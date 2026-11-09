@@ -180,20 +180,20 @@ PiliPlus-Rust/
 6. 至少完成 macOS + iOS/Android 的最小播放集成测试；Windows/Linux 构建和后续实测计划明确。
 7. 完成下述阶段 2 视频 Spike 并形成书面决策。
 
-## 6. 阶段 1 并行执行：Slint 播放器可行性 Spike（架构阻断项）
+## 6. M0 限时执行：Slint 视频与 UI 可行性 Spike（仅阻断 Phase 2）
 
 > 这不是提前开展阶段 2 全量 UI 开发，而是低成本排除最关键的技术风险。
 
-制作一个独立 Slint 窗口，包含：视频、覆盖弹幕、进度条、播放暂停、Seek、全屏、窗口缩放、后台切换。
+制作独立 Slint 窗口验证视频、弹幕、控制与全屏；同时验证长列表虚拟化、富文本/表情、IME、辅助功能和移动端生命周期。M0 留存测试证据，M4 评审 Phase 2 的 Go/No-Go。
 
 **分别验证：**
 
 - macOS：Slint 与 libmpv 视频输出如何同窗合成、是否支持硬解、弹幕层级与 HiDPI。
-- Android：Slint 与 Media3 的 `SurfaceView`/`TextureView` 合成和触摸分发；优先避免每帧 CPU RGBA 拷贝。
-- iOS：Slint 与 AVPlayerLayer/原生 View 的合成、旋转、安全区、后台音频/画中画。
+- Android：优先 Slint + libmpv 视频表面/触摸分发；Media3 SurfaceView/TextureView 作为备选，避免每帧 CPU RGBA 拷贝。
+- iOS：优先验证 Slint + libmpv 合成、旋转、安全区、后台音频/画中画；AVPlayerLayer 为备选。
 - Windows/Linux：窗口句柄、GPU 后端、视频表面、打包依赖；不能因为 macOS 通过就视为完成。
 
-**决策门槛**：如果无法实现稳定的硬件解码 + 正确覆盖弹幕 + 全屏/输入交互，在阶段 2 前评估改造渲染方案（例如独立 Overlay 合成或替代 UI 框架），不强行推进 Slint。
+**决策门槛**：若硬解、弹幕覆盖、全屏/输入、富文本、IME、长列表或无障碍不达标，则 Phase 2 No-Go；Phase 1 Flutter + Rust Core 保持独立可发布，并评估替代方案。
 
 ## 7. 第二阶段：Slint UI 替换 Flutter（P1）
 
@@ -323,7 +323,7 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 
 | ID | 风险 | 概率/影响 | 缓解策略 | 阶段阻断？ |
 |---|---|---|---|---|
-| R1 | Slint 与原生视频表面难以合成 | 高/高 | 阶段1立即视频 Spike | **是** |
+| R1 | Slint 与原生视频表面难以合成 | 高/高 | M0 限时视频 Spike | **是（Phase 2）** |
 | R2 | iOS/Android DASH、清晰度、请求头差异 | 中/高 | 单独播放器契约与真机样本 | **是** |
 | R3 | 原 Flutter 的定制 media-kit 行为未摸清 | 高/中 | 固定 commit 和依赖审计 | 是（阶段1） |
 | R4 | 登录/数据库迁移损坏数据 | 中/高 | 复制数据演练、双读、回滚 | **是** |
@@ -367,11 +367,27 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 - [ ] `RUST-003` 建立 Rust Workspace、fmt/clippy/test CI 和统一日志/错误体系。
 - [ ] `RUST-004` 集成 `flutter_rust_bridge`，实现异步、事件流、取消和 Flutter 端自动化测试。
 - [ ] `RUST-005` 迁移一个**只读 API**（例如视频详情），建立 fixture 对照测试和功能开关。
-- [ ] `RUST-006` 定义 Player Port（资源、音轨、事件、控制、画面表面、生命周期）。
+- [ ] `RUST-006` **M1 前置、P1-04/P1-05 前** 定义 Player Port（资源、音轨、时钟、事件、控制、画面表面、生命周期）。
 - [ ] `SPIKE-001` macOS Slint + libmpv 视频 + 覆盖弹幕技术验证。
-- [ ] `SPIKE-002` Android Slint + Media3 Surface/Texture 合成验证。
-- [ ] `SPIKE-003` iOS Slint + AVPlayerLayer 叠加与全屏验证。
+- [ ] `SPIKE-002` **M0** Android Slint + libmpv 视频表面与 Media3 回退对照。
+- [ ] `SPIKE-003` iOS Slint + libmpv 可行性和 AVPlayerLayer 备选方案验证。
 - [ ] `QA-001` 定义端到端功能矩阵、性能采样场景和发布前测试清单。
+
+## 15. 参考资料（2026-11-10 检索）
+
+- PiliPlus 官方仓库：https://github.com/bggRGjQaUbCoE/PiliPlus
+- PiliPlus 当前依赖配置：https://github.com/bggRGjQaUbCoE/PiliPlus/blob/main/pubspec.yaml
+- flutter_rust_bridge：https://pub.dev/packages/flutter_rust_bridge
+- Slint 框架及平台：https://slint.dev/faqs
+- Slint 移动端开发：https://docs.slint.dev/latest/docs/slint/guide/platforms/mobile/general/
+- Slint Android：https://docs.slint.dev/latest/docs/slint/guide/platforms/mobile/android/
+- Slint 许可证：https://github.com/slint-ui/slint/blob/master/LICENSE.md
+- mpv：https://github.com/mpv-player/mpv
+- Media3：https://developer.android.com/media/media3
+
+---
+
+**Review 建议**：原则上批准三阶段路线，但阶段 2 的完整 Slint 替换以视频合成 Spike 通过为前置条件；第一阶段优先交付一个可以继续使用的 Flutter + Rust 客户端，而不是过早追求所有代码全部 Rust 化。
 
 ## 16. v0.2 Review 意见与架构约束
 
@@ -428,20 +444,3 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 | 上游变更映射缺失 | UPSTREAM_COMMIT + Rust fixtures 回归 |
 | 弹幕时钟不明 | 使用单一播放器事实时钟 |
 | 五端同时卡验收 | macOS/Android 先行，其余单独准入 |
-
-
-## 15. 参考资料（2026-11-10 检索）
-
-- PiliPlus 官方仓库：https://github.com/bggRGjQaUbCoE/PiliPlus
-- PiliPlus 当前依赖配置：https://github.com/bggRGjQaUbCoE/PiliPlus/blob/main/pubspec.yaml
-- flutter_rust_bridge：https://pub.dev/packages/flutter_rust_bridge
-- Slint 框架及平台：https://slint.dev/faqs
-- Slint 移动端开发：https://docs.slint.dev/latest/docs/slint/guide/platforms/mobile/general/
-- Slint Android：https://docs.slint.dev/latest/docs/slint/guide/platforms/mobile/android/
-- Slint 许可证：https://github.com/slint-ui/slint/blob/master/LICENSE.md
-- mpv：https://github.com/mpv-player/mpv
-- Media3：https://developer.android.com/media/media3
-
----
-
-**Review 建议**：原则上批准三阶段路线，但阶段 2 的完整 Slint 替换以视频合成 Spike 通过为前置条件；第一阶段优先交付一个可以继续使用的 Flutter + Rust 客户端，而不是过早追求所有代码全部 Rust 化。

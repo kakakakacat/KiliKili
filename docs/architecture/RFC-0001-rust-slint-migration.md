@@ -1,0 +1,385 @@
+# PiliPlus Rust + Slint 跨平台重构：技术方案与目标规划
+
+> **状态**：RFC / 待 Review  
+> **版本**：v0.1  
+> **日期**：2026-11-10  
+> **原始项目**：https://github.com/bggRGjQaUbCoE/PiliPlus  
+> **目标平台**：iOS、Android、macOS、Windows、Linux；**不支持 Web**  
+> **核心原则**：先 Rust 化可复用业务核心，再 Slint 替换 UI，最后集中做性能与稳定性；每个阶段保持可运行、可回退。
+
+---
+
+## 0. 执行摘要 / Review 结论
+
+本项目不是将 Dart 代码机械翻译成 Rust，而是基于 PiliPlus 功能基线重构跨平台客户端。
+
+- **阶段 1：Flutter + Rust Core**。保持 Flutter UI 和现有播放器，逐模块迁移业务逻辑至独立 Rust Workspace，通过 `flutter_rust_bridge` 通信。
+- **阶段 2：Slint + Rust Core**。另建 Slint 客户端，复用既有 Core，按页面和平台迁移，最终移除 Flutter 运行时。视频播放采用平台适配层，不能假设 Slint 能直接嵌入所有视频表面。
+- **阶段 3：性能优化 + Bug 修复**。在阶段 1/2 持续保证质量的基础上，集中优化视频、弹幕、图片、滚动、启动时间、CPU、内存和耗电。
+
+**预先设置阻断门槛**：阶段 1 早期必须完成 *Slint + mpv/AVPlayer/Media3 的视频嵌入及弹幕覆盖* 可行性 Spike。未验证成功不得承诺阶段 2 的完整五端替换。
+
+## 1. 背景和现状
+
+PiliPlus 是 Flutter 第三方 Bilibili 客户端。当前 `pubspec.yaml` 包含 `media_kit`、`dio`、`protobuf`、`hive_ce`、`get` 等依赖，且对 `media_kit` 等采用 Git override；因此播放器路径不能仅依据上游标准插件行为推断。首个交付应锁定 upstream commit 和依赖版本，并绘制真实依赖图。
+
+### 1.1 目标
+
+1. 以 Rust 共享业务核心覆盖五个平台，UI 和平台细节不侵入 Core。
+2. **保留功能和数据兼容性**，迁移期间保持可用的 Flutter 版本。
+3. 第二阶段采用 Slint 声明式 UI，形成一套跨平台设计和组件体系。
+4. 平台硬解、系统音频/画中画、窗口能力通过可替换适配器实现，不追求所有依赖都为纯 Rust。
+5. 建立可重复的功能、兼容性、性能测试与 CI 构建链路。
+
+### 1.2 非目标
+
+- 不做 Web/WASM、不实现网页服务端。
+- 不自研 H.264/HEVC/AV1 解码器，不以纯 Rust 取代平台硬件解码。
+- 不在第一阶段重写完整 UI、动画和播放渲染。
+- 不以 Rust 代码行占比作为成功指标。
+- 不承诺规避 iOS 侧载签名有效期、第三方 API 授权或平台审核要求。
+
+### 1.3 边界与假设
+
+- 优先保留 PiliPlus 功能而非界面完全一致；对每项差异记录验收。
+- 开发基线：macOS Apple Silicon 开发主机；Android 实机、iPhone、Windows/Linux 验证环境需在里程碑前明确。
+- 因上游经常更新，迁移以**固定 commit**为基线，后续通过显式同步窗口合并必要修复。
+- GPL-3.0 相关义务须纳入发布前法律/许可证检查，复用代码和资源时保留来源声明。
+
+## 2. 目标架构
+
+```text
+Stage 1                               Stage 2/3
+┌────────────────────┐                ┌────────────────────┐
+│ Flutter UI          │                │ Slint UI            │
+│ 现有 Flutter Player │                │ 页面/组件/主题      │
+└──────────┬─────────┘                └──────────┬─────────┘
+           │ flutter_rust_bridge                 │ Rust callbacks / models
+           ▼                                     ▼
+┌─────────────────────────────────────────────────────────┐
+│ Rust Application / Domain                               │
+│ UseCases | Repositories | PlayerController | Events     │
+├─────────────────────────────────────────────────────────┤
+│ API / Auth / Models / Danmaku / Download / Cache / DB   │
+├─────────────────────────────────────────────────────────┤
+│ Ports: Http | Storage | Clock | Player | SecureStore    │
+└────────────────────────────┬────────────────────────────┘
+                             │ platform adapters
+              ┌──────────────┼────────────────┐
+              ▼              ▼                ▼
+         iOS/Android     macOS/Win/Linux   Test adapters
+         AVPlayer/Media3      libmpv        fake/in-memory
+```
+
+### 2.1 分层职责
+
+| 层 | 内容 | 禁止依赖 |
+|---|---|---|
+| `domain` | 业务实体、规则、错误、UseCase、Repository Trait | Flutter/Slint、特定平台 SDK |
+| `data` | HTTP、序列化、API DTO、会话、数据库、缓存 | UI 组件 |
+| `application` | 页面所需聚合查询、任务取消、并发和事件流 | Flutter Widget/Slint 具体类型 |
+| `bridge_flutter` | Rust API 转 Dart、事件订阅、生命周期管理 | 具体 Bilibili 协议细节 |
+| `ui_slint` | Slint 页面、主题、输入事件、可访问性 | API 底层细节 |
+| `platform-*` | 视频、Keychain/Keystore、文件、分享、通知、窗口 | 业务页面结构 |
+
+### 2.2 设计约束
+
+- Core 对外暴露**粗粒度异步 API**，避免每帧/每条弹幕跨 FFI；高频数据经批处理或原生共享结构传递。
+- 事件需携带 `request_id`/`generation`，路由切换、Seek、搜索输入改变时支持取消和丢弃过期结果。
+- Core 的错误统一映射为机器可识别的错误码、用户提示与诊断字段；日志中不得包含 Cookie/Token。
+- 网络和存储的所有平台差异封装为 trait 或平台 Adapter。
+- 用户数据迁移必须可回滚，避免一次性删除旧数据库或缓存。
+
+## 3. 推荐技术栈
+
+| 关注点 | 阶段 1 | 阶段 2/3 | 决策说明 |
+|---|---|---|---|
+| UI | Flutter 原界面 | Slint | 迁移中同时保留两种 Shell |
+| Dart/Rust 桥接 | flutter_rust_bridge v2（固定版本） | 移除 | 仅属于 Stage 1 |
+| Rust runtime | Tokio | Tokio | 移动端需处理初始化、后台任务和线程生命周期 |
+| HTTP | reqwest + rustls（需审查 API 要求） | 不变 | 定义超时、重试、代理、压缩和 Cookie 策略 |
+| 序列化 | serde、serde_json、prost、quick-xml | 不变 | Protobuf schema 版本化 |
+| DB | SQLite（rusqlite/sqlx 二选一） | 不变 | 建议先用 rusqlite 封装同步 I/O 工作线程 |
+| Secret | iOS Keychain / Android Keystore 适配层 | 不变 | 非敏感设置可在 SQLite/配置文件 |
+| 缓存 | 文件存储 + SQLite 索引 + LRU | 不变 | 明确配额和清理策略 |
+| 视频 | 保留现有 media-kit | iOS AVPlayer；Android Media3；桌面 libmpv | 这是**候选目标**，通过 Spike 后冻结 |
+| 弹幕 | Rust 解析/调度，Flutter 呈现 | Slint/GPU Overlay | 跨 FFI 采用批处理 |
+| 图片 | 保持 Flutter 图片链路 | image crate + 系统/GPU 解码评估 | 避免全尺寸解码和重复缓存 |
+| 诊断 | tracing、统一错误码 | tracing + 崩溃/性能采样 | 自建服务为可选项 |
+| CI | cargo fmt/clippy/test + Flutter build | Slint 五平台构建与测试 | 构建成功不等于真机通过 |
+
+## 4. Rust Workspace 初始结构
+
+```text
+PiliPlus-Rust/
+├── upstream/                  # 可选：固定基线或 Git submodule
+├── app-flutter/               # 阶段1壳，保持可发布
+├── app-slint/                 # 阶段2独立壳，不在Stage1过早全量开发
+├── rust/
+│   ├── Cargo.toml
+│   └── crates/
+│       ├── bili-domain/       # 纯业务实体与 Traits
+│       ├── bili-api/          # REST/协议、DTO、网络访问
+│       ├── bili-auth/         # 登录状态、Cookie/凭证接口
+│       ├── bili-core/         # UseCase、Application Service
+│       ├── bili-danmaku/      # 解码、索引、过滤、调度
+│       ├── bili-storage/      # DB、下载索引、缓存
+│       ├── bili-download/     # 下载任务、续传和资源管理
+│       ├── bili-player/       # 播放控制抽象和事件
+│       ├── bili-platform/     # 文件、安全存储、系统能力traits
+│       ├── bridge-flutter/    # FRB 对外接口
+│       ├── player-mpv/        # 桌面适配
+│       ├── player-apple/      # AVPlayer FFI 适配
+│       └── player-android/    # JNI/Media3 适配
+├── tests/fixtures/            # 脱敏的网络协议样本
+├── benchmarks/
+├── docs/adr/                  # Architecture Decision Records
+└── .github/workflows/
+```
+
+注：阶段 1 无需一次性创建所有 crates；按功能边界逐个加入。拆分的原则是**可独立测试和可替换**，而不是目录越多越好。
+
+## 5. 第一阶段：Flutter → Rust Core（P0）
+
+### 5.1 交付目标
+
+- Flutter UI 与原有播放器行为保持一致；业务 API 和数据处理逐步由 Rust 接管。
+- Core 不依赖 Flutter 类型；基于同一组测试可以在不启动 Flutter 的情况下运行。
+- Rust 模块功能开关允许回退到 Dart 实现，避免出现不可定位的大范围回归。
+- 提前执行播放器/Slint 技术 Spike，为阶段 2 设置 Go/No-Go 门槛。
+
+### 5.2 任务拆解（推荐顺序）
+
+| ID | 工作包 | 交付物 | 必过验收 |
+|---|---|---|---|
+| P1-00 | 基线审计 | upstream commit、页面/功能矩阵、依赖图、数据目录清单 | 可复现原版构建和基础流程 |
+| P1-01 | Workspace、日志、CI、FRB | Rust 最小方法、异步方法、事件流 | macOS/iOS/Android 桥接编译并执行测试 |
+| P1-02 | Domain / DTO / API | 统一实体、API Client、fixture 测试 | API 对照数据一致、异常可恢复 |
+| P1-03 | 搜索/首页/详情 | Flutter 页面通过 Rust UseCase 加载 | UI 行为和加载状态无明显退化 |
+| P1-04 | 播放资源解析 | 视频清晰度、DASH 音视频 URL、签名/请求头处理 | 现有播放器可成功使用 Rust 返回的数据 |
+| P1-05 | 弹幕引擎 | Protobuf/XML 解码、过滤、时间线、调度 | 同样 fixture 的过滤/排序结果与基线一致 |
+| P1-06 | 认证/用户数据 | 账号会话、收藏、历史、评论等 | 用户状态和敏感数据安全迁移 |
+| P1-07 | 存储/缓存/下载 | schema 迁移、下载任务恢复、配额 | 升级前数据可读、失败可回退 |
+| P1-08 | 收尾/替换 Dart Service | 文档、跨平台测试、兼容性报告 | 核心业务通过 Rust 运行且 Flutter 版本稳定 |
+
+### 5.3 对齐旧行为的策略
+
+- `golden fixtures`：对 API 响应脱敏并固定，Rust 与 Dart 使用同一输入数据校验规范化输出。
+- `shadow mode`：早期仅对非敏感只读功能同时执行 Dart/Rust 解析并比对，结果仍用 Dart 显示；禁止对写操作重复执行。
+- `feature flags`：按功能、按平台切换实现；发生故障可降级回 Dart。
+- `upgrade tests`：复制旧版用户数据，验证首次启动、数据库迁移、登录状态、下载任务和缓存兼容性。
+- 重要外部 API 的变化通过协议适配层修复，避免污染 Domain。
+
+### 5.4 阶段 1 定义完成（DoD）
+
+1. 按已审计的范围完成核心业务模块 Rust 化；剩余 Dart 仅承担 UI、播放渲染、平台桥接及有记录的遗留功能。
+2. 核心 Rust 单测、集成测试、Flutter 回归通过；无阻断性崩溃/数据损坏。
+3. 重要流程：首页→详情→播放→弹幕；登录→收藏/历史；搜索；网络断连恢复。
+4. 核心 Rust Crates 独立测试；Dart Widget 不存在于 Core。
+5. 迁移数据及升级/回滚路径已通过演练。
+6. 至少完成 macOS + iOS/Android 的最小播放集成测试；Windows/Linux 构建和后续实测计划明确。
+7. 完成下述阶段 2 视频 Spike 并形成书面决策。
+
+## 6. 阶段 1 并行执行：Slint 播放器可行性 Spike（架构阻断项）
+
+> 这不是提前开展阶段 2 全量 UI 开发，而是低成本排除最关键的技术风险。
+
+制作一个独立 Slint 窗口，包含：视频、覆盖弹幕、进度条、播放暂停、Seek、全屏、窗口缩放、后台切换。
+
+**分别验证：**
+
+- macOS：Slint 与 libmpv 视频输出如何同窗合成、是否支持硬解、弹幕层级与 HiDPI。
+- Android：Slint 与 Media3 的 `SurfaceView`/`TextureView` 合成和触摸分发；优先避免每帧 CPU RGBA 拷贝。
+- iOS：Slint 与 AVPlayerLayer/原生 View 的合成、旋转、安全区、后台音频/画中画。
+- Windows/Linux：窗口句柄、GPU 后端、视频表面、打包依赖；不能因为 macOS 通过就视为完成。
+
+**决策门槛**：如果无法实现稳定的硬件解码 + 正确覆盖弹幕 + 全屏/输入交互，在阶段 2 前评估改造渲染方案（例如独立 Overlay 合成或替代 UI 框架），不强行推进 Slint。
+
+## 7. 第二阶段：Slint UI 替换 Flutter（P1）
+
+### 7.1 架构目标
+
+- 建立 `app-slint`，直接调用 `bili-core` / `bili-player`。
+- 页面样式和 UI 状态均在 Slint Shell；网络请求、会话管理、业务数据和播放状态仍在 Rust Core。
+- 使用单一设计系统：颜色、字号、间距、列表项、对话框、触摸目标、深色模式、响应式窗口。
+- 五个平台共享页面结构，但允许触屏和桌面交互规则差异（鼠标悬停、快捷键、手势、窗口行为）。
+
+### 7.2 推荐迁移顺序
+
+1. 设计系统 / 导航 / 设置、关于、错误态、加载态。
+2. 首页、分类、搜索、视频列表/卡片，建立虚拟滚动和图片缓存。
+3. 视频详情、评论、个人中心、收藏、历史。
+4. 视频播放器、弹幕叠加、全屏、倍速、清晰度、播放进度。
+5. Android/iOS 触控、键盘、IME、安全区域、系统返回键、后台恢复和画中画。
+6. 桌面快捷键、窗口管理、托盘（可选）、通知和深色模式。
+7. 最后迁移直播等复杂功能，视 PiliPlus 基线的正式功能清单排序。
+
+### 7.3 五端播放器策略
+
+| 平台 | 目标播放后端 | 关键问题 |
+|---|---|---|
+| iOS | AVPlayer（候选） | DASH 音视频分轨、必要请求头、硬解、PiP、合成覆盖 |
+| Android | Media3（候选） | DASH/分轨、Surface 生命周期、HDR、后台音频、PiP |
+| macOS | libmpv（候选） | Video surface、硬解、全屏、HiDPI、沙盒签名 |
+| Windows | libmpv（候选） | GPU 视频输出、DPI、DLL 分发、驱动兼容 |
+| Linux | libmpv（候选） | Wayland/X11、视频输出、系统库兼容 |
+
+**注意**：Bilibili 视频可能提供分离音视频 DASH 资源；AVPlayer/Media3 是否能使用相同清单/封装，需用真实、合法可访问的样本验证。必要时对不同平台使用适配后的 Manifest/资源描述，不能仅用单 URL 接口硬编码。
+
+### 7.4 Slint 阶段完成标准
+
+- 五端能够启动并运行核心路径；每个平台完成实际设备/系统测试。
+- 与第一阶段相比，用户数据可以升级迁移；不要求完全共用旧 Flutter 运行时存储目录。
+- 视频播放、弹幕覆盖、触摸/鼠标操作、音频焦点和前后台恢复通过专项验收。
+- 安装包及版本信息齐全；正式 Slint 客户端不再依赖 Flutter 运行时。
+- 无重大可访问性、输入法或多 DPI 回归。
+
+## 8. 第三阶段：性能优化与 Bug 修复（P2）
+
+> 性能与 Bug 修复从阶段 1 就开始实施；第三阶段仅表示集中专项优化。
+
+### 8.1 必须有基线的指标
+
+| 指标 | 场景 | 衡量方法 | 建议门槛 |
+|---|---|---|---|
+| 冷启动 | 设备重启/杀进程后至可交互 | 多次采样 p50/p95 | 不劣于基线；专项优化后再设目标 |
+| 内存 | 空闲首页、长列表、1080p 视频 | RSS/PSS + GPU 指标 | 无持续增长/泄漏，比较峰值 |
+| CPU | 1080p + 固定弹幕密度 | 多次稳态采样 | 不劣于基线，明确环境 |
+| 帧耗时 | 首页快速滚动、视频弹幕 | p95/p99 帧耗时和丢帧 | 针对目标刷新率设预算 |
+| Seek 延迟 | 同一视频、固定网络 | 点击至有效帧时间 | 不劣于基线 |
+| 网络 | 弱网/断线/恢复 | 超时、重试、首帧 | 不出现无限重试/重复请求风暴 |
+| 电量 | 固定亮度、音量、网络、播放时长 | 能耗工具/设备统计 | 优化前后 A/B |
+| 安装体积 | Release 包 | 各平台实际产物 | 每次增量可解释 |
+
+### 8.2 优化顺序
+
+1. 正确性、卡死和崩溃优先；依赖数据和实测，而非理论加速比例。
+2. 避免大对象跨 FFI 重复序列化；使用批处理和粗粒度接口。
+3. 视频硬解与零拷贝/低拷贝路径；减少 UI 与播放器抢占 GPU。
+4. 弹幕：预索引、轨道缓存、文本测量缓存、批量渲染和同步时钟。
+5. 图片：按展示尺寸解码、分页预取、内存和磁盘分级缓存。
+6. 列表：虚拟化、稳定 item key、减少重复布局与无意义状态通知。
+7. Rust 端 profiling：`cargo flamegraph`（支持平台）、Instruments、Android Perfetto、Windows WPA 等。
+
+## 9. CI、测试与发布矩阵
+
+### 9.1 CI 分层
+
+- 每个 PR：`cargo fmt --check`、`cargo clippy`、`cargo test`、协议 fixture、基础静态检查。
+- 阶段 1：Flutter 单测、Widget 测试、至少 macOS/Android/iOS 构建检查。
+- 阶段 2：macOS、Windows、Linux 构建；iOS/Android 构建与模拟器冒烟（能力允许时）。
+- 每夜：跨平台集成测试、性能基准样本、依赖许可证报告。
+- 发布前：真机播放与后台行为、安装包签名、断网恢复、升级路径和用户数据回归。
+
+### 9.2 测试等级
+
+- **Unit**：API Model/弹幕/缓存策略/时间线/错误映射，无网络。
+- **Contract**：脱敏 HTTP fixtures；固定预期；覆盖协议变化。
+- **Integration**：沙盒存储、数据库升级、播放器模拟器、真实 API 的受控测试。
+- **E2E**：账号、首页、搜索、详情、播放、Seek、全屏、弹幕、评论与数据升级。
+- **Performance**：固定机器、网络、视频样本、分辨率、弹幕密度，重复采样。
+
+### 9.3 平台覆盖注意
+
+- macOS Apple Silicon 开发机可直接覆盖 macOS 和 Apple 平台的部分构建/模拟器验证。
+- Android 需要设备或模拟器进行 Media3、Surface 和生命周期验证；仅 Docker 编译不能验证 GPU/解码链路。
+- Windows/Linux 应有对应系统的 CI Runner 和最终实机/VM GUI 测试。
+- iOS 侧载免费签名 7 天限制独立于客户端技术架构；此项目不承诺绕过限制。
+
+## 10. 工程管理与上线策略
+
+### 10.1 分支与 upstream 同步
+
+- `main`：稳定可构建。
+- `feature/rust-*`：按模块迁移；小 PR。
+- `spike/slint-player-*`：技术探索，未经 Review 不并入正式功能。
+- `release/*`：测试发布；upstream 同步须配合回归。
+- 设定 `UPSTREAM_COMMIT` 并记录 rebase/merge 策略，避免基础代码不断变化。
+
+### 10.2 ADR 决策记录
+
+至少编写以下 ADR：
+
+- ADR-001：Rust Workspace 分层与边界。
+- ADR-002：flutter_rust_bridge 调用/事件/错误规范。
+- ADR-003：存储与登录态升级、回滚。
+- ADR-004：播放器后端和画面合成策略。
+- ADR-005：弹幕时钟/布局/渲染策略。
+- ADR-006：Slint GPL/其他许可证与源码分发。
+
+### 10.3 发布与合规
+
+- PiliPlus 使用 GPL-3.0；若派生代码用于分发，遵守许可证、版权和对应源码义务。
+- Slint 可选择 GPLv3 等官方许可路径；需结合项目发布方式确认。
+- 审查视频和 API 的使用条款、账号凭据处理、日志脱敏、用户内容下载授权及各应用商店规则。
+- 不嵌入硬编码账户凭据、设备私钥或不可公开的 API 秘钥。
+
+## 11. 风险登记簿
+
+| ID | 风险 | 概率/影响 | 缓解策略 | 阶段阻断？ |
+|---|---|---|---|---|
+| R1 | Slint 与原生视频表面难以合成 | 高/高 | 阶段1立即视频 Spike | **是** |
+| R2 | iOS/Android DASH、清晰度、请求头差异 | 中/高 | 单独播放器契约与真机样本 | **是** |
+| R3 | 原 Flutter 的定制 media-kit 行为未摸清 | 高/中 | 固定 commit 和依赖审计 | 是（阶段1） |
+| R4 | 登录/数据库迁移损坏数据 | 中/高 | 复制数据演练、双读、回滚 | **是** |
+| R5 | FFI 高频调用拖慢性能 | 中/中 | 粗粒度接口、事件批处理 | 否 |
+| R6 | 上游 Bilibili API 变化频繁 | 高/中 | 版本化 Protocol Adapter 和 fixtures | 否 |
+| R7 | 五平台发布/签名/依赖问题 | 中/高 | 早期 CI、逐平台验收 | 是（发布） |
+| R8 | GPL/平台分发条款不满足 | 中/高 | 发布前许可证与合规 Review | 是（发布） |
+| R9 | 各平台 Slint 触摸、IME、辅助功能差异 | 中/中 | UI 系统测试和平台验收 | 否 |
+| R10 | 过早追求纯 Rust 导致过度重写 | 高/中 | 以可验证价值为前提，硬解保留原生 | 否 |
+
+## 12. 里程碑与交付物
+
+> 时间不做无依据的精确承诺；以下按 **完成条件** 推进。
+
+| 里程碑 | 主要成果 | Go / No-Go |
+|---|---|---|
+| M0：仓库与基线 | 功能矩阵、构建流程、固定 upstream、测试样本 | 原版可复现 |
+| M1：Rust 桥接基础 | Workspace、FRB、CI、最小 API | 能在 Flutter 使用异步 Rust Core |
+| M2：Rust 数据/播放业务 | 首页、详情、视频资源、弹幕 | 核心路径行为一致 |
+| M3：Rust 数据持久化 | 登录、收藏、历史、下载、升级 | 不丢数据、可回滚 |
+| M4：Slint 视频技术评审 | macOS/Android/iOS Spike + 合成分析 | **通过才启动完整 UI 迁移** |
+| M5：Slint 客户端 Beta | 五端核心 UI + 播放 + 弹幕 | 平台关键流程通过 |
+| M6：性能与稳定性 Release | 指标对比、问题闭环、安装包 | 发布门槛全部满足 |
+
+## 13. Review 需确定的问题
+
+1. **项目关系**：Fork PiliPlus 继续公开协作，还是独立新仓库并保留来源与许可证？
+2. **第一阶段范围**：直播、下载、动态、字幕、番剧是否都要求进入 M3，还是允许按功能矩阵后移？
+3. **数据库策略**：沿用原版持久化格式，还是采取一次性导入 Rust SQLite + 回滚？
+4. **播放器策略**：接受移动端保留 AVPlayer/Media3 的原生桥接，还是为五端统一 mpv 承担额外集成成本？
+5. **Slint 失败回退**：播放器 Spike 不达标时，允许更换 UI/合成技术方案吗？
+6. **支持的 OS 最低版本**：iOS、Android、macOS、Windows、Linux 发行版和架构范围要明确。
+7. **交付发布**：仅 GitHub Releases 侧载，还是考虑 App Store / TestFlight / 各商店？
+8. **测试资源**：至少需要一台 iOS 与 Android 真机，Windows/Linux GUI 环境；谁负责平台验收？
+9. **团队/Agent 实施方式**：每个 PR 的最大范围、Review 人、自动测试及完成判断。
+
+## 14. 推荐的第一批 Issue（可直接作为 Agent 待办）
+
+- [ ] `RUST-001` 锁定 PiliPlus upstream commit，跑通 macOS/Android/iOS 基线构建，输出 `BASELINE.md`。
+- [ ] `RUST-002` 审查 `pubspec.yaml` Git overrides，明确 `media-kit` 定制逻辑及播放调用链。
+- [ ] `RUST-003` 建立 Rust Workspace、fmt/clippy/test CI 和统一日志/错误体系。
+- [ ] `RUST-004` 集成 `flutter_rust_bridge`，实现异步、事件流、取消和 Flutter 端自动化测试。
+- [ ] `RUST-005` 迁移一个**只读 API**（例如视频详情），建立 fixture 对照测试和功能开关。
+- [ ] `RUST-006` 定义 Player Port（资源、音轨、事件、控制、画面表面、生命周期）。
+- [ ] `SPIKE-001` macOS Slint + libmpv 视频 + 覆盖弹幕技术验证。
+- [ ] `SPIKE-002` Android Slint + Media3 Surface/Texture 合成验证。
+- [ ] `SPIKE-003` iOS Slint + AVPlayerLayer 叠加与全屏验证。
+- [ ] `QA-001` 定义端到端功能矩阵、性能采样场景和发布前测试清单。
+
+## 15. 参考资料（2026-11-10 检索）
+
+- PiliPlus 官方仓库：https://github.com/bggRGjQaUbCoE/PiliPlus
+- PiliPlus 当前依赖配置：https://github.com/bggRGjQaUbCoE/PiliPlus/blob/main/pubspec.yaml
+- flutter_rust_bridge：https://pub.dev/packages/flutter_rust_bridge
+- Slint 框架及平台：https://slint.dev/faqs
+- Slint 移动端开发：https://docs.slint.dev/latest/docs/slint/guide/platforms/mobile/general/
+- Slint Android：https://docs.slint.dev/latest/docs/slint/guide/platforms/mobile/android/
+- Slint 许可证：https://github.com/slint-ui/slint/blob/master/LICENSE.md
+- mpv：https://github.com/mpv-player/mpv
+- Media3：https://developer.android.com/media/media3
+
+---
+
+**Review 建议**：原则上批准三阶段路线，但阶段 2 的完整 Slint 替换以视频合成 Spike 通过为前置条件；第一阶段优先交付一个可以继续使用的 Flutter + Rust 客户端，而不是过早追求所有代码全部 Rust 化。

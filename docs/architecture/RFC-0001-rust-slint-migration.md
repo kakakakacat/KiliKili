@@ -1,7 +1,7 @@
 # PiliPlus Rust + Slint 跨平台重构：技术方案与目标规划
 
-> **状态**：RFC / 待 Review  
-> **版本**：v0.1  
+> **状态**：RFC v0.2 / Review 意见已吸收，待 ADR 验证  
+> **版本**：v0.2  
 > **日期**：2026-11-10  
 > **原始项目**：https://github.com/bggRGjQaUbCoE/PiliPlus  
 > **目标平台**：iOS、Android、macOS、Windows、Linux；**不支持 Web**  
@@ -17,7 +17,7 @@
 - **阶段 2：Slint + Rust Core**。另建 Slint 客户端，复用既有 Core，按页面和平台迁移，最终移除 Flutter 运行时。视频播放采用平台适配层，不能假设 Slint 能直接嵌入所有视频表面。
 - **阶段 3：性能优化 + Bug 修复**。在阶段 1/2 持续保证质量的基础上，集中优化视频、弹幕、图片、滚动、启动时间、CPU、内存和耗电。
 
-**预先设置阻断门槛**：阶段 1 早期必须完成 *Slint + mpv/AVPlayer/Media3 的视频嵌入及弹幕覆盖* 可行性 Spike。未验证成功不得承诺阶段 2 的完整五端替换。
+**M0 阻断门槛**：阶段 1 启动时限时验证 Slint 视频合成、弹幕覆盖、长列表、富文本、IME 和无障碍。未通过仅阻断 Phase 2 Slint 完整替换；Phase 1 Flutter + Rust Core 仍可独立发布。
 
 ## 1. 背景和现状
 
@@ -102,7 +102,7 @@ Stage 1                               Stage 2/3
 | DB | SQLite（rusqlite/sqlx 二选一） | 不变 | 建议先用 rusqlite 封装同步 I/O 工作线程 |
 | Secret | iOS Keychain / Android Keystore 适配层 | 不变 | 非敏感设置可在 SQLite/配置文件 |
 | 缓存 | 文件存储 + SQLite 索引 + LRU | 不变 | 明确配额和清理策略 |
-| 视频 | 保留现有 media-kit | iOS AVPlayer；Android Media3；桌面 libmpv | 这是**候选目标**，通过 Spike 后冻结 |
+| 视频 | 保留定制 media-kit/libmpv | 优先验证五端 libmpv；原生 AVPlayer/Media3 作为备选 | ADR-004 以 DASH/硬解/PiP/后台播放实测决定 |
 | 弹幕 | Rust 解析/调度，Flutter 呈现 | Slint/GPU Overlay | 跨 FFI 采用批处理 |
 | 图片 | 保持 Flutter 图片链路 | image crate + 系统/GPU 解码评估 | 避免全尺寸解码和重复缓存 |
 | 诊断 | tracing、统一错误码 | tracing + 崩溃/性能采样 | 自建服务为可选项 |
@@ -153,13 +153,13 @@ PiliPlus-Rust/
 | ID | 工作包 | 交付物 | 必过验收 |
 |---|---|---|---|
 | P1-00 | 基线审计 | upstream commit、页面/功能矩阵、依赖图、数据目录清单 | 可复现原版构建和基础流程 |
-| P1-01 | Workspace、日志、CI、FRB | Rust 最小方法、异步方法、事件流 | macOS/iOS/Android 桥接编译并执行测试 |
+| P1-01 | Workspace、Player Port、日志、CI、FRB | 播放时钟、事件、状态契约 | P1-04/P1-05 前批准 Player Port，桥接测试通过 |
 | P1-02 | Domain / DTO / API | 统一实体、API Client、fixture 测试 | API 对照数据一致、异常可恢复 |
 | P1-03 | 搜索/首页/详情 | Flutter 页面通过 Rust UseCase 加载 | UI 行为和加载状态无明显退化 |
 | P1-04 | 播放资源解析 | 视频清晰度、DASH 音视频 URL、签名/请求头处理 | 现有播放器可成功使用 Rust 返回的数据 |
 | P1-05 | 弹幕引擎 | Protobuf/XML 解码、过滤、时间线、调度 | 同样 fixture 的过滤/排序结果与基线一致 |
-| P1-06 | 认证/用户数据 | 账号会话、收藏、历史、评论等 | 用户状态和敏感数据安全迁移 |
-| P1-07 | 存储/缓存/下载 | schema 迁移、下载任务恢复、配额 | 升级前数据可读、失败可回退 |
+| P1-06 | 认证/用户数据 | Dart Hive 导出、Rust SQLite 导入、会话、历史、收藏 | 中间格式与升级/回滚/幂等校验通过 |
+| P1-07 | 存储/缓存/下载 | DASH 分轨合并、URLSession/WorkManager 后台适配、配额 | 下载中断恢复、后台任务和回滚通过 |
 | P1-08 | 收尾/替换 Dart Service | 文档、跨平台测试、兼容性报告 | 核心业务通过 Rust 运行且 Flutter 版本稳定 |
 
 ### 5.3 对齐旧行为的策略
@@ -218,8 +218,8 @@ PiliPlus-Rust/
 
 | 平台 | 目标播放后端 | 关键问题 |
 |---|---|---|
-| iOS | AVPlayer（候选） | DASH 音视频分轨、必要请求头、硬解、PiP、合成覆盖 |
-| Android | Media3（候选） | DASH/分轨、Surface 生命周期、HDR、后台音频、PiP |
+| iOS | libmpv 优先；AVPlayer 备选 | DASH 音视频分轨、必要请求头、硬解、PiP、合成覆盖 |
+| Android | libmpv 优先；Media3 备选 | DASH/分轨、Surface 生命周期、HDR、后台音频、PiP |
 | macOS | libmpv（候选） | Video surface、硬解、全屏、HiDPI、沙盒签名 |
 | Windows | libmpv（候选） | GPU 视频输出、DPI、DLL 分发、驱动兼容 |
 | Linux | libmpv（候选） | Wayland/X11、视频输出、系统库兼容 |
@@ -298,14 +298,19 @@ PiliPlus-Rust/
 
 ### 10.2 ADR 决策记录
 
-至少编写以下 ADR：
+ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策、后果、回退与复审条件；无证据时标记 Proposed。
 
-- ADR-001：Rust Workspace 分层与边界。
-- ADR-002：flutter_rust_bridge 调用/事件/错误规范。
-- ADR-003：存储与登录态升级、回滚。
-- ADR-004：播放器后端和画面合成策略。
-- ADR-005：弹幕时钟/布局/渲染策略。
-- ADR-006：Slint GPL/其他许可证与源码分发。
+| ADR | 决策范围 | 截止时点 |
+|---|---|---|
+| ADR-001 | Domain/Application/Data 对应 crates | M1 |
+| ADR-002 | Flutter/Slint/Tokio 线程与生命周期 | M1 |
+| ADR-003 | Player Port、状态归属、弹幕时钟 | P1-04/P1-05 前 |
+| ADR-004 | libmpv 与 AVPlayer/Media3 比较、视频合成 | M0 提案，M4 准入前批准 |
+| ADR-005 | Hive Dart 导出 → Rust SQLite 导入与回滚 | P1-06 前 |
+| ADR-006 | DASH 分轨 mux、URLSession/WorkManager 后台下载 | P1-07 前 |
+| ADR-007 | Slint 视频/列表/富文本/IME/无障碍及失败回退 | M0/M4 |
+| ADR-008 | WBI、协议版本化与上游同步 | M1 |
+| ADR-009 | GPL、播放器依赖和分发合规 | 发布前 |
 
 ### 10.3 发布与合规
 
@@ -326,22 +331,22 @@ PiliPlus-Rust/
 | R6 | 上游 Bilibili API 变化频繁 | 高/中 | 版本化 Protocol Adapter 和 fixtures | 否 |
 | R7 | 五平台发布/签名/依赖问题 | 中/高 | 早期 CI、逐平台验收 | 是（发布） |
 | R8 | GPL/平台分发条款不满足 | 中/高 | 发布前许可证与合规 Review | 是（发布） |
-| R9 | 各平台 Slint 触摸、IME、辅助功能差异 | 中/中 | UI 系统测试和平台验收 | 否 |
+| R9 | Slint 列表虚拟化、富文本、IME、无障碍及移动端成熟度 | 高/高 | M0 Spike，Flutter + Rust Core 为回退 | **是（Phase 2）** |
 | R10 | 过早追求纯 Rust 导致过度重写 | 高/中 | 以可验证价值为前提，硬解保留原生 | 否 |
 
 ## 12. 里程碑与交付物
 
-> 时间不做无依据的精确承诺；以下按 **完成条件** 推进。
+> M0 是限时 Spike；Phase 1 发布和 Phase 2 准入分别判断，禁止将 CI 编译等同于真机验收。
 
 | 里程碑 | 主要成果 | Go / No-Go |
 |---|---|---|
-| M0：仓库与基线 | 功能矩阵、构建流程、固定 upstream、测试样本 | 原版可复现 |
-| M1：Rust 桥接基础 | Workspace、FRB、CI、最小 API | 能在 Flutter 使用异步 Rust Core |
-| M2：Rust 数据/播放业务 | 首页、详情、视频资源、弹幕 | 核心路径行为一致 |
-| M3：Rust 数据持久化 | 登录、收藏、历史、下载、升级 | 不丢数据、可回滚 |
-| M4：Slint 视频技术评审 | macOS/Android/iOS Spike + 合成分析 | **通过才启动完整 UI 迁移** |
-| M5：Slint 客户端 Beta | 五端核心 UI + 播放 + 弹幕 | 平台关键流程通过 |
-| M6：性能与稳定性 Release | 指标对比、问题闭环、安装包 | 发布门槛全部满足 |
+| M0：基线与风险 Spike | 固定上游 commit、审计 Hive/media-kit；macOS+Android 的 Slint 视频/弹幕/长列表/IME 验证 | 产出测试报告；未通过阻断 Phase 2 而非 Phase 1 |
+| M1：Rust Core 基础 | Workspace、FRB、Player Port、协议 crate、CI、线程模型 | 播放器状态所有权与时钟契约批准 |
+| M2：Rust 业务迁移 | API、签名、首页、详情、DASH、弹幕 | 行为/fixture 与 Flutter 基线一致 |
+| M3：Flutter + Rust Core 稳定发布 | Hive 迁移、认证、缓存、下载、恢复与回滚 | **正式可独立发布** |
+| M4：Slint 首批平台 | ADR-004/007 审批；macOS+Android 播放/弹幕/UI | 实机通过，否则维持 M3 |
+| M5：其余平台逐项交付 | iOS、Windows、Linux 分别验证与发布 | 各平台独立 Go/No-Go |
+| M6：优化及正式版本 | CPU/内存/流畅度/崩溃/耗电对照 | 性能、稳定性与合规检查通过 |
 
 ## 13. Review 需确定的问题
 
@@ -367,6 +372,63 @@ PiliPlus-Rust/
 - [ ] `SPIKE-002` Android Slint + Media3 Surface/Texture 合成验证。
 - [ ] `SPIKE-003` iOS Slint + AVPlayerLayer 叠加与全屏验证。
 - [ ] `QA-001` 定义端到端功能矩阵、性能采样场景和发布前测试清单。
+
+## 16. v0.2 Review 意见与架构约束
+
+### 16.1 Player Port 和单一播放时钟（P0）
+- 阶段 1 的真实播放状态由 Dart media-kit/libmpv 拥有，阶段 2 由 Native libmpv Adapter 拥有。包括 position、duration、paused、buffering、speed、音轨以及 Seek 完成事实。
+- Rust Player Orchestrator 负责播放意图、清晰度选择、业务状态、错误恢复策略、进度持久化以及对 UI 发布状态快照；不自行累计时间模拟播放器时钟。
+- 播放器事件附加 sequence/generation。Flutter/Slint 消费 Rust 快照，Seek/暂停/倍速/缓冲时弹幕以真实播放器时钟重新定位。跨 FFI 使用合并/限频快照，避免每帧调用。
+- P1-04 与 P1-05 开始前完成 ADR-003、Player Port 资源/音轨/事件/渲染表面/生命周期接口评审。
+
+### 16.2 ADR-004：播放器后端选择（P0）
+- libmpv 为五端统一的首选验证方案，因现有 media-kit 已与 mpv 相关；不能预设它在移动端具备完整 PiP、后台音频、硬解和 Slint 表面合成能力。
+- AVPlayer 不直接支持常规分轨 DASH manifest，若用作 iOS fallback 必须评估 HLS 转换/本地代理的功能、性能和维护代价；Android Media3 作为另一个 fallback。
+- 使用相同合法样本测量 DASH 分轨、Seek、倍速、请求头、清晰度、HDR/硬解、音画同步、弹幕叠加、CPU/GPU/内存、PiP、后台音频、包体与构建复杂度。记录设备、系统、版本与日志；据此决定。
+
+### 16.3 Hive 数据兼容和回滚（P0）
+- 不要求 Rust 直接读取 hive_ce 二进制。先由 Dart Exporter 导出版本化 JSON/SQLite 中间格式，带 schema_version、记录数量和校验信息；Rust Importer 用 SQLite 事务导入。
+- 迁移前备份，迁移成功验收前不删除旧数据；必须验证重复执行幂等、失败中断、用户收藏/历史完整性和账号安全。敏感凭据优先走系统安全存储，不导出明文。
+- ADR-005 必须在 P1-06 前批准。
+
+### 16.4 DASH 下载与后台运行（P0）
+- Rust 负责下载状态机、任务队列和持久化，分轨音视频下载后需 mux，评估 FFmpeg/替代实现的包体、性能与许可。
+- iOS 长时间后台传输依赖 URLSession 等系统机制，Android 采用 WorkManager 或适用的前台任务策略；应用内 Tokio 不等于后台保活。
+- 断点续传、任务恢复、磁盘配额、失败清理、跨进程恢复需要独立测试。ADR-006 在 P1-07 前通过。
+
+### 16.5 Slint UI 可行性与线程模型（P0）
+- M0 限时 Spike 除视频外必须包含：大列表虚拟化、评论/动态富文本与表情、中文 IME/焦点、辅助功能 VoiceOver/TalkBack、触控、HiDPI、前后台与窗口生命周期。
+- Slint UI 只在其事件循环线程被更新；Tokio 处理网络/IO/调度，使用 slint::invoke_from_event_loop 或等价消息队列切换，处理弱引用、任务取消与移动端挂起/恢复。
+- 任一关键风险无法接受则 Phase 2 No-Go，M3 Flutter + Rust Core 保持正式可发布且持续维护。
+
+### 16.6 分层与 crate 映射（P1）
+- domain：bili-domain 中的实体、规则和 Ports traits。
+- application：bili-core 中 UseCase、播放器意图编排、事件/快照。
+- data：bili-api、bili-auth、bili-protocol、bili-storage 的 HTTP/认证/协议/DB Adapters。
+- infrastructure：player-mpv、platform-download、secure-storage 等平台 Adapters。
+- presentation：bridge-flutter 与 app-slint；不得直接依赖具体协议实现。
+
+### 16.7 协议变更、上游同步和平台分级（P1）
+- WBI 签名、必要请求头、设备信息格式等易变协议放在单独 bili-protocol crate，使用版本化 fixtures、变更记录和独立回归测试；遵守第三方服务规则。
+- 固定 UPSTREAM_COMMIT，按同步窗口审计上游 API/签名/播放器修复。先改 Rust Protocol/Adapter 与 fixture，再验证 Flutter 旧实现差异；避免只同步 Dart 修复遗漏 Rust。
+- Slint 先以 macOS + Android 为首批验收目标，再分别验收 iOS、Windows、Linux。编译成功不代表视频/IME/硬解等真实功能可用。
+
+### 16.8 Review 逐项处理结果
+| Review 问题 | 结论 |
+|---|---|
+| Spike 阻断与 M4 排期冲突 | M0 限时 Spike，M4 审批/复核 |
+| 播放器所有权断层 | 真实时间归播放器，意图与快照归 Rust |
+| 移动端 AVPlayer/Media3 候选 | libmpv 优先实测，ADR-004 裁决 |
+| Hive 隐含迁移成本 | Dart 导出 + Rust 导入，保留回滚 |
+| DASH 下载/后台任务 | mux + URLSession/WorkManager |
+| Slint 长列表/富文本/IME/无障碍 | Phase 2 阻断风险，M3 可发布回退 |
+| 线程与运行时生命周期 | Slint 事件循环单线程，Tokio 后台 |
+| Crate 与分层不一致 | 增加明确映射 |
+| 签名与风控协议易变 | bili-protocol 版本化 |
+| 上游变更映射缺失 | UPSTREAM_COMMIT + Rust fixtures 回归 |
+| 弹幕时钟不明 | 使用单一播放器事实时钟 |
+| 五端同时卡验收 | macOS/Android 先行，其余单独准入 |
+
 
 ## 15. 参考资料（2026-11-10 检索）
 

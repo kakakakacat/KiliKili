@@ -1,6 +1,6 @@
 # ADR-003: Player Port, Ownership, and Danmaku Clock
 
-Status: **Proposed — requires implementation review and runtime evidence**  
+Status: **Contract implemented — adapter review and runtime evidence pending**
 Date: 2026-11-10  
 Related: RFC-0001 v0.2, ADR-004
 
@@ -17,30 +17,30 @@ Phase 1 keeps Flutter `media_kit` while moving business logic to Rust. Phase 2 p
 - Every asynchronous command and playback event includes `session_id` and monotonic `generation`/sequence; stale events after seek, video swap and widget destruction must be ignored.
 - Danmaku scheduler uses backend-reported presentation position; seek resets scheduled items, pause freezes position, speed changes recompute trajectories.
 
-## Candidate interface (illustrative, not committed ABI)
+## Contract in code
 
-```rust
-pub struct PlaybackSnapshot {
-    pub session_id: u64,
-    pub generation: u64,
-    pub position_ms: u64,
-    pub duration_ms: Option<u64>,
-    pub paused: bool,
-    pub buffering: bool,
-    pub speed: f32,
-}
+`rust/crates/bili-domain/src/player.rs` defines the backend-independent contract.
+`PlayerPort::dispatch` receives `Stamped<PlayerCommand>`; a backend emits
+`Stamped<PlaybackEvent>` through `PlayerEventSink`. The stamp contains
+`SessionId` and monotonic `Generation`. Before opening another resource,
+seeking, or destroying a player, the caller bumps its `GenerationGate` and
+drops events that fail `Stamped::accept`. This is a Rust API, not a frozen FFI
+ABI; adapters can map it to Dart streams or native channels.
 
-pub enum PlayerCommand {
-    Open { session_id: u64, generation: u64 },
-    Play,
-    Pause,
-    Seek { position_ms: u64, generation: u64 },
-    SetSpeed(f32),
-    Close,
-}
-```
+`Open` carries either separate DASH video/audio URLs or ordered legacy
+segments, plus `User-Agent` and `Referer`. The media-kit adapter may encode
+those resources as `edl://`, while another backend may use its own track
+composition. URLs and headers are redacted in `Debug` output. Commands also
+cover play, pause, seek, speed, video/audio track selection, surface attach
+and detach, foreground/background lifecycle, and close. The surface ID is
+opaque: its native handle stays inside the platform adapter.
 
-The final interface must additionally model DASH video/audio streams, request headers, track selection, buffering/error events, stream cancellation, and surfaces; do not freeze the ABI before auditing the media-kit fork.
+`PlayerSnapshot` contains the backend-reported position, duration, playback
+state, speed and active tracks. The backend also emits explicit seek-complete,
+surface-lost, closed and categorized failure events. Sending a seek command
+does not imply that a seek completed. Buffering and pause do not advance
+position in Rust. Position events should be coalesced before crossing FFI;
+the adapter must not make one call per frame or per danmaku item.
 
 ## Validation requirements
 
@@ -49,6 +49,12 @@ The final interface must additionally model DASH video/audio streams, request he
 3. Background/foreground and route disposal correctly cancel listeners; no old session overwrites new video.
 4. Player event traffic is bounded through batching/coalescing; compare wall time and memory with baseline.
 5. Verify identical behavior in a Flutter adapter and a prototype native adapter before adopting the latter.
+
+The pure contract tests in `rust/crates/bili-domain/tests/player_port_contract.rs`
+cover resource/header representation, redaction and stale event filtering.
+They do not satisfy the five runtime requirements above. The Flutter adapter
+and native prototype must be measured on devices before this ADR is accepted
+or the player backend is changed.
 
 ## Consequences
 

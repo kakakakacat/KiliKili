@@ -5,6 +5,7 @@
 //! 的情况下独立测试。
 
 pub mod error;
+pub mod player;
 pub mod playurl;
 pub mod redact;
 pub mod session;

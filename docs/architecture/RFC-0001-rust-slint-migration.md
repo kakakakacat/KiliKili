@@ -374,18 +374,14 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 8. ~~**测试资源**~~：**已确定**。macOS/iOS/Android/Windows 四端均具备真机验证条件；Linux 无 GUI/GPU 环境，已决定降级为 best-effort。详见 [VALIDATION-CAPABILITY.md](../m0/VALIDATION-CAPABILITY.md)。
 9. **团队/Agent 实施方式**：每个 PR 的最大范围、Review 人、自动测试及完成判断。
 
-## 14. 推荐的第一批 Issue（可直接作为 Agent 待办）
+## 14. 第一批 Issue
 
-- [ ] `RUST-001` 锁定 PiliPlus upstream commit，跑通 macOS/Android/iOS 基线构建，输出 `BASELINE.md`。
-- [ ] `RUST-002` 审查 `pubspec.yaml` Git overrides，明确 `media-kit` 定制逻辑及播放调用链。
-- [ ] `RUST-003` 建立 Rust Workspace、fmt/clippy/test CI 和统一日志/错误体系。
-- [ ] `RUST-004` 集成 `flutter_rust_bridge`，实现异步、事件流、取消和 Flutter 端自动化测试。
-- [ ] `RUST-005` 迁移一个**只读 API**（例如视频详情），建立 fixture 对照测试和功能开关。
-- [ ] `RUST-006` **M1 前置、P1-04/P1-05 前** 定义 Player Port（资源、音轨、时钟、事件、控制、画面表面、生命周期）。
-- [ ] `SPIKE-001` macOS Slint + libmpv 视频 + 覆盖弹幕技术验证。
-- [ ] `SPIKE-002` **M0** Android Slint + libmpv 视频表面与 Media3 回退对照。
-- [ ] `SPIKE-003` iOS Slint + libmpv 可行性和 AVPlayerLayer 备选方案验证。
-- [ ] `QA-001` 定义端到端功能矩阵、性能采样场景和发布前测试清单。
+已全部建为 GitHub Issues，不在本文维护副本（避免状态双写漂移）：
+<https://github.com/kakakakacat/KiliKili/issues>
+
+- **Milestones** 对应 §12 的 M0–M6
+- **Labels**：`phase:P1`/`phase:P2`、`area:*`、`type:spike`/`type:blocker`/`type:chore`
+- 本文与 ADR 保留**决策与证据**；**状态**一律以 Issues 为准
 
 ## 15. 参考资料（2026-11-10 检索）
 

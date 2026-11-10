@@ -3,7 +3,8 @@
 状态：**已实测**（硬件探测结果，非推断）
 日期：2026-11-10
 修订：2026-11-10 — §2 / §3.1 原先把「每个 PR 自动编译」与 Docker 多发行版矩阵
-写成既有保障，与仓库里的 workflow 配置不符，已按实际配置更正
+写成既有保障，与仓库里的 workflow 配置不符，已按实际配置更正；§2.1 补入 Windows
+首次手动 dispatch 的实测结论；§5 勾掉四条已完成项
 关联：RFC-0001 §9.3 / §16.7，ADR-004
 
 本文回答一个 RFC 里此前含糊带过的问题：五个目标平台，**哪些能做真机验收、哪些只能做编译验证、哪些根本没覆盖**。结论直接影响 M4/M5 的准入范围，以及 ADR-004 能拿到多少实测数据。
@@ -53,6 +54,33 @@ push / PR 上自动运行的只有两个，都**不产出任何平台产物**：
 没有任何 rust/cargo 设置步骤，Rust 工具链完全依赖 runner 自带环境满足
 `rust/rust-toolchain.toml` 钉的 1.97.0 与七个 target，Android 侧还要
 `android.ndkVersion` 对得上。这条路径只能靠手动 dispatch 验证。
+
+#### 已验证：Windows（2026-11-10）
+
+手动 dispatch 一次 `win_x64.yml` 验证上述 Rust 路径，
+[run 42813991420](https://github.com/kakakakacat/KiliKili/actions/runs/42813991420)，
+head `dd9bb7a74`，success，12m55s。
+
+构建日志里 `cargo` / `rustc` **零出现**——`flutter build windows` 会吞掉插件的编译
+输出，只漏出少量 CMake warning。因此「构建绿」本身不足以证明 Rust 编进去了：
+cargokit 若未被触发，Flutter 会照常产出一个不含 `bridge_flutter.dll` 的 exe，
+构建同样成功，而 `RustCore.isReady` 在用户机上恒为 false，四条 Rust 路径全部
+静默回退 Dart。**这种失败模式不会让 CI 变红**，只能查产物。
+
+查 portable 产物的结论（均为实测）：
+
+| 项 | 结果 |
+|---|---|
+| `bridge_flutter.dll` | ✅ 存在，6,110,720 字节；二进制内含 `bili_api`、`rustc` 字符串，确为本项目 crate 编出的 cdylib |
+| `libmpv-2.dll` | ✅ 存在，37,981,184 字节 |
+| 安装包是否同样包含 | ✅ `windows/packaging/exe/inno_setup.iss` 的 `[Files]` 为 `Source: "{{SOURCE_DIR}}\\*"; Flags: recursesubdirs` 递归整个 Release 目录 |
+
+这同时回答了 §5 第 3 条里「libmpv DLL 的安装包分发方式需在 Windows 首次构建时
+确认」：portable 与 setup 都随包分发，无需额外处理。
+
+**结论**：Windows runner 自带环境满足 `rust-toolchain.toml` 的 1.97.0 与
+`x86_64-pc-windows-msvc`，cargokit 正常触发。其余四端**尚未以同样方式验证**，
+不要由这一次外推。验证方法记在这里，是因为「查日志」得不出结论，必须查产物。
 
 **CI 能证明的**（前提是手动 dispatch 了对应 workflow）：编译通过、依赖完整、单测与协议 fixture 通过。
 **CI 证明不了的**（全部是本项目的核心风险）：硬解、Slint + libmpv 同窗合成、PiP、后台音频、音频焦点、中文 IME、VoiceOver/TalkBack、渲染性能。CI runner 是虚拟化的，`hwdec` 必然回落软解。
@@ -126,7 +154,7 @@ Docker 27.3.1，已承载 6 个生产容器
 
 开发在两台机器间通过 git 同步，需提前规避：
 
-1. **`.gitattributes` 需补全**。当前仅 `*.patch text eol=lf`。跨 macOS/Windows 时换行符不统一会产生大量假 diff，并使 `cargo fmt --check` 与 `dart format` 在两端判定不一致导致 CI 红。
-2. **工具链版本两端钉死**。Flutter 已由 `.fvmrc` 锁定 3.47.9；Rust 需在 workspace 根添加 `rust-toolchain.toml`（channel + components + targets）。`Cargo.lock` 必须提交（应用非库）。
-3. **Windows 侧三个已知障碍**：需开启开发者模式（Flutter symlink 支持）；Rust `target/` 嵌套深，易触发 260 字符路径限制，仓库应置于短路径并开启长路径支持；libmpv DLL 的安装包分发方式需在 Windows 首次构建时确认，不留至发布前。
-4. **仅用 git 同步**，不要将仓库置于 iCloud/OneDrive/Dropbox。`build/`、`target/`、`.dart_tool/`、`Pods/` 等产物不得跨机同步。现有 `.gitignore` 为 Flutter 标准模板，**Rust `target/` 需在建 workspace 时补入**。
+1. ~~**`.gitattributes` 需补全**~~ ✅ 已完成（`f113d9136`，现 49 行）。原问题：跨 macOS/Windows 换行符不统一会产生大量假 diff，并使 `cargo fmt --check` 与 `dart format` 在两端判定不一致导致 CI 红。
+2. ~~**工具链版本两端钉死**~~ ✅ 已完成。Flutter 由 `.fvmrc` 锁 3.47.9；`rust/rust-toolchain.toml` 钉 1.97.0 + rustfmt/clippy + 七个 target；`rust/Cargo.lock` 已提交。
+3. **Windows 侧已知障碍**（本机开发用，CI 不受影响）：需开启开发者模式（Flutter symlink 支持）；Rust `target/` 嵌套深，易触发 260 字符路径限制，仓库应置于短路径并开启长路径支持。~~libmpv DLL 的安装包分发方式~~ ✅ 已确认随包分发，见 §2.1。
+4. ~~**`.gitignore` 补 Rust `target/`**~~ ✅ 已完成（`.gitignore:157` `/rust/target/`）。仍需遵守：**仅用 git 同步**，不要将仓库置于 iCloud/OneDrive/Dropbox；`build/`、`target/`、`.dart_tool/`、`Pods/` 等产物不得跨机同步。

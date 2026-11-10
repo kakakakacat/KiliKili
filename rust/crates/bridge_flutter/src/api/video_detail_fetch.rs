@@ -17,12 +17,12 @@
 //! 传入的 Cookie 立即用 `Redacted` 包裹，日志与 Debug 输出都只会看到
 //! `<redacted>`。
 //!
-//! ## 尚未对齐基线的部分
+//! ## 传输设置
 //!
-//! 基线 Dio 还带着重试拦截器、系统代理、证书豁免、HTTP/1.1 回退
-//! （`lib/http/init.dart`）。这些改变的是网络与安全边界，应当随「Rust
-//! 接管传输」整体迁移，而不是由一个只读接口顺手引入。在依赖这些开关的
-//! 环境里本路径会失败，Dart 侧据此降级——这正是功能开关存在的意义。
+//! 重试、系统代理、证书豁免、HTTP/1.1 由调用方按请求传入
+//! （[`TransportSettings`]），值取自 Dart 的 `Pref`——即基线 Dio 用的
+//! 同一批开关（issue #25）。仍未对齐的差异见
+//! `bili_api::transport_reqwest` 的模块文档。
 
 use std::time::Duration;
 
@@ -32,6 +32,7 @@ use bili_api::transport_reqwest::ReqwestTransport;
 use bili_domain::redact::Redacted;
 
 use crate::api::init;
+use crate::api::transport::TransportSettings;
 
 /// 取数结果。与 `VideoDetailParse` 同形：失败不抛异常，由 Dart 决定降级。
 #[derive(Debug, Clone)]
@@ -51,6 +52,8 @@ pub struct VideoDetailFetch {
 ///
 /// `headers` 为账号体系产出的请求头（User-Agent、Referer、x-bili-* 等），
 /// `cookie` 为完整的 Cookie 头值，未登录时传 `None`。
+///
+/// `transport` 为本次请求的传输设置，取自 Dart 的 `Pref`。
 #[allow(clippy::too_many_arguments)]
 pub async fn fetch_video_detail(
     base_url: String,
@@ -60,7 +63,9 @@ pub async fn fetch_video_detail(
     cookie: Option<String>,
     headers: Vec<(String, String)>,
     timeout_ms: u64,
+    transport: TransportSettings,
 ) -> VideoDetailFetch {
+    let transport = ReqwestTransport::new(transport.to_config());
     let ctx = RequestContext {
         base_url,
         cookie: cookie.map(Redacted::new),
@@ -72,7 +77,7 @@ pub async fn fetch_video_detail(
     // 的执行器不提供。JoinHandle 本身是普通 Future，可以在 FRB 线程上
     // await。
     let handle = init::runtime().spawn(async move {
-        client::fetch_video_detail(&ReqwestTransport, &ctx, &bvid, &mixin_key, wts)
+        client::fetch_video_detail(&transport, &ctx, &bvid, &mixin_key, wts)
             .await
             .and_then(|detail| {
                 serde_json::to_string(&detail).map_err(|e| {

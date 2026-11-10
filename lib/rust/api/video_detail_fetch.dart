@@ -5,6 +5,7 @@
 
 import 'package:PiliPlus/rust/frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'package:PiliPlus/rust/api/transport.dart';
 
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `fmt`
 
@@ -15,6 +16,8 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 ///
 /// `headers` 为账号体系产出的请求头（User-Agent、Referer、x-bili-* 等），
 /// `cookie` 为完整的 Cookie 头值，未登录时传 `None`。
+///
+/// `transport` 为本次请求的传输设置，取自 Dart 的 `Pref`。
 Future<VideoDetailFetch> fetchVideoDetail({
   required String baseUrl,
   required String bvid,
@@ -23,6 +26,7 @@ Future<VideoDetailFetch> fetchVideoDetail({
   String? cookie,
   required List<(String, String)> headers,
   required BigInt timeoutMs,
+  required TransportSettings transport,
 }) => RustLib.instance.api.crateApiVideoDetailFetchFetchVideoDetail(
   baseUrl: baseUrl,
   bvid: bvid,
@@ -31,6 +35,7 @@ Future<VideoDetailFetch> fetchVideoDetail({
   cookie: cookie,
   headers: headers,
   timeoutMs: timeoutMs,
+  transport: transport,
 );
 
 /// 取数结果。与 `VideoDetailParse` 同形：失败不抛异常，由 Dart 决定降级。

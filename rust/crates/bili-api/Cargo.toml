@@ -14,13 +14,16 @@ percent-encoding = "2.3"
 reqwest = { workspace = true, optional = true }
 serde.workspace = true
 serde_json.workspace = true
+# 只为重试之间的退避等待。传输实现已经要求调用方在 Tokio 运行时上跑
+# （reqwest 需要它的反应器），不是为此新引入的运行时依赖。
+tokio = { workspace = true, optional = true }
 tracing.workspace = true
 
 [features]
 default = ["reqwest-transport"]
 # 传输实现可关闭：请求构造与响应解析是纯函数，不需要网络栈即可测试，
 # 将来若换传输（或在只做解析的构建里）不必把 TLS 栈一起拖进来。
-reqwest-transport = ["dep:reqwest"]
+reqwest-transport = ["dep:reqwest", "dep:tokio"]
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt"] }

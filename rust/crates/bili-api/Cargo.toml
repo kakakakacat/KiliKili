@@ -1,0 +1,29 @@
+[package]
+name = "bili-api"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "数据层：REST 接口的请求构造、传输、DTO 与到领域实体的映射。"
+
+[dependencies]
+bili-domain = { path = "../bili-domain" }
+bili-protocol = { path = "../bili-protocol" }
+percent-encoding = "2.3"
+reqwest = { workspace = true, optional = true }
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+
+[features]
+default = ["reqwest-transport"]
+# 传输实现可关闭：请求构造与响应解析是纯函数，不需要网络栈即可测试，
+# 将来若换传输（或在只做解析的构建里）不必把 TLS 栈一起拖进来。
+reqwest-transport = ["dep:reqwest"]
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt"] }
+
+[lints]
+workspace = true

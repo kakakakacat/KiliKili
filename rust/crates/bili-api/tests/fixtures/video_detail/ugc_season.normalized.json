@@ -1,0 +1,159 @@
+{
+  "bvid": "BV1fixture003",
+  "aid": 100000003,
+  "videos": 1,
+  "copyright": 1,
+  "pic": "https://example.invalid/cover/season.jpg",
+  "title": "示例稿件：合集内一集",
+  "pubdate": 1720000000,
+  "ctime": 1719999000,
+  "desc": "",
+  "desc_v2": null,
+  "duration": 600,
+  "is_stein_gate": 1,
+  "owner": {
+    "mid": 10005,
+    "name": "示例合集作者",
+    "face": "https://example.invalid/face/10005.jpg"
+  },
+  "stat": {
+    "view": 5000,
+    "danmaku": null,
+    "reply": null,
+    "favorite": 0,
+    "coin": 0,
+    "share": 12,
+    "like": 0
+  },
+  "argue_msg": null,
+  "cid": 200000010,
+  "dimension": {
+    "width": 3840,
+    "height": 2160
+  },
+  "season_id": 300001,
+  "is_upower_exclusive": true,
+  "pages": [
+    {
+      "cid": 200000010,
+      "page": 1,
+      "from": "vupload",
+      "part": "合集内一集",
+      "duration": 600,
+      "vid": null,
+      "dimension": {
+        "width": 3840,
+        "height": 2160
+      },
+      "ctime": 1719999000,
+      "first_frame": null,
+      "badge": null
+    }
+  ],
+  "ugc_season": {
+    "id": 300001,
+    "title": "示例合集",
+    "cover": "https://example.invalid/cover/season_cover.jpg",
+    "mid": 10005,
+    "sections": [
+      {
+        "season_id": 300001,
+        "id": 400001,
+        "title": "正片",
+        "type": 1,
+        "episodes": [
+          {
+            "season_id": 300001,
+            "section_id": 400001,
+            "id": 500001,
+            "aid": 100000003,
+            "bvid": "BV1fixture003",
+            "cid": 200000010,
+            "title": "第 1 集",
+            "attribute": 0,
+            "badge": null,
+            "arc": {
+              "aid": 100000003,
+              "pic": "https://example.invalid/cover/season.jpg",
+              "title": "示例稿件：合集内一集",
+              "pubdate": 1720000000,
+              "duration": 600,
+              "author": {
+                "mid": 10005,
+                "name": "示例合集作者",
+                "face": "https://example.invalid/face/10005.jpg"
+              },
+              "stat": {
+                "view": 5000,
+                "danmaku": null,
+                "reply": null,
+                "favorite": 0,
+                "coin": 0,
+                "share": null,
+                "like": 60
+              },
+              "dimension": {
+                "width": 3840,
+                "height": 2160
+              }
+            },
+            "page": {
+              "cid": 200000010,
+              "page": 1,
+              "from": "vupload",
+              "part": "合集内一集",
+              "duration": 600,
+              "vid": null,
+              "dimension": null,
+              "ctime": 1719999000,
+              "first_frame": null,
+              "badge": null
+            },
+            "pages": [
+              {
+                "cid": 200000010,
+                "page": 1,
+                "from": "vupload",
+                "part": "合集内一集",
+                "duration": 600,
+                "vid": null,
+                "dimension": null,
+                "ctime": 1719999000,
+                "first_frame": null,
+                "badge": null
+              }
+            ]
+          },
+          {
+            "season_id": 300001,
+            "section_id": 400001,
+            "id": 500002,
+            "aid": 100000004,
+            "bvid": "BV1fixture004",
+            "cid": 200000011,
+            "title": "第 2 集",
+            "attribute": 16,
+            "badge": "限免",
+            "arc": {
+              "aid": 100000004,
+              "pic": "https://example.invalid/cover/ep2.jpg",
+              "title": "第 2 集",
+              "pubdate": 1720600000,
+              "duration": 720,
+              "author": null,
+              "stat": null,
+              "dimension": {
+                "width": 1920,
+                "height": 1080
+              }
+            },
+            "page": null,
+            "pages": null
+          }
+        ]
+      }
+    ]
+  },
+  "staff": null,
+  "redirect_url": null
+}

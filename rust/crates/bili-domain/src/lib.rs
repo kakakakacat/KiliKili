@@ -7,6 +7,7 @@
 pub mod error;
 pub mod redact;
 pub mod session;
+pub mod video;
 
 #[cfg(test)]
 mod tests {

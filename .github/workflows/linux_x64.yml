@@ -85,6 +85,43 @@ jobs:
           chmod 0755 DEBIAN/postrm
           chmod 0755 DEBIAN/prerm
 
+          printf "生成运行时依赖...\n"
+          # 依赖不再手写，由 dpkg-shlibdeps 从 ELF 扫描生成。
+          #
+          # 手写列表会漂：2026-11-10 发现 deb 少声明了 webkit2gtk 与 libsoup3，
+          # 缺了它们应用根本起不来（DT_NEEDED，加载期解析）。同一份 bundle 打出的
+          # rpm 没有这个问题，因为 rpmbuild 本来就从 ELF 自动生成 Requires。
+          # 见 issue #36 / PR #38。
+          #
+          # debian/control 是 dpkg-shlibdeps 的硬性要求；它必须在打包前删掉，
+          # 否则会被 dpkg-deb 当作普通内容一起打进去。
+          mkdir -p debian
+          printf "Source: kilikili\n\nPackage: kilikili\nArchitecture: amd64\n" > debian/control
+          # libdartjni.so 需要 libjvm.so，桌面系统不提供它，扫描会让整步失败
+          SCAN_LIBS=$(find opt/KiliKili/lib -name '*.so' ! -name 'libdartjni.so' | sort)
+          SHLIBDEPS=$(dpkg-shlibdeps -O --ignore-missing-info -l"$PWD/opt/KiliKili/lib" opt/KiliKili/kilikili $SCAN_LIBS)
+          rm -rf debian
+          DEPENDS=$(printf '%s\n' "$SHLIBDEPS" | sed -n 's/^shlibs:Depends=//p')
+          if [ -z "$DEPENDS" ]; then
+            printf "dpkg-shlibdeps 没有产出任何依赖\n"
+            printf "原始输出: %s\n" "$SHLIBDEPS"
+            exit 1
+          fi
+          printf "生成的依赖: %s\n" "$DEPENDS"
+          # 关键库必须在内，否则说明扫描漏了。用子串而非包名全等匹配：
+          # Ubuntu 的 t64 过渡会把包名改成 libgtk-3-0t64 这类，写死全名
+          # 会在下一次这种过渡里变成假失败。
+          for token in gtk-3 mpv webkit2gtk soup; do
+            case "$DEPENDS" in
+              *"$token"*) ;;
+              *)
+                printf "生成的依赖里没有 %s，扫描可能不完整\n" "$token"
+                exit 1
+                ;;
+            esac
+          done
+          printf 'Depends: %s\n' "$DEPENDS" >> DEBIAN/control
+
           printf "打包 deb 文件...\n"
           popd
           dpkg-deb --build --verbose --root-owner-group "KiliKili_linux_${{ env.version }}_amd64"

@@ -42,6 +42,11 @@ does not imply that a seek completed. Buffering and pause do not advance
 position in Rust. Position events should be coalesced before crossing FFI;
 the adapter must not make one call per frame or per danmaku item.
 
+`rust/crates/bili-core/src/player_session.rs` applies this rule in the
+application layer: open, seek, track changes and close invalidate older
+events. It stores only the last backend snapshot and does not derive position
+from wall time or assume that a command succeeded.
+
 ## Validation requirements
 
 1. Seek forward/back while danmaku is active; no stale danmaku should appear after a generation switch.
@@ -51,7 +56,8 @@ the adapter must not make one call per frame or per danmaku item.
 5. Verify identical behavior in a Flutter adapter and a prototype native adapter before adopting the latter.
 
 The pure contract tests in `rust/crates/bili-domain/tests/player_port_contract.rs`
-cover resource/header representation, redaction and stale event filtering.
+and `rust/crates/bili-core/tests/player_session.rs` cover resource/header
+representation, redaction, stale event filtering and backend clock ownership.
 They do not satisfy the five runtime requirements above. The Flutter adapter
 and native prototype must be measured on devices before this ADR is accepted
 or the player backend is changed.

@@ -2,6 +2,8 @@
 //!
 //! 本 crate 不得依赖 Flutter Widget 或 Slint 具体类型。
 
+pub mod player_session;
+
 #[cfg(test)]
 mod tests {
     #[test]

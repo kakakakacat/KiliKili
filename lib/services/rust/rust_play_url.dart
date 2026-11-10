@@ -60,6 +60,7 @@ abstract final class RustPlayUrl {
       // 取流绑定 video 账号（lib/utils/accounts/api_type.dart），必须与
       // 拦截器的选择一致，否则两条路径用的是不同账号。
       final account = Accounts.video;
+      final cookie = await RustRequest.cookieFor(account, videoType.api);
 
       final result = await rust_api.fetchPlayUrl(
         baseUrl: HttpString.apiBaseUrl,
@@ -77,7 +78,7 @@ abstract final class RustPlayUrl {
         ),
         mixinKey: mixinKey,
         wts: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        cookie: await RustRequest.cookieFor(account, videoType.api),
+        cookie: cookie,
         headers: RustRequest.headersFor(account),
         timeoutMs: BigInt.from(_timeoutMs),
         transport: RustTransport.current(),
@@ -95,7 +96,9 @@ abstract final class RustPlayUrl {
       }
 
       final normalized = jsonDecode(json) as Map<String, dynamic>;
-      return Success(PlayUrlModel.fromJson(denormalizePlayUrl(normalized)));
+      final playUrl = PlayUrlModel.fromJson(denormalizePlayUrl(normalized));
+      if (kDebugMode) debugPrint('[rust] 取流成功 (cookie=${cookie != null})');
+      return Success(playUrl);
     } catch (e, st) {
       // 包括桥接未就绪、账号状态异常在内的一切意外：降级，不抛。
       if (kDebugMode) debugPrint('[rust] 取流路径自身出错，降级: $e\n$st');

@@ -48,13 +48,14 @@ abstract final class RustVideoDetail {
       // videoIntro 绑定 heartbeat 账号（lib/utils/accounts/api_type.dart）。
       // 这里必须与拦截器的选择一致，否则两条路径用的是不同账号。
       final account = Accounts.heartbeat;
+      final cookie = await RustRequest.cookieFor(account, Api.videoIntro);
 
       final result = await rust_api.fetchVideoDetail(
         baseUrl: HttpString.apiBaseUrl,
         bvid: bvid,
         mixinKey: mixinKey,
         wts: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        cookie: await RustRequest.cookieFor(account, Api.videoIntro),
+        cookie: cookie,
         headers: RustRequest.headersFor(account),
         timeoutMs: BigInt.from(_timeoutMs),
         transport: RustTransport.current(),
@@ -72,6 +73,9 @@ abstract final class RustVideoDetail {
       }
 
       final normalized = jsonDecode(json) as Map<String, dynamic>;
+      if (kDebugMode) {
+        debugPrint('[rust] 视频详情取数成功 (cookie=${cookie != null})');
+      }
       return Success(
         VideoDetailData.fromJson(denormalizeVideoDetail(normalized)),
       );

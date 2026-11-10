@@ -64,7 +64,11 @@ abstract final class PlayUrlShadow {
       }
 
       final diff = _firstDifference(jsonDecode(rustJson), dart, r'$');
-      if (diff != null) _report(diff);
+      if (diff != null) {
+        _report(diff);
+      } else if (kDebugMode) {
+        debugPrint('[shadow] 取流解析一致');
+      }
     } catch (e, st) {
       if (kDebugMode) debugPrint('PlayUrlShadow 比对自身出错: $e\n$st');
     }

@@ -10,5 +10,7 @@ Installed-Size: size_need_change
 Description: third-party Bilibili client developed in Flutter
 Homepage: https://github.com/kakakakacat/KiliKili
 Depends: libgtk-3-0t64,
-         libmpv2
+         libmpv2,
+         libwebkit2gtk-4.1-0,
+         libsoup-3.0-0
 

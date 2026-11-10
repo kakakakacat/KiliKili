@@ -47,6 +47,23 @@ jobs:
         run: cargo test --all-features
 
   # 交叉编译仅验证能否产出目标平台产物，不代表运行时正确。
+  #
+  # 每个 PR 只跑 x86_64 的 Linux 与 Windows：两者一分钟内结束、不排队，
+  # 已足以答出「代码里有没有写死某个平台」这个交叉编译唯一能答的问题。
+  #
+  # Apple 与 Android 三个 target 移到手动触发（下面的 cross-build-dispatch），
+  # 原因是收益与代价不成比例：
+  #
+  # - GitHub 的 macOS arm64 hosted runner 常年容量紧张。PR #41 上
+  #   `aarch64-apple-darwin` 连续两次在 15 分钟后报 "The job was not acquired
+  #   by Runner of type hosted"——job 根本没启动，那个红灯关于代码的信息量为零，
+  #   却是整个 PR 唯一的红。这种红灯重复几次，就会训练出「红了也先合」的习惯，
+  #   那比没有这个检查更糟。
+  # - 平台级的断裂（链接器、NDK、cargokit 把 Rust 接进 app 构建）本来就不是
+  #   `cargo build --target` 能发现的，要靠五个 app workflow，而它们一直是手动
+  #   dispatch（见 docs/m0/VALIDATION-CAPABILITY.md §2.1）。
+  #
+  # rust-toolchain.toml 仍钉着七个 target，手动跑或本地跑的覆盖面不变。
   cross-build:
     name: cross-build ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
@@ -54,11 +71,35 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: macos-26,       target: aarch64-apple-darwin }
-          - { os: macos-26,       target: aarch64-apple-ios }
-          - { os: ubuntu-latest,  target: aarch64-linux-android }
           - { os: ubuntu-latest,  target: x86_64-unknown-linux-gnu }
           - { os: windows-latest, target: x86_64-pc-windows-msvc }
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Add target
+        run: rustup target add ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+          key: ${{ matrix.target }}
+
+      - name: Build
+        run: cargo build --target ${{ matrix.target }} --release
+
+  # Apple 与 Android：只在手动 dispatch 时跑，理由见上。
+  # 建议的使用时机：改动触及 FFI/桥接层、升级 FRB 或工具链、发版前。
+  cross-build-dispatch:
+    name: cross-build ${{ matrix.target }} (manual)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-26,      target: aarch64-apple-darwin }
+          - { os: macos-26,      target: aarch64-apple-ios }
+          - { os: ubuntu-latest, target: aarch64-linux-android }
     steps:
       - uses: actions/checkout@v5
 

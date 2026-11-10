@@ -2,6 +2,9 @@
 
 状态：**已实测**（由 git 历史计算，非估计）
 日期：2026-11-10
+修订：2026-11-11 —— 按 §6 的方法重算。实质改动 15 → **16**（新增
+`lib/pages/setting/models/play_settings.dart`，`9d1d5c3c9` 默认开启自动播放），
+仅重命名波及 951 → 950，新增文件 167 → **187**（弹幕解码 `9d1d5c3c9`）
 关联：RFC-0001 §10.1（分支与 upstream 同步）
 
 RFC §10.1 规定了要固定 `UPSTREAM_COMMIT` 并记录 rebase/merge 策略，但没有
@@ -26,22 +29,22 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 类别 | 数量 |
 | --- | ---: |
 | 修改的上游既有文件 | 966 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 951 |
-| &nbsp;&nbsp;其中：有实质改动 | **15** |
-| 新增文件 | 167 |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 950 |
+| &nbsp;&nbsp;其中：有实质改动 | **16** |
+| 新增文件 | 187 |
 | 删除文件 | 0 |
 
 ## 3. 包名重命名：分叉面的主体
 
 `ba430476b chore: rename app package identifiers to KiliKili` 把每个 Dart
 文件的 `package:PiliPlus/` 改成了 `package:kilikili/`，一次触及 992 个文件。
-**分叉面里 951 个文件只有这一处差异。**
+**分叉面里 950 个文件只有这一处差异。**
 
 对同步的影响很具体：上游每改动一个 Dart 文件，我们这边大概率冲突，但
 **冲突内容永远是那一行 import**。处理方式是取上游版本后重新套用重命名，
 而不是逐个手工合并。值得为此准备一条命令，而不是每次人肉处理。
 
-这也意味着：**冲突数量多不代表分叉深**。真正需要人判断的只有下面 15 个。
+这也意味着：**冲突数量多不代表分叉深**。真正需要人判断的只有下面 16 个。
 
 ## 4. 有实质改动的上游文件
 
@@ -55,6 +58,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | `lib/main.dart` | `ee41df52c` | 启动时初始化 Rust Core |
 | `lib/http/video.dart` | `f321aea73` `43827d42f` `9385cf06d` | 视频详情与取流接入 Rust 路径（带开关与回退） |
 | `lib/http/search.dart` | `130b9f533` | 搜索建议接入 Rust 解析（带回退） |
+| `lib/pages/setting/models/play_settings.dart` | `9d1d5c3c9` | 自动播放默认值改为开启（issue #16） |
 | `test/utils/accounts/deleted_account_test.dart` | `83244c723` | 适配 CI 上打补丁后的 Flutter |
 | `assets/linux/DEBIAN/control` | `5ecebd8f8` 及本次 | 依赖声明改由构建期生成（见 §5） |
 | `.github/workflows/linux_x64.yml` | `d9b23ba4e` `45cfe832c` `6d35ee6e9` 及本次 | RPM 选包修复、产物体积闸门、依赖自动生成 |
@@ -77,17 +81,17 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 5. 新增文件
 
-167 个，不与上游冲突，按区域分布：
+187 个，不与上游冲突，按区域分布：
 
 | 区域 | 文件数 | 内容 |
 | --- | ---: | --- |
-| `rust/` | 73 | Rust workspace：5 个 crate 与 fixture |
+| `rust/` | 87 | Rust workspace：5 个 crate 与 fixture |
 | `rust_builder/` | 46 | cargokit，把 Rust 接入 Flutter 各端构建 |
-| `lib/services/` | 14 | Rust 开关、shadow mode、取数封装 |
+| `lib/services/` | 15 | Rust 开关、shadow mode、取数封装、规范化 |
 | `lib/rust/` | 10 | FRB 生成的 Dart 绑定 |
-| `tool/` | 8 | 构建准备、FRB 生成、README 统计、产物核对 |
-| `docs/` | 7 | RFC、ADR、M0 记录 |
-| 其他 | 9 | workflow、测试、资源 |
+| `tool/` | 10 | 构建准备、FRB 生成、README 统计、产物核对、fixture 生成 |
+| `docs/` | 9 | RFC、ADR、M0 记录 |
+| 其他 | 10 | workflow、测试、资源 |
 
 ## 6. 如何重新计算
 

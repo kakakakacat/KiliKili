@@ -87,6 +87,30 @@ pwsh -NoProfile -File lib/scripts/patch.ps1 <android|iOS|macOS|Linux|windows>
 
 **material 包（9）**：`modal_barrier_material` `navigation_drawer` `popup_menu` `fab` `text_field` `scaffold` `refresh_indicator` `tabs` `bottom_sheet_android`
 
+### 3.2.1 pub cache 污染（全局、不可 git 复位）
+
+补丁脚本修改的三处状态中，**只有两处能用 git 复位**：
+
+| 位置 | 性质 | 复位方式 |
+|---|---|---|
+| Flutter SDK | git 仓库 | `git reset --hard` |
+| 项目源码 | git 仓库 | `git restore` |
+| **pub cache 的 `cupertino_ui` / `material_ui`** | **全局共享目录，非 git 仓库** | **只能删除后重新拉取** |
+
+pub cache 的补丁**跨平台、跨会话累积残留**。实际踩到的故障：先执行 `patch.ps1 iOS`，之后复位 SDK 并执行 `patch.ps1 android`，SDK 已是 Android 状态而 pub cache 仍停在 iOS 状态——`cupertino_ui` 引用仅由 iOS 补丁提供的 `popGestureEnabled_`，编译报：
+
+```
+cupertino_ui-1.1.6/lib/src/route.dart:219:45: Error:
+The getter 'popGestureEnabled_' isn't defined for the type 'PageRoute<T>'.
+```
+
+两点后果：
+
+1. `~/.pub-cache` 是全局目录，该污染会**影响本机其他 Flutter 项目**。
+2. CI 不会出现此问题（每个 job 均为全新环境），因此 **CI 绿不代表本机可构建**，反之亦然。
+
+**切换目标平台必须使用 [`tool/prepare-build.sh`](../../tool/prepare-build.sh)**，它按正确顺序执行复位、清理 pub cache、重新拉取、打补丁四步。手工操作漏掉任一步都会产生难以定位的编译错误。
+
 ### 3.3 影响
 
 - **锁定 Flutter 版本**不只是锁 3.47.9，而是锁 **3.47.9 + 对应平台补丁集**。升级 Flutter 时每个补丁都可能冲突。

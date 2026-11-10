@@ -163,6 +163,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.2"
+  bridge_flutter:
+    dependency: "direct main"
+    description:
+      path: rust_builder
+      relative: true
+    source: path
+    version: "0.0.1"
   brotli:
     dependency: "direct main"
     description:

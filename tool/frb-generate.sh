@@ -9,14 +9,14 @@
 #
 # 三处版本必须一致，否则产生难查的 ABI 错配：
 #   pubspec.yaml 的 flutter_rust_bridge
-#   rust/crates/bridge-flutter/Cargo.toml 的 flutter_rust_bridge = "=x.y.z"
+#   rust/crates/bridge_flutter/Cargo.toml 的 flutter_rust_bridge = "=x.y.z"
 #   本机 flutter_rust_bridge_codegen CLI
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
 CLI_VER="$(flutter_rust_bridge_codegen --version | awk '{print $2}')"
-CARGO_VER="$(grep -oE 'flutter_rust_bridge = "=[0-9.]+"' rust/crates/bridge-flutter/Cargo.toml | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')"
+CARGO_VER="$(grep -oE 'flutter_rust_bridge = "=[0-9.]+"' rust/crates/bridge_flutter/Cargo.toml | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')"
 PUB_VER="$(grep -E '^\s+flutter_rust_bridge: [0-9]' pubspec.yaml | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')"
 
 if [ "$CLI_VER" != "$CARGO_VER" ] || [ "$CLI_VER" != "$PUB_VER" ]; then
@@ -34,6 +34,6 @@ flutter_rust_bridge_codegen generate --no-web
 echo "格式化 Rust"
 (cd rust && cargo fmt)
 
-echo "完成。记得复核 rust/crates/bridge-flutter/src/lib.rs 中"
+echo "完成。记得复核 rust/crates/bridge_flutter/src/lib.rs 中"
 echo "codegen 注入的 'mod frb_generated;' 位置——它会被插到模块文档注释之前，"
 echo "导致 E0753 语法错误，需移到文档块之后。"

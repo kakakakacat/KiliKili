@@ -46,7 +46,7 @@ impl WireType {
             2 => Ok(Self::LengthDelimited),
             5 => Ok(Self::Fixed32),
             3 | 4 => Err(protocol("group 已废弃，弹幕协议不应出现")),
-            other => Err(protocol(&format!("未知 wire type {other}"))),
+            other => Err(protocol(format!("未知 wire type {other}"))),
         }
     }
 }
@@ -69,7 +69,7 @@ pub(crate) struct Reader<'a> {
 ///
 /// 诊断信息只含**位置与字段号**，不含字段内容：解析失败的详情会经桥接
 /// 回到 Dart 并写进日志，而弹幕内容是用户数据。
-fn protocol(detail: &str) -> DomainError {
+fn protocol(detail: impl Into<String>) -> DomainError {
     DomainError::new(ErrorKind::Protocol, detail)
 }
 
@@ -86,9 +86,9 @@ impl<'a> Reader<'a> {
     pub(crate) fn read_tag(&mut self) -> Result<Tag, DomainError> {
         let key = self.read_varint()?;
         let field = u32::try_from(key >> 3)
-            .map_err(|_| protocol(&format!("字段号越界，偏移 {}", self.pos)))?;
+            .map_err(|_| protocol(format!("字段号越界，偏移 {}", self.pos)))?;
         if field == 0 {
-            return Err(protocol(&format!("字段号 0 非法，偏移 {}", self.pos)));
+            return Err(protocol(format!("字段号 0 非法，偏移 {}", self.pos)));
         }
         Ok(Tag {
             field,
@@ -106,14 +106,14 @@ impl<'a> Reader<'a> {
             let byte = *self
                 .buf
                 .get(self.pos)
-                .ok_or_else(|| protocol(&format!("varint 被截断，偏移 {}", self.pos)))?;
+                .ok_or_else(|| protocol(format!("varint 被截断，偏移 {}", self.pos)))?;
             self.pos += 1;
             value |= u64::from(byte & 0x7f) << (shift * 7);
             if byte & 0x80 == 0 {
                 return Ok(value);
             }
         }
-        Err(protocol(&format!("varint 超过 10 字节，偏移 {}", self.pos)))
+        Err(protocol(format!("varint 超过 10 字节，偏移 {}", self.pos)))
     }
 
     /// 读 `len` 字节。
@@ -125,7 +125,7 @@ impl<'a> Reader<'a> {
         let slice = self
             .buf
             .get(self.pos..end)
-            .ok_or_else(|| protocol(&format!("长度 {len} 超出剩余字节，偏移 {}", self.pos)))?;
+            .ok_or_else(|| protocol(format!("长度 {len} 超出剩余字节，偏移 {}", self.pos)))?;
         self.pos = end;
         Ok(slice)
     }
@@ -133,7 +133,7 @@ impl<'a> Reader<'a> {
     /// 读一段长度前缀的字节。
     pub(crate) fn read_bytes(&mut self) -> Result<&'a [u8], DomainError> {
         let len = usize::try_from(self.read_varint()?)
-            .map_err(|_| protocol(&format!("长度越界，偏移 {}", self.pos)))?;
+            .map_err(|_| protocol(format!("长度越界，偏移 {}", self.pos)))?;
         self.read_slice(len)
     }
 
@@ -143,7 +143,7 @@ impl<'a> Reader<'a> {
         let bytes = self.read_bytes()?;
         core::str::from_utf8(bytes)
             .map(str::to_owned)
-            .map_err(|_| protocol(&format!("字符串不是合法 UTF-8，偏移 {at}")))
+            .map_err(|_| protocol(format!("字符串不是合法 UTF-8，偏移 {at}")))
     }
 
     /// 读 `int32`。

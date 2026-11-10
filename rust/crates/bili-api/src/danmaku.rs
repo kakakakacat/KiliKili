@@ -12,9 +12,9 @@
 //!
 //! 一个热门视频的单个分段有数千条弹幕。基线为此专门在响应超过 256 KiB
 //! 时把解析切到 isolate（`GrpcReq` 的 `_isolateSize` 与 `dmSegMobile` 的
-//! `isolate: true`）——也就是说这段解析已经重到必须躲开 UI 线程，而其余
-//! 已迁移的只读接口（详情、取流、搜索建议）都是一次一条记录。这里的收益
-//! 是实打实的，而不是「因为能迁所以迁」。
+//! `isolate: true`）——也就是说这段解析已经重到必须躲开 UI 线程。已迁移的
+//! 其余只读接口（详情、取流、搜索建议）条目数以个、以十计，差着两三个
+//! 数量级。这里的收益是实打实的，而不是「因为能迁所以迁」。
 
 use bili_domain::danmaku::{DanmakuColorful, DanmakuElem, DanmakuFrom, DanmakuSegment};
 use bili_domain::error::{DomainError, ErrorKind};
@@ -74,7 +74,7 @@ pub fn parse_segment(bytes: &[u8]) -> Result<DanmakuSegment, DomainError> {
             (field @ (reply_field::ELEMS | reply_field::STATE), wire) => {
                 return Err(DomainError::new(
                     ErrorKind::Protocol,
-                    &format!("分段字段 {field} 的 wire type 变成了 {wire:?}"),
+                    format!("分段字段 {field} 的 wire type 变成了 {wire:?}"),
                 ));
             }
             // ai_flag / segment_rules / colorful_src / context_src 与将来
@@ -136,7 +136,7 @@ fn parse_elem(bytes: &[u8]) -> Result<DanmakuElem, DomainError> {
             (field, wire) if is_known_elem_field(field) => {
                 return Err(DomainError::new(
                     ErrorKind::Protocol,
-                    &format!("弹幕字段 {field} 的 wire type 变成了 {wire:?}"),
+                    format!("弹幕字段 {field} 的 wire type 变成了 {wire:?}"),
                 ));
             }
             // 真正的未知字段（含客户端本地的 100/101，理应不会从服务端来）

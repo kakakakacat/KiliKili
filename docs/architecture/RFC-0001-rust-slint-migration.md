@@ -281,9 +281,23 @@ PiliPlus-Rust/
 
 ### 9.3 平台覆盖注意
 
-- macOS Apple Silicon 开发机可直接覆盖 macOS 和 Apple 平台的部分构建/模拟器验证。
-- Android 需要设备或模拟器进行 Media3、Surface 和生命周期验证；仅 Docker 编译不能验证 GPU/解码链路。
-- Windows/Linux 应有对应系统的 CI Runner 和最终实机/VM GUI 测试。
+> 完整的实测能力矩阵、硬件探测证据与排除记录见 [docs/m0/VALIDATION-CAPABILITY.md](../m0/VALIDATION-CAPABILITY.md)。
+
+编译打包全部放 GitHub Actions（上游已有五端 workflow 可继承），本机只做 CI 证明不了的事。
+
+| 平台 | 编译 | 真机 GUI | 硬解 | 结论 |
+|---|---|---|---|---|
+| macOS | Actions + 本机 | ✅ 本机 | ✅ videotoolbox | 完整验收 |
+| iOS | Actions | ✅ 真机 | ✅ videotoolbox | 完整验收（签名待配置） |
+| Android | Actions | ✅ 真机 | ✅ mediacodec | 完整验收 |
+| Windows | Actions | ✅ 家中设备 | ✅ d3d11va | 完整验收 |
+| Linux | Actions | ❌ | ❌ | **best-effort** |
+
+- **CI 证明不了核心风险**：硬解、Slint + libmpv 合成、PiP、后台音频、IME、无障碍、渲染性能。CI runner 为虚拟化环境，`hwdec` 必然回落软解。性能基线（§8.1）必须固定同一台机器采样。
+- **Linux 降级为 best-effort**：仅保证 Actions 编译通过 + Docker 多发行版 glibc/动态库兼容性矩阵 + Rust Core headless 单测；放弃 vaapi 硬解、Wayland/X11 合成、渲染性能与音频验收。Docker 是编译与兼容性闸门，不是验收手段——macOS 宿主下无 GPU 直通与显示输出。
+- **已评估并排除**：家用 iStoreOS 软路由（x86_64、具备 `/dev/dri`），因 Celeron J1900 为 Bay Trail Gen7，仅支持 H.264 硬解，不支持 HEVC/AV1/DV，且驱动栈（i965）与现代 Linux 桌面（iHD）不一致，验证结论不可外推。
+- **成本**：私有仓库 macOS runner 为 10 倍分钟倍率，需公开仓库、限制触发时机或使用 self-hosted runner。
+- **Rust 进入后 CI 需补**：各端 target、NDK 配置与 `~/.cargo`、`target/` 缓存，归入 `RUST-003`。
 - iOS 侧载免费签名 7 天限制独立于客户端技术架构；此项目不承诺绕过限制。
 
 ## 10. 工程管理与上线策略
@@ -332,6 +346,8 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 | R7 | 五平台发布/签名/依赖问题 | 中/高 | 早期 CI、逐平台验收 | 是（发布） |
 | R8 | GPL/平台分发条款不满足 | 中/高 | 发布前许可证与合规 Review | 是（发布） |
 | R9 | Slint 列表虚拟化、富文本、IME、无障碍及移动端成熟度 | 高/高 | M0 Spike，Flutter + Rust Core 为回退 | **是（Phase 2）** |
+| R11 | **基线给 Flutter 框架打 34–37 个补丁**（按平台不同），代表上游框架满足不了、改框架才实现的交互；Slint 需全部重新实现 | 高/高 | SPIKE-003 逐项评估补丁对应交互的 Slint 可行性，归类为原生支持/需自实现/做不到 | **是（Phase 2）** |
+| R12 | media-kit 系插件未适配 Swift Package Manager，Flutter 将来版本会报错；该 fork 上游不会适配 | 中/中 | 跟踪 Flutter SPM 强制时间点，必要时自行适配 | 否 |
 | R10 | 过早追求纯 Rust 导致过度重写 | 高/中 | 以可验证价值为前提，硬解保留原生 | 否 |
 
 ## 12. 里程碑与交付物
@@ -357,21 +373,17 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 5. **Slint 失败回退**：播放器 Spike 不达标时，允许更换 UI/合成技术方案吗？
 6. **支持的 OS 最低版本**：iOS、Android、macOS、Windows、Linux 发行版和架构范围要明确。
 7. **交付发布**：仅 GitHub Releases 侧载，还是考虑 App Store / TestFlight / 各商店？
-8. **测试资源**：至少需要一台 iOS 与 Android 真机，Windows/Linux GUI 环境；谁负责平台验收？
+8. ~~**测试资源**~~：**已确定**。macOS/iOS/Android/Windows 四端均具备真机验证条件；Linux 无 GUI/GPU 环境，已决定降级为 best-effort。详见 [VALIDATION-CAPABILITY.md](../m0/VALIDATION-CAPABILITY.md)。
 9. **团队/Agent 实施方式**：每个 PR 的最大范围、Review 人、自动测试及完成判断。
 
-## 14. 推荐的第一批 Issue（可直接作为 Agent 待办）
+## 14. 第一批 Issue
 
-- [ ] `RUST-001` 锁定 PiliPlus upstream commit，跑通 macOS/Android/iOS 基线构建，输出 `BASELINE.md`。
-- [ ] `RUST-002` 审查 `pubspec.yaml` Git overrides，明确 `media-kit` 定制逻辑及播放调用链。
-- [ ] `RUST-003` 建立 Rust Workspace、fmt/clippy/test CI 和统一日志/错误体系。
-- [ ] `RUST-004` 集成 `flutter_rust_bridge`，实现异步、事件流、取消和 Flutter 端自动化测试。
-- [ ] `RUST-005` 迁移一个**只读 API**（例如视频详情），建立 fixture 对照测试和功能开关。
-- [ ] `RUST-006` **M1 前置、P1-04/P1-05 前** 定义 Player Port（资源、音轨、时钟、事件、控制、画面表面、生命周期）。
-- [ ] `SPIKE-001` macOS Slint + libmpv 视频 + 覆盖弹幕技术验证。
-- [ ] `SPIKE-002` **M0** Android Slint + libmpv 视频表面与 Media3 回退对照。
-- [ ] `SPIKE-003` iOS Slint + libmpv 可行性和 AVPlayerLayer 备选方案验证。
-- [ ] `QA-001` 定义端到端功能矩阵、性能采样场景和发布前测试清单。
+已全部建为 GitHub Issues，不在本文维护副本（避免状态双写漂移）：
+<https://github.com/kakakakacat/KiliKili/issues>
+
+- **Milestones** 对应 §12 的 M0–M6
+- **Labels**：`phase:P1`/`phase:P2`、`area:*`、`type:spike`/`type:blocker`/`type:chore`
+- 本文与 ADR 保留**决策与证据**；**状态**一律以 Issues 为准
 
 ## 15. 参考资料（2026-11-10 检索）
 
@@ -427,7 +439,7 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 ### 16.7 协议变更、上游同步和平台分级（P1）
 - WBI 签名、必要请求头、设备信息格式等易变协议放在单独 bili-protocol crate，使用版本化 fixtures、变更记录和独立回归测试；遵守第三方服务规则。
 - 固定 UPSTREAM_COMMIT，按同步窗口审计上游 API/签名/播放器修复。先改 Rust Protocol/Adapter 与 fixture，再验证 Flutter 旧实现差异；避免只同步 Dart 修复遗漏 Rust。
-- Slint 先以 macOS + Android 为首批验收目标，再分别验收 iOS、Windows、Linux。编译成功不代表视频/IME/硬解等真实功能可用。
+- Slint 首批验收目标为 **macOS + Android + Windows**（三端均具备真机与硬解验证条件），iOS 紧随其后，Linux 单独降级为 best-effort。编译成功不代表视频/IME/硬解等真实功能可用。依据见 §9.3 与 [VALIDATION-CAPABILITY.md](../m0/VALIDATION-CAPABILITY.md)。
 
 ### 16.8 Review 逐项处理结果
 | Review 问题 | 结论 |

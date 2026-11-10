@@ -1,0 +1,66 @@
+//! 领域层：业务实体、规则、错误与 Port traits。
+//!
+//! 本 crate **不得**依赖 Flutter、Slint、具体平台 SDK 或任何
+//! 协议/传输实现（RFC-0001 §2.1）。它必须能在不启动任何 UI
+//! 的情况下独立测试。
+
+pub mod error;
+pub mod redact;
+
+#[cfg(test)]
+mod tests {
+    use super::error::{DomainError, ErrorKind};
+    use super::redact::{Redacted, is_credential_key, redact_header, redact_query};
+
+    #[test]
+    fn error_kind_is_retryable() {
+        assert!(ErrorKind::Network.is_retryable());
+        assert!(!ErrorKind::Auth.is_retryable());
+    }
+
+    #[test]
+    fn domain_error_carries_kind() {
+        let e = DomainError::new(ErrorKind::Network, "timeout");
+        assert_eq!(e.kind(), ErrorKind::Network);
+    }
+
+    #[test]
+    fn credential_keys_match_case_insensitively() {
+        assert!(is_credential_key("SESSDATA"));
+        assert!(is_credential_key("  bili_jct "));
+        assert!(is_credential_key("Access_Key"));
+        assert!(!is_credential_key("bvid"));
+    }
+
+    #[test]
+    fn redacted_never_prints_its_value() {
+        let secret = Redacted::new("super-secret-token");
+        assert_eq!(format!("{secret}"), "<redacted>");
+        assert_eq!(format!("{secret:?}"), "<redacted>");
+        assert_eq!(*secret.expose(), "super-secret-token");
+    }
+
+    #[test]
+    fn query_redaction_keeps_keys_and_drops_values() {
+        let q = "bvid=BV1xx&SESSDATA=abc123&qn=80&bili_jct=deadbeef";
+        assert_eq!(
+            redact_query(q),
+            "bvid=BV1xx&SESSDATA=<redacted>&qn=80&bili_jct=<redacted>"
+        );
+    }
+
+    #[test]
+    fn query_redaction_tolerates_malformed_pairs() {
+        assert_eq!(redact_query("a&b=1&=2"), "a&b=1&=2");
+        assert_eq!(redact_query(""), "");
+    }
+
+    #[test]
+    fn header_redaction() {
+        assert_eq!(redact_header("Cookie", "SESSDATA=x"), "Cookie: <redacted>");
+        assert_eq!(
+            redact_header("User-Agent", "Mozilla"),
+            "User-Agent: Mozilla"
+        );
+    }
+}

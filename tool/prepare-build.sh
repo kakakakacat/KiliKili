@@ -46,6 +46,6 @@ GITHUB_WORKSPACE="$REPO" FLUTTER_ROOT="$FLUTTER_ROOT" \
     pwsh -NoProfile -File lib/scripts/patch.ps1 "$PLATFORM"
 
 echo
-echo "就绪。现在可以构建 $PLATFORM。"
+echo "就绪。现在可以构建 ${PLATFORM}。"
 echo "构建后请检查 git status：工具链与补丁脚本会改动受版本控制的文件，"
 echo "这些改动不得提交（详见 docs/m0/BASELINE.md §6.1）。"

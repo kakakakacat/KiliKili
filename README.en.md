@@ -1,60 +1,31 @@
-<div align="center">
-    <img width="200" height="200" src="assets/images/logo/logo.png" alt="PiliPlus logo">
-    <h1>PiliPlus</h1>
-</div>
+# KiliKili
 
-<div align="center">
+[简体中文](README.md)
 
-[中文](README.md) | English
+KiliKili is a third-party Bilibili client for Android, iOS, macOS, Windows, and Linux. It is forked from [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus). We thank the authors and contributors of PiliPlus and its predecessors, [PiliPalaX](https://github.com/orz12/PiliPalaX) and [PiliPala](https://github.com/guozhigq/pilipala). KiliKili is maintained independently and is not affiliated with those projects or Bilibili.
 
-![GitHub repo size](https://img.shields.io/github/repo-size/bggRGjQaUbCoE/PiliPlus)
-![GitHub Repo stars](https://img.shields.io/github/stars/bggRGjQaUbCoE/PiliPlus)
-![GitHub all releases](https://img.shields.io/github/downloads/bggRGjQaUbCoE/PiliPlus/total)
+## Goals
 
-</div>
+We aim to build a stable, maintainable cross-platform client while preserving PiliPlus features and compatibility with existing user data:
 
-<div align="center">
-    <p>A third-party Bilibili client built with Flutter</p>
+1. **Migrate the shared core first.** Keep the current Flutter UI and player while gradually moving reusable protocol and data logic to Rust. Each step is checked against the existing behavior and retains a fallback path.
+2. **Validate a new UI before adopting it.** Evaluate Slint for video playback, danmaku overlays, mobile lifecycle, text input, and accessibility. We will replace the UI gradually only if those checks pass; the Flutter + Rust version remains a usable product in its own right.
+3. **Keep improving the client.** Invest in cross-platform builds, compatibility, performance, stability, and bug fixes beyond the initial migration.
 
-<img src="assets/screenshots/510shots_so.png" width="32%" alt="PiliPlus mobile screenshot" />
-<img src="assets/screenshots/174shots_so.png" width="32%" alt="PiliPlus mobile screenshot" />
-<img src="assets/screenshots/850shots_so.png" width="32%" alt="PiliPlus mobile screenshot" />
-<br/>
-<img src="assets/screenshots/main_screen.png" width="96%" alt="PiliPlus desktop screenshot" />
-<br/>
-</div>
+The project is currently in the **Flutter + Rust migration stage**. Slint is a future goal, not the UI used by the current app. See the [architecture RFC](docs/architecture/RFC-0001-rust-slint-migration.md) for the plan and acceptance criteria.
 
-<br/>
+## Long-term maintenance
 
-## Download
+**We commit to maintaining and updating KiliKili for the long term.** We will continue to follow important upstream fixes, Bilibili API changes, and platform compatibility issues, while documenting migration progress and known limitations. Releases will prioritize quality and usability over a fixed schedule. If the Slint approach does not pass validation, we will continue maintaining the usable Flutter + Rust version.
 
-Download a build from [Releases](https://github.com/bggRGjQaUbCoE/PiliPlus/releases), or clone the repository and build it locally.
+Bug reports, suggestions, and pull requests are welcome through this repository's [Issues](https://github.com/kakakakacat/KiliKili/issues) and Pull Requests.
 
-## Disclaimer
+## Source and builds
 
-PiliPlus is a personal project developed for educational purposes, intended only for learning and testing. Please delete it within 24 hours of downloading.
-All APIs used were collected from the official website. This project does not provide any cracked content.
+Use [this repository](https://github.com/kakakakacat/KiliKili) for source code and release information. Before building, read the [build baseline and environment notes](docs/m0/BASELINE.md): Flutter builds currently require a specific SDK version and platform patches, and may fail with an unpatched SDK.
 
-Credit to the original project: [guozhigq/pilipala](https://github.com/guozhigq/pilipala).
-Credit to the upstream project: [orz12/PiliPalaX](https://github.com/orz12/PiliPalaX).
-This repository makes more extensive changes. Thank you to the original authors for sharing their work as open source.
+## License and credits
 
-Thank you for using PiliPlus.
+This project follows the [GPL-3.0 license](LICENSE) in this repository. Derived code and assets retain their applicable copyright and license requirements. Thanks again to [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus) and all upstream contributors.
 
-## Acknowledgements
-
-- [bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect)
-- [flutter_meedu_videoplayer](https://github.com/zezo357/flutter_meedu_videoplayer)
-- [media-kit](https://github.com/media-kit/media-kit)
-- [dio](https://pub.dev/packages/dio)
-- And others
-
-## Star History
-
-<a href="https://star-history.dera.page/#bggRGjQaUbCoE/PiliPlus&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date" />
-   <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date" />
- </picture>
-</a>
+KiliKili is an unofficial client and does not provide cracked content. Please follow applicable service terms and local laws.

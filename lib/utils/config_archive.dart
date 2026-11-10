@@ -3,20 +3,20 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:PiliPlus/build_config.dart';
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
+import 'package:kilikili/build_config.dart';
+import 'package:kilikili/common/constants.dart';
+import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
-import 'package:PiliPlus/pages/my_reply/view.dart';
-import 'package:PiliPlus/pages/search/controller.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/device_utils.dart';
-import 'package:PiliPlus/utils/font_utils.dart';
-import 'package:PiliPlus/utils/global_data.dart';
-import 'package:PiliPlus/utils/parse_int.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:kilikili/pages/my_reply/view.dart';
+import 'package:kilikili/pages/search/controller.dart';
+import 'package:kilikili/utils/accounts.dart';
+import 'package:kilikili/utils/device_utils.dart';
+import 'package:kilikili/utils/font_utils.dart';
+import 'package:kilikili/utils/global_data.dart';
+import 'package:kilikili/utils/parse_int.dart';
+import 'package:kilikili/utils/storage.dart';
+import 'package:kilikili/utils/storage_key.dart';
+import 'package:kilikili/utils/storage_pref.dart';
 import 'package:archive/archive.dart';
 import 'package:get/get.dart';
 

@@ -1,9 +1,9 @@
-import 'package:PiliPlus/common/widgets/badge.dart';
-import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.dart';
-import 'package:PiliPlus/models_new/history/history.dart';
-import 'package:PiliPlus/pages/common/multi_select/base.dart';
-import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
+import 'package:kilikili/common/widgets/badge.dart';
+import 'package:kilikili/common/widgets/progress_bar/video_progress_indicator.dart';
+import 'package:kilikili/models_new/history/history.dart';
+import 'package:kilikili/pages/common/multi_select/base.dart';
+import 'package:kilikili/utils/duration_utils.dart';
+import 'package:kilikili/utils/extension/iterable_ext.dart';
 import 'package:material_ui/material_ui.dart'
     show ColorScheme, Widget, Positioned;
 

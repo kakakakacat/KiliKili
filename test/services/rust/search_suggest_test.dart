@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:PiliPlus/services/rust/search_suggest_result.dart';
+import 'package:kilikili/services/rust/search_suggest_result.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

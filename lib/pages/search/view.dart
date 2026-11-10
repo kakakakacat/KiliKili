@@ -1,21 +1,21 @@
 import 'dart:convert';
 
-import 'package:PiliPlus/common/widgets/dialog/export_import.dart';
-import 'package:PiliPlus/common/widgets/disabled_icon.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:PiliPlus/common/widgets/sliver_wrap.dart';
-import 'package:PiliPlus/common/widgets/view_insets_safe_area.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/search/search_rcmd/data.dart';
-import 'package:PiliPlus/pages/search/controller.dart';
-import 'package:PiliPlus/pages/search/widgets/hot_keyword.dart';
-import 'package:PiliPlus/pages/search/widgets/search_text.dart';
-import 'package:PiliPlus/utils/em.dart' show Em;
-import 'package:PiliPlus/utils/extension/size_ext.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:kilikili/common/widgets/dialog/export_import.dart';
+import 'package:kilikili/common/widgets/disabled_icon.dart';
+import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
+import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:kilikili/common/widgets/sliver_wrap.dart';
+import 'package:kilikili/common/widgets/view_insets_safe_area.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/models_new/search/search_rcmd/data.dart';
+import 'package:kilikili/pages/search/controller.dart';
+import 'package:kilikili/pages/search/widgets/hot_keyword.dart';
+import 'package:kilikili/pages/search/widgets/search_text.dart';
+import 'package:kilikili/utils/em.dart' show Em;
+import 'package:kilikili/utils/extension/size_ext.dart';
+import 'package:kilikili/utils/storage.dart';
+import 'package:kilikili/utils/storage_key.dart';
+import 'package:kilikili/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 

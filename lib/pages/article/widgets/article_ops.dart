@@ -1,13 +1,13 @@
 import 'dart:math' as math;
 
-import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/models_new/article/article_view/ops.dart';
-import 'package:PiliPlus/pages/article/view.dart';
-import 'package:PiliPlus/pages/article/widgets/sliver_list_ext.dart';
-import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
-import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
-import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:kilikili/common/style.dart';
+import 'package:kilikili/models_new/article/article_view/ops.dart';
+import 'package:kilikili/pages/article/view.dart';
+import 'package:kilikili/pages/article/widgets/sliver_list_ext.dart';
+import 'package:kilikili/pages/dynamics/widgets/vote.dart';
+import 'package:kilikili/utils/app_scheme.dart';
+import 'package:kilikili/utils/extension/num_ext.dart';
+import 'package:kilikili/utils/image_utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:material_ui/material_ui.dart';
 

@@ -1,11 +1,11 @@
 import 'dart:math';
 
-import 'package:PiliPlus/models/common/search/article_search_type.dart';
-import 'package:PiliPlus/models/search/result.dart';
-import 'package:PiliPlus/pages/article/view.dart';
-import 'package:PiliPlus/pages/search/widgets/search_text.dart';
-import 'package:PiliPlus/pages/search_panel/controller.dart';
-import 'package:PiliPlus/utils/extension/context_ext.dart';
+import 'package:kilikili/models/common/search/article_search_type.dart';
+import 'package:kilikili/models/search/result.dart';
+import 'package:kilikili/pages/article/view.dart';
+import 'package:kilikili/pages/search/widgets/search_text.dart';
+import 'package:kilikili/pages/search_panel/controller.dart';
+import 'package:kilikili/utils/extension/context_ext.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 

@@ -1,4 +1,4 @@
-import 'package:PiliPlus/pages/setting/widgets/checkbox_num.dart';
+import 'package:kilikili/pages/setting/widgets/checkbox_num.dart';
 import 'package:material_ui/material_ui.dart';
 
 class OrderedCheckboxListTile extends StatelessWidget {

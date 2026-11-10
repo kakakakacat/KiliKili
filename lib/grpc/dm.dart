@@ -1,8 +1,8 @@
-import 'package:PiliPlus/grpc/bilibili/community/service/dm/v1.pb.dart';
-import 'package:PiliPlus/grpc/grpc_req.dart';
-import 'package:PiliPlus/grpc/url.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/video/video_play_info/subtitle.dart';
+import 'package:kilikili/grpc/bilibili/community/service/dm/v1.pb.dart';
+import 'package:kilikili/grpc/grpc_req.dart';
+import 'package:kilikili/grpc/url.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/models_new/video/video_play_info/subtitle.dart';
 import 'package:fixnum/fixnum.dart';
 
 abstract final class DmGrpc {

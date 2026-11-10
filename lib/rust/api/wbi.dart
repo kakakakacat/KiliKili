@@ -3,7 +3,7 @@
 
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
-import 'package:PiliPlus/rust/frb_generated.dart';
+import 'package:kilikili/rust/frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 /// 由 nav 接口返回的 `img_key` / `sub_key` 推导 `mixin_key`。

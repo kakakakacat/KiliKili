@@ -1,5 +1,5 @@
-import 'package:PiliPlus/rust/api/init.dart' as rust_api;
-import 'package:PiliPlus/rust/frb_generated.dart';
+import 'package:kilikili/rust/api/init.dart' as rust_api;
+import 'package:kilikili/rust/frb_generated.dart';
 import 'package:flutter/foundation.dart';
 
 /// Rust Core 的启动入口。

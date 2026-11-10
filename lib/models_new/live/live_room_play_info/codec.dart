@@ -1,5 +1,5 @@
-import 'package:PiliPlus/models/common/video/base_quality.dart';
-import 'package:PiliPlus/models_new/live/live_room_play_info/url_info.dart';
+import 'package:kilikili/models/common/video/base_quality.dart';
+import 'package:kilikili/models_new/live/live_room_play_info/url_info.dart';
 
 class CodecItem {
   String? codecName;

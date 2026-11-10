@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:PiliPlus/models/search/suggest.dart';
+import 'package:kilikili/models/search/suggest.dart';
 
 /// 优先使用 Rust 的规范化结果；桥接结果无效时沿用基线模型解析。
 SearchSuggestModel searchSuggestFromRustOrDart(

@@ -11,7 +11,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:PiliPlus/services/rust/video_detail_normalize.dart';
+import 'package:kilikili/services/rust/video_detail_normalize.dart';
 
 const _fixtureDir = 'rust/crates/bili-api/tests/fixtures/video_detail';
 

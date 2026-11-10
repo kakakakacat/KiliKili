@@ -1,5 +1,5 @@
-import 'package:PiliPlus/models/common/video/cdn_type.dart';
-import 'package:PiliPlus/utils/video_utils.dart';
+import 'package:kilikili/models/common/video/cdn_type.dart';
+import 'package:kilikili/utils/video_utils.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

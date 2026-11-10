@@ -2,13 +2,13 @@
 
 import 'dart:async' show Timer;
 
-import 'package:PiliPlus/models/common/enum_with_label.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/widgets/menu_row.dart';
-import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/utils/device_utils.dart';
-import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/theme_utils.dart';
+import 'package:kilikili/models/common/enum_with_label.dart';
+import 'package:kilikili/pages/video/introduction/ugc/widgets/menu_row.dart';
+import 'package:kilikili/plugin/pl_player/controller.dart';
+import 'package:kilikili/utils/device_utils.dart';
+import 'package:kilikili/utils/duration_utils.dart';
+import 'package:kilikili/utils/page_utils.dart';
+import 'package:kilikili/utils/theme_utils.dart';
 import 'package:collection/collection.dart';
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPicker;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';

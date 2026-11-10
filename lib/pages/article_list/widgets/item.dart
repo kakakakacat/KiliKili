@@ -1,9 +1,9 @@
-import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/stat/stat.dart';
-import 'package:PiliPlus/models/common/stat_type.dart';
-import 'package:PiliPlus/models_new/article/article_list/article.dart';
-import 'package:PiliPlus/pages/article/view.dart';
+import 'package:kilikili/common/style.dart';
+import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/stat/stat.dart';
+import 'package:kilikili/models/common/stat_type.dart';
+import 'package:kilikili/models_new/article/article_list/article.dart';
+import 'package:kilikili/pages/article/view.dart';
 import 'package:material_ui/material_ui.dart';
 
 class ArticleListItem extends StatelessWidget {

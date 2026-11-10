@@ -1,4 +1,4 @@
-import 'package:PiliPlus/models/dynamics/eva3_user.dart';
+import 'package:kilikili/models/dynamics/eva3_user.dart';
 
 class Eva3Toy {
   Eva3ToyInfo? info;

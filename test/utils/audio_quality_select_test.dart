@@ -1,6 +1,6 @@
-import 'package:PiliPlus/models/common/video/base_quality.dart';
-import 'package:PiliPlus/models/video/play/url.dart';
-import 'package:PiliPlus/utils/video_utils.dart';
+import 'package:kilikili/models/common/video/base_quality.dart';
+import 'package:kilikili/models/video/play/url.dart';
+import 'package:kilikili/utils/video_utils.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 PlayUrlModel _playUrl(List<int> audioIds) => PlayUrlModel.fromJson({

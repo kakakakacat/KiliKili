@@ -1,7 +1,7 @@
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/msg.dart';
-import 'package:PiliPlus/models_new/msg/msg_sys/data.dart';
-import 'package:PiliPlus/pages/common/common_list_controller.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/http/msg.dart';
+import 'package:kilikili/models_new/msg/msg_sys/data.dart';
+import 'package:kilikili/pages/common/common_list_controller.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 class SysMsgController

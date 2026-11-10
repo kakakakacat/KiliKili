@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-rm /usr/bin/piliplus
+rm /usr/bin/kilikili
 if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
     if [ -x /usr/bin/update-desktop-database ]; then
         echo "updating desktop database..."
@@ -19,8 +19,8 @@ fi
 
 if [ $1 = "purge" ]; then
     echo "Removing user data..."
-    rm -rf /home/*/.local/share/com.example.PiliPlus || true
-    rm -rf /root/.local/share/com.example.PiliPlus || true
+    rm -rf /home/*/.local/share/io.github.kakacat.kilikili || true
+    rm -rf /root/.local/share/io.github.kakacat.kilikili || true
 fi
 
 exit 0

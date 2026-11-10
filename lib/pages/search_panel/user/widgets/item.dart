@@ -1,7 +1,7 @@
-import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
-import 'package:PiliPlus/models/search/result.dart';
-import 'package:PiliPlus/utils/bili_utils.dart';
-import 'package:PiliPlus/utils/num_utils.dart';
+import 'package:kilikili/common/widgets/pendant_avatar.dart';
+import 'package:kilikili/models/search/result.dart';
+import 'package:kilikili/utils/bili_utils.dart';
+import 'package:kilikili/utils/num_utils.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:material_ui/material_ui.dart';

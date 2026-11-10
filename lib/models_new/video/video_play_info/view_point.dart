@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
+import 'package:kilikili/common/widgets/progress_bar/segment_progress_bar.dart';
 
 class ViewPoint {
   int? type;

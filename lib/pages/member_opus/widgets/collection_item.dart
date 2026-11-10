@@ -1,8 +1,8 @@
-import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/grpc/bilibili/app/dynamic/v2.pb.dart'
+import 'package:kilikili/common/style.dart';
+import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/grpc/bilibili/app/dynamic/v2.pb.dart'
     show SectionOpusCollection, OpusCollectionWithCover;
-import 'package:PiliPlus/pages/member_opus/widgets/opus_grid.dart';
+import 'package:kilikili/pages/member_opus/widgets/opus_grid.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:material_ui/material_ui.dart'

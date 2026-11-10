@@ -1,4 +1,4 @@
-import 'package:PiliPlus/models/login/captcha_config.dart';
+import 'package:kilikili/models/login/captcha_config.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

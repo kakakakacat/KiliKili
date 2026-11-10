@@ -1,9 +1,9 @@
-import 'package:PiliPlus/http/dynamics.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/member.dart';
-import 'package:PiliPlus/http/msg.dart';
-import 'package:PiliPlus/models/dynamics/result.dart';
-import 'package:PiliPlus/pages/common/common_list_controller.dart';
+import 'package:kilikili/http/dynamics.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/http/member.dart';
+import 'package:kilikili/http/msg.dart';
+import 'package:kilikili/models/dynamics/result.dart';
+import 'package:kilikili/pages/common/common_list_controller.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 class MemberDynamicsController

@@ -1,10 +1,10 @@
-import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/stat/stat.dart';
-import 'package:PiliPlus/grpc/bilibili/app/dynamic/v2.pb.dart'
+import 'package:kilikili/common/style.dart';
+import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/stat/stat.dart';
+import 'package:kilikili/grpc/bilibili/app/dynamic/v2.pb.dart'
     show OpusFlowItem;
-import 'package:PiliPlus/models/common/stat_type.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:kilikili/models/common/stat_type.dart';
+import 'package:kilikili/utils/page_utils.dart';
 import 'package:flutter/foundation.dart' show clampDouble;
 import 'package:material_ui/material_ui.dart';
 

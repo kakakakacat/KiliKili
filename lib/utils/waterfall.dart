@@ -1,9 +1,9 @@
-import 'package:PiliPlus/common/skeleton/dynamic_card.dart';
-import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
-import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/sliver/sliver_constrained_cross_axis.dart';
-import 'package:PiliPlus/utils/global_data.dart';
-import 'package:PiliPlus/utils/grid.dart';
+import 'package:kilikili/common/skeleton/dynamic_card.dart';
+import 'package:kilikili/common/sliver_single_child_delegate.dart';
+import 'package:kilikili/common/style.dart';
+import 'package:kilikili/common/widgets/sliver/sliver_constrained_cross_axis.dart';
+import 'package:kilikili/utils/global_data.dart';
+import 'package:kilikili/utils/grid.dart';
 import 'package:flutter/rendering.dart' show SliverConstraints;
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart'
     show SliverSimpleGridDelegate;

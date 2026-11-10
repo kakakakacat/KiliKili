@@ -1,12 +1,12 @@
-import 'package:PiliPlus/common/widgets/badge.dart';
-import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.dart';
-import 'package:PiliPlus/models/model_owner.dart';
-import 'package:PiliPlus/models_new/later/bangumi.dart';
-import 'package:PiliPlus/models_new/later/rights.dart';
-import 'package:PiliPlus/models_new/later/stat.dart';
-import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
-import 'package:PiliPlus/pages/common/multi_select/base.dart';
-import 'package:PiliPlus/utils/duration_utils.dart';
+import 'package:kilikili/common/widgets/badge.dart';
+import 'package:kilikili/common/widgets/progress_bar/video_progress_indicator.dart';
+import 'package:kilikili/models/model_owner.dart';
+import 'package:kilikili/models_new/later/bangumi.dart';
+import 'package:kilikili/models_new/later/rights.dart';
+import 'package:kilikili/models_new/later/stat.dart';
+import 'package:kilikili/models_new/video/video_detail/dimension.dart';
+import 'package:kilikili/pages/common/multi_select/base.dart';
+import 'package:kilikili/utils/duration_utils.dart';
 import 'package:material_ui/material_ui.dart'
     show ColorScheme, Widget, Positioned;
 

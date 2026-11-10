@@ -1,6 +1,6 @@
-import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:kilikili/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
+import 'package:kilikili/utils/platform_utils.dart';
+import 'package:kilikili/utils/storage_pref.dart';
 import 'package:material_ui/material_ui.dart';
 
 Widget tabBarView({

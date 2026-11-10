@@ -1,5 +1,5 @@
-import 'package:PiliPlus/models/common/video/base_quality.dart';
-import 'package:PiliPlus/models_new/live/live_room_play_info/codec.dart';
+import 'package:kilikili/models/common/video/base_quality.dart';
+import 'package:kilikili/models_new/live/live_room_play_info/codec.dart';
 
 class Format {
   String? formatName;

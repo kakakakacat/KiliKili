@@ -1,9 +1,9 @@
-import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
-import 'package:PiliPlus/models_new/download/download_info.dart';
-import 'package:PiliPlus/pages/common/multi_select/base.dart';
-import 'package:PiliPlus/services/download/download_service.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:kilikili/models_new/download/bili_download_entry_info.dart';
+import 'package:kilikili/models_new/download/download_info.dart';
+import 'package:kilikili/pages/common/multi_select/base.dart';
+import 'package:kilikili/services/download/download_service.dart';
+import 'package:kilikili/utils/extension/iterable_ext.dart';
+import 'package:kilikili/utils/page_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:material_ui/material_ui.dart';
 

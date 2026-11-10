@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:PiliPlus/rust/api/search_suggest.dart' as rust_api;
-import 'package:PiliPlus/services/rust/rust_flags.dart';
+import 'package:kilikili/rust/api/search_suggest.dart' as rust_api;
+import 'package:kilikili/services/rust/rust_flags.dart';
 import 'package:flutter/foundation.dart';
 
 /// 搜索建议的 Rust 解析路径。只处理同一份 Dart 已取回的响应。

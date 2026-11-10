@@ -1,8 +1,8 @@
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/user.dart';
-import 'package:PiliPlus/models_new/login_log/data.dart';
-import 'package:PiliPlus/models_new/login_log/list.dart';
-import 'package:PiliPlus/pages/log_table/controller.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/http/user.dart';
+import 'package:kilikili/models_new/login_log/data.dart';
+import 'package:kilikili/models_new/login_log/list.dart';
+import 'package:kilikili/pages/log_table/controller.dart';
 
 class LoginLogController extends LogController<LoginLogData, LoginLogItem> {
   @override

@@ -1,9 +1,9 @@
-import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/radio_widget.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/utils/extension/string_ext.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:kilikili/common/widgets/button/icon_button.dart';
+import 'package:kilikili/common/widgets/radio_widget.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/utils/extension/string_ext.dart';
+import 'package:kilikili/utils/storage_pref.dart';
+import 'package:kilikili/utils/utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';

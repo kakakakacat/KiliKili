@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:io' show Platform;
 
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
-import 'package:PiliPlus/utils/device_utils.dart';
-import 'package:PiliPlus/utils/dlna_utils.dart';
-import 'package:PiliPlus/utils/permission_handler.dart';
+import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
+import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
+import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:kilikili/common/widgets/view_sliver_safe_area.dart';
+import 'package:kilikili/utils/device_utils.dart';
+import 'package:kilikili/utils/dlna_utils.dart';
+import 'package:kilikili/utils/permission_handler.dart';
 import 'package:dlna_dart/dlna.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';

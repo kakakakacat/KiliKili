@@ -1,15 +1,15 @@
 import 'dart:math';
 
-import 'package:PiliPlus/common/widgets/emote_tooltip.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart'
+import 'package:kilikili/common/widgets/emote_tooltip.dart';
+import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
+import 'package:kilikili/common/widgets/scroll_physics.dart'
     show tabBarView, platformClampingPhysics;
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
-import 'package:PiliPlus/models_new/live/live_emote/datum.dart';
-import 'package:PiliPlus/models_new/live/live_emote/emoticon.dart';
-import 'package:PiliPlus/pages/live_emote/controller.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/models/common/image_type.dart';
+import 'package:kilikili/models_new/live/live_emote/datum.dart';
+import 'package:kilikili/models_new/live/live_emote/emoticon.dart';
+import 'package:kilikili/pages/live_emote/controller.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 

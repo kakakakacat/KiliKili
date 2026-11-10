@@ -1,6 +1,6 @@
 import 'dart:convert' show utf8;
 
-import 'package:PiliPlus/common/constants.dart';
+import 'package:kilikili/common/constants.dart';
 import 'package:crypto/crypto.dart' show md5;
 
 abstract final class AppSign {

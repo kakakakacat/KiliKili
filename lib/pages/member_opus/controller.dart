@@ -1,10 +1,10 @@
-import 'package:PiliPlus/grpc/bilibili/app/dynamic/v2.pb.dart'
+import 'package:kilikili/grpc/bilibili/app/dynamic/v2.pb.dart'
     show OpusSpaceFlowResp, OpusFlowItem, SectionOpusCollection;
-import 'package:PiliPlus/grpc/space.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/space/space/tab2.dart';
-import 'package:PiliPlus/pages/common/common_list_controller.dart';
-import 'package:PiliPlus/pages/member/controller.dart';
+import 'package:kilikili/grpc/space.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/models_new/space/space/tab2.dart';
+import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/pages/member/controller.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:get/get.dart';

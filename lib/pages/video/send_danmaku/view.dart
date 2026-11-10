@@ -1,17 +1,17 @@
 import 'dart:async';
 
-import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart'
+import 'package:kilikili/common/widgets/button/icon_button.dart';
+import 'package:kilikili/common/widgets/scroll_physics.dart'
     show platformClampingPhysics;
-import 'package:PiliPlus/common/widgets/view_safe_area.dart';
-import 'package:PiliPlus/http/danmaku.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/publish_panel_type.dart';
-import 'package:PiliPlus/pages/common/publish/common_text_pub_page.dart';
-import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
-import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
-import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/utils/accounts.dart';
+import 'package:kilikili/common/widgets/view_safe_area.dart';
+import 'package:kilikili/http/danmaku.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/models/common/publish_panel_type.dart';
+import 'package:kilikili/pages/common/publish/common_text_pub_page.dart';
+import 'package:kilikili/pages/danmaku/danmaku_model.dart';
+import 'package:kilikili/pages/setting/slide_color_picker.dart';
+import 'package:kilikili/plugin/pl_player/controller.dart';
+import 'package:kilikili/utils/accounts.dart';
 import 'package:canvas_danmaku/models/danmaku_content_item.dart';
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';

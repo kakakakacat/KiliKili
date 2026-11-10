@@ -1,10 +1,10 @@
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/models_new/match/match_info/contest.dart';
-import 'package:PiliPlus/models_new/match/match_info/team.dart';
-import 'package:PiliPlus/pages/match_info/widgets/team_info_layout.dart';
-import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/models_new/match/match_info/contest.dart';
+import 'package:kilikili/models_new/match/match_info/team.dart';
+import 'package:kilikili/pages/match_info/widgets/team_info_layout.dart';
+import 'package:kilikili/utils/app_scheme.dart';
+import 'package:kilikili/utils/date_utils.dart';
+import 'package:kilikili/utils/page_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 

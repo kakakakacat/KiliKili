@@ -1,16 +1,16 @@
 import 'dart:convert';
 
-import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/video/video_type.dart';
-import 'package:PiliPlus/models/video/play/url.dart';
-import 'package:PiliPlus/rust/api/play_url_fetch.dart' as rust_api;
-import 'package:PiliPlus/services/rust/play_url_denormalize.dart';
-import 'package:PiliPlus/services/rust/rust_flags.dart';
-import 'package:PiliPlus/services/rust/rust_request.dart';
-import 'package:PiliPlus/services/rust/rust_transport.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/wbi_sign.dart';
+import 'package:kilikili/http/constants.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/models/common/video/video_type.dart';
+import 'package:kilikili/models/video/play/url.dart';
+import 'package:kilikili/rust/api/play_url_fetch.dart' as rust_api;
+import 'package:kilikili/services/rust/play_url_denormalize.dart';
+import 'package:kilikili/services/rust/rust_flags.dart';
+import 'package:kilikili/services/rust/rust_request.dart';
+import 'package:kilikili/services/rust/rust_transport.dart';
+import 'package:kilikili/utils/accounts.dart';
+import 'package:kilikili/utils/wbi_sign.dart';
 import 'package:flutter/foundation.dart';
 
 /// 取流的 Rust 取数路径：请求由 Rust 发出、Rust 解析。

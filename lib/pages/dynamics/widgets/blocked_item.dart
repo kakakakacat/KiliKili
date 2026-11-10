@@ -1,5 +1,5 @@
-import 'package:PiliPlus/models/dynamics/result.dart' show ModuleBlocked;
-import 'package:PiliPlus/pages/article/widgets/opus_content.dart'
+import 'package:kilikili/models/dynamics/result.dart' show ModuleBlocked;
+import 'package:kilikili/pages/article/widgets/opus_content.dart'
     show moduleBlockedItem;
 import 'package:material_ui/material_ui.dart';
 

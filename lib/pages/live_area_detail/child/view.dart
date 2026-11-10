@@ -1,15 +1,15 @@
-import 'package:PiliPlus/common/skeleton/video_card_v.dart';
-import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
-import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/live/live_feed_index/card_data_list_item.dart';
-import 'package:PiliPlus/pages/live/widgets/live_item_app.dart';
-import 'package:PiliPlus/pages/live_area_detail/child/controller.dart';
-import 'package:PiliPlus/pages/search/widgets/search_text.dart';
-import 'package:PiliPlus/utils/grid.dart';
+import 'package:kilikili/common/skeleton/video_card_v.dart';
+import 'package:kilikili/common/sliver_single_child_delegate.dart';
+import 'package:kilikili/common/style.dart';
+import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
+import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
+import 'package:kilikili/common/widgets/sliver/sliver_pinned_header.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/models_new/live/live_feed_index/card_data_list_item.dart';
+import 'package:kilikili/pages/live/widgets/live_item_app.dart';
+import 'package:kilikili/pages/live_area_detail/child/controller.dart';
+import 'package:kilikili/pages/search/widgets/search_text.dart';
+import 'package:kilikili/utils/grid.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 

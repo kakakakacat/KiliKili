@@ -1,5 +1,5 @@
-import 'package:PiliPlus/models_new/follow/list.dart';
-import 'package:PiliPlus/utils/parse_int.dart';
+import 'package:kilikili/models_new/follow/list.dart';
+import 'package:kilikili/utils/parse_int.dart';
 
 class FollowUpModel {
   LiveUsers? liveUsers;

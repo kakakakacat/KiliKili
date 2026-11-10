@@ -1,8 +1,8 @@
-import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
-import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
-import 'package:PiliPlus/models_new/sponsor_block/segment_item.dart';
-import 'package:PiliPlus/pages/sponsor_block/block_mixin.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:kilikili/models/common/sponsor_block/segment_type.dart';
+import 'package:kilikili/models/common/sponsor_block/skip_type.dart';
+import 'package:kilikili/models_new/sponsor_block/segment_item.dart';
+import 'package:kilikili/pages/sponsor_block/block_mixin.dart';
+import 'package:kilikili/utils/storage_pref.dart';
 
 class SegmentModel implements Comparable<SegmentModel> {
   SegmentModel({

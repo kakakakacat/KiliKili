@@ -1,6 +1,6 @@
-import 'package:PiliPlus/models/model_owner.dart';
-import 'package:PiliPlus/models_new/article/article_list/article.dart';
-import 'package:PiliPlus/models_new/article/article_list/list.dart';
+import 'package:kilikili/models/model_owner.dart';
+import 'package:kilikili/models_new/article/article_list/article.dart';
+import 'package:kilikili/models_new/article/article_list/list.dart';
 
 class ArticleListData {
   ArticleListInfo? list;

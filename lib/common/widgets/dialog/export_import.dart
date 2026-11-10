@@ -3,15 +3,15 @@ import 'dart:convert' show utf8, jsonDecode;
 import 'dart:io';
 import 'dart:typed_data' show Uint8List;
 
-import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
-import 'package:PiliPlus/utils/config_archive.dart';
-import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/extension/file_ext.dart';
-import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/storage_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:kilikili/common/style.dart';
+import 'package:kilikili/common/widgets/dialog/simple_dialog_option.dart';
+import 'package:kilikili/utils/config_archive.dart';
+import 'package:kilikili/utils/date_utils.dart';
+import 'package:kilikili/utils/extension/file_ext.dart';
+import 'package:kilikili/utils/extension/theme_ext.dart';
+import 'package:kilikili/utils/platform_utils.dart';
+import 'package:kilikili/utils/storage_utils.dart';
+import 'package:kilikili/utils/utils.dart';
 import 'package:archive/archive.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart' show Clipboard;
@@ -37,7 +37,7 @@ void exportToLocalFile({
   final res = utf8.encode(onExport());
   StorageUtils.saveBytes2File(
     name:
-        'piliplus_${localFileName()}_'
+        'kilikili_${localFileName()}_'
         '${DateFormatUtils.only0_9.format(DateTime.now())}.json',
     bytes: res,
   );
@@ -211,7 +211,7 @@ void importFromInput<T>(
 
 Future<void> _exportAllDataToArchive() async {
   final name =
-      'piliplus_data_'
+      'kilikili_data_'
       '${DateFormatUtils.only0_9.format(DateTime.now())}.zip';
   if (PlatformUtils.isDesktop) {
     final path = await FilePicker.saveFile(

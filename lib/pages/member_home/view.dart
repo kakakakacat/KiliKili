@@ -1,28 +1,28 @@
-import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/button/more_btn.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart'
+import 'package:kilikili/common/style.dart';
+import 'package:kilikili/common/widgets/button/more_btn.dart';
+import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
+import 'package:kilikili/common/widgets/scroll_physics.dart'
     show platformAlwaysClampingPhysics;
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/space/space/data.dart';
-import 'package:PiliPlus/models_new/space/space/tab2.dart';
-import 'package:PiliPlus/models_new/space/space_archive/item.dart';
-import 'package:PiliPlus/models_new/space/space_article/item.dart';
-import 'package:PiliPlus/models_new/space/space_audio/item.dart';
-import 'package:PiliPlus/models_new/space/space_fav/list.dart';
-import 'package:PiliPlus/pages/member/controller.dart';
-import 'package:PiliPlus/pages/member_article/widget/item.dart';
-import 'package:PiliPlus/pages/member_audio/widgets/item.dart';
-import 'package:PiliPlus/pages/member_coin_arc/view.dart';
-import 'package:PiliPlus/pages/member_comic/widgets/item.dart';
-import 'package:PiliPlus/pages/member_contribute/controller.dart';
-import 'package:PiliPlus/pages/member_home/widgets/fav_item.dart';
-import 'package:PiliPlus/pages/member_home/widgets/video_card_v_member_home.dart';
-import 'package:PiliPlus/pages/member_like_arc/view.dart';
-import 'package:PiliPlus/pages/member_opus/widgets/opus_grid.dart';
-import 'package:PiliPlus/pages/member_pgc/widgets/pgc_card_v_member_pgc.dart';
-import 'package:PiliPlus/utils/grid.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/models_new/space/space/data.dart';
+import 'package:kilikili/models_new/space/space/tab2.dart';
+import 'package:kilikili/models_new/space/space_archive/item.dart';
+import 'package:kilikili/models_new/space/space_article/item.dart';
+import 'package:kilikili/models_new/space/space_audio/item.dart';
+import 'package:kilikili/models_new/space/space_fav/list.dart';
+import 'package:kilikili/pages/member/controller.dart';
+import 'package:kilikili/pages/member_article/widget/item.dart';
+import 'package:kilikili/pages/member_audio/widgets/item.dart';
+import 'package:kilikili/pages/member_coin_arc/view.dart';
+import 'package:kilikili/pages/member_comic/widgets/item.dart';
+import 'package:kilikili/pages/member_contribute/controller.dart';
+import 'package:kilikili/pages/member_home/widgets/fav_item.dart';
+import 'package:kilikili/pages/member_home/widgets/video_card_v_member_home.dart';
+import 'package:kilikili/pages/member_like_arc/view.dart';
+import 'package:kilikili/pages/member_opus/widgets/opus_grid.dart';
+import 'package:kilikili/pages/member_pgc/widgets/pgc_card_v_member_pgc.dart';
+import 'package:kilikili/utils/grid.dart';
+import 'package:kilikili/utils/page_utils.dart';
 import 'package:flutter/rendering.dart'
     show BoxHitTestEntry, BoxHitTestResult, RenderObjectWithChildMixin;
 import 'package:flutter/services.dart'
@@ -34,7 +34,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
-part 'package:PiliPlus/pages/member_home/widgets/live_item.dart';
+part 'package:kilikili/pages/member_home/widgets/live_item.dart';
 
 class MemberHome extends StatefulWidget {
   const MemberHome({super.key, this.heroTag});

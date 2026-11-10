@@ -1,15 +1,15 @@
-import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
-import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
-import 'package:PiliPlus/models/dynamics/up.dart';
-import 'package:PiliPlus/pages/common/common_page.dart';
-import 'package:PiliPlus/pages/dynamics/controller.dart';
-import 'package:PiliPlus/pages/dynamics/widgets/up_panel.dart';
-import 'package:PiliPlus/pages/dynamics_create/view.dart';
-import 'package:PiliPlus/pages/dynamics_tab/view.dart';
-import 'package:PiliPlus/pages/main/controller.dart';
-import 'package:PiliPlus/utils/extension/get_ext.dart';
+import 'package:kilikili/common/widgets/scroll_physics.dart' show tabBarView;
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/models/common/dynamic/dynamics_type.dart';
+import 'package:kilikili/models/common/dynamic/up_panel_position.dart';
+import 'package:kilikili/models/dynamics/up.dart';
+import 'package:kilikili/pages/common/common_page.dart';
+import 'package:kilikili/pages/dynamics/controller.dart';
+import 'package:kilikili/pages/dynamics/widgets/up_panel.dart';
+import 'package:kilikili/pages/dynamics_create/view.dart';
+import 'package:kilikili/pages/dynamics_tab/view.dart';
+import 'package:kilikili/pages/main/controller.dart';
+import 'package:kilikili/utils/extension/get_ext.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart' hide DraggableScrollableSheet;
 

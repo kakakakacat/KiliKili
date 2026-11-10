@@ -4,7 +4,7 @@
 
 // ignore_for_file: prefer_initializing_formals
 
-import 'package:PiliPlus/pages/article/widgets/sliver_to_box_adapter.dart'
+import 'package:kilikili/pages/article/widgets/sliver_to_box_adapter.dart'
     show ArticleRenderSliverMixin;
 import 'package:flutter/rendering.dart' show RenderSliverList;
 import 'package:flutter/widgets.dart';

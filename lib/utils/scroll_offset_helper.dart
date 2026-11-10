@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
+import 'package:kilikili/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:material_ui/material_ui.dart';
 
 const double _kTopPadding = 7;

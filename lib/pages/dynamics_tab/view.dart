@@ -1,16 +1,16 @@
 import 'dart:async';
 
-import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
-import 'package:PiliPlus/models/dynamics/result.dart';
-import 'package:PiliPlus/pages/dynamics/controller.dart';
-import 'package:PiliPlus/pages/dynamics/widgets/dynamic_panel.dart';
-import 'package:PiliPlus/pages/dynamics_tab/controller.dart';
-import 'package:PiliPlus/utils/extension/get_ext.dart';
-import 'package:PiliPlus/utils/global_data.dart';
-import 'package:PiliPlus/utils/waterfall.dart';
+import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
+import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/models/common/dynamic/dynamics_type.dart';
+import 'package:kilikili/models/dynamics/result.dart';
+import 'package:kilikili/pages/dynamics/controller.dart';
+import 'package:kilikili/pages/dynamics/widgets/dynamic_panel.dart';
+import 'package:kilikili/pages/dynamics_tab/controller.dart';
+import 'package:kilikili/utils/extension/get_ext.dart';
+import 'package:kilikili/utils/global_data.dart';
+import 'package:kilikili/utils/waterfall.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';

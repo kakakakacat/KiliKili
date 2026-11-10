@@ -1,9 +1,9 @@
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/member.dart';
-import 'package:PiliPlus/models/common/member/contribute_type.dart';
-import 'package:PiliPlus/models_new/space/space_archive/data.dart';
-import 'package:PiliPlus/models_new/space/space_archive/item.dart';
-import 'package:PiliPlus/pages/common/common_list_controller.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/http/member.dart';
+import 'package:kilikili/models/common/member/contribute_type.dart';
+import 'package:kilikili/models_new/space/space_archive/data.dart';
+import 'package:kilikili/models_new/space/space_archive/item.dart';
+import 'package:kilikili/pages/common/common_list_controller.dart';
 
 class MemberComicController
     extends CommonListController<SpaceArchiveData, SpaceArchiveItem> {

@@ -1,15 +1,15 @@
 import 'dart:math';
 
-import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
-import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
-import 'package:PiliPlus/pages/video/controller.dart';
-import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/scroll_offset_helper.dart';
+import 'package:kilikili/common/style.dart';
+import 'package:kilikili/common/widgets/button/icon_button.dart';
+import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/progress_bar/segment_progress_bar.dart';
+import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:kilikili/pages/common/slide/common_slide_page.dart';
+import 'package:kilikili/pages/video/controller.dart';
+import 'package:kilikili/plugin/pl_player/controller.dart';
+import 'package:kilikili/utils/duration_utils.dart';
+import 'package:kilikili/utils/scroll_offset_helper.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 

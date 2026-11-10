@@ -1,14 +1,14 @@
-import 'package:PiliPlus/models/model_owner.dart';
-import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
-import 'package:PiliPlus/models_new/video/video_detail/argue_info.dart';
-import 'package:PiliPlus/models_new/video/video_detail/desc_v2.dart';
-import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
-import 'package:PiliPlus/models_new/video/video_detail/page.dart';
-import 'package:PiliPlus/models_new/video/video_detail/rights.dart';
-import 'package:PiliPlus/models_new/video/video_detail/staff.dart';
-import 'package:PiliPlus/models_new/video/video_detail/stat.dart';
-import 'package:PiliPlus/models_new/video/video_detail/ugc_season.dart';
-import 'package:PiliPlus/utils/parse_string.dart';
+import 'package:kilikili/models/model_owner.dart';
+import 'package:kilikili/models_new/download/bili_download_entry_info.dart';
+import 'package:kilikili/models_new/video/video_detail/argue_info.dart';
+import 'package:kilikili/models_new/video/video_detail/desc_v2.dart';
+import 'package:kilikili/models_new/video/video_detail/dimension.dart';
+import 'package:kilikili/models_new/video/video_detail/page.dart';
+import 'package:kilikili/models_new/video/video_detail/rights.dart';
+import 'package:kilikili/models_new/video/video_detail/staff.dart';
+import 'package:kilikili/models_new/video/video_detail/stat.dart';
+import 'package:kilikili/models_new/video/video_detail/ugc_season.dart';
+import 'package:kilikili/utils/parse_string.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 
 class VideoDetailData {

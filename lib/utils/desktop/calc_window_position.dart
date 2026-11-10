@@ -1,5 +1,5 @@
-import 'package:PiliPlus/utils/desktop/window_bounds.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:kilikili/utils/desktop/window_bounds.dart';
+import 'package:kilikili/utils/storage_pref.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/rendering.dart' show Offset, Rect;
 import 'package:nativeapi/nativeapi.dart' as nativeapi;

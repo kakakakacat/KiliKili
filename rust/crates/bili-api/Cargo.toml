@@ -1,0 +1,18 @@
+[package]
+name = "bili-api"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "数据层：REST 接口的请求构造、DTO 与到领域实体的映射。不含传输实现（见 src/lib.rs）。"
+
+[dependencies]
+bili-domain = { path = "../bili-domain" }
+bili-protocol = { path = "../bili-protocol" }
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,56 @@
+{
+  "bvid": "BV1fixture001",
+  "aid": 100000001,
+  "videos": 1,
+  "copyright": 1,
+  "pic": "https://example.invalid/cover/single.jpg",
+  "title": "示例稿件：单 P 横屏",
+  "pubdate": 1700000000,
+  "ctime": 1699999000,
+  "desc": "这是一段示例简介。",
+  "desc_v2": null,
+  "duration": 362,
+  "is_stein_gate": 0,
+  "owner": {
+    "mid": 10001,
+    "name": "示例 UP 主",
+    "face": "https://example.invalid/face/10001.jpg"
+  },
+  "stat": {
+    "view": 123456,
+    "danmaku": 789,
+    "reply": 321,
+    "favorite": 4567,
+    "coin": 890,
+    "share": 123,
+    "like": 23456
+  },
+  "argue_msg": "",
+  "cid": 200000001,
+  "dimension": {
+    "width": 1920,
+    "height": 1080
+  },
+  "season_id": null,
+  "is_upower_exclusive": false,
+  "pages": [
+    {
+      "cid": 200000001,
+      "page": 1,
+      "from": "vupload",
+      "part": "示例稿件：单 P 横屏",
+      "duration": 362,
+      "vid": "",
+      "dimension": {
+        "width": 1920,
+        "height": 1080
+      },
+      "ctime": 1699999000,
+      "first_frame": "https://example.invalid/frame/200000001.jpg",
+      "badge": null
+    }
+  ],
+  "ugc_season": null,
+  "staff": null,
+  "redirect_url": null
+}

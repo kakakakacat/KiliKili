@@ -1,0 +1,127 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "bvid": "BV1fixture002",
+    "aid": 100000002,
+    "videos": 3,
+    "copyright": 2,
+    "pic": "https://example.invalid/cover/vertical.jpg",
+    "title": "示例稿件：竖屏多 P",
+    "pubdate": 1710000000,
+    "ctime": 1709999000,
+    "desc": "简介中有 @某人 与 BV1fixture001。",
+    "desc_v2": [
+      {
+        "raw_text": "简介中有 ",
+        "type": 1,
+        "biz_id": 0
+      },
+      {
+        "raw_text": "某人",
+        "type": 2,
+        "biz_id": 10002
+      },
+      {
+        "raw_text": " 与 BV1fixture001。",
+        "type": 1,
+        "biz_id": 0
+      }
+    ],
+    "duration": 1234,
+    "rights": {
+      "is_stein_gate": 0
+    },
+    "owner": {
+      "mid": 10001,
+      "name": "示例 UP 主",
+      "face": "https://example.invalid/face/10001.jpg"
+    },
+    "stat": {
+      "view": 1000,
+      "danmaku": 0,
+      "reply": 0,
+      "favorite": 0,
+      "coin": 0,
+      "share": 0,
+      "like": 0
+    },
+    "argue_info": {
+      "argue_msg": "本视频内容为示例，请勿当真",
+      "argue_type": 1
+    },
+    "cid": 200000002,
+    "dimension": {
+      "width": 1920,
+      "height": 1080,
+      "rotate": 1
+    },
+    "pages": [
+      {
+        "cid": 200000002,
+        "page": 1,
+        "from": "vupload",
+        "part": "第一 P",
+        "duration": 400,
+        "vid": "",
+        "dimension": { "width": 1920, "height": 1080, "rotate": 1 },
+        "first_frame": "https://example.invalid/frame/200000002.jpg",
+        "ctime": 1709999000
+      },
+      {
+        "cid": 200000003,
+        "page": 2,
+        "from": "vupload",
+        "part": "第二 P",
+        "duration": 400,
+        "dimension": { "width": 1080, "height": 1920, "rotate": 0 },
+        "ctime": 1709999001,
+        "badge": "预告"
+      },
+      {
+        "cid": 200000004,
+        "page": 3,
+        "from": "vupload",
+        "part": "第三 P",
+        "duration": 434,
+        "ctime": 1709999002
+      }
+    ],
+    "staff": [
+      {
+        "mid": 10001,
+        "title": "UP主",
+        "name": "示例 UP 主",
+        "face": "https://example.invalid/face/10001.jpg",
+        "vip": {
+          "type": 2,
+          "status": 1,
+          "label": { "text": "年度大会员" }
+        },
+        "official": {
+          "role": 1,
+          "title": "示例认证",
+          "desc": "示例认证说明",
+          "type": 0
+        }
+      },
+      {
+        "mid": "10003",
+        "title": "音乐",
+        "name": "示例音乐人",
+        "face": "https://example.invalid/face/10003.jpg",
+        "vip": {
+          "vipType": 1,
+          "vipStatus": 0
+        }
+      },
+      {
+        "mid": 10004,
+        "title": "剪辑",
+        "name": "示例剪辑师",
+        "face": "https://example.invalid/face/10004.jpg"
+      }
+    ]
+  }
+}

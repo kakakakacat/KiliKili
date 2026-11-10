@@ -82,6 +82,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "bili-api"
+version = "0.1.0"
+dependencies = [
+ "bili-domain",
+ "bili-protocol",
+ "serde",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
 name = "bili-core"
 version = "0.1.0"
 dependencies = [
@@ -93,6 +104,7 @@ dependencies = [
 name = "bili-domain"
 version = "0.1.0"
 dependencies = [
+ "serde",
  "thiserror",
  "tracing",
 ]
@@ -127,10 +139,12 @@ dependencies = [
 name = "bridge_flutter"
 version = "0.1.0"
 dependencies = [
+ "bili-api",
  "bili-core",
  "bili-domain",
  "bili-protocol",
  "flutter_rust_bridge",
+ "serde_json",
  "tokio",
  "tracing",
  "tracing-subscriber",

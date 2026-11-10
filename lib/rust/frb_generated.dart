@@ -4,6 +4,7 @@
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
 import 'package:PiliPlus/rust/api/init.dart';
+import 'package:PiliPlus/rust/api/video_detail.dart';
 import 'package:PiliPlus/rust/api/wbi.dart';
 
 import 'dart:async';
@@ -71,7 +72,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -1238403247;
+  int get rustContentHash => -747860162;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -86,6 +87,10 @@ abstract class RustLibApi extends BaseApi {
   Future<String> crateApiInitCoreVersion();
 
   Future<String> crateApiInitInitApp({required String maxLevel});
+
+  Future<VideoDetailParse> crateApiVideoDetailParseVideoDetail({
+    required String body,
+  });
 
   Future<String?> crateApiWbiWbiMixinKey({
     required String imgKey,
@@ -166,6 +171,39 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
+  Future<VideoDetailParse> crateApiVideoDetailParseVideoDetail({
+    required String body,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(body, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 3,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_video_detail_parse,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiVideoDetailParseVideoDetailConstMeta,
+        argValues: [body],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVideoDetailParseVideoDetailConstMeta =>
+      const TaskConstMeta(
+        debugName: "parse_video_detail",
+        argNames: ["body"],
+      );
+
+  @override
   Future<String?> crateApiWbiWbiMixinKey({
     required String imgKey,
     required String subKey,
@@ -179,7 +217,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 3,
+            funcId: 4,
             port: port_,
           );
         },
@@ -213,7 +251,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 4,
+            funcId: 5,
             port: port_,
           );
         },
@@ -283,6 +321,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  VideoDetailParse dco_decode_video_detail_parse(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return VideoDetailParse(
+      json: dco_decode_opt_String(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+    );
+  }
+
+  @protected
   String sse_decode_String(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_list_prim_u_8_strict(deserializer);
@@ -340,6 +391,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   void sse_decode_unit(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
+  }
+
+  @protected
+  VideoDetailParse sse_decode_video_detail_parse(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_json = sse_decode_opt_String(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    return VideoDetailParse(
+      json: var_json,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+    );
   }
 
   @protected
@@ -411,6 +475,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   void sse_encode_unit(void self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
+  }
+
+  @protected
+  void sse_encode_video_detail_parse(
+    VideoDetailParse self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.json, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
   }
 
   @protected

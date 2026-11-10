@@ -1,31 +1,35 @@
+<div align="center">
+
 # KiliKili
 
-[English](README.en.md)
+一个长期维护的跨平台哔哩哔哩第三方客户端
 
-KiliKili 是一个面向 Android、iOS、macOS、Windows 和 Linux 的第三方哔哩哔哩客户端，基于 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus) fork 开发。感谢 PiliPlus 及其上游 [PiliPalaX](https://github.com/orz12/PiliPalaX)、[PiliPala](https://github.com/guozhigq/pilipala) 的作者和贡献者。KiliKili 是独立维护的衍生项目，不代表这些上游项目或哔哩哔哩官方。
+[简体中文](README.md) · [English](README.en.md)
 
-## 项目目标
+</div>
 
-我们希望在保留 PiliPlus 已有功能和用户数据兼容性的基础上，逐步构建一个稳定、易维护的跨平台客户端：
+KiliKili 基于 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus) fork 开发。我们希望延续它好用的功能，让观看体验更稳定、更流畅，并让这个项目能够长期发展。
 
-1. **先迁移业务核心**：保留现有 Flutter 界面和播放器，将网络协议、数据处理等可复用逻辑逐步迁移到 Rust。每一步都经过对照测试，并保留回退路径。
-2. **再验证新界面**：评估 Slint 在视频播放、弹幕、移动端生命周期、输入法和无障碍等场景中的可行性。只有验证通过后，才会逐步替换界面；Flutter + Rust 版本本身也会继续保持可用。
-3. **持续改进体验**：完善跨平台构建、兼容性、性能、稳定性和问题修复，而不是只完成一次技术迁移。
+## 支持平台
 
-目前项目处于 **Flutter + Rust 逐步迁移阶段**。Slint 是后续目标，尚未成为当前应用的界面。详细方案和验收条件见 [架构 RFC](docs/architecture/RFC-0001-rust-slint-migration.md)。
+| 平台 | 支持情况 |
+| :--- | :---: |
+| Android | ✅ |
+| iPhone / iPad | ✅ |
+| macOS | ✅ |
+| Windows | ✅ |
+| Linux | ✅ |
 
-## 长期维护承诺
+以上是当前继承自 PiliPlus 的平台支持范围。KiliKili 的正式安装包尚未发布，发布信息请关注本仓库的 [Releases](https://github.com/kakakakacat/KiliKili/releases)。
 
-**KiliKili 会长期更新和维护。** 我们会持续跟进上游的重要修复、哔哩哔哩接口变化及各平台兼容性问题，并公开记录迁移进展与已知限制。更新会以质量和实际可用性为先，不承诺固定的发版周期；即使 Slint 方案未通过验证，也会继续维护可用的 Flutter + Rust 版本。
+## 我们的方向
 
-欢迎通过 [Issues](https://github.com/kakakakacat/KiliKili/issues) 反馈问题或提出建议，也欢迎提交 Pull Request。
+保留现有功能和用户数据，持续改进播放、兼容性与性能。项目正在逐步引入 Rust；未来会在充分验证后探索 Slint 界面。无论界面如何演进，稳定可用始终是第一位的。
 
-## 获取与构建
+## 长期更新
 
-代码和发布信息以[本仓库](https://github.com/kakakakacat/KiliKili)为准。构建前请阅读 [构建基线与环境说明](docs/m0/BASELINE.md)：当前 Flutter 构建依赖指定 SDK 版本和平台补丁，直接使用未打补丁的 Flutter SDK 可能失败。
+**我们承诺长期维护和更新 KiliKili。** 上游修复、接口变化和各平台的问题都会持续跟进。欢迎在 [Issues](https://github.com/kakakakacat/KiliKili/issues) 反馈问题或提出建议。
 
-## 许可与致谢
+## 致谢与许可
 
-本项目遵循仓库中的 [GPL-3.0 许可证](LICENSE)。衍生代码与资源保留其原有版权及许可要求。再次感谢 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus) 和所有上游贡献者。
-
-本项目是非官方客户端，不提供破解内容；使用时请遵守相关服务条款和当地法律。
+感谢 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus)、[PiliPalaX](https://github.com/orz12/PiliPalaX)、[PiliPala](https://github.com/guozhigq/pilipala) 及所有贡献者。本项目遵循 [GPL-3.0](LICENSE)，是独立维护的非官方客户端，与哔哩哔哩官方无关。

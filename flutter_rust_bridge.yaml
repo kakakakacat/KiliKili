@@ -1,0 +1,7 @@
+# flutter_rust_bridge codegen 配置
+# 版本必须与 pubspec.yaml 的 flutter_rust_bridge 及
+# rust/crates/bridge-flutter/Cargo.toml 的 =2.13.0 三者一致。
+rust_input: crate::api
+rust_root: rust/crates/bridge-flutter/
+dart_output: lib/rust/
+dart_entrypoint_class_name: RustLib

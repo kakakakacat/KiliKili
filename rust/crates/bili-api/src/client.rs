@@ -5,10 +5,13 @@
 //! 就不是对象安全的。
 
 use bili_domain::error::DomainError;
-use bili_domain::video::VideoDetail;
+use bili_domain::playurl::PlayUrl;
+use bili_domain::video::{VideoDetail, VideoType};
+use bili_protocol::risk::{Entropy, RiskTokens};
 
 use crate::http::{HttpGet, HttpTransport, RequestContext, check_status};
-use crate::request;
+use crate::playurl::{self, Outcome};
+use crate::request::{self, PlayUrlParams, PreparedRequest};
 
 /// 取视频详情。
 ///
@@ -35,6 +38,87 @@ pub async fn fetch_video_detail<T: HttpTransport>(
         )
     })?;
 
+    let body = send(transport, ctx, &prepared).await?;
+    crate::video_detail::parse(&body)
+}
+
+/// 取流地址。
+///
+/// 把基线 `VideoHttp.videoUrl`（`lib/http/video.dart`）的**三条重试分支**
+/// 一并搬了过来——少一条，Rust 路径就会在基线能播的内容上失败：
+///
+/// 1. 主接口（playview）返回 DRM 内容 → 改走降级接口，一次；
+/// 2. UGC 请求带着 `ep_id` 却被服务端以非 0 码拒绝 → 改按 PGC 请求
+///    （番剧的分享链接会给出 UGC 形态的参数）；
+/// 3. 两条分支都只重试一次，且互不叠加——基线的递归同样如此。
+///
+/// 风控 token 每次尝试都重新生成（`entropy`）：复用同一对值等于给服务端
+/// 一个稳定指纹，与这些参数存在的目的相悖。`wts` 则沿用首次取的值——
+/// 重试紧随其后，落在同一秒内，重新取一次只会让请求更难复现。
+///
+/// # Errors
+/// - 参数不足以标识视频 → `Protocol`；
+/// - 传输失败 → `Network`；非 2xx → 见 [`check_status`]；
+/// - 业务失败 → 见 [`crate::envelope`] 与 [`crate::playurl`]。
+pub async fn fetch_play_url<T: HttpTransport, E: Entropy + ?Sized>(
+    transport: &T,
+    ctx: &RequestContext,
+    params: &PlayUrlParams,
+    entropy: &mut E,
+    mixin_key: &str,
+    wts: i64,
+) -> Result<PlayUrl, DomainError> {
+    let mut params = params.clone();
+    // 两条重试分支各自只允许一次，分开记：DRM 降级之后若再撞上
+    // 「UGC 带 ep_id」的分支，基线也还会再试一次。
+    let mut drm_fallback_used = params.fallback;
+    let mut pgc_switch_used = params.video_type != VideoType::Ugc;
+
+    loop {
+        let tokens = RiskTokens::generate(entropy);
+        let prepared = request::play_url(&params, &tokens, mixin_key, wts).ok_or_else(|| {
+            DomainError::new(
+                bili_domain::error::ErrorKind::Protocol,
+                "参数不足以标识一个视频（缺 cid 或标识符）",
+            )
+        })?;
+
+        let body = send(transport, ctx, &prepared).await?;
+
+        match playurl::parse(&body, params.video_type, params.fallback) {
+            Ok(Outcome::Ready(play)) => return Ok(*play),
+            Ok(Outcome::NeedsFallback) if !drm_fallback_used => {
+                drm_fallback_used = true;
+                params.fallback = true;
+            }
+            Ok(Outcome::NeedsFallback) => {
+                return Err(DomainError::new(
+                    bili_domain::error::ErrorKind::Remote,
+                    "降级接口仍然只给出 DRM 内容",
+                ));
+            }
+            // 基线：`code != 0 && epid != null && videoType == ugc` 时改按
+            // PGC 请求。条件里用的是原始业务码，不是错误大类——因此
+            // DomainError 带上了 code。
+            Err(e)
+                if e.code().is_some_and(|c| c != 0)
+                    && !pgc_switch_used
+                    && params.ep_id.is_some() =>
+            {
+                pgc_switch_used = true;
+                params.video_type = VideoType::Pgc;
+            }
+            Err(e) => return Err(e),
+        }
+    }
+}
+
+/// 发一条已构造好的请求，返回响应体。
+async fn send<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    prepared: &PreparedRequest,
+) -> Result<String, DomainError> {
     let url = format!(
         "{}{}?{}",
         ctx.base_url.trim_end_matches('/'),
@@ -42,9 +126,9 @@ pub async fn fetch_video_detail<T: HttpTransport>(
         encode_query(&prepared.query)
     );
 
-    // 只记 path，不记完整 URL：URL 里虽无凭据，但带着 bvid 与签名，
-    // 日志里留一份对诊断无益，对隐私有损。
-    tracing::debug!(path = prepared.path, "fetch video detail");
+    // 只记 path：URL 里虽无凭据，却带着标识符与签名，日志里留一份对诊断
+    // 无益，对隐私有损。
+    tracing::debug!(path = prepared.path, "发送请求");
 
     let resp = transport
         .get(HttpGet {
@@ -55,7 +139,7 @@ pub async fn fetch_video_detail<T: HttpTransport>(
         .await?;
 
     check_status(resp.status)?;
-    crate::video_detail::parse(&resp.body)
+    Ok(resp.body)
 }
 
 /// 百分号编码查询串。
@@ -227,6 +311,211 @@ mod tests {
         let err = block_on(fetch_video_detail(&t, &ctx(), "BV1L94y1H7CV", MIXIN_KEY, 1))
             .expect_err("503 必须失败");
         assert!(err.kind().is_retryable());
+    }
+
+    /// 脚本化传输：按顺序吐出预置响应，并记下每次请求的 URL。
+    ///
+    /// 重试分支的验证必须看到**第二次**请求长什么样——只有一个固定响应
+    /// 的桩件无法区分「重试了」与「第一次就成功了」。
+    struct ScriptedTransport {
+        responses: Mutex<Vec<&'static str>>,
+        urls: Mutex<Vec<String>>,
+    }
+
+    impl ScriptedTransport {
+        fn new(responses: &[&'static str]) -> Self {
+            let mut v = responses.to_vec();
+            v.reverse();
+            Self {
+                responses: Mutex::new(v),
+                urls: Mutex::new(Vec::new()),
+            }
+        }
+
+        fn urls(&self) -> Vec<String> {
+            self.urls.lock().expect("锁未被毒化").clone()
+        }
+    }
+
+    impl HttpTransport for ScriptedTransport {
+        async fn get(&self, request: HttpGet) -> Result<HttpResponse, DomainError> {
+            self.urls.lock().expect("锁未被毒化").push(request.url);
+            let body = self
+                .responses
+                .lock()
+                .expect("锁未被毒化")
+                .pop()
+                .expect("脚本里应当还有响应——多出来的请求本身就是失败");
+            Ok(HttpResponse {
+                status: 200,
+                body: body.to_owned(),
+            })
+        }
+    }
+
+    /// 固定随机源：风控 token 的内容与本层的分支无关，只要不同次调用
+    /// 都能生成即可。
+    struct FixedEntropy;
+    impl bili_protocol::risk::Entropy for FixedEntropy {
+        fn next_below(&mut self, bound: u32) -> u32 {
+            bound / 2
+        }
+    }
+
+    fn pgc_params() -> PlayUrlParams {
+        PlayUrlParams {
+            ep_id: Some(123),
+            video_type: VideoType::Pgc,
+            ..PlayUrlParams::ugc("BV1L94y1H7CV", 42, 80)
+        }
+    }
+
+    #[test]
+    fn drm_content_retries_once_through_the_fallback_api() {
+        let t = ScriptedTransport::new(&[
+            r#"{"code":0,"data":{"arc":{"is_drm":true}}}"#,
+            r#"{"code":0,"result":{"video_info":{"quality":112}}}"#,
+        ]);
+        let play = block_on(fetch_play_url(
+            &t,
+            &ctx(),
+            &pgc_params(),
+            &mut FixedEntropy,
+            MIXIN_KEY,
+            1_702_204_169,
+        ))
+        .expect("降级后应当拿到流");
+        assert_eq!(play.quality, Some(112));
+
+        let urls = t.urls();
+        assert_eq!(urls.len(), 2, "基线只重试一次");
+        assert!(urls[0].contains("/ogv/player/playview"));
+        assert!(
+            urls[1].contains("/pgc/player/web/v2/playurl"),
+            "降级必须换接口: {}",
+            urls[1]
+        );
+        assert!(
+            !urls[1].contains("biz_type"),
+            "降级接口不认 playview 的那组参数"
+        );
+    }
+
+    #[test]
+    fn drm_on_the_fallback_api_is_not_retried_again() {
+        let t = ScriptedTransport::new(&[
+            r#"{"code":0,"data":{"arc":{"is_drm":true}}}"#,
+            r#"{"code":0,"result":{}}"#,
+        ]);
+        // 降级接口返回的 result 里没有 video_info：此处走的是
+        // PgcFallbackDto 的缺省路径，不该再触发一次降级。
+        let play = block_on(fetch_play_url(
+            &t,
+            &ctx(),
+            &pgc_params(),
+            &mut FixedEntropy,
+            MIXIN_KEY,
+            1,
+        ))
+        .expect("缺字段不该让整次取流失败");
+        assert_eq!(play.quality, None);
+        assert_eq!(t.urls().len(), 2);
+    }
+
+    #[test]
+    fn ugc_with_epid_retries_as_pgc_on_business_error() {
+        // 番剧的分享链接会给出 UGC 形态的参数；基线据此改按 PGC 请求。
+        let t = ScriptedTransport::new(&[
+            r#"{"code":-404,"message":"啥都木有"}"#,
+            r#"{"code":0,"data":{"video_info":{"quality":80}}}"#,
+        ]);
+        let params = PlayUrlParams {
+            ep_id: Some(123),
+            ..PlayUrlParams::ugc("BV1L94y1H7CV", 42, 80)
+        };
+        let play = block_on(fetch_play_url(
+            &t,
+            &ctx(),
+            &params,
+            &mut FixedEntropy,
+            MIXIN_KEY,
+            1,
+        ))
+        .expect("改按 PGC 后应当成功");
+        assert_eq!(play.quality, Some(80));
+
+        let urls = t.urls();
+        assert!(urls[0].contains("/x/player/wbi/playurl"));
+        assert!(urls[1].contains("/ogv/player/playview"));
+    }
+
+    #[test]
+    fn ugc_without_epid_reports_the_business_error() {
+        let t = ScriptedTransport::new(&[r#"{"code":-404,"message":"啥都木有"}"#]);
+        let err = block_on(fetch_play_url(
+            &t,
+            &ctx(),
+            &PlayUrlParams::ugc("BV1L94y1H7CV", 42, 80),
+            &mut FixedEntropy,
+            MIXIN_KEY,
+            1,
+        ))
+        .expect_err("没有 ep_id 就没有第二条路可走");
+        assert_eq!(err.code(), Some(-404));
+        assert_eq!(t.urls().len(), 1, "不得凭空多发一次请求");
+    }
+
+    #[test]
+    fn risk_tokens_differ_between_attempts() {
+        // 复用同一对 token 等于给服务端一个稳定指纹。
+        let t = ScriptedTransport::new(&[
+            r#"{"code":0,"data":{"arc":{"is_drm":true}}}"#,
+            r#"{"code":0,"result":{"video_info":{}}}"#,
+        ]);
+        let mut entropy = CountingEntropy(0);
+        block_on(fetch_play_url(
+            &t,
+            &ctx(),
+            &pgc_params(),
+            &mut entropy,
+            MIXIN_KEY,
+            1,
+        ))
+        .expect("应当成功");
+
+        let urls = t.urls();
+        let token_of = |url: &str| {
+            url.split('&')
+                .find(|p| p.starts_with("dm_img_str="))
+                .map(ToOwned::to_owned)
+                .expect("请求里必须带风控 token")
+        };
+        assert_ne!(token_of(&urls[0]), token_of(&urls[1]));
+    }
+
+    /// 每次调用都给出不同值的随机源替身。
+    struct CountingEntropy(u32);
+    impl bili_protocol::risk::Entropy for CountingEntropy {
+        fn next_below(&mut self, bound: u32) -> u32 {
+            self.0 = self.0.wrapping_add(7);
+            self.0 % bound
+        }
+    }
+
+    #[test]
+    fn missing_identifier_never_reaches_the_network() {
+        let t = ScriptedTransport::new(&[]);
+        let err = block_on(fetch_play_url(
+            &t,
+            &ctx(),
+            &PlayUrlParams::ugc("", 0, 80),
+            &mut FixedEntropy,
+            MIXIN_KEY,
+            1,
+        ))
+        .expect_err("参数不足必须失败");
+        assert_eq!(err.kind(), ErrorKind::Protocol);
+        assert!(t.urls().is_empty(), "不该发出注定失败的请求");
     }
 
     #[test]

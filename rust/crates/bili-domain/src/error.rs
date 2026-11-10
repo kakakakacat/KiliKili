@@ -66,6 +66,7 @@ impl fmt::Display for ErrorKind {
 pub struct DomainError {
     kind: ErrorKind,
     detail: String,
+    code: Option<i64>,
 }
 
 impl DomainError {
@@ -73,7 +74,28 @@ impl DomainError {
         Self {
             kind,
             detail: detail.into(),
+            code: None,
         }
+    }
+
+    /// 带上服务端业务错误码。
+    ///
+    /// [`ErrorKind`] 是给程序做决策用的粗分类，而有些**分支**要的恰是
+    /// 原始码：基线在 playurl 上会因为「UGC 请求返回了非 0 码且带 epid」
+    /// 改走 PGC 接口（`lib/http/video.dart`），这类分支无法从大类推出。
+    /// 码同时也是用户可见文案的依据（`_parseVideoErr`）。
+    pub fn with_code(kind: ErrorKind, detail: impl Into<String>, code: i64) -> Self {
+        Self {
+            kind,
+            detail: detail.into(),
+            code: Some(code),
+        }
+    }
+
+    /// 服务端业务错误码。仅当失败来自接口信封时才有值。
+    #[must_use]
+    pub const fn code(&self) -> Option<i64> {
+        self.code
     }
 
     #[must_use]

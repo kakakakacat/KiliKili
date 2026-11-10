@@ -45,8 +45,55 @@ abstract final class RustFlags {
 
   static bool get rustVideoDetail =>
       RustCore.isReady &&
-      (_box.get(rustVideoDetailKey, defaultValue: false) as bool);
+      (_box.get(rustVideoDetailKey, defaultValue: _defaultOn(rustVideoDetailKey))
+          as bool);
 
   static Future<void> setRustVideoDetail(bool value) =>
       _box.put(rustVideoDetailKey, value);
+
+  /// 取流走 Rust：请求由 Rust 发出、Rust 解析，结果进入播放器。
+  ///
+  /// 默认关闭，理由同 [rustVideoDetail]，且取流更敏感——详情取不到是
+  /// 空页面，流取不到是播放器一直转圈。另有几条基线特有的重试分支
+  /// （DRM 降级、UGC→PGC），任何一条没对齐都会表现为「某些番剧播不了」。
+  ///
+  /// 关闭、Rust 未就绪、取流失败——三种情况都走 Dart 原路径，见
+  /// [RustPlayUrl.fetch]。
+  static const String rustPlayUrlKey = 'rust.fetch.playUrl';
+
+  static bool get rustPlayUrl =>
+      RustCore.isReady &&
+      (_box.get(rustPlayUrlKey, defaultValue: _defaultOn(rustPlayUrlKey))
+          as bool);
+
+  static Future<void> setRustPlayUrl(bool value) =>
+      _box.put(rustPlayUrlKey, value);
+
+  /// 取流 shadow mode：Dart 与 Rust 对**同一份响应**各自规范化后比对，
+  /// 播放仍然用 Dart 的结果。debug 默认开启，理由同 [shadowVideoDetail]。
+  static const String shadowPlayUrlKey = 'rust.shadow.playUrl';
+
+  static bool get shadowPlayUrl =>
+      RustCore.isReady &&
+      (_box.get(shadowPlayUrlKey, defaultValue: kDebugMode) as bool);
+
+  static Future<void> setShadowPlayUrl(bool value) =>
+      _box.put(shadowPlayUrlKey, value);
+
+  /// 构建期指定的初始值，用于真机验证。
+  ///
+  /// 取数开关没有设置项入口（见类文档：不往上游的设置页里加东西），
+  /// 而验证一条取数路径必须能把它打开。办法是构建时指定：
+  ///
+  /// ```sh
+  /// flutter build apk --debug --dart-define=rust.fetch.playUrl=true
+  /// ```
+  ///
+  /// 只影响**初始值**：用户或代码此后写过的值仍然优先。不给 define 时
+  /// 恒为 false，因此 release 产物不受影响。
+  static bool _defaultOn(String key) => switch (key) {
+    rustVideoDetailKey => const bool.fromEnvironment('rust.fetch.videoDetail'),
+    rustPlayUrlKey => const bool.fromEnvironment('rust.fetch.playUrl'),
+    _ => false,
+  };
 }

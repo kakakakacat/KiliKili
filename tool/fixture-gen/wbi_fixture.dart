@@ -41,6 +41,8 @@ void main() {
   ];
 
   final out = {
+    // 与 bili-protocol 的 PROTOCOL_VERSION 对应（ADR-008）。
+    'protocol_version': 1,
     'img_key': imgKey,
     'sub_key': subKey,
     'mixin_key': mixinKey,

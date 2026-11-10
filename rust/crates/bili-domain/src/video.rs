@@ -199,3 +199,42 @@ pub struct Staff {
     pub official_type: Option<i64>,
     pub official_desc: Option<String>,
 }
+
+/// 视频形态。决定走哪个取流接口，以及部分请求参数是否存在。
+///
+/// 对应基线 `lib/models/common/video/video_type.dart`。接口路径与
+/// `biz_type` 属于协议细节，留在 `bili-api`；这里只保留「是哪一类视频」
+/// 这个领域概念本身。
+///
+/// 数值与基线的 `type` 字段一致——它会出现在历史记录等接口的参数里，
+/// 换一套编号会让两边的持久化数据对不上。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub enum VideoType {
+    /// 用户投稿。
+    Ugc,
+    /// 番剧 / 影视等 OGV。
+    Pgc,
+    /// 课程。
+    Pugv,
+}
+
+impl VideoType {
+    /// 基线的数值编号。
+    #[must_use]
+    pub const fn code(self) -> i64 {
+        match self {
+            Self::Ugc => 3,
+            Self::Pgc => 4,
+            Self::Pugv => 10,
+        }
+    }
+
+    /// 评论区类型编号（基线 `replyType`）。
+    #[must_use]
+    pub const fn reply_type(self) -> i64 {
+        match self {
+            Self::Ugc | Self::Pgc => 1,
+            Self::Pugv => 33,
+        }
+    }
+}

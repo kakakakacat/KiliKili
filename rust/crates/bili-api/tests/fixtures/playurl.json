@@ -1,0 +1,653 @@
+{
+  "protocol_version": 1,
+  "generated_from": "lib/http/video.dart::videoUrl + lib/utils/wbi_sign.dart",
+  "img_key": "7cd084941338484aae1ad9425b84077c",
+  "sub_key": "4932caff0ff746eab6f01bf08b70ac45",
+  "mixin_key": "ea1db124af3c7062474693fa704f4ff8",
+  "wts": 1702204169,
+  "dm_img_str": "QUJDREVGR0hJSktMTU5PUFFSU1RVVld",
+  "dm_cover_img_str": "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5",
+  "cases": [
+    {
+      "name": "ugc_minimal",
+      "input": {
+        "bvid": "BV1L94y1H7CV",
+        "cid": 1304392106,
+        "qn": 80,
+        "video_type": "ugc",
+        "try_look": false,
+        "voice_balance": false,
+        "fallback": false
+      },
+      "path": "/x/player/wbi/playurl",
+      "query": [
+        [
+          "bvid",
+          "BV1L94y1H7CV"
+        ],
+        [
+          "cid",
+          "1304392106"
+        ],
+        [
+          "dm_cover_img_str",
+          "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5"
+        ],
+        [
+          "dm_img_inter",
+          "{\"ds\":[],\"wh\":[0,0,0],\"of\":[0,0,0]}"
+        ],
+        [
+          "dm_img_list",
+          "[]"
+        ],
+        [
+          "dm_img_str",
+          "QUJDREVGR0hJSktMTU5PUFFSU1RVVld"
+        ],
+        [
+          "fnval",
+          "4048"
+        ],
+        [
+          "fnver",
+          "0"
+        ],
+        [
+          "fourk",
+          "1"
+        ],
+        [
+          "gaia_source",
+          "pre-load"
+        ],
+        [
+          "isGaiaAvoided",
+          "true"
+        ],
+        [
+          "qn",
+          "80"
+        ],
+        [
+          "voice_balance",
+          "0"
+        ],
+        [
+          "web_location",
+          "1315873"
+        ],
+        [
+          "wts",
+          "1702204169"
+        ],
+        [
+          "w_rid",
+          "e2c69765548c860e12d62cfcc781ff32"
+        ]
+      ]
+    },
+    {
+      "name": "ugc_try_look_with_avid",
+      "input": {
+        "avid": 844620406,
+        "bvid": "BV1L94y1H7CV",
+        "cid": 1304392106,
+        "qn": 112,
+        "video_type": "ugc",
+        "try_look": true,
+        "voice_balance": true,
+        "fallback": false
+      },
+      "path": "/x/player/wbi/playurl",
+      "query": [
+        [
+          "avid",
+          "844620406"
+        ],
+        [
+          "bvid",
+          "BV1L94y1H7CV"
+        ],
+        [
+          "cid",
+          "1304392106"
+        ],
+        [
+          "dm_cover_img_str",
+          "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5"
+        ],
+        [
+          "dm_img_inter",
+          "{\"ds\":[],\"wh\":[0,0,0],\"of\":[0,0,0]}"
+        ],
+        [
+          "dm_img_list",
+          "[]"
+        ],
+        [
+          "dm_img_str",
+          "QUJDREVGR0hJSktMTU5PUFFSU1RVVld"
+        ],
+        [
+          "fnval",
+          "4048"
+        ],
+        [
+          "fnver",
+          "0"
+        ],
+        [
+          "fourk",
+          "1"
+        ],
+        [
+          "gaia_source",
+          "pre-load"
+        ],
+        [
+          "isGaiaAvoided",
+          "true"
+        ],
+        [
+          "qn",
+          "112"
+        ],
+        [
+          "try_look",
+          "1"
+        ],
+        [
+          "voice_balance",
+          "1"
+        ],
+        [
+          "web_location",
+          "1315873"
+        ],
+        [
+          "wts",
+          "1702204169"
+        ],
+        [
+          "w_rid",
+          "acd675902846bf7b2d525590bee692bb"
+        ]
+      ]
+    },
+    {
+      "name": "pgc_primary",
+      "input": {
+        "ep_id": 374717,
+        "season_id": 28843,
+        "cid": 221404201,
+        "qn": 80,
+        "video_type": "pgc",
+        "try_look": false,
+        "voice_balance": false,
+        "fallback": false
+      },
+      "path": "/ogv/player/playview",
+      "query": [
+        [
+          "app_id",
+          "100"
+        ],
+        [
+          "biz_type",
+          "ogv"
+        ],
+        [
+          "cid",
+          "221404201"
+        ],
+        [
+          "dm_cover_img_str",
+          "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5"
+        ],
+        [
+          "dm_img_inter",
+          "{\"ds\":[],\"wh\":[0,0,0],\"of\":[0,0,0]}"
+        ],
+        [
+          "dm_img_list",
+          "[]"
+        ],
+        [
+          "dm_img_str",
+          "QUJDREVGR0hJSktMTU5PUFFSU1RVVld"
+        ],
+        [
+          "drm_tech_type",
+          "0"
+        ],
+        [
+          "ep_id",
+          "374717"
+        ],
+        [
+          "fnval",
+          "4048"
+        ],
+        [
+          "fnver",
+          "0"
+        ],
+        [
+          "fourk",
+          "1"
+        ],
+        [
+          "from_client",
+          "BROWSER"
+        ],
+        [
+          "gaia_source",
+          "pre-load"
+        ],
+        [
+          "isGaiaAvoided",
+          "true"
+        ],
+        [
+          "qn",
+          "80"
+        ],
+        [
+          "scene",
+          "normal"
+        ],
+        [
+          "season_id",
+          "28843"
+        ],
+        [
+          "voice_balance",
+          "0"
+        ],
+        [
+          "web_location",
+          "1315873"
+        ],
+        [
+          "wts",
+          "1702204169"
+        ],
+        [
+          "w_rid",
+          "fba768b4f0480abbbdb1a469cd9cd7a6"
+        ]
+      ]
+    },
+    {
+      "name": "pgc_fallback_drops_biz_group",
+      "input": {
+        "ep_id": 374717,
+        "season_id": 28843,
+        "cid": 221404201,
+        "qn": 80,
+        "video_type": "pgc",
+        "try_look": false,
+        "voice_balance": false,
+        "fallback": true
+      },
+      "path": "/pgc/player/web/v2/playurl",
+      "query": [
+        [
+          "cid",
+          "221404201"
+        ],
+        [
+          "dm_cover_img_str",
+          "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5"
+        ],
+        [
+          "dm_img_inter",
+          "{\"ds\":[],\"wh\":[0,0,0],\"of\":[0,0,0]}"
+        ],
+        [
+          "dm_img_list",
+          "[]"
+        ],
+        [
+          "dm_img_str",
+          "QUJDREVGR0hJSktMTU5PUFFSU1RVVld"
+        ],
+        [
+          "ep_id",
+          "374717"
+        ],
+        [
+          "fnval",
+          "4048"
+        ],
+        [
+          "fnver",
+          "0"
+        ],
+        [
+          "fourk",
+          "1"
+        ],
+        [
+          "gaia_source",
+          "pre-load"
+        ],
+        [
+          "isGaiaAvoided",
+          "true"
+        ],
+        [
+          "qn",
+          "80"
+        ],
+        [
+          "season_id",
+          "28843"
+        ],
+        [
+          "voice_balance",
+          "0"
+        ],
+        [
+          "web_location",
+          "1315873"
+        ],
+        [
+          "wts",
+          "1702204169"
+        ],
+        [
+          "w_rid",
+          "42cc3490d6f48d2aa61b840380683805"
+        ]
+      ]
+    },
+    {
+      "name": "pgc_with_language",
+      "input": {
+        "ep_id": 374717,
+        "cid": 221404201,
+        "qn": 80,
+        "video_type": "pgc",
+        "try_look": true,
+        "voice_balance": false,
+        "fallback": false,
+        "language": "zh"
+      },
+      "path": "/ogv/player/playview",
+      "query": [
+        [
+          "app_id",
+          "100"
+        ],
+        [
+          "biz_type",
+          "ogv"
+        ],
+        [
+          "cid",
+          "221404201"
+        ],
+        [
+          "cur_language",
+          "zh"
+        ],
+        [
+          "dm_cover_img_str",
+          "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5"
+        ],
+        [
+          "dm_img_inter",
+          "{\"ds\":[],\"wh\":[0,0,0],\"of\":[0,0,0]}"
+        ],
+        [
+          "dm_img_list",
+          "[]"
+        ],
+        [
+          "dm_img_str",
+          "QUJDREVGR0hJSktMTU5PUFFSU1RVVld"
+        ],
+        [
+          "drm_tech_type",
+          "0"
+        ],
+        [
+          "ep_id",
+          "374717"
+        ],
+        [
+          "fnval",
+          "4048"
+        ],
+        [
+          "fnver",
+          "0"
+        ],
+        [
+          "fourk",
+          "1"
+        ],
+        [
+          "from_client",
+          "BROWSER"
+        ],
+        [
+          "gaia_source",
+          "pre-load"
+        ],
+        [
+          "isGaiaAvoided",
+          "true"
+        ],
+        [
+          "qn",
+          "80"
+        ],
+        [
+          "scene",
+          "normal"
+        ],
+        [
+          "try_look",
+          "1"
+        ],
+        [
+          "voice_balance",
+          "0"
+        ],
+        [
+          "web_location",
+          "1315873"
+        ],
+        [
+          "wts",
+          "1702204169"
+        ],
+        [
+          "w_rid",
+          "b00eabf7b28335beaf91dc6b4eac7d1a"
+        ]
+      ]
+    },
+    {
+      "name": "pugv_primary",
+      "input": {
+        "season_id": 1234,
+        "cid": 999888,
+        "qn": 64,
+        "video_type": "pugv",
+        "try_look": false,
+        "voice_balance": false,
+        "fallback": false
+      },
+      "path": "/ogv/player/playview",
+      "query": [
+        [
+          "app_id",
+          "100"
+        ],
+        [
+          "biz_type",
+          "pugv"
+        ],
+        [
+          "cid",
+          "999888"
+        ],
+        [
+          "dm_cover_img_str",
+          "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5"
+        ],
+        [
+          "dm_img_inter",
+          "{\"ds\":[],\"wh\":[0,0,0],\"of\":[0,0,0]}"
+        ],
+        [
+          "dm_img_list",
+          "[]"
+        ],
+        [
+          "dm_img_str",
+          "QUJDREVGR0hJSktMTU5PUFFSU1RVVld"
+        ],
+        [
+          "drm_tech_type",
+          "0"
+        ],
+        [
+          "fnval",
+          "4048"
+        ],
+        [
+          "fnver",
+          "0"
+        ],
+        [
+          "fourk",
+          "1"
+        ],
+        [
+          "from_client",
+          "BROWSER"
+        ],
+        [
+          "gaia_source",
+          "pre-load"
+        ],
+        [
+          "isGaiaAvoided",
+          "true"
+        ],
+        [
+          "qn",
+          "64"
+        ],
+        [
+          "scene",
+          "normal"
+        ],
+        [
+          "season_id",
+          "1234"
+        ],
+        [
+          "voice_balance",
+          "0"
+        ],
+        [
+          "web_location",
+          "1315873"
+        ],
+        [
+          "wts",
+          "1702204169"
+        ],
+        [
+          "w_rid",
+          "df11fc43065b3bdf4b3442276e73149c"
+        ]
+      ]
+    },
+    {
+      "name": "pugv_fallback",
+      "input": {
+        "ep_id": 5678,
+        "cid": 999888,
+        "qn": 64,
+        "video_type": "pugv",
+        "try_look": false,
+        "voice_balance": false,
+        "fallback": true
+      },
+      "path": "/pugv/player/web/playurl",
+      "query": [
+        [
+          "cid",
+          "999888"
+        ],
+        [
+          "dm_cover_img_str",
+          "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5"
+        ],
+        [
+          "dm_img_inter",
+          "{\"ds\":[],\"wh\":[0,0,0],\"of\":[0,0,0]}"
+        ],
+        [
+          "dm_img_list",
+          "[]"
+        ],
+        [
+          "dm_img_str",
+          "QUJDREVGR0hJSktMTU5PUFFSU1RVVld"
+        ],
+        [
+          "ep_id",
+          "5678"
+        ],
+        [
+          "fnval",
+          "4048"
+        ],
+        [
+          "fnver",
+          "0"
+        ],
+        [
+          "fourk",
+          "1"
+        ],
+        [
+          "gaia_source",
+          "pre-load"
+        ],
+        [
+          "isGaiaAvoided",
+          "true"
+        ],
+        [
+          "qn",
+          "64"
+        ],
+        [
+          "voice_balance",
+          "0"
+        ],
+        [
+          "web_location",
+          "1315873"
+        ],
+        [
+          "wts",
+          "1702204169"
+        ],
+        [
+          "w_rid",
+          "caa3a34f2b6a429c368e39efa9a2863f"
+        ]
+      ]
+    }
+  ]
+}

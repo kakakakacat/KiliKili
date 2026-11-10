@@ -1,0 +1,189 @@
+{
+  "from": null,
+  "result": null,
+  "message": null,
+  "quality": 112,
+  "format": "hdflv2",
+  "time_length": 1434000,
+  "accept_format": "hdflv2,flv_p60,flv,flv720,flv480,mp4",
+  "accept_description": [
+    "高清 1080P+",
+    "高清 1080P",
+    "高清 720P"
+  ],
+  "accept_quality": [
+    112,
+    80,
+    64
+  ],
+  "video_codecid": 7,
+  "seek_param": "start",
+  "seek_type": "offset",
+  "support_formats": [
+    {
+      "quality": 112,
+      "format": "hdflv2",
+      "new_desc": "1080P 高码率",
+      "display_desc": "1080P",
+      "codecs": [
+        "avc1.640032",
+        "hev1.1.6.L153.90"
+      ]
+    },
+    {
+      "quality": 80,
+      "format": "flv",
+      "new_desc": "1080P 高清",
+      "display_desc": "1080P",
+      "codecs": [
+        "avc1.640032"
+      ]
+    }
+  ],
+  "dash": {
+    "duration": 1434,
+    "min_buffer_time": 1.5,
+    "video": [
+      {
+        "id": 112,
+        "base_url": "https://cdn.example.invalid/ogv/112-avc.m4s?token=PLACEHOLDER",
+        "backup_url": [
+          "https://backup.example.invalid/ogv/112-avc.m4s?token=PLACEHOLDER"
+        ],
+        "band_width": 2512000,
+        "mime_type": "video/mp4",
+        "codecs": "avc1.640032",
+        "width": 1920,
+        "height": 1080,
+        "frame_rate": "25",
+        "sar": "1:1",
+        "start_with_sap": 1,
+        "segment_base": {
+          "initialization": "0-993",
+          "index_range": "994-2025"
+        },
+        "codecid": 7
+      },
+      {
+        "id": 80,
+        "base_url": "https://cdn.example.invalid/ogv/80-hev.m4s?token=PLACEHOLDER",
+        "backup_url": [],
+        "band_width": 1182000,
+        "mime_type": "video/mp4",
+        "codecs": "hev1.1.6.L120.90",
+        "width": 1920,
+        "height": 1080,
+        "frame_rate": "25",
+        "sar": "1:1",
+        "start_with_sap": 1,
+        "segment_base": {
+          "initialization": "0-1011",
+          "index_range": "1012-2043"
+        },
+        "codecid": 12
+      }
+    ],
+    "audio": [
+      {
+        "id": 30251,
+        "base_url": "https://cdn.example.invalid/ogv/30251.m4s?token=PLACEHOLDER",
+        "backup_url": [],
+        "band_width": 1200000,
+        "mime_type": "audio/mp4",
+        "codecs": "fLaC",
+        "width": 0,
+        "height": 0,
+        "frame_rate": "",
+        "sar": "",
+        "start_with_sap": 0,
+        "segment_base": {
+          "initialization": "0-1013",
+          "index_range": "1014-2045"
+        },
+        "codecid": 0
+      },
+      {
+        "id": 30250,
+        "base_url": "https://cdn.example.invalid/ogv/30250.m4s?token=PLACEHOLDER",
+        "backup_url": [
+          "https://backup.example.invalid/ogv/30250.m4s?token=PLACEHOLDER"
+        ],
+        "band_width": 390000,
+        "mime_type": "audio/mp4",
+        "codecs": "ec-3",
+        "width": 0,
+        "height": 0,
+        "frame_rate": "",
+        "sar": "",
+        "start_with_sap": 0,
+        "segment_base": {
+          "initialization": "0-1051",
+          "index_range": "1052-2083"
+        },
+        "codecid": 0
+      },
+      {
+        "id": 30280,
+        "base_url": "https://cdn.example.invalid/ogv/30280.m4s?token=PLACEHOLDER",
+        "backup_url": [
+          "https://backup.example.invalid/ogv/30280.m4s?token=PLACEHOLDER"
+        ],
+        "band_width": 194000,
+        "mime_type": "audio/mp4",
+        "codecs": "mp4a.40.2",
+        "width": 0,
+        "height": 0,
+        "frame_rate": "",
+        "sar": "",
+        "start_with_sap": 0,
+        "segment_base": {
+          "initialization": "0-903",
+          "index_range": "904-1935"
+        },
+        "codecid": 0
+      }
+    ]
+  },
+  "durl": null,
+  "volume": {
+    "measured_i": -17.5,
+    "measured_lra": 8.2,
+    "measured_tp": -1.3,
+    "measured_threshold": -28.1,
+    "target_offset": 0.4,
+    "target_i": -14.0,
+    "target_tp": -1.0
+  },
+  "last_play_time": 183000,
+  "last_play_cid": 100002,
+  "cur_language": "ja",
+  "language": {
+    "support": true,
+    "items": [
+      {
+        "lang": "ja",
+        "title": "日语",
+        "subtitle_lang": "ja",
+        "production_type": 1
+      },
+      {
+        "lang": "zh",
+        "title": "国语",
+        "subtitle_lang": "zh-Hans",
+        "production_type": 2
+      }
+    ]
+  },
+  "clip_info_list": [
+    {
+      "start": 0.0,
+      "end": 88.5,
+      "clip_type": "CLIP_TYPE_OP"
+    },
+    {
+      "start": 1350.0,
+      "end": 1434.0,
+      "clip_type": "CLIP_TYPE_ED"
+    }
+  ]
+}

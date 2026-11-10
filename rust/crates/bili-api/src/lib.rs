@@ -32,6 +32,7 @@ pub mod client;
 pub mod envelope;
 pub mod http;
 pub mod nav;
+pub mod playurl;
 pub mod request;
 #[cfg(feature = "reqwest-transport")]
 pub mod transport_reqwest;

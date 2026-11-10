@@ -1,0 +1,76 @@
+{
+  "code": 0,
+  "message": "success",
+  "ttl": 1,
+  "data": {
+    "from": "local",
+    "result": "suee",
+    "message": "",
+    "quality": 64,
+    "format": "flv720",
+    "timelength": 603000,
+    "accept_format": "flv720,flv480,mp4",
+    "accept_description": [
+      "高清 720P",
+      "清晰 480P"
+    ],
+    "accept_quality": [
+      64,
+      32
+    ],
+    "video_codecid": 7,
+    "seek_param": "start",
+    "seek_type": "offset",
+    "durl": [
+      {
+        "order": 1,
+        "length": 603000,
+        "size": 52428800,
+        "ahead": "",
+        "vhead": "",
+        "url": "https://cdn.example.invalid/pugv-1.flv?token=PLACEHOLDER",
+        "backup_url": [
+          "https://backup.example.invalid/pugv-1.flv?token=PLACEHOLDER"
+        ]
+      }
+    ],
+    "support_formats": [
+      {
+        "quality": 64,
+        "format": "flv720",
+        "new_description": "720P 高清",
+        "display_desc": "720P",
+        "codecs": [
+          "avc1.640028"
+        ]
+      },
+      {
+        "quality": 32,
+        "format": "flv480",
+        "new_description": "480P 清晰",
+        "display_desc": "480P",
+        "codecs": [
+          "avc1.64001F"
+        ]
+      }
+    ],
+    "volume": {
+      "measured_i": -21.3,
+      "measured_lra": 6.7,
+      "measured_tp": -0.8,
+      "measured_threshold": -31.5,
+      "target_offset": 0.2,
+      "target_i": -14,
+      "target_tp": -1
+    },
+    "last_play_time": 0,
+    "last_play_cid": 0,
+    "play_view_business_info": {
+      "user_status": {
+        "watch_progress": {
+          "current_watch_progress": 71000
+        }
+      }
+    }
+  }
+}

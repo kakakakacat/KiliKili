@@ -6,11 +6,10 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/rust/api/video_detail_fetch.dart' as rust_api;
 import 'package:PiliPlus/services/rust/rust_flags.dart';
+import 'package:PiliPlus/services/rust/rust_request.dart';
 import 'package:PiliPlus/services/rust/rust_transport.dart';
 import 'package:PiliPlus/services/rust/video_detail_denormalize.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/accounts/account.dart';
-import 'package:PiliPlus/utils/accounts/account_manager/account_mgr.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:flutter/foundation.dart';
 
@@ -49,15 +48,15 @@ abstract final class RustVideoDetail {
       // videoIntro 绑定 heartbeat 账号（lib/utils/accounts/api_type.dart）。
       // 这里必须与拦截器的选择一致，否则两条路径用的是不同账号。
       final account = Accounts.heartbeat;
-      final uri = Uri.parse('${HttpString.apiBaseUrl}${Api.videoIntro}');
+      final cookie = await RustRequest.cookieFor(account, Api.videoIntro);
 
       final result = await rust_api.fetchVideoDetail(
         baseUrl: HttpString.apiBaseUrl,
         bvid: bvid,
         mixinKey: mixinKey,
         wts: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        cookie: await _cookieFor(account, uri),
-        headers: _headersFor(account),
+        cookie: cookie,
+        headers: RustRequest.headersFor(account),
         timeoutMs: BigInt.from(_timeoutMs),
         transport: RustTransport.current(),
       );
@@ -74,6 +73,9 @@ abstract final class RustVideoDetail {
       }
 
       final normalized = jsonDecode(json) as Map<String, dynamic>;
+      if (kDebugMode) {
+        debugPrint('[rust] 视频详情取数成功 (cookie=${cookie != null})');
+      }
       return Success(
         VideoDetailData.fromJson(denormalizeVideoDetail(normalized)),
       );
@@ -82,22 +84,5 @@ abstract final class RustVideoDetail {
       if (kDebugMode) debugPrint('[rust] 取数路径自身出错，降级: $e\n$st');
       return null;
     }
-  }
-
-  static List<(String, String)> _headersFor(Account account) => [
-    ...account.headers.entries.map((e) => (e.key, e.value)),
-    // 拦截器对未显式设置 referer 的请求补这一条
-    // （lib/utils/accounts/account_manager/account_mgr.dart）。
-    ('referer', HttpString.baseUrl),
-    // 基线的 BaseOptions 里带的两条。Http2Adapter 不会自动补 UA。
-    ('user-agent', 'Dart/3.6 (dart:io)'),
-    ('accept-encoding', 'br,gzip'),
-  ];
-
-  static Future<String?> _cookieFor(Account account, Uri uri) async {
-    if (account is NoAccount) return null;
-    final cookies = await account.cookieJar.loadForRequest(uri);
-    final value = AccountManager.getCookies(cookies);
-    return value.isEmpty ? null : value;
   }
 }

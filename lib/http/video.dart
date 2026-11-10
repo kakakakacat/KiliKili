@@ -28,6 +28,8 @@ import 'package:PiliPlus/models_new/video/video_note_list/data.dart';
 import 'package:PiliPlus/models_new/video/video_play_info/data.dart';
 import 'package:PiliPlus/models_new/video/video_relation/data.dart';
 import 'package:PiliPlus/models_new/video/video_shot/data.dart';
+import 'package:PiliPlus/services/rust/play_url_shadow.dart';
+import 'package:PiliPlus/services/rust/rust_play_url.dart';
 import 'package:PiliPlus/services/rust/rust_video_detail.dart';
 import 'package:PiliPlus/services/rust/video_detail_shadow.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -251,7 +253,31 @@ abstract final class VideoHttp {
     String? language,
     bool voiceBalance = false,
     bool fallback = false,
+    /// 是否允许走 Rust 取数路径。
+    ///
+    /// 下面那三处递归都传 false：它们是 Dart 路径自己的重试分支（DRM
+    /// 降级、UGC→PGC），而 Rust 路径有自己的同名分支。让递归再进一次
+    /// Rust，同一次取流就会在两套重试逻辑之间来回跳。
+    bool allowRust = true,
   }) async {
+    if (allowRust) {
+      // 功能开关打开且取流成功时走 Rust；返回 null 即降级回下面的 Dart
+      // 路径（RFC-0001 §5.3）。开关默认关闭。
+      final viaRust = await RustPlayUrl.fetch(
+        avid: avid,
+        bvid: bvid,
+        cid: cid,
+        qn: qn,
+        epid: epid is int ? epid : int.tryParse('$epid'),
+        seasonId: seasonId is int ? seasonId : int.tryParse('$seasonId'),
+        tryLook: tryLook,
+        videoType: videoType,
+        language: language,
+        voiceBalance: voiceBalance,
+      );
+      if (viaRust != null) return viaRust;
+    }
+
     final dmImgStr = Utils.base64EncodeRandomString(16, 64);
     final dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
     final params = await WbiSign.makSign({
@@ -292,6 +318,10 @@ abstract final class VideoHttp {
       );
 
       if (res.data['code'] == 0) {
+        // shadow mode：Dart 与 Rust 对同一份响应各自规范化后比对，播放
+        // 仍用下面的 Dart 结果。比对不等待、不抛出，详见 PlayUrlShadow。
+        unawaited(PlayUrlShadow.compare(res.data, videoType, fallback));
+
         late PlayUrlModel data;
         switch (videoType) {
           case .ugc:
@@ -322,6 +352,7 @@ abstract final class VideoHttp {
                 language: language,
                 voiceBalance: voiceBalance,
                 fallback: true,
+                allowRust: false,
               );
             } else {
               final reason = result['not_playable_reason'];
@@ -358,6 +389,7 @@ abstract final class VideoHttp {
           language: language,
           voiceBalance: voiceBalance,
           fallback: fallback,
+          allowRust: false,
         );
       }
       return Error(_parseVideoErr(res.data['code'], res.data['message']));

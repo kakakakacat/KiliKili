@@ -42,9 +42,16 @@ impl RemoteFailure {
 
     /// 转成领域错误。`detail` 只含 code 与服务端文案，不含请求参数——
     /// 参数里可能有凭据，而错误对象会进日志。
+    ///
+    /// 原始 code 一并带上：调用方的某些分支（playurl 的 UGC→PGC 重试）
+    /// 与用户可见文案都依赖它，从 [`ErrorKind`] 反推不出来。
     #[must_use]
     pub fn into_domain_error(self) -> DomainError {
-        DomainError::new(self.kind(), format!("code {}: {}", self.code, self.message))
+        DomainError::with_code(
+            self.kind(),
+            format!("code {}: {}", self.code, self.message),
+            self.code,
+        )
     }
 }
 

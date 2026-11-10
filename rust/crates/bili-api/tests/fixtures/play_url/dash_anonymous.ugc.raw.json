@@ -1,0 +1,295 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "from": "local",
+    "result": "suee",
+    "message": "",
+    "quality": 64,
+    "format": "flv720",
+    "timelength": 2013994,
+    "accept_format": "hdflv2,flv,flv720,flv480,mp4",
+    "accept_description": [
+      "高清 1080P+",
+      "高清 1080P",
+      "高清 720P",
+      "清晰 480P",
+      "流畅 360P"
+    ],
+    "accept_quality": [
+      112,
+      80,
+      64,
+      32,
+      16
+    ],
+    "video_codecid": 7,
+    "seek_param": "start",
+    "seek_type": "offset",
+    "dash": {
+      "duration": 2014,
+      "minBufferTime": 1.5,
+      "min_buffer_time": 1.5,
+      "dolby": {
+        "type": 0,
+        "audio": null
+      },
+      "flac": null,
+      "video": [
+        {
+          "id": 80,
+          "baseUrl": "https://cdn.example.invalid/v-80-7.m4s?token=PLACEHOLDER",
+          "base_url": "https://cdn.example.invalid/v-80-7.m4s?token=PLACEHOLDER",
+          "backupUrl": [
+            "https://backup.example.invalid/v-80-7.m4s?token=PLACEHOLDER"
+          ],
+          "backup_url": [
+            "https://backup.example.invalid/v-80-7.m4s?token=PLACEHOLDER"
+          ],
+          "bandwidth": 947541,
+          "mimeType": "video/mp4",
+          "mime_type": "video/mp4",
+          "codecs": "avc1.640033",
+          "width": 1438,
+          "height": 1080,
+          "frameRate": "30.000",
+          "frame_rate": "30.000",
+          "sar": "1:1",
+          "startWithSap": 1,
+          "start_with_sap": 1,
+          "SegmentBase": {
+            "Initialization": "0-917",
+            "indexRange": "918-5817"
+          },
+          "segment_base": {
+            "initialization": "0-917",
+            "index_range": "918-5817"
+          },
+          "codecid": 7
+        },
+        {
+          "id": 80,
+          "baseUrl": "https://cdn.example.invalid/v-80-12.m4s?token=PLACEHOLDER",
+          "base_url": "https://cdn.example.invalid/v-80-12.m4s?token=PLACEHOLDER",
+          "backupUrl": [
+            "https://backup.example.invalid/v-80-12.m4s?token=PLACEHOLDER"
+          ],
+          "backup_url": [
+            "https://backup.example.invalid/v-80-12.m4s?token=PLACEHOLDER"
+          ],
+          "bandwidth": 487119,
+          "mimeType": "video/mp4",
+          "mime_type": "video/mp4",
+          "codecs": "hvc1.1.6.L120.90",
+          "width": 1438,
+          "height": 1080,
+          "frameRate": "30.000",
+          "frame_rate": "30.000",
+          "sar": "1:1",
+          "startWithSap": 1,
+          "start_with_sap": 1,
+          "SegmentBase": {
+            "Initialization": "0-1082",
+            "indexRange": "1083-5982"
+          },
+          "segment_base": {
+            "initialization": "0-1082",
+            "index_range": "1083-5982"
+          },
+          "codecid": 12
+        },
+        {
+          "id": 64,
+          "baseUrl": "https://cdn.example.invalid/v-64-7.m4s?token=PLACEHOLDER",
+          "base_url": "https://cdn.example.invalid/v-64-7.m4s?token=PLACEHOLDER",
+          "backupUrl": [
+            "https://backup.example.invalid/v-64-7.m4s?token=PLACEHOLDER"
+          ],
+          "backup_url": [
+            "https://backup.example.invalid/v-64-7.m4s?token=PLACEHOLDER"
+          ],
+          "bandwidth": 447876,
+          "mimeType": "video/mp4",
+          "mime_type": "video/mp4",
+          "codecs": "avc1.640033",
+          "width": 958,
+          "height": 720,
+          "frameRate": "30.000",
+          "frame_rate": "30.000",
+          "sar": "1:1",
+          "startWithSap": 1,
+          "start_with_sap": 1,
+          "SegmentBase": {
+            "Initialization": "0-916",
+            "indexRange": "917-5816"
+          },
+          "segment_base": {
+            "initialization": "0-916",
+            "index_range": "917-5816"
+          },
+          "codecid": 7
+        },
+        {
+          "id": 32,
+          "baseUrl": "https://cdn.example.invalid/v-32-7.m4s?token=PLACEHOLDER",
+          "base_url": "https://cdn.example.invalid/v-32-7.m4s?token=PLACEHOLDER",
+          "backupUrl": [
+            "https://backup.example.invalid/v-32-7.m4s?token=PLACEHOLDER"
+          ],
+          "backup_url": [
+            "https://backup.example.invalid/v-32-7.m4s?token=PLACEHOLDER"
+          ],
+          "bandwidth": 230602,
+          "mimeType": "video/mp4",
+          "mime_type": "video/mp4",
+          "codecs": "avc1.640033",
+          "width": 638,
+          "height": 480,
+          "frameRate": "30.000",
+          "frame_rate": "30.000",
+          "sar": "1:1",
+          "startWithSap": 1,
+          "start_with_sap": 1,
+          "SegmentBase": {
+            "Initialization": "0-916",
+            "indexRange": "917-5816"
+          },
+          "segment_base": {
+            "initialization": "0-916",
+            "index_range": "917-5816"
+          },
+          "codecid": 7
+        }
+      ],
+      "audio": [
+        {
+          "id": 30232,
+          "baseUrl": "https://cdn.example.invalid/a-30232-0.m4s?token=PLACEHOLDER",
+          "base_url": "https://cdn.example.invalid/a-30232-0.m4s?token=PLACEHOLDER",
+          "backupUrl": [
+            "https://backup.example.invalid/a-30232-0.m4s?token=PLACEHOLDER"
+          ],
+          "backup_url": [
+            "https://backup.example.invalid/a-30232-0.m4s?token=PLACEHOLDER"
+          ],
+          "bandwidth": 104408,
+          "mimeType": "audio/mp4",
+          "mime_type": "audio/mp4",
+          "codecs": "mp4a.40.2",
+          "width": 0,
+          "height": 0,
+          "frameRate": "",
+          "frame_rate": "",
+          "sar": "",
+          "startWithSap": 0,
+          "start_with_sap": 0,
+          "SegmentBase": {
+            "Initialization": "0-836",
+            "indexRange": "837-5700"
+          },
+          "segment_base": {
+            "initialization": "0-836",
+            "index_range": "837-5700"
+          },
+          "codecid": 0
+        },
+        {
+          "id": 30216,
+          "baseUrl": "https://cdn.example.invalid/a-30216-0.m4s?token=PLACEHOLDER",
+          "base_url": "https://cdn.example.invalid/a-30216-0.m4s?token=PLACEHOLDER",
+          "backupUrl": [
+            "https://backup.example.invalid/a-30216-0.m4s?token=PLACEHOLDER"
+          ],
+          "backup_url": [
+            "https://backup.example.invalid/a-30216-0.m4s?token=PLACEHOLDER"
+          ],
+          "bandwidth": 65675,
+          "mimeType": "audio/mp4",
+          "mime_type": "audio/mp4",
+          "codecs": "mp4a.40.2",
+          "width": 0,
+          "height": 0,
+          "frameRate": "",
+          "frame_rate": "",
+          "sar": "",
+          "startWithSap": 0,
+          "start_with_sap": 0,
+          "SegmentBase": {
+            "Initialization": "0-836",
+            "indexRange": "837-5700"
+          },
+          "segment_base": {
+            "initialization": "0-836",
+            "index_range": "837-5700"
+          },
+          "codecid": 0
+        }
+      ]
+    },
+    "support_formats": [
+      {
+        "quality": 112,
+        "format": "hdflv2",
+        "new_description": "1080P 高码率",
+        "display_desc": "1080P",
+        "superscript": "高码率",
+        "codecs": [
+          "av01.0.08M.08.0.110.01.01.01.0",
+          "avc1.640033",
+          "hvc1.1.6.L120.90"
+        ],
+        "can_watch_qn_reason": 0,
+        "limit_watch_reason": 0,
+        "report": {}
+      },
+      {
+        "quality": 80,
+        "format": "flv",
+        "new_description": "1080P 高清",
+        "display_desc": "1080P",
+        "superscript": "",
+        "codecs": [
+          "av01.0.08M.08.0.110.01.01.01.0",
+          "avc1.640033",
+          "hvc1.1.6.L120.90"
+        ],
+        "can_watch_qn_reason": 0,
+        "limit_watch_reason": 0,
+        "report": {}
+      },
+      {
+        "quality": 64,
+        "format": "flv720",
+        "new_description": "720P 准高清",
+        "display_desc": "720P",
+        "superscript": "",
+        "codecs": [
+          "av01.0.08M.08.0.110.01.01.01.0",
+          "avc1.640033",
+          "hvc1.1.6.L120.90"
+        ],
+        "can_watch_qn_reason": 0,
+        "limit_watch_reason": 0,
+        "report": {}
+      }
+    ],
+    "high_format": null,
+    "last_play_time": 0,
+    "last_play_cid": 0,
+    "view_info": null,
+    "play_conf": {
+      "is_new_description": false
+    },
+    "cur_language": "",
+    "cur_production_type": 0,
+    "auto_qn_resp": {
+      "dyeid": "0800f1968e18b5200072f0a06af2dd81",
+      "qn_feature": {
+        "quality_tag": "常规",
+        "tid_name": "",
+        "sub_tid_name": ""
+      }
+    }
+  }
+}

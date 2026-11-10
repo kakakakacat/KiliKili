@@ -58,7 +58,11 @@ abstract final class VideoDetailShadow {
         normalizeVideoDetail(data),
         r'$',
       );
-      if (diff != null) _report(diff);
+      if (diff != null) {
+        _report(diff);
+      } else if (kDebugMode) {
+        debugPrint('[shadow] 视频详情解析一致');
+      }
     } catch (e, st) {
       // 包括 Rust 未就绪、桥接异常、本地 JSON 异常在内的一切意外。
       if (kDebugMode) debugPrint('VideoDetailShadow 比对自身出错: $e\n$st');

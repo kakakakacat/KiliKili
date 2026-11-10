@@ -1,1 +1,49 @@
-*.patch text eol=lf
+# 跨 macOS / Windows 协作：统一仓库内换行为 LF，检出时不转换。
+# 未统一时会产生大量假 diff，并使 cargo fmt --check / dart format 在两端判定不一致。
+* text=auto eol=lf
+
+# 必须保持 CRLF 的 Windows 脚本
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+
+# 必须保持 LF
+*.sh       text eol=lf
+*.patch    text eol=lf
+gradlew    text eol=lf
+*.pbxproj  text eol=lf
+
+# 二进制：禁止换行转换与文本合并
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.webp binary
+*.gif  binary
+*.ico  binary
+*.icns binary
+*.ttf  binary
+*.otf  binary
+*.woff  binary
+*.woff2 binary
+*.jks  binary
+*.keystore binary
+*.so   binary
+*.dll  binary
+*.dylib binary
+*.a    binary
+*.jar  binary
+*.zip  binary
+*.apk  binary
+*.aab  binary
+*.mp4  binary
+*.webm binary
+*.pdf  binary
+
+# 锁文件与生成产物：合并冲突时不做行级合并，diff 折叠
+pubspec.lock  -diff merge=binary
+Cargo.lock    -diff merge=binary
+*.pb.dart     linguist-generated=true -diff
+*.pbenum.dart linguist-generated=true -diff
+*.pbjson.dart linguist-generated=true -diff
+*.g.dart      linguist-generated=true -diff
+*.freezed.dart linguist-generated=true -diff

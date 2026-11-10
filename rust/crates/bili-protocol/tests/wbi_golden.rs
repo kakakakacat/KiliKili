@@ -20,6 +20,7 @@ use serde::Deserialize;
 
 #[derive(Deserialize)]
 struct Fixture {
+    protocol_version: u32,
     img_key: String,
     sub_key: String,
     mixin_key: String,
@@ -49,6 +50,17 @@ fn to_dart_string(v: &serde_json::Value) -> String {
         serde_json::Value::Number(n) if n.is_i64() || n.is_u64() => n.to_string(),
         other => panic!("fixture 含未预期的值类型: {other:?}"),
     }
+}
+
+#[test]
+fn fixture_matches_current_protocol_version() {
+    // fixture 停留在旧协议版本时，对照仍可能通过（旧用例恰好没变），
+    // 从而让人误以为新协议已被覆盖。版本号对不上即失败（ADR-008）。
+    assert_eq!(
+        load().protocol_version,
+        bili_protocol::PROTOCOL_VERSION,
+        "fixture 与 bili-protocol 的协议版本不一致，需重新生成 fixture"
+    );
 }
 
 #[test]

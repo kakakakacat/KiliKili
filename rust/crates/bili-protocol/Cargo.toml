@@ -11,6 +11,13 @@ description = "易变协议：WBI 签名、风控参数、协议版本化。与 
 bili-domain = { path = "../bili-domain" }
 md-5 = "0.10"
 percent-encoding = "2.3"
+rand = { version = "0.9", optional = true }
+
+[features]
+# 默认提供基于系统随机源的 Entropy 实现。关掉它可以让本 crate 在没有
+# 系统随机源的目标上编译（如纯 wasm 沙箱），此时由调用方自带实现。
+default = ["system-entropy"]
+system-entropy = ["dep:rand"]
 
 [dev-dependencies]
 serde = { version = "1", features = ["derive"] }

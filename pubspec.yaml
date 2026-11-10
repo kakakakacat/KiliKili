@@ -179,6 +179,8 @@ dependencies:
   # 必须与 rust/crates/bridge-flutter/Cargo.toml 的 =2.13.0
   # 及 codegen CLI 版本严格一致；三者不同源会产生难查的 ABI 错配。
   flutter_rust_bridge: 2.13.0
+  bridge_flutter:
+    path: rust_builder
 dependency_overrides:
   flutter_inappwebview_android:
     git:

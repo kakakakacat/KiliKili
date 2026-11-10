@@ -20,6 +20,7 @@ analyzer:
     - windows/**
     - web/**
     - build/**
+    - rust_builder/cargokit/**
     # - lib/common/widgets/flutter/**
 
 formatter:

@@ -1,11 +1,13 @@
 [package]
-name = "bridge-flutter"
+name = "bridge_flutter"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "flutter_rust_bridge 对 Dart 的导出层。仅属 Stage 1，Phase 2 移除。"
+# 用下划线而非连字符：此名会流入 Dart 包名、Android namespace 与 CMake
+# 标识符，三者均不接受连字符。bili-* 诸 crate 不跨这些边界，故保留连字符。
 
 # cdylib: Android/Windows/Linux 动态库；staticlib: iOS/macOS 静态链接
 [lib]

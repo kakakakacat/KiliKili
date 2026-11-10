@@ -3,8 +3,8 @@
 状态：**已实测**（硬件探测结果，非推断）
 日期：2026-11-10
 修订：2026-11-10 — §2 / §3.1 原先把「每个 PR 自动编译」与 Docker 多发行版矩阵
-写成既有保障，与仓库里的 workflow 配置不符，已按实际配置更正；§2.1 补入 Windows
-首次手动 dispatch 的实测结论；§5 勾掉四条已完成项
+写成既有保障，与仓库里的 workflow 配置不符，已按实际配置更正；§2.1 补入五端产物核查的
+实测结论（Android 与 macOS 为首次构建）；§5 勾掉四条已完成项
 关联：RFC-0001 §9.3 / §16.7，ADR-004
 
 本文回答一个 RFC 里此前含糊带过的问题：五个目标平台，**哪些能做真机验收、哪些只能做编译验证、哪些根本没覆盖**。结论直接影响 M4/M5 的准入范围，以及 ADR-004 能拿到多少实测数据。
@@ -55,32 +55,57 @@ push / PR 上自动运行的只有两个，都**不产出任何平台产物**：
 `rust/rust-toolchain.toml` 钉的 1.97.0 与七个 target，Android 侧还要
 `android.ndkVersion` 对得上。这条路径只能靠手动 dispatch 验证。
 
-#### 已验证：Windows（2026-11-10）
+#### 已验证：五端产物均含 Rust 库（2026-11-10）
 
-手动 dispatch 一次 `win_x64.yml` 验证上述 Rust 路径，
-[run 42813991420](https://github.com/kakakakacat/KiliKili/actions/runs/42813991420)，
-head `dd9bb7a74`，success，12m55s。
+**构建日志不是证据。** `flutter build` 会吞掉插件的编译输出，Windows 那次
+成功构建的日志里 `cargo` / `rustc` **零出现**。如果 cargokit 没被触发，构建
+照样成功，产物只是少一个 Rust 动态库，`RustCore.isReady` 在用户机上恒为
+false，四条 Rust 路径全部静默回退 Dart。**这种失败不会让任何 status check
+变红**，只能查产物。
 
-构建日志里 `cargo` / `rustc` **零出现**——`flutter build windows` 会吞掉插件的编译
-输出，只漏出少量 CMake warning。因此「构建绿」本身不足以证明 Rust 编进去了：
-cargokit 若未被触发，Flutter 会照常产出一个不含 `bridge_flutter.dll` 的 exe，
-构建同样成功，而 `RustCore.isReady` 在用户机上恒为 false，四条 Rust 路径全部
-静默回退 Dart。**这种失败模式不会让 CI 变红**，只能查产物。
+五端各手动 dispatch 一次，逐个解开产物核对：
 
-查 portable 产物的结论（均为实测）：
+| 平台 | run | 产物 | Rust 库路径 | 字节 |
+|---|---|---|---|---|
+| Windows | [42813991420](https://github.com/kakakakacat/KiliKili/actions/runs/42813991420) | portable zip | `bridge_flutter.dll` | 6,110,720 |
+| Android | [42819477559](https://github.com/kakakakacat/KiliKili/actions/runs/42819477559) | arm64-v8a APK | `lib/arm64-v8a/libbridge_flutter.so` | 5,178,952 |
+| iOS | [42802714845](https://github.com/kakakakacat/KiliKili/actions/runs/42802714845) | ipa | `Payload/Runner.app/Frameworks/bridge_flutter.framework/bridge_flutter` | 12,396,752 |
+| macOS | [42819477559](https://github.com/kakakakacat/KiliKili/actions/runs/42819477559) | dmg | `KiliKili.app/Contents/Frameworks/bridge_flutter.framework/Versions/A/bridge_flutter` | 25,453,584 |
+| Linux | [42822338947](https://github.com/kakakakacat/KiliKili/actions/runs/42822338947) | rpm | `/opt/KiliKili/lib/libbridge_flutter.so` | 见 RPM 文件列表 |
 
-| 项 | 结果 |
+五个二进制内均含 `bili_api`、`rustc`、`frb_` 字符串，确为本项目 crate 编出。
+**Android 与 macOS 是本仓库首次构建**，此前这两个 workflow 一次都没跑过。
+
+播放器依赖同样在位：Windows `libmpv-2.dll` 37,981,184 字节；Android
+`libmpv.so` 14,869,024；iOS `Mpv.framework` 与整套 ffmpeg framework；macOS
+`Mpv.framework` 7,445,680。Linux 不随包分发 libmpv，由 rpmbuild 自动生成的
+`Requires: libmpv.so.2()(64bit)` 声明为系统依赖（deb 的依赖声明有缺口，见 issue #36）。
+
+Windows 安装包与 portable 同源：`windows/packaging/exe/inno_setup.iss` 的
+`[Files]` 递归整个 Release 目录。这回答了 §5 第 3 条里「libmpv DLL 的安装包
+分发方式需在 Windows 首次构建时确认」——无需额外处理。
+
+##### 核对方法
+
+每种产物的打开方式不同，记在这里以免下次重新摸索：
+
+| 产物 | 方法 |
 |---|---|
-| `bridge_flutter.dll` | ✅ 存在，6,110,720 字节；二进制内含 `bili_api`、`rustc` 字符串，确为本项目 crate 编出的 cdylib |
-| `libmpv-2.dll` | ✅ 存在，37,981,184 字节 |
-| 安装包是否同样包含 | ✅ `windows/packaging/exe/inno_setup.iss` 的 `[Files]` 为 `Source: "{{SOURCE_DIR}}\\*"; Flags: recursesubdirs` 递归整个 Release 目录 |
+| apk / ipa | 本身就是 zip，直接解 |
+| portable zip | 直接解 |
+| dmg | 7-Zip 可解（本例 LZFSE 压缩）。Windows 上建符号链接会失败，实体文件在 `Versions/A/` 下，不影响核对 |
+| rpm | header 未压缩，可直接解析 `BASENAMES`(1117) / `DIRNAMES`(1118) / `REQUIRENAME`(1049) 拿到文件列表与依赖，无需 rpm 工具 |
 
-这同时回答了 §5 第 3 条里「libmpv DLL 的安装包分发方式需在 Windows 首次构建时
-确认」：portable 与 setup 都随包分发，无需额外处理。
+##### 这次核对发现的两个缺陷
 
-**结论**：Windows runner 自带环境满足 `rust-toolchain.toml` 的 1.97.0 与
-`x86_64-pc-windows-msvc`，cargokit 正常触发。其余四端**尚未以同样方式验证**，
-不要由这一次外推。验证方法记在这里，是因为「查日志」得不出结论，必须查产物。
+- **Linux RPM 发布的是 debuginfo 子包**，11,289 字节，不含应用。构建全程绿。
+  已修（#34），并给产物加了体积闸门（#35）。
+- **deb 的 `Depends` 少声明 webkit2gtk 与 libsoup3**，干净系统上可能起不来。
+  体积闸门拦不住这一类——包的体积是对的，错的是元数据。见 issue #36。
+
+**仍未验证**：产物里有 Rust 库 ≠ 运行时加载成功。`RustCore.isReady` 在真机上
+是否为 true、四条 Rust 路径在登录态下行为是否与 Dart 一致，都还没验（issue #25）。
+本节只证明「编出来了、装进去了」。
 
 **CI 能证明的**（前提是手动 dispatch 了对应 workflow）：编译通过、依赖完整、单测与协议 fixture 通过。
 **CI 证明不了的**（全部是本项目的核心风险）：硬解、Slint + libmpv 同窗合成、PiP、后台音频、音频焦点、中文 IME、VoiceOver/TalkBack、渲染性能。CI runner 是虚拟化的，`hwdec` 必然回落软解。

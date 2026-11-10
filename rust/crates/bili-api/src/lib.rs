@@ -29,10 +29,12 @@
 //! 换嵌套层级都止步于此。
 
 pub mod client;
+pub mod danmaku;
 pub mod envelope;
 pub mod http;
 pub mod nav;
 pub mod playurl;
+pub(crate) mod protobuf;
 pub mod request;
 pub mod search_suggest;
 #[cfg(feature = "reqwest-transport")]

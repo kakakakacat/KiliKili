@@ -1,0 +1,57 @@
+{
+  "state": 0,
+  "elems": [
+    {
+      "id": 1800000000000000001,
+      "progress": 1200,
+      "mode": 1,
+      "fontsize": 25,
+      "color": 16777215,
+      "mid_hash": "1a2b3c4d",
+      "content": "前方高能",
+      "ctime": 1762700000,
+      "weight": 10,
+      "pool": 0,
+      "id_str": "1800000000000000001",
+      "like_count": 0,
+      "dm_type": 0,
+      "oid": 900000001,
+      "dm_from": 1
+    },
+    {
+      "id": 1800000000000000002,
+      "progress": 1200,
+      "mode": 5,
+      "fontsize": 25,
+      "color": 16711680,
+      "mid_hash": "2b3c4d5e",
+      "content": "顶部弹幕",
+      "ctime": 1762700050,
+      "weight": 8,
+      "pool": 0,
+      "id_str": "1800000000000000002",
+      "like_count": 3,
+      "oid": 900000001,
+      "dm_from": 1
+    },
+    {
+      "id": 1800000000000000003,
+      "progress": 95500,
+      "mode": 4,
+      "fontsize": 18,
+      "color": 16777215,
+      "mid_hash": "3c4d5e6f",
+      "content": "前方高能",
+      "ctime": 1762700100,
+      "weight": 1,
+      "pool": 0,
+      "id_str": "1800000000000000003",
+      "like_count": 0,
+      "oid": 900000001,
+      "dm_from": 1
+    },
+    {
+      "content": "只有内容的弹幕"
+    }
+  ]
+}

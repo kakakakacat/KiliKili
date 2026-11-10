@@ -4,6 +4,7 @@
 //! 协议/传输实现（RFC-0001 §2.1）。它必须能在不启动任何 UI
 //! 的情况下独立测试。
 
+pub mod danmaku;
 pub mod error;
 pub mod player;
 pub mod playurl;
@@ -17,6 +18,17 @@ mod tests {
     use super::error::{DomainError, ErrorKind};
     use super::redact::{Redacted, is_credential_key, redact_header, redact_query};
     use super::session::{GenerationGate, SessionId, Stamped};
+
+    #[test]
+    fn danmaku_segment_boundaries_match_the_baseline() {
+        use super::danmaku::{SEGMENT_LENGTH_MS, segment_index};
+        // 基线 DmUtils.calcSegment：progress ~/ (60 * 6 * 1000)
+        assert_eq!(SEGMENT_LENGTH_MS, 360_000);
+        assert_eq!(segment_index(0), 0);
+        assert_eq!(segment_index(359_999), 0);
+        assert_eq!(segment_index(360_000), 1, "分段边界属于下一段");
+        assert_eq!(segment_index(7_200_000), 20);
+    }
 
     #[test]
     fn error_kind_is_retryable() {

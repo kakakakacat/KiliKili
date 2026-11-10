@@ -6,6 +6,9 @@ on:
     paths:
       - 'lib/**'
       - 'test/**'
+      # 测试读的 golden fixture 在 rust/ 下：fixture 变了而这里不触发，
+      # 等于 Dart 侧的基线对照在最需要它的那次改动上没跑。
+      - 'rust/crates/bili-api/tests/fixtures/**'
       - 'tool/prepare-build.sh'
       - 'pubspec.yaml'
       - 'pubspec.lock'
@@ -14,6 +17,9 @@ on:
     paths:
       - 'lib/**'
       - 'test/**'
+      # 测试读的 golden fixture 在 rust/ 下：fixture 变了而这里不触发，
+      # 等于 Dart 侧的基线对照在最需要它的那次改动上没跑。
+      - 'rust/crates/bili-api/tests/fixtures/**'
       - 'tool/prepare-build.sh'
       - 'pubspec.yaml'
       - 'pubspec.lock'

@@ -2,6 +2,8 @@
 
 状态：**已实测**（硬件探测结果，非推断）
 日期：2026-11-10
+修订：2026-11-10 — §2 / §3.1 原先把「每个 PR 自动编译」与 Docker 多发行版矩阵
+写成既有保障，与仓库里的 workflow 配置不符，已按实际配置更正
 关联：RFC-0001 §9.3 / §16.7，ADR-004
 
 本文回答一个 RFC 里此前含糊带过的问题：五个目标平台，**哪些能做真机验收、哪些只能做编译验证、哪些根本没覆盖**。结论直接影响 M4/M5 的准入范围，以及 ADR-004 能拿到多少实测数据。
@@ -22,15 +24,37 @@
 
 编译打包全部放 GitHub Actions，本机只做 CI 证明不了的事。上游已配好五端 workflow，可直接继承：
 
-| workflow | runner | 产物 |
-|---|---|---|
-| `build.yml` (android) | `ubuntu-latest` | APK，`--split-per-abi` |
-| `ios.yml` | `macos-26` | `--release --no-codesign` |
-| `mac.yml` | `macos-26` | .app |
-| `win_x64.yml` | `windows-latest` | innosetup 安装包 |
-| `linux_x64.yml` | `ubuntu-latest` | 需 `libmpv-dev` `libgtk-3-dev` `webkit2gtk-4.1` |
+| workflow | runner | 触发 | 产物 |
+|---|---|---|---|
+| `build.yml` (android) | `ubuntu-latest` | 手动 | APK，`--split-per-abi`；并按输入调用下面四个 |
+| `ios.yml` | `macos-26` | 手动 / 被 `build.yml` 调用 | `--release --no-codesign` |
+| `mac.yml` | `macos-26` | 手动 / 被 `build.yml` 调用 | .app |
+| `win_x64.yml` | `windows-latest` | 手动 / 被 `build.yml` 调用 | innosetup 安装包 |
+| `linux_x64.yml` | `ubuntu-latest` | 手动 / 被 `build.yml` 调用 | 需 `libmpv-dev` `libgtk-3-dev` `webkit2gtk-4.1` |
 
-**CI 能证明的**：编译通过、依赖完整、单测与协议 fixture 通过。
+### 2.1 五端构建不在 push / PR 上自动运行
+
+核对于 2026-11-10。上表五个 workflow 均只有 `workflow_dispatch`（后四个另有
+`workflow_call`，由 `build.yml` 按平台开关调用）。`build.yml` 的 `pull_request`
+触发自上游 `3ae3955f5` 起即为注释状态，本 fork 保持原样——这是明确保留的现状，
+不是遗漏：macOS runner 的 10 倍倍率见下「成本约束」，且少改上游 workflow 可以
+减少同步冲突。
+
+push / PR 上自动运行的只有两个，都**不产出任何平台产物**：
+
+| workflow | 触发路径 | 内容 |
+|---|---|---|
+| `flutter-test.yml` | `lib/**` `test/**` `pubspec.*` `tool/prepare-build.sh` | `ubuntu-latest`；`tool/prepare-build.sh Linux` 打补丁后跑 `flutter test` |
+| `rust.yml` | `rust/**` | `cargo fmt` / `clippy` / `test`，外加五个 target 的交叉编译 |
+
+**含义：一个只改 Dart 的 PR，在合并前没有任何环节验证过它还能编译出 app。**
+需要这个保证时，必须在合并前手动 dispatch 对应 workflow 并把结论记进 PR。
+自 `ee41df52c`（cargokit 接入 app 构建）之后尤其要注意：五个 app workflow 里
+没有任何 rust/cargo 设置步骤，Rust 工具链完全依赖 runner 自带环境满足
+`rust/rust-toolchain.toml` 钉的 1.97.0 与七个 target，Android 侧还要
+`android.ndkVersion` 对得上。这条路径只能靠手动 dispatch 验证。
+
+**CI 能证明的**（前提是手动 dispatch 了对应 workflow）：编译通过、依赖完整、单测与协议 fixture 通过。
 **CI 证明不了的**（全部是本项目的核心风险）：硬解、Slint + libmpv 同窗合成、PiP、后台音频、音频焦点、中文 IME、VoiceOver/TalkBack、渲染性能。CI runner 是虚拟化的，`hwdec` 必然回落软解。
 
 性能基线（RFC §8.1 的八项指标）**必须固定在同一台机器采样**，CI runner 的性能抖动使其数据不可比。
@@ -44,9 +68,17 @@
 ## 3. Linux：明确降级为 best-effort
 
 ### 3.1 保留的保障
-- Actions `ubuntu-latest` 保证每个 PR 编译通过
-- Docker 多发行版矩阵（`ubuntu:22.04` / `ubuntu:24.04` / `debian:12` / `fedora:41`）验证 **glibc 版本与动态库符号兼容性**——Flutter Linux 最常见的发布事故是构建机能跑、用户机 glibc 过旧起不来
-- Rust Core 无 UI 依赖的 crate（`bili-domain`、`bili-api`、`bili-danmaku` 等）在容器内跑单测与 fixture 对照
+
+区分**已落地**与**计划中**，下表核对于 2026-11-10。
+
+| 保障 | 状态 | 实际情况 |
+|---|---|---|
+| PR 上跑 Dart 单测 | ✅ 已落地 | `flutter-test.yml`，`ubuntu-latest`，命中 `lib/**` / `test/**` 等路径时触发。**只跑测试，不产出 Linux 产物** |
+| PR 上跑 Rust 单测与交叉编译 | ✅ 已落地 | `rust.yml`，命中 `rust/**` 时触发；`bili-domain` / `bili-api` / `bili-protocol` / `bili-core` 的单测与 fixture 对照在 `ubuntu-latest` 上直接运行（非容器内） |
+| Linux 产物构建 | ⚠️ 手动 | `linux_x64.yml` 只有 `workflow_dispatch` / `workflow_call`，见 §2.1 |
+| Docker 多发行版矩阵（`ubuntu:22.04` / `ubuntu:24.04` / `debian:12` / `fedora:41`）验证 **glibc 版本与动态库符号兼容性** | ❌ 计划，尚未落地 | 仓库中没有对应 workflow 或 compose 文件。这是 Flutter Linux 最常见的发布事故（构建机能跑、用户机 glibc 过旧起不来），在该矩阵建起来之前，Linux 的兼容性保障实际为零 |
+
+`bili-danmaku` 等 crate 尚未建立，上表只列已存在的。
 
 ### 3.2 放弃的保障
 vaapi/vdpau 硬解、Wayland 与 X11 合成行为、渲染性能与帧耗时、音频（PulseAudio/PipeWire）、HiDPI 缩放。
@@ -54,6 +86,8 @@ vaapi/vdpau 硬解、Wayland 与 X11 合成行为、渲染性能与帧耗时、�
 ### 3.3 Docker 的定位
 Docker 是 **Linux 编译与兼容性闸门，不是 Linux 验收手段**。开发宿主为 macOS 时，Docker 运行在 Linux VM 中，无 GPU 直通、无显示输出；即便加 Xvfb + VNC，所得也仅为「窗口能创建、进程未崩溃」的冒烟级结论。
 （注：Linux 宿主可用 `--device /dev/dri` 透传 GPU 并实测 vaapi；本项目宿主为 macOS，此路不通。）
+
+本节描述的是该矩阵建成后的定位；按 §3.1，它目前仍是计划。
 
 ### 3.4 已评估并排除的硬件：家用软路由
 

@@ -108,6 +108,11 @@ jobs:
 
           printf "生成 spec 文件...\n"
           cat > "$RPM_BUILD_ROOT/SPECS/kilikili.spec" <<EOF
+          # 不产出 debuginfo 子包。Flutter 的 bundle 不经过 rpmbuild 的编译流程，
+          # 拆出来的符号没有使用场景，却会让 RPMS/ 下出现第二个 .rpm，而下面的
+          # 选包逻辑必须是确定的。deb / AppImage / tar.gz 同样不剥离符号。
+          %global debug_package %{nil}
+
           Name:           kilikili
           Version:        ${{ env.version }}
           Release:        1%{?dist}
@@ -164,10 +169,33 @@ jobs:
           printf "构建 RPM 包...\n"
           rpmbuild --define "_topdir $RPM_BUILD_ROOT" -bb "$RPM_BUILD_ROOT/SPECS/kilikili.spec"
 
-          printf "移动生成的 RPM...\n"
-          find "$RPM_BUILD_ROOT/RPMS" -name "*.rpm" -exec mv {} "KiliKili_linux_${{ env.version }}_amd64.rpm" \;
+          printf "选择主包...\n"
+          # 原先是 find ... -exec mv {} <固定文件名> \;，对每个匹配各执行一次 mv，
+          # 后找到的会静默覆盖先找到的。装了 elfutils 之后 rpmbuild 会额外产出
+          # kilikili-debuginfo-*.rpm，于是发布的 RPM 成了只含调试符号的 11KB
+          # 空壳，而构建依旧是绿的。显式选包 + 数量校验，不再依赖 find 的顺序。
+          TARGET="KiliKili_linux_${{ env.version }}_amd64.rpm"
+          mapfile -t RPM_FILES < <(find "$RPM_BUILD_ROOT/RPMS" -type f -name 'kilikili-*.rpm' \
+            ! -name '*-debuginfo-*' ! -name '*-debugsource-*' | sort)
+          if [ "${#RPM_FILES[@]}" -ne 1 ]; then
+            printf "期望恰好 1 个主包，实际 %d 个\n" "${#RPM_FILES[@]}"
+            printf "RPMS/ 下的全部 .rpm：\n"
+            find "$RPM_BUILD_ROOT/RPMS" -type f -name '*.rpm' -print
+            exit 1
+          fi
+          mv "${RPM_FILES[0]}" "$TARGET"
 
-          printf "完成: KiliKili_linux_%s_amd64.rpm\n" "${{ env.version }}"
+          # 体积闸门：主包应与 deb 同量级（约 18MB）。只含元数据或符号的包会
+          # 远小于此。这一条正是上述 bug 当初能溜过 CI 的原因。
+          RPM_SIZE="$(stat -c%s "$TARGET")"
+          printf "RPM 体积: %s 字节\n" "$RPM_SIZE"
+          if [ "$RPM_SIZE" -lt 10000000 ]; then
+            printf "RPM 体积异常偏小，包内容很可能不完整。内含文件：\n"
+            rpm -qlp "$TARGET" || true
+            exit 1
+          fi
+
+          printf "完成: %s\n" "$TARGET"
         shell: bash
 
       - name: Package AppImage

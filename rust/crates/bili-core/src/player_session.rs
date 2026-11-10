@@ -9,6 +9,7 @@ pub struct PlayerSession<P: PlayerPort> {
     gate: GenerationGate,
     port: P,
     snapshot: Option<PlayerSnapshot>,
+    closed: bool,
 }
 
 impl<P: PlayerPort> PlayerSession<P> {
@@ -18,6 +19,7 @@ impl<P: PlayerPort> PlayerSession<P> {
             gate: GenerationGate::new(session_id),
             port,
             snapshot: None,
+            closed: false,
         }
     }
 
@@ -41,6 +43,11 @@ impl<P: PlayerPort> PlayerSession<P> {
     /// # Errors
     /// 返回底层适配器的命令错误；即使派发失败，旧代际也已作废。
     pub fn dispatch(&mut self, command: PlayerCommand) -> Result<(), P::Error> {
+        match command {
+            PlayerCommand::Open { .. } => self.closed = false,
+            PlayerCommand::Close => self.closed = true,
+            _ => {}
+        }
         if matches!(
             command,
             PlayerCommand::Open { .. }
@@ -62,6 +69,9 @@ impl<P: PlayerPort> PlayerSession<P> {
     /// 只采纳当前播放会话/代际的后端事件。位置来自后端快照本身。
     pub fn accept_event(&mut self, event: Stamped<PlaybackEvent>) -> Option<PlaybackEvent> {
         let event = event.accept(&self.gate)?;
+        if self.closed && !matches!(event, PlaybackEvent::Closed) {
+            return None;
+        }
         match event {
             PlaybackEvent::Snapshot(snapshot) => self.snapshot = Some(snapshot),
             PlaybackEvent::Closed => self.snapshot = None,

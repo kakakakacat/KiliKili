@@ -36,6 +36,11 @@ jobs:
           flutter-version-file: pubspec.yaml
           cache: true
 
+      - name: Install Linux native asset headers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libx11-dev libxi-dev
+
       - name: Prepare patched Flutter SDK and packages
         run: |
           export FLUTTER_ROOT="$(dirname "$(dirname "$(command -v flutter)")")"

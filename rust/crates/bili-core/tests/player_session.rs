@@ -84,6 +84,19 @@ fn route_disposal_and_cross_session_events_cannot_restore_playback() {
 }
 
 #[test]
+fn closed_session_rejects_late_snapshot_even_with_current_generation() {
+    let mut session = PlayerSession::new(SessionId(5), Port::default());
+    assert!(session.dispatch(PlayerCommand::Close).is_ok());
+    let late = Stamped::new(
+        SessionId(5),
+        session.generation(),
+        PlaybackEvent::Snapshot(snapshot(200, PlaybackState::Playing)),
+    );
+    assert!(session.accept_event(late).is_none());
+    assert!(session.snapshot().is_none());
+}
+
+#[test]
 fn pause_and_speed_intents_do_not_fabricate_player_state() {
     let mut session = PlayerSession::new(SessionId(4), Port::default());
     assert!(session.dispatch(PlayerCommand::Pause).is_ok());

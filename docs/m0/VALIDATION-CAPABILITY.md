@@ -5,6 +5,9 @@
 修订：2026-11-10 — §2 / §3.1 原先把「每个 PR 自动编译」与 Docker 多发行版矩阵
 写成既有保障，与仓库里的 workflow 配置不符，已按实际配置更正；§2.1 补入五端产物核查的
 实测结论（Android 与 macOS 为首次构建）；§5 勾掉四条已完成项
+修订：2026-11-11 — `rust.yml` 的交叉编译矩阵拆分：PR 只跑 x86_64 的 Linux/Windows，
+Apple 与 Android 改为手动 dispatch（理由见 §2.1）；「成本约束」按仓库已公开的事实重写；
+「Rust 进入后 CI 需补」已完成，改为记录现状
 关联：RFC-0001 §9.3 / §16.7，ADR-004
 
 本文回答一个 RFC 里此前含糊带过的问题：五个目标平台，**哪些能做真机验收、哪些只能做编译验证、哪些根本没覆盖**。结论直接影响 M4/M5 的准入范围，以及 ADR-004 能拿到多少实测数据。
@@ -45,8 +48,31 @@ push / PR 上自动运行的只有两个，都**不产出任何平台产物**：
 
 | workflow | 触发路径 | 内容 |
 |---|---|---|
-| `flutter-test.yml` | `lib/**` `test/**` `pubspec.*` `tool/prepare-build.sh` | `ubuntu-latest`；`tool/prepare-build.sh Linux` 打补丁后跑 `flutter test` |
-| `rust.yml` | `rust/**` | `cargo fmt` / `clippy` / `test`，外加五个 target 的交叉编译 |
+| `flutter-test.yml` | `lib/**` `test/**` `pubspec.*` `tool/prepare-build.sh` `rust/crates/bili-api/tests/fixtures/**` | `ubuntu-latest`；`tool/prepare-build.sh Linux` 打补丁后跑 `flutter test` |
+| `rust.yml` | `rust/**` | `cargo fmt` / `clippy` / `test`，外加 **x86_64 Linux 与 Windows** 两个 target 的交叉编译 |
+
+`flutter-test.yml` 把 fixture 目录也列为触发路径，是因为 Dart 侧有测试读 `rust/`
+下的 golden（核对它们确实出自基线）；只改 fixture 时若不触发，唯一检查它们的
+job 就跑不到。
+
+##### Apple 与 Android 的交叉编译为何不在 PR 上
+
+2026-11-11 起，`aarch64-apple-darwin` / `aarch64-apple-ios` / `aarch64-linux-android`
+三个 target 移到 `rust.yml` 的 `cross-build-dispatch` job，只在手动 dispatch 时运行。
+
+直接起因：PR #41 上 `aarch64-apple-darwin` 连续两次在 **15 分钟**后失败，错误是
+"The job was not acquired by Runner of type hosted even after multiple attempts"
+——GitHub 的 macOS arm64 hosted runner 容量不足，job 根本没有启动。它是那个 PR
+唯一的红灯，而关于代码的信息量为零。这种红灯重复几次就会训练出「红了也先合」的
+习惯，比没有这个检查更糟。
+
+判断依据是**交叉编译能证明什么**：它只回答「代码里有没有写死某个平台」，而
+x86_64 的 Linux + Windows 已经能回答这个问题，且一分钟内结束。真正的平台级断裂
+（链接器、NDK、cargokit 把 Rust 接进 app 构建）本来就不是 `cargo build --target`
+能发现的，要靠五个 app workflow——而它们一直是手动 dispatch。
+
+`rust/rust-toolchain.toml` 仍钉着七个 target，手动跑与本地跑的覆盖面不变。
+**建议 dispatch 的时机**：改动触及 FFI/桥接层、升级 FRB 或工具链、发版前。
 
 **含义：一个只改 Dart 的 PR，在合并前没有任何环节验证过它还能编译出 app。**
 需要这个保证时，必须在合并前手动 dispatch 对应 workflow 并把结论记进 PR。
@@ -79,7 +105,7 @@ false，四条 Rust 路径全部静默回退 Dart。**这种失败不会让任�
 播放器依赖同样在位：Windows `libmpv-2.dll` 37,981,184 字节；Android
 `libmpv.so` 14,869,024；iOS `Mpv.framework` 与整套 ffmpeg framework；macOS
 `Mpv.framework` 7,445,680。Linux 不随包分发 libmpv，由 rpmbuild 自动生成的
-`Requires: libmpv.so.2()(64bit)` 声明为系统依赖（deb 的依赖声明有缺口，见 issue #36）。
+`Requires: libmpv.so.2()(64bit)` 声明为系统依赖（deb 侧当时有缺口，已修，见下）。
 
 Windows 安装包与 portable 同源：`windows/packaging/exe/inno_setup.iss` 的
 `[Files]` 递归整个 Release 目录。这回答了 §5 第 3 条里「libmpv DLL 的安装包
@@ -101,7 +127,10 @@ Windows 安装包与 portable 同源：`windows/packaging/exe/inno_setup.iss` �
 - **Linux RPM 发布的是 debuginfo 子包**，11,289 字节，不含应用。构建全程绿。
   已修（#34），并给产物加了体积闸门（#35）。
 - **deb 的 `Depends` 少声明 webkit2gtk 与 libsoup3**，干净系统上可能起不来。
-  体积闸门拦不住这一类——包的体积是对的，错的是元数据。见 issue #36。
+  体积闸门拦不住这一类——包的体积是对的，错的是元数据。已修（issue #36 / PR #38），
+  并在 #39 里改为构建期用 `dpkg-shlibdeps` 从 ELF 生成，不再手工维护；缺关键库则
+  构建失败。**未在干净系统上实际安装验证**，结论来自 ELF 与包元数据的静态比对
+  （本机无 Linux GUI 环境，见 §3）。
 
 **仍未验证**：产物里有 Rust 库 ≠ 运行时加载成功。`RustCore.isReady` 在真机上
 是否为 true、四条 Rust 路径在登录态下行为是否与 Dart 一致，都还没验（issue #25）。
@@ -112,11 +141,24 @@ Windows 安装包与 portable 同源：`windows/packaging/exe/inno_setup.iss` �
 
 性能基线（RFC §8.1 的八项指标）**必须固定在同一台机器采样**，CI runner 的性能抖动使其数据不可比。
 
-### 成本约束
-私有仓库下 macOS runner 为 **10 倍分钟倍率**，2000 分钟免费额度实际只够 200 分钟 macOS 构建。Rust 五端交叉编译会显著拉长构建时间。三个选项：仓库公开、macOS/iOS job 限定 tag 或手动触发、或将开发机注册为 self-hosted runner。
+### 成本与可用性约束
 
-### Rust 进入后 CI 需补
-现有 workflow 仅含 Flutter。需增加 Rust toolchain、各端 target（`aarch64-linux-android`、`aarch64-apple-ios`、`x86_64-pc-windows-msvc` 等）、NDK 配置，以及 `~/.cargo` 与 `target/` 缓存——无缓存时每次全量编译 Rust 会使构建时间失控。归入 `RUST-003`，与 workspace 同期完成。
+本节原先按私有仓库写（macOS runner 10 倍分钟倍率、2000 分钟免费额度只够 200
+分钟 macOS 构建）。**仓库现已公开**，Actions 分钟数不再计费，当初列出的三个
+选项里「仓库公开」已经发生。
+
+剩下的约束不是钱，是**可用性**：GitHub 的 macOS arm64 hosted runner 容量紧张，
+排不到时 job 会在 15 分钟后以 "not acquired by Runner" 失败。已据此把 Apple 与
+Android 的 Rust 交叉编译改为手动 dispatch（§2.1）；五个 app workflow 本就是手动。
+若将来需要稳定的 macOS CI，剩下的路是把开发机注册为 self-hosted runner。
+
+### Rust CI 现状（原「进入后需补」，已完成）
+
+`RUST-003`（issue #3，已关闭）落地了 `rust.yml`：工具链由 `rust-toolchain.toml`
+决定（不在 workflow 里重复指定，避免两处版本漂移）、`Swatinem/rust-cache` 缓存
+`~/.cargo` 与 `target/`、Android 侧配 NDK r29 的 clang 作为链接器（`rustup target`
+只给标准库，不给链接器与 C 编译器，而 FRB 依赖链含 C 代码）。NDK 刻意不用
+`local-cache`，否则恢复出的 NDK 残缺、故障只在第二次之后出现。
 
 ## 3. Linux：明确降级为 best-effort
 
@@ -127,11 +169,11 @@ Windows 安装包与 portable 同源：`windows/packaging/exe/inno_setup.iss` �
 | 保障 | 状态 | 实际情况 |
 |---|---|---|
 | PR 上跑 Dart 单测 | ✅ 已落地 | `flutter-test.yml`，`ubuntu-latest`，命中 `lib/**` / `test/**` 等路径时触发。**只跑测试，不产出 Linux 产物** |
-| PR 上跑 Rust 单测与交叉编译 | ✅ 已落地 | `rust.yml`，命中 `rust/**` 时触发；`bili-domain` / `bili-api` / `bili-protocol` / `bili-core` 的单测与 fixture 对照在 `ubuntu-latest` 上直接运行（非容器内） |
+| PR 上跑 Rust 单测与交叉编译 | ✅ 已落地（交叉编译部分收窄） | `rust.yml`，命中 `rust/**` 时触发；`bili-domain` / `bili-api` / `bili-protocol` / `bili-core` 的单测与 fixture 对照在 `ubuntu-latest` 上直接运行（非容器内）。交叉编译在 PR 上只剩 x86_64 Linux/Windows，Apple 与 Android 改为手动，见 §2.1 |
 | Linux 产物构建 | ⚠️ 手动 | `linux_x64.yml` 只有 `workflow_dispatch` / `workflow_call`，见 §2.1 |
 | Docker 多发行版矩阵（`ubuntu:22.04` / `ubuntu:24.04` / `debian:12` / `fedora:41`）验证 **glibc 版本与动态库符号兼容性** | ❌ 计划，尚未落地 | 仓库中没有对应 workflow 或 compose 文件。这是 Flutter Linux 最常见的发布事故（构建机能跑、用户机 glibc 过旧起不来），在该矩阵建起来之前，Linux 的兼容性保障实际为零 |
 
-`bili-danmaku` 等 crate 尚未建立，上表只列已存在的。
+`bili-danmaku` 等 crate 尚未建立，上表只列已存在的。弹幕的**解码**已落在 `bili-api`、实体在 `bili-domain`（RFC §4 的注里记了为什么没单开 crate），其单测与 golden 对照已包含在上面那一行里。
 
 ### 3.2 放弃的保障
 vaapi/vdpau 硬解、Wayland 与 X11 合成行为、渲染性能与帧耗时、音频（PulseAudio/PipeWire）、HiDPI 缩放。

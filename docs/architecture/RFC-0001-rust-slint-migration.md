@@ -139,6 +139,17 @@ PiliPlus-Rust/
 
 注：阶段 1 无需一次性创建所有 crates；按功能边界逐个加入。拆分的原则是**可独立测试和可替换**，而不是目录越多越好。
 
+实际落地与上表的偏离（2026-11-11）：
+
+- 当前存在的 crate 是 `bili-domain` / `bili-api` / `bili-protocol` / `bili-core` /
+  `bridge_flutter` 五个。`bili-protocol` 不在上表里，是 Review 后按 §16.7 从
+  `bili-api` 里拆出来的——易变协议与稳定数据层的改动频率差一个量级。
+- **弹幕解码没有建 `bili-danmaku`**：`DmSegMobileReply` 的解码落在 `bili-api`
+  （data 层的协议解码），实体落在 `bili-domain`。按上表单开一个 crate，等于让
+  一个 protobuf 解码器自己占一层，而它与视频详情、取流的解析是同一类工作。
+  `bili-danmaku` 留给**引擎**（过滤、合并、分桶、调度，见 issue #42）——那才是
+  上表所说「解码、索引、过滤、调度」里真正独立于协议的部分。
+
 ## 5. 第一阶段：Flutter → Rust Core（P0）
 
 ### 5.1 交付目标

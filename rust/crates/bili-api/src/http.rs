@@ -117,3 +117,55 @@ pub fn check_status(status: u16) -> Result<(), DomainError> {
         )),
     }
 }
+
+/// 传输层配置。对应基线 Dio 里那组影响「请求怎么发」的开关
+/// （`lib/http/init.dart`、`lib/http/retry_interceptor.dart`）。
+///
+/// 由调用方按请求传入而非在 Rust 侧读配置：这些开关的真相源是 Dart 的
+/// `Pref`（用户在设置页改的就是它），Rust 再存一份就会出现「设置改了但
+/// Rust 路径还用旧值」的问题——与凭据不落 Rust 是同一个理由。
+///
+/// 默认值刻意与基线的默认值一致，见各字段注释。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TransportConfig {
+    /// 重试次数。基线 `Pref.retryCount` 默认 2；0 表示不重试。
+    pub retry_count: u32,
+    /// 重试基础间隔（毫秒）。第 n 次重试等待 `n * retry_delay_ms`，
+    /// 与基线 `RetryInterceptor` 的递增间隔一致。
+    pub retry_delay_ms: u64,
+    /// 系统代理。`None` 表示直连。
+    pub proxy: Option<ProxyConfig>,
+    /// 接受无效证书。
+    ///
+    /// 基线在开了系统代理时**无条件**接受（抓包场景），另有一个独立开关
+    /// `Pref.badCertificateCallback`。两者都由调用方折算成这一个布尔值。
+    pub accept_invalid_certs: bool,
+    /// 只用 HTTP/1.1。
+    ///
+    /// 基线默认 `Pref.enableHttp2 == false`，即默认就走 HTTP/1.1；而
+    /// reqwest 默认经 ALPN 协商 h2。不显式对齐的话，Rust 路径会在用户
+    /// 没开 HTTP/2 时偷偷用 h2——这正是「Rust 路径与基线行为不一致」
+    /// 最隐蔽的一种。
+    pub http1_only: bool,
+}
+
+/// 代理配置。只支持 HTTP 代理：基线的 `findProxy` 返回的也是
+/// `PROXY host:port`，没有 SOCKS 分支。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ProxyConfig {
+    pub host: String,
+    pub port: u16,
+}
+
+impl Default for TransportConfig {
+    fn default() -> Self {
+        Self {
+            retry_count: 2,
+            retry_delay_ms: 500,
+            proxy: None,
+            accept_invalid_certs: false,
+            // 与基线 `Pref.enableHttp2` 的默认值（false）对应。
+            http1_only: true,
+        }
+    }
+}

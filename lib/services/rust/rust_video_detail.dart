@@ -6,6 +6,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/rust/api/video_detail_fetch.dart' as rust_api;
 import 'package:PiliPlus/services/rust/rust_flags.dart';
+import 'package:PiliPlus/services/rust/rust_transport.dart';
 import 'package:PiliPlus/services/rust/video_detail_denormalize.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
@@ -24,10 +25,11 @@ import 'package:flutter/foundation.dart';
 /// Cookie 与账号头按请求从 Dart 的账号体系取出传给 Rust，Rust 不保存。
 /// 账号切换、Cookie 刷新、登出仍然只发生在 Dart 一侧，不存在两份账号状态。
 ///
-/// ## 与基线 Dio 的差距
+/// ## 与基线 Dio 的对齐
 ///
-/// Rust 侧没有基线的重试拦截器、系统代理、证书豁免与 HTTP/1.1 回退。
-/// 依赖这些设置的环境下本路径会失败并降级，不会把请求发错地方。
+/// 重试、系统代理、证书豁免、HTTP/1.1 按请求从 `Pref` 取出传给 Rust
+/// （[RustTransport]，issue #25）。仍有差异的部分见
+/// `rust/crates/bili-api/src/transport_reqwest.rs` 的模块文档。
 abstract final class RustVideoDetail {
   /// 与基线 `BaseOptions` 一致的超时（`lib/http/init.dart`）。
   static const int _timeoutMs = 10000;
@@ -57,6 +59,7 @@ abstract final class RustVideoDetail {
         cookie: await _cookieFor(account, uri),
         headers: _headersFor(account),
         timeoutMs: BigInt.from(_timeoutMs),
+        transport: RustTransport.current(),
       );
 
       final json = result.json;

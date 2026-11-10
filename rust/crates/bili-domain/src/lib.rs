@@ -6,11 +6,13 @@
 
 pub mod error;
 pub mod redact;
+pub mod session;
 
 #[cfg(test)]
 mod tests {
     use super::error::{DomainError, ErrorKind};
     use super::redact::{Redacted, is_credential_key, redact_header, redact_query};
+    use super::session::{GenerationGate, SessionId, Stamped};
 
     #[test]
     fn error_kind_is_retryable() {
@@ -62,5 +64,40 @@ mod tests {
             redact_header("User-Agent", "Mozilla"),
             "User-Agent: Mozilla"
         );
+    }
+
+    #[test]
+    fn stale_generation_is_rejected() {
+        let gate = GenerationGate::new(SessionId(1));
+        let g0 = gate.current();
+        let old = Stamped::new(SessionId(1), g0, "first");
+
+        gate.bump(); // 用户切了视频
+
+        assert_eq!(old.accept(&gate), None, "过期结果必须被丢弃");
+    }
+
+    #[test]
+    fn current_generation_is_accepted() {
+        let gate = GenerationGate::new(SessionId(7));
+        let g = gate.bump();
+        let fresh = Stamped::new(SessionId(7), g, 42);
+        assert_eq!(fresh.accept(&gate), Some(42));
+    }
+
+    #[test]
+    fn cross_session_result_is_rejected() {
+        let gate = GenerationGate::new(SessionId(1));
+        let g = gate.current();
+        let other = Stamped::new(SessionId(2), g, "wrong session");
+        assert_eq!(other.accept(&gate), None, "跨会话结果绝不可采纳");
+    }
+
+    #[test]
+    fn gate_is_shared_across_clones() {
+        let gate = GenerationGate::new(SessionId(1));
+        let clone = gate.clone();
+        clone.bump();
+        assert_eq!(gate.current(), clone.current(), "克隆须共享同一代际");
     }
 }

@@ -1,0 +1,24 @@
+[package]
+name = "bridge-flutter"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "flutter_rust_bridge 对 Dart 的导出层。仅属 Stage 1，Phase 2 移除。"
+
+# cdylib: Android/Windows/Linux 动态库；staticlib: iOS/macOS 静态链接
+[lib]
+crate-type = ["cdylib", "staticlib", "lib"]
+
+[dependencies]
+bili-domain = { path = "../bili-domain" }
+bili-core = { path = "../bili-core" }
+flutter_rust_bridge = "=2.13.0"
+tokio = { workspace = true }
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[lints]
+workspace = true
+

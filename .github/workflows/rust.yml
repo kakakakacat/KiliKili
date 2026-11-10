@@ -65,6 +65,39 @@ jobs:
       - name: Add target
         run: rustup target add ${{ matrix.target }}
 
+      # rustup target 只提供标准库，不提供链接器与 C 编译器。
+      # FRB 依赖链含 C 代码（cc-rs），交叉编译到 Android 必须用 NDK 的
+      # clang，否则报 `failed to find tool "aarch64-linux-android-clang"`。
+      - name: Set up Android NDK
+        if: endsWith(matrix.target, '-linux-android')
+        id: ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          # 与项目 android/app/build.gradle.kts 使用的 NDK 保持一致
+          ndk-version: r29
+          local-cache: true
+
+      - name: Configure Android toolchain
+        if: endsWith(matrix.target, '-linux-android')
+        shell: bash
+        env:
+          NDK: ${{ steps.ndk.outputs.ndk-path }}
+        run: |
+          BIN="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          # minSdk 对应的 API level；clang 包装脚本按 <target><api>-clang 命名
+          API=24
+          case "${{ matrix.target }}" in
+            aarch64-linux-android)   TRIPLE=aarch64-linux-android ;;
+            armv7-linux-androideabi) TRIPLE=armv7a-linux-androideabi ;;
+            x86_64-linux-android)    TRIPLE=x86_64-linux-android ;;
+          esac
+          VAR=$(echo "${{ matrix.target }}" | tr 'a-z-' 'A-Z_')
+          {
+            echo "CC_${{ matrix.target }}=$BIN/${TRIPLE}${API}-clang"
+            echo "AR_${{ matrix.target }}=$BIN/llvm-ar"
+            echo "CARGO_TARGET_${VAR}_LINKER=$BIN/${TRIPLE}${API}-clang"
+          } >> "$GITHUB_ENV"
+
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: rust

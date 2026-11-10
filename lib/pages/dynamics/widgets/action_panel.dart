@@ -1,8 +1,8 @@
-import 'package:PiliPlus/models/dynamics/result.dart';
-import 'package:PiliPlus/pages/dynamics_repost/view.dart';
-import 'package:PiliPlus/utils/num_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/request_utils.dart';
+import 'package:kilikili/models/dynamics/result.dart';
+import 'package:kilikili/pages/dynamics_repost/view.dart';
+import 'package:kilikili/utils/num_utils.dart';
+import 'package:kilikili/utils/page_utils.dart';
+import 'package:kilikili/utils/request_utils.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 

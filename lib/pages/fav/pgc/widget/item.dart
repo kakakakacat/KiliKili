@@ -1,13 +1,13 @@
-import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/badge.dart';
-import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/select_mask.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
-import 'package:PiliPlus/models_new/fav/fav_pgc/list.dart';
-import 'package:PiliPlus/pages/common/multi_select/base.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:kilikili/common/style.dart';
+import 'package:kilikili/common/widgets/badge.dart';
+import 'package:kilikili/common/widgets/button/icon_button.dart';
+import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/select_mask.dart';
+import 'package:kilikili/models/common/badge_type.dart';
+import 'package:kilikili/models_new/fav/fav_pgc/list.dart';
+import 'package:kilikili/pages/common/multi_select/base.dart';
+import 'package:kilikili/utils/page_utils.dart';
+import 'package:kilikili/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
 class FavPgcItem extends StatelessWidget {

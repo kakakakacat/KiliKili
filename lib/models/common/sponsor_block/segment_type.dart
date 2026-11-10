@@ -2,7 +2,7 @@
 
 import 'dart:ui';
 
-import 'package:PiliPlus/models/common/sponsor_block/action_type.dart';
+import 'package:kilikili/models/common/sponsor_block/action_type.dart';
 
 enum SegmentType {
   sponsor(

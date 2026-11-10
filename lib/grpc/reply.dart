@@ -1,11 +1,11 @@
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart';
-import 'package:PiliPlus/grpc/bilibili/pagination.pb.dart';
-import 'package:PiliPlus/grpc/grpc_req.dart';
-import 'package:PiliPlus/grpc/url.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/utils/global_data.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:kilikili/common/constants.dart';
+import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart';
+import 'package:kilikili/grpc/bilibili/pagination.pb.dart';
+import 'package:kilikili/grpc/grpc_req.dart';
+import 'package:kilikili/grpc/url.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/utils/global_data.dart';
+import 'package:kilikili/utils/storage_pref.dart';
 import 'package:fixnum/fixnum.dart';
 
 abstract final class ReplyGrpc {

@@ -1,15 +1,15 @@
-import 'package:PiliPlus/common/skeleton/fav_pgc_item.dart';
-import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
-import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
-import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/fav/fav_pgc/list.dart';
-import 'package:PiliPlus/pages/fav/pgc/controller.dart';
-import 'package:PiliPlus/pages/fav/pgc/pgc_layout.dart';
-import 'package:PiliPlus/pages/fav/pgc/widget/item.dart';
-import 'package:PiliPlus/utils/grid.dart';
+import 'package:kilikili/common/skeleton/fav_pgc_item.dart';
+import 'package:kilikili/common/sliver_single_child_delegate.dart';
+import 'package:kilikili/common/widgets/button/icon_button.dart';
+import 'package:kilikili/common/widgets/dialog/dialog.dart';
+import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
+import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/models_new/fav/fav_pgc/list.dart';
+import 'package:kilikili/pages/fav/pgc/controller.dart';
+import 'package:kilikili/pages/fav/pgc/pgc_layout.dart';
+import 'package:kilikili/pages/fav/pgc/widget/item.dart';
+import 'package:kilikili/utils/grid.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 

@@ -1,20 +1,20 @@
 import 'dart:async';
 import 'dart:io' show Platform;
 
-import 'package:PiliPlus/common/widgets/route_aware_mixin.dart'
+import 'package:kilikili/common/widgets/route_aware_mixin.dart'
     show routeObserver;
-import 'package:PiliPlus/common/widgets/selection_text.dart';
-import 'package:PiliPlus/http/browser_ua.dart';
-import 'package:PiliPlus/main.dart' show webViewEnvironment;
-import 'package:PiliPlus/models/common/webview_menu_type.dart';
-import 'package:PiliPlus/plugin/linux_webview.dart';
-import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
-import 'package:PiliPlus/utils/extension/string_ext.dart';
-import 'package:PiliPlus/utils/linux_cookie_manager.dart';
-import 'package:PiliPlus/utils/login_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:kilikili/common/widgets/selection_text.dart';
+import 'package:kilikili/http/browser_ua.dart';
+import 'package:kilikili/main.dart' show webViewEnvironment;
+import 'package:kilikili/models/common/webview_menu_type.dart';
+import 'package:kilikili/plugin/linux_webview.dart';
+import 'package:kilikili/utils/app_scheme.dart';
+import 'package:kilikili/utils/extension/num_ext.dart';
+import 'package:kilikili/utils/extension/string_ext.dart';
+import 'package:kilikili/utils/linux_cookie_manager.dart';
+import 'package:kilikili/utils/login_utils.dart';
+import 'package:kilikili/utils/page_utils.dart';
+import 'package:kilikili/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -216,12 +216,12 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
 document.addEventListener('click', function(e) {
   var finishBtn = e.target && e.target.closest ? e.target.closest('.finish-btn') : null;
   if (finishBtn) {
-    window.PiliPlus.postMessage('finishButtonClicked');
+    window.KiliKili.postMessage('finishButtonClicked');
     return;
   }
   var infoBar = e.target && e.target.closest ? e.target.closest('.info-bar') : null;
   if (infoBar) {
-    window.PiliPlus.postMessage('infoBarClicked');
+    window.KiliKili.postMessage('infoBarClicked');
     return;
   }
 }, true);
@@ -562,7 +562,7 @@ class _LinuxContextMenuButton extends StatefulWidget {
 
 class _LinuxContextMenuButtonState extends State<_LinuxContextMenuButton> {
   static const _channel = MethodChannel(
-    'com.example.piliplus/linux_context_menu',
+    'io.github.kakacat.kilikili/linux_context_menu',
   );
   static int _nextRequestId = 0;
   int? _requestId;

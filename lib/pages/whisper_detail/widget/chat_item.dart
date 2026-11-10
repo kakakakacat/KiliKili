@@ -1,27 +1,27 @@
 import 'dart:convert';
 import 'dart:math' as math;
 
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/badge.dart';
-import 'package:PiliPlus/common/widgets/emote_tooltip.dart';
-import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
-import 'package:PiliPlus/common/widgets/selection_text.dart';
-import 'package:PiliPlus/grpc/bilibili/im/interfaces/v1.pb.dart'
+import 'package:kilikili/common/constants.dart';
+import 'package:kilikili/common/style.dart';
+import 'package:kilikili/common/widgets/badge.dart';
+import 'package:kilikili/common/widgets/emote_tooltip.dart';
+import 'package:kilikili/common/widgets/gesture/tap_gesture_recognizer.dart';
+import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/image_viewer/hero.dart';
+import 'package:kilikili/common/widgets/selection_text.dart';
+import 'package:kilikili/grpc/bilibili/im/interfaces/v1.pb.dart'
     show EmotionInfo;
-import 'package:PiliPlus/grpc/bilibili/im/type.pb.dart' show Msg, MsgType;
-import 'package:PiliPlus/http/search.dart';
-import 'package:PiliPlus/models/common/image_preview_type.dart';
-import 'package:PiliPlus/pages/article/view.dart';
-import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/image_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:kilikili/grpc/bilibili/im/type.pb.dart' show Msg, MsgType;
+import 'package:kilikili/http/search.dart';
+import 'package:kilikili/models/common/image_preview_type.dart';
+import 'package:kilikili/pages/article/view.dart';
+import 'package:kilikili/utils/app_scheme.dart';
+import 'package:kilikili/utils/date_utils.dart';
+import 'package:kilikili/utils/duration_utils.dart';
+import 'package:kilikili/utils/extension/num_ext.dart';
+import 'package:kilikili/utils/id_utils.dart';
+import 'package:kilikili/utils/image_utils.dart';
+import 'package:kilikili/utils/page_utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:material_ui/material_ui.dart';

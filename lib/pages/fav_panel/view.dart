@@ -1,10 +1,10 @@
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
-import 'package:PiliPlus/pages/common/common_intro_controller.dart';
-import 'package:PiliPlus/utils/bili_utils.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
-import 'package:PiliPlus/utils/num_utils.dart';
+import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/models_new/fav/fav_folder/list.dart';
+import 'package:kilikili/pages/common/common_intro_controller.dart';
+import 'package:kilikili/utils/bili_utils.dart';
+import 'package:kilikili/utils/feed_back.dart';
+import 'package:kilikili/utils/num_utils.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 

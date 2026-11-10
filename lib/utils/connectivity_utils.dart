@@ -1,6 +1,6 @@
 import 'dart:io' show Platform;
 
-import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:kilikili/utils/platform_utils.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:nm/nm.dart';
 

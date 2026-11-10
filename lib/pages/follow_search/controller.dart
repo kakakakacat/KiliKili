@@ -1,8 +1,8 @@
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/member.dart';
-import 'package:PiliPlus/models_new/follow/data.dart';
-import 'package:PiliPlus/models_new/follow/list.dart';
-import 'package:PiliPlus/pages/common/search/common_search_controller.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/http/member.dart';
+import 'package:kilikili/models_new/follow/data.dart';
+import 'package:kilikili/models_new/follow/list.dart';
+import 'package:kilikili/pages/common/search/common_search_controller.dart';
 
 class FollowSearchController
     extends CommonSearchController<FollowData, FollowItemModel> {

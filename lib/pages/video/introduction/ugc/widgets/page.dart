@@ -1,9 +1,9 @@
-import 'package:PiliPlus/common/assets.dart';
-import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
-import 'package:PiliPlus/models_new/video/video_detail/page.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
-import 'package:PiliPlus/utils/scroll_offset_helper.dart';
+import 'package:kilikili/common/assets.dart';
+import 'package:kilikili/models_new/video/video_detail/episode.dart';
+import 'package:kilikili/models_new/video/video_detail/page.dart';
+import 'package:kilikili/pages/video/introduction/ugc/controller.dart';
+import 'package:kilikili/utils/extension/num_ext.dart';
+import 'package:kilikili/utils/scroll_offset_helper.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 

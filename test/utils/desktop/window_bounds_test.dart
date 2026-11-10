@@ -1,6 +1,6 @@
 import 'dart:ui' show Offset, Rect, Size;
 
-import 'package:PiliPlus/utils/desktop/window_bounds.dart';
+import 'package:kilikili/utils/desktop/window_bounds.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nativeapi/nativeapi.dart' as nativeapi;
 

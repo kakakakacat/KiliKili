@@ -1,13 +1,13 @@
-import 'package:PiliPlus/pages/setting/models/dm_settings.dart';
-import 'package:PiliPlus/pages/setting/models/dyn_settings.dart';
-import 'package:PiliPlus/pages/setting/models/extra_settings.dart';
-import 'package:PiliPlus/pages/setting/models/model.dart';
-import 'package:PiliPlus/pages/setting/models/play_settings.dart';
-import 'package:PiliPlus/pages/setting/models/privacy_settings.dart';
-import 'package:PiliPlus/pages/setting/models/recommend_settings.dart';
-import 'package:PiliPlus/pages/setting/models/reply_settings.dart';
-import 'package:PiliPlus/pages/setting/models/style_settings.dart';
-import 'package:PiliPlus/pages/setting/models/video_settings.dart';
+import 'package:kilikili/pages/setting/models/dm_settings.dart';
+import 'package:kilikili/pages/setting/models/dyn_settings.dart';
+import 'package:kilikili/pages/setting/models/extra_settings.dart';
+import 'package:kilikili/pages/setting/models/model.dart';
+import 'package:kilikili/pages/setting/models/play_settings.dart';
+import 'package:kilikili/pages/setting/models/privacy_settings.dart';
+import 'package:kilikili/pages/setting/models/recommend_settings.dart';
+import 'package:kilikili/pages/setting/models/reply_settings.dart';
+import 'package:kilikili/pages/setting/models/style_settings.dart';
+import 'package:kilikili/pages/setting/models/video_settings.dart';
 
 enum SettingType {
   privacySetting('隐私设置'),

@@ -1,17 +1,17 @@
-import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/badge.dart';
-import 'package:PiliPlus/common/widgets/image/image_save.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/stat/stat.dart';
-import 'package:PiliPlus/common/widgets/video_card/video_card_v.dart';
-import 'package:PiliPlus/http/search.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
-import 'package:PiliPlus/models/common/stat_type.dart';
-import 'package:PiliPlus/models_new/member/coin_like_arc/item.dart';
-import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:kilikili/common/style.dart';
+import 'package:kilikili/common/widgets/badge.dart';
+import 'package:kilikili/common/widgets/image/image_save.dart';
+import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/stat/stat.dart';
+import 'package:kilikili/common/widgets/video_card/video_card_v.dart';
+import 'package:kilikili/http/search.dart';
+import 'package:kilikili/models/common/badge_type.dart';
+import 'package:kilikili/models/common/stat_type.dart';
+import 'package:kilikili/models_new/member/coin_like_arc/item.dart';
+import 'package:kilikili/utils/date_utils.dart';
+import 'package:kilikili/utils/duration_utils.dart';
+import 'package:kilikili/utils/page_utils.dart';
+import 'package:kilikili/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
 class MemberCoinLikeItem extends StatelessWidget {

@@ -1,4 +1,4 @@
-import 'package:PiliPlus/pages/common/multi_select/base.dart';
+import 'package:kilikili/pages/common/multi_select/base.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 

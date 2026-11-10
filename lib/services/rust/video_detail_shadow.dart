@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:PiliPlus/rust/api/video_detail.dart' as rust_api;
-import 'package:PiliPlus/services/rust/rust_flags.dart';
-import 'package:PiliPlus/services/rust/video_detail_normalize.dart';
+import 'package:kilikili/rust/api/video_detail.dart' as rust_api;
+import 'package:kilikili/services/rust/rust_flags.dart';
+import 'package:kilikili/services/rust/video_detail_normalize.dart';
 import 'package:flutter/foundation.dart';
 
 /// 视频详情的 shadow mode 比对（RFC-0001 §5.3）。

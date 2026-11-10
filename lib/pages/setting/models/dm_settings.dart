@@ -1,13 +1,13 @@
 import 'dart:math' show max;
 
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
-import 'package:PiliPlus/pages/setting/models/model.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
-import 'package:PiliPlus/utils/filtering_text.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:kilikili/common/widgets/custom_icon.dart';
+import 'package:kilikili/pages/setting/models/model.dart';
+import 'package:kilikili/utils/extension/num_ext.dart';
+import 'package:kilikili/utils/filtering_text.dart';
+import 'package:kilikili/utils/platform_utils.dart';
+import 'package:kilikili/utils/storage.dart';
+import 'package:kilikili/utils/storage_key.dart';
+import 'package:kilikili/utils/storage_pref.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';

@@ -1,10 +1,10 @@
-import 'package:PiliPlus/common/assets.dart';
-import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/badge.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
-import 'package:PiliPlus/models/dynamics/result.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
+import 'package:kilikili/common/assets.dart';
+import 'package:kilikili/common/style.dart';
+import 'package:kilikili/common/widgets/badge.dart';
+import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/models/common/badge_type.dart';
+import 'package:kilikili/models/dynamics/result.dart';
+import 'package:kilikili/utils/extension/num_ext.dart';
 import 'package:material_ui/material_ui.dart';
 
 Widget liveRcmdPanel(

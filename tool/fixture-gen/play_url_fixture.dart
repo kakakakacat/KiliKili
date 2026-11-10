@@ -16,7 +16,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:PiliPlus/services/rust/play_url_normalize.dart';
+import 'package:kilikili/services/rust/play_url_normalize.dart';
 
 const _fixtureDir = 'rust/crates/bili-api/tests/fixtures/play_url';
 

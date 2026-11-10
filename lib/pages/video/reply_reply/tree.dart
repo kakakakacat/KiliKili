@@ -1,6 +1,6 @@
 import 'dart:collection';
 
-import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart';
+import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart';
 import 'package:collection/collection.dart';
 import 'package:fixnum/fixnum.dart';
 

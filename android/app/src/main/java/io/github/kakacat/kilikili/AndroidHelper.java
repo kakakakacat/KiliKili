@@ -1,7 +1,7 @@
-package com.example.piliplus;
+package io.github.kakacat.kilikili;
 
-import static com.example.piliplus.MediaHelper.getCustomRemoteAction;
-import static com.example.piliplus.MediaHelper.getRemoteAction;
+import static io.github.kakacat.kilikili.MediaHelper.getCustomRemoteAction;
+import static io.github.kakacat.kilikili.MediaHelper.getRemoteAction;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;

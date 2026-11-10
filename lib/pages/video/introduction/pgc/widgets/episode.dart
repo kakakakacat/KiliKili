@@ -1,16 +1,16 @@
 import 'dart:async' show StreamSubscription;
 
-import 'package:PiliPlus/common/assets.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_info_model/new_ep.dart';
-import 'package:PiliPlus/models_new/video/video_detail/episode.dart'
+import 'package:kilikili/common/assets.dart';
+import 'package:kilikili/models_new/pgc/pgc_info_model/episode.dart';
+import 'package:kilikili/models_new/pgc/pgc_info_model/new_ep.dart';
+import 'package:kilikili/models_new/video/video_detail/episode.dart'
     hide EpisodeItem;
-import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
-import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:PiliPlus/utils/scroll_offset_helper.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:kilikili/pages/video/introduction/pgc/controller.dart';
+import 'package:kilikili/utils/accounts.dart';
+import 'package:kilikili/utils/extension/num_ext.dart';
+import 'package:kilikili/utils/extension/theme_ext.dart';
+import 'package:kilikili/utils/scroll_offset_helper.dart';
+import 'package:kilikili/utils/utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:material_ui/material_ui.dart';

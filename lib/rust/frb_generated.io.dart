@@ -3,20 +3,20 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
-import 'package:PiliPlus/rust/api/init.dart';
-import 'package:PiliPlus/rust/api/play_url.dart';
-import 'package:PiliPlus/rust/api/play_url_fetch.dart';
-import 'package:PiliPlus/rust/api/search_suggest.dart';
-import 'package:PiliPlus/rust/api/transport.dart';
-import 'package:PiliPlus/rust/api/video_detail.dart';
-import 'package:PiliPlus/rust/api/video_detail_fetch.dart';
-import 'package:PiliPlus/rust/api/wbi.dart';
+import 'package:kilikili/rust/api/init.dart';
+import 'package:kilikili/rust/api/play_url.dart';
+import 'package:kilikili/rust/api/play_url_fetch.dart';
+import 'package:kilikili/rust/api/search_suggest.dart';
+import 'package:kilikili/rust/api/transport.dart';
+import 'package:kilikili/rust/api/video_detail.dart';
+import 'package:kilikili/rust/api/video_detail_fetch.dart';
+import 'package:kilikili/rust/api/wbi.dart';
 
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi' as ffi;
 
-import 'package:PiliPlus/rust/frb_generated.dart';
+import 'package:kilikili/rust/frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_io.dart';
 
 abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {

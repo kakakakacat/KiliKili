@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:PiliPlus/models/search/suggest.dart';
+import 'package:kilikili/models/search/suggest.dart';
 
 const fixtureDir = 'rust/crates/bili-api/tests/fixtures/search_suggest';
 

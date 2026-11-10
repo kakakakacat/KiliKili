@@ -1,9 +1,9 @@
-import 'package:PiliPlus/models/common/live/live_search_type.dart';
-import 'package:PiliPlus/pages/live_search/child/controller.dart';
-import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:kilikili/models/common/live/live_search_type.dart';
+import 'package:kilikili/pages/live_search/child/controller.dart';
+import 'package:kilikili/utils/extension/scroll_controller_ext.dart';
+import 'package:kilikili/utils/id_utils.dart';
+import 'package:kilikili/utils/page_utils.dart';
+import 'package:kilikili/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 

@@ -1,25 +1,25 @@
 import 'dart:io' show Platform;
 import 'dart:math' as math;
 
-import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/draggable_sheet/dyn.dart';
-import 'package:PiliPlus/common/widgets/marquee.dart';
-import 'package:PiliPlus/pages/live_room/controller.dart';
-import 'package:PiliPlus/pages/setting/models/play_settings.dart'
+import 'package:kilikili/common/style.dart';
+import 'package:kilikili/common/widgets/draggable_sheet/dyn.dart';
+import 'package:kilikili/common/widgets/marquee.dart';
+import 'package:kilikili/pages/live_room/controller.dart';
+import 'package:kilikili/pages/setting/models/play_settings.dart'
     show showPlayerVolumeDialog;
-import 'package:PiliPlus/pages/video/widgets/header_control.dart';
-import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
-import 'package:PiliPlus/services/shutdown_timer_service.dart'
+import 'package:kilikili/pages/video/widgets/header_control.dart';
+import 'package:kilikili/plugin/pl_player/controller.dart';
+import 'package:kilikili/plugin/pl_player/widgets/common_btn.dart';
+import 'package:kilikili/services/shutdown_timer_service.dart'
     show shutdownTimerService;
-import 'package:PiliPlus/utils/android/android_helper.dart';
-import 'package:PiliPlus/utils/extension/context_ext.dart';
-import 'package:PiliPlus/utils/extension/size_ext.dart';
-import 'package:PiliPlus/utils/extension/string_ext.dart';
-import 'package:PiliPlus/utils/ios/pip_helper.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:kilikili/utils/android/android_helper.dart';
+import 'package:kilikili/utils/extension/context_ext.dart';
+import 'package:kilikili/utils/extension/size_ext.dart';
+import 'package:kilikili/utils/extension/string_ext.dart';
+import 'package:kilikili/utils/ios/pip_helper.dart';
+import 'package:kilikili/utils/platform_utils.dart';
+import 'package:kilikili/utils/storage.dart';
+import 'package:kilikili/utils/storage_key.dart';
 import 'package:collection/collection.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';

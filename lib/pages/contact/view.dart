@@ -1,10 +1,10 @@
-import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
-import 'package:PiliPlus/pages/fan/view.dart';
-import 'package:PiliPlus/pages/follow/child/child_view.dart';
-import 'package:PiliPlus/pages/follow_search/view.dart';
-import 'package:PiliPlus/pages/share/view.dart' show UserModel;
-import 'package:PiliPlus/utils/accounts.dart';
+import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:kilikili/common/widgets/scroll_physics.dart' show tabBarView;
+import 'package:kilikili/pages/fan/view.dart';
+import 'package:kilikili/pages/follow/child/child_view.dart';
+import 'package:kilikili/pages/follow_search/view.dart';
+import 'package:kilikili/pages/share/view.dart' show UserModel;
+import 'package:kilikili/utils/accounts.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 

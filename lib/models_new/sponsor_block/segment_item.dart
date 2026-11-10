@@ -1,5 +1,5 @@
-import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
+import 'package:kilikili/models/common/sponsor_block/segment_type.dart';
+import 'package:kilikili/utils/extension/iterable_ext.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 
 class SegmentItemModel {

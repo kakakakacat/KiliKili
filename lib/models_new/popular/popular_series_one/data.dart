@@ -1,5 +1,5 @@
-import 'package:PiliPlus/models/model_hot_video_item.dart';
-import 'package:PiliPlus/models_new/popular/popular_series_one/config.dart';
+import 'package:kilikili/models/model_hot_video_item.dart';
+import 'package:kilikili/models_new/popular/popular_series_one/config.dart';
 
 class PopularSeriesOneData {
   PopularSeriesConfig? config;

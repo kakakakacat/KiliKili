@@ -1,4 +1,4 @@
-import 'package:PiliPlus/models/common/enum_with_label.dart';
+import 'package:kilikili/models/common/enum_with_label.dart';
 
 enum BarHideType with EnumWithLabel {
   instant('即时'),

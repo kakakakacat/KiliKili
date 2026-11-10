@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:PiliPlus/models/video/play/url.dart';
-import 'package:PiliPlus/services/rust/play_url_denormalize.dart';
-import 'package:PiliPlus/services/rust/play_url_normalize.dart';
+import 'package:kilikili/models/video/play/url.dart';
+import 'package:kilikili/services/rust/play_url_denormalize.dart';
+import 'package:kilikili/services/rust/play_url_normalize.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// `play_url_normalize.dart` 是 `PlayUrlModel.fromJson` 那套解析规则的

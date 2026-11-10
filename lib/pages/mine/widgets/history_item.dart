@@ -1,6 +1,6 @@
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/models_new/history/list.dart';
-import 'package:PiliPlus/pages/history/widgets/item.dart' show onPushHistory;
+import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/models_new/history/list.dart';
+import 'package:kilikili/pages/history/widgets/item.dart' show onPushHistory;
 import 'package:material_ui/material_ui.dart';
 
 class MineHistoryItem extends StatelessWidget {

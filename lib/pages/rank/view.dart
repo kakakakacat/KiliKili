@@ -1,7 +1,7 @@
-import 'package:PiliPlus/common/widgets/flutter/vertical_tabs.dart';
-import 'package:PiliPlus/models/common/rank_type.dart';
-import 'package:PiliPlus/pages/rank/controller.dart';
-import 'package:PiliPlus/pages/rank/zone/view.dart';
+import 'package:kilikili/common/widgets/flutter/vertical_tabs.dart';
+import 'package:kilikili/models/common/rank_type.dart';
+import 'package:kilikili/pages/rank/controller.dart';
+import 'package:kilikili/pages/rank/zone/view.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 

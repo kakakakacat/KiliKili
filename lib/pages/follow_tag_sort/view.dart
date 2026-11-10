@@ -1,10 +1,10 @@
-import 'package:PiliPlus/common/widgets/reorder_mixin.dart';
-import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:PiliPlus/http/follow.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/member/tags.dart';
-import 'package:PiliPlus/pages/follow/controller.dart';
-import 'package:PiliPlus/utils/bili_utils.dart';
+import 'package:kilikili/common/widgets/reorder_mixin.dart';
+import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:kilikili/http/follow.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/models/member/tags.dart';
+import 'package:kilikili/pages/follow/controller.dart';
+import 'package:kilikili/utils/bili_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';

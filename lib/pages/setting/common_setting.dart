@@ -1,6 +1,6 @@
-import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:PiliPlus/models/common/setting_type.dart';
-import 'package:PiliPlus/pages/setting/models/model.dart';
+import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:kilikili/models/common/setting_type.dart';
+import 'package:kilikili/pages/setting/models/model.dart';
 import 'package:material_ui/material_ui.dart';
 
 class CommonSetting extends StatefulWidget {

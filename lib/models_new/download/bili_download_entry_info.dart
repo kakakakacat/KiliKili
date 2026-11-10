@@ -1,17 +1,17 @@
-import 'package:PiliPlus/common/widgets/badge.dart';
-import 'package:PiliPlus/models/common/video/base_quality.dart';
-import 'package:PiliPlus/models/common/video/video_type.dart';
-import 'package:PiliPlus/models/video/play/url.dart' show Volume;
-import 'package:PiliPlus/models_new/download/download_info.dart';
-import 'package:PiliPlus/models_new/sponsor_block/segment_item.dart';
-import 'package:PiliPlus/models_new/video/video_play_info/subtitle.dart';
-import 'package:PiliPlus/models_new/video/video_play_info/view_point.dart';
-import 'package:PiliPlus/pages/common/multi_select/base.dart'
+import 'package:kilikili/common/widgets/badge.dart';
+import 'package:kilikili/models/common/video/base_quality.dart';
+import 'package:kilikili/models/common/video/video_type.dart';
+import 'package:kilikili/models/video/play/url.dart' show Volume;
+import 'package:kilikili/models_new/download/download_info.dart';
+import 'package:kilikili/models_new/sponsor_block/segment_item.dart';
+import 'package:kilikili/models_new/video/video_play_info/subtitle.dart';
+import 'package:kilikili/models_new/video/video_play_info/view_point.dart';
+import 'package:kilikili/pages/common/multi_select/base.dart'
     show MultiSelectData;
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/path_utils.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:kilikili/utils/page_utils.dart';
+import 'package:kilikili/utils/path_utils.dart';
+import 'package:kilikili/utils/platform_utils.dart';
+import 'package:kilikili/utils/utils.dart';
 import 'package:get/route_manager.dart';
 import 'package:material_ui/material_ui.dart';
 

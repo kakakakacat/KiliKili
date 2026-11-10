@@ -1,5 +1,5 @@
-import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/services/service_locator.dart';
+import 'package:kilikili/plugin/pl_player/controller.dart';
+import 'package:kilikili/services/service_locator.dart';
 import 'package:audio_session/audio_session.dart';
 
 class AudioSessionHandler {

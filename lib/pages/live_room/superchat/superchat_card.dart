@@ -1,25 +1,25 @@
 import 'dart:async' show Timer;
 
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/selection_text.dart';
-import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
-import 'package:PiliPlus/pages/member/widget/medal_widget.dart';
-import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/color_utils.dart';
-import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
-import 'package:PiliPlus/utils/extension/selectable_region_ext.dart';
-import 'package:PiliPlus/utils/image_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/screenshot.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/selection_text.dart';
+import 'package:kilikili/models_new/live/live_superchat/item.dart';
+import 'package:kilikili/pages/member/widget/medal_widget.dart';
+import 'package:kilikili/utils/app_scheme.dart';
+import 'package:kilikili/utils/color_utils.dart';
+import 'package:kilikili/utils/date_utils.dart';
+import 'package:kilikili/utils/extension/iterable_ext.dart';
+import 'package:kilikili/utils/extension/selectable_region_ext.dart';
+import 'package:kilikili/utils/image_utils.dart';
+import 'package:kilikili/utils/page_utils.dart';
+import 'package:kilikili/utils/platform_utils.dart';
+import 'package:kilikili/utils/screenshot.dart';
+import 'package:kilikili/utils/utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
-part 'package:PiliPlus/common/widgets/context_menu/live_menu_helper.dart';
+part 'package:kilikili/common/widgets/context_menu/live_menu_helper.dart';
 
 class SuperChatCard extends StatefulWidget {
   const SuperChatCard({

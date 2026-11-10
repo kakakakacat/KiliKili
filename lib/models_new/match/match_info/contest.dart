@@ -1,6 +1,6 @@
-import 'package:PiliPlus/models_new/match/match_info/season.dart';
-import 'package:PiliPlus/models_new/match/match_info/team.dart';
-import 'package:PiliPlus/utils/parse_string.dart';
+import 'package:kilikili/models_new/match/match_info/season.dart';
+import 'package:kilikili/models_new/match/match_info/team.dart';
+import 'package:kilikili/utils/parse_string.dart';
 
 class MatchContest {
   int? id;

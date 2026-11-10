@@ -1,6 +1,6 @@
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/models_new/later/list.dart';
-import 'package:PiliPlus/pages/later/widgets/video_card_h_later.dart'
+import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/models_new/later/list.dart';
+import 'package:kilikili/pages/later/widgets/video_card_h_later.dart'
     show onPushLater;
 import 'package:material_ui/material_ui.dart';
 

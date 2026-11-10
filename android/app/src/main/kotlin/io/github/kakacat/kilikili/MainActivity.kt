@@ -1,4 +1,4 @@
-package com.example.piliplus
+package io.github.kakacat.kilikili
 
 import android.content.res.Configuration
 import android.os.Build

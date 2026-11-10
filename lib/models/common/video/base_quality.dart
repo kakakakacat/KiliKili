@@ -1,4 +1,4 @@
-import 'package:PiliPlus/models/video/play/url.dart';
+import 'package:kilikili/models/video/play/url.dart';
 
 part 'audio_quality.dart';
 part 'live_quality.dart';

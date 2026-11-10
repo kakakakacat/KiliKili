@@ -1,6 +1,6 @@
-import 'package:PiliPlus/models_new/live/live_feed_index/feedback.dart';
-import 'package:PiliPlus/models_new/live/live_feed_index/watched_show.dart';
-import 'package:PiliPlus/utils/parse_string.dart';
+import 'package:kilikili/models_new/live/live_feed_index/feedback.dart';
+import 'package:kilikili/models_new/live/live_feed_index/watched_show.dart';
+import 'package:kilikili/utils/parse_string.dart';
 
 class CardLiveItem {
   final int? roomid;

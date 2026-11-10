@@ -1,35 +1,35 @@
 import 'dart:io' show Platform, Directory;
 
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
-import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
-import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart'
+import 'package:kilikili/common/widgets/custom_icon.dart';
+import 'package:kilikili/common/widgets/dialog/simple_dialog_option.dart';
+import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart'
     show RefreshIndicator, displacement, refreshDragExtent;
-import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart'
+import 'package:kilikili/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart'
     show deviceTouchSlop, touchSlopH;
-import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart'
+import 'package:kilikili/common/widgets/image_grid/image_grid_view.dart'
     show ImageGridView, ImageModel;
-import 'package:PiliPlus/http/fav.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
-import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
-import 'package:PiliPlus/pages/home/controller.dart';
-import 'package:PiliPlus/pages/setting/models/model.dart';
-import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
-import 'package:PiliPlus/services/download/download_service.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/android/bindings.g.dart';
-import 'package:PiliPlus/utils/desktop/window_controller.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
-import 'package:PiliPlus/utils/filtering_text.dart';
-import 'package:PiliPlus/utils/image_utils.dart';
-import 'package:PiliPlus/utils/path_utils.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/update.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:kilikili/http/fav.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/models/common/sponsor_block/skip_type.dart';
+import 'package:kilikili/pages/common/slide/common_slide_page.dart';
+import 'package:kilikili/pages/home/controller.dart';
+import 'package:kilikili/pages/setting/models/model.dart';
+import 'package:kilikili/pages/setting/widgets/slider_dialog.dart';
+import 'package:kilikili/services/download/download_service.dart';
+import 'package:kilikili/utils/accounts.dart';
+import 'package:kilikili/utils/android/bindings.g.dart';
+import 'package:kilikili/utils/desktop/window_controller.dart';
+import 'package:kilikili/utils/extension/num_ext.dart';
+import 'package:kilikili/utils/feed_back.dart';
+import 'package:kilikili/utils/filtering_text.dart';
+import 'package:kilikili/utils/image_utils.dart';
+import 'package:kilikili/utils/path_utils.dart';
+import 'package:kilikili/utils/platform_utils.dart';
+import 'package:kilikili/utils/storage.dart';
+import 'package:kilikili/utils/storage_key.dart';
+import 'package:kilikili/utils/storage_pref.dart';
+import 'package:kilikili/utils/update.dart';
+import 'package:kilikili/utils/utils.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';

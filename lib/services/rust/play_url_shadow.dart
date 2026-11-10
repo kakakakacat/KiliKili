@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:PiliPlus/models/common/video/video_type.dart';
-import 'package:PiliPlus/rust/api/play_url.dart' as rust_api;
-import 'package:PiliPlus/services/rust/play_url_normalize.dart';
-import 'package:PiliPlus/services/rust/rust_flags.dart';
+import 'package:kilikili/models/common/video/video_type.dart';
+import 'package:kilikili/rust/api/play_url.dart' as rust_api;
+import 'package:kilikili/services/rust/play_url_normalize.dart';
+import 'package:kilikili/services/rust/rust_flags.dart';
 import 'package:flutter/foundation.dart';
 
 /// 取流的 shadow mode 比对（RFC-0001 §5.3）。

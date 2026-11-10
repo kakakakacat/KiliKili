@@ -1,4 +1,4 @@
-part of 'package:PiliPlus/pages/member_home/view.dart';
+part of 'package:kilikili/pages/member_home/view.dart';
 
 const _maxWith = 400.0;
 

@@ -1,8 +1,8 @@
-import 'package:PiliPlus/common/widgets/badge.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/models_new/sub/sub/list.dart';
-import 'package:PiliPlus/pages/subscription/widgets/item.dart' show onPushSub;
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:kilikili/common/widgets/badge.dart';
+import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/models_new/sub/sub/list.dart';
+import 'package:kilikili/pages/subscription/widgets/item.dart' show onPushSub;
+import 'package:kilikili/utils/utils.dart';
 import 'package:material_ui/material_ui.dart';
 
 class MineSubItem extends StatelessWidget {

@@ -1,14 +1,14 @@
-import 'package:PiliPlus/common/style.dart' as common_style;
-import 'package:PiliPlus/models/dynamics/eva3_comment.dart';
-import 'package:PiliPlus/models/dynamics/eva3_opus.dart';
-import 'package:PiliPlus/models/dynamics/eva3_toy.dart';
-import 'package:PiliPlus/models/dynamics/eva3_user.dart';
-import 'package:PiliPlus/models/dynamics/eva3_video.dart';
-import 'package:PiliPlus/models/dynamics/eva3_vote.dart';
-import 'package:PiliPlus/models/dynamics/result.dart';
-import 'package:PiliPlus/models/dynamics/vote_model.dart';
-import 'package:PiliPlus/utils/color_utils.dart';
-import 'package:PiliPlus/utils/parse_int.dart';
+import 'package:kilikili/common/style.dart' as common_style;
+import 'package:kilikili/models/dynamics/eva3_comment.dart';
+import 'package:kilikili/models/dynamics/eva3_opus.dart';
+import 'package:kilikili/models/dynamics/eva3_toy.dart';
+import 'package:kilikili/models/dynamics/eva3_user.dart';
+import 'package:kilikili/models/dynamics/eva3_video.dart';
+import 'package:kilikili/models/dynamics/eva3_vote.dart';
+import 'package:kilikili/models/dynamics/result.dart';
+import 'package:kilikili/models/dynamics/vote_model.dart';
+import 'package:kilikili/utils/color_utils.dart';
+import 'package:kilikili/utils/parse_int.dart';
 
 class ArticleContentModel {
   int? align;

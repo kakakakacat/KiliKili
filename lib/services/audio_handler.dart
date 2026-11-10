@@ -1,25 +1,25 @@
 import 'dart:io' show File, Platform;
 import 'dart:ui' show PlatformDispatcher;
 
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart' show DetailItem;
-import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
-import 'package:PiliPlus/models_new/live/live_room_info_h5/data.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart';
-import 'package:PiliPlus/models_new/video/video_detail/data.dart';
-import 'package:PiliPlus/models_new/video/video_detail/page.dart';
-import 'package:PiliPlus/pages/common/common_intro_controller.dart';
-import 'package:PiliPlus/pages/live_room/controller.dart';
-import 'package:PiliPlus/pages/video/introduction/local/controller.dart';
-import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
-import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
-import 'package:PiliPlus/utils/android/bindings.g.dart';
-import 'package:PiliPlus/utils/device_utils.dart';
-import 'package:PiliPlus/utils/image_utils.dart';
-import 'package:PiliPlus/utils/path_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:kilikili/common/constants.dart';
+import 'package:kilikili/grpc/bilibili/app/listener/v1.pb.dart' show DetailItem;
+import 'package:kilikili/models_new/download/bili_download_entry_info.dart';
+import 'package:kilikili/models_new/live/live_room_info_h5/data.dart';
+import 'package:kilikili/models_new/pgc/pgc_info_model/episode.dart';
+import 'package:kilikili/models_new/video/video_detail/data.dart';
+import 'package:kilikili/models_new/video/video_detail/page.dart';
+import 'package:kilikili/pages/common/common_intro_controller.dart';
+import 'package:kilikili/pages/live_room/controller.dart';
+import 'package:kilikili/pages/video/introduction/local/controller.dart';
+import 'package:kilikili/pages/video/introduction/pgc/controller.dart';
+import 'package:kilikili/pages/video/introduction/ugc/controller.dart';
+import 'package:kilikili/plugin/pl_player/controller.dart';
+import 'package:kilikili/plugin/pl_player/models/play_status.dart';
+import 'package:kilikili/utils/android/bindings.g.dart';
+import 'package:kilikili/utils/device_utils.dart';
+import 'package:kilikili/utils/image_utils.dart';
+import 'package:kilikili/utils/path_utils.dart';
+import 'package:kilikili/utils/storage_pref.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_service_mpris/audio_service_mpris.dart';
 import 'package:collection/collection.dart';
@@ -32,9 +32,9 @@ import 'package:path/path.dart' as path;
 Future<VideoPlayerServiceHandler> initAudioService() {
   if (Platform.isLinux) {
     AudioServiceMpris.init(
-      dBusName: 'com.example.piliplus.audio',
+      dBusName: 'io.github.kakacat.kilikili.audio',
       identity: Constants.appName,
-      desktopEntry: 'com.example.piliplus',
+      desktopEntry: 'io.github.kakacat.kilikili',
       canGoNext: true,
       canGoPrevious: true,
       canPlay: true,
@@ -45,7 +45,7 @@ Future<VideoPlayerServiceHandler> initAudioService() {
   return AudioService.init(
     builder: VideoPlayerServiceHandler.new,
     config: const AudioServiceConfig(
-      androidNotificationChannelId: 'com.example.piliplus.audio',
+      androidNotificationChannelId: 'io.github.kakacat.kilikili.audio',
       androidNotificationChannelName: 'Audio Service ${Constants.appName}',
       androidNotificationOngoing: true,
       androidStopForegroundOnPause: true,

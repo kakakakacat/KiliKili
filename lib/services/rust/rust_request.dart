@@ -1,6 +1,6 @@
-import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/utils/accounts/account.dart';
-import 'package:PiliPlus/utils/accounts/account_manager/account_mgr.dart';
+import 'package:kilikili/http/constants.dart';
+import 'package:kilikili/utils/accounts/account.dart';
+import 'package:kilikili/utils/accounts/account_manager/account_mgr.dart';
 
 /// Rust 取数路径共用的请求头与 Cookie 取法。
 ///

@@ -1,12 +1,12 @@
-import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
-import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/msg/im_user_infos/datum.dart';
-import 'package:PiliPlus/models_new/msg/msg_dnd/uid_setting.dart';
-import 'package:PiliPlus/models_new/msg/session_ss/data.dart';
-import 'package:PiliPlus/pages/whisper_link_setting/controller.dart';
-import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:kilikili/common/widgets/pendant_avatar.dart';
+import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/models_new/msg/im_user_infos/datum.dart';
+import 'package:kilikili/models_new/msg/msg_dnd/uid_setting.dart';
+import 'package:kilikili/models_new/msg/session_ss/data.dart';
+import 'package:kilikili/pages/whisper_link_setting/controller.dart';
+import 'package:kilikili/utils/extension/theme_ext.dart';
+import 'package:kilikili/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 

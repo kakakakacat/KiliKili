@@ -1,10 +1,10 @@
-import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/image/image_save.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/models/search/result.dart';
-import 'package:PiliPlus/pages/article/view.dart';
-import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:kilikili/common/style.dart';
+import 'package:kilikili/common/widgets/image/image_save.dart';
+import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/models/search/result.dart';
+import 'package:kilikili/pages/article/view.dart';
+import 'package:kilikili/utils/date_utils.dart';
+import 'package:kilikili/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
 class SearchArticleItem extends StatelessWidget {

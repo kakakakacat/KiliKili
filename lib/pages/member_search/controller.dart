@@ -1,7 +1,7 @@
-import 'package:PiliPlus/models/common/member/search_type.dart';
-import 'package:PiliPlus/pages/member_search/child/controller.dart';
-import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:kilikili/models/common/member/search_type.dart';
+import 'package:kilikili/pages/member_search/child/controller.dart';
+import 'package:kilikili/utils/extension/scroll_controller_ext.dart';
+import 'package:kilikili/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 

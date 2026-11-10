@@ -1,9 +1,9 @@
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/pages/log_table/controller.dart';
-import 'package:PiliPlus/utils/extension/widget_ext.dart';
+import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
+import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
+import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/pages/log_table/controller.dart';
+import 'package:kilikili/utils/extension/widget_ext.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 

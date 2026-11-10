@@ -1,4 +1,4 @@
-import 'package:PiliPlus/utils/path_utils.dart';
+import 'package:kilikili/utils/path_utils.dart';
 import 'package:path/path.dart' as path;
 
 class Subtitle implements Comparable<Subtitle> {

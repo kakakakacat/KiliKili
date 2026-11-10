@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:PiliPlus/models/model_owner.dart';
-import 'package:PiliPlus/models_new/video/video_detail/arc.dart';
-import 'package:PiliPlus/models_new/video/video_detail/data.dart';
-import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
-import 'package:PiliPlus/models_new/video/video_detail/page.dart';
-import 'package:PiliPlus/models_new/video/video_detail/stat.dart';
-import 'package:PiliPlus/services/rust/video_detail_denormalize.dart';
-import 'package:PiliPlus/services/rust/video_detail_normalize.dart';
+import 'package:kilikili/models/model_owner.dart';
+import 'package:kilikili/models_new/video/video_detail/arc.dart';
+import 'package:kilikili/models_new/video/video_detail/data.dart';
+import 'package:kilikili/models_new/video/video_detail/dimension.dart';
+import 'package:kilikili/models_new/video/video_detail/page.dart';
+import 'package:kilikili/models_new/video/video_detail/stat.dart';
+import 'package:kilikili/services/rust/video_detail_denormalize.dart';
+import 'package:kilikili/services/rust/video_detail_normalize.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// `video_detail_normalize.dart` 是 `VideoDetailData.fromJson` 那套解析规则

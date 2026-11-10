@@ -1,5 +1,5 @@
-import 'package:PiliPlus/services/rust_core.dart';
-import 'package:PiliPlus/utils/storage.dart';
+import 'package:kilikili/services/rust_core.dart';
+import 'package:kilikili/utils/storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive_ce/hive.dart';
 

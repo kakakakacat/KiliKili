@@ -1,9 +1,9 @@
-import 'package:PiliPlus/common/widgets/custom_tooltip.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/utils/extension/string_ext.dart';
-import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:kilikili/common/widgets/custom_tooltip.dart';
+import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/utils/extension/string_ext.dart';
+import 'package:kilikili/utils/extension/theme_ext.dart';
+import 'package:kilikili/utils/platform_utils.dart';
+import 'package:kilikili/utils/storage_pref.dart';
 import 'package:material_ui/material_ui.dart';
 
 bool enableEmoteTooltip = Pref.enableEmoteTooltip;

@@ -1,6 +1,6 @@
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/models_new/dynamic/dyn_mention/item.dart';
-import 'package:PiliPlus/utils/num_utils.dart';
+import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/models_new/dynamic/dyn_mention/item.dart';
+import 'package:kilikili/utils/num_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
 class DynMentionItem extends StatelessWidget {

@@ -1,14 +1,14 @@
-import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart'
+import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
+import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
+import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
+import 'package:kilikili/common/widgets/scroll_physics.dart'
     show platformAlwaysClampingPhysics;
-import 'package:PiliPlus/grpc/bilibili/app/dynamic/v2.pb.dart'
+import 'package:kilikili/grpc/bilibili/app/dynamic/v2.pb.dart'
     show ModuleAuthor;
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
-import 'package:PiliPlus/pages/common/dyn/like_list/controller.dart';
-import 'package:PiliPlus/pages/common/dyn/like_list/widgets/item.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/pages/common/dyn/common_dyn_page.dart';
+import 'package:kilikili/pages/common/dyn/like_list/controller.dart';
+import 'package:kilikili/pages/common/dyn/like_list/widgets/item.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart' hide ListTile;
 

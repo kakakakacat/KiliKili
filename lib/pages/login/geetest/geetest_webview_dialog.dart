@@ -1,9 +1,9 @@
 import 'dart:convert' show jsonDecode;
 import 'dart:io' show Platform;
 
-import 'package:PiliPlus/http/browser_ua.dart';
-import 'package:PiliPlus/main.dart';
-import 'package:PiliPlus/plugin/linux_webview.dart';
+import 'package:kilikili/http/browser_ua.dart';
+import 'package:kilikili/main.dart';
+import 'package:kilikili/plugin/linux_webview.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -46,7 +46,7 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
         '<style>#E{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:red}</style>'
         '<body><div id="E"></div>'
         '<script>'
-        '${Platform.isLinux ? "R=(n,o)=>window.PiliPlus.postMessage(n+':'+JSON.stringify(o))" : "R=(n,o)=>window.flutter_inappwebview?.callHandler(n,o)"};$js'
+        '${Platform.isLinux ? "R=(n,o)=>window.KiliKili.postMessage(n+':'+JSON.stringify(o))" : "R=(n,o)=>window.flutter_inappwebview?.callHandler(n,o)"};$js'
         '</script>'
         '<script src="$_geetestJsUri" onload="G()" onerror="E()"></script>'
         '<script src="$_geetestConfigUri?gt=$gt&callback=geetest_$ts" onerror="E()"></script>'

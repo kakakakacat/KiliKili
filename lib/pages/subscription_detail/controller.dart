@@ -1,10 +1,10 @@
-import 'package:PiliPlus/http/fav.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/sub/sub/list.dart';
-import 'package:PiliPlus/models_new/sub/sub_detail/data.dart';
-import 'package:PiliPlus/models_new/sub/sub_detail/media.dart';
-import 'package:PiliPlus/pages/common/common_list_controller.dart';
-import 'package:PiliPlus/pages/common/page_order/page_order_mixin.dart';
+import 'package:kilikili/http/fav.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/models_new/sub/sub/list.dart';
+import 'package:kilikili/models_new/sub/sub_detail/data.dart';
+import 'package:kilikili/models_new/sub/sub_detail/media.dart';
+import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/pages/common/page_order/page_order_mixin.dart';
 import 'package:get/get.dart';
 
 class SubDetailController

@@ -1,5 +1,5 @@
-import 'package:PiliPlus/common/widgets/flutter/text/text.dart';
-import 'package:PiliPlus/common/widgets/text_ellipsis/rich_text_ellipsis.dart';
+import 'package:kilikili/common/widgets/flutter/text/text.dart';
+import 'package:kilikili/common/widgets/text_ellipsis/rich_text_ellipsis.dart';
 import 'package:material_ui/material_ui.dart';
 
 class TextEllipsis extends BaseText {

@@ -1,5 +1,5 @@
-import 'package:PiliPlus/rust/api/transport.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:kilikili/rust/api/transport.dart';
+import 'package:kilikili/utils/storage_pref.dart';
 
 /// 把基线 Dio 的传输开关折算成 Rust 取数路径的传输设置（issue #25）。
 ///

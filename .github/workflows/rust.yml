@@ -1,0 +1,74 @@
+# 独立于上游的五个 Flutter workflow，避免同步上游时产生冲突。
+# Rust 接入 Flutter 构建后再考虑是否合并（见 issue #5 / RUST-004）。
+name: Rust
+
+on:
+  push:
+    branches: [main]
+    paths: ['rust/**', '.github/workflows/rust.yml']
+  pull_request:
+    paths: ['rust/**', '.github/workflows/rust.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: rust-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: rust
+
+jobs:
+  check:
+    name: fmt / clippy / test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # rust-toolchain.toml 决定版本与组件，此处不重复指定，
+      # 避免两处版本定义漂移。
+      - name: Show toolchain
+        run: |
+          rustc --version
+          cargo --version
+
+      # 无缓存时 Rust 全量编译会使构建时间失控（见 VALIDATION-CAPABILITY.md §2）
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+
+      - name: Format
+        run: cargo fmt --all --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Test
+        run: cargo test --all-features
+
+  # 交叉编译仅验证能否产出目标平台产物，不代表运行时正确。
+  cross-build:
+    name: cross-build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-26,       target: aarch64-apple-darwin }
+          - { os: macos-26,       target: aarch64-apple-ios }
+          - { os: ubuntu-latest,  target: aarch64-linux-android }
+          - { os: ubuntu-latest,  target: x86_64-unknown-linux-gnu }
+          - { os: windows-latest, target: x86_64-pc-windows-msvc }
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Add target
+        run: rustup target add ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+          key: ${{ matrix.target }}
+
+      - name: Build
+        run: cargo build --target ${{ matrix.target }} --release

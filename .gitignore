@@ -152,3 +152,7 @@ dist
 test*
 !/test/
 !/test/**
+
+# Rust
+/rust/target/
+**/*.rs.bk

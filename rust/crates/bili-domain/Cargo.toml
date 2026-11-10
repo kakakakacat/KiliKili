@@ -1,0 +1,14 @@
+[package]
+name = "bili-domain"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "纯业务实体、规则、错误与 Port traits。不依赖 Flutter/Slint 或任何平台 SDK。"
+
+[dependencies]
+thiserror.workspace = true
+
+[lints]
+workspace = true

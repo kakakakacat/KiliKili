@@ -1,0 +1,15 @@
+# 两台开发机（macOS / Windows）必须使用同一工具链版本。
+# rustc 版本漂移会改变 borrow checker 行为与 clippy lint 集，
+# 导致同一份代码在两端结果不一致、CI 莫名失败。
+[toolchain]
+channel = "1.97.0"
+components = ["rustfmt", "clippy"]
+targets = [
+    "aarch64-apple-darwin",
+    "aarch64-apple-ios",
+    "aarch64-linux-android",
+    "armv7-linux-androideabi",
+    "x86_64-linux-android",
+    "x86_64-pc-windows-msvc",
+    "x86_64-unknown-linux-gnu",
+]

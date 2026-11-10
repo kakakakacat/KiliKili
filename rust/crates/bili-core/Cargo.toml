@@ -1,0 +1,15 @@
+[package]
+name = "bili-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "应用层：UseCase、播放器意图编排、事件与状态快照。"
+
+[dependencies]
+bili-domain = { path = "../bili-domain" }
+tracing.workspace = true
+
+[lints]
+workspace = true

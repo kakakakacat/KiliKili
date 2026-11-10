@@ -1,0 +1,9 @@
+//! 应用层：UseCase、播放器意图编排、事件与状态快照（RFC-0001 §16.6）。
+//!
+//! 本 crate 不得依赖 Flutter Widget 或 Slint 具体类型。
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn workspace_builds() {}
+}

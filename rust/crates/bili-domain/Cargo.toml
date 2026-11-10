@@ -9,6 +9,7 @@ description = "纯业务实体、规则、错误与 Port traits。不依赖 Flut
 
 [dependencies]
 thiserror.workspace = true
+tracing.workspace = true
 
 [lints]
 workspace = true

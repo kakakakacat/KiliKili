@@ -75,7 +75,13 @@ jobs:
         with:
           # 与项目 android/app/build.gradle.kts 使用的 NDK 保持一致
           ndk-version: r29
-          local-cache: true
+          # 不缓存：local-cache 恢复出的 NDK 是残缺的——包装脚本
+          # aarch64-linux-android24-clang 还在，它要调用的 bin/clang 本体却
+          # 丢了，链接阶段报 `line 4: .../bin/clang: No such file or directory`。
+          # 首次下载（缓存未命中）时一切正常，命中缓存后才失败，这使得故障
+          # 只在第二次之后出现，很容易误判为代码问题。
+          # 每次重新下载约耗时 1 分钟，换取可重复的构建。
+          local-cache: false
 
       - name: Configure Android toolchain
         if: endsWith(matrix.target, '-linux-android')

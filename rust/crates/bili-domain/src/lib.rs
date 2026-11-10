@@ -8,6 +8,7 @@ pub mod error;
 pub mod player;
 pub mod playurl;
 pub mod redact;
+pub mod search;
 pub mod session;
 pub mod video;
 

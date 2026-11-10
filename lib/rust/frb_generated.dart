@@ -6,6 +6,7 @@
 import 'package:PiliPlus/rust/api/init.dart';
 import 'package:PiliPlus/rust/api/play_url.dart';
 import 'package:PiliPlus/rust/api/play_url_fetch.dart';
+import 'package:PiliPlus/rust/api/search_suggest.dart';
 import 'package:PiliPlus/rust/api/transport.dart';
 import 'package:PiliPlus/rust/api/video_detail.dart';
 import 'package:PiliPlus/rust/api/video_detail_fetch.dart';
@@ -76,7 +77,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -1959034314;
+  int get rustContentHash => 1977092375;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -118,6 +119,10 @@ abstract class RustLibApi extends BaseApi {
     required String body,
     required String videoType,
     required bool fallback,
+  });
+
+  Future<SearchSuggestParse> crateApiSearchSuggestParseSearchSuggest({
+    required String body,
   });
 
   Future<VideoDetailParse> crateApiVideoDetailParseVideoDetail({
@@ -370,7 +375,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<VideoDetailParse> crateApiVideoDetailParseVideoDetail({
+  Future<SearchSuggestParse> crateApiSearchSuggestParseSearchSuggest({
     required String body,
   }) {
     return handler.executeNormal(
@@ -382,6 +387,39 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             generalizedFrbRustBinding,
             serializer,
             funcId: 6,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_search_suggest_parse,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiSearchSuggestParseSearchSuggestConstMeta,
+        argValues: [body],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSearchSuggestParseSearchSuggestConstMeta =>
+      const TaskConstMeta(
+        debugName: "parse_search_suggest",
+        argNames: ["body"],
+      );
+
+  @override
+  Future<VideoDetailParse> crateApiVideoDetailParseVideoDetail({
+    required String body,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(body, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 7,
             port: port_,
           );
         },
@@ -416,7 +454,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 7,
+            funcId: 8,
             port: port_,
           );
         },
@@ -450,7 +488,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 8,
+            funcId: 9,
             port: port_,
           );
         },
@@ -600,6 +638,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     return (
       dco_decode_String(arr[0]),
       dco_decode_String(arr[1]),
+    );
+  }
+
+  @protected
+  SearchSuggestParse dco_decode_search_suggest_parse(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return SearchSuggestParse(
+      json: dco_decode_opt_String(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
     );
   }
 
@@ -844,6 +895,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SearchSuggestParse sse_decode_search_suggest_parse(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_json = sse_decode_opt_String(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    return SearchSuggestParse(
+      json: var_json,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+    );
+  }
+
+  @protected
   TransportSettings sse_decode_transport_settings(
     SseDeserializer deserializer,
   ) {
@@ -1075,6 +1141,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.$1, serializer);
     sse_encode_String(self.$2, serializer);
+  }
+
+  @protected
+  void sse_encode_search_suggest_parse(
+    SearchSuggestParse self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.json, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
   }
 
   @protected

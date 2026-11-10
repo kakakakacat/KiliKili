@@ -45,8 +45,10 @@ abstract final class RustFlags {
 
   static bool get rustVideoDetail =>
       RustCore.isReady &&
-      (_box.get(rustVideoDetailKey, defaultValue: _defaultOn(rustVideoDetailKey))
-          as bool);
+      (_box.get(
+        rustVideoDetailKey,
+        defaultValue: _defaultOn(rustVideoDetailKey),
+      ) as bool);
 
   static Future<void> setRustVideoDetail(bool value) =>
       _box.put(rustVideoDetailKey, value);
@@ -80,6 +82,20 @@ abstract final class RustFlags {
   static Future<void> setShadowPlayUrl(bool value) =>
       _box.put(shadowPlayUrlKey, value);
 
+  /// 搜索建议响应使用 Rust 解析。请求和 WBI 签名仍由现有 Dart 路径处理。
+  /// 默认关闭；解析失败会回退到 `SearchSuggestModel.fromJson`。
+  static const String rustSearchSuggestKey = 'rust.parse.searchSuggest';
+
+  static bool get rustSearchSuggest =>
+      RustCore.isReady &&
+      (_box.get(
+        rustSearchSuggestKey,
+        defaultValue: _defaultOn(rustSearchSuggestKey),
+      ) as bool);
+
+  static Future<void> setRustSearchSuggest(bool value) =>
+      _box.put(rustSearchSuggestKey, value);
+
   /// 构建期指定的初始值，用于真机验证。
   ///
   /// 取数开关没有设置项入口（见类文档：不往上游的设置页里加东西），
@@ -94,6 +110,9 @@ abstract final class RustFlags {
   static bool _defaultOn(String key) => switch (key) {
     rustVideoDetailKey => const bool.fromEnvironment('rust.fetch.videoDetail'),
     rustPlayUrlKey => const bool.fromEnvironment('rust.fetch.playUrl'),
+    rustSearchSuggestKey => const bool.fromEnvironment(
+      'rust.parse.searchSuggest',
+    ),
     _ => false,
   };
 }

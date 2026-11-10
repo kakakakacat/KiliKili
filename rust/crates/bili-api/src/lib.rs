@@ -34,6 +34,7 @@ pub mod http;
 pub mod nav;
 pub mod playurl;
 pub mod request;
+pub mod search_suggest;
 #[cfg(feature = "reqwest-transport")]
 pub mod transport_reqwest;
 pub mod video_detail;

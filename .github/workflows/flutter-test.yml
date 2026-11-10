@@ -1,0 +1,50 @@
+name: Flutter tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'lib/**'
+      - 'test/**'
+      - 'tool/prepare-build.sh'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - '.github/workflows/flutter-test.yml'
+  pull_request:
+    paths:
+      - 'lib/**'
+      - 'test/**'
+      - 'tool/prepare-build.sh'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - '.github/workflows/flutter-test.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: flutter-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+
+      - name: Install Linux native asset headers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libx11-dev libxi-dev
+
+      - name: Prepare patched Flutter SDK and packages
+        run: |
+          export FLUTTER_ROOT="$(dirname "$(dirname "$(command -v flutter)")")"
+          tool/prepare-build.sh Linux
+
+      - name: Run Flutter tests
+        run: flutter test --no-pub

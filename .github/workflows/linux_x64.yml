@@ -97,6 +97,12 @@ jobs:
           # 否则会被 dpkg-deb 当作普通内容一起打进去。
           mkdir -p debian
           printf "Source: kilikili\n\nPackage: kilikili\nArchitecture: amd64\n" > debian/control
+          #
+          # 预期告警：dpkg-shlibdeps 会就 libflutter_linux_gtk.so 的 $ORIGIN
+          # RPATH 报 6 次 warning。它按自己的规则找「包构建树根」，与这里的
+          # 目录布局对不上。不影响结果：下面的 -l 已把产物自带的 lib 目录加入
+          # 搜索路径，且生成的依赖经与独立的 DT_NEEDED 清单逐条核对，31 个
+          # 外部 SONAME 全部有对应包声明，无遗漏。
           # libdartjni.so 需要 libjvm.so，桌面系统不提供它，扫描会让整步失败
           SCAN_LIBS=$(find opt/KiliKili/lib -name '*.so' ! -name 'libdartjni.so' | sort)
           SHLIBDEPS=$(dpkg-shlibdeps -O --ignore-missing-info -l"$PWD/opt/KiliKili/lib" opt/KiliKili/kilikili $SCAN_LIBS)

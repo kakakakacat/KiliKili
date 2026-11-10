@@ -156,3 +156,7 @@ test*
 # Rust
 /rust/target/
 **/*.rs.bk
+# 上面宽泛的 `test*` 规则会静默吞掉 Rust 的集成测试目录
+# （cargo 约定为 <crate>/tests/），导致测试在本地通过却从未进入仓库与 CI。
+!/rust/**/tests/
+!/rust/**/tests/**

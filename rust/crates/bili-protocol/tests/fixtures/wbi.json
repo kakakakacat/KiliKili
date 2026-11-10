@@ -1,0 +1,49 @@
+{
+  "img_key": "7cd084941338484aae1ad9425b84077c",
+  "sub_key": "4932caff0ff746eab6f01bf08b70ac45",
+  "mixin_key": "ea1db124af3c7062474693fa704f4ff8",
+  "cases": [
+    {
+      "name": "single_bvid",
+      "params": {
+        "bvid": "BV1L94y1H7CV",
+        "wts": 1702204169
+      },
+      "w_rid": "1042532bb847d879c1fcd82b719bbabd"
+    },
+    {
+      "name": "multi_param_sorted",
+      "params": {
+        "qn": 80,
+        "bvid": "BV1L94y1H7CV",
+        "cid": 1304392106,
+        "wts": 1702204169
+      },
+      "w_rid": "67334bac4dd2a5a91d92d22a957815bc"
+    },
+    {
+      "name": "chars_stripped",
+      "params": {
+        "q": "a!b'c(d)e*f",
+        "wts": 1702204169
+      },
+      "w_rid": "833ddfd04b194c9c5d110bc357f31f7d"
+    },
+    {
+      "name": "needs_percent_encoding",
+      "params": {
+        "q": "测试 & =+#",
+        "wts": 1702204169
+      },
+      "w_rid": "d643d745c2c1201eb1f449459bfe5f3b"
+    },
+    {
+      "name": "empty_value",
+      "params": {
+        "q": "",
+        "wts": 1702204169
+      },
+      "w_rid": "9f7ed5bb04603b6403a641c500f5e399"
+    }
+  ]
+}

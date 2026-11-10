@@ -32,4 +32,21 @@ abstract final class RustFlags {
 
   static Future<void> setShadowVideoDetail(bool value) =>
       _box.put(shadowVideoDetailKey, value);
+
+  /// 视频详情**取数**走 Rust：请求由 Rust 发出、Rust 解析，结果进入 UI。
+  ///
+  /// 默认关闭，包括 debug。与 shadow mode 不同，这条路径一旦出问题是用户
+  /// 可见的；而 Rust 侧的 HTTP 栈还没有基线 Dio 的重试、系统代理、证书
+  /// 豁免与 HTTP/1.1 回退。先让它在开关后面跑够，再考虑默认值。
+  ///
+  /// 关闭、Rust 未就绪、取数失败——三种情况都走 Dart 原路径，见
+  /// [RustVideoDetail.fetch]。
+  static const String rustVideoDetailKey = 'rust.fetch.videoDetail';
+
+  static bool get rustVideoDetail =>
+      RustCore.isReady &&
+      (_box.get(rustVideoDetailKey, defaultValue: false) as bool);
+
+  static Future<void> setRustVideoDetail(bool value) =>
+      _box.put(rustVideoDetailKey, value);
 }

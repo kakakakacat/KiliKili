@@ -2,4 +2,5 @@
 
 pub mod init;
 pub mod video_detail;
+pub mod video_detail_fetch;
 pub mod wbi;

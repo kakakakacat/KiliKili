@@ -28,6 +28,7 @@ import 'package:PiliPlus/models_new/video/video_note_list/data.dart';
 import 'package:PiliPlus/models_new/video/video_play_info/data.dart';
 import 'package:PiliPlus/models_new/video/video_relation/data.dart';
 import 'package:PiliPlus/models_new/video/video_shot/data.dart';
+import 'package:PiliPlus/services/rust/rust_video_detail.dart';
 import 'package:PiliPlus/services/rust/video_detail_shadow.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
@@ -377,6 +378,11 @@ abstract final class VideoHttp {
   static Future<LoadingState<VideoDetailData>> videoIntro({
     required String bvid,
   }) async {
+    // 功能开关打开且取数成功时走 Rust；返回 null 即降级回下面的 Dart 路径
+    // （RFC-0001 §5.3）。开关默认关闭。
+    final viaRust = await RustVideoDetail.fetch(bvid);
+    if (viaRust != null) return viaRust;
+
     final res = await Request().get(
       Api.videoIntro,
       queryParameters: await WbiSign.makSign({'bvid': bvid}),

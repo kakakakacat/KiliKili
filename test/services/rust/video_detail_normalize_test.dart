@@ -7,6 +7,7 @@ import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
 import 'package:PiliPlus/models_new/video/video_detail/stat.dart';
+import 'package:PiliPlus/services/rust/video_detail_denormalize.dart';
 import 'package:PiliPlus/services/rust/video_detail_normalize.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -34,6 +35,25 @@ void main() {
 
   test('fixture 目录非空，否则本测试形同虚设', () {
     expect(raws, isNotEmpty);
+  });
+
+  test('规范化 → 还原 → 模型，与直接解析原始响应等价', () {
+    // Rust 取数路径返回的是规范化 JSON，要经 denormalize 才交给模型。
+    // 这一来一回若丢了字段，UI 上表现为详情页某处莫名其妙地空着，很难
+    // 反推到是哪一步丢的——所以在这里钉死。
+    for (final raw in raws) {
+      final body = jsonDecode(raw.readAsStringSync()) as Map<String, dynamic>;
+      final data = body['data'] as Map<String, dynamic>;
+
+      final direct = _fromModel(VideoDetailData.fromJson(data));
+      final roundTrip = _fromModel(
+        VideoDetailData.fromJson(
+          denormalizeVideoDetail(normalizeVideoDetail(data)),
+        ),
+      );
+
+      expect(roundTrip, direct, reason: '${raw.path}: 规范化往返丢了字段');
+    }
   });
 
   test('规范化结果与 VideoDetailData.fromJson 一致', () {

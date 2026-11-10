@@ -46,6 +46,23 @@ jobs:
       - name: Rename DMG
         run: mv KiliKili*.dmg KiliKili_macos_${{ env.version }}.dmg
 
+      # 同 linux_x64.yml。这一步在 macOS 上尤其有意义：上面的 create-dmg
+      # 同时带了 `|| true` 和 continue-on-error，失败不会让构建变红。
+      - name: 校验产物体积
+        run: |
+          f="KiliKili_macos_${{ env.version }}.dmg"
+          if [ ! -f "$f" ]; then
+            printf "缺失: %s\n" "$f"
+            exit 1
+          fi
+          size="$(stat -f%z "$f")"
+          printf "%s = %s 字节\n" "$f" "$size"
+          if [ "$size" -lt 25000000 ]; then
+            printf "体积过小，dmg 很可能不完整\n"
+            exit 1
+          fi
+        shell: bash
+
       - name: Release
         if: ${{ github.event.inputs.tag != '' }}
         uses: softprops/action-gh-release@v3

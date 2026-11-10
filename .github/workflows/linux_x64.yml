@@ -241,6 +241,34 @@ jobs:
           printf "完成: KiliKili_linux_%s_amd64.AppImage\n" "${{ env.version }}"
         shell: bash
 
+      # 上传前统一核对产物体积。CI 的 status check 覆盖不到产物内容：
+      # 打包步骤成功 ≠ 包里有应用。2026-11-10 发布的 RPM 是个 11KB 的
+      # 调试符号包，构建全程是绿的（见 PR #34）。下限取实测值的一半左右，
+      # 只拦「明显不是应用」的情况，不做精确断言。
+      - name: 校验产物体积
+        run: |
+          fail=0
+          check() {
+            if [ ! -f "$1" ]; then
+              printf "缺失: %s\n" "$1"
+              fail=1
+              return
+            fi
+            size="$(stat -c%s "$1")"
+            if [ "$size" -lt "$2" ]; then
+              printf "过小: %s = %s 字节，下限 %s\n" "$1" "$size" "$2"
+              fail=1
+            else
+              printf "OK:   %s = %s 字节\n" "$1" "$size"
+            fi
+          }
+          check "KiliKili_linux_${{ env.version }}_amd64.tar.gz"   10000000
+          check "KiliKili_linux_${{ env.version }}_amd64.deb"       8000000
+          check "KiliKili_linux_${{ env.version }}_amd64.rpm"      10000000
+          check "KiliKili_linux_${{ env.version }}_amd64.AppImage" 10000000
+          exit "$fail"
+        shell: bash
+
       - name: Release
         if: ${{ github.event.inputs.tag != '' }}
         uses: softprops/action-gh-release@v3

@@ -60,6 +60,29 @@ jobs:
           Compress-Archive -Path "Release/KiliKili-Win" -DestinationPath "KiliKili_windows_${{env.version}}_x64_portable.zip"
         shell: pwsh
 
+      # 同 linux_x64.yml：上传前核对体积，防止产物成功上传但内容是错的。
+      - name: 校验产物体积
+        shell: pwsh
+        run: |
+          $fail = $false
+          function Check($path, $min) {
+            if (-not (Test-Path $path)) {
+              Write-Host "缺失: $path"
+              $script:fail = $true
+              return
+            }
+            $size = (Get-Item $path).Length
+            if ($size -lt $min) {
+              Write-Host "过小: $path = $size 字节，下限 $min"
+              $script:fail = $true
+            } else {
+              Write-Host "OK:   $path = $size 字节"
+            }
+          }
+          Check "KiliKili_windows_${{env.version}}_x64_portable.zip" 20000000
+          Check "KiliKili-Win-Setup/KiliKili_windows_${{env.version}}_x64_setup.exe" 15000000
+          if ($fail) { exit 1 }
+
       - name: Release
         if: ${{ github.event.inputs.tag != '' }}
         uses: softprops/action-gh-release@v3

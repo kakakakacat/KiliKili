@@ -1,0 +1,45 @@
+{
+  "state": 0,
+  "elems": [
+    {
+      "id": 9007199254740993,
+      "progress": 359999,
+      "mode": 7,
+      "fontsize": 64,
+      "color": 16711935,
+      "mid_hash": "4d5e6f70",
+      "content": "[1,1,\"25\",\"#ffffff\",\"高级弹幕\",0,0,0,0,500,0,true,\"黑体\",1]",
+      "ctime": 1762700200,
+      "weight": 10,
+      "action": "",
+      "pool": 2,
+      "id_str": "9007199254740993",
+      "attr": 4,
+      "like_count": 1234567890123,
+      "animation": "anim-token",
+      "extra": "{\"flag\":1,\"dmFrom\":\"web\"}",
+      "colorful": 60001,
+      "dm_type": 1,
+      "oid": 900000002,
+      "dm_from": 2
+    },
+    {
+      "id": 9007199254740994,
+      "progress": 0,
+      "mode": 1,
+      "fontsize": 25,
+      "color": 0,
+      "mid_hash": "5e6f7081",
+      "content": "emoji 🎉 与换行\n第二行",
+      "ctime": 1762700300,
+      "weight": 0,
+      "pool": 1,
+      "id_str": "9007199254740994",
+      "attr": 0,
+      "like_count": 0,
+      "colorful": 0,
+      "oid": 900000002,
+      "dm_from": 3
+    }
+  ]
+}

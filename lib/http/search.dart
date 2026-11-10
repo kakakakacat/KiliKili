@@ -5,6 +5,8 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/search/search_type.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/models/search/suggest.dart';
+import 'package:PiliPlus/services/rust/rust_search_suggest.dart';
+import 'package:PiliPlus/services/rust/search_suggest_result.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_pub_search/data.dart';
 import 'package:PiliPlus/models_new/pagelist/page_item.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
@@ -35,7 +37,9 @@ abstract final class SearchHttp {
     final resData = res.data;
     if (resData is Map && resData['code'] == 0) {
       try {
-        return Success(SearchSuggestModel.fromJson(resData['data']['result']));
+        final body = Map<String, dynamic>.from(resData);
+        final rustJson = await RustSearchSuggest.parse(body);
+        return Success(searchSuggestFromRustOrDart(body, rustJson));
       } catch (_) {
         if (kDebugMode) rethrow;
       }

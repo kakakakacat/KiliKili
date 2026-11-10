@@ -3,6 +3,7 @@
 pub mod init;
 pub mod play_url;
 pub mod play_url_fetch;
+pub mod search_suggest;
 pub mod transport;
 pub mod video_detail;
 pub mod video_detail_fetch;

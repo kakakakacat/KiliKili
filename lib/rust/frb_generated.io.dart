@@ -6,6 +6,7 @@
 import 'package:PiliPlus/rust/api/init.dart';
 import 'package:PiliPlus/rust/api/play_url.dart';
 import 'package:PiliPlus/rust/api/play_url_fetch.dart';
+import 'package:PiliPlus/rust/api/search_suggest.dart';
 import 'package:PiliPlus/rust/api/transport.dart';
 import 'package:PiliPlus/rust/api/video_detail.dart';
 import 'package:PiliPlus/rust/api/video_detail_fetch.dart';
@@ -73,6 +74,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   (String, String) dco_decode_record_string_string(dynamic raw);
+
+  @protected
+  SearchSuggestParse dco_decode_search_suggest_parse(dynamic raw);
 
   @protected
   TransportSettings dco_decode_transport_settings(dynamic raw);
@@ -151,6 +155,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   (String, String) sse_decode_record_string_string(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SearchSuggestParse sse_decode_search_suggest_parse(
     SseDeserializer deserializer,
   );
 
@@ -250,6 +259,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_record_string_string(
     (String, String) self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_search_suggest_parse(
+    SearchSuggestParse self,
     SseSerializer serializer,
   );
 

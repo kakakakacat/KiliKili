@@ -1,0 +1,41 @@
+name: README charts
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - assets/stats/**
+  schedule:
+    - cron: '17 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: readme-charts-main
+  cancel-in-progress: true
+
+jobs:
+  update:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Generate charts
+        run: python3 tool/generate_readme_stats.py
+
+      - name: Commit updated charts
+        run: |
+          git add assets/stats/commits.svg assets/stats/code-changes.svg
+          if git diff --cached --quiet; then
+            echo "Charts are up to date"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(stats): refresh README charts"
+          git push origin HEAD:main

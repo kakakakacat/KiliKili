@@ -16,6 +16,7 @@ crate-type = ["cdylib", "staticlib", "lib"]
 [dependencies]
 bili-domain = { path = "../bili-domain" }
 bili-core = { path = "../bili-core" }
+bili-protocol = { path = "../bili-protocol" }
 flutter_rust_bridge = "=2.13.0"
 tokio = { workspace = true }
 tracing.workspace = true

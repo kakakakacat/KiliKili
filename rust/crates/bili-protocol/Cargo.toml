@@ -1,0 +1,20 @@
+[package]
+name = "bili-protocol"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "易变协议：WBI 签名、风控参数、协议版本化。与 Domain 隔离（RFC-0001 §16.7）。"
+
+[dependencies]
+bili-domain = { path = "../bili-domain" }
+md-5 = "0.10"
+percent-encoding = "2.3"
+
+[dev-dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[lints]
+workspace = true

@@ -3,12 +3,18 @@
 name: Rust
 
 on:
-  push:
-    branches: [main]
-    paths: ['rust/**', '.github/workflows/rust.yml']
-  pull_request:
-    paths: ['rust/**', '.github/workflows/rust.yml']
+  workflow_call:
+    inputs:
+      cross_build:
+        type: boolean
+        required: false
+        default: false
   workflow_dispatch:
+    inputs:
+      cross_build:
+        description: Run Apple and Android cross builds
+        type: boolean
+        default: true
 
 concurrency:
   group: rust-${{ github.ref }}
@@ -91,7 +97,7 @@ jobs:
   # 建议的使用时机：改动触及 FFI/桥接层、升级 FRB 或工具链、发版前。
   cross-build-dispatch:
     name: cross-build ${{ matrix.target }} (manual)
-    if: github.event_name == 'workflow_dispatch'
+    if: inputs.cross_build == true
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false

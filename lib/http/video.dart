@@ -16,12 +16,8 @@ import 'package:kilikili/models/pgc_lcf.dart';
 import 'package:kilikili/models/video/play/url.dart';
 import 'package:kilikili/models_new/triple/pgc_triple.dart';
 import 'package:kilikili/models_new/triple/ugc_triple.dart';
-import 'package:kilikili/models_new/video/video_ai_conclusion/data.dart';
 import 'package:kilikili/models_new/video/video_detail/data.dart';
-import 'package:kilikili/models_new/video/video_note_list/data.dart';
-import 'package:kilikili/models_new/video/video_play_info/data.dart';
 import 'package:kilikili/models_new/video/video_relation/data.dart';
-import 'package:kilikili/models_new/video/video_shot/data.dart';
 import 'package:kilikili/services/rust/play_url_shadow.dart';
 import 'package:kilikili/services/rust/rust_flags.dart';
 import 'package:kilikili/services/rust/rust_play_url.dart';
@@ -844,72 +840,6 @@ abstract final class VideoHttp {
   }
 
   // 查看视频同时在看人数
-  static Future<LoadingState<String>> onlineTotal({
-    int? aid,
-    String? bvid,
-    required int cid,
-  }) async {
-    assert(aid != null || bvid != null);
-    final res = await Request().get(
-      Api.onlineTotal,
-      queryParameters: {'aid': aid, 'bvid': bvid, 'cid': cid},
-    );
-    if (res.data['code'] == 0) {
-      return Success(res.data['data']['total']);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<AiConclusionData>> aiConclusion({
-    required String bvid,
-    required int cid,
-    int? upMid,
-  }) async {
-    final params = await WbiSign.makSign({
-      'bvid': bvid,
-      'cid': cid,
-      'up_mid': ?upMid,
-    });
-    final res = await Request().get(Api.aiConclusion, queryParameters: params);
-    final int? code = res.data['code'];
-    if (code == 0) {
-      final int? dataCode = res.data['data']?['code'];
-      if (dataCode == 0) {
-        return Success(AiConclusionData.fromJson(res.data['data']));
-      } else {
-        return Error(null, code: dataCode);
-      }
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<PlayInfoData>> playInfo({
-    String? aid,
-    String? bvid,
-    required int cid,
-    dynamic seasonId,
-    dynamic epId,
-  }) async {
-    assert(aid != null || bvid != null);
-    final res = await Request().get(
-      Api.playInfo,
-      queryParameters: await WbiSign.makSign({
-        'aid': ?aid,
-        'bvid': ?bvid,
-        'cid': cid,
-        'season_id': ?seasonId,
-        'ep_id': ?epId,
-      }),
-    );
-    if (res.data['code'] == 0) {
-      return Success(PlayInfoData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   static Future<String?> getSubtitles(
     String subtitleUrl, {
     SubtitleFormat format = .vtt,
@@ -959,29 +889,6 @@ abstract final class VideoHttp {
   // `lib/services/rust/rust_pgc.dart` 的 `RustPgc.rank`。
   // 它们原本住在本文件只是归档位置的问题，模型（PgcRankItem）属 PGC 域。
 
-  static Future<LoadingState<VideoNoteData>> getVideoNoteList({
-    dynamic oid,
-    dynamic uperMid,
-    required int page,
-  }) async {
-    final res = await Request().get(
-      Api.archiveNoteList,
-      queryParameters: {
-        'csrf': Accounts.main.csrf,
-        'oid': oid,
-        'oid_type': 0,
-        'pn': page,
-        'ps': 10,
-        'uper_mid': ?uperMid,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(VideoNoteData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   static Future<LoadingState<PlayUrlModel>> tvPlayUrl({
     required int cid,
     required int objectId, // aid, epid
@@ -1010,35 +917,5 @@ abstract final class VideoHttp {
     } else {
       return Error(res.data['message']);
     }
-  }
-
-  static Future<LoadingState<VideoShotData>> videoshot({
-    required String bvid,
-    required int cid,
-  }) async {
-    final res = await Request().get(
-      Api.videoshot,
-      queryParameters: {
-        // 'aid': IdUtils.bv2av(_bvid),
-        'bvid': bvid,
-        'cid': cid,
-        'index': 1,
-      },
-      options: Options(
-        headers: {
-          'user-agent': BrowserUa.pc,
-          'referer': 'https://www.bilibili.com/video/$bvid',
-        },
-      ),
-    );
-    if (res.data['code'] == 0) {
-      final data = VideoShotData.fromJson(res.data['data']);
-      if (data.index.isNotEmpty) {
-        return Success(data);
-      } else {
-        return const Error(null);
-      }
-    }
-    return Error(res.data['message']);
   }
 }

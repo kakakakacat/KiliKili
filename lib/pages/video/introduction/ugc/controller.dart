@@ -15,7 +15,7 @@ import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/common/video/source_type.dart';
 import 'package:kilikili/models_new/member_card_info/data.dart';
 import 'package:kilikili/models_new/relation/data.dart';
-import 'package:kilikili/models_new/video/video_ai_conclusion/model_result.dart';
+import 'package:kilikili/services/rust/rust_video_page.dart';
 import 'package:kilikili/models_new/video/video_detail/data.dart';
 import 'package:kilikili/models_new/video/video_detail/dimension.dart';
 import 'package:kilikili/models_new/video/video_detail/episode.dart';
@@ -64,7 +64,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   late final enableAi = Pref.enableAi;
   late final horizontalMemberPage = Pref.horizontalMemberPage;
 
-  AiConclusionResult? aiConclusionResult;
+  AiConclusion? aiConclusionResult;
 
   late final Map<int?, bool> seasonFavState = {};
 
@@ -779,7 +779,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   }
 
   // ai总结
-  static Future<AiConclusionResult?> getAiConclusion(
+  static Future<AiConclusion?> getAiConclusion(
     String bvid,
     int cid,
     int? mid,
@@ -789,14 +789,14 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       return null;
     }
     SmartDialog.showLoading(msg: '正在获取AI总结');
-    final res = await VideoHttp.aiConclusion(
+    final res = await RustVideoPage.aiConclusion(
       bvid: bvid,
       cid: cid,
       upMid: mid,
     );
     SmartDialog.dismiss();
     if (res case Success(:final response)) {
-      return response.modelResult;
+      return response;
     } else if (res is Error && res.code == 1) {
       SmartDialog.showToast("AI处理中，请稍后再试");
     } else {

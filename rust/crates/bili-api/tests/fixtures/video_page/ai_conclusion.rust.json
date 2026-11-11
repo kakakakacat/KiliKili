@@ -1,0 +1,27 @@
+{
+  "outline": [
+    {
+      "part_outline": [
+        {
+          "content": "示例要点一",
+          "timestamp": 0
+        },
+        {
+          "content": "示例要点二",
+          "timestamp": 42
+        }
+      ],
+      "title": "示例章节一"
+    },
+    {
+      "part_outline": [
+        {
+          "content": "示例要点三",
+          "timestamp": 128
+        }
+      ],
+      "title": "示例章节二"
+    }
+  ],
+  "summary": "示例总结：这个视频讲了三件事。"
+}

@@ -6,7 +6,7 @@ import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/scaffold/mini_scaffold.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/image_type.dart';
-import 'package:kilikili/models_new/video/video_note_list/list.dart';
+import 'package:kilikili/services/rust/rust_video_page.dart';
 import 'package:kilikili/pages/article/view.dart';
 import 'package:kilikili/pages/common/slide/common_slide_page.dart';
 import 'package:kilikili/pages/video/note/controller.dart';
@@ -166,7 +166,7 @@ class _NoteListPageState extends State<NoteListPage>
   }
 
   Widget _buildBody(
-    LoadingState<List<VideoNoteItemModel>?> loadingState,
+    LoadingState<List<NoteItem>?> loadingState,
   ) {
     switch (loadingState) {
       case Loading():
@@ -203,7 +203,7 @@ class _NoteListPageState extends State<NoteListPage>
     }
   }
 
-  Widget _itemWidget(VideoNoteItemModel item) {
+  Widget _itemWidget(NoteItem item) {
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
@@ -240,9 +240,8 @@ class _NoteListPageState extends State<NoteListPage>
                             item.author!.name!,
                             style: TextStyle(
                               color:
-                                  item.author?.vipInfo?.status != null &&
-                                      item.author!.vipInfo!.status > 0 &&
-                                      item.author!.vipInfo!.type == 2
+                                  (item.author?.vipStatus ?? 0) > 0 &&
+                                      item.author!.vipType == 2
                                   ? theme.colorScheme.vipColor
                                   : theme.colorScheme.outline,
                               fontSize: 13,

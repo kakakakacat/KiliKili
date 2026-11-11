@@ -52,6 +52,8 @@ import 'package:kilikili/plugin/pl_player/models/data_source.dart';
 import 'package:kilikili/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:kilikili/plugin/pl_player/models/play_status.dart';
 import 'package:kilikili/services/download/download_service.dart';
+import 'package:kilikili/services/rust/rust_video_page.dart';
+import 'package:kilikili/services/rust/video_page_compat.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/connectivity_utils.dart';
 import 'package:kilikili/utils/extension/context_ext.dart';
@@ -1170,7 +1172,7 @@ class VideoDetailController extends GetxController
     if (plPlayerController.showViewPoints) {
       viewPointList.clear();
     }
-    final res = await VideoHttp.playInfo(
+    final res = await RustVideoPage.playInfo(
       bvid: bvid,
       cid: cid.value,
       seasonId: seasonId,
@@ -1206,17 +1208,17 @@ class VideoDetailController extends GetxController
       }
 
       if (plPlayerController.showViewPoints &&
-          response.viewPoints?.firstOrNull?.type == 2) {
+          response.viewPoints?.firstOrNull?.kind == 2) {
         try {
           final duration = (data.timeLength! / 1000);
-          viewPointList.value = response.viewPoints!
-              .map((e) => e.toSegment(duration))
-              .toList();
+          viewPointList.value = VideoPageCompat.viewPoints(
+            response.viewPoints!,
+          ).map((e) => e.toSegment(duration)).toList();
         } catch (_) {}
       }
 
-      if (response.subtitle?.subtitles case final sub? when (sub.isNotEmpty)) {
-        _setSubtitle(sub);
+      if (response.subtitles case final sub? when sub.isNotEmpty) {
+        _setSubtitle(VideoPageCompat.subtitles(sub));
       } else if (!Accounts.main.isLogin) {
         final res = await DmGrpc.dmViewSubtitles(aid, cid.value);
         if (res case Success(:final response)) {

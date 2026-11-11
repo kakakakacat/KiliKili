@@ -49,6 +49,7 @@ import 'package:kilikili/plugin/pl_player/widgets/common_btn.dart';
 import 'package:kilikili/plugin/pl_player/widgets/forward_seek.dart';
 import 'package:kilikili/plugin/pl_player/widgets/mpv_convert_webp.dart';
 import 'package:kilikili/plugin/pl_player/widgets/play_pause_btn.dart';
+import 'package:kilikili/services/rust/rust_video_page.dart';
 import 'package:kilikili/utils/android/bindings.g.dart';
 import 'package:kilikili/utils/cache_manager.dart';
 import 'package:kilikili/utils/connectivity_utils.dart';

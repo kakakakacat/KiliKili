@@ -7,6 +7,7 @@ import 'package:kilikili/http/download.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/services/rust/rust_sponsor_block.dart';
+import 'package:kilikili/services/rust/rust_video_page.dart';
 import 'package:kilikili/services/rust/sponsor_block_compat.dart';
 import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/common/video/base_quality.dart';
@@ -19,6 +20,7 @@ import 'package:kilikili/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:kilikili/models_new/video/video_detail/page.dart';
 import 'package:kilikili/models_new/video/video_play_info/subtitle.dart';
 import 'package:kilikili/services/download/download_manager.dart';
+import 'package:kilikili/services/rust/video_page_compat.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/cache_manager.dart';
 import 'package:kilikili/utils/danmaku_utils.dart';
@@ -469,7 +471,7 @@ class DownloadService extends GetxService {
     try {
       final pageData = entry.pageData;
       if (pageData == null) return true;
-      final res = await VideoHttp.playInfo(
+      final res = await RustVideoPage.playInfo(
         bvid: entry.bvid,
         cid: pageData.cid,
       );
@@ -478,18 +480,19 @@ class DownloadService extends GetxService {
 
         final viewPoints = response.viewPoints;
         if (viewPoints != null && viewPoints.isNotEmpty) {
-          entry.viewPoints = viewPoints;
+          entry.viewPoints = VideoPageCompat.viewPoints(viewPoints);
           needsUpdate = true;
         }
 
-        final subtitles =
-            response.subtitle?.subtitles ??
-            (!Accounts.main.isLogin
-                ? (await DmGrpc.dmViewSubtitles(
-                    entry.avid,
-                    pageData.cid,
-                  )).dataOrNull
-                : null);
+        final fromPlayInfo = response.subtitles;
+        final subtitles = fromPlayInfo != null
+            ? VideoPageCompat.subtitles(fromPlayInfo)
+            : (!Accounts.main.isLogin
+                  ? (await DmGrpc.dmViewSubtitles(
+                      entry.avid,
+                      pageData.cid,
+                    )).dataOrNull
+                  : null);
 
         if (subtitles != null && subtitles.isNotEmpty) {
           entry.subtitles = subtitles

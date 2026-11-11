@@ -44,3 +44,4 @@ pub mod subtitle;
 pub mod transport_reqwest;
 pub mod video_detail;
 pub mod video_feed;
+pub mod video_page;

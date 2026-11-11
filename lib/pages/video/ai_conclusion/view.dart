@@ -1,5 +1,5 @@
 import 'package:kilikili/common/widgets/gesture/tap_gesture_recognizer.dart';
-import 'package:kilikili/models_new/video/video_ai_conclusion/model_result.dart';
+import 'package:kilikili/services/rust/rust_video_page.dart';
 import 'package:kilikili/pages/common/slide/common_slide_page.dart';
 import 'package:kilikili/pages/video/controller.dart';
 import 'package:kilikili/utils/duration_utils.dart';
@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class AiConclusionPanel extends CommonSlidePage {
-  final AiConclusionResult item;
+  final AiConclusion item;
 
   const AiConclusionPanel({
     super.key,
@@ -20,7 +20,7 @@ class AiConclusionPanel extends CommonSlidePage {
   static Widget buildContent(
     BuildContext context,
     ThemeData theme,
-    AiConclusionResult res, {
+    AiConclusion res, {
     Key? key,
     bool tap = true,
   }) {

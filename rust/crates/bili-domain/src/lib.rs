@@ -16,6 +16,7 @@ pub mod sponsor_block;
 pub mod subtitle;
 pub mod video;
 pub mod video_feed;
+pub mod video_page;
 
 #[cfg(test)]
 mod tests {

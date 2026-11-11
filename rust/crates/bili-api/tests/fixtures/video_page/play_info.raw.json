@@ -1,0 +1,19 @@
+{
+  "code": 0,
+  "message": "OK",
+  "ttl": 1,
+  "data": {
+    "last_play_cid": 0,
+    "subtitle": {
+      "allow_submit": false,
+      "lan": "",
+      "lan_doc": "",
+      "subtitles": [],
+      "subtitle_position": null,
+      "font_size_type": 0
+    },
+    "view_points": [],
+    "has_next": false,
+    "page_no": 1
+  }
+}

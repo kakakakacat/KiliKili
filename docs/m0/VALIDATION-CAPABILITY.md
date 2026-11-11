@@ -8,6 +8,9 @@
 修订：2026-11-11 — `rust.yml` 的交叉编译矩阵拆分：PR 只跑 x86_64 的 Linux/Windows，
 Apple 与 Android 改为手动 dispatch（理由见 §2.1）；「成本约束」按仓库已公开的事实重写；
 「Rust 进入后 CI 需补」已完成，改为记录现状
+修订：2026-11-11 — `flutter-test.yml` 新增 bridge job：编出原生库、打开开关，
+在 CI 里真正跨 FFI 跑一遍（§3.1 的 Dart 单测那一行改写）。在此之前桥接层从未被
+执行过一次；`bili-danmaku` 已建立，§3.1 末尾那段随之更正
 关联：RFC-0001 §9.3 / §16.7，ADR-004
 
 本文回答一个 RFC 里此前含糊带过的问题：五个目标平台，**哪些能做真机验收、哪些只能做编译验证、哪些根本没覆盖**。结论直接影响 M4/M5 的准入范围，以及 ADR-004 能拿到多少实测数据。
@@ -168,12 +171,13 @@ Android 的 Rust 交叉编译改为手动 dispatch（§2.1）；五个 app workf
 
 | 保障 | 状态 | 实际情况 |
 |---|---|---|
-| PR 上跑 Dart 单测 | ✅ 已落地 | `flutter-test.yml`，`ubuntu-latest`，命中 `lib/**` / `test/**` 等路径时触发。**只跑测试，不产出 Linux 产物** |
+| PR 上跑 Dart 单测 | ✅ 已落地 | `flutter-test.yml` 的 `test` job，`ubuntu-latest`，命中 `lib/**` / `test/**` / `rust/**` 等路径时触发。**只跑测试，不产出 Linux 产物**。该 job 不加载原生库，`RustCore.isReady` 恒为 false，因此它验的是**开关关闭**下的 Dart 原路径、纯算法单测，以及 golden 的裁判（「这份期望值确实是基线会得出的结果」） |
+| PR 上真正跨 FFI 跑一遍 | ✅ 已落地（2026-11-11） | 同一 workflow 的 `bridge` job：`cargo build -p bridge_flutter --release` 之后打开开关跑 `test/bridge`。在它之前，FRB 的类型映射、弹幕会话的生命周期、失败降级在 CI 里一次也没被执行过——Rust 单测证明引擎算得对，这个 job 证明那个结果能原样回到 Dart。原生库没加载起来时**直接失败而不是跳过**（理由见 `test/bridge/bridge_env.dart`：这组测试最可能的退化就是悄悄变成 0 个测试） |
 | PR 上跑 Rust 单测与交叉编译 | ✅ 已落地（交叉编译部分收窄） | `rust.yml`，命中 `rust/**` 时触发；`bili-domain` / `bili-api` / `bili-protocol` / `bili-core` 的单测与 fixture 对照在 `ubuntu-latest` 上直接运行（非容器内）。交叉编译在 PR 上只剩 x86_64 Linux/Windows，Apple 与 Android 改为手动，见 §2.1 |
 | Linux 产物构建 | ⚠️ 手动 | `linux_x64.yml` 只有 `workflow_dispatch` / `workflow_call`，见 §2.1 |
 | Docker 多发行版矩阵（`ubuntu:22.04` / `ubuntu:24.04` / `debian:12` / `fedora:41`）验证 **glibc 版本与动态库符号兼容性** | ❌ 计划，尚未落地 | 仓库中没有对应 workflow 或 compose 文件。这是 Flutter Linux 最常见的发布事故（构建机能跑、用户机 glibc 过旧起不来），在该矩阵建起来之前，Linux 的兼容性保障实际为零 |
 
-`bili-danmaku` 等 crate 尚未建立，上表只列已存在的。弹幕的**解码**已落在 `bili-api`、实体在 `bili-domain`（RFC §4 的注里记了为什么没单开 crate），其单测与 golden 对照已包含在上面那一行里。
+上表只列已存在的 crate。弹幕的**解码**落在 `bili-api`、实体在 `bili-domain`，`bili-danmaku`（2026-11-11 建立）只装引擎——标记自己、合并、过滤、分桶（RFC §4 的注里记了这条分界线）。它们的单测与 golden 对照包含在上面第二行里，跨 FFI 的那一半在 `bridge` 那行。
 
 ### 3.2 放弃的保障
 vaapi/vdpau 硬解、Wayland 与 X11 合成行为、渲染性能与帧耗时、音频（PulseAudio/PipeWire）、HiDPI 缩放。

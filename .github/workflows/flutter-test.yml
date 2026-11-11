@@ -6,11 +6,12 @@ on:
     paths:
       - 'lib/**'
       - 'test/**'
-      # 测试读的 golden fixture 在 rust/ 下：fixture 变了而这里不触发，
-      # 等于 Dart 侧的基线对照在最需要它的那次改动上没跑。
-      # 通配 crate 名：弹幕引擎的 fixture 在 bili-danmaku 下，下一个 crate
-      # 还会在别处，逐个列举迟早漏。
-      - 'rust/crates/*/tests/fixtures/**'
+      # rust/ 整个在内，有两个理由：
+      # 1. 测试读的 golden fixture 在 rust/ 下。fixture 变了而这里不触发，
+      #    等于 Dart 侧的基线对照在最需要它的那次改动上没跑。
+      # 2. 下面的 bridge job 会编出原生库真跨 FFI 跑一遍，Rust 侧任何改动
+      #    都可能让它变红，而那正是它存在的理由。
+      - 'rust/**'
       - 'tool/prepare-build.sh'
       - 'pubspec.yaml'
       - 'pubspec.lock'
@@ -19,11 +20,8 @@ on:
     paths:
       - 'lib/**'
       - 'test/**'
-      # 测试读的 golden fixture 在 rust/ 下：fixture 变了而这里不触发，
-      # 等于 Dart 侧的基线对照在最需要它的那次改动上没跑。
-      # 通配 crate 名：弹幕引擎的 fixture 在 bili-danmaku 下，下一个 crate
-      # 还会在别处，逐个列举迟早漏。
-      - 'rust/crates/*/tests/fixtures/**'
+      # 理由同上。
+      - 'rust/**'
       - 'tool/prepare-build.sh'
       - 'pubspec.yaml'
       - 'pubspec.lock'
@@ -35,6 +33,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # 不加载原生库：RustCore.isReady 恒为 false，验的是**开关关闭**下的
+  # Dart 原路径，以及所有纯算法测试与基线对照（golden 的裁判）。
   test:
     runs-on: ubuntu-latest
     steps:
@@ -58,3 +58,52 @@ jobs:
 
       - name: Run Flutter tests
         run: flutter test --no-pub
+
+  # 唯一真正加载原生库、跨 FFI 执行的 job（见 test/bridge/bridge_env.dart）。
+  #
+  # 在它之前，桥接层——FRB 的类型映射、弹幕会话的生命周期、失败降级——
+  # 在 CI 里一次也没被执行过：上面那个 job 里 Rust 路径全部短路。Rust 的
+  # 单测证明引擎算得对，这里证明那个结果确实能原样回到 Dart。
+  bridge:
+    name: bridge (FFI integration)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+
+      - name: Install Linux native asset headers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libx11-dev libxi-dev
+
+      # 与 rust.yml 共用缓存键，无缓存时全量编译会使构建时间失控。
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+
+      # 只编这一个 crate 的 cdylib，不经 cargokit、不打包 app：这个 job
+      # 要验的是桥接的**运行时行为**，不是五端构建能不能把它装进去
+      # （那是五个 app workflow 的事，见 docs/m0/VALIDATION-CAPABILITY.md §2.1）。
+      - name: Build native library
+        working-directory: rust
+        run: cargo build -p bridge_flutter --release
+
+      - name: Prepare patched Flutter SDK and packages
+        run: |
+          export FLUTTER_ROOT="$(dirname "$(dirname "$(command -v flutter)")")"
+          tool/prepare-build.sh Linux
+
+      # FRB 生成的加载器默认去 rust/crates/bridge_flutter/target/release/ 找，
+      # 那是单 crate 构建的布局；workspace 的产物在 rust/target/release/。
+      # 用 FRB 自己的环境变量指过去，而不是拿 --target-dir 把产物挪个地方
+      # ——挪了就与 rust.yml 的缓存布局分家，每次都是全量编译。
+      - name: Run bridge integration tests
+        env:
+          KILIKILI_RUST_BRIDGE_TESTS: '1'
+          FRB_DART_LOAD_EXTERNAL_LIBRARY_NATIVE_LIB_DIR: ${{ github.workspace }}/rust/target/release
+        run: flutter test --no-pub test/bridge

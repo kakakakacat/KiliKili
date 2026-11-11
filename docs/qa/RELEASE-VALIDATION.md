@@ -45,7 +45,9 @@
 | Windows | F01–F13 中适用项；重点记录安装、窗口与硬解 | 有独立设备；不能以 Actions 构建替代 GUI 操作 |
 | Linux | 构建、解包、原生库与依赖检查；功能项记 `NOT TESTED` | 目前无可用 Linux GUI/硬解验收环境，按 best-effort 发布范围单独披露 |
 
-自动检查只提供补充证据：`flutter-test.yml` 跑 Dart 测试及 bridge job，`rust.yml` 跑 Rust 检查；五端 app workflow 目前需要手动 dispatch。每个发布候选要在记录中填入对应 workflow run 链接，并对产物运行 `python3 tool/inspect-artifact.py <artifact> --require <原生库文件名>`。实际库名按平台产物确定，不能只看构建日志或包体积。产物检查方法见[发布产物复盘](../m0/2026-11-10-RELEASE-REVIEW.md)。
+自动检查由 `ci.yml` 统一触发：每个 PR 和 main 提交都会跑 `rust.yml`（Rust 检查与冻结快照）、`flutter-test.yml`（Dart 基线对照与真实 FFI）、Android Release 开发包构建及 `libbridge_flutter.so` 产物检查；`regression gate` 要求这些 job 全部成功。每日定时运行还会调用 iOS、macOS、Windows、Linux 的既有打包 workflow；手动运行 CI 时可用 `full_platforms` 请求相同的全平台构建。若启用分支保护，应把 `regression gate` 设为必过检查。CI 的固定 fixture 对照不访问上游实时接口，基线版本见 [M0 基线](../m0/BASELINE.md)；更新快照须在 PR 中审查差异并重跑 Dart parity，不得在 CI 中设置 `UPDATE_GOLDEN`。
+
+自动构建仍只证明产物可打包；它不能验收视频首帧、硬解、PiP、后台音频或升级后的真实用户数据。每个发布候选仍须填入 workflow run 链接、真机执行记录，并对目标平台的最终产物运行 `python3 tool/inspect-artifact.py <artifact> --require <原生库文件名>`。实际库名按平台产物确定，不能只看构建日志或包体积。产物检查方法见[发布产物复盘](../m0/2026-11-10-RELEASE-REVIEW.md)。
 
 ## 4. 性能采样场景
 
@@ -69,8 +71,8 @@
 逐项勾选并附证据；未满足项写缺陷、影响平台和处置决定。清单是发布门槛的记录，不表示当前版本已具备发布条件。
 
 - [ ] 候选 commit、版本号、Release 产物哈希固定；后续任何代码或打包改动重新生成候选记录。
-- [ ] 对目标平台手动触发对应 app workflow；记录 run 链接、构建结果、安装包签名/版本信息，并用 `inspect-artifact.py` 核对原生库与依赖。
-- [ ] `flutter-test.yml`、`rust.yml` 中适用的检查通过；记录未触发的检查及原因。对于只改文档的提交，不把未触发写成通过。
+- [ ] `regression gate` 通过；记录本次 CI 的 run 链接。若候选 commit 未经历全平台定时构建，手动以 `full_platforms` 运行 CI；记录构建结果、安装包签名/版本信息，并用 `inspect-artifact.py` 核对最终产物的原生库与依赖。
+- [ ] `flutter-test.yml`、`rust.yml` 的全部检查通过；确认 bridge job 实际加载原生库，未将跳过的测试写作通过。
 - [ ] 每个目标平台完成 F01–F11；适用的 F12–F13 已执行。登录态、断网恢复和旧版原地升级都有实际设备证据。
 - [ ] Android、iOS、macOS、Windows 的播放、Seek、全屏、弹幕、前后台或窗口生命周期经过实际设备验收；iOS 真机签名问题已解决或该平台不纳入本次发布。
 - [ ] P01–P08 已按固定设备协议采样；缺少基线、回归或未覆盖的平台在发布说明中明确记录，不把 CI 性能作为对照。

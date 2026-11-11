@@ -1,31 +1,7 @@
 name: Flutter tests
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'lib/**'
-      - 'test/**'
-      # rust/ 整个在内，有两个理由：
-      # 1. 测试读的 golden fixture 在 rust/ 下。fixture 变了而这里不触发，
-      #    等于 Dart 侧的基线对照在最需要它的那次改动上没跑。
-      # 2. 下面的 bridge job 会编出原生库真跨 FFI 跑一遍，Rust 侧任何改动
-      #    都可能让它变红，而那正是它存在的理由。
-      - 'rust/**'
-      - 'tool/prepare-build.sh'
-      - 'pubspec.yaml'
-      - 'pubspec.lock'
-      - '.github/workflows/flutter-test.yml'
-  pull_request:
-    paths:
-      - 'lib/**'
-      - 'test/**'
-      # 理由同上。
-      - 'rust/**'
-      - 'tool/prepare-build.sh'
-      - 'pubspec.yaml'
-      - 'pubspec.lock'
-      - '.github/workflows/flutter-test.yml'
+  workflow_call:
   workflow_dispatch:
 
 concurrency:

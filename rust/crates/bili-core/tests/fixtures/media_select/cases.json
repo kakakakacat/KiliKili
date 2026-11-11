@@ -1,0 +1,184 @@
+{
+  "comment": [
+    "清晰度 / 编码 / 音质选择的对照用例。两边各跑一遍：",
+    "  Rust  rust/crates/bili-core/tests/media_select_golden.rs",
+    "  基线  test/utils/media_select_golden_test.dart（跑真正的 VideoUtils）",
+    "",
+    "与其他 fixture 链的不同之处：期望值是**人写的**，不是基线生成的。",
+    "原因是 VideoUtils 依赖 Pref（hive + flutter），纯 dart 的 fixture",
+    "生成器跑不起来。裁判因此换成了 CI 里的那个 Dart 测试——它用真正的",
+    "VideoUtils 跑同一批输入，期望值错了它会红。方向没变：基线仍是判据。",
+    "",
+    "前四个 video 用例与四个 audio 用例取自既有的",
+    "test/utils/video_quality_select_test.dart 与 audio_quality_select_test.dart，",
+    "它们的期望值本来就是基线行为。"
+  ],
+  "video": [
+    {
+      "name": "偏好的清晰度就在列表里",
+      "videos": [
+        { "id": 129, "codecs": "av01" },
+        { "id": 127, "codecs": "av01" },
+        { "id": 126, "codecs": "av01" },
+        { "id": 125, "codecs": "av01" },
+        { "id": 120, "codecs": "av01" },
+        { "id": 116, "codecs": "av01" },
+        { "id": 112, "codecs": "av01" },
+        { "id": 100, "codecs": "av01" },
+        { "id": 80, "codecs": "av01" },
+        { "id": 74, "codecs": "av01" },
+        { "id": 64, "codecs": "av01" },
+        { "id": 32, "codecs": "av01" },
+        { "id": 16, "codecs": "av01" },
+        { "id": 6, "codecs": "av01" }
+      ],
+      "accept_quality": [129, 127, 126, 125, 120, 116, 112, 100, 80, 74, 64, 32, 16, 6],
+      "support_formats": [
+        { "quality": 129, "codecs": ["av01"] },
+        { "quality": 127, "codecs": ["av01"] },
+        { "quality": 126, "codecs": ["av01"] },
+        { "quality": 125, "codecs": ["av01"] },
+        { "quality": 120, "codecs": ["av01"] },
+        { "quality": 116, "codecs": ["av01"] },
+        { "quality": 112, "codecs": ["av01"] },
+        { "quality": 100, "codecs": ["av01"] },
+        { "quality": 80, "codecs": ["av01"] },
+        { "quality": 74, "codecs": ["av01"] },
+        { "quality": 64, "codecs": ["av01"] },
+        { "quality": 32, "codecs": ["av01"] },
+        { "quality": 16, "codecs": ["av01"] },
+        { "quality": 6, "codecs": ["av01"] }
+      ],
+      "prefer_quality": 80,
+      "prefer_codecs": ["AV1"],
+      "expected": { "quality": 80, "format_index": 8, "video_index": 8, "codec": "AV1" }
+    },
+    {
+      "name": "偏好的清晰度缺席，退到不超过它的最高一档",
+      "videos": [
+        { "id": 129, "codecs": "av01" },
+        { "id": 120, "codecs": "av01" },
+        { "id": 100, "codecs": "av01" },
+        { "id": 80, "codecs": "av01" }
+      ],
+      "accept_quality": [129, 120, 100, 80],
+      "support_formats": [
+        { "quality": 129, "codecs": ["av01"] },
+        { "quality": 120, "codecs": ["av01"] },
+        { "quality": 100, "codecs": ["av01"] },
+        { "quality": 80, "codecs": ["av01"] }
+      ],
+      "prefer_quality": 112,
+      "prefer_codecs": ["AV1"],
+      "expected": { "quality": 100, "format_index": 2, "video_index": 2, "codec": "AV1" }
+    },
+    {
+      "name": "偏好低于所有档位，取最低的那一档",
+      "videos": [
+        { "id": 126, "codecs": "av01" },
+        { "id": 80, "codecs": "av01" },
+        { "id": 32, "codecs": "av01" }
+      ],
+      "accept_quality": [126, 80, 32],
+      "support_formats": [
+        { "quality": 126, "codecs": ["av01"] },
+        { "quality": 80, "codecs": ["av01"] },
+        { "quality": 32, "codecs": ["av01"] }
+      ],
+      "prefer_quality": 6,
+      "prefer_codecs": ["AV1"],
+      "expected": { "quality": 32, "format_index": 2, "video_index": 2, "codec": "AV1" }
+    },
+    {
+      "name": "偏好高于所有档位，取最高的那一档",
+      "videos": [
+        { "id": 80, "codecs": "av01" },
+        { "id": 64, "codecs": "av01" }
+      ],
+      "accept_quality": [80, 64],
+      "support_formats": [
+        { "quality": 80, "codecs": ["av01"] },
+        { "quality": 64, "codecs": ["av01"] }
+      ],
+      "prefer_quality": 127,
+      "prefer_codecs": ["AV1"],
+      "expected": { "quality": 80, "format_index": 0, "video_index": 0, "codec": "AV1" }
+    },
+    {
+      "name": "同一清晰度下按编码偏好挑流",
+      "videos": [
+        { "id": 80, "codecs": "av01.0.08M.08" },
+        { "id": 80, "codecs": "hev1.1.6.L120.90" },
+        { "id": 80, "codecs": "avc1.640032" }
+      ],
+      "accept_quality": [80],
+      "support_formats": [{ "quality": 80, "codecs": ["av01", "hev1", "avc1"] }],
+      "prefer_quality": 80,
+      "prefer_codecs": ["AVC"],
+      "expected": { "quality": 80, "format_index": 0, "video_index": 2, "codec": "AVC" }
+    },
+    {
+      "name": "偏好列表的先后即优先级",
+      "videos": [
+        { "id": 80, "codecs": "av01.0.08M.08" },
+        { "id": 80, "codecs": "hev1.1.6.L120.90" },
+        { "id": 80, "codecs": "avc1.640032" }
+      ],
+      "accept_quality": [80],
+      "support_formats": [{ "quality": 80, "codecs": ["av01", "hev1", "avc1"] }],
+      "prefer_quality": 80,
+      "prefer_codecs": ["HEVC", "AV1"],
+      "expected": { "quality": 80, "format_index": 0, "video_index": 1, "codec": "HEVC" }
+    },
+    {
+      "name": "偏好的编码该清晰度没有，退回 support_formats 里的第一个编码",
+      "videos": [
+        { "id": 80, "codecs": "hev1.1.6.L120.90" },
+        { "id": 80, "codecs": "avc1.640032" }
+      ],
+      "accept_quality": [80],
+      "support_formats": [{ "quality": 80, "codecs": ["hev1", "avc1"] }],
+      "prefer_quality": 80,
+      "prefer_codecs": ["DVH1"],
+      "expected": { "quality": 80, "format_index": 0, "video_index": 0, "codec": "HEVC" }
+    },
+    {
+      "name": "没有编码偏好时同样退回第一个编码",
+      "videos": [
+        { "id": 64, "codecs": "avc1.640032" },
+        { "id": 64, "codecs": "av01.0.08M.08" }
+      ],
+      "accept_quality": [64],
+      "support_formats": [{ "quality": 64, "codecs": ["avc1", "av01"] }],
+      "prefer_quality": 64,
+      "prefer_codecs": [],
+      "expected": { "quality": 64, "format_index": 0, "video_index": 0, "codec": "AVC" }
+    }
+  ],
+  "audio": [
+    {
+      "name": "有 Hi-Res 就用 Hi-Res",
+      "audios": [30251, 30280, 30232, 30216],
+      "prefer_quality": 30251,
+      "expected": { "audio_index": 0, "id": 30251 }
+    },
+    {
+      "name": "有杜比时不降到 192K（按 rank 而不是 code 比）",
+      "audios": [30250, 30280],
+      "prefer_quality": 30251,
+      "expected": { "audio_index": 0, "id": 30250 }
+    },
+    {
+      "name": "不升到高于设置的音质",
+      "audios": [30280, 30216],
+      "prefer_quality": 30232,
+      "expected": { "audio_index": 1, "id": 30216 }
+    },
+    {
+      "name": "不升到高于设置的音质（没有更低的则取最低）",
+      "audios": [30280, 30232],
+      "prefer_quality": 30216,
+      "expected": { "audio_index": 1, "id": 30232 }
+    }
+  ]
+}

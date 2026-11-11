@@ -11,5 +11,9 @@ description = "应用层：UseCase、播放器意图编排、事件与状态快�
 bili-domain = { path = "../bili-domain" }
 tracing.workspace = true
 
+[dev-dependencies]
+# 选择算法的对照用例是 JSON：同一份输入与期望值，Rust 与基线各跑一遍。
+serde_json.workspace = true
+
 [lints]
 workspace = true

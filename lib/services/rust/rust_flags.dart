@@ -96,6 +96,25 @@ abstract final class RustFlags {
   static Future<void> setRustSearchSuggest(bool value) =>
       _box.put(rustSearchSuggestKey, value);
 
+  /// 清晰度 / 编码 / 音质选择走 Rust（RFC-0001 §16.1 把清晰度选择划给
+  /// Rust Player Orchestrator）。
+  ///
+  /// 默认关闭。它影响的是**用户看到的画质**：选错一档不会报错，只会
+  /// 「今天画质怎么不一样」。任何一步失败（包括基线会抛异常的那几种
+  /// 输入）都回到 `VideoUtils` 的原实现，见 [RustMediaSelect]。
+  static const String rustMediaSelectKey = 'rust.select.media';
+
+  static bool get rustMediaSelect =>
+      RustCore.isReady &&
+      (_box.get(
+            rustMediaSelectKey,
+            defaultValue: _defaultOn(rustMediaSelectKey),
+          )
+          as bool);
+
+  static Future<void> setRustMediaSelect(bool value) =>
+      _box.put(rustMediaSelectKey, value);
+
   /// `DmView` 的字幕轨由 Rust 解析。请求仍由现有 Dart 路径发出。
   ///
   /// 默认关闭；解析失败会回退到 `DmGrpc.dmViewToSubtitle`。与弹幕引擎
@@ -158,6 +177,7 @@ abstract final class RustFlags {
     rustDmViewSubtitleKey => const bool.fromEnvironment(
       'rust.parse.dmViewSubtitle',
     ),
+    rustMediaSelectKey => const bool.fromEnvironment('rust.select.media'),
     _ => false,
   };
 }

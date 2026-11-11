@@ -4,6 +4,7 @@
 
 pub mod media_select;
 pub mod player_session;
+pub mod subtitle_format;
 
 #[cfg(test)]
 mod tests {

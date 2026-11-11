@@ -96,6 +96,24 @@ abstract final class RustFlags {
   static Future<void> setRustSearchSuggest(bool value) =>
       _box.put(rustSearchSuggestKey, value);
 
+  /// 字幕文件由 Rust 解析并转成 WebVTT / SRT。
+  ///
+  /// 默认关闭。开启后 Dart 连那份 JSON 都不解（按纯文本取回直接交给
+  /// Rust），基线为此开的 `compute` 由 FRB 的工作线程替代。失败回退到
+  /// 基线的 `SubtitleUtils`，用的是同一份正文，不重新请求。
+  static const String rustSubtitleConvertKey = 'rust.convert.subtitle';
+
+  static bool get rustSubtitleConvert =>
+      RustCore.isReady &&
+      (_box.get(
+            rustSubtitleConvertKey,
+            defaultValue: _defaultOn(rustSubtitleConvertKey),
+          )
+          as bool);
+
+  static Future<void> setRustSubtitleConvert(bool value) =>
+      _box.put(rustSubtitleConvertKey, value);
+
   /// 清晰度 / 编码 / 音质选择走 Rust（RFC-0001 §16.1 把清晰度选择划给
   /// Rust Player Orchestrator）。
   ///
@@ -178,6 +196,9 @@ abstract final class RustFlags {
       'rust.parse.dmViewSubtitle',
     ),
     rustMediaSelectKey => const bool.fromEnvironment('rust.select.media'),
+    rustSubtitleConvertKey => const bool.fromEnvironment(
+      'rust.convert.subtitle',
+    ),
     _ => false,
   };
 }

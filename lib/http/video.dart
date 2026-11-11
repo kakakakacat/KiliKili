@@ -29,7 +29,9 @@ import 'package:kilikili/models_new/video/video_play_info/data.dart';
 import 'package:kilikili/models_new/video/video_relation/data.dart';
 import 'package:kilikili/models_new/video/video_shot/data.dart';
 import 'package:kilikili/services/rust/play_url_shadow.dart';
+import 'package:kilikili/services/rust/rust_flags.dart';
 import 'package:kilikili/services/rust/rust_play_url.dart';
+import 'package:kilikili/services/rust/rust_subtitle.dart';
 import 'package:kilikili/services/rust/rust_video_detail.dart';
 import 'package:kilikili/services/rust/video_detail_shadow.dart';
 import 'package:kilikili/utils/accounts.dart';
@@ -973,8 +975,35 @@ abstract final class VideoHttp {
     String subtitleUrl, {
     SubtitleFormat format = .vtt,
   }) async {
+    if (RustFlags.rustSubtitleConvert) {
+      // 按**纯文本**取回：这条路径的意义就在于 Dart 不解这份 JSON。
+      final res = await Request().get(
+        subtitleUrl.http2https,
+        options: Options(responseType: ResponseType.plain),
+      );
+      // 不是字符串说明请求失败（Request.get 的异常分支返回一个 Map），
+      // 与基线拿不到 body 时一样返回 null。
+      if (res.data case final String body) {
+        if (await RustSubtitle.convert(body, format) case final result?) {
+          // text 为 null 表示响应里没有 body，基线此时也返回 null。
+          return result.text;
+        }
+        // Rust 失败：用同一份正文走基线，不重新请求。
+        return _subtitlesWithDart(jsonDecode(body), format);
+      }
+      return null;
+    }
+
     final res = await Request().get(subtitleUrl.http2https);
-    if (res.data?['body'] case List list) {
+    return _subtitlesWithDart(res.data, format);
+  }
+
+  /// 基线的字幕转换。[data] 是已解出的 JSON（Dio 解的，或降级时自己解的）。
+  static Future<String?> _subtitlesWithDart(
+    dynamic data,
+    SubtitleFormat format,
+  ) async {
+    if (data?['body'] case List list) {
       switch (format) {
         case .json:
           throw UnimplementedError();

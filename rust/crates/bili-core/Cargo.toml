@@ -14,6 +14,9 @@ tracing.workspace = true
 [dev-dependencies]
 # 选择算法的对照用例是 JSON：同一份输入与期望值，Rust 与基线各跑一遍。
 serde_json.workspace = true
+# 字幕 golden 要先解 fixture 的 JSON 正文再转格式；解析属于 data 层。
+# 只在测试里依赖，本 crate 的生产代码仍然不认识 bili-api（层次不反转）。
+bili-api = { path = "../bili-api", default-features = false }
 
 [lints]
 workspace = true

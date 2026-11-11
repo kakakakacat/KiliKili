@@ -7,6 +7,7 @@ pub mod media_select;
 pub mod play_url;
 pub mod play_url_fetch;
 pub mod search_suggest;
+pub mod subtitle;
 pub mod transport;
 pub mod video_detail;
 pub mod video_detail_fetch;

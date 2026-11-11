@@ -12,6 +12,7 @@ import 'package:kilikili/rust/api/misc.dart';
 import 'package:kilikili/rust/api/pgc.dart';
 import 'package:kilikili/rust/api/play_url.dart';
 import 'package:kilikili/rust/api/play_url_fetch.dart';
+import 'package:kilikili/rust/api/playback.dart';
 import 'package:kilikili/rust/api/reply.dart';
 import 'package:kilikili/rust/api/search.dart';
 import 'package:kilikili/rust/api/search_suggest.dart';
@@ -96,6 +97,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   DanmakuFilter dco_decode_box_autoadd_danmaku_filter(dynamic raw);
 
   @protected
+  Dash dco_decode_box_autoadd_dash(dynamic raw);
+
+  @protected
   EmoteMeta dco_decode_box_autoadd_emote_meta(dynamic raw);
 
   @protected
@@ -115,6 +119,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Interaction dco_decode_box_autoadd_interaction(dynamic raw);
+
+  @protected
+  LanguageOptions dco_decode_box_autoadd_language_options(dynamic raw);
 
   @protected
   LiveAppIdentity dco_decode_box_autoadd_live_app_identity(dynamic raw);
@@ -141,6 +148,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveSecondPage dco_decode_box_autoadd_live_second_page(dynamic raw);
 
   @protected
+  LoudnormConfig dco_decode_box_autoadd_loudnorm_config(dynamic raw);
+
+  @protected
   MatchContest dco_decode_box_autoadd_match_contest(dynamic raw);
 
   @protected
@@ -154,6 +164,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MediaScore dco_decode_box_autoadd_media_score(dynamic raw);
+
+  @protected
+  MediaStream dco_decode_box_autoadd_media_stream(dynamic raw);
 
   @protected
   MiscContext dco_decode_box_autoadd_misc_context(dynamic raw);
@@ -210,6 +223,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlayInfo dco_decode_box_autoadd_play_info(dynamic raw);
 
   @protected
+  PlayUrl dco_decode_box_autoadd_play_url(dynamic raw);
+
+  @protected
   PlayUrlRequest dco_decode_box_autoadd_play_url_request(dynamic raw);
 
   @protected
@@ -258,6 +274,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SeasonStatus dco_decode_box_autoadd_season_status(dynamic raw);
 
   @protected
+  SegmentBase dco_decode_box_autoadd_segment_base(dynamic raw);
+
+  @protected
   SponsorBlockContext dco_decode_box_autoadd_sponsor_block_context(dynamic raw);
 
   @protected
@@ -284,6 +303,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   VideoShot dco_decode_box_autoadd_video_shot(dynamic raw);
 
   @protected
+  Volume dco_decode_box_autoadd_volume(dynamic raw);
+
+  @protected
+  CdnServiceEntry dco_decode_cdn_service_entry(dynamic raw);
+
+  @protected
+  ClipInfo dco_decode_clip_info(dynamic raw);
+
+  @protected
   DanmakuBucketItem dco_decode_danmaku_bucket_item(dynamic raw);
 
   @protected
@@ -302,7 +330,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   DanmakuPushResult dco_decode_danmaku_push_result(dynamic raw);
 
   @protected
+  Dash dco_decode_dash(dynamic raw);
+
+  @protected
   DmViewSubtitlesParse dco_decode_dm_view_subtitles_parse(dynamic raw);
+
+  @protected
+  Durl dco_decode_durl(dynamic raw);
 
   @protected
   Emote dco_decode_emote(dynamic raw);
@@ -359,6 +393,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Interaction dco_decode_interaction(dynamic raw);
 
   @protected
+  LanguageItem dco_decode_language_item(dynamic raw);
+
+  @protected
+  LanguageOptions dco_decode_language_options(dynamic raw);
+
+  @protected
   List<String> dco_decode_list_String(dynamic raw);
 
   @protected
@@ -377,7 +417,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<BlackListItem> dco_decode_list_black_list_item(dynamic raw);
 
   @protected
+  List<CdnServiceEntry> dco_decode_list_cdn_service_entry(dynamic raw);
+
+  @protected
+  List<ClipInfo> dco_decode_list_clip_info(dynamic raw);
+
+  @protected
   List<DanmakuBucketItem> dco_decode_list_danmaku_bucket_item(dynamic raw);
+
+  @protected
+  List<Durl> dco_decode_list_durl(dynamic raw);
 
   @protected
   List<Emote> dco_decode_list_emote(dynamic raw);
@@ -395,6 +444,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<FormatCandidateInput> dco_decode_list_format_candidate_input(
     dynamic raw,
   );
+
+  @protected
+  List<LanguageItem> dco_decode_list_language_item(dynamic raw);
 
   @protected
   List<LiveArea> dco_decode_list_live_area(dynamic raw);
@@ -436,6 +488,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<MatchContest> dco_decode_list_match_contest(dynamic raw);
 
   @protected
+  List<MediaStream> dco_decode_list_media_stream(dynamic raw);
+
+  @protected
   List<NoteItem> dco_decode_list_note_item(dynamic raw);
 
   @protected
@@ -470,6 +525,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<PgcSection> dco_decode_list_pgc_section(dynamic raw);
+
+  @protected
+  List<PlayFormat> dco_decode_list_play_format(dynamic raw);
 
   @protected
   List<PlaySubtitle> dco_decode_list_play_subtitle(dynamic raw);
@@ -627,6 +685,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveUrlInfo dco_decode_live_url_info(dynamic raw);
 
   @protected
+  LoudnormConfig dco_decode_loudnorm_config(dynamic raw);
+
+  @protected
   MatchContest dco_decode_match_contest(dynamic raw);
 
   @protected
@@ -643,6 +704,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MediaScore dco_decode_media_score(dynamic raw);
+
+  @protected
+  MediaStream dco_decode_media_stream(dynamic raw);
 
   @protected
   MiscContext dco_decode_misc_context(dynamic raw);
@@ -687,6 +751,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   DanmakuFilter? dco_decode_opt_box_autoadd_danmaku_filter(dynamic raw);
 
   @protected
+  Dash? dco_decode_opt_box_autoadd_dash(dynamic raw);
+
+  @protected
   EmoteMeta? dco_decode_opt_box_autoadd_emote_meta(dynamic raw);
 
   @protected
@@ -703,6 +770,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Interaction? dco_decode_opt_box_autoadd_interaction(dynamic raw);
+
+  @protected
+  LanguageOptions? dco_decode_opt_box_autoadd_language_options(dynamic raw);
 
   @protected
   LiveFollowSection? dco_decode_opt_box_autoadd_live_follow_section(
@@ -789,6 +859,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlayInfo? dco_decode_opt_box_autoadd_play_info(dynamic raw);
 
   @protected
+  PlayUrl? dco_decode_opt_box_autoadd_play_url(dynamic raw);
+
+  @protected
   PopularPrecious? dco_decode_opt_box_autoadd_popular_precious(dynamic raw);
 
   @protected
@@ -827,6 +900,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SeasonStatus? dco_decode_opt_box_autoadd_season_status(dynamic raw);
 
   @protected
+  SegmentBase? dco_decode_opt_box_autoadd_segment_base(dynamic raw);
+
+  @protected
   SponsorUserInfo? dco_decode_opt_box_autoadd_sponsor_user_info(dynamic raw);
 
   @protected
@@ -844,6 +920,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   VideoShot? dco_decode_opt_box_autoadd_video_shot(dynamic raw);
 
   @protected
+  Volume? dco_decode_opt_box_autoadd_volume(dynamic raw);
+
+  @protected
   List<String>? dco_decode_opt_list_String(dynamic raw);
 
   @protected
@@ -856,7 +935,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<BgmRecommend>? dco_decode_opt_list_bgm_recommend(dynamic raw);
 
   @protected
+  List<ClipInfo>? dco_decode_opt_list_clip_info(dynamic raw);
+
+  @protected
   List<DanmakuBucketItem>? dco_decode_opt_list_danmaku_bucket_item(dynamic raw);
+
+  @protected
+  List<Durl>? dco_decode_opt_list_durl(dynamic raw);
 
   @protected
   List<EmotePackage>? dco_decode_opt_list_emote_package(dynamic raw);
@@ -865,16 +950,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<FeedVideoItem>? dco_decode_opt_list_feed_video_item(dynamic raw);
 
   @protected
+  List<LanguageItem>? dco_decode_opt_list_language_item(dynamic raw);
+
+  @protected
   List<LiveArea>? dco_decode_opt_list_live_area(dynamic raw);
 
   @protected
   List<LiveAreaGroup>? dco_decode_opt_list_live_area_group(dynamic raw);
 
   @protected
+  List<MediaStream>? dco_decode_opt_list_media_stream(dynamic raw);
+
+  @protected
   List<NoteItem>? dco_decode_opt_list_note_item(dynamic raw);
 
   @protected
   List<PgcRankItem>? dco_decode_opt_list_pgc_rank_item(dynamic raw);
+
+  @protected
+  List<PlayFormat>? dco_decode_opt_list_play_format(dynamic raw);
 
   @protected
   List<PlaySubtitle>? dco_decode_opt_list_play_subtitle(dynamic raw);
@@ -1001,6 +1095,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PgcUserStatus dco_decode_pgc_user_status(dynamic raw);
 
   @protected
+  PlayFormat dco_decode_play_format(dynamic raw);
+
+  @protected
   PlayInfo dco_decode_play_info(dynamic raw);
 
   @protected
@@ -1010,13 +1107,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlaySubtitle dco_decode_play_subtitle(dynamic raw);
 
   @protected
-  PlayUrlFetch dco_decode_play_url_fetch(dynamic raw);
-
-  @protected
-  PlayUrlParse dco_decode_play_url_parse(dynamic raw);
+  PlayUrl dco_decode_play_url(dynamic raw);
 
   @protected
   PlayUrlRequest dco_decode_play_url_request(dynamic raw);
+
+  @protected
+  PlayUrlResult dco_decode_play_url_result(dynamic raw);
 
   @protected
   PopularPrecious dco_decode_popular_precious(dynamic raw);
@@ -1145,6 +1242,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SeasonStatusResult dco_decode_season_status_result(dynamic raw);
 
   @protected
+  SegmentBase dco_decode_segment_base(dynamic raw);
+
+  @protected
   SkipSegment dco_decode_skip_segment(dynamic raw);
 
   @protected
@@ -1229,6 +1329,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ViewPoint dco_decode_view_point(dynamic raw);
 
   @protected
+  Volume dco_decode_volume(dynamic raw);
+
+  @protected
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
@@ -1295,6 +1398,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  Dash sse_decode_box_autoadd_dash(SseDeserializer deserializer);
+
+  @protected
   EmoteMeta sse_decode_box_autoadd_emote_meta(SseDeserializer deserializer);
 
   @protected
@@ -1316,6 +1422,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Interaction sse_decode_box_autoadd_interaction(SseDeserializer deserializer);
+
+  @protected
+  LanguageOptions sse_decode_box_autoadd_language_options(
+    SseDeserializer deserializer,
+  );
 
   @protected
   LiveAppIdentity sse_decode_box_autoadd_live_app_identity(
@@ -1354,6 +1465,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  LoudnormConfig sse_decode_box_autoadd_loudnorm_config(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   MatchContest sse_decode_box_autoadd_match_contest(
     SseDeserializer deserializer,
   );
@@ -1369,6 +1485,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MediaScore sse_decode_box_autoadd_media_score(SseDeserializer deserializer);
+
+  @protected
+  MediaStream sse_decode_box_autoadd_media_stream(SseDeserializer deserializer);
 
   @protected
   MiscContext sse_decode_box_autoadd_misc_context(SseDeserializer deserializer);
@@ -1447,6 +1566,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlayInfo sse_decode_box_autoadd_play_info(SseDeserializer deserializer);
 
   @protected
+  PlayUrl sse_decode_box_autoadd_play_url(SseDeserializer deserializer);
+
+  @protected
   PlayUrlRequest sse_decode_box_autoadd_play_url_request(
     SseDeserializer deserializer,
   );
@@ -1515,6 +1637,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SegmentBase sse_decode_box_autoadd_segment_base(SseDeserializer deserializer);
+
+  @protected
   SponsorBlockContext sse_decode_box_autoadd_sponsor_block_context(
     SseDeserializer deserializer,
   );
@@ -1549,6 +1674,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   VideoShot sse_decode_box_autoadd_video_shot(SseDeserializer deserializer);
 
   @protected
+  Volume sse_decode_box_autoadd_volume(SseDeserializer deserializer);
+
+  @protected
+  CdnServiceEntry sse_decode_cdn_service_entry(SseDeserializer deserializer);
+
+  @protected
+  ClipInfo sse_decode_clip_info(SseDeserializer deserializer);
+
+  @protected
   DanmakuBucketItem sse_decode_danmaku_bucket_item(
     SseDeserializer deserializer,
   );
@@ -1577,9 +1711,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  Dash sse_decode_dash(SseDeserializer deserializer);
+
+  @protected
   DmViewSubtitlesParse sse_decode_dm_view_subtitles_parse(
     SseDeserializer deserializer,
   );
+
+  @protected
+  Durl sse_decode_durl(SseDeserializer deserializer);
 
   @protected
   Emote sse_decode_emote(SseDeserializer deserializer);
@@ -1640,6 +1780,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Interaction sse_decode_interaction(SseDeserializer deserializer);
 
   @protected
+  LanguageItem sse_decode_language_item(SseDeserializer deserializer);
+
+  @protected
+  LanguageOptions sse_decode_language_options(SseDeserializer deserializer);
+
+  @protected
   List<String> sse_decode_list_String(SseDeserializer deserializer);
 
   @protected
@@ -1664,9 +1810,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<CdnServiceEntry> sse_decode_list_cdn_service_entry(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<ClipInfo> sse_decode_list_clip_info(SseDeserializer deserializer);
+
+  @protected
   List<DanmakuBucketItem> sse_decode_list_danmaku_bucket_item(
     SseDeserializer deserializer,
   );
+
+  @protected
+  List<Durl> sse_decode_list_durl(SseDeserializer deserializer);
 
   @protected
   List<Emote> sse_decode_list_emote(SseDeserializer deserializer);
@@ -1686,6 +1843,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<FormatCandidateInput> sse_decode_list_format_candidate_input(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<LanguageItem> sse_decode_list_language_item(
     SseDeserializer deserializer,
   );
 
@@ -1743,6 +1905,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<MediaStream> sse_decode_list_media_stream(SseDeserializer deserializer);
+
+  @protected
   List<NoteItem> sse_decode_list_note_item(SseDeserializer deserializer);
 
   @protected
@@ -1793,6 +1958,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<PgcSection> sse_decode_list_pgc_section(SseDeserializer deserializer);
+
+  @protected
+  List<PlayFormat> sse_decode_list_play_format(SseDeserializer deserializer);
 
   @protected
   List<PlaySubtitle> sse_decode_list_play_subtitle(
@@ -1986,6 +2154,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveUrlInfo sse_decode_live_url_info(SseDeserializer deserializer);
 
   @protected
+  LoudnormConfig sse_decode_loudnorm_config(SseDeserializer deserializer);
+
+  @protected
   MatchContest sse_decode_match_contest(SseDeserializer deserializer);
 
   @protected
@@ -2002,6 +2173,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MediaScore sse_decode_media_score(SseDeserializer deserializer);
+
+  @protected
+  MediaStream sse_decode_media_stream(SseDeserializer deserializer);
 
   @protected
   MiscContext sse_decode_misc_context(SseDeserializer deserializer);
@@ -2054,6 +2228,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  Dash? sse_decode_opt_box_autoadd_dash(SseDeserializer deserializer);
+
+  @protected
   EmoteMeta? sse_decode_opt_box_autoadd_emote_meta(
     SseDeserializer deserializer,
   );
@@ -2076,6 +2253,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Interaction? sse_decode_opt_box_autoadd_interaction(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LanguageOptions? sse_decode_opt_box_autoadd_language_options(
     SseDeserializer deserializer,
   );
 
@@ -2206,6 +2388,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlayInfo? sse_decode_opt_box_autoadd_play_info(SseDeserializer deserializer);
 
   @protected
+  PlayUrl? sse_decode_opt_box_autoadd_play_url(SseDeserializer deserializer);
+
+  @protected
   PopularPrecious? sse_decode_opt_box_autoadd_popular_precious(
     SseDeserializer deserializer,
   );
@@ -2266,6 +2451,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SegmentBase? sse_decode_opt_box_autoadd_segment_base(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SponsorUserInfo? sse_decode_opt_box_autoadd_sponsor_user_info(
     SseDeserializer deserializer,
   );
@@ -2287,6 +2477,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  Volume? sse_decode_opt_box_autoadd_volume(SseDeserializer deserializer);
+
+  @protected
   List<String>? sse_decode_opt_list_String(SseDeserializer deserializer);
 
   @protected
@@ -2303,9 +2496,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<ClipInfo>? sse_decode_opt_list_clip_info(SseDeserializer deserializer);
+
+  @protected
   List<DanmakuBucketItem>? sse_decode_opt_list_danmaku_bucket_item(
     SseDeserializer deserializer,
   );
+
+  @protected
+  List<Durl>? sse_decode_opt_list_durl(SseDeserializer deserializer);
 
   @protected
   List<EmotePackage>? sse_decode_opt_list_emote_package(
@@ -2318,6 +2517,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<LanguageItem>? sse_decode_opt_list_language_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<LiveArea>? sse_decode_opt_list_live_area(SseDeserializer deserializer);
 
   @protected
@@ -2326,10 +2530,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<MediaStream>? sse_decode_opt_list_media_stream(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<NoteItem>? sse_decode_opt_list_note_item(SseDeserializer deserializer);
 
   @protected
   List<PgcRankItem>? sse_decode_opt_list_pgc_rank_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<PlayFormat>? sse_decode_opt_list_play_format(
     SseDeserializer deserializer,
   );
 
@@ -2488,6 +2702,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PgcUserStatus sse_decode_pgc_user_status(SseDeserializer deserializer);
 
   @protected
+  PlayFormat sse_decode_play_format(SseDeserializer deserializer);
+
+  @protected
   PlayInfo sse_decode_play_info(SseDeserializer deserializer);
 
   @protected
@@ -2497,13 +2714,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlaySubtitle sse_decode_play_subtitle(SseDeserializer deserializer);
 
   @protected
-  PlayUrlFetch sse_decode_play_url_fetch(SseDeserializer deserializer);
-
-  @protected
-  PlayUrlParse sse_decode_play_url_parse(SseDeserializer deserializer);
+  PlayUrl sse_decode_play_url(SseDeserializer deserializer);
 
   @protected
   PlayUrlRequest sse_decode_play_url_request(SseDeserializer deserializer);
+
+  @protected
+  PlayUrlResult sse_decode_play_url_result(SseDeserializer deserializer);
 
   @protected
   PopularPrecious sse_decode_popular_precious(SseDeserializer deserializer);
@@ -2664,6 +2881,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SegmentBase sse_decode_segment_base(SseDeserializer deserializer);
+
+  @protected
   SkipSegment sse_decode_skip_segment(SseDeserializer deserializer);
 
   @protected
@@ -2766,6 +2986,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ViewPoint sse_decode_view_point(SseDeserializer deserializer);
 
   @protected
+  Volume sse_decode_volume(SseDeserializer deserializer);
+
+  @protected
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
@@ -2844,6 +3067,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_dash(Dash self, SseSerializer serializer);
+
+  @protected
   void sse_encode_box_autoadd_emote_meta(
     EmoteMeta self,
     SseSerializer serializer,
@@ -2879,6 +3105,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_interaction(
     Interaction self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_language_options(
+    LanguageOptions self,
     SseSerializer serializer,
   );
 
@@ -2931,6 +3163,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_loudnorm_config(
+    LoudnormConfig self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_match_contest(
     MatchContest self,
     SseSerializer serializer,
@@ -2957,6 +3195,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_media_score(
     MediaScore self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_media_stream(
+    MediaStream self,
     SseSerializer serializer,
   );
 
@@ -3069,6 +3313,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_play_url(PlayUrl self, SseSerializer serializer);
+
+  @protected
   void sse_encode_box_autoadd_play_url_request(
     PlayUrlRequest self,
     SseSerializer serializer,
@@ -3165,6 +3412,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_segment_base(
+    SegmentBase self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_sponsor_block_context(
     SponsorBlockContext self,
     SseSerializer serializer,
@@ -3207,6 +3460,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_volume(Volume self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_cdn_service_entry(
+    CdnServiceEntry self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_clip_info(ClipInfo self, SseSerializer serializer);
+
+  @protected
   void sse_encode_danmaku_bucket_item(
     DanmakuBucketItem self,
     SseSerializer serializer,
@@ -3240,10 +3505,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_dash(Dash self, SseSerializer serializer);
+
+  @protected
   void sse_encode_dm_view_subtitles_parse(
     DmViewSubtitlesParse self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_durl(Durl self, SseSerializer serializer);
 
   @protected
   void sse_encode_emote(Emote self, SseSerializer serializer);
@@ -3315,6 +3586,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_interaction(Interaction self, SseSerializer serializer);
 
   @protected
+  void sse_encode_language_item(LanguageItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_language_options(
+    LanguageOptions self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_String(List<String> self, SseSerializer serializer);
 
   @protected
@@ -3345,10 +3625,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_cdn_service_entry(
+    List<CdnServiceEntry> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_clip_info(List<ClipInfo> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_danmaku_bucket_item(
     List<DanmakuBucketItem> self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_list_durl(List<Durl> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_emote(List<Emote> self, SseSerializer serializer);
@@ -3374,6 +3666,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_format_candidate_input(
     List<FormatCandidateInput> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_language_item(
+    List<LanguageItem> self,
     SseSerializer serializer,
   );
 
@@ -3450,6 +3748,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_media_stream(
+    List<MediaStream> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_note_item(List<NoteItem> self, SseSerializer serializer);
 
   @protected
@@ -3515,6 +3819,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_pgc_section(
     List<PgcSection> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_play_format(
+    List<PlayFormat> self,
     SseSerializer serializer,
   );
 
@@ -3780,6 +4090,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_live_url_info(LiveUrlInfo self, SseSerializer serializer);
 
   @protected
+  void sse_encode_loudnorm_config(
+    LoudnormConfig self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_match_contest(MatchContest self, SseSerializer serializer);
 
   @protected
@@ -3799,6 +4115,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_media_score(MediaScore self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_media_stream(MediaStream self, SseSerializer serializer);
 
   @protected
   void sse_encode_misc_context(MiscContext self, SseSerializer serializer);
@@ -3861,6 +4180,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_dash(Dash? self, SseSerializer serializer);
+
+  @protected
   void sse_encode_opt_box_autoadd_emote_meta(
     EmoteMeta? self,
     SseSerializer serializer,
@@ -3890,6 +4212,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_interaction(
     Interaction? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_language_options(
+    LanguageOptions? self,
     SseSerializer serializer,
   );
 
@@ -4050,6 +4378,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_play_url(
+    PlayUrl? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_popular_precious(
     PopularPrecious? self,
     SseSerializer serializer,
@@ -4122,6 +4456,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_segment_base(
+    SegmentBase? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_sponsor_user_info(
     SponsorUserInfo? self,
     SseSerializer serializer,
@@ -4142,6 +4482,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_video_shot(
     VideoShot? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_volume(
+    Volume? self,
     SseSerializer serializer,
   );
 
@@ -4167,10 +4513,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_list_clip_info(
+    List<ClipInfo>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_list_danmaku_bucket_item(
     List<DanmakuBucketItem>? self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_opt_list_durl(List<Durl>? self, SseSerializer serializer);
 
   @protected
   void sse_encode_opt_list_emote_package(
@@ -4181,6 +4536,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_feed_video_item(
     List<FeedVideoItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_language_item(
+    List<LanguageItem>? self,
     SseSerializer serializer,
   );
 
@@ -4197,6 +4558,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_list_media_stream(
+    List<MediaStream>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_list_note_item(
     List<NoteItem>? self,
     SseSerializer serializer,
@@ -4205,6 +4572,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_pgc_rank_item(
     List<PgcRankItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_play_format(
+    List<PlayFormat>? self,
     SseSerializer serializer,
   );
 
@@ -4401,6 +4774,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_pgc_user_status(PgcUserStatus self, SseSerializer serializer);
 
   @protected
+  void sse_encode_play_format(PlayFormat self, SseSerializer serializer);
+
+  @protected
   void sse_encode_play_info(PlayInfo self, SseSerializer serializer);
 
   @protected
@@ -4413,16 +4789,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_play_subtitle(PlaySubtitle self, SseSerializer serializer);
 
   @protected
-  void sse_encode_play_url_fetch(PlayUrlFetch self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_play_url_parse(PlayUrlParse self, SseSerializer serializer);
+  void sse_encode_play_url(PlayUrl self, SseSerializer serializer);
 
   @protected
   void sse_encode_play_url_request(
     PlayUrlRequest self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_play_url_result(PlayUrlResult self, SseSerializer serializer);
 
   @protected
   void sse_encode_popular_precious(
@@ -4635,6 +5011,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_segment_base(SegmentBase self, SseSerializer serializer);
+
+  @protected
   void sse_encode_skip_segment(SkipSegment self, SseSerializer serializer);
 
   @protected
@@ -4768,6 +5147,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_view_point(ViewPoint self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_volume(Volume self, SseSerializer serializer);
 }
 
 // Section: wire_class

@@ -526,9 +526,19 @@ impl LanguageDto {
     fn into_domain(self) -> LanguageOptions {
         LanguageOptions {
             support: self.support,
-            items: self
-                .items
-                .map(|v| v.into_iter().map(LanguageItemDto::into_domain).collect()),
+            items: self.items.map(|v| {
+                let mut items: Vec<LanguageItem> =
+                    v.into_iter().map(LanguageItemDto::into_domain).collect();
+                // 中文在前，AI 配音在后。`sort_by` 是稳定排序，同级条目
+                // 保持协议顺序——基线用的 Dart `List.sort` 不保证这点，
+                // 稳定是更强的保证，不是行为差异。
+                items.sort_by(|a, b| {
+                    let a_zh = a.lang.as_deref().is_some_and(|l| l.contains("zh"));
+                    let b_zh = b.lang.as_deref().is_some_and(|l| l.contains("zh"));
+                    b_zh.cmp(&a_zh).then(a.is_ai.cmp(&b.is_ai))
+                });
+                items
+            }),
         }
     }
 }
@@ -549,6 +559,7 @@ impl LanguageItemDto {
             title: self.title,
             subtitle_lang: self.subtitle_lang,
             production_type: self.production_type,
+            is_ai: self.production_type == Some(2),
         }
     }
 }
@@ -738,15 +749,19 @@ mod tests {
     }
 
     #[test]
-    fn language_items_keep_protocol_order() {
-        // 排序与「（AI）」后缀是 Dart 的展示规则，不在这里做。
+    fn language_items_are_sorted_for_display() {
+        // 中文在前、AI 配音在后。顺序在这一侧定，宿主只负责画。
         let body = r#"{"code":0,"data":{"language":{"support":true,"items":[
             {"lang":"ja","title":"日语","production_type":1},
-            {"lang":"zh","title":"国语","production_type":2}]}}}"#;
+            {"lang":"zh","title":"国语AI","production_type":2},
+            {"lang":"zh","title":"国语","production_type":1}]}}}"#;
         let play = ready(parse(body, VideoType::Ugc, false).expect("应当解析成功"));
         let items = play.language.expect("language").items.expect("items");
-        assert_eq!(items[0].lang.as_deref(), Some("ja"));
-        assert_eq!(items[1].production_type, Some(2));
+        assert_eq!(items[0].title.as_deref(), Some("国语"));
+        assert!(!items[0].is_ai);
+        assert_eq!(items[1].title.as_deref(), Some("国语AI"));
+        assert!(items[1].is_ai);
+        assert_eq!(items[2].lang.as_deref(), Some("ja"));
     }
 
     #[test]

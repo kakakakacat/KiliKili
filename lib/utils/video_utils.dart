@@ -1,8 +1,9 @@
 import 'package:kilikili/models/common/video/base_quality.dart';
 import 'package:kilikili/models/common/video/cdn_type.dart';
 import 'package:kilikili/models/common/video/video_decode_type.dart';
-import 'package:kilikili/models/video/play/url.dart'
-    show AudioItem, VideoItem, FormatItem;
+import 'package:kilikili/rust/api/playback.dart' as rust_api;
+import 'package:kilikili/services/rust/rust_play_url.dart'
+    show MediaStream, PlayFormat;
 import 'package:kilikili/services/rust/rust_live.dart' show LiveCodec;
 import 'package:kilikili/services/rust/rust_media_select.dart';
 import 'package:kilikili/utils/extension/iterable_ext.dart';
@@ -14,96 +15,25 @@ abstract final class VideoUtils {
   static String? liveCdnUrl = Pref.liveCdnUrl;
   static bool disableAudioCDN = Pref.disableAudioCDN;
 
-  static const _proxyTf = 'proxy-tf-all-ws.bilivideo.com';
-
-  static final _mirrorRegex = RegExp(
-    r'^https?://(?:upos-\w+-(?!302)\w+|(?:upos|proxy)-tf-[^/]+)\.(?:bilivideo|akamaized)\.(?:com|net)/upgcxcode',
-  );
-
-  static final _mCdnTfRegex = RegExp(
-    r'^https?://(?:(?:(?:\d{1,3}\.){3}\d{1,3}|[^/]+\.mcdn\.bilivideo\.(?:com|cn|net))(?:\:\d{1,5})?/v\d/resource)',
-  );
-
+  /// 从候选地址里挑一个真正要播的。
+  ///
+  /// 规则在 Rust（`bili-core::cdn`）：镜像站改 host、`os=mcdn` 走 tf
+  /// 代理、`szbdyd.com` 换回源站、Akamai 保留自带签名——按 RFC §2.3，
+  /// 这些换掉宿主框架一个字都不会变，所以不留在这边。
+  ///
+  /// [defaultCDNService] 不传时用当前设置。[isAudio] 配合
+  /// `disableAudioCDN`：音频换 CDN 的收益小、踩签名问题的代价大。
   static String getCdnUrl(
     Iterable<String> urls, {
     CDNService? defaultCDNService,
     bool isAudio = false,
-  }) {
-    defaultCDNService ??= cdnService;
-
-    if (defaultCDNService == CDNService.baseUrl) {
-      return urls.first;
-    }
-
-    if (defaultCDNService == CDNService.akamai &&
-        !(isAudio && disableAudioCDN)) {
-      // Akamai URLs have their own signature (e.g. hdnts). Replacing another
-      // CDN's host preserves the wrong signature and results in HTTP 403.
-      // Keep the API-provided URL intact, including its encoded query string.
-      return urls.firstWhere(
-        (url) => Uri.tryParse(url)?.host == CDNService.akamai.host,
-        orElse: () => urls.first,
-      );
-    }
-
-    String? mcdnTf;
-    String? mcdnUpgcxcode;
-
-    String last = '';
-    for (final url in urls) {
-      last = url;
-      if (_mirrorRegex.hasMatch(url)) {
-        final uri = Uri.parse(url);
-        if (uri.queryParameters['os'] == 'mcdn') {
-          // upos-sz-mirrorcoso1.bilivideo.com os=mcdn
-          mcdnUpgcxcode = url;
-        } else {
-          if (defaultCDNService == CDNService.backupUrl ||
-              (isAudio && disableAudioCDN)) {
-            return url;
-          }
-          return uri.replace(host: defaultCDNService.host).toString();
-        }
-      }
-
-      if (_mCdnTfRegex.hasMatch(url)) {
-        mcdnTf = url;
-        continue;
-      }
-
-      // upos-\w*-302.* & bcache & mcdn host but upgcxcode path
-      if (url.contains('/upgcxcode/')) {
-        mcdnUpgcxcode = url;
-        continue;
-      }
-
-      // may be deprecated
-      if (url.contains('szbdyd.com')) {
-        final uri = Uri.parse(url);
-        final hostname =
-            uri.queryParameters['xy_usource'] ?? defaultCDNService.host;
-        return uri
-            .replace(scheme: 'https', host: hostname, port: 443)
-            .toString();
-      }
-
-      if (kDebugMode) {
-        debugPrint('unknown cdn type: $url');
-      }
-    }
-
-    return mcdnUpgcxcode == null
-        ? mcdnTf == null
-              ? last
-              : Uri(
-                  scheme: 'https',
-                  host: _proxyTf,
-                  queryParameters: {'url': mcdnTf},
-                ).toString()
-        : Uri.parse(mcdnUpgcxcode)
-              .replace(host: defaultCDNService.host ?? CDNService.ali.host)
-              .toString();
-  }
+  }) => rust_api.pickCdnUrl(
+    urls: urls is List<String> ? urls : urls.toList(),
+    // 枚举名即 Rust 侧的 key，两边同一张表（`cdnServices()`）。
+    service: (defaultCDNService ?? cdnService).name,
+    isAudio: isAudio,
+    disableAudioCdn: disableAudioCDN,
+  );
 
   static String getLiveCdnUrl(LiveCodec e, {int index = 0}) {
     final urlInfo = e.urlInfo.getOrFirst(index);
@@ -134,104 +64,41 @@ abstract final class VideoUtils {
     return VideoDecodeFormatType.fromString(codecs.first);
   }
 
-  static int _findAvailableVideoQuality(
-    List<VideoItem> videoList,
-    List<int>? acceptQuality,
-    int preferQuality,
-  ) {
-    final highestVideoQa = videoList.first.id;
-    if (preferQuality >= highestVideoQa) {
-      return highestVideoQa;
-    }
-
-    if (acceptQuality != null && acceptQuality.isNotEmpty) {
-      return acceptQuality.findTargetMedia((e) => e, preferQuality);
-    }
-
-    return videoList.findTargetMedia((e) => e.id, preferQuality).quality.code;
-  }
-
   static (
     int targetQuality,
-    FormatItem targetFormat,
+    PlayFormat targetFormat,
     VideoDecodeFormatType targetDecode,
-    VideoItem targetVideo,
+    MediaStream targetVideo,
   )
   findTargetVideo(
-    List<VideoItem> videoList,
+    List<MediaStream> videoList,
     int preferQuality,
     List<int>? acceptQuality,
-    List<FormatItem> supportFormats,
+    List<PlayFormat> supportFormats,
     List<VideoDecodeFormatType> preferCodecs,
   ) {
-    assert(videoList.isNotEmpty);
-
-    // Rust 路径（开关默认关闭）。失败返回 null，落回下面的原实现——
-    // 包括本方法会抛异常的那几种输入，Rust 不替它「修」。
-    if (RustMediaSelect.selectVideo(
-          videoList: videoList,
-          preferQuality: preferQuality,
-          acceptQuality: acceptQuality,
-          supportFormats: supportFormats,
-          preferCodecs: preferCodecs,
-        )
-        case final selection?) {
-      final video = videoList[selection.videoIndex];
-      return (
-        video.id,
-        supportFormats[selection.formatIndex],
-        selection.codec,
-        video,
-      );
-    }
-
-    final targetQuality = _findAvailableVideoQuality(
-      videoList,
-      acceptQuality,
-      preferQuality,
+    final selection = RustMediaSelect.selectVideo(
+      videoList: videoList,
+      preferQuality: preferQuality,
+      acceptQuality: acceptQuality,
+      supportFormats: supportFormats,
+      preferCodecs: preferCodecs,
     );
-
-    final targetFormat = supportFormats.firstWhere(
-      (e) => e.quality == targetQuality,
-      orElse: () => supportFormats.first,
+    final video = videoList[selection.videoIndex];
+    return (
+      video.id,
+      supportFormats[selection.formatIndex],
+      selection.codec,
+      video,
     );
-
-    final targetDecode = VideoUtils.selectCodec(
-      targetFormat.codecs!,
-      preferCodecs,
-    );
-
-    final targetQaVideoList = videoList
-        .where((e) => e.id == targetQuality)
-        .toList();
-
-    final targetVideo = targetQaVideoList.firstWhere(
-      (e) => targetDecode.codes.any(e.codecs!.startsWith),
-      orElse: () => targetQaVideoList.first,
-    );
-
-    return (targetVideo.id, targetFormat, targetDecode, targetVideo);
   }
 
-  static AudioItem findTargetAudio(
-    List<AudioItem> audioList,
+  static MediaStream findTargetAudio(
+    List<MediaStream> audioList,
     int preferQuality,
-  ) {
-    assert(audioList.isNotEmpty);
-
-    // Rust 路径（开关默认关闭），同 findTargetVideo。
-    if (RustMediaSelect.selectAudio(
-          audioList: audioList,
-          preferQuality: preferQuality,
-        )
-        case final index?) {
-      return audioList[index];
-    }
-
-    final preferredRank = AudioQuality.fromCode(preferQuality).rank;
-    return audioList.findTargetMedia(
-      (audio) => AudioQuality.fromCode(audio.id).rank,
-      preferredRank,
-    );
-  }
+  ) =>
+      audioList[RustMediaSelect.selectAudio(
+        audioList: audioList,
+        preferQuality: preferQuality,
+      )];
 }

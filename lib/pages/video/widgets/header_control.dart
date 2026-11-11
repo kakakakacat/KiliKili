@@ -18,7 +18,8 @@ import 'package:kilikili/models/common/super_resolution_type.dart';
 import 'package:kilikili/models/common/video/base_quality.dart';
 import 'package:kilikili/models/common/video/cdn_type.dart';
 import 'package:kilikili/models/common/video/video_decode_type.dart';
-import 'package:kilikili/models/video/play/url.dart';
+import 'package:kilikili/services/rust/play_url_ext.dart';
+import 'package:kilikili/services/rust/rust_play_url.dart';
 import 'package:kilikili/models_new/video/video_play_info/subtitle.dart';
 import 'package:kilikili/pages/common/common_intro_controller.dart';
 import 'package:kilikili/pages/danmaku/danmaku_model.dart';
@@ -325,7 +326,7 @@ class HeaderControlState extends State<HeaderControl>
   @override
   late final PlPlayerController plPlayerController = widget.controller;
   late final VideoDetailController videoDetailCtr = widget.videoDetailCtr;
-  late final PlayUrlModel videoInfo = videoDetailCtr.data;
+  late final PlayUrl videoInfo = videoDetailCtr.data;
   static const TextStyle subTitleStyle = TextStyle(fontSize: 12);
   static const TextStyle titleStyle = TextStyle(fontSize: 14);
 
@@ -879,7 +880,7 @@ class HeaderControlState extends State<HeaderControl>
     final VideoQuality? currentVideoQa = videoDetailCtr.currentVideoQa.value;
     if (currentVideoQa == null) return;
 
-    final List<FormatItem> videoFormat = videoInfo.supportFormats!;
+    final List<PlayFormat> videoFormat = videoInfo.supportFormats!;
     final availableQa = videoInfo.dash!.video!.availableVideoQualities;
 
     showBottomSheet(
@@ -975,7 +976,7 @@ class HeaderControlState extends State<HeaderControl>
   /// 选择音质
   void showSetAudioQa() {
     final AudioQuality currentAudioQa = videoDetailCtr.currentAudioQa!;
-    final List<AudioItem> audio = videoInfo.dash!.audio!;
+    final List<MediaStream> audio = videoInfo.dash!.audio!;
     showBottomSheet(
       (context, setState) {
         final theme = Theme.of(context);
@@ -1029,7 +1030,7 @@ class HeaderControlState extends State<HeaderControl>
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 20,
                       ),
-                      title: Text(item.quality),
+                      title: Text(item.audioQualityDesc),
                       subtitle: Text(
                         item.codecs!,
                         style: subTitleStyle,
@@ -1053,7 +1054,8 @@ class HeaderControlState extends State<HeaderControl>
 
   // 选择解码格式
   void showSetDecodeFormats() {
-    final firstCode = videoDetailCtr.firstVideo.quality.code;
+    // 流的 id 就是清晰度码，基线那里绕了一圈 `quality.code`。
+    final firstCode = videoDetailCtr.firstVideo.id;
     // 当前视频可用的解码格式
     final videoFormat = videoInfo.supportFormats!;
 

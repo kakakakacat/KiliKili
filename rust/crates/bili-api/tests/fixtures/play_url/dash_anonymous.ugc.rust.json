@@ -1,0 +1,196 @@
+{
+  "accept_description": [
+    "高清 1080P+",
+    "高清 1080P",
+    "高清 720P",
+    "清晰 480P",
+    "流畅 360P"
+  ],
+  "accept_format": "hdflv2,flv,flv720,flv480,mp4",
+  "accept_quality": [
+    112,
+    80,
+    64,
+    32,
+    16
+  ],
+  "clip_info_list": null,
+  "cur_language": "",
+  "dash": {
+    "audio": [
+      {
+        "backup_url": [
+          "https://backup.example.invalid/a-30232-0.m4s?token=PLACEHOLDER"
+        ],
+        "band_width": 104408,
+        "base_url": "https://cdn.example.invalid/a-30232-0.m4s?token=PLACEHOLDER",
+        "codecid": 0,
+        "codecs": "mp4a.40.2",
+        "frame_rate": "",
+        "height": 0,
+        "id": 30232,
+        "mime_type": "audio/mp4",
+        "sar": "",
+        "segment_base": {
+          "index_range": "837-5700",
+          "initialization": "0-836"
+        },
+        "start_with_sap": 0,
+        "width": 0
+      },
+      {
+        "backup_url": [
+          "https://backup.example.invalid/a-30216-0.m4s?token=PLACEHOLDER"
+        ],
+        "band_width": 65675,
+        "base_url": "https://cdn.example.invalid/a-30216-0.m4s?token=PLACEHOLDER",
+        "codecid": 0,
+        "codecs": "mp4a.40.2",
+        "frame_rate": "",
+        "height": 0,
+        "id": 30216,
+        "mime_type": "audio/mp4",
+        "sar": "",
+        "segment_base": {
+          "index_range": "837-5700",
+          "initialization": "0-836"
+        },
+        "start_with_sap": 0,
+        "width": 0
+      }
+    ],
+    "duration": 2014,
+    "min_buffer_time": 1.5,
+    "video": [
+      {
+        "backup_url": [
+          "https://backup.example.invalid/v-80-7.m4s?token=PLACEHOLDER"
+        ],
+        "band_width": 947541,
+        "base_url": "https://cdn.example.invalid/v-80-7.m4s?token=PLACEHOLDER",
+        "codecid": 7,
+        "codecs": "avc1.640033",
+        "frame_rate": "30.000",
+        "height": 1080,
+        "id": 80,
+        "mime_type": "video/mp4",
+        "sar": "1:1",
+        "segment_base": {
+          "index_range": "918-5817",
+          "initialization": "0-917"
+        },
+        "start_with_sap": 1,
+        "width": 1438
+      },
+      {
+        "backup_url": [
+          "https://backup.example.invalid/v-80-12.m4s?token=PLACEHOLDER"
+        ],
+        "band_width": 487119,
+        "base_url": "https://cdn.example.invalid/v-80-12.m4s?token=PLACEHOLDER",
+        "codecid": 12,
+        "codecs": "hvc1.1.6.L120.90",
+        "frame_rate": "30.000",
+        "height": 1080,
+        "id": 80,
+        "mime_type": "video/mp4",
+        "sar": "1:1",
+        "segment_base": {
+          "index_range": "1083-5982",
+          "initialization": "0-1082"
+        },
+        "start_with_sap": 1,
+        "width": 1438
+      },
+      {
+        "backup_url": [
+          "https://backup.example.invalid/v-64-7.m4s?token=PLACEHOLDER"
+        ],
+        "band_width": 447876,
+        "base_url": "https://cdn.example.invalid/v-64-7.m4s?token=PLACEHOLDER",
+        "codecid": 7,
+        "codecs": "avc1.640033",
+        "frame_rate": "30.000",
+        "height": 720,
+        "id": 64,
+        "mime_type": "video/mp4",
+        "sar": "1:1",
+        "segment_base": {
+          "index_range": "917-5816",
+          "initialization": "0-916"
+        },
+        "start_with_sap": 1,
+        "width": 958
+      },
+      {
+        "backup_url": [
+          "https://backup.example.invalid/v-32-7.m4s?token=PLACEHOLDER"
+        ],
+        "band_width": 230602,
+        "base_url": "https://cdn.example.invalid/v-32-7.m4s?token=PLACEHOLDER",
+        "codecid": 7,
+        "codecs": "avc1.640033",
+        "frame_rate": "30.000",
+        "height": 480,
+        "id": 32,
+        "mime_type": "video/mp4",
+        "sar": "1:1",
+        "segment_base": {
+          "index_range": "917-5816",
+          "initialization": "0-916"
+        },
+        "start_with_sap": 1,
+        "width": 638
+      }
+    ]
+  },
+  "durl": null,
+  "format": "flv720",
+  "from": "local",
+  "language": null,
+  "last_play_cid": 0,
+  "last_play_time": 0,
+  "message": "",
+  "quality": 64,
+  "result": "suee",
+  "seek_param": "start",
+  "seek_type": "offset",
+  "support_formats": [
+    {
+      "codecs": [
+        "av01.0.08M.08.0.110.01.01.01.0",
+        "avc1.640033",
+        "hvc1.1.6.L120.90"
+      ],
+      "display_desc": "1080P",
+      "format": "hdflv2",
+      "new_desc": "1080P 高码率",
+      "quality": 112
+    },
+    {
+      "codecs": [
+        "av01.0.08M.08.0.110.01.01.01.0",
+        "avc1.640033",
+        "hvc1.1.6.L120.90"
+      ],
+      "display_desc": "1080P",
+      "format": "flv",
+      "new_desc": "1080P 高清",
+      "quality": 80
+    },
+    {
+      "codecs": [
+        "av01.0.08M.08.0.110.01.01.01.0",
+        "avc1.640033",
+        "hvc1.1.6.L120.90"
+      ],
+      "display_desc": "720P",
+      "format": "flv720",
+      "new_desc": "720P 准高清",
+      "quality": 64
+    }
+  ],
+  "time_length": 2013994,
+  "video_codecid": 7,
+  "volume": null
+}

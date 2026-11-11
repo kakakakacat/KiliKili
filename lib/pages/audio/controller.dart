@@ -18,7 +18,9 @@ import 'package:kilikili/http/browser_ua.dart';
 import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/audio_normalization.dart';
-import 'package:kilikili/models/video/play/url.dart' as http_model show Volume;
+import 'package:kilikili/services/rust/rust_play_url.dart'
+    as http_model
+    show Volume;
 import 'package:kilikili/pages/common/common_intro_controller.dart'
     show FavMixin;
 import 'package:kilikili/pages/dynamics_repost/view.dart';

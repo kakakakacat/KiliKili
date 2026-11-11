@@ -1,8 +1,13 @@
-//! 取流 golden 对照测试。
+//! 取流解析的 golden 快照（issue #79）。
 //!
-//! 期望值由 Dart 基线实现产出（`tool/fixture-gen/play_url_fixture.dart`），
-//! 不是本实现的自我验证：Rust 必须对同一份响应产出与 Dart **逐字段相同**
-//! 的规范化结果，否则 shadow mode 的比对会被我们自己的「改进」淹没。
+//! ## 它从「对照 Dart」变成了「冻结 Rust」
+//!
+//! 迁移前期望值由 Dart 基线产出（`tool/fixture-gen/play_url_fixture.dart`），
+//! 本测试逐字段比对两边。取流迁成 typed 直连后 `PlayUrlModel` 整棵树都
+//! 删了，那个期望值没有来源了——按 ADR-011 决策五，parity 是**一次性**
+//! 的：`test/services/rust/play_url_parity_test.dart` 用删除前那些
+//! `fromJson` 的逐行转写对账一次，通过后随旧模型一并删除；此处留下的
+//! 快照继续钉住 Rust 自己的输出，防止后续改动悄悄改掉解析行为。
 //!
 //! 样本的文件名指出响应形状——响应本身不足以区分（PUGV 降级与 UGC 的
 //! 外层形状相同）：
@@ -11,10 +16,13 @@
 //! <名字>.<ugc|pgc|pugv>[-fallback].raw.json
 //! ```
 //!
-//! 重新生成期望值：
+//! 重新生成：
 //! ```sh
-//! dart tool/fixture-gen/play_url_fixture.dart
+//! UPDATE_GOLDEN=1 cargo test -p bili-api --test play_url_golden
 //! ```
+//!
+//! **重新生成等于重新承诺**：快照变了就说明解析行为变了，diff 要在 PR
+//! 里逐行看过，不是跑一下命令就算数。
 
 // 测试里 expect 是对的：fixture 缺失或损坏时就该崩掉并指出原因。
 #![allow(clippy::expect_used)]
@@ -59,7 +67,7 @@ fn cases() -> Vec<Case> {
             };
 
             Some(Case {
-                expected: dir.join(format!("{stem}.normalized.json")),
+                expected: dir.join(format!("{stem}.rust.json")),
                 raw: path,
                 name: stem,
                 video_type,
@@ -85,8 +93,8 @@ fn first_difference(a: &serde_json::Value, b: &serde_json::Value, path: &str) ->
                 let next = format!("{path}.{k}");
                 match (x.get(k), y.get(k)) {
                     (Some(xv), Some(yv)) => first_difference(xv, yv, &next),
-                    (Some(xv), None) => Some(format!("{next}: Rust 有 {xv}，Dart 无此字段")),
-                    (None, Some(yv)) => Some(format!("{next}: Dart 有 {yv}，Rust 无此字段")),
+                    (Some(xv), None) => Some(format!("{next}: 本次有 {xv}，快照无此字段")),
+                    (None, Some(yv)) => Some(format!("{next}: 快照有 {yv}，本次无此字段")),
                     (None, None) => None,
                 }
             })
@@ -94,7 +102,7 @@ fn first_difference(a: &serde_json::Value, b: &serde_json::Value, path: &str) ->
         (Value::Array(x), Value::Array(y)) => {
             if x.len() != y.len() {
                 return Some(format!(
-                    "{path}: 长度不同，Rust {} 项 / Dart {} 项",
+                    "{path}: 长度不同，本次 {} 项 / 快照 {} 项",
                     x.len(),
                     y.len()
                 ));
@@ -104,16 +112,16 @@ fn first_difference(a: &serde_json::Value, b: &serde_json::Value, path: &str) ->
                 .enumerate()
                 .find_map(|(i, (xv, yv))| first_difference(xv, yv, &format!("{path}[{i}]")))
         }
-        // 数值比较走 f64：两端对 minBufferTime 之类的浮点各自序列化，
+        // 数值比较走 f64：浮点在两次序列化之间可能写法不同，
         // `1.5` 与 `1.50` 是同一个值而不是差异。
         (Value::Number(x), Value::Number(y)) if x.as_f64() == y.as_f64() => None,
         _ if a == b => None,
-        _ => Some(format!("{path}: Rust {a} / Dart {b}")),
+        _ => Some(format!("{path}: 本次 {a} / 快照 {b}")),
     }
 }
 
 #[test]
-fn normalized_output_matches_dart_baseline() {
+fn parsed_output_matches_snapshot() {
     let cases = cases();
     assert!(
         !cases.is_empty(),
@@ -122,12 +130,6 @@ fn normalized_output_matches_dart_baseline() {
 
     for case in cases {
         let raw = fs::read_to_string(&case.raw).expect("raw fixture 可读");
-        let expected_src = fs::read_to_string(&case.expected).unwrap_or_else(|_| {
-            panic!(
-                "缺少 {} 的期望值，请运行 dart tool/fixture-gen/play_url_fixture.dart",
-                case.name
-            )
-        });
 
         let outcome = playurl::parse(&raw, case.video_type, case.fallback)
             .unwrap_or_else(|e| panic!("样本 `{}` 应解析成功，实际失败: {e}", case.name));
@@ -136,25 +138,42 @@ fn normalized_output_matches_dart_baseline() {
         };
 
         let got = serde_json::to_value(&play).expect("实体可序列化");
+
+        if std::env::var_os("UPDATE_GOLDEN").is_some() {
+            let pretty = serde_json::to_string_pretty(&got).expect("快照可序列化");
+            fs::write(
+                &case.expected,
+                format!(
+                    "{pretty}
+"
+                ),
+            )
+            .expect("快照可写");
+            continue;
+        }
+
+        let expected_src = fs::read_to_string(&case.expected).unwrap_or_else(|_| {
+            panic!(
+                "缺少 {} 的快照，用 UPDATE_GOLDEN=1 cargo test -p bili-api --test play_url_golden 生成",
+                case.name
+            )
+        });
         let expected: serde_json::Value =
-            serde_json::from_str(&expected_src).expect("期望值必须是合法 JSON");
+            serde_json::from_str(&expected_src).expect("快照必须是合法 JSON");
 
         if let Some(diff) = first_difference(&got, &expected, &case.name) {
-            panic!(
-                "样本 `{}` 的规范化结果与 Dart 基线不一致：{diff}",
-                case.name
-            );
+            panic!("样本 `{}` 的解析结果与快照不一致：{diff}", case.name);
         }
     }
 }
 
 #[test]
 fn every_raw_fixture_has_expectations() {
-    // 只加 raw 而忘了重新生成期望值，会让新样本悄悄不参与对照。
+    // 只加 raw 而忘了生成快照，会让新样本悄悄不参与对照。
     for case in cases() {
         assert!(
             case.expected.exists(),
-            "样本 `{}` 缺少 .normalized.json，重新生成 fixture 后再提交",
+            "样本 `{}` 缺少 .rust.json，用 UPDATE_GOLDEN=1 生成后再提交",
             case.name
         );
     }

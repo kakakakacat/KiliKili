@@ -1,16 +1,16 @@
-//! 取流的 Rust 取数路径（HTTP 由 Rust 发起）。
+//! 取流的 Rust 取数路径（HTTP 由 Rust 发起，issue #79）。
 //!
-//! 与 `video_detail_fetch` 同构：开关打开时请求由 Rust 发出并解析，
-//! 任何一步失败都返回一个**值**而不是异常，由 Dart 决定降级
-//! （RFC-0001 §5.3）。
+//! **这是取流的唯一实现**：ADR-011 决策四不保留旧实现、不设降级开关，
+//! 基线的 `VideoHttp.videoUrl` 连同 `rust.fetch.playUrl` 开关在本切片
+//! 一并删除。失败仍然返回一个**值**而不是异常，但 Dart 收到失败后不再
+//! 有第二条路可走——它拿 `error_kind` / `error_code` 产出文案。
 //!
-//! ## 为什么取流比详情更需要「失败即降级」
+//! ## 重试分支只剩一份
 //!
-//! 详情取不到，用户看到的是一个空页面；流取不到，用户看到的是播放器
-//! 转圈。两者都不该由一个尚未成为默认路径的组件引发，而取流还多出
-//! 几条基线特有的重试分支（DRM 降级、UGC→PGC），任何一条没对齐都会
-//! 表现为「某些番剧在 Rust 路径下播不了」——降级把这类差异挡在用户
-//! 之外，shadow 与真机验证再把它们找出来。
+//! 基线在 Dart 侧有三条重试分支（PGC 内容为 DRM 时改走降级接口、
+//! UGC 带 `ep_id` 失败后改按 PGC 重取），Rust 侧另有一份同名分支。
+//! 迁移后只保留 Rust 这一份，由 `client::fetch_play_url` 按响应自行
+//! 决定——基线的降级同样是响应驱动的，不由调用方指定。
 //!
 //! ## 凭据
 //!
@@ -27,6 +27,7 @@ use bili_domain::video::VideoType;
 use bili_protocol::risk::SystemEntropy;
 
 use crate::api::init;
+use crate::api::play_url::{PlayUrl, play_url};
 use crate::api::transport::TransportSettings;
 
 /// 取流的业务入参。与基线 `VideoHttp.videoUrl` 的签名一一对应。
@@ -48,20 +49,23 @@ pub struct PlayUrlRequest {
     pub language: Option<String>,
 }
 
-/// 取流结果。失败不抛异常，由 Dart 决定降级。
+/// 取流结果。失败不抛异常，由 Dart 按 `error_kind` 产出文案。
+///
+/// 迁移前这里是一个 JSON 字符串 + Dart 侧的 `denormalizePlayUrl` 还原，
+/// 现在直接给 typed 结构（ADR-011）。
 #[derive(Debug, Clone)]
-pub struct PlayUrlFetch {
-    /// 规范化后的 JSON。失败时为 `None`。
-    pub json: Option<String>,
+pub struct PlayUrlResult {
+    /// 取流结果。失败时为 `None`。
+    pub data: Option<PlayUrl>,
     /// 失败大类：`network|remote|protocol|auth|storage|player|cancelled`。
     pub error_kind: Option<String>,
     /// 失败详情。**不含凭据**，也不含完整 URL。
     pub error_detail: Option<String>,
     /// 服务端业务错误码。仅当失败来自接口信封时才有值。
     ///
-    /// 带给 Dart 是为了让它能判断「这是内容本身的问题还是 Rust 路径的
-    /// 问题」——前者降级回 Dart 只会再失败一次，但仍照做：错误文案由
-    /// 基线统一产出，两条路径给出不同措辞才是更糟的事。
+    /// 基线 `VideoHttp._parseVideoErr` 的文案就是按这个码分支的
+    /// （-404 稿件不存在、87008 需要充电…），迁移后由 Dart 侧的
+    /// `playUrlErrorMessage` 接手，码必须原样带过去。
     pub error_code: Option<i64>,
 }
 
@@ -80,7 +84,7 @@ pub async fn fetch_play_url(
     headers: Vec<(String, String)>,
     timeout_ms: u64,
     transport: TransportSettings,
-) -> PlayUrlFetch {
+) -> PlayUrlResult {
     let Some(params) = request.into_params() else {
         return failure("protocol", "未知的 video_type".to_owned(), None);
     };
@@ -105,19 +109,11 @@ pub async fn fetch_play_url(
             wts,
         )
         .await
-        .and_then(|play| {
-            serde_json::to_string(&play).map_err(|e| {
-                bili_domain::error::DomainError::new(
-                    bili_domain::error::ErrorKind::Protocol,
-                    format!("实体序列化失败: {e}"),
-                )
-            })
-        })
     });
 
     match handle.await {
-        Ok(Ok(json)) => PlayUrlFetch {
-            json: Some(json),
+        Ok(Ok(play)) => PlayUrlResult {
+            data: Some(play_url(play)),
             error_kind: None,
             error_detail: None,
             error_code: None,
@@ -129,9 +125,9 @@ pub async fn fetch_play_url(
     }
 }
 
-fn failure(kind: &str, detail: String, code: Option<i64>) -> PlayUrlFetch {
-    PlayUrlFetch {
-        json: None,
+fn failure(kind: &str, detail: String, code: Option<i64>) -> PlayUrlResult {
+    PlayUrlResult {
+        data: None,
         error_kind: Some(kind.to_owned()),
         error_detail: Some(detail),
         error_code: code,

@@ -1,0 +1,191 @@
+{
+  "accept_description": [
+    "高清 1080P+",
+    "高清 1080P",
+    "高清 720P"
+  ],
+  "accept_format": "hdflv2,flv_p60,flv,flv720,flv480,mp4",
+  "accept_quality": [
+    112,
+    80,
+    64
+  ],
+  "clip_info_list": [
+    {
+      "clip_type": "CLIP_TYPE_OP",
+      "end": 88.5,
+      "start": 0.0
+    },
+    {
+      "clip_type": "CLIP_TYPE_ED",
+      "end": 1434.0,
+      "start": 1350.0
+    }
+  ],
+  "cur_language": "ja",
+  "dash": {
+    "audio": [
+      {
+        "backup_url": [],
+        "band_width": 1200000,
+        "base_url": "https://cdn.example.invalid/ogv/30251.m4s?token=PLACEHOLDER",
+        "codecid": 0,
+        "codecs": "fLaC",
+        "frame_rate": "",
+        "height": 0,
+        "id": 30251,
+        "mime_type": "audio/mp4",
+        "sar": "",
+        "segment_base": {
+          "index_range": "1014-2045",
+          "initialization": "0-1013"
+        },
+        "start_with_sap": 0,
+        "width": 0
+      },
+      {
+        "backup_url": [
+          "https://backup.example.invalid/ogv/30250.m4s?token=PLACEHOLDER"
+        ],
+        "band_width": 390000,
+        "base_url": "https://cdn.example.invalid/ogv/30250.m4s?token=PLACEHOLDER",
+        "codecid": 0,
+        "codecs": "ec-3",
+        "frame_rate": "",
+        "height": 0,
+        "id": 30250,
+        "mime_type": "audio/mp4",
+        "sar": "",
+        "segment_base": {
+          "index_range": "1052-2083",
+          "initialization": "0-1051"
+        },
+        "start_with_sap": 0,
+        "width": 0
+      },
+      {
+        "backup_url": [
+          "https://backup.example.invalid/ogv/30280.m4s?token=PLACEHOLDER"
+        ],
+        "band_width": 194000,
+        "base_url": "https://cdn.example.invalid/ogv/30280.m4s?token=PLACEHOLDER",
+        "codecid": 0,
+        "codecs": "mp4a.40.2",
+        "frame_rate": "",
+        "height": 0,
+        "id": 30280,
+        "mime_type": "audio/mp4",
+        "sar": "",
+        "segment_base": {
+          "index_range": "904-1935",
+          "initialization": "0-903"
+        },
+        "start_with_sap": 0,
+        "width": 0
+      }
+    ],
+    "duration": 1434,
+    "min_buffer_time": 1.5,
+    "video": [
+      {
+        "backup_url": [
+          "https://backup.example.invalid/ogv/112-avc.m4s?token=PLACEHOLDER"
+        ],
+        "band_width": 2512000,
+        "base_url": "https://cdn.example.invalid/ogv/112-avc.m4s?token=PLACEHOLDER",
+        "codecid": 7,
+        "codecs": "avc1.640032",
+        "frame_rate": "25",
+        "height": 1080,
+        "id": 112,
+        "mime_type": "video/mp4",
+        "sar": "1:1",
+        "segment_base": {
+          "index_range": "994-2025",
+          "initialization": "0-993"
+        },
+        "start_with_sap": 1,
+        "width": 1920
+      },
+      {
+        "backup_url": [],
+        "band_width": 1182000,
+        "base_url": "https://cdn.example.invalid/ogv/80-hev.m4s?token=PLACEHOLDER",
+        "codecid": 12,
+        "codecs": "hev1.1.6.L120.90",
+        "frame_rate": "25",
+        "height": 1080,
+        "id": 80,
+        "mime_type": "video/mp4",
+        "sar": "1:1",
+        "segment_base": {
+          "index_range": "1012-2043",
+          "initialization": "0-1011"
+        },
+        "start_with_sap": 1,
+        "width": 1920
+      }
+    ]
+  },
+  "durl": null,
+  "format": "hdflv2",
+  "from": null,
+  "language": {
+    "items": [
+      {
+        "is_ai": true,
+        "lang": "zh",
+        "production_type": 2,
+        "subtitle_lang": "zh-Hans",
+        "title": "国语"
+      },
+      {
+        "is_ai": false,
+        "lang": "ja",
+        "production_type": 1,
+        "subtitle_lang": "ja",
+        "title": "日语"
+      }
+    ],
+    "support": true
+  },
+  "last_play_cid": 100002,
+  "last_play_time": 183000,
+  "message": null,
+  "quality": 112,
+  "result": null,
+  "seek_param": "start",
+  "seek_type": "offset",
+  "support_formats": [
+    {
+      "codecs": [
+        "avc1.640032",
+        "hev1.1.6.L153.90"
+      ],
+      "display_desc": "1080P",
+      "format": "hdflv2",
+      "new_desc": "1080P 高码率",
+      "quality": 112
+    },
+    {
+      "codecs": [
+        "avc1.640032"
+      ],
+      "display_desc": "1080P",
+      "format": "flv",
+      "new_desc": "1080P 高清",
+      "quality": 80
+    }
+  ],
+  "time_length": 1434000,
+  "video_codecid": 7,
+  "volume": {
+    "measured_i": -17.5,
+    "measured_lra": 8.2,
+    "measured_threshold": -28.1,
+    "measured_tp": -1.3,
+    "target_i": -14.0,
+    "target_offset": 0.4,
+    "target_tp": -1.0
+  }
+}

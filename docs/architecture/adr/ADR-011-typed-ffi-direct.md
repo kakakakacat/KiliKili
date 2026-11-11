@@ -330,3 +330,87 @@ S11a 第二批要迁的 `LiveQuality` 是 `BaseQuality` 的子类，与
 `desc: None`，由 `live_playurl_compat.dart` 查静态表补齐。**这条分界线
 本身要被测试覆盖**——parity 测试比的是「Rust + 适配层」的整体输出与基线
 `LiveQuality.fromFormat` 的结果，拆开比任何一半都证明不了迁移没改行为。
+
+> **2026-11-11 更正**：本节当时写下的「随视频取流（`VideoQuality` /
+> `AudioQuality`）迁完一并删除」**落空了**。视频取流在 #79 迁完后，
+> `base_quality.dart` 确实不再 import 取流模型——第一个理由消失了，但
+> 第二、三个理由（设置页与 `Pref` 的非网络消费者、那张客户端静态表）
+> 与层级无关，所以 `live_playurl_compat.dart` 仍在。详见补充十二。
+>
+> 教训：**写「随 X 一并删」时要逐条检查每个理由是不是都随 X 消失**，
+> 只核对主要理由会给出一个过于乐观的期限。
+
+## S11a 第二批与 #79（取流 / issue #79）落地后的补充
+
+### 补充十一：迁的不只是数据结构，算法要一起搬走
+
+取流这一片本来按前十批的套路划范围：把 `PlayUrlModel` 换成 typed 结构，
+派生行为（音轨排序、候选 URL 顺序、CDN 选路、补档合并、loudnorm 参数串、
+片头片尾转片段）作为「展示规则」留在 Dart 的一个扩展文件里。
+
+**那个范围是错的。** RFC §2.3 把判据写清楚了：Stage 2 要换掉 Flutter 这层，
+而 Rust 不换，所以判据是「换宿主时这段代码要不要重写一遍」，不是「它算不算
+展示规则」。按这条判据，上面六项全部该下沉——它们换一套 UI 一个字都不会变。
+
+最终的分工：
+
+| 东西 | 去哪 | 为什么 |
+| --- | --- | --- |
+| 音轨排序、AI 配音判定 | `bili-api` 解析时 | 顺序与判定是规则，不是渲染 |
+| 候选 URL 顺序、CDN 选路 | `bili-core::cdn` | 两条正则、mcdn/szbdyd 分支全是业务规则 |
+| 补档的缺档计算与去重合并 | `bili-core::playback` | 纯算法 |
+| loudnorm 参数串 | `bili-core::playback` | FFmpeg 语法，与 UI 框架无关 |
+| 片头片尾 → 可跳过片段 | `bili-core::playback` | 产出与 SponsorBlock 同一个类型 |
+| 选流 / 选码 | `bili-core::media_select`（本就有） | 开关与 Dart 原实现一并删除 |
+| 「（AI）」后缀 | 留宿主 | 中文 UI 文案 |
+| `VideoQuality` / `AudioQuality` 静态表 | **暂留宿主**，见下 |
+
+**给后续切片的判据**：迁一条路径时，先列出它在宿主侧的全部派生行为，逐条
+问「换宿主要不要重写」。答案是「要」的，和数据结构一起搬；留下的每一条都
+要在代码注释里写明为什么留、随哪个切片走（RFC §2.3 的例外条款）。
+
+### 补充十二：例外要写清楚，更要写得住
+
+`VideoQuality` / `AudioQuality` 两张静态表留在了宿主侧，理由不是「它是展示
+规则」——按判据它确实该下沉——而是**拔出来的代价落在别处**：设置页的画质/
+音质下拉、`Pref` 的默认值、一串 `Rxn<VideoQuality>` 都要跟着改，那是设置与
+播放器 UI 的改造，不该塞进起播路径这一片。它随画质设置项迁移一并下沉。
+
+`LiveQuality`（补充十）是同一张表的第三个子类，它的适配层
+`live_playurl_compat.dart` 因此也留了下来——补充十当时预计它随本片删除，
+没删成。两处合起来说明一件事：**例外会比预期活得久**。所以例外的注释里
+必须同时写「为什么留」和「随谁删」，并且那个「随谁」要指向一个真的会让
+全部理由同时消失的切片，而不是最先想到的那个。
+
+### 决策四在 #79 的具体代价
+
+取流是唯一一条「错了就黑屏」的链路，而本阶段的验证手段只有 fixture 与
+parity 测试。决策四意味着：
+
+- `VideoHttp.videoUrl` 连同它的三条重试分支（DRM 降级、UGC→PGC、两者不
+  叠加）一并删除，重试此后只在 `bili_api::client::fetch_play_url` 里有
+  一份。两份重试逻辑各跑各的，正是「某些番剧在某条路径下播不了」的来源；
+- `rust.fetch.playUrl` / `rust.shadow.playUrl` / `rust.select.media` 三个
+  开关消失，shadow 机制随之退场（连带清掉 #24 里与取流相关的部分）；
+- 取流失败时用户看到的是错误文案（`playUrlErrorMessage`，基线
+  `_parseVideoErr` 的逐字搬运），不再是「悄悄换条路再试一次」。
+
+真机验证仍按 EPIC #67 留到 Phase 2，矩阵里要补「UGC / PGC / PUGV / 互动
+视频 / 下载」五项取流（#13）。
+
+### golden 的角色在本片发生了一次转换
+
+`play_url_golden.rs` 原来的期望值由 Dart 基线产出
+（`tool/fixture-gen/play_url_fixture.dart`），判据在 Dart 那侧。基线模型
+删除后那个来源没了，于是：
+
+- 期望值改成 Rust 自己的快照（`*.rust.json`，`UPDATE_GOLDEN=1` 重新生成），
+  角色从「对照 Dart」变成「冻结 Rust」；
+- 一次性的 parity 由 `test/services/rust/play_url_parity_test.dart` 承担，
+  它是迁移前 `PlayUrlModel.fromJson` 的逐字拷贝，不 import `lib/`；
+- 选择算法那对测试同理：Dart 那半（`test/utils/media_select_golden_test.dart`
+  等三个）删除，Rust 那半保留并在文档里记下「期望值删除前与基线逐条对过」。
+
+**这是补充二那条寿命规则的第三种情形**：不是 parity 测试到期，而是**判据
+所在的那一侧**被迁移删掉了，golden 必须换一个角色，否则它会退化成「Rust
+与一份 Rust 也在用的文件自洽」。

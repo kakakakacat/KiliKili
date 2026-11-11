@@ -1,11 +1,18 @@
 // 生成 playurl 请求 golden fixture：从 Dart 基线产出期望的查询串与签名，
 // 供 Rust 侧对照（rust/crates/bili-api/tests/playurl_golden.rs）。
 //
-// 本文件**逐字复制** lib/http/video.dart::videoUrl 的参数组装、
+// 本文件**逐字复制**了迁移前 lib/http/video.dart::videoUrl 的参数组装、
 // lib/models/common/video/video_type.dart 的接口路径，以及
-// lib/utils/wbi_sign.dart 的签名算法。复制而非 import，是为了让 fixture
-// 反映基线此刻的真实行为：上游改了组装方式，这里会与之产生差异，Rust
-// 测试随之变红，差异就暴露出来了。
+// lib/utils/wbi_sign.dart 的签名算法。
+//
+// 2026-11-11（issue #79）：`videoUrl` 随取流迁成 typed 直连而删除，所以
+// 这份拷贝不再有「跟着上游一起变」的对照对象——它从此是**冻结的基线
+// 快照**。仍然保留，因为它锁的是**请求面**（查询串与签名），而请求面
+// 正是最容易在迁移中悄悄改掉、又最难从响应里看出来的部分：参数少一个、
+// 顺序换一下，服务端照样返回 200，只是风控画像变了。
+//
+// 上游若改了取流的参数组装，这里不会自动发现——那要靠同步上游时比对
+// `docs/architecture/protocol-changelog.md`。
 //
 // 随机的 dm_img_str / dm_cover_img_str 在这里被固定成占位值——随机值无法
 // 对照固定期望。它们的**形状**（长度区间、字符集）由 bili-protocol 的
@@ -14,6 +21,7 @@
 // 用法: dart tool/fixture-gen/playurl_fixture.dart \
 //         > rust/crates/bili-api/tests/fixtures/playurl.json
 import 'dart:convert';
+
 import 'package:crypto/crypto.dart';
 
 // 与 bili-protocol 的 PROTOCOL_VERSION 对应（ADR-008）。
@@ -21,8 +29,38 @@ const protocolVersion = 1;
 
 final RegExp _chrFilter = RegExp(r"[!\'\(\)\*]");
 const _mixinKeyEncTab = <int>[
-  46, 47, 18, 2, 53, 8, 23, 32, 15, 50, 10, 31, 58, 3, 45, 35,
-  27, 43, 5, 49, 33, 9, 42, 19, 29, 28, 14, 39, 12, 38, 41, 13,
+  46,
+  47,
+  18,
+  2,
+  53,
+  8,
+  23,
+  32,
+  15,
+  50,
+  10,
+  31,
+  58,
+  3,
+  45,
+  35,
+  27,
+  43,
+  5,
+  49,
+  33,
+  9,
+  42,
+  19,
+  29,
+  28,
+  14,
+  39,
+  12,
+  38,
+  41,
+  13,
 ];
 
 String getMixinKey(String orig) =>
@@ -31,8 +69,10 @@ String getMixinKey(String orig) =>
 String encWbi(Map<String, Object> params, String mixinKey) {
   final keys = params.keys.toList()..sort();
   final queryStr = keys
-      .map((i) =>
-          '${Uri.encodeComponent(i)}=${Uri.encodeComponent(params[i].toString().replaceAll(_chrFilter, ''))}')
+      .map(
+        (i) =>
+            '${Uri.encodeComponent(i)}=${Uri.encodeComponent(params[i].toString().replaceAll(_chrFilter, ''))}',
+      )
       .join('&');
   return md5.convert(utf8.encode(queryStr + mixinKey)).toString();
 }

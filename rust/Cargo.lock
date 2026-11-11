@@ -148,6 +148,7 @@ dependencies = [
  "bili-domain",
  "serde_json",
  "tracing",
+ "url",
 ]
 
 [[package]]

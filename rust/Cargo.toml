@@ -25,6 +25,9 @@ reqwest = { version = "0.12", default-features = false, features = [
 # 弹幕过滤规则来自用户配置，必须按条编译、失败即降级回 Dart
 # （见 bili-danmaku::rule 与 ADR-010）。
 regex = "1"
+# CDN 选路要按 host/query 改写地址。reqwest 已经把它带进依赖树，
+# 这里只是显式用上，不新增编译单元。
+url = "2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
 tokio = { version = "1", features = ["rt-multi-thread", "sync", "time", "macros"] }

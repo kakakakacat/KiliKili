@@ -9,6 +9,7 @@ pub mod misc;
 pub mod pgc;
 pub mod play_url;
 pub mod play_url_fetch;
+pub mod playback;
 pub mod reply;
 pub mod search;
 pub mod search_suggest;

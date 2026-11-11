@@ -147,7 +147,7 @@ Dart。** 不接受「跳过这一条规则继续」——少过滤一条弹幕�
 东西），真机验证靠构建期指定初始值：
 
 ```bash
-flutter run --release   --dart-define=rust.engine.danmaku=true   --dart-define=rust.parse.dmViewSubtitle=true   --dart-define=rust.select.media=true   --dart-define=rust.convert.subtitle=true
+flutter run --release   --dart-define=rust.engine.danmaku=true   --dart-define=rust.parse.dmViewSubtitle=true   --dart-define=rust.convert.subtitle=true
 ```
 
 只在 Hive 里没存过该键时生效，所以同一台设备改了值要先清数据。弹幕那条

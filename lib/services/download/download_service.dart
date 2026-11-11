@@ -10,6 +10,8 @@ import 'package:kilikili/services/rust/rust_sponsor_block.dart';
 import 'package:kilikili/services/rust/rust_video_page.dart';
 import 'package:kilikili/services/rust/sponsor_block_compat.dart';
 import 'package:kilikili/http/video.dart';
+import 'package:kilikili/services/rust/play_url_ext.dart';
+import 'package:kilikili/services/rust/rust_play_url.dart';
 import 'package:kilikili/models/common/video/base_quality.dart';
 import 'package:kilikili/models_new/download/bili_download_entry_info.dart';
 import 'package:kilikili/models_new/download/bili_download_media_file_info.dart';
@@ -430,11 +432,11 @@ class DownloadService extends GetxService {
   Future<bool> updatePgcSegmentsAndVolume(BiliDownloadEntryInfo entry) async {
     final ep = entry.ep;
     if (ep == null) return false;
-    final res = await VideoHttp.videoUrl(
+    final res = await RustPlayUrl.fetch(
       avid: entry.avid,
       bvid: entry.bvid,
       cid: entry.cid,
-      seasonId: entry.seasonId,
+      seasonId: int.tryParse(entry.seasonId ?? ''),
       epid: ep.episodeId,
       qn: entry.preferedVideoQuality,
       tryLook: false,
@@ -447,9 +449,13 @@ class DownloadService extends GetxService {
     if (res case Success(:final response)) {
       bool needsUpdate = false;
 
-      final clipInfoList = response.clipInfoList;
-      if (clipInfoList != null && clipInfoList.isNotEmpty) {
-        entry.segments = clipInfoList;
+      // 片头片尾转成与 SponsorBlock 同一个片段模型（转换在 Rust）。
+      final segments = pgcClipSegments(
+        response.clipInfoList,
+        response.timeLength,
+      );
+      if (segments.isNotEmpty) {
+        entry.segments = segments.map((e) => e.toItemModel()).toList();
         needsUpdate = true;
       }
 
@@ -540,7 +546,7 @@ class DownloadService extends GetxService {
 
   Future<bool> updateUgcVolume(BiliDownloadEntryInfo entry) async {
     assert(entry.ep == null);
-    final res = await VideoHttp.videoUrl(
+    final res = await RustPlayUrl.fetch(
       avid: entry.avid,
       bvid: entry.bvid,
       cid: entry.cid,

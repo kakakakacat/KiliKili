@@ -12,9 +12,9 @@ import 'package:kilikili/rust/api/live.dart';
 // 它是 `BaseQuality` 这个 sealed class 的子类，和 `VideoQuality`、
 // `AudioQuality` 同属一个封闭层级。三件事让它搬不动：
 //
-// 1. **另外两个子类还没迁。** sealed class 的子类必须同文件（它们是
-//    `part`），只迁走一个就得把层级拆了，而拆它要连视频取流一起动——
-//    那是另一个切片（`ugcUrl`/`pgcUrl`，仍在 EPIC #67 的待办里）。
+// 1. ~~另外两个子类还没迁。~~ **2026-11-11 已不成立**：视频取流
+//    （#79）迁完后 `base_quality.dart` 不再 import 取流模型，层级的
+//    外部耦合解开了。但下面两条与层级无关，所以本文件还是留着。
 // 2. **一半的消费点与取流无关。** 设置页的画质下拉读
 //    `LiveQuality.values` 列全部档位，`Pref.liveQuality` /
 //    `liveQualityCellular` 的默认值读 `LiveQuality.origin.code` /
@@ -24,9 +24,14 @@ import 'package:kilikili/rust/api/live.dart';
 //    那不是协议数据，是本端对码率号的命名，响应里的 `g_qn_desc` 缺哪档
 //    就由它补哪档。表留在 Dart，补齐也就留在 Dart。
 //
-// **随哪个切片删除**：`BaseQuality` 的最后一个子类迁完时——即视频取流
-// （`VideoQuality` / `AudioQuality`）落地之后。届时本文件连同
-// `live_playurl_parity_test.dart` 一并删除。
+// **随哪个切片删除**：随**画质设置项迁移**——那一片要把
+// `VideoQuality` / `AudioQuality` / `LiveQuality` 三张客户端静态表一起
+// 下沉 Rust，并改掉设置页下拉、`Pref` 默认值与一串 `Rxn<VideoQuality>`。
+// 届时本文件连同 `live_playurl_parity_test.dart` 一并删除。
+//
+// 这个期限是**修正过的**：原先写的是「随视频取流迁完」，而取流
+// （#79）迁完时只消掉了上面三条理由里的第一条。写「随 X 一并删」时要
+// 逐条检查每个理由是不是都随 X 消失（ADR-011 补充十二）。
 //
 // ## 适配是单向的
 //

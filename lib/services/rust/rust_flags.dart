@@ -53,35 +53,6 @@ abstract final class RustFlags {
   static Future<void> setRustVideoDetail(bool value) =>
       _box.put(rustVideoDetailKey, value);
 
-  /// 取流走 Rust：请求由 Rust 发出、Rust 解析，结果进入播放器。
-  ///
-  /// 默认关闭，理由同 [rustVideoDetail]，且取流更敏感——详情取不到是
-  /// 空页面，流取不到是播放器一直转圈。另有几条基线特有的重试分支
-  /// （DRM 降级、UGC→PGC），任何一条没对齐都会表现为「某些番剧播不了」。
-  ///
-  /// 关闭、Rust 未就绪、取流失败——三种情况都走 Dart 原路径，见
-  /// [RustPlayUrl.fetch]。
-  static const String rustPlayUrlKey = 'rust.fetch.playUrl';
-
-  static bool get rustPlayUrl =>
-      RustCore.isReady &&
-      (_box.get(rustPlayUrlKey, defaultValue: _defaultOn(rustPlayUrlKey))
-          as bool);
-
-  static Future<void> setRustPlayUrl(bool value) =>
-      _box.put(rustPlayUrlKey, value);
-
-  /// 取流 shadow mode：Dart 与 Rust 对**同一份响应**各自规范化后比对，
-  /// 播放仍然用 Dart 的结果。debug 默认开启，理由同 [shadowVideoDetail]。
-  static const String shadowPlayUrlKey = 'rust.shadow.playUrl';
-
-  static bool get shadowPlayUrl =>
-      RustCore.isReady &&
-      (_box.get(shadowPlayUrlKey, defaultValue: kDebugMode) as bool);
-
-  static Future<void> setShadowPlayUrl(bool value) =>
-      _box.put(shadowPlayUrlKey, value);
-
   /// 搜索建议响应使用 Rust 解析。请求和 WBI 签名仍由现有 Dart 路径处理。
   /// 默认关闭；解析失败会回退到 `SearchSuggestModel.fromJson`。
   static const String rustSearchSuggestKey = 'rust.parse.searchSuggest';
@@ -106,32 +77,12 @@ abstract final class RustFlags {
   static bool get rustSubtitleConvert =>
       RustCore.isReady &&
       (_box.get(
-            rustSubtitleConvertKey,
-            defaultValue: _defaultOn(rustSubtitleConvertKey),
-          )
-          as bool);
+        rustSubtitleConvertKey,
+        defaultValue: _defaultOn(rustSubtitleConvertKey),
+      ) as bool);
 
   static Future<void> setRustSubtitleConvert(bool value) =>
       _box.put(rustSubtitleConvertKey, value);
-
-  /// 清晰度 / 编码 / 音质选择走 Rust（RFC-0001 §16.1 把清晰度选择划给
-  /// Rust Player Orchestrator）。
-  ///
-  /// 默认关闭。它影响的是**用户看到的画质**：选错一档不会报错，只会
-  /// 「今天画质怎么不一样」。任何一步失败（包括基线会抛异常的那几种
-  /// 输入）都回到 `VideoUtils` 的原实现，见 [RustMediaSelect]。
-  static const String rustMediaSelectKey = 'rust.select.media';
-
-  static bool get rustMediaSelect =>
-      RustCore.isReady &&
-      (_box.get(
-            rustMediaSelectKey,
-            defaultValue: _defaultOn(rustMediaSelectKey),
-          )
-          as bool);
-
-  static Future<void> setRustMediaSelect(bool value) =>
-      _box.put(rustMediaSelectKey, value);
 
   /// `DmView` 的字幕轨由 Rust 解析。请求仍由现有 Dart 路径发出。
   ///
@@ -142,10 +93,9 @@ abstract final class RustFlags {
   static bool get rustDmViewSubtitle =>
       RustCore.isReady &&
       (_box.get(
-            rustDmViewSubtitleKey,
-            defaultValue: _defaultOn(rustDmViewSubtitleKey),
-          )
-          as bool);
+        rustDmViewSubtitleKey,
+        defaultValue: _defaultOn(rustDmViewSubtitleKey),
+      ) as bool);
 
   static Future<void> setRustDmViewSubtitle(bool value) =>
       _box.put(rustDmViewSubtitleKey, value);
@@ -166,10 +116,9 @@ abstract final class RustFlags {
   static bool get rustDanmakuEngine =>
       RustCore.isReady &&
       (_box.get(
-            rustDanmakuEngineKey,
-            defaultValue: _defaultOn(rustDanmakuEngineKey),
-          )
-          as bool);
+        rustDanmakuEngineKey,
+        defaultValue: _defaultOn(rustDanmakuEngineKey),
+      ) as bool);
 
   static Future<void> setRustDanmakuEngine(bool value) =>
       _box.put(rustDanmakuEngineKey, value);
@@ -180,14 +129,13 @@ abstract final class RustFlags {
   /// 而验证一条取数路径必须能把它打开。办法是构建时指定：
   ///
   /// ```sh
-  /// flutter build apk --debug --dart-define=rust.fetch.playUrl=true
+  /// flutter build apk --debug --dart-define=rust.fetch.videoDetail=true
   /// ```
   ///
   /// 只影响**初始值**：用户或代码此后写过的值仍然优先。不给 define 时
   /// 恒为 false，因此 release 产物不受影响。
   static bool _defaultOn(String key) => switch (key) {
     rustVideoDetailKey => const bool.fromEnvironment('rust.fetch.videoDetail'),
-    rustPlayUrlKey => const bool.fromEnvironment('rust.fetch.playUrl'),
     rustSearchSuggestKey => const bool.fromEnvironment(
       'rust.parse.searchSuggest',
     ),
@@ -195,7 +143,6 @@ abstract final class RustFlags {
     rustDmViewSubtitleKey => const bool.fromEnvironment(
       'rust.parse.dmViewSubtitle',
     ),
-    rustMediaSelectKey => const bool.fromEnvironment('rust.select.media'),
     rustSubtitleConvertKey => const bool.fromEnvironment(
       'rust.convert.subtitle',
     ),

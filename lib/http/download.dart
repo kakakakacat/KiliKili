@@ -4,7 +4,9 @@ import 'package:kilikili/models/common/account_type.dart';
 import 'package:kilikili/models/common/video/base_quality.dart';
 import 'package:kilikili/models/common/video/video_decode_type.dart';
 import 'package:kilikili/models/common/video/video_type.dart';
-import 'package:kilikili/models/video/play/url.dart';
+import 'package:kilikili/services/rust/play_url_ext.dart';
+import 'package:kilikili/services/rust/rust_play_url.dart';
+import 'package:kilikili/services/rust/sponsor_block_compat.dart';
 import 'package:kilikili/models_new/download/bili_download_entry_info.dart';
 import 'package:kilikili/models_new/download/bili_download_media_file_info.dart';
 import 'package:kilikili/utils/accounts.dart';
@@ -23,11 +25,13 @@ abstract final class DownloadHttp {
     EpInfo? ep,
   }) async {
     final isLogin = Accounts.get(AccountType.video).isLogin;
-    final res = await VideoHttp.videoUrl(
+    final res = await RustPlayUrl.fetch(
       avid: entry.avid,
       bvid: entry.bvid,
       cid: entry.cid,
-      seasonId: entry.seasonId,
+      // 下载条目把 season_id 存成字符串，取流要的是数字。基线靠
+      // `videoUrl` 的 `dynamic` 参数掩掉了这个差异。
+      seasonId: int.tryParse(entry.seasonId ?? ''),
       epid: ep?.episodeId,
       qn: entry.preferedVideoQuality,
       tryLook: !isLogin && Pref.p1080,
@@ -43,19 +47,23 @@ abstract final class DownloadHttp {
 
       // segments
       entry
-        ..segments = response.clipInfoList
+        // 片头片尾转成与 SponsorBlock 同一个片段模型（转换在 Rust）。
+        ..segments = pgcClipSegments(
+          response.clipInfoList,
+          response.timeLength,
+        ).map((e) => e.toItemModel()).toList()
         ..volume = response.volume;
 
       if (dash != null) {
         final (
           int targetQuality,
-          FormatItem targetFormat,
+          PlayFormat targetFormat,
           VideoDecodeFormatType targetDecode,
-          VideoItem videoDash,
+          MediaStream videoDash,
         ) = VideoUtils.findTargetVideo(
           dash.video!,
           entry.preferedVideoQuality,
-          response.acceptQuality,
+          response.acceptQuality?.map((e) => e.toInt()).toList(),
           response.supportFormats!,
           Pref.preferCodecs,
         );
@@ -83,7 +91,7 @@ abstract final class DownloadHttp {
           dashDrmType: 0,
         );
         List<Type2File>? audioFileList;
-        final List<AudioItem>? audioList = dash.audio;
+        final List<MediaStream>? audioList = dash.audio;
         if (audioList != null && audioList.isNotEmpty) {
           final preferAudioQa =
               entry.preferedAudioQuality ?? Pref.defaultAudioQa;
@@ -132,7 +140,7 @@ abstract final class DownloadHttp {
             url: VideoUtils.getCdnUrl(first.playUrls),
           ),
         ];
-        final FormatItem? formatItem = response.supportFormats
+        final PlayFormat? formatItem = response.supportFormats
             ?.firstWhereOrNull((e) => e.quality == response.quality);
         final String description =
             formatItem?.displayDesc ?? VideoQuality.clear480.shortDesc;

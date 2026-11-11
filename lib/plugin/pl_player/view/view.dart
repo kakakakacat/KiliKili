@@ -23,7 +23,8 @@ import 'package:kilikili/models/common/sponsor_block/post_segment_model.dart';
 import 'package:kilikili/models/common/sponsor_block/segment_type.dart';
 import 'package:kilikili/models/common/super_resolution_type.dart';
 import 'package:kilikili/models/common/video/base_quality.dart';
-import 'package:kilikili/models/video/play/url.dart';
+import 'package:kilikili/services/rust/play_url_ext.dart';
+import 'package:kilikili/services/rust/rust_play_url.dart';
 import 'package:kilikili/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:kilikili/pages/common/common_intro_controller.dart';
 import 'package:kilikili/pages/danmaku/danmaku_model.dart';
@@ -651,7 +652,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                     height: 35,
                     value: e.lang,
                     child: Text(
-                      e.title!,
+                      e.displayTitle,
                       style: const TextStyle(color: Colors.white, fontSize: 13),
                     ),
                   ),
@@ -774,7 +775,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           if (currentVideoQa == null) {
             return const SizedBox.shrink();
           }
-          final PlayUrlModel videoInfo = videoDetailController.data;
+          final PlayUrl videoInfo = videoDetailController.data;
           if (videoInfo.dash == null) {
             return const SizedBox.shrink();
           }
@@ -2053,7 +2054,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
     String? url = video.baseUrl;
     if (url == null) return;
-    VideoQuality qa = video.quality;
+    VideoQuality qa = video.videoQuality(videoInfo.supportFormats);
 
     final ctr = plPlayerController;
     final theme = Theme.of(context);
@@ -2091,7 +2092,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   onSelected: (value) {
                     final video = videoDetailController.findVideoByQa(value);
                     url = video.baseUrl;
-                    qa = video.quality;
+                    qa = video.videoQuality(videoInfo.supportFormats);
                     return false;
                   },
                   itemBuilder: (context) => videoInfo.supportFormats!

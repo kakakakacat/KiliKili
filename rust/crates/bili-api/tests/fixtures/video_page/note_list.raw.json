@@ -1,0 +1,660 @@
+{
+  "code": 0,
+  "message": "OK",
+  "ttl": 1,
+  "data": {
+    "list": [
+      {
+        "cvid": 50000001,
+        "title": "示例笔记标题1",
+        "summary": "示例笔记摘要1",
+        "pubtime": "2026-10-31 10:24",
+        "web_url": "https://example.invalid/note/1",
+        "message": "更新于示例时间1",
+        "author": {
+          "mid": 20001,
+          "name": "UP主1",
+          "face": "https://example.invalid/face/1.jpg",
+          "level": 4,
+          "is_senior_member": 0,
+          "vip_info": {
+            "type": 0,
+            "status": 0,
+            "due_date": 0,
+            "vip_pay_type": 0,
+            "theme_type": 0,
+            "label": {
+              "path": "",
+              "text": "",
+              "label_theme": "",
+              "text_color": "",
+              "bg_style": 0,
+              "bg_color": "",
+              "border_color": "",
+              "use_img_label": true,
+              "img_label_uri_hans": "",
+              "img_label_uri_hant": "",
+              "img_label_uri_hans_static": "https://i0.hdslb.com/bfs/vip/d7b702ef65a976b20ed854cbd04cb9e27341bb79.png",
+              "img_label_uri_hant_static": "https://i0.hdslb.com/bfs/activity-plat/static/20220614/e369244d0b14644f5e1a06431e22a4d5/KJunwh19T5.png"
+            },
+            "avatar_subscript": 0,
+            "nickname_color": "",
+            "role": 0,
+            "avatar_subscript_url": "",
+            "tv_vip_status": 0,
+            "tv_vip_pay_type": 0,
+            "tv_due_date": 0,
+            "avatar_icon": {
+              "icon_resource": {}
+            }
+          },
+          "pendant": {
+            "pid": 0,
+            "name": "",
+            "image": "",
+            "expire": 0,
+            "image_enhance": "",
+            "image_enhance_frame": "",
+            "n_pid": 0
+          },
+          "official": {
+            "role": 0,
+            "title": "",
+            "desc": "",
+            "type": -1
+          },
+          "follower": 0
+        },
+        "likes": 0,
+        "has_like": false
+      },
+      {
+        "cvid": 50000002,
+        "title": "示例笔记标题2",
+        "summary": "示例笔记摘要2",
+        "pubtime": "2026-09-19 14:42",
+        "web_url": "https://example.invalid/note/2",
+        "message": "更新于示例时间2",
+        "author": {
+          "mid": 20002,
+          "name": "UP主2",
+          "face": "https://example.invalid/face/2.jpg",
+          "level": 5,
+          "is_senior_member": 0,
+          "vip_info": {
+            "type": 2,
+            "status": 1,
+            "due_date": 1817481600000,
+            "vip_pay_type": 1,
+            "theme_type": 0,
+            "label": {
+              "path": "http://i0.hdslb.com/bfs/vip/label_annual.png",
+              "text": "年度大会员",
+              "label_theme": "annual_vip",
+              "text_color": "#FFFFFF",
+              "bg_style": 1,
+              "bg_color": "#FB7299",
+              "border_color": "",
+              "use_img_label": true,
+              "img_label_uri_hans": "",
+              "img_label_uri_hant": "",
+              "img_label_uri_hans_static": "https://i0.hdslb.com/bfs/vip/8d4f8bfc713826a5412a0a27eaaac4d6b9ede1d9.png",
+              "img_label_uri_hant_static": "https://i0.hdslb.com/bfs/activity-plat/static/20220614/e369244d0b14644f5e1a06431e22a4d5/VEW8fCC0hg.png"
+            },
+            "avatar_subscript": 1,
+            "nickname_color": "#FB7299",
+            "role": 3,
+            "avatar_subscript_url": "",
+            "tv_vip_status": 0,
+            "tv_vip_pay_type": 0,
+            "tv_due_date": 0,
+            "avatar_icon": {
+              "icon_type": 1,
+              "icon_resource": {}
+            }
+          },
+          "pendant": {
+            "pid": 0,
+            "name": "",
+            "image": "",
+            "expire": 0,
+            "image_enhance": "",
+            "image_enhance_frame": "",
+            "n_pid": 0
+          },
+          "official": {
+            "role": 0,
+            "title": "",
+            "desc": "",
+            "type": -1
+          },
+          "follower": 0
+        },
+        "likes": 1,
+        "has_like": false
+      },
+      {
+        "cvid": 50000003,
+        "title": "示例笔记标题3",
+        "summary": "示例笔记摘要3",
+        "pubtime": "2026-08-26 12:47",
+        "web_url": "https://example.invalid/note/3",
+        "message": "更新于示例时间3",
+        "author": {
+          "mid": 20003,
+          "name": "UP主3",
+          "face": "https://example.invalid/face/3.jpg",
+          "level": 4,
+          "is_senior_member": 0,
+          "vip_info": {
+            "type": 0,
+            "status": 0,
+            "due_date": 0,
+            "vip_pay_type": 0,
+            "theme_type": 0,
+            "label": {
+              "path": "",
+              "text": "",
+              "label_theme": "",
+              "text_color": "",
+              "bg_style": 0,
+              "bg_color": "",
+              "border_color": "",
+              "use_img_label": true,
+              "img_label_uri_hans": "",
+              "img_label_uri_hant": "",
+              "img_label_uri_hans_static": "https://i0.hdslb.com/bfs/vip/d7b702ef65a976b20ed854cbd04cb9e27341bb79.png",
+              "img_label_uri_hant_static": "https://i0.hdslb.com/bfs/activity-plat/static/20220614/e369244d0b14644f5e1a06431e22a4d5/KJunwh19T5.png"
+            },
+            "avatar_subscript": 0,
+            "nickname_color": "",
+            "role": 0,
+            "avatar_subscript_url": "",
+            "tv_vip_status": 0,
+            "tv_vip_pay_type": 0,
+            "tv_due_date": 0,
+            "avatar_icon": {
+              "icon_resource": {}
+            }
+          },
+          "pendant": {
+            "pid": 0,
+            "name": "",
+            "image": "",
+            "expire": 0,
+            "image_enhance": "",
+            "image_enhance_frame": "",
+            "n_pid": 0
+          },
+          "official": {
+            "role": 0,
+            "title": "",
+            "desc": "",
+            "type": -1
+          },
+          "follower": 0
+        },
+        "likes": 7,
+        "has_like": false
+      },
+      {
+        "cvid": 50000004,
+        "title": "示例笔记标题4",
+        "summary": "示例笔记摘要4",
+        "pubtime": "2026-08-20 18:11",
+        "web_url": "https://example.invalid/note/4",
+        "message": "更新于示例时间4",
+        "author": {
+          "mid": 20004,
+          "name": "UP主4",
+          "face": "https://example.invalid/face/4.jpg",
+          "level": 4,
+          "is_senior_member": 0,
+          "vip_info": {
+            "type": 0,
+            "status": 0,
+            "due_date": 0,
+            "vip_pay_type": 0,
+            "theme_type": 0,
+            "label": {
+              "path": "",
+              "text": "",
+              "label_theme": "",
+              "text_color": "",
+              "bg_style": 0,
+              "bg_color": "",
+              "border_color": "",
+              "use_img_label": true,
+              "img_label_uri_hans": "",
+              "img_label_uri_hant": "",
+              "img_label_uri_hans_static": "https://i0.hdslb.com/bfs/vip/d7b702ef65a976b20ed854cbd04cb9e27341bb79.png",
+              "img_label_uri_hant_static": "https://i0.hdslb.com/bfs/activity-plat/static/20220614/e369244d0b14644f5e1a06431e22a4d5/KJunwh19T5.png"
+            },
+            "avatar_subscript": 0,
+            "nickname_color": "",
+            "role": 0,
+            "avatar_subscript_url": "",
+            "tv_vip_status": 0,
+            "tv_vip_pay_type": 0,
+            "tv_due_date": 0,
+            "avatar_icon": {
+              "icon_resource": {}
+            }
+          },
+          "pendant": {
+            "pid": 0,
+            "name": "",
+            "image": "",
+            "expire": 0,
+            "image_enhance": "",
+            "image_enhance_frame": "",
+            "n_pid": 0
+          },
+          "official": {
+            "role": 0,
+            "title": "",
+            "desc": "",
+            "type": -1
+          },
+          "follower": 0
+        },
+        "likes": 1,
+        "has_like": false
+      },
+      {
+        "cvid": 50000005,
+        "title": "示例笔记标题5",
+        "summary": "示例笔记摘要5",
+        "pubtime": "2026-07-27 02:13",
+        "web_url": "https://example.invalid/note/5",
+        "message": "更新于示例时间5",
+        "author": {
+          "mid": 20005,
+          "name": "UP主5",
+          "face": "https://example.invalid/face/5.jpg",
+          "level": 5,
+          "is_senior_member": 0,
+          "vip_info": {
+            "type": 2,
+            "status": 1,
+            "due_date": 1836662400000,
+            "vip_pay_type": 0,
+            "theme_type": 0,
+            "label": {
+              "path": "http://i0.hdslb.com/bfs/vip/label_annual.png",
+              "text": "年度大会员",
+              "label_theme": "annual_vip",
+              "text_color": "#FFFFFF",
+              "bg_style": 1,
+              "bg_color": "#FB7299",
+              "border_color": "",
+              "use_img_label": true,
+              "img_label_uri_hans": "",
+              "img_label_uri_hant": "",
+              "img_label_uri_hans_static": "https://i0.hdslb.com/bfs/vip/8d4f8bfc713826a5412a0a27eaaac4d6b9ede1d9.png",
+              "img_label_uri_hant_static": "https://i0.hdslb.com/bfs/activity-plat/static/20220614/e369244d0b14644f5e1a06431e22a4d5/VEW8fCC0hg.png"
+            },
+            "avatar_subscript": 1,
+            "nickname_color": "#FB7299",
+            "role": 3,
+            "avatar_subscript_url": "",
+            "tv_vip_status": 0,
+            "tv_vip_pay_type": 0,
+            "tv_due_date": 0,
+            "avatar_icon": {
+              "icon_type": 1,
+              "icon_resource": {}
+            }
+          },
+          "pendant": {
+            "pid": 0,
+            "name": "",
+            "image": "",
+            "expire": 0,
+            "image_enhance": "",
+            "image_enhance_frame": "",
+            "n_pid": 0
+          },
+          "official": {
+            "role": 0,
+            "title": "",
+            "desc": "",
+            "type": -1
+          },
+          "follower": 0
+        },
+        "likes": 1,
+        "has_like": false
+      },
+      {
+        "cvid": 50000006,
+        "title": "示例笔记标题6",
+        "summary": "示例笔记摘要6",
+        "pubtime": "2026-07-15 08:54",
+        "web_url": "https://example.invalid/note/6",
+        "message": "更新于示例时间6",
+        "author": {
+          "mid": 20006,
+          "name": "UP主6",
+          "face": "https://example.invalid/face/6.jpg",
+          "level": 3,
+          "is_senior_member": 0,
+          "vip_info": {
+            "type": 0,
+            "status": 0,
+            "due_date": 0,
+            "vip_pay_type": 0,
+            "theme_type": 0,
+            "label": {
+              "path": "",
+              "text": "",
+              "label_theme": "",
+              "text_color": "",
+              "bg_style": 0,
+              "bg_color": "",
+              "border_color": "",
+              "use_img_label": true,
+              "img_label_uri_hans": "",
+              "img_label_uri_hant": "",
+              "img_label_uri_hans_static": "https://i0.hdslb.com/bfs/vip/d7b702ef65a976b20ed854cbd04cb9e27341bb79.png",
+              "img_label_uri_hant_static": "https://i0.hdslb.com/bfs/activity-plat/static/20220614/e369244d0b14644f5e1a06431e22a4d5/KJunwh19T5.png"
+            },
+            "avatar_subscript": 0,
+            "nickname_color": "",
+            "role": 0,
+            "avatar_subscript_url": "",
+            "tv_vip_status": 0,
+            "tv_vip_pay_type": 0,
+            "tv_due_date": 0,
+            "avatar_icon": {
+              "icon_resource": {}
+            }
+          },
+          "pendant": {
+            "pid": 0,
+            "name": "",
+            "image": "",
+            "expire": 0,
+            "image_enhance": "",
+            "image_enhance_frame": "",
+            "n_pid": 0
+          },
+          "official": {
+            "role": 0,
+            "title": "",
+            "desc": "",
+            "type": -1
+          },
+          "follower": 0
+        },
+        "likes": 4,
+        "has_like": false
+      },
+      {
+        "cvid": 50000007,
+        "title": "示例笔记标题7",
+        "summary": "示例笔记摘要7",
+        "pubtime": "2026-06-23 03:11",
+        "web_url": "https://example.invalid/note/7",
+        "message": "更新于示例时间7",
+        "author": {
+          "mid": 20007,
+          "name": "UP主7",
+          "face": "https://example.invalid/face/7.jpg",
+          "level": 5,
+          "is_senior_member": 0,
+          "vip_info": {
+            "type": 1,
+            "status": 0,
+            "due_date": 1731513600000,
+            "vip_pay_type": 0,
+            "theme_type": 0,
+            "label": {
+              "path": "",
+              "text": "",
+              "label_theme": "",
+              "text_color": "",
+              "bg_style": 0,
+              "bg_color": "",
+              "border_color": "",
+              "use_img_label": true,
+              "img_label_uri_hans": "",
+              "img_label_uri_hant": "",
+              "img_label_uri_hans_static": "https://i0.hdslb.com/bfs/vip/d7b702ef65a976b20ed854cbd04cb9e27341bb79.png",
+              "img_label_uri_hant_static": "https://i0.hdslb.com/bfs/activity-plat/static/20220614/e369244d0b14644f5e1a06431e22a4d5/KJunwh19T5.png"
+            },
+            "avatar_subscript": 0,
+            "nickname_color": "",
+            "role": 0,
+            "avatar_subscript_url": "",
+            "tv_vip_status": 0,
+            "tv_vip_pay_type": 0,
+            "tv_due_date": 0,
+            "avatar_icon": {
+              "icon_resource": {}
+            }
+          },
+          "pendant": {
+            "pid": 0,
+            "name": "",
+            "image": "",
+            "expire": 0,
+            "image_enhance": "",
+            "image_enhance_frame": "",
+            "n_pid": 0
+          },
+          "official": {
+            "role": 0,
+            "title": "",
+            "desc": "",
+            "type": -1
+          },
+          "follower": 0
+        },
+        "likes": 12,
+        "has_like": false
+      },
+      {
+        "cvid": 50000008,
+        "title": "示例笔记标题8",
+        "summary": "示例笔记摘要8",
+        "pubtime": "2026-04-05 19:54",
+        "web_url": "https://example.invalid/note/8",
+        "message": "更新于示例时间8",
+        "author": {
+          "mid": 20008,
+          "name": "UP主8",
+          "face": "https://example.invalid/face/8.jpg",
+          "level": 4,
+          "is_senior_member": 0,
+          "vip_info": {
+            "type": 1,
+            "status": 0,
+            "due_date": 1774454400000,
+            "vip_pay_type": 0,
+            "theme_type": 0,
+            "label": {
+              "path": "",
+              "text": "",
+              "label_theme": "",
+              "text_color": "",
+              "bg_style": 0,
+              "bg_color": "",
+              "border_color": "",
+              "use_img_label": true,
+              "img_label_uri_hans": "",
+              "img_label_uri_hant": "",
+              "img_label_uri_hans_static": "https://i0.hdslb.com/bfs/vip/d7b702ef65a976b20ed854cbd04cb9e27341bb79.png",
+              "img_label_uri_hant_static": "https://i0.hdslb.com/bfs/activity-plat/static/20220614/e369244d0b14644f5e1a06431e22a4d5/KJunwh19T5.png"
+            },
+            "avatar_subscript": 0,
+            "nickname_color": "",
+            "role": 0,
+            "avatar_subscript_url": "",
+            "tv_vip_status": 0,
+            "tv_vip_pay_type": 0,
+            "tv_due_date": 0,
+            "avatar_icon": {
+              "icon_resource": {}
+            }
+          },
+          "pendant": {
+            "pid": 0,
+            "name": "",
+            "image": "",
+            "expire": 0,
+            "image_enhance": "",
+            "image_enhance_frame": "",
+            "n_pid": 0
+          },
+          "official": {
+            "role": 0,
+            "title": "",
+            "desc": "",
+            "type": -1
+          },
+          "follower": 0
+        },
+        "likes": 2,
+        "has_like": false
+      },
+      {
+        "cvid": 50000009,
+        "title": "示例笔记标题9",
+        "summary": "示例笔记摘要9",
+        "pubtime": "2025-08-07 10:57",
+        "web_url": "https://example.invalid/note/9",
+        "message": "更新于示例时间9",
+        "author": {
+          "mid": 20009,
+          "name": "UP主9",
+          "face": "https://example.invalid/face/9.jpg",
+          "level": 6,
+          "is_senior_member": 0,
+          "vip_info": {
+            "type": 2,
+            "status": 1,
+            "due_date": 1820678400000,
+            "vip_pay_type": 1,
+            "theme_type": 0,
+            "label": {
+              "path": "http://i0.hdslb.com/bfs/vip/label_annual.png",
+              "text": "年度大会员",
+              "label_theme": "annual_vip",
+              "text_color": "#FFFFFF",
+              "bg_style": 1,
+              "bg_color": "#FB7299",
+              "border_color": "",
+              "use_img_label": true,
+              "img_label_uri_hans": "",
+              "img_label_uri_hant": "",
+              "img_label_uri_hans_static": "https://i0.hdslb.com/bfs/vip/8d4f8bfc713826a5412a0a27eaaac4d6b9ede1d9.png",
+              "img_label_uri_hant_static": "https://i0.hdslb.com/bfs/activity-plat/static/20220614/e369244d0b14644f5e1a06431e22a4d5/VEW8fCC0hg.png"
+            },
+            "avatar_subscript": 1,
+            "nickname_color": "#FB7299",
+            "role": 3,
+            "avatar_subscript_url": "",
+            "tv_vip_status": 0,
+            "tv_vip_pay_type": 0,
+            "tv_due_date": 0,
+            "avatar_icon": {
+              "icon_type": 1,
+              "icon_resource": {}
+            }
+          },
+          "pendant": {
+            "pid": 0,
+            "name": "",
+            "image": "",
+            "expire": 0,
+            "image_enhance": "",
+            "image_enhance_frame": "",
+            "n_pid": 0
+          },
+          "official": {
+            "role": 0,
+            "title": "",
+            "desc": "",
+            "type": -1
+          },
+          "follower": 0
+        },
+        "likes": 1,
+        "has_like": false
+      },
+      {
+        "cvid": 50000010,
+        "title": "示例笔记标题10",
+        "summary": "示例笔记摘要10",
+        "pubtime": "2025-07-05 01:16",
+        "web_url": "https://example.invalid/note/10",
+        "message": "更新于示例时间10",
+        "author": {
+          "mid": 20010,
+          "name": "UP主10",
+          "face": "https://example.invalid/face/10.jpg",
+          "level": 6,
+          "is_senior_member": 0,
+          "vip_info": {
+            "type": 1,
+            "status": 1,
+            "due_date": 1798387200000,
+            "vip_pay_type": 0,
+            "theme_type": 0,
+            "label": {
+              "path": "http://i0.hdslb.com/bfs/vip/label_vip.png",
+              "text": "大会员",
+              "label_theme": "vip",
+              "text_color": "#FFFFFF",
+              "bg_style": 1,
+              "bg_color": "#FB7299",
+              "border_color": "",
+              "use_img_label": true,
+              "img_label_uri_hans": "",
+              "img_label_uri_hant": "",
+              "img_label_uri_hans_static": "https://i0.hdslb.com/bfs/vip/3788b674c69072f1ee252b79a31ecc8c43af3039.png",
+              "img_label_uri_hant_static": "https://i0.hdslb.com/bfs/activity-plat/static/20220614/e369244d0b14644f5e1a06431e22a4d5/jwXBWRVwa5.png"
+            },
+            "avatar_subscript": 1,
+            "nickname_color": "#FB7299",
+            "role": 1,
+            "avatar_subscript_url": "",
+            "tv_vip_status": 0,
+            "tv_vip_pay_type": 0,
+            "tv_due_date": 0,
+            "avatar_icon": {
+              "icon_type": 1,
+              "icon_resource": {}
+            }
+          },
+          "pendant": {
+            "pid": 56656,
+            "name": "某科学的超电磁炮T",
+            "image": "https://example.invalid/pendant/10.png",
+            "expire": 0,
+            "image_enhance": "https://i0.hdslb.com/bfs/garb/item/4010f5b1f8433176e47ec045de26512023b70e1e.png",
+            "image_enhance_frame": "",
+            "n_pid": 56656
+          },
+          "official": {
+            "role": 0,
+            "title": "",
+            "desc": "",
+            "type": -1
+          },
+          "follower": 0
+        },
+        "likes": 7,
+        "has_like": false
+      }
+    ],
+    "page": {
+      "total": 45,
+      "size": 10,
+      "num": 1
+    },
+    "show_public_note": true,
+    "message": ""
+  }
+}

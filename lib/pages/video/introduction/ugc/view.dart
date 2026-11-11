@@ -15,7 +15,7 @@ import 'package:kilikili/common/widgets/stat/stat.dart';
 import 'package:kilikili/common/widgets/translucent_column.dart';
 import 'package:kilikili/http/sponsor_block.dart';
 import 'package:kilikili/services/rust/rust_sponsor_block.dart';
-import 'package:kilikili/models_new/video/video_ai_conclusion/model_result.dart';
+import 'package:kilikili/services/rust/rust_video_page.dart';
 import 'package:kilikili/models_new/video/video_detail/data.dart';
 import 'package:kilikili/models_new/video/video_detail/desc_v2.dart';
 import 'package:kilikili/models_new/video/video_detail/episode.dart';
@@ -993,7 +993,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
           if (introController.aiConclusionResult == null) {
             await introController.aiConclusion();
           }
-          if (introController.aiConclusionResult case AiConclusionResult(
+          if (introController.aiConclusionResult case AiConclusion(
             :final summary,
             :final outline,
           )) {

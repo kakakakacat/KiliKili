@@ -1,0 +1,40 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "code": 0,
+    "model_result": {
+      "result_type": 2,
+      "summary": "示例总结：这个视频讲了三件事。",
+      "outline": [
+        {
+          "title": "示例章节一",
+          "part_outline": [
+            {
+              "timestamp": 0,
+              "content": "示例要点一"
+            },
+            {
+              "timestamp": 42,
+              "content": "示例要点二"
+            }
+          ]
+        },
+        {
+          "title": "示例章节二",
+          "part_outline": [
+            {
+              "timestamp": 128,
+              "content": "示例要点三"
+            }
+          ]
+        }
+      ]
+    },
+    "stid": "示例 stid",
+    "status": 0,
+    "like_num": 0,
+    "dislike_num": 0
+  }
+}

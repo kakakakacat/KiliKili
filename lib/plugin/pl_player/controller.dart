@@ -15,7 +15,6 @@ import 'package:kilikili/models/common/super_resolution_type.dart';
 import 'package:kilikili/models/common/video/video_type.dart';
 import 'package:kilikili/models/user/danmaku_rule.dart';
 import 'package:kilikili/models/video/play/url.dart';
-import 'package:kilikili/models_new/video/video_shot/data.dart';
 import 'package:kilikili/pages/danmaku/danmaku_model.dart';
 import 'package:kilikili/pages/sponsor_block/block_mixin.dart';
 import 'package:kilikili/plugin/pl_player/models/data_source.dart';
@@ -29,6 +28,7 @@ import 'package:kilikili/plugin/pl_player/models/play_status.dart';
 import 'package:kilikili/plugin/pl_player/models/video_fit_type.dart';
 import 'package:kilikili/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:kilikili/plugin/pl_player/utils/fullscreen.dart';
+import 'package:kilikili/services/rust/rust_video_page.dart';
 import 'package:kilikili/services/service_locator.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/android/android_helper.dart';
@@ -1722,7 +1722,12 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   late final Map<String, ui.Image?> previewCache = {};
-  LoadingState<VideoShotData>? videoShot;
+  LoadingState<VideoShot>? videoShot;
+
+  /// 预览图实测的单格尺寸。服务端给的 `imgXSize`/`imgYSize` 偶尔与真图不符，
+  /// 基线原先把实测值写回模型当缓存；typed 结构不可变，改放这里。
+  double? previewImgXSize;
+  double? previewImgYSize;
   double? hoverDx;
   late final RxBool showPreview = false.obs;
   late final showSeekPreview = Pref.showSeekPreview;
@@ -1763,6 +1768,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     hidePreview();
     previewIndex.value = null;
     videoShot = null;
+    previewImgXSize = null;
+    previewImgYSize = null;
     for (final i in previewCache.values) {
       i?.dispose();
     }
@@ -1770,7 +1777,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   Future<void> getVideoShot() async {
-    videoShot = await VideoHttp.videoshot(bvid: bvid, cid: cid!);
+    videoShot = await RustVideoPage.videoShot(bvid: bvid, cid: cid!);
   }
 
   int _screenshotState = 0;

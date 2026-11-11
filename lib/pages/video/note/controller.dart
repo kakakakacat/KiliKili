@@ -1,12 +1,9 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/video.dart';
-import 'package:kilikili/models_new/video/video_note_list/data.dart';
-import 'package:kilikili/models_new/video/video_note_list/list.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_video_page.dart';
 import 'package:get/get.dart';
 
-class NoteListPageCtr
-    extends CommonListController<VideoNoteData, VideoNoteItemModel> {
+class NoteListPageCtr extends CommonListController<NoteList, NoteItem> {
   NoteListPageCtr({required this.oid});
   final int oid;
 
@@ -19,8 +16,8 @@ class NoteListPageCtr
   }
 
   @override
-  List<VideoNoteItemModel>? getDataList(VideoNoteData response) {
-    count.value = response.page?.total ?? -1;
+  List<NoteItem>? getDataList(NoteList response) {
+    count.value = response.total ?? -1;
     return response.list;
   }
 
@@ -33,9 +30,6 @@ class NoteListPageCtr
   }
 
   @override
-  Future<LoadingState<VideoNoteData>> customGetData() =>
-      VideoHttp.getVideoNoteList(
-        oid: oid,
-        page: page,
-      );
+  Future<LoadingState<NoteList>> customGetData() =>
+      RustVideoPage.noteList(oid: oid, page: page);
 }

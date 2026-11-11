@@ -85,20 +85,22 @@ Widget buildSeekPreviewWidget(
         final int imgXLen = data.imgXLen;
         final int imgYLen = data.imgYLen;
         final int totalPerImage = data.totalPerImage;
-        double imgXSize = data.imgXSize;
-        double imgYSize = data.imgYSize;
+        // 测得的真实尺寸存在控制器上：FRB 的结构不可变，而基线原先是把它
+        // 写回模型里当缓存的（`data..imgXSize = ...`）。
+        double imgXSize = plPlayerController.previewImgXSize ?? data.imgXSize;
+        double imgYSize = plPlayerController.previewImgYSize ?? data.imgYSize;
 
         return Obx(
           () {
             final index = plPlayerController.previewIndex.value!;
             int pageIndex = (index ~/ totalPerImage).clamp(
               0,
-              data.image.length - 1,
+              data.images.length - 1,
             );
             int align = index % totalPerImage;
             int x = align % imgXLen;
             int y = align ~/ imgYLen;
-            final url = data.image[pageIndex];
+            final url = data.images[pageIndex];
 
             final dx = plPlayerController.hoverDx;
             final hovering = dx != null;
@@ -118,9 +120,10 @@ Widget buildSeekPreviewWidget(
                 imgYSize: imgYSize,
                 height: height,
                 imageCache: plPlayerController.previewCache,
-                onSetSize: (xSize, ySize) => data
-                  ..imgXSize = imgXSize = xSize
-                  ..imgYSize = imgYSize = ySize,
+                onSetSize: (xSize, ySize) {
+                  imgXSize = plPlayerController.previewImgXSize = xSize;
+                  imgYSize = plPlayerController.previewImgYSize = ySize;
+                },
                 isMounted: isMounted,
                 position: position,
               ),

@@ -12,6 +12,7 @@ import 'package:kilikili/models_new/video/video_detail/stat_detail.dart';
 import 'package:kilikili/models_new/video/video_tag/data.dart';
 import 'package:kilikili/pages/video/controller.dart';
 import 'package:kilikili/pages/video/introduction/ugc/widgets/triple_mixin.dart';
+import 'package:kilikili/services/rust/rust_video_page.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/global_data.dart';
 import 'package:kilikili/utils/page_utils.dart';
@@ -105,7 +106,7 @@ abstract class CommonIntroController extends GetxController
     if (!isShowOnlineTotal) {
       return;
     }
-    final result = await VideoHttp.onlineTotal(
+    final result = await RustVideoPage.onlineTotal(
       aid: aid,
       bvid: bvid,
       cid: cid.value,

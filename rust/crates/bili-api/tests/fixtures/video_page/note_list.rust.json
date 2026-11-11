@@ -1,0 +1,185 @@
+{
+  "list": [
+    {
+      "author": {
+        "face": "https://example.invalid/face/1.jpg",
+        "is_senior_member": 0,
+        "level": 4,
+        "mid": 20001,
+        "name": "UP主1",
+        "official_desc": "",
+        "official_type": -1,
+        "pendant_image": "",
+        "vip_label_text": "",
+        "vip_status": 0,
+        "vip_type": 0
+      },
+      "cvid": 50000001,
+      "pubtime": "2026-10-31 10:24",
+      "summary": "示例笔记摘要1"
+    },
+    {
+      "author": {
+        "face": "https://example.invalid/face/2.jpg",
+        "is_senior_member": 0,
+        "level": 5,
+        "mid": 20002,
+        "name": "UP主2",
+        "official_desc": "",
+        "official_type": -1,
+        "pendant_image": "",
+        "vip_label_text": "年度大会员",
+        "vip_status": 1,
+        "vip_type": 2
+      },
+      "cvid": 50000002,
+      "pubtime": "2026-09-19 14:42",
+      "summary": "示例笔记摘要2"
+    },
+    {
+      "author": {
+        "face": "https://example.invalid/face/3.jpg",
+        "is_senior_member": 0,
+        "level": 4,
+        "mid": 20003,
+        "name": "UP主3",
+        "official_desc": "",
+        "official_type": -1,
+        "pendant_image": "",
+        "vip_label_text": "",
+        "vip_status": 0,
+        "vip_type": 0
+      },
+      "cvid": 50000003,
+      "pubtime": "2026-08-26 12:47",
+      "summary": "示例笔记摘要3"
+    },
+    {
+      "author": {
+        "face": "https://example.invalid/face/4.jpg",
+        "is_senior_member": 0,
+        "level": 4,
+        "mid": 20004,
+        "name": "UP主4",
+        "official_desc": "",
+        "official_type": -1,
+        "pendant_image": "",
+        "vip_label_text": "",
+        "vip_status": 0,
+        "vip_type": 0
+      },
+      "cvid": 50000004,
+      "pubtime": "2026-08-20 18:11",
+      "summary": "示例笔记摘要4"
+    },
+    {
+      "author": {
+        "face": "https://example.invalid/face/5.jpg",
+        "is_senior_member": 0,
+        "level": 5,
+        "mid": 20005,
+        "name": "UP主5",
+        "official_desc": "",
+        "official_type": -1,
+        "pendant_image": "",
+        "vip_label_text": "年度大会员",
+        "vip_status": 1,
+        "vip_type": 2
+      },
+      "cvid": 50000005,
+      "pubtime": "2026-07-27 02:13",
+      "summary": "示例笔记摘要5"
+    },
+    {
+      "author": {
+        "face": "https://example.invalid/face/6.jpg",
+        "is_senior_member": 0,
+        "level": 3,
+        "mid": 20006,
+        "name": "UP主6",
+        "official_desc": "",
+        "official_type": -1,
+        "pendant_image": "",
+        "vip_label_text": "",
+        "vip_status": 0,
+        "vip_type": 0
+      },
+      "cvid": 50000006,
+      "pubtime": "2026-07-15 08:54",
+      "summary": "示例笔记摘要6"
+    },
+    {
+      "author": {
+        "face": "https://example.invalid/face/7.jpg",
+        "is_senior_member": 0,
+        "level": 5,
+        "mid": 20007,
+        "name": "UP主7",
+        "official_desc": "",
+        "official_type": -1,
+        "pendant_image": "",
+        "vip_label_text": "",
+        "vip_status": 0,
+        "vip_type": 1
+      },
+      "cvid": 50000007,
+      "pubtime": "2026-06-23 03:11",
+      "summary": "示例笔记摘要7"
+    },
+    {
+      "author": {
+        "face": "https://example.invalid/face/8.jpg",
+        "is_senior_member": 0,
+        "level": 4,
+        "mid": 20008,
+        "name": "UP主8",
+        "official_desc": "",
+        "official_type": -1,
+        "pendant_image": "",
+        "vip_label_text": "",
+        "vip_status": 0,
+        "vip_type": 1
+      },
+      "cvid": 50000008,
+      "pubtime": "2026-04-05 19:54",
+      "summary": "示例笔记摘要8"
+    },
+    {
+      "author": {
+        "face": "https://example.invalid/face/9.jpg",
+        "is_senior_member": 0,
+        "level": 6,
+        "mid": 20009,
+        "name": "UP主9",
+        "official_desc": "",
+        "official_type": -1,
+        "pendant_image": "",
+        "vip_label_text": "年度大会员",
+        "vip_status": 1,
+        "vip_type": 2
+      },
+      "cvid": 50000009,
+      "pubtime": "2025-08-07 10:57",
+      "summary": "示例笔记摘要9"
+    },
+    {
+      "author": {
+        "face": "https://example.invalid/face/10.jpg",
+        "is_senior_member": 0,
+        "level": 6,
+        "mid": 20010,
+        "name": "UP主10",
+        "official_desc": "",
+        "official_type": -1,
+        "pendant_image": "https://example.invalid/pendant/10.png",
+        "vip_label_text": "大会员",
+        "vip_status": 1,
+        "vip_type": 1
+      },
+      "cvid": 50000010,
+      "pubtime": "2025-07-05 01:16",
+      "summary": "示例笔记摘要10"
+    }
+  ],
+  "total": 45
+}

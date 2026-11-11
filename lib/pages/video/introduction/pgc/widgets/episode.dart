@@ -2,7 +2,6 @@ import 'dart:async' show StreamSubscription;
 
 import 'package:kilikili/common/assets.dart';
 import 'package:kilikili/models_new/pgc/pgc_info_model/episode.dart';
-import 'package:kilikili/models_new/pgc/pgc_info_model/new_ep.dart';
 import 'package:kilikili/models_new/video/video_detail/episode.dart'
     hide EpisodeItem;
 import 'package:kilikili/pages/video/introduction/pgc/controller.dart';
@@ -11,6 +10,8 @@ import 'package:kilikili/utils/extension/num_ext.dart';
 import 'package:kilikili/utils/extension/theme_ext.dart';
 import 'package:kilikili/utils/scroll_offset_helper.dart';
 import 'package:kilikili/utils/utils.dart';
+import 'package:kilikili/services/rust/pgc_detail_compat.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:material_ui/material_ui.dart';
@@ -36,7 +37,8 @@ class _EpisodePanelState extends State<EpisodePanel> {
   int get _index => _pgcController.episodeIndex;
   bool get _isEpisode => _pgcController.episodeType == .episode;
 
-  late NewEp? _newEp;
+  String? _newEpDesc;
+  String? _newEpTitle;
   late List<EpisodeItem> _episodes;
   late final isPugv = _episodes.first.from == 'pugv';
 
@@ -103,8 +105,9 @@ class _EpisodePanelState extends State<EpisodePanel> {
     final item = _pgcController.pgcItem;
     if (!item.hasEpisodes) return const (true, true);
     _seasonId = _pgcController.seasonId;
-    _episodes = item.episodes!;
-    _newEp = item.newEp;
+    _episodes = _pgcController.mainEpisodes;
+    _newEpDesc = item.newEpDesc;
+    _newEpTitle = item.newEpTitle;
     return const (true, false);
   }
 
@@ -150,9 +153,9 @@ class _EpisodePanelState extends State<EpisodePanel> {
                   onPressed: () =>
                       widget.showEpisodes(type: .pgc, episodeType: .episode),
                   child: Text(
-                    _newEp?.desc?.contains('连载') == true
-                        ? '连载中，更新至${Utils.isStringNumeric(_newEp!.title!) ? '第${_newEp!.title}话' : '${_newEp!.title}'}'
-                        : _newEp?.desc ?? '查看全部',
+                    _newEpDesc?.contains('连载') == true
+                        ? '连载中，更新至${Utils.isStringNumeric(_newEpTitle!) ? '第$_newEpTitle话' : '$_newEpTitle'}'
+                        : _newEpDesc ?? '查看全部',
                     style: const TextStyle(fontSize: 13),
                   ),
                 ),

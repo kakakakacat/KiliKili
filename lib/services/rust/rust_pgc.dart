@@ -21,7 +21,16 @@ export 'package:kilikili/rust/api/pgc.dart'
         PgcRankItem,
         PgcReviewAuthor,
         PgcReviewItem,
+        PgcBriefImage,
+        PgcCooperator,
+        PgcEpisode,
         PgcReviewStat,
+        PgcSeasonBrief,
+        PgcSeasonDetail,
+        PgcSeasonStat,
+        PgcSection,
+        PgcUpInfo,
+        PgcUserStatus,
         SeasonStatus,
         TimelineDay,
         TimelineEpisode;
@@ -33,9 +42,10 @@ export 'package:kilikili/rust/api/pgc.dart'
 /// 索引结果、索引筛选条件、「番剧索引」入口、放送时间表、短评/长评列表、
 /// 追番状态、两种排行榜。
 ///
-/// **不在这里**：番剧详情（`pgcInfo` / `pugvInfo`）仍走
-/// `lib/http/search.dart`，它的 `PgcInfoModel` 深入播放页，留到第二批；
-/// 短评的五个写操作仍走 `lib/http/pgc.dart`，归 ADR-013（#50）。
+/// 第二批补上了番剧与课堂详情（`pgcInfo` / `pugvInfo`）。
+///
+/// **不在这里**：短评的五个写操作仍走 `lib/http/pgc.dart`，归
+/// ADR-013（#50）。
 ///
 /// ## 没有降级开关
 ///
@@ -77,6 +87,42 @@ abstract final class RustPgc {
   static Error _failure(String? detail, int? code) =>
       Error(detail ?? '请求失败', code: code);
 
+  /// 取番剧或课堂详情。
+  ///
+  /// `pugv` 为真时走 `pugvInfo`（载荷在 `data`），否则走 `pgcInfo`
+  /// （载荷在 `result`）。两条接口的响应结构相同，只有载荷键不同。
+  ///
+  /// `seasonId` 与 `epId` 至少要给一个，两个都缺时 Rust 侧不发请求，
+  /// 直接回一个 protocol 错误。
+  static Future<LoadingState<rust_api.PgcSeasonDetail>> seasonDetail({
+    required bool pugv,
+    int? seasonId,
+    int? epId,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    final path = pugv ? Api.pugvInfo : Api.pgcInfo;
+    try {
+      final context = await _context(path: path);
+      final res = pugv
+          ? await rust_api.fetchPugvSeasonDetail(
+              context: context,
+              seasonId: seasonId,
+              epId: epId,
+            )
+          : await rust_api.fetchPgcSeasonDetail(
+              context: context,
+              seasonId: seasonId,
+              epId: epId,
+            );
+      final data = res.data;
+      if (data == null) return _failure(res.errorDetail, res.errorCode);
+      return Success(data);
+    } catch (e, st) {
+      if (kDebugMode) debugPrint('[rust] 取番剧详情出错: $e\n$st');
+      return Error('$e');
+    }
+  }
+
   /// 取一页索引结果。
   ///
   /// `params` 是用户在筛选面板里选中的键值对，取值来自
@@ -95,9 +141,7 @@ abstract final class RustPgc {
         query: rust_api.PgcIndexQuery(
           page: page,
           // 基线把 params 整个摊进查询串，值可能是 int 也可能是 String。
-          filters: params.entries
-              .map((e) => (e.key, '${e.value}'))
-              .toList(),
+          filters: params.entries.map((e) => (e.key, '${e.value}')).toList(),
           seasonType: _asInt(seasonType),
           type: _asInt(type),
           indexType: _asInt(indexType),

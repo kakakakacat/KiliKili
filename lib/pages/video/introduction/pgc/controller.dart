@@ -11,7 +11,7 @@ import 'package:kilikili/models/common/pgc_episode_type.dart';
 import 'package:kilikili/models/common/video/source_type.dart';
 import 'package:kilikili/models/common/video/video_type.dart';
 import 'package:kilikili/models_new/pgc/pgc_info_model/episode.dart';
-import 'package:kilikili/models_new/pgc/pgc_info_model/result.dart';
+import 'package:kilikili/models_new/pgc/pgc_info_model/stat.dart';
 import 'package:kilikili/models_new/video/video_detail/episode.dart'
     hide EpisodeItem;
 import 'package:kilikili/models_new/video/video_detail/stat_detail.dart';
@@ -19,6 +19,8 @@ import 'package:kilikili/pages/common/common_intro_controller.dart';
 import 'package:kilikili/pages/dynamics_repost/view.dart';
 import 'package:kilikili/pages/video/reply/controller.dart';
 import 'package:kilikili/plugin/pl_player/models/play_repeat.dart';
+import 'package:kilikili/services/rust/pgc_detail_compat.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:kilikili/services/service_locator.dart';
 import 'package:kilikili/utils/android/android_helper.dart';
 import 'package:kilikili/utils/bili_utils.dart';
@@ -29,7 +31,6 @@ import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:kilikili/utils/share_utils.dart';
 import 'package:kilikili/utils/utils.dart';
-import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -44,12 +45,42 @@ class PgcIntroController extends CommonIntroController {
   late int seasonId;
   late int epId;
 
-  late final String pgcType = pgcItem.type == 1 || pgcItem.type == 4
+  late final String pgcType = pgcItem.kind == 1 || pgcItem.kind == 4
       ? '追番'
       : '追剧';
 
   late final bool isPgc;
-  late PgcInfoModel pgcItem;
+
+  /// 服务端那一刻说了什么。不可变。
+  late PgcSeasonDetail pgcItem;
+
+  /// 剧集面板按共享基类 `BaseEpisodeItem` 做多态消费，所以这里缓存一份
+  /// 适配过的 Dart 剧集（见 `pgc_detail_compat.dart`）。**取数时转一次**，
+  /// 不在 getter 里转——`episodes` 在翻页与定位里会被反复读。
+  late List<EpisodeItem> _episodes;
+  late List<List<EpisodeItem>> _sectionEpisodes;
+
+  /// 点完赞/收藏之后会被就地改，所以是可变的 Dart 对象而不是 FRB 结构。
+  PgcStat? _stat;
+
+  /// 点赞/收藏之后会被就地改，界面读的是这一份。
+  PgcStat? get stat => _stat;
+
+  /// 正片（已适配成共享基类的子类）。
+  List<EpisodeItem> get mainEpisodes => _episodes;
+
+  /// 花絮各组（同上）。下标与 `pgcItem.sections` 一一对应。
+  List<List<EpisodeItem>> get sectionEpisodes => _sectionEpisodes;
+
+  void _applyDetail(PgcSeasonDetail detail) {
+    pgcItem = detail;
+    _episodes = detail.episodes.map(toDartEpisode).toList();
+    _sectionEpisodes = detail.sections
+        .map((s) => s.episodes.map(toDartEpisode).toList())
+        .toList();
+    _stat = toDartStat(detail.stat);
+  }
+
   late PgcEpisodeType episodeType;
 
   ScrollController? seasonController;
@@ -58,7 +89,7 @@ class PgcIntroController extends CommonIntroController {
   (Object, int) get getFavRidType => (epId, 24);
 
   @override
-  StatDetail? getStat() => pgcItem.stat;
+  StatDetail? getStat() => _stat;
 
   late final RxBool isFollowed = false.obs;
   late final RxInt followStatus = (-1).obs;
@@ -77,7 +108,7 @@ class PgcIntroController extends CommonIntroController {
     seasonId = args['seasonId'];
     epId = args['epId'];
     isPgc = args['videoType'] == VideoType.pgc;
-    pgcItem = args['pgcItem'];
+    _applyDetail(args['pgcItem']);
     if (args['sectionIndex'] case final int value) {
       episodeType = .section;
       sectionIndex = value;
@@ -87,7 +118,11 @@ class PgcIntroController extends CommonIntroController {
 
     super.onInit();
 
-    seasonIndex = pgcItem.seasons?.indexWhere((e) => e.seasonId == seasonId) ?? 0;
+    // 基线是 `seasons?.indexWhere(...) ?? 0`：列表为 null 时取 0，找不到
+    // 时取 -1。FRB 侧没有 null 列表，空列表等价于基线的 null 分支。
+    seasonIndex = pgcItem.seasons.isEmpty
+        ? 0
+        : pgcItem.seasons.indexWhere((e) => e.seasonId == seasonId);
     _updateEpisodeIndex(cid.value);
 
     _onGetPgcInfo();
@@ -109,7 +144,7 @@ class PgcIntroController extends CommonIntroController {
     if (result case Success(:final response)) {
       final hasLike = response.like == 1;
       final hasFav = response.favorite == 1;
-      late final stat = pgcItem.stat;
+      late final stat = _stat;
       if (hasLike) {
         stat?.like = math.max(1, stat.like);
       }
@@ -135,7 +170,7 @@ class PgcIntroController extends CommonIntroController {
     final result = await VideoHttp.likeVideo(bvid: bvid, type: newVal);
     if (result case Success(:final response)) {
       SmartDialog.showToast(newVal ? response : '取消赞');
-      pgcItem.stat?.like += newVal ? 1 : -1;
+      _stat?.like += newVal ? 1 : -1;
       hasLike.value = newVal;
     } else {
       result.toast();
@@ -203,7 +238,7 @@ class PgcIntroController extends CommonIntroController {
                     6：漫画
                     7：综艺 // 4099
                   */
-                    dynType: switch (pgcItem.type) {
+                    dynType: switch (pgcItem.kind) {
                       1 => 4097,
                       2 => 4098,
                       3 => 4101,
@@ -244,7 +279,7 @@ class PgcIntroController extends CommonIntroController {
                       "headline": title,
                       "source": 16,
                       "thumb": item.cover,
-                      "source_desc": BiliUtils.pgcType2Label(pgcItem.type),
+                      "source_desc": BiliUtils.pgcType2Label(pgcItem.kind),
                     },
                   );
                 } catch (e) {
@@ -426,7 +461,7 @@ class PgcIntroController extends CommonIntroController {
     }
     final result = await VideoHttp.pgcTriple(epId: epId, seasonId: seasonId);
     if (result case Success(:final response)) {
-      late final stat = pgcItem.stat;
+      late final stat = _stat;
       if (response.like == 1 && !hasLike.value) {
         stat?.like++;
         hasLike.value = true;
@@ -486,12 +521,8 @@ class PgcIntroController extends CommonIntroController {
     }
   }
 
-  List<EpisodeItem> get episodes {
-    if (episodeType == .section) {
-      return pgcItem.sections![sectionIndex].episodes!;
-    }
-    return pgcItem.episodes!;
-  }
+  List<EpisodeItem> get episodes =>
+      episodeType == .section ? _sectionEpisodes[sectionIndex] : _episodes;
 
   EpisodeItem findEpisode(int cid) {
     return episodes.firstWhere((e) => e.cid == cid);
@@ -531,17 +562,20 @@ class PgcIntroController extends CommonIntroController {
     _changingSeason = true;
     SmartDialog.showLoading();
     try {
-      final res = await SearchHttp.pgcInfo(seasonId: seasonId, epId: epId);
+      final res = await RustPgc.seasonDetail(
+        pugv: !isPgc,
+        seasonId: seasonId,
+        epId: epId,
+      );
       if (res case Success(:final response)) {
-        final (EpisodeItem? episode, int? sectionIndex) = response
-            .findEpisode();
+        final (PgcEpisode? episode, int? sectionIndex) = response.findEpisode();
         if (episode != null) {
-          pgcItem = response;
+          _applyDetail(response);
           this.seasonId = seasonId;
           this.seasonIndex = seasonIndex;
           this.sectionIndex = sectionIndex ?? 0;
           onChangeEpisode(
-            episode,
+            toDartEpisode(episode),
             episodeType: sectionIndex != null ? .section : .episode,
           );
           _onGetPgcInfo();

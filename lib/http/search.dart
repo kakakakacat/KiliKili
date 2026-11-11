@@ -4,7 +4,6 @@ import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/search/suggest.dart';
 import 'package:kilikili/models_new/dynamic/dyn_topic_pub_search/data.dart';
 import 'package:kilikili/models_new/pagelist/page_item.dart';
-import 'package:kilikili/models_new/pgc/pgc_info_model/result.dart';
 import 'package:kilikili/services/rust/rust_search_suggest.dart';
 import 'package:kilikili/services/rust/search_suggest_result.dart';
 import 'package:kilikili/utils/extension/iterable_ext.dart';
@@ -31,7 +30,8 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 /// **2. 另外四个不属于搜索域，各有归属：**
 ///
 /// - `ab2c` / `ab2cWithDimension`：取分 P 列表，属视频页（S3 / #53）
-/// - `pgcInfo` / `pugvInfo`：番剧与课堂详情，属 PGC（S10 / #60）
+/// - ~~`pgcInfo` / `pugvInfo`~~：番剧与课堂详情，已随 S10 第二批迁走，
+///   见 `lib/services/rust/rust_pgc.dart`
 /// - `topicPubSearch`：话题发布页的搜索，属动态（S5 / #55）
 ///
 /// 它们住在 `search.dart` 里只是历史归档位置的问题。顺手一起迁会把三个
@@ -91,42 +91,6 @@ abstract final class SearchHttp {
     } else {
       SmartDialog.showToast("ab2c error: ${res.data['message']}");
       return null;
-    }
-  }
-
-  static Future<LoadingState<PgcInfoModel>> pgcInfo({
-    dynamic seasonId,
-    dynamic epId,
-  }) async {
-    final res = await Request().get(
-      Api.pgcInfo,
-      queryParameters: {
-        'season_id': ?seasonId,
-        'ep_id': ?epId,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(PgcInfoModel.fromJson(res.data['result']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<PgcInfoModel>> pugvInfo({
-    dynamic seasonId,
-    dynamic epId,
-  }) async {
-    final res = await Request().get(
-      Api.pugvInfo,
-      queryParameters: {
-        'season_id': ?seasonId,
-        'ep_id': ?epId,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(PgcInfoModel.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
     }
   }
 

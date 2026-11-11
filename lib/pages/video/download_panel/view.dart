@@ -9,7 +9,6 @@ import 'package:kilikili/models/common/badge_type.dart';
 import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/models/common/video/base_quality.dart';
 import 'package:kilikili/models_new/pgc/pgc_info_model/episode.dart' as pgc;
-import 'package:kilikili/models_new/pgc/pgc_info_model/result.dart';
 import 'package:kilikili/models_new/video/video_detail/data.dart';
 import 'package:kilikili/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:kilikili/models_new/video/video_detail/page.dart';
@@ -25,6 +24,7 @@ import 'package:kilikili/utils/id_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:kilikili/utils/utils.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -48,7 +48,7 @@ class DownloadPanel extends StatefulWidget {
   });
 
   final int index;
-  final PgcInfoModel? pgcItem;
+  final PgcSeasonDetail? pgcItem;
   final VideoDetailData? videoDetail;
   final List<ugc.BaseEpisodeItem> episodes;
   final ScrollController scrollController;

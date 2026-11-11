@@ -14,7 +14,6 @@ import 'package:kilikili/models/common/video/base_quality.dart';
 import 'package:kilikili/models_new/download/bili_download_entry_info.dart';
 import 'package:kilikili/models_new/download/bili_download_media_file_info.dart';
 import 'package:kilikili/models_new/pgc/pgc_info_model/episode.dart' as pgc;
-import 'package:kilikili/models_new/pgc/pgc_info_model/result.dart';
 import 'package:kilikili/models_new/video/video_detail/data.dart';
 import 'package:kilikili/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:kilikili/models_new/video/video_detail/page.dart';
@@ -32,6 +31,7 @@ import 'package:kilikili/utils/storage.dart';
 import 'package:kilikili/utils/storage_key.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:kilikili/utils/subtitle_utils.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:flutter/foundation.dart'
     show kDebugMode, debugPrint, VoidCallback;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -200,7 +200,7 @@ class DownloadService extends GetxService {
 
   void downloadBangumi({
     required int index,
-    required PgcInfoModel pgcItem,
+    required PgcSeasonDetail pgcItem,
     required pgc.EpisodeItem episode,
     required VideoQuality quality,
     AudioQuality? audioQuality,
@@ -227,7 +227,7 @@ class DownloadService extends GetxService {
       indexTitle: episode.longTitle ?? '',
       showTitle: episode.showTitle,
       from: episode.from ?? 'bangumi',
-      seasonType: pgcItem.type ?? (episode.from == 'pugv' ? -1 : 0),
+      seasonType: pgcItem.kind ?? (episode.from == 'pugv' ? -1 : 0),
       width: 0,
       height: 0,
       rotate: 0,
@@ -262,8 +262,8 @@ class DownloadService extends GetxService {
       avid: source.avId,
       ep: ep,
       source: source,
-      ownerId: pgcItem.upInfo?.mid,
-      ownerName: pgcItem.upInfo?.uname,
+      ownerId: pgcItem.up?.mid,
+      ownerName: pgcItem.up?.uname,
       pageData: null,
     );
     _createDownload(entry);

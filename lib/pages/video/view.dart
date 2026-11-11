@@ -19,7 +19,6 @@ import 'package:kilikili/common/widgets/sliver/video_header.dart';
 import 'package:kilikili/common/widgets/svg/play_icon.dart';
 import 'package:kilikili/models/common/episode_panel_type.dart';
 import 'package:kilikili/models/common/pgc_episode_type.dart';
-import 'package:kilikili/models_new/pgc/pgc_info_model/result.dart';
 import 'package:kilikili/models_new/video/video_tag/data.dart';
 import 'package:kilikili/pages/common/common_intro_controller.dart';
 import 'package:kilikili/pages/danmaku/view.dart';
@@ -69,6 +68,8 @@ import 'package:kilikili/utils/platform_utils.dart';
 import 'package:kilikili/utils/storage.dart';
 import 'package:kilikili/utils/storage_key.dart';
 import 'package:kilikili/utils/theme_utils.dart';
+import 'package:kilikili/services/rust/pgc_detail_compat.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, clampDouble;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -1847,7 +1848,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   }
 
   void showIntroDetail(
-    PgcInfoModel videoDetail,
+    PgcSeasonDetail videoDetail,
     List<VideoTagItem>? videoTags,
   ) {
     videoDetailController.childKey.currentState?.showBottomSheet(

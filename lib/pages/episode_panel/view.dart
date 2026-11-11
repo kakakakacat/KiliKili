@@ -16,7 +16,6 @@ import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/common/episode_panel_type.dart';
 import 'package:kilikili/models/common/pgc_episode_type.dart';
 import 'package:kilikili/models_new/pgc/pgc_info_model/episode.dart' as pgc;
-import 'package:kilikili/models_new/pgc/pgc_info_model/result.dart';
 import 'package:kilikili/models_new/video/video_detail/data.dart';
 import 'package:kilikili/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:kilikili/models_new/video/video_detail/page.dart';
@@ -33,6 +32,8 @@ import 'package:kilikili/utils/extension/num_ext.dart';
 import 'package:kilikili/utils/id_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:kilikili/utils/scroll_offset_helper.dart';
+import 'package:kilikili/services/rust/pgc_detail_compat.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -77,14 +78,16 @@ class _EpisodePanelState extends State<EpisodePanel>
   late VideoDetailData _videoDetail;
   PgcEpisodeType get _episodeType =>
       widget.episodeType ?? _pgcController.episodeType;
+  // 面板按共享基类多态渲染，所以读的是控制器里适配过的那一份
+  // （见 lib/services/rust/pgc_detail_compat.dart），不是 FRB 结构。
   List<ugc.BaseEpisodeItem> get _pgcEpisodes =>
       _isSidePanel || _episodeType == .episode
-      ? _pgcItem.episodes!
-      : _pgcItem.sections![_pgcController.sectionIndex].episodes!;
+      ? _pgcController.mainEpisodes
+      : _pgcController.sectionEpisodes[_pgcController.sectionIndex];
   late final _ugcController = _introController as UgcIntroController;
 
   // pgc
-  late PgcInfoModel _pgcItem;
+  late PgcSeasonDetail _pgcItem;
   late final _pgcController = _introController as PgcIntroController;
 
   // fav

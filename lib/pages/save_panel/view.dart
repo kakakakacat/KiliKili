@@ -20,6 +20,7 @@ import 'package:kilikili/utils/image_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:kilikili/utils/share_utils.dart';
 import 'package:kilikili/utils/utils.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/rendering.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -133,7 +134,7 @@ class _SavePanelState extends State<SavePanel> {
               episode.shareCopy ??
               '${pgcItem.title} ${episode.showTitle ?? episode.longTitle ?? ''}';
           pubdate = episode.pubTime;
-          uname = pgcItem.upInfo?.uname;
+          uname = pgcItem.up?.uname;
 
           uri = _reply2Uri(
             reply,

@@ -4,6 +4,7 @@ import 'package:kilikili/pages/search_panel/article/controller.dart';
 import 'package:kilikili/pages/search_panel/article/widgets/item.dart';
 import 'package:kilikili/pages/search_panel/view.dart';
 import 'package:kilikili/utils/grid.dart';
+import 'package:kilikili/services/rust/rust_search.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -24,7 +25,7 @@ class _SearchArticlePanelState
         CommonSearchPanelState<
           SearchArticlePanel,
           SearchArticleData,
-          SearchArticleItemModel
+          SearchArticleItem
         >
     with GridMixin {
   @override
@@ -90,14 +91,14 @@ class _SearchArticlePanelState
   }
 
   @override
-  Widget buildList(List<SearchArticleItemModel> list) {
+  Widget buildList(List<SearchArticleItem> list) {
     return SliverGrid.builder(
       gridDelegate: gridDelegate,
       itemBuilder: (context, index) {
         if (index == list.length - 1) {
           controller.onLoadMore();
         }
-        return SearchArticleItem(item: list[index]);
+        return SearchArticleTile(item: list[index]);
       },
       itemCount: list.length,
     );

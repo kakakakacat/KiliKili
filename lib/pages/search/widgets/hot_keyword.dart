@@ -1,5 +1,5 @@
 import 'package:kilikili/common/assets.dart';
-import 'package:kilikili/models_new/search/search_trending/list.dart';
+import 'package:kilikili/services/rust/rust_search.dart';
 import 'package:kilikili/utils/extension/string_ext.dart';
 import 'package:kilikili/utils/image_utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
@@ -12,7 +12,7 @@ import 'package:flutter/rendering.dart'
 import 'package:material_ui/material_ui.dart';
 
 class SliverHotKeyword extends StatelessWidget {
-  final List<SearchTrendingItemModel> hotSearchList;
+  final List<SearchTrendingItem> hotSearchList;
   final Function? onClick;
   const SliverHotKeyword({
     super.key,

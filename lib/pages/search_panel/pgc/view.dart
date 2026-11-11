@@ -5,6 +5,7 @@ import 'package:kilikili/pages/search_panel/controller.dart';
 import 'package:kilikili/pages/search_panel/pgc/widgets/item.dart';
 import 'package:kilikili/pages/search_panel/view.dart';
 import 'package:kilikili/utils/grid.dart';
+import 'package:kilikili/services/rust/rust_search.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart'
     hide SliverGridDelegateWithMaxCrossAxisExtent;
@@ -26,17 +27,17 @@ class _SearchPgcPanelState
         CommonSearchPanelState<
           SearchPgcPanel,
           SearchPgcData,
-          SearchPgcItemModel
+          SearchPgcItem
         > {
   @override
-  late final SearchPanelController<SearchPgcData, SearchPgcItemModel>
+  late final SearchPanelController<SearchPgcData, SearchPgcItem>
   controller;
 
   @override
   void initState() {
     super.initState();
     controller = Get.put(
-      SearchPanelController<SearchPgcData, SearchPgcItemModel>(
+      SearchPanelController<SearchPgcData, SearchPgcItem>(
         keyword: widget.keyword,
         searchType: widget.searchType,
         tag: widget.tag,
@@ -51,14 +52,14 @@ class _SearchPgcPanelState
   );
 
   @override
-  Widget buildList(List<SearchPgcItemModel> list) {
+  Widget buildList(List<SearchPgcItem> list) {
     return SliverGrid.builder(
       gridDelegate: gridDelegate,
       itemBuilder: (BuildContext context, int index) {
         if (index == list.length - 1) {
           controller.onLoadMore();
         }
-        return SearchPgcItem(item: list[index]);
+        return SearchPgcCard(item: list[index]);
       },
       itemCount: list.length,
     );

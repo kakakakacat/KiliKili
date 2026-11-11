@@ -15,8 +15,10 @@
 //! 1. `<[^>]*>([^<]*)</[^>]*>` 要求成对标签，且内层不含 `<`。单个
 //!    `<em>` 没有闭合标签时**整体不匹配**，那段文本原样作为非命中段
 //!    留下——基线如此，不要「顺手修好」。
-//! 2. 匹配失败时正则从**下一个字符**继续试，而不是跳过整个标签。
-//! 3. `&#x` 实体只认 2–4 位十六进制。位数不符时原样保留。
+//! 2. 空串守卫只在非命中段上。基线的 `if (str != '')` 写在 `onNonMatch`
+//!    里，`onMatch` 没有，于是空的**命中**段会产出而空的非命中段不会。
+//! 3. 匹配失败时正则从**下一个字符**继续试，而不是跳过整个标签。
+//! 4. `&#x` 实体只认 2–4 位十六进制。位数不符时原样保留。
 
 use bili_domain::search::{TitleSpan, spans_to_plain};
 
@@ -33,9 +35,17 @@ pub fn parse_title_spans(origin: &str) -> Vec<TitleSpan> {
         match find_tag_pair(origin, cursor) {
             Some((start, end, inner)) => {
                 if start > cursor {
-                    push_non_empty(&mut out, false, &origin[cursor..start]);
+                    push_non_empty(&mut out, &origin[cursor..start]);
                 }
-                push_non_empty(&mut out, true, inner);
+                // 命中段**即使为空也要产出**。基线的空串守卫
+                // （`if (str != '')`）只写在 `onNonMatch` 里，`onMatch`
+                // 没有——所以 `a<em></em>b` 在基线下是三段，中间那段是
+                // 空的命中段。看着像疏漏，但它是现行行为，Dart 侧的
+                // parity 测试会钉住这一条。
+                out.push(TitleSpan {
+                    is_em: true,
+                    text: decode_entities(inner),
+                });
                 cursor = end;
             }
             None => break,
@@ -43,7 +53,7 @@ pub fn parse_title_spans(origin: &str) -> Vec<TitleSpan> {
     }
 
     if cursor < origin.len() {
-        push_non_empty(&mut out, false, &origin[cursor..]);
+        push_non_empty(&mut out, &origin[cursor..]);
     }
     out
 }
@@ -128,12 +138,14 @@ pub fn parse_duration_secs(data: &str) -> i64 {
 
 // ------------------------------------------------------------------ 内部
 
-fn push_non_empty(out: &mut Vec<TitleSpan>, is_em: bool, raw: &str) {
+/// 产出一个**非命中**段。空串不入列表，对应基线 `onNonMatch` 里的
+/// `if (str != '')`。命中段没有这个守卫，见 [`parse_title_spans`]。
+fn push_non_empty(out: &mut Vec<TitleSpan>, raw: &str) {
     if raw.is_empty() {
         return;
     }
     out.push(TitleSpan {
-        is_em,
+        is_em: false,
         text: decode_entities(raw),
     });
 }
@@ -277,11 +289,13 @@ mod tests {
     }
 
     #[test]
-    fn inner_text_may_be_empty() {
-        // `([^<]*)` 可以匹配空串，但空段落不入列表。
+    fn empty_em_span_is_emitted_but_empty_plain_span_is_not() {
+        // 基线的空串守卫只在 `onNonMatch` 里，`onMatch` 没有——所以空的
+        // **命中**段会产出，空的非命中段不会。看着像疏漏，但这是现行
+        // 行为，Dart 侧 parity 测试钉住了它。
         let spans = parse_title_spans("a<em></em>b");
-        let texts: Vec<&str> = spans.iter().map(|s| s.text.as_str()).collect();
-        assert_eq!(texts, ["a", "b"]);
+        let got: Vec<(bool, &str)> = spans.iter().map(|s| (s.is_em, s.text.as_str())).collect();
+        assert_eq!(got, [(false, "a"), (true, ""), (false, "b")]);
     }
 
     #[test]

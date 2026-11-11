@@ -5,11 +5,12 @@ import 'package:kilikili/models/search/result.dart';
 import 'package:kilikili/pages/search/widgets/search_text.dart';
 import 'package:kilikili/pages/search_panel/controller.dart';
 import 'package:kilikili/utils/extension/context_ext.dart';
+import 'package:kilikili/services/rust/rust_search.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class SearchUserController
-    extends SearchPanelController<SearchUserData, SearchUserItemModel> {
+    extends SearchPanelController<SearchUserData, SearchUserItem> {
   SearchUserController({
     required super.keyword,
     required super.searchType,

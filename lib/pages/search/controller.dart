@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/search.dart';
+import 'package:kilikili/services/rust/rust_search.dart';
 import 'package:kilikili/models/search/suggest.dart';
 import 'package:kilikili/models_new/search/search_rcmd/data.dart';
 import 'package:kilikili/models_new/search/search_trending/data.dart';
@@ -75,7 +76,7 @@ class BaseSearchController extends GetxController {
 
   // 获取热搜关键词
   Future<void> queryTrendingList() async {
-    trendingState.value = await SearchHttp.searchTrending(limit: 10);
+    trendingState.value = await RustSearch.searchTrending(limit: 10);
   }
 }
 
@@ -199,7 +200,7 @@ class SSearchController extends GetxController
   }
 
   Future<void> queryRecommendList() async {
-    recommendData.value = await SearchHttp.searchRecommend();
+    recommendData.value = await RustSearch.searchRecommend();
   }
 
   void onClickKeyword(String keyword, {bool clearSuggest = true}) {

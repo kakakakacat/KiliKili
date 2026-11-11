@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -608863032;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -460684000;
 
 // Section: executor
 
@@ -984,6 +984,322 @@ fn wire__crate__api__video_detail__parse_video_detail_impl(
         },
     )
 }
+fn wire__crate__api__search__search_all_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "search_all",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::search::SearchContext>::sse_decode(&mut deserializer);
+            let api_query = <crate::api::search::SearchQuery>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::search::search_all(api_context, api_query).await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__search__search_article_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "search_article",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::search::SearchContext>::sse_decode(&mut deserializer);
+            let api_query = <crate::api::search::SearchQuery>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::search::search_article(api_context, api_query).await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__search__search_live_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "search_live",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::search::SearchContext>::sse_decode(&mut deserializer);
+            let api_query = <crate::api::search::SearchQuery>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::search::search_live(api_context, api_query).await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__search__search_pgc_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "search_pgc",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::search::SearchContext>::sse_decode(&mut deserializer);
+            let api_query = <crate::api::search::SearchQuery>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::search::search_pgc(api_context, api_query).await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__search__search_recommend_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "search_recommend",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::search::SearchContext>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok =
+                            Ok::<_, ()>(crate::api::search::search_recommend(api_context).await)?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__search__search_trending_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "search_trending",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::search::SearchContext>::sse_decode(&mut deserializer);
+            let api_limit = <i64>::sse_decode(&mut deserializer);
+            let api_needs_top = <bool>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::search::search_trending(
+                                api_context,
+                                api_limit,
+                                api_needs_top,
+                            )
+                            .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__search__search_user_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "search_user",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::search::SearchContext>::sse_decode(&mut deserializer);
+            let api_query = <crate::api::search::SearchQuery>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::search::search_user(api_context, api_query).await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__search__search_video_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "search_video",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::search::SearchContext>::sse_decode(&mut deserializer);
+            let api_query = <crate::api::search::SearchQuery>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::search::search_video(api_context, api_query).await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__media_select__select_target_audio_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -1569,6 +1885,118 @@ impl SseDecode for Vec<(String, String)> {
     }
 }
 
+impl SseDecode for Vec<crate::api::search::SearchActivityItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::search::SearchActivityItem>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::search::SearchArticleItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::search::SearchArticleItem>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::search::SearchLiveItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::search::SearchLiveItem>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::search::SearchPgcItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::search::SearchPgcItem>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::search::SearchTrendingItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::search::SearchTrendingItem>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::search::SearchUserCard> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::search::SearchUserCard>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::search::SearchUserItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::search::SearchUserItem>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::search::SearchVideoItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::search::SearchVideoItem>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::api::sponsor_block::SkipSegment> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1578,6 +2006,18 @@ impl SseDecode for Vec<crate::api::sponsor_block::SkipSegment> {
             ans_.push(<crate::api::sponsor_block::SkipSegment>::sse_decode(
                 deserializer,
             ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::search::TitleSpan> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::search::TitleSpan>::sse_decode(deserializer));
         }
         return ans_;
     }
@@ -1597,11 +2037,46 @@ impl SseDecode for Vec<crate::api::media_select::VideoCandidateInput> {
     }
 }
 
+impl SseDecode for crate::api::search::MediaScore {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_score = <Option<f64>>::sse_decode(deserializer);
+        let mut var_userCount = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::search::MediaScore {
+            score: var_score,
+            user_count: var_userCount,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::OfficialVerify {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_kind = <Option<i64>>::sse_decode(deserializer);
+        let mut var_desc = <Option<String>>::sse_decode(deserializer);
+        return crate::api::search::OfficialVerify {
+            kind: var_kind,
+            desc: var_desc,
+        };
+    }
+}
+
 impl SseDecode for Option<String> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         if (<bool>::sse_decode(deserializer)) {
             return Some(<String>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<bool> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<bool>::sse_decode(deserializer));
         } else {
             return None;
         }
@@ -1624,6 +2099,30 @@ impl SseDecode for Option<i64> {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         if (<bool>::sse_decode(deserializer)) {
             return Some(<i64>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::search::MediaScore> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::search::MediaScore>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::search::OfficialVerify> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::search::OfficialVerify>::sse_decode(
+                deserializer,
+            ));
         } else {
             return None;
         }
@@ -1661,6 +2160,19 @@ impl SseDecode for Option<crate::api::video_feed::PopularSeriesOne> {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         if (<bool>::sse_decode(deserializer)) {
             return Some(<crate::api::video_feed::PopularSeriesOne>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::search::SearchAllData> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::search::SearchAllData>::sse_decode(
                 deserializer,
             ));
         } else {
@@ -1772,6 +2284,84 @@ impl SseDecode for Option<Vec<i64>> {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         if (<bool>::sse_decode(deserializer)) {
             return Some(<Vec<i64>>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<Vec<crate::api::search::SearchArticleItem>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<Vec<crate::api::search::SearchArticleItem>>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<Vec<crate::api::search::SearchLiveItem>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<Vec<crate::api::search::SearchLiveItem>>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<Vec<crate::api::search::SearchPgcItem>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<Vec<crate::api::search::SearchPgcItem>>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<Vec<crate::api::search::SearchTrendingItem>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<Vec<crate::api::search::SearchTrendingItem>>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<Vec<crate::api::search::SearchUserItem>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<Vec<crate::api::search::SearchUserItem>>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<Vec<crate::api::search::SearchVideoItem>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<Vec<crate::api::search::SearchVideoItem>>::sse_decode(
+                deserializer,
+            ));
         } else {
             return None;
         }
@@ -1970,6 +2560,355 @@ impl SseDecode for (String, String) {
     }
 }
 
+impl SseDecode for crate::api::search::SearchActivityItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_id = <Option<i64>>::sse_decode(deserializer);
+        let mut var_title = <Option<String>>::sse_decode(deserializer);
+        let mut var_desc = <Option<String>>::sse_decode(deserializer);
+        let mut var_cover = <Option<String>>::sse_decode(deserializer);
+        let mut var_url = <Option<String>>::sse_decode(deserializer);
+        let mut var_state = <Option<i64>>::sse_decode(deserializer);
+        let mut var_status = <Option<i64>>::sse_decode(deserializer);
+        let mut var_author = <Option<String>>::sse_decode(deserializer);
+        return crate::api::search::SearchActivityItem {
+            id: var_id,
+            title: var_title,
+            desc: var_desc,
+            cover: var_cover,
+            url: var_url,
+            state: var_state,
+            status: var_status,
+            author: var_author,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::SearchAllData {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_numResults = <Option<i64>>::sse_decode(deserializer);
+        let mut var_videos = <Vec<crate::api::search::SearchVideoItem>>::sse_decode(deserializer);
+        let mut var_users = <Vec<crate::api::search::SearchUserCard>>::sse_decode(deserializer);
+        let mut var_medias = <Vec<crate::api::search::SearchPgcItem>>::sse_decode(deserializer);
+        let mut var_activities =
+            <Vec<crate::api::search::SearchActivityItem>>::sse_decode(deserializer);
+        let mut var_esportsJson = <Option<String>>::sse_decode(deserializer);
+        return crate::api::search::SearchAllData {
+            num_results: var_numResults,
+            videos: var_videos,
+            users: var_users,
+            medias: var_medias,
+            activities: var_activities,
+            esports_json: var_esportsJson,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::SearchAllResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data = <Option<crate::api::search::SearchAllData>>::sse_decode(deserializer);
+        let mut var_numResults = <Option<i64>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::search::SearchAllResult {
+            data: var_data,
+            num_results: var_numResults,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::SearchArticleItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_pubTime = <Option<i64>>::sse_decode(deserializer);
+        let mut var_like = <Option<i64>>::sse_decode(deserializer);
+        let mut var_titleSpans = <Vec<crate::api::search::TitleSpan>>::sse_decode(deserializer);
+        let mut var_title = <String>::sse_decode(deserializer);
+        let mut var_rankOffset = <Option<i64>>::sse_decode(deserializer);
+        let mut var_mid = <Option<i64>>::sse_decode(deserializer);
+        let mut var_imageUrls = <Vec<String>>::sse_decode(deserializer);
+        let mut var_id = <Option<i64>>::sse_decode(deserializer);
+        let mut var_categoryId = <Option<i64>>::sse_decode(deserializer);
+        let mut var_view = <Option<i64>>::sse_decode(deserializer);
+        let mut var_reply = <Option<i64>>::sse_decode(deserializer);
+        let mut var_desc = <Option<String>>::sse_decode(deserializer);
+        let mut var_rankScore = <Option<i64>>::sse_decode(deserializer);
+        let mut var_itemType = <Option<String>>::sse_decode(deserializer);
+        let mut var_templateId = <Option<i64>>::sse_decode(deserializer);
+        let mut var_categoryName = <Option<String>>::sse_decode(deserializer);
+        return crate::api::search::SearchArticleItem {
+            pub_time: var_pubTime,
+            like: var_like,
+            title_spans: var_titleSpans,
+            title: var_title,
+            rank_offset: var_rankOffset,
+            mid: var_mid,
+            image_urls: var_imageUrls,
+            id: var_id,
+            category_id: var_categoryId,
+            view: var_view,
+            reply: var_reply,
+            desc: var_desc,
+            rank_score: var_rankScore,
+            item_type: var_itemType,
+            template_id: var_templateId,
+            category_name: var_categoryName,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::SearchArticleResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data =
+            <Option<Vec<crate::api::search::SearchArticleItem>>>::sse_decode(deserializer);
+        let mut var_numResults = <Option<i64>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::search::SearchArticleResult {
+            data: var_data,
+            num_results: var_numResults,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::SearchContext {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_baseUrl = <String>::sse_decode(deserializer);
+        let mut var_cookie = <Option<String>>::sse_decode(deserializer);
+        let mut var_headers = <Vec<(String, String)>>::sse_decode(deserializer);
+        let mut var_mixinKey = <String>::sse_decode(deserializer);
+        let mut var_wts = <i64>::sse_decode(deserializer);
+        let mut var_timeoutMs = <u64>::sse_decode(deserializer);
+        let mut var_transport =
+            <crate::api::transport::TransportSettings>::sse_decode(deserializer);
+        return crate::api::search::SearchContext {
+            base_url: var_baseUrl,
+            cookie: var_cookie,
+            headers: var_headers,
+            mixin_key: var_mixinKey,
+            wts: var_wts,
+            timeout_ms: var_timeoutMs,
+            transport: var_transport,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::SearchLiveItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_rankOffset = <Option<i64>>::sse_decode(deserializer);
+        let mut var_uid = <Option<i64>>::sse_decode(deserializer);
+        let mut var_tags = <Option<String>>::sse_decode(deserializer);
+        let mut var_liveTime = <Option<String>>::sse_decode(deserializer);
+        let mut var_uname = <Option<String>>::sse_decode(deserializer);
+        let mut var_uface = <Option<String>>::sse_decode(deserializer);
+        let mut var_userCover = <Option<String>>::sse_decode(deserializer);
+        let mut var_itemType = <Option<String>>::sse_decode(deserializer);
+        let mut var_titleSpans = <Vec<crate::api::search::TitleSpan>>::sse_decode(deserializer);
+        let mut var_title = <String>::sse_decode(deserializer);
+        let mut var_cover = <Option<String>>::sse_decode(deserializer);
+        let mut var_online = <Option<i64>>::sse_decode(deserializer);
+        let mut var_rankIndex = <Option<i64>>::sse_decode(deserializer);
+        let mut var_rankScore = <Option<i64>>::sse_decode(deserializer);
+        let mut var_roomid = <Option<i64>>::sse_decode(deserializer);
+        let mut var_attentions = <Option<i64>>::sse_decode(deserializer);
+        let mut var_cateName = <Option<String>>::sse_decode(deserializer);
+        return crate::api::search::SearchLiveItem {
+            rank_offset: var_rankOffset,
+            uid: var_uid,
+            tags: var_tags,
+            live_time: var_liveTime,
+            uname: var_uname,
+            uface: var_uface,
+            user_cover: var_userCover,
+            item_type: var_itemType,
+            title_spans: var_titleSpans,
+            title: var_title,
+            cover: var_cover,
+            online: var_online,
+            rank_index: var_rankIndex,
+            rank_score: var_rankScore,
+            roomid: var_roomid,
+            attentions: var_attentions,
+            cate_name: var_cateName,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::SearchLiveResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data =
+            <Option<Vec<crate::api::search::SearchLiveItem>>>::sse_decode(deserializer);
+        let mut var_numResults = <Option<i64>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::search::SearchLiveResult {
+            data: var_data,
+            num_results: var_numResults,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::SearchOwner {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_mid = <Option<i64>>::sse_decode(deserializer);
+        let mut var_name = <Option<String>>::sse_decode(deserializer);
+        let mut var_face = <Option<String>>::sse_decode(deserializer);
+        return crate::api::search::SearchOwner {
+            mid: var_mid,
+            name: var_name,
+            face: var_face,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::SearchPgcItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_itemType = <Option<String>>::sse_decode(deserializer);
+        let mut var_mediaId = <Option<i64>>::sse_decode(deserializer);
+        let mut var_titleSpans = <Vec<crate::api::search::TitleSpan>>::sse_decode(deserializer);
+        let mut var_title = <String>::sse_decode(deserializer);
+        let mut var_orgTitle = <Option<String>>::sse_decode(deserializer);
+        let mut var_mediaType = <Option<i64>>::sse_decode(deserializer);
+        let mut var_cv = <Option<String>>::sse_decode(deserializer);
+        let mut var_staff = <Option<String>>::sse_decode(deserializer);
+        let mut var_seasonId = <Option<i64>>::sse_decode(deserializer);
+        let mut var_isAvid = <Option<bool>>::sse_decode(deserializer);
+        let mut var_hitEpids = <Option<String>>::sse_decode(deserializer);
+        let mut var_seasonType = <Option<i64>>::sse_decode(deserializer);
+        let mut var_seasonTypeName = <Option<String>>::sse_decode(deserializer);
+        let mut var_url = <Option<String>>::sse_decode(deserializer);
+        let mut var_buttonText = <Option<String>>::sse_decode(deserializer);
+        let mut var_isFollow = <Option<i64>>::sse_decode(deserializer);
+        let mut var_isSelection = <Option<i64>>::sse_decode(deserializer);
+        let mut var_cover = <Option<String>>::sse_decode(deserializer);
+        let mut var_areas = <Option<String>>::sse_decode(deserializer);
+        let mut var_styles = <Option<String>>::sse_decode(deserializer);
+        let mut var_gotoUrl = <Option<String>>::sse_decode(deserializer);
+        let mut var_desc = <Option<String>>::sse_decode(deserializer);
+        let mut var_pubtime = <Option<i64>>::sse_decode(deserializer);
+        let mut var_mediaMode = <Option<i64>>::sse_decode(deserializer);
+        let mut var_mediaScore = <Option<crate::api::search::MediaScore>>::sse_decode(deserializer);
+        let mut var_indexShow = <Option<String>>::sse_decode(deserializer);
+        return crate::api::search::SearchPgcItem {
+            item_type: var_itemType,
+            media_id: var_mediaId,
+            title_spans: var_titleSpans,
+            title: var_title,
+            org_title: var_orgTitle,
+            media_type: var_mediaType,
+            cv: var_cv,
+            staff: var_staff,
+            season_id: var_seasonId,
+            is_avid: var_isAvid,
+            hit_epids: var_hitEpids,
+            season_type: var_seasonType,
+            season_type_name: var_seasonTypeName,
+            url: var_url,
+            button_text: var_buttonText,
+            is_follow: var_isFollow,
+            is_selection: var_isSelection,
+            cover: var_cover,
+            areas: var_areas,
+            styles: var_styles,
+            goto_url: var_gotoUrl,
+            desc: var_desc,
+            pubtime: var_pubtime,
+            media_mode: var_mediaMode,
+            media_score: var_mediaScore,
+            index_show: var_indexShow,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::SearchPgcResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data =
+            <Option<Vec<crate::api::search::SearchPgcItem>>>::sse_decode(deserializer);
+        let mut var_numResults = <Option<i64>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::search::SearchPgcResult {
+            data: var_data,
+            num_results: var_numResults,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::SearchQuery {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_searchType = <String>::sse_decode(deserializer);
+        let mut var_keyword = <String>::sse_decode(deserializer);
+        let mut var_page = <i64>::sse_decode(deserializer);
+        let mut var_order = <Option<String>>::sse_decode(deserializer);
+        let mut var_duration = <Option<i64>>::sse_decode(deserializer);
+        let mut var_tids = <Option<i64>>::sse_decode(deserializer);
+        let mut var_orderSort = <Option<i64>>::sse_decode(deserializer);
+        let mut var_userType = <Option<i64>>::sse_decode(deserializer);
+        let mut var_categoryId = <Option<i64>>::sse_decode(deserializer);
+        let mut var_pubBegin = <Option<i64>>::sse_decode(deserializer);
+        let mut var_pubEnd = <Option<i64>>::sse_decode(deserializer);
+        let mut var_gaiaVtoken = <Option<String>>::sse_decode(deserializer);
+        return crate::api::search::SearchQuery {
+            search_type: var_searchType,
+            keyword: var_keyword,
+            page: var_page,
+            order: var_order,
+            duration: var_duration,
+            tids: var_tids,
+            order_sort: var_orderSort,
+            user_type: var_userType,
+            category_id: var_categoryId,
+            pub_begin: var_pubBegin,
+            pub_end: var_pubEnd,
+            gaia_vtoken: var_gaiaVtoken,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::SearchStat {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_view = <Option<i64>>::sse_decode(deserializer);
+        let mut var_danmaku = <Option<i64>>::sse_decode(deserializer);
+        let mut var_favorite = <Option<i64>>::sse_decode(deserializer);
+        let mut var_reply = <Option<i64>>::sse_decode(deserializer);
+        let mut var_like = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::search::SearchStat {
+            view: var_view,
+            danmaku: var_danmaku,
+            favorite: var_favorite,
+            reply: var_reply,
+            like: var_like,
+        };
+    }
+}
+
 impl SseDecode for crate::api::search_suggest::SearchSuggestParse {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1980,6 +2919,205 @@ impl SseDecode for crate::api::search_suggest::SearchSuggestParse {
             json: var_json,
             error_kind: var_errorKind,
             error_detail: var_errorDetail,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::SearchTrendingItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_keyword = <String>::sse_decode(deserializer);
+        let mut var_showName = <String>::sse_decode(deserializer);
+        let mut var_icon = <Option<String>>::sse_decode(deserializer);
+        let mut var_showLiveIcon = <Option<bool>>::sse_decode(deserializer);
+        let mut var_recommendReason = <Option<String>>::sse_decode(deserializer);
+        return crate::api::search::SearchTrendingItem {
+            keyword: var_keyword,
+            show_name: var_showName,
+            icon: var_icon,
+            show_live_icon: var_showLiveIcon,
+            recommend_reason: var_recommendReason,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::SearchTrendingResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data =
+            <Option<Vec<crate::api::search::SearchTrendingItem>>>::sse_decode(deserializer);
+        let mut var_numResults = <Option<i64>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::search::SearchTrendingResult {
+            data: var_data,
+            num_results: var_numResults,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::SearchUserCard {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_mid = <Option<i64>>::sse_decode(deserializer);
+        let mut var_uname = <Option<String>>::sse_decode(deserializer);
+        let mut var_usign = <Option<String>>::sse_decode(deserializer);
+        let mut var_fans = <Option<i64>>::sse_decode(deserializer);
+        let mut var_videos = <Option<i64>>::sse_decode(deserializer);
+        let mut var_upic = <Option<String>>::sse_decode(deserializer);
+        let mut var_verifyInfo = <Option<String>>::sse_decode(deserializer);
+        let mut var_level = <Option<i64>>::sse_decode(deserializer);
+        let mut var_gender = <Option<i64>>::sse_decode(deserializer);
+        let mut var_isUpUser = <Option<i64>>::sse_decode(deserializer);
+        let mut var_isLive = <Option<i64>>::sse_decode(deserializer);
+        let mut var_roomId = <Option<i64>>::sse_decode(deserializer);
+        let mut var_officialVerify =
+            <Option<crate::api::search::OfficialVerify>>::sse_decode(deserializer);
+        let mut var_isSeniorMember = <Option<i64>>::sse_decode(deserializer);
+        let mut var_res = <Vec<crate::api::search::SearchVideoItem>>::sse_decode(deserializer);
+        return crate::api::search::SearchUserCard {
+            mid: var_mid,
+            uname: var_uname,
+            usign: var_usign,
+            fans: var_fans,
+            videos: var_videos,
+            upic: var_upic,
+            verify_info: var_verifyInfo,
+            level: var_level,
+            gender: var_gender,
+            is_up_user: var_isUpUser,
+            is_live: var_isLive,
+            room_id: var_roomId,
+            official_verify: var_officialVerify,
+            is_senior_member: var_isSeniorMember,
+            res: var_res,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::SearchUserItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_itemType = <Option<String>>::sse_decode(deserializer);
+        let mut var_mid = <Option<i64>>::sse_decode(deserializer);
+        let mut var_uname = <Option<String>>::sse_decode(deserializer);
+        let mut var_usign = <Option<String>>::sse_decode(deserializer);
+        let mut var_fans = <Option<i64>>::sse_decode(deserializer);
+        let mut var_videos = <Option<i64>>::sse_decode(deserializer);
+        let mut var_upic = <Option<String>>::sse_decode(deserializer);
+        let mut var_faceNft = <Option<i64>>::sse_decode(deserializer);
+        let mut var_faceNftType = <Option<i64>>::sse_decode(deserializer);
+        let mut var_verifyInfo = <Option<String>>::sse_decode(deserializer);
+        let mut var_level = <Option<i64>>::sse_decode(deserializer);
+        let mut var_gender = <Option<i64>>::sse_decode(deserializer);
+        let mut var_isUpUser = <Option<i64>>::sse_decode(deserializer);
+        let mut var_isLive = <Option<i64>>::sse_decode(deserializer);
+        let mut var_roomId = <Option<i64>>::sse_decode(deserializer);
+        let mut var_officialVerify =
+            <Option<crate::api::search::OfficialVerify>>::sse_decode(deserializer);
+        let mut var_isSeniorMember = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::search::SearchUserItem {
+            item_type: var_itemType,
+            mid: var_mid,
+            uname: var_uname,
+            usign: var_usign,
+            fans: var_fans,
+            videos: var_videos,
+            upic: var_upic,
+            face_nft: var_faceNft,
+            face_nft_type: var_faceNftType,
+            verify_info: var_verifyInfo,
+            level: var_level,
+            gender: var_gender,
+            is_up_user: var_isUpUser,
+            is_live: var_isLive,
+            room_id: var_roomId,
+            official_verify: var_officialVerify,
+            is_senior_member: var_isSeniorMember,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::SearchUserResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data =
+            <Option<Vec<crate::api::search::SearchUserItem>>>::sse_decode(deserializer);
+        let mut var_numResults = <Option<i64>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::search::SearchUserResult {
+            data: var_data,
+            num_results: var_numResults,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::SearchVideoItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_id = <Option<i64>>::sse_decode(deserializer);
+        let mut var_aid = <Option<i64>>::sse_decode(deserializer);
+        let mut var_bvid = <Option<String>>::sse_decode(deserializer);
+        let mut var_arcurl = <Option<String>>::sse_decode(deserializer);
+        let mut var_titleSpans = <Vec<crate::api::search::TitleSpan>>::sse_decode(deserializer);
+        let mut var_title = <String>::sse_decode(deserializer);
+        let mut var_description = <Option<String>>::sse_decode(deserializer);
+        let mut var_pic = <Option<String>>::sse_decode(deserializer);
+        let mut var_pubdate = <Option<i64>>::sse_decode(deserializer);
+        let mut var_senddate = <Option<i64>>::sse_decode(deserializer);
+        let mut var_durationSecs = <i64>::sse_decode(deserializer);
+        let mut var_owner = <crate::api::search::SearchOwner>::sse_decode(deserializer);
+        let mut var_stat = <crate::api::search::SearchStat>::sse_decode(deserializer);
+        let mut var_itemType = <Option<String>>::sse_decode(deserializer);
+        let mut var_roomid = <Option<i64>>::sse_decode(deserializer);
+        let mut var_isUnionVideo = <Option<i64>>::sse_decode(deserializer);
+        let mut var_tag = <Option<String>>::sse_decode(deserializer);
+        return crate::api::search::SearchVideoItem {
+            id: var_id,
+            aid: var_aid,
+            bvid: var_bvid,
+            arcurl: var_arcurl,
+            title_spans: var_titleSpans,
+            title: var_title,
+            description: var_description,
+            pic: var_pic,
+            pubdate: var_pubdate,
+            senddate: var_senddate,
+            duration_secs: var_durationSecs,
+            owner: var_owner,
+            stat: var_stat,
+            item_type: var_itemType,
+            roomid: var_roomid,
+            is_union_video: var_isUnionVideo,
+            tag: var_tag,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::SearchVideoResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data =
+            <Option<Vec<crate::api::search::SearchVideoItem>>>::sse_decode(deserializer);
+        let mut var_numResults = <Option<i64>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::search::SearchVideoResult {
+            data: var_data,
+            num_results: var_numResults,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
         };
     }
 }
@@ -2117,6 +3255,18 @@ impl SseDecode for crate::api::subtitle::SubtitleConvert {
             missing_body: var_missingBody,
             error_kind: var_errorKind,
             error_detail: var_errorDetail,
+        };
+    }
+}
+
+impl SseDecode for crate::api::search::TitleSpan {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_isEm = <bool>::sse_decode(deserializer);
+        let mut var_text = <String>::sse_decode(deserializer);
+        return crate::api::search::TitleSpan {
+            is_em: var_isEm,
+            text: var_text,
         };
     }
 }
@@ -2340,8 +3490,16 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        27 => wire__crate__api__wbi__wbi_mixin_key_impl(port, ptr, rust_vec_len, data_len),
-        28 => wire__crate__api__wbi__wbi_sign_impl(port, ptr, rust_vec_len, data_len),
+        25 => wire__crate__api__search__search_all_impl(port, ptr, rust_vec_len, data_len),
+        26 => wire__crate__api__search__search_article_impl(port, ptr, rust_vec_len, data_len),
+        27 => wire__crate__api__search__search_live_impl(port, ptr, rust_vec_len, data_len),
+        28 => wire__crate__api__search__search_pgc_impl(port, ptr, rust_vec_len, data_len),
+        29 => wire__crate__api__search__search_recommend_impl(port, ptr, rust_vec_len, data_len),
+        30 => wire__crate__api__search__search_trending_impl(port, ptr, rust_vec_len, data_len),
+        31 => wire__crate__api__search__search_user_impl(port, ptr, rust_vec_len, data_len),
+        32 => wire__crate__api__search__search_video_impl(port, ptr, rust_vec_len, data_len),
+        35 => wire__crate__api__wbi__wbi_mixin_key_impl(port, ptr, rust_vec_len, data_len),
+        36 => wire__crate__api__wbi__wbi_sign_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -2360,8 +3518,8 @@ fn pde_ffi_dispatcher_sync_impl(
         6 => {
             wire__crate__api__danmaku__danmaku_open_session_count_impl(ptr, rust_vec_len, data_len)
         }
-        25 => wire__crate__api__media_select__select_target_audio_impl(ptr, rust_vec_len, data_len),
-        26 => wire__crate__api__media_select__select_target_video_impl(ptr, rust_vec_len, data_len),
+        33 => wire__crate__api__media_select__select_target_audio_impl(ptr, rust_vec_len, data_len),
+        34 => wire__crate__api__media_select__select_target_video_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -2690,6 +3848,48 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::media_select::FormatCandidate
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::MediaScore {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.score.into_into_dart().into_dart(),
+            self.user_count.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::MediaScore
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::MediaScore>
+    for crate::api::search::MediaScore
+{
+    fn into_into_dart(self) -> crate::api::search::MediaScore {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::OfficialVerify {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.kind.into_into_dart().into_dart(),
+            self.desc.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::OfficialVerify
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::OfficialVerify>
+    for crate::api::search::OfficialVerify
+{
+    fn into_into_dart(self) -> crate::api::search::OfficialVerify {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::play_url_fetch::PlayUrlFetch {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -2922,6 +4122,373 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::video_feed::PopularSeriesOneR
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchActivityItem {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.id.into_into_dart().into_dart(),
+            self.title.into_into_dart().into_dart(),
+            self.desc.into_into_dart().into_dart(),
+            self.cover.into_into_dart().into_dart(),
+            self.url.into_into_dart().into_dart(),
+            self.state.into_into_dart().into_dart(),
+            self.status.into_into_dart().into_dart(),
+            self.author.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchActivityItem
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchActivityItem>
+    for crate::api::search::SearchActivityItem
+{
+    fn into_into_dart(self) -> crate::api::search::SearchActivityItem {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchAllData {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.num_results.into_into_dart().into_dart(),
+            self.videos.into_into_dart().into_dart(),
+            self.users.into_into_dart().into_dart(),
+            self.medias.into_into_dart().into_dart(),
+            self.activities.into_into_dart().into_dart(),
+            self.esports_json.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchAllData
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchAllData>
+    for crate::api::search::SearchAllData
+{
+    fn into_into_dart(self) -> crate::api::search::SearchAllData {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchAllResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.num_results.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchAllResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchAllResult>
+    for crate::api::search::SearchAllResult
+{
+    fn into_into_dart(self) -> crate::api::search::SearchAllResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchArticleItem {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.pub_time.into_into_dart().into_dart(),
+            self.like.into_into_dart().into_dart(),
+            self.title_spans.into_into_dart().into_dart(),
+            self.title.into_into_dart().into_dart(),
+            self.rank_offset.into_into_dart().into_dart(),
+            self.mid.into_into_dart().into_dart(),
+            self.image_urls.into_into_dart().into_dart(),
+            self.id.into_into_dart().into_dart(),
+            self.category_id.into_into_dart().into_dart(),
+            self.view.into_into_dart().into_dart(),
+            self.reply.into_into_dart().into_dart(),
+            self.desc.into_into_dart().into_dart(),
+            self.rank_score.into_into_dart().into_dart(),
+            self.item_type.into_into_dart().into_dart(),
+            self.template_id.into_into_dart().into_dart(),
+            self.category_name.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchArticleItem
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchArticleItem>
+    for crate::api::search::SearchArticleItem
+{
+    fn into_into_dart(self) -> crate::api::search::SearchArticleItem {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchArticleResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.num_results.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchArticleResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchArticleResult>
+    for crate::api::search::SearchArticleResult
+{
+    fn into_into_dart(self) -> crate::api::search::SearchArticleResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchContext {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.base_url.into_into_dart().into_dart(),
+            self.cookie.into_into_dart().into_dart(),
+            self.headers.into_into_dart().into_dart(),
+            self.mixin_key.into_into_dart().into_dart(),
+            self.wts.into_into_dart().into_dart(),
+            self.timeout_ms.into_into_dart().into_dart(),
+            self.transport.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchContext
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchContext>
+    for crate::api::search::SearchContext
+{
+    fn into_into_dart(self) -> crate::api::search::SearchContext {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchLiveItem {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.rank_offset.into_into_dart().into_dart(),
+            self.uid.into_into_dart().into_dart(),
+            self.tags.into_into_dart().into_dart(),
+            self.live_time.into_into_dart().into_dart(),
+            self.uname.into_into_dart().into_dart(),
+            self.uface.into_into_dart().into_dart(),
+            self.user_cover.into_into_dart().into_dart(),
+            self.item_type.into_into_dart().into_dart(),
+            self.title_spans.into_into_dart().into_dart(),
+            self.title.into_into_dart().into_dart(),
+            self.cover.into_into_dart().into_dart(),
+            self.online.into_into_dart().into_dart(),
+            self.rank_index.into_into_dart().into_dart(),
+            self.rank_score.into_into_dart().into_dart(),
+            self.roomid.into_into_dart().into_dart(),
+            self.attentions.into_into_dart().into_dart(),
+            self.cate_name.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchLiveItem
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchLiveItem>
+    for crate::api::search::SearchLiveItem
+{
+    fn into_into_dart(self) -> crate::api::search::SearchLiveItem {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchLiveResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.num_results.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchLiveResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchLiveResult>
+    for crate::api::search::SearchLiveResult
+{
+    fn into_into_dart(self) -> crate::api::search::SearchLiveResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchOwner {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.mid.into_into_dart().into_dart(),
+            self.name.into_into_dart().into_dart(),
+            self.face.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchOwner
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchOwner>
+    for crate::api::search::SearchOwner
+{
+    fn into_into_dart(self) -> crate::api::search::SearchOwner {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchPgcItem {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.item_type.into_into_dart().into_dart(),
+            self.media_id.into_into_dart().into_dart(),
+            self.title_spans.into_into_dart().into_dart(),
+            self.title.into_into_dart().into_dart(),
+            self.org_title.into_into_dart().into_dart(),
+            self.media_type.into_into_dart().into_dart(),
+            self.cv.into_into_dart().into_dart(),
+            self.staff.into_into_dart().into_dart(),
+            self.season_id.into_into_dart().into_dart(),
+            self.is_avid.into_into_dart().into_dart(),
+            self.hit_epids.into_into_dart().into_dart(),
+            self.season_type.into_into_dart().into_dart(),
+            self.season_type_name.into_into_dart().into_dart(),
+            self.url.into_into_dart().into_dart(),
+            self.button_text.into_into_dart().into_dart(),
+            self.is_follow.into_into_dart().into_dart(),
+            self.is_selection.into_into_dart().into_dart(),
+            self.cover.into_into_dart().into_dart(),
+            self.areas.into_into_dart().into_dart(),
+            self.styles.into_into_dart().into_dart(),
+            self.goto_url.into_into_dart().into_dart(),
+            self.desc.into_into_dart().into_dart(),
+            self.pubtime.into_into_dart().into_dart(),
+            self.media_mode.into_into_dart().into_dart(),
+            self.media_score.into_into_dart().into_dart(),
+            self.index_show.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchPgcItem
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchPgcItem>
+    for crate::api::search::SearchPgcItem
+{
+    fn into_into_dart(self) -> crate::api::search::SearchPgcItem {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchPgcResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.num_results.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchPgcResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchPgcResult>
+    for crate::api::search::SearchPgcResult
+{
+    fn into_into_dart(self) -> crate::api::search::SearchPgcResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchQuery {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.search_type.into_into_dart().into_dart(),
+            self.keyword.into_into_dart().into_dart(),
+            self.page.into_into_dart().into_dart(),
+            self.order.into_into_dart().into_dart(),
+            self.duration.into_into_dart().into_dart(),
+            self.tids.into_into_dart().into_dart(),
+            self.order_sort.into_into_dart().into_dart(),
+            self.user_type.into_into_dart().into_dart(),
+            self.category_id.into_into_dart().into_dart(),
+            self.pub_begin.into_into_dart().into_dart(),
+            self.pub_end.into_into_dart().into_dart(),
+            self.gaia_vtoken.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchQuery
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchQuery>
+    for crate::api::search::SearchQuery
+{
+    fn into_into_dart(self) -> crate::api::search::SearchQuery {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchStat {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.view.into_into_dart().into_dart(),
+            self.danmaku.into_into_dart().into_dart(),
+            self.favorite.into_into_dart().into_dart(),
+            self.reply.into_into_dart().into_dart(),
+            self.like.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchStat
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchStat>
+    for crate::api::search::SearchStat
+{
+    fn into_into_dart(self) -> crate::api::search::SearchStat {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::search_suggest::SearchSuggestParse {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -2940,6 +4507,208 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::search_suggest::SearchSuggest
     for crate::api::search_suggest::SearchSuggestParse
 {
     fn into_into_dart(self) -> crate::api::search_suggest::SearchSuggestParse {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchTrendingItem {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.keyword.into_into_dart().into_dart(),
+            self.show_name.into_into_dart().into_dart(),
+            self.icon.into_into_dart().into_dart(),
+            self.show_live_icon.into_into_dart().into_dart(),
+            self.recommend_reason.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchTrendingItem
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchTrendingItem>
+    for crate::api::search::SearchTrendingItem
+{
+    fn into_into_dart(self) -> crate::api::search::SearchTrendingItem {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchTrendingResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.num_results.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchTrendingResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchTrendingResult>
+    for crate::api::search::SearchTrendingResult
+{
+    fn into_into_dart(self) -> crate::api::search::SearchTrendingResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchUserCard {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.mid.into_into_dart().into_dart(),
+            self.uname.into_into_dart().into_dart(),
+            self.usign.into_into_dart().into_dart(),
+            self.fans.into_into_dart().into_dart(),
+            self.videos.into_into_dart().into_dart(),
+            self.upic.into_into_dart().into_dart(),
+            self.verify_info.into_into_dart().into_dart(),
+            self.level.into_into_dart().into_dart(),
+            self.gender.into_into_dart().into_dart(),
+            self.is_up_user.into_into_dart().into_dart(),
+            self.is_live.into_into_dart().into_dart(),
+            self.room_id.into_into_dart().into_dart(),
+            self.official_verify.into_into_dart().into_dart(),
+            self.is_senior_member.into_into_dart().into_dart(),
+            self.res.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchUserCard
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchUserCard>
+    for crate::api::search::SearchUserCard
+{
+    fn into_into_dart(self) -> crate::api::search::SearchUserCard {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchUserItem {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.item_type.into_into_dart().into_dart(),
+            self.mid.into_into_dart().into_dart(),
+            self.uname.into_into_dart().into_dart(),
+            self.usign.into_into_dart().into_dart(),
+            self.fans.into_into_dart().into_dart(),
+            self.videos.into_into_dart().into_dart(),
+            self.upic.into_into_dart().into_dart(),
+            self.face_nft.into_into_dart().into_dart(),
+            self.face_nft_type.into_into_dart().into_dart(),
+            self.verify_info.into_into_dart().into_dart(),
+            self.level.into_into_dart().into_dart(),
+            self.gender.into_into_dart().into_dart(),
+            self.is_up_user.into_into_dart().into_dart(),
+            self.is_live.into_into_dart().into_dart(),
+            self.room_id.into_into_dart().into_dart(),
+            self.official_verify.into_into_dart().into_dart(),
+            self.is_senior_member.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchUserItem
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchUserItem>
+    for crate::api::search::SearchUserItem
+{
+    fn into_into_dart(self) -> crate::api::search::SearchUserItem {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchUserResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.num_results.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchUserResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchUserResult>
+    for crate::api::search::SearchUserResult
+{
+    fn into_into_dart(self) -> crate::api::search::SearchUserResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchVideoItem {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.id.into_into_dart().into_dart(),
+            self.aid.into_into_dart().into_dart(),
+            self.bvid.into_into_dart().into_dart(),
+            self.arcurl.into_into_dart().into_dart(),
+            self.title_spans.into_into_dart().into_dart(),
+            self.title.into_into_dart().into_dart(),
+            self.description.into_into_dart().into_dart(),
+            self.pic.into_into_dart().into_dart(),
+            self.pubdate.into_into_dart().into_dart(),
+            self.senddate.into_into_dart().into_dart(),
+            self.duration_secs.into_into_dart().into_dart(),
+            self.owner.into_into_dart().into_dart(),
+            self.stat.into_into_dart().into_dart(),
+            self.item_type.into_into_dart().into_dart(),
+            self.roomid.into_into_dart().into_dart(),
+            self.is_union_video.into_into_dart().into_dart(),
+            self.tag.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchVideoItem
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchVideoItem>
+    for crate::api::search::SearchVideoItem
+{
+    fn into_into_dart(self) -> crate::api::search::SearchVideoItem {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::SearchVideoResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.num_results.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::search::SearchVideoResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchVideoResult>
+    for crate::api::search::SearchVideoResult
+{
+    fn into_into_dart(self) -> crate::api::search::SearchVideoResult {
         self
     }
 }
@@ -3127,6 +4896,24 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::subtitle::SubtitleConvert>
     for crate::api::subtitle::SubtitleConvert
 {
     fn into_into_dart(self) -> crate::api::subtitle::SubtitleConvert {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::search::TitleSpan {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.is_em.into_into_dart().into_dart(),
+            self.text.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::search::TitleSpan {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::search::TitleSpan>
+    for crate::api::search::TitleSpan
+{
+    fn into_into_dart(self) -> crate::api::search::TitleSpan {
         self
     }
 }
@@ -3556,12 +5343,102 @@ impl SseEncode for Vec<(String, String)> {
     }
 }
 
+impl SseEncode for Vec<crate::api::search::SearchActivityItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::search::SearchActivityItem>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::search::SearchArticleItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::search::SearchArticleItem>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::search::SearchLiveItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::search::SearchLiveItem>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::search::SearchPgcItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::search::SearchPgcItem>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::search::SearchTrendingItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::search::SearchTrendingItem>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::search::SearchUserCard> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::search::SearchUserCard>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::search::SearchUserItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::search::SearchUserItem>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::search::SearchVideoItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::search::SearchVideoItem>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::api::sponsor_block::SkipSegment> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <crate::api::sponsor_block::SkipSegment>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::search::TitleSpan> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::search::TitleSpan>::sse_encode(item, serializer);
         }
     }
 }
@@ -3576,12 +5453,38 @@ impl SseEncode for Vec<crate::api::media_select::VideoCandidateInput> {
     }
 }
 
+impl SseEncode for crate::api::search::MediaScore {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<f64>>::sse_encode(self.score, serializer);
+        <Option<i64>>::sse_encode(self.user_count, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::OfficialVerify {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.kind, serializer);
+        <Option<String>>::sse_encode(self.desc, serializer);
+    }
+}
+
 impl SseEncode for Option<String> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <bool>::sse_encode(self.is_some(), serializer);
         if let Some(value) = self {
             <String>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<bool> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <bool>::sse_encode(value, serializer);
         }
     }
 }
@@ -3602,6 +5505,26 @@ impl SseEncode for Option<i64> {
         <bool>::sse_encode(self.is_some(), serializer);
         if let Some(value) = self {
             <i64>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::search::MediaScore> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::search::MediaScore>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::search::OfficialVerify> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::search::OfficialVerify>::sse_encode(value, serializer);
         }
     }
 }
@@ -3632,6 +5555,16 @@ impl SseEncode for Option<crate::api::video_feed::PopularSeriesOne> {
         <bool>::sse_encode(self.is_some(), serializer);
         if let Some(value) = self {
             <crate::api::video_feed::PopularSeriesOne>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::search::SearchAllData> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::search::SearchAllData>::sse_encode(value, serializer);
         }
     }
 }
@@ -3722,6 +5655,66 @@ impl SseEncode for Option<Vec<i64>> {
         <bool>::sse_encode(self.is_some(), serializer);
         if let Some(value) = self {
             <Vec<i64>>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<Vec<crate::api::search::SearchArticleItem>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <Vec<crate::api::search::SearchArticleItem>>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<Vec<crate::api::search::SearchLiveItem>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <Vec<crate::api::search::SearchLiveItem>>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<Vec<crate::api::search::SearchPgcItem>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <Vec<crate::api::search::SearchPgcItem>>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<Vec<crate::api::search::SearchTrendingItem>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <Vec<crate::api::search::SearchTrendingItem>>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<Vec<crate::api::search::SearchUserItem>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <Vec<crate::api::search::SearchUserItem>>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<Vec<crate::api::search::SearchVideoItem>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <Vec<crate::api::search::SearchVideoItem>>::sse_encode(value, serializer);
         }
     }
 }
@@ -3848,12 +5841,321 @@ impl SseEncode for (String, String) {
     }
 }
 
+impl SseEncode for crate::api::search::SearchActivityItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.id, serializer);
+        <Option<String>>::sse_encode(self.title, serializer);
+        <Option<String>>::sse_encode(self.desc, serializer);
+        <Option<String>>::sse_encode(self.cover, serializer);
+        <Option<String>>::sse_encode(self.url, serializer);
+        <Option<i64>>::sse_encode(self.state, serializer);
+        <Option<i64>>::sse_encode(self.status, serializer);
+        <Option<String>>::sse_encode(self.author, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::SearchAllData {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.num_results, serializer);
+        <Vec<crate::api::search::SearchVideoItem>>::sse_encode(self.videos, serializer);
+        <Vec<crate::api::search::SearchUserCard>>::sse_encode(self.users, serializer);
+        <Vec<crate::api::search::SearchPgcItem>>::sse_encode(self.medias, serializer);
+        <Vec<crate::api::search::SearchActivityItem>>::sse_encode(self.activities, serializer);
+        <Option<String>>::sse_encode(self.esports_json, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::SearchAllResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<crate::api::search::SearchAllData>>::sse_encode(self.data, serializer);
+        <Option<i64>>::sse_encode(self.num_results, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::SearchArticleItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.pub_time, serializer);
+        <Option<i64>>::sse_encode(self.like, serializer);
+        <Vec<crate::api::search::TitleSpan>>::sse_encode(self.title_spans, serializer);
+        <String>::sse_encode(self.title, serializer);
+        <Option<i64>>::sse_encode(self.rank_offset, serializer);
+        <Option<i64>>::sse_encode(self.mid, serializer);
+        <Vec<String>>::sse_encode(self.image_urls, serializer);
+        <Option<i64>>::sse_encode(self.id, serializer);
+        <Option<i64>>::sse_encode(self.category_id, serializer);
+        <Option<i64>>::sse_encode(self.view, serializer);
+        <Option<i64>>::sse_encode(self.reply, serializer);
+        <Option<String>>::sse_encode(self.desc, serializer);
+        <Option<i64>>::sse_encode(self.rank_score, serializer);
+        <Option<String>>::sse_encode(self.item_type, serializer);
+        <Option<i64>>::sse_encode(self.template_id, serializer);
+        <Option<String>>::sse_encode(self.category_name, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::SearchArticleResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<Vec<crate::api::search::SearchArticleItem>>>::sse_encode(self.data, serializer);
+        <Option<i64>>::sse_encode(self.num_results, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::SearchContext {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.base_url, serializer);
+        <Option<String>>::sse_encode(self.cookie, serializer);
+        <Vec<(String, String)>>::sse_encode(self.headers, serializer);
+        <String>::sse_encode(self.mixin_key, serializer);
+        <i64>::sse_encode(self.wts, serializer);
+        <u64>::sse_encode(self.timeout_ms, serializer);
+        <crate::api::transport::TransportSettings>::sse_encode(self.transport, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::SearchLiveItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.rank_offset, serializer);
+        <Option<i64>>::sse_encode(self.uid, serializer);
+        <Option<String>>::sse_encode(self.tags, serializer);
+        <Option<String>>::sse_encode(self.live_time, serializer);
+        <Option<String>>::sse_encode(self.uname, serializer);
+        <Option<String>>::sse_encode(self.uface, serializer);
+        <Option<String>>::sse_encode(self.user_cover, serializer);
+        <Option<String>>::sse_encode(self.item_type, serializer);
+        <Vec<crate::api::search::TitleSpan>>::sse_encode(self.title_spans, serializer);
+        <String>::sse_encode(self.title, serializer);
+        <Option<String>>::sse_encode(self.cover, serializer);
+        <Option<i64>>::sse_encode(self.online, serializer);
+        <Option<i64>>::sse_encode(self.rank_index, serializer);
+        <Option<i64>>::sse_encode(self.rank_score, serializer);
+        <Option<i64>>::sse_encode(self.roomid, serializer);
+        <Option<i64>>::sse_encode(self.attentions, serializer);
+        <Option<String>>::sse_encode(self.cate_name, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::SearchLiveResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<Vec<crate::api::search::SearchLiveItem>>>::sse_encode(self.data, serializer);
+        <Option<i64>>::sse_encode(self.num_results, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::SearchOwner {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.mid, serializer);
+        <Option<String>>::sse_encode(self.name, serializer);
+        <Option<String>>::sse_encode(self.face, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::SearchPgcItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<String>>::sse_encode(self.item_type, serializer);
+        <Option<i64>>::sse_encode(self.media_id, serializer);
+        <Vec<crate::api::search::TitleSpan>>::sse_encode(self.title_spans, serializer);
+        <String>::sse_encode(self.title, serializer);
+        <Option<String>>::sse_encode(self.org_title, serializer);
+        <Option<i64>>::sse_encode(self.media_type, serializer);
+        <Option<String>>::sse_encode(self.cv, serializer);
+        <Option<String>>::sse_encode(self.staff, serializer);
+        <Option<i64>>::sse_encode(self.season_id, serializer);
+        <Option<bool>>::sse_encode(self.is_avid, serializer);
+        <Option<String>>::sse_encode(self.hit_epids, serializer);
+        <Option<i64>>::sse_encode(self.season_type, serializer);
+        <Option<String>>::sse_encode(self.season_type_name, serializer);
+        <Option<String>>::sse_encode(self.url, serializer);
+        <Option<String>>::sse_encode(self.button_text, serializer);
+        <Option<i64>>::sse_encode(self.is_follow, serializer);
+        <Option<i64>>::sse_encode(self.is_selection, serializer);
+        <Option<String>>::sse_encode(self.cover, serializer);
+        <Option<String>>::sse_encode(self.areas, serializer);
+        <Option<String>>::sse_encode(self.styles, serializer);
+        <Option<String>>::sse_encode(self.goto_url, serializer);
+        <Option<String>>::sse_encode(self.desc, serializer);
+        <Option<i64>>::sse_encode(self.pubtime, serializer);
+        <Option<i64>>::sse_encode(self.media_mode, serializer);
+        <Option<crate::api::search::MediaScore>>::sse_encode(self.media_score, serializer);
+        <Option<String>>::sse_encode(self.index_show, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::SearchPgcResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<Vec<crate::api::search::SearchPgcItem>>>::sse_encode(self.data, serializer);
+        <Option<i64>>::sse_encode(self.num_results, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::SearchQuery {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.search_type, serializer);
+        <String>::sse_encode(self.keyword, serializer);
+        <i64>::sse_encode(self.page, serializer);
+        <Option<String>>::sse_encode(self.order, serializer);
+        <Option<i64>>::sse_encode(self.duration, serializer);
+        <Option<i64>>::sse_encode(self.tids, serializer);
+        <Option<i64>>::sse_encode(self.order_sort, serializer);
+        <Option<i64>>::sse_encode(self.user_type, serializer);
+        <Option<i64>>::sse_encode(self.category_id, serializer);
+        <Option<i64>>::sse_encode(self.pub_begin, serializer);
+        <Option<i64>>::sse_encode(self.pub_end, serializer);
+        <Option<String>>::sse_encode(self.gaia_vtoken, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::SearchStat {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.view, serializer);
+        <Option<i64>>::sse_encode(self.danmaku, serializer);
+        <Option<i64>>::sse_encode(self.favorite, serializer);
+        <Option<i64>>::sse_encode(self.reply, serializer);
+        <Option<i64>>::sse_encode(self.like, serializer);
+    }
+}
+
 impl SseEncode for crate::api::search_suggest::SearchSuggestParse {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <Option<String>>::sse_encode(self.json, serializer);
         <Option<String>>::sse_encode(self.error_kind, serializer);
         <Option<String>>::sse_encode(self.error_detail, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::SearchTrendingItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.keyword, serializer);
+        <String>::sse_encode(self.show_name, serializer);
+        <Option<String>>::sse_encode(self.icon, serializer);
+        <Option<bool>>::sse_encode(self.show_live_icon, serializer);
+        <Option<String>>::sse_encode(self.recommend_reason, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::SearchTrendingResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<Vec<crate::api::search::SearchTrendingItem>>>::sse_encode(self.data, serializer);
+        <Option<i64>>::sse_encode(self.num_results, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::SearchUserCard {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.mid, serializer);
+        <Option<String>>::sse_encode(self.uname, serializer);
+        <Option<String>>::sse_encode(self.usign, serializer);
+        <Option<i64>>::sse_encode(self.fans, serializer);
+        <Option<i64>>::sse_encode(self.videos, serializer);
+        <Option<String>>::sse_encode(self.upic, serializer);
+        <Option<String>>::sse_encode(self.verify_info, serializer);
+        <Option<i64>>::sse_encode(self.level, serializer);
+        <Option<i64>>::sse_encode(self.gender, serializer);
+        <Option<i64>>::sse_encode(self.is_up_user, serializer);
+        <Option<i64>>::sse_encode(self.is_live, serializer);
+        <Option<i64>>::sse_encode(self.room_id, serializer);
+        <Option<crate::api::search::OfficialVerify>>::sse_encode(self.official_verify, serializer);
+        <Option<i64>>::sse_encode(self.is_senior_member, serializer);
+        <Vec<crate::api::search::SearchVideoItem>>::sse_encode(self.res, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::SearchUserItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<String>>::sse_encode(self.item_type, serializer);
+        <Option<i64>>::sse_encode(self.mid, serializer);
+        <Option<String>>::sse_encode(self.uname, serializer);
+        <Option<String>>::sse_encode(self.usign, serializer);
+        <Option<i64>>::sse_encode(self.fans, serializer);
+        <Option<i64>>::sse_encode(self.videos, serializer);
+        <Option<String>>::sse_encode(self.upic, serializer);
+        <Option<i64>>::sse_encode(self.face_nft, serializer);
+        <Option<i64>>::sse_encode(self.face_nft_type, serializer);
+        <Option<String>>::sse_encode(self.verify_info, serializer);
+        <Option<i64>>::sse_encode(self.level, serializer);
+        <Option<i64>>::sse_encode(self.gender, serializer);
+        <Option<i64>>::sse_encode(self.is_up_user, serializer);
+        <Option<i64>>::sse_encode(self.is_live, serializer);
+        <Option<i64>>::sse_encode(self.room_id, serializer);
+        <Option<crate::api::search::OfficialVerify>>::sse_encode(self.official_verify, serializer);
+        <Option<i64>>::sse_encode(self.is_senior_member, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::SearchUserResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<Vec<crate::api::search::SearchUserItem>>>::sse_encode(self.data, serializer);
+        <Option<i64>>::sse_encode(self.num_results, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::SearchVideoItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.id, serializer);
+        <Option<i64>>::sse_encode(self.aid, serializer);
+        <Option<String>>::sse_encode(self.bvid, serializer);
+        <Option<String>>::sse_encode(self.arcurl, serializer);
+        <Vec<crate::api::search::TitleSpan>>::sse_encode(self.title_spans, serializer);
+        <String>::sse_encode(self.title, serializer);
+        <Option<String>>::sse_encode(self.description, serializer);
+        <Option<String>>::sse_encode(self.pic, serializer);
+        <Option<i64>>::sse_encode(self.pubdate, serializer);
+        <Option<i64>>::sse_encode(self.senddate, serializer);
+        <i64>::sse_encode(self.duration_secs, serializer);
+        <crate::api::search::SearchOwner>::sse_encode(self.owner, serializer);
+        <crate::api::search::SearchStat>::sse_encode(self.stat, serializer);
+        <Option<String>>::sse_encode(self.item_type, serializer);
+        <Option<i64>>::sse_encode(self.roomid, serializer);
+        <Option<i64>>::sse_encode(self.is_union_video, serializer);
+        <Option<String>>::sse_encode(self.tag, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::SearchVideoResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<Vec<crate::api::search::SearchVideoItem>>>::sse_encode(self.data, serializer);
+        <Option<i64>>::sse_encode(self.num_results, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
     }
 }
 
@@ -3937,6 +6239,14 @@ impl SseEncode for crate::api::subtitle::SubtitleConvert {
         <bool>::sse_encode(self.missing_body, serializer);
         <Option<String>>::sse_encode(self.error_kind, serializer);
         <Option<String>>::sse_encode(self.error_detail, serializer);
+    }
+}
+
+impl SseEncode for crate::api::search::TitleSpan {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_em, serializer);
+        <String>::sse_encode(self.text, serializer);
     }
 }
 

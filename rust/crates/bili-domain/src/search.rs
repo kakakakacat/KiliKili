@@ -183,7 +183,7 @@ pub struct SearchLiveItem {
 
 // ---------------------------------------------------------------- 番剧结果
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct SearchPgcItem {
     pub item_type: Option<String>,
     pub media_id: Option<i64>,
@@ -209,10 +209,20 @@ pub struct SearchPgcItem {
     pub desc: Option<String>,
     pub pubtime: Option<i64>,
     pub media_mode: Option<i64>,
-    /// 评分。接口给的是 `{"score":9.7,"user_count":123}`，形状不稳定，
-    /// 基线原样存成 `Map` 交给 UI。这里保持同样的不解释，给成 JSON 串。
-    pub media_score_json: Option<String>,
+    /// 评分。
+    ///
+    /// 基线把它原样存成 `Map` 交给 UI（`item.mediaScore?['score']`）。
+    /// 这里解成结构：形状是稳定的两个字段，而留成 JSON 串就等于把解析
+    /// 推回 Dart，正是本次迁移要去掉的东西。
+    pub media_score: Option<MediaScore>,
     pub index_show: Option<String>,
+}
+
+/// 番剧评分。
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct MediaScore {
+    pub score: Option<f64>,
+    pub user_count: Option<i64>,
 }
 
 // ---------------------------------------------------------------- 专栏结果
@@ -256,7 +266,7 @@ pub struct SearchActivityItem {
 }
 
 /// 综合搜索的结果。各分区互不依赖，缺哪块就是空。
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Default)]
+#[derive(Debug, Clone, PartialEq, Serialize, Default)]
 pub struct SearchAllResult {
     pub num_results: Option<i64>,
     pub videos: Vec<SearchVideoItem>,

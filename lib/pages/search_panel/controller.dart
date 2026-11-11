@@ -1,7 +1,7 @@
 import 'dart:async' show StreamSubscription, Timer;
 
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/search.dart';
+import 'package:kilikili/services/rust/rust_search.dart';
 import 'package:kilikili/models/common/search/article_search_type.dart';
 import 'package:kilikili/models/common/search/search_type.dart';
 import 'package:kilikili/models/common/search/user_search_type.dart';
@@ -102,7 +102,7 @@ class SearchPanelController<R extends SearchNumData<T>, T>
   }
 
   @override
-  Future<LoadingState<R>> customGetData() => SearchHttp.searchByType<R>(
+  Future<LoadingState<R>> customGetData() => RustSearch.searchByType<R>(
     searchType: searchType_,
     keyword: keyword,
     page: page,
@@ -115,9 +115,14 @@ class SearchPanelController<R extends SearchNumData<T>, T>
     pubBegin: pubBegin,
     pubEnd: pubEnd,
     gaiaVtoken: gaiaVtoken,
-    onSuccess: _onSuccess,
   );
 
+  // 风控校验通过后的重查流程。**基线里就没有被调用过**：唯一的调用点是
+  // `lib/http/search.dart` 里那句注释掉的 `RequestUtils.validate(vVoucher,
+  // onSuccess)`。S9 迁移时保留原样——它是给风控验证流程预留的位置，不是
+  // 本切片该顺手删掉或实现的东西。Rust 侧已经支持传 gaia_vtoken，等验证
+  // 流程接上就能用。
+  // ignore: unused_element
   void _onSuccess(String gaiaVtoken) {
     this.gaiaVtoken = gaiaVtoken;
     SmartDialog.showLoading(onDismiss: _stopTimer);

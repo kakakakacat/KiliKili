@@ -38,7 +38,10 @@
       "item_type": "media_bangumi",
       "media_id": 800000001,
       "media_mode": 2,
-      "media_score_json": "{\"score\":9.7,\"user_count\":123456}",
+      "media_score": {
+        "score": 9.7,
+        "user_count": 123456
+      },
       "media_type": 1,
       "org_title": "Example Bangumi",
       "pubtime": 1600000000,
@@ -79,7 +82,7 @@
       "item_type": "media_ft",
       "media_id": 800000002,
       "media_mode": null,
-      "media_score_json": null,
+      "media_score": null,
       "media_type": 2,
       "org_title": null,
       "pubtime": 1610000000,

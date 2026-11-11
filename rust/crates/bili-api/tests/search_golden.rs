@@ -75,7 +75,10 @@ fn video_search_matches_the_frozen_snapshot() {
 #[test]
 fn combined_search_matches_the_frozen_snapshot() {
     let parsed = bili_api::search::parse_all(&raw("search_all.raw.json")).expect("应解析成功");
-    assert_snapshot("search_all", &serde_json::to_value(&parsed).expect("可序列化"));
+    assert_snapshot(
+        "search_all",
+        &serde_json::to_value(&parsed).expect("可序列化"),
+    );
 }
 
 #[test]
@@ -112,8 +115,8 @@ fn article_search_matches_the_frozen_snapshot() {
 #[test]
 fn trending_matches_the_frozen_snapshot() {
     // needs_top=true：热搜榜页用的是这一支，置顶项要拼进列表。
-    let parsed =
-        bili_api::search::parse_trending(&raw("search_trending.raw.json"), true).expect("应解析成功");
+    let parsed = bili_api::search::parse_trending(&raw("search_trending.raw.json"), true)
+        .expect("应解析成功");
     assert_snapshot(
         "search_trending",
         &serde_json::to_value(&parsed).expect("可序列化"),

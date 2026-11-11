@@ -37,9 +37,9 @@
 
 use bili_domain::error::{DomainError, ErrorKind};
 use bili_domain::search::{
-    OfficialVerify, SearchActivityItem, SearchAllResult, SearchArticleItem, SearchLiveItem,
-    SearchOwner, SearchPgcItem, SearchStat, SearchTrending, SearchTrendingItem, SearchUserCard,
-    SearchUserItem, SearchVideoItem,
+    MediaScore, OfficialVerify, SearchActivityItem, SearchAllResult, SearchArticleItem,
+    SearchLiveItem, SearchOwner, SearchPgcItem, SearchStat, SearchTrending, SearchTrendingItem,
+    SearchUserCard, SearchUserItem, SearchVideoItem,
 };
 use serde_json::Value;
 
@@ -557,10 +557,7 @@ fn pgc_item(value: &Value) -> Option<SearchPgcItem> {
         desc: str_field(value, "desc"),
         pubtime: i64_field(value, "pubtime"),
         media_mode: i64_field(value, "media_mode"),
-        media_score_json: value
-            .get("media_score")
-            .filter(|v| !v.is_null())
-            .and_then(|v| serde_json::to_string(v).ok()),
+        media_score: media_score(value.get("media_score")),
         index_show: str_field(value, "index_show"),
     })
 }
@@ -607,6 +604,14 @@ fn activity_item(value: &Value) -> Option<SearchActivityItem> {
         state: i64_field(value, "state"),
         status: i64_field(value, "status"),
         author: str_field(value, "author"),
+    })
+}
+
+fn media_score(value: Option<&Value>) -> Option<MediaScore> {
+    let value = value.filter(|v| !v.is_null())?;
+    Some(MediaScore {
+        score: value.get("score").and_then(Value::as_f64),
+        user_count: value.get("user_count").and_then(Value::as_i64),
     })
 }
 
@@ -762,9 +767,8 @@ mod tests {
 
     #[test]
     fn trending_prepends_the_top_list_and_counts_it() {
-        let body = envelope(
-            r#"{"list":[{"keyword":"b"},{"keyword":"c"}],"top_list":[{"keyword":"a"}]}"#,
-        );
+        let body =
+            envelope(r#"{"list":[{"keyword":"b"},{"keyword":"c"}],"top_list":[{"keyword":"a"}]}"#);
         let top = parse_trending(&body, true).expect("应当解析成功");
         assert_eq!(top.top_count, 1);
         let words: Vec<&str> = top.list.iter().map(|i| i.keyword.as_str()).collect();

@@ -528,12 +528,18 @@ mod tests {
 
     #[test]
     fn akamai_selects_its_signed_backup_byte_for_byte() {
-        assert_eq!(pick_cdn_url(&v(&[COSOV, AKAMAI]), AKAMAI_SVC, false, false), AKAMAI);
+        assert_eq!(
+            pick_cdn_url(&v(&[COSOV, AKAMAI]), AKAMAI_SVC, false, false),
+            AKAMAI
+        );
     }
 
     #[test]
     fn akamai_keeps_a_signed_primary_url() {
-        assert_eq!(pick_cdn_url(&v(&[AKAMAI, COSOV]), AKAMAI_SVC, false, false), AKAMAI);
+        assert_eq!(
+            pick_cdn_url(&v(&[AKAMAI, COSOV]), AKAMAI_SVC, false, false),
+            AKAMAI
+        );
     }
 
     #[test]
@@ -547,29 +553,51 @@ mod tests {
     #[test]
     fn missing_akamai_backup_preserves_the_original_primary() {
         assert_eq!(pick_cdn_url(&v(&[COSOV]), AKAMAI_SVC, false, false), COSOV);
-        assert_eq!(pick_cdn_url(&v(&[MCDN, COSOV]), AKAMAI_SVC, false, false), MCDN);
+        assert_eq!(
+            pick_cdn_url(&v(&[MCDN, COSOV]), AKAMAI_SVC, false, false),
+            MCDN
+        );
     }
 
     #[test]
     fn akamai_selects_the_signed_audio_backup_too() {
-        assert_eq!(pick_cdn_url(&v(&[COSOV, AKAMAI]), AKAMAI_SVC, true, false), AKAMAI);
+        assert_eq!(
+            pick_cdn_url(&v(&[COSOV, AKAMAI]), AKAMAI_SVC, true, false),
+            AKAMAI
+        );
     }
 
     #[test]
     fn disabled_audio_cdn_keeps_the_original_audio_mirror() {
         // 音频保持原样，视频不受这个开关影响
-        assert_eq!(pick_cdn_url(&v(&[COSOV, AKAMAI]), AKAMAI_SVC, true, true), COSOV);
-        assert_eq!(pick_cdn_url(&v(&[COSOV, AKAMAI]), AKAMAI_SVC, false, true), AKAMAI);
+        assert_eq!(
+            pick_cdn_url(&v(&[COSOV, AKAMAI]), AKAMAI_SVC, true, true),
+            COSOV
+        );
+        assert_eq!(
+            pick_cdn_url(&v(&[COSOV, AKAMAI]), AKAMAI_SVC, false, true),
+            AKAMAI
+        );
     }
 
     #[test]
     fn base_and_backup_selection_retain_their_behavior() {
         assert_eq!(
-            pick_cdn_url(&v(&[MCDN, COSOV, AKAMAI]), CdnService::BaseUrl, false, false),
+            pick_cdn_url(
+                &v(&[MCDN, COSOV, AKAMAI]),
+                CdnService::BaseUrl,
+                false,
+                false
+            ),
             MCDN
         );
         assert_eq!(
-            pick_cdn_url(&v(&[MCDN, COSOV, AKAMAI]), CdnService::BackupUrl, false, false),
+            pick_cdn_url(
+                &v(&[MCDN, COSOV, AKAMAI]),
+                CdnService::BackupUrl,
+                false,
+                false
+            ),
             COSOV
         );
     }

@@ -5,7 +5,7 @@ Status: **Accepted（2026-11-11 仓库所有者确认，决策四选 A：迁移�
 Date: 2026-11-11
 Related: RFC-0001 §2.2 / §5.3、ADR-008、ADR-010、issue #48、issue #64、EPIC #67
 落地证据：S13 #64、S9 #59、S3 #53、S1 #51、S15 #66、S10 #73 #83、
-S11a #76 及第二批（文末按切片追加补充）
+S11a #76 #86 及第三批（文末按切片追加补充）
 
 ## 背景
 
@@ -330,3 +330,44 @@ S11a 第二批要迁的 `LiveQuality` 是 `BaseQuality` 的子类，与
 `desc: None`，由 `live_playurl_compat.dart` 查静态表补齐。**这条分界线
 本身要被测试覆盖**——parity 测试比的是「Rust + 适配层」的整体输出与基线
 `LiveQuality.fromFormat` 的结果，拆开比任何一半都证明不了迁移没改行为。
+
+### 补充十一：先问「这条接口是不是真的只读」，别信名字
+
+S11a 第三批清点 `lib/http/live.dart` 剩余只读时，`liveShieldUser` 差点
+被当成「查询屏蔽用户列表」迁走。它实际是**写操作**：`type: 1` 添加屏蔽
+用户、`type: 0` 移除，返回值只是新增那条的回显；请求是 POST、带 `csrf`
+与 `csrf_token`。调用点（`live_dm_block/controller.dart` 的 `onAdd` /
+`onRemove`）一看就清楚，函数名与返回类型都不清楚。
+
+**判据**：认领只读切片时，对每条接口确认三件事再决定——HTTP 方法、是否
+带 `csrf`、**调用点拿返回值做什么**。只看函数签名会把「写完回显」误判成
+查询，而写操作归 ADR-013（#50），误迁进只读切片等于绕开那份还没落地的
+幂等/重试约定。
+
+反过来的一条：`getInfoByUser`（读屏蔽设置）确实是只读，于是读走了 Rust、
+写留在 Dart。此时**让写操作直接构造 FRB 的 Dart 类**（见补充七），读写
+共用 `LiveShieldUser` 一个类型，不必为写路径另留一个等价的 Dart 模型。
+
+### 补充十二：共享实体的生产者，要连「非 REST 的那些」一起数
+
+补充八说「认领切片前数一下共享模型的生产者」。S11a 第三批补上一句：
+**生产者不一定都在 `lib/http/*.dart` 里**。
+
+`SuperChatItem` 的两个生产者，一个是 REST 的 `superChatMsg`，另一个是
+WebSocket 推送 —— `live_room/controller.dart` 的
+`case 'SUPER_CHAT_MESSAGE'` 直接调 `SuperChatItem.fromJson`。只搜
+`lib/http/` 会漏掉后者，把它当成单生产者迁走，结果是模型一行都删不掉、
+还多一个适配层。同样地 `UinfoMedal` 的四个生产者里有两个（SuperChat、
+弹幕消息）在长连接那条路径上。
+
+**判据**：数生产者要搜 `XxxModel.fromJson` 的**全部**调用点，而不是
+`lib/http/` 里的接口清单。长连接、本地缓存反序列化、测试夹具都算。
+
+`SuperChatItem` 另有两个与生产者无关的障碍，也值得作为判据记下来：
+
+- `expired` / `deleted` 是**可变的客户端状态**（`removeWhere((e) =>
+  e.expired)`），而 FRB 结构不可变——这是补充七说过的那类问题；
+- `fromJson` 里读 `GlobalData().showMedal`，**解析依赖全局设置**。这种
+  模型即便生产者单一也不该直接迁：协议解析应当是纯函数，客户端偏好要
+  留在调用点，否则同一份响应在不同设置下解析出不同结构，golden 快照会
+  变得不可复现。

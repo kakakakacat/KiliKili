@@ -5,6 +5,8 @@ import 'package:kilikili/grpc/grpc_req.dart';
 import 'package:kilikili/grpc/url.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models_new/video/video_play_info/subtitle.dart';
+import 'package:kilikili/services/rust/rust_dm_view.dart';
+import 'package:kilikili/services/rust/rust_flags.dart';
 import 'package:fixnum/fixnum.dart';
 
 abstract final class DmGrpc {
@@ -51,6 +53,44 @@ abstract final class DmGrpc {
       DmViewReq(pid: Int64(aid), oid: Int64(cid), type: 1),
       DmViewReply.fromBuffer,
     );
+  }
+
+  /// 取 `DmView` 并直接给出字幕轨，开关开启时由 Rust 解析。
+  ///
+  /// 调用方不必关心走的是哪条路径：两条路径产出同一组 `Subtitle`，顺序
+  /// 也相同（Rust 侧按基线的 `compareTo` 排过）。Rust 解析失败时用**同一
+  /// 份字节**走基线解码，不重新请求。
+  ///
+  /// 返回空列表与基线返回 null 等价——调用方本来就只在 `isNotEmpty` 时
+  /// 使用结果。
+  static Future<LoadingState<List<Subtitle>>> dmViewSubtitles(
+    int aid,
+    int cid,
+  ) async {
+    if (!RustFlags.rustDmViewSubtitle) {
+      final res = await dmView(aid, cid);
+      if (res case Success(:final response)) {
+        return Success(dmViewToSubtitle(response) ?? const []);
+      }
+      return res as LoadingState<List<Subtitle>>;
+    }
+
+    final raw = await GrpcReq.requestRaw(
+      GrpcUrl.dmView,
+      DmViewReq(pid: Int64(aid), oid: Int64(cid), type: 1),
+    );
+    if (raw case Success(:final response)) {
+      final parsed = await RustDmView.parseSubtitles(response);
+      if (parsed != null) return Success(parsed);
+      try {
+        return Success(
+          dmViewToSubtitle(DmViewReply.fromBuffer(response)) ?? const [],
+        );
+      } catch (e) {
+        return Error(e.toString());
+      }
+    }
+    return raw as LoadingState<List<Subtitle>>;
   }
 
   static List<Subtitle>? dmViewToSubtitle(DmViewReply? dmView) {

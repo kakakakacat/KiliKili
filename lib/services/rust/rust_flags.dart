@@ -96,6 +96,23 @@ abstract final class RustFlags {
   static Future<void> setRustSearchSuggest(bool value) =>
       _box.put(rustSearchSuggestKey, value);
 
+  /// `DmView` 的字幕轨由 Rust 解析。请求仍由现有 Dart 路径发出。
+  ///
+  /// 默认关闭；解析失败会回退到 `DmGrpc.dmViewToSubtitle`。与弹幕引擎
+  /// 不同，这条路径无状态、一次调用结束，失败只影响本次取字幕。
+  static const String rustDmViewSubtitleKey = 'rust.parse.dmViewSubtitle';
+
+  static bool get rustDmViewSubtitle =>
+      RustCore.isReady &&
+      (_box.get(
+            rustDmViewSubtitleKey,
+            defaultValue: _defaultOn(rustDmViewSubtitleKey),
+          )
+          as bool);
+
+  static Future<void> setRustDmViewSubtitle(bool value) =>
+      _box.put(rustDmViewSubtitleKey, value);
+
   /// 弹幕引擎走 Rust：分段解码、标记自己、合并、过滤、分桶都在 Rust，
   /// Dart 只按播放进度取**一桶**（100ms）。
   ///
@@ -138,6 +155,9 @@ abstract final class RustFlags {
       'rust.parse.searchSuggest',
     ),
     rustDanmakuEngineKey => const bool.fromEnvironment('rust.engine.danmaku'),
+    rustDmViewSubtitleKey => const bool.fromEnvironment(
+      'rust.parse.dmViewSubtitle',
+    ),
     _ => false,
   };
 }

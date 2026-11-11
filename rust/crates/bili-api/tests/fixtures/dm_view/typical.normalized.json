@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1183516938024452354,
+    "lan": "zh-CN",
+    "lan_doc": "中文（中国）",
+    "subtitle_url": "//s1.example.invalid/zh-CN.json",
+    "subtitle_type": 0,
+    "is_ai": false
+  },
+  {
+    "id": 1183516938024452353,
+    "lan": "ai-zh",
+    "lan_doc": "中文（自动翻译）",
+    "subtitle_url": "//aisubtitle.example.invalid/ai-zh.json",
+    "subtitle_type": 1,
+    "is_ai": true
+  },
+  {
+    "id": 1183516938024452352,
+    "lan": "en-US",
+    "lan_doc": "English",
+    "subtitle_url": "//aisubtitle.example.invalid/en.json",
+    "subtitle_type": 0,
+    "is_ai": false
+  }
+]

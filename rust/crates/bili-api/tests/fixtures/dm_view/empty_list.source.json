@@ -1,0 +1,9 @@
+{
+  "comment": "subtitle 字段在、列表为空。基线的 hasSubtitle() 为真但 subtitles.isNotEmpty 为假，仍然返回 null。",
+  "closed": false,
+  "subtitle": {
+    "lan": "",
+    "lan_doc": "",
+    "subtitles": []
+  }
+}

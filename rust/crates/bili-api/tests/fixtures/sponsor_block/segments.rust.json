@@ -1,0 +1,52 @@
+[
+  {
+    "action_type": "skip",
+    "category": "sponsor",
+    "cid": "1000001",
+    "end_ms": 78900,
+    "start_ms": 12346,
+    "uuid": "00000000000000000000000000000000000000000001",
+    "video_duration_ms": 600500.0,
+    "votes": 3
+  },
+  {
+    "action_type": "mute",
+    "category": "selfpromo",
+    "cid": "1000001",
+    "end_ms": 135004,
+    "start_ms": 120000,
+    "uuid": "00000000000000000000000000000000000000000002",
+    "video_duration_ms": 600500.0,
+    "votes": 0
+  },
+  {
+    "action_type": "full",
+    "category": "exclusive_access",
+    "cid": "1000001",
+    "end_ms": 0,
+    "start_ms": 0,
+    "uuid": "00000000000000000000000000000000000000000003",
+    "video_duration_ms": 600500.0,
+    "votes": 12
+  },
+  {
+    "action_type": "poi",
+    "category": "poi_highlight",
+    "cid": "1000001",
+    "end_ms": 301750,
+    "start_ms": 301750,
+    "uuid": "00000000000000000000000000000000000000000004",
+    "video_duration_ms": 0.0,
+    "votes": 1
+  },
+  {
+    "action_type": null,
+    "category": "music_offtopic",
+    "cid": null,
+    "end_ms": 455900,
+    "start_ms": 400100,
+    "uuid": "00000000000000000000000000000000000000000005",
+    "video_duration_ms": null,
+    "votes": -1
+  }
+]

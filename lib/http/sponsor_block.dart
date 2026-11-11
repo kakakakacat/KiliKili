@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:kilikili/build_config.dart';
 import 'package:kilikili/common/constants.dart';
 import 'package:kilikili/http/init.dart';
@@ -8,13 +6,16 @@ import 'package:kilikili/http/sponsor_block_api.dart';
 import 'package:kilikili/models/common/sponsor_block/post_segment_model.dart';
 import 'package:kilikili/models/common/sponsor_block/segment_type.dart';
 import 'package:kilikili/models_new/sponsor_block/segment_item.dart';
-import 'package:kilikili/models_new/sponsor_block/user_info.dart';
 import 'package:kilikili/utils/storage_pref.dart';
-import 'package:kilikili/utils/utils.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 
 /// https://github.com/hanydd/BilibiliSponsorBlock/wiki/API
+///
+/// **只剩写接口**。四个只读接口（skipSegments / userInfo / status.uptime /
+/// portVideo）已迁到 Rust，见 `lib/services/rust/rust_sponsor_block.dart`
+/// 与 issue #64。写接口要等 ADR-013（#50）定下幂等与重试策略，因为
+/// Rust 侧的 `HttpTransport` 目前只有 GET，而写操作降级意味着可能重复提交。
 abstract final class SponsorBlock {
   static String get blockServer => Pref.blockServer;
   static final options = Options(
@@ -53,27 +54,6 @@ abstract final class SponsorBlock {
 
   static String _api(String url) => '$blockServer/api/$url';
 
-  static Future<LoadingState<List<SegmentItemModel>>> getSkipSegments({
-    required String bvid,
-    required int cid,
-  }) async {
-    final res = await Request().get(
-      _api(SponsorBlockApi.skipSegments),
-      queryParameters: {
-        'videoID': bvid,
-        'cid': cid,
-      },
-      options: options,
-    );
-
-    if (res.statusCode == 200) {
-      if (res.data case final List list) {
-        return Success(list.map((i) => SegmentItemModel.fromJson(i)).toList());
-      }
-    }
-    return getErrMsg(res);
-  }
-
   static Future<LoadingState<void>> voteOnSponsorTime({
     required String uuid,
     int? type,
@@ -100,37 +80,6 @@ abstract final class SponsorBlock {
       options: options,
     );
     return res.statusCode == 200 ? const Success(null) : getErrMsg(res);
-  }
-
-  static Future<LoadingState<void>> uptimeStatus() async {
-    final res = await Request().get(
-      _api(SponsorBlockApi.uptimeStatus),
-      options: options,
-    );
-    if (res.statusCode == 200 &&
-        res.data is String &&
-        Utils.isStringNumeric(res.data)) {
-      return const Success(null);
-    }
-    return getErrMsg(res);
-  }
-
-  static Future<LoadingState<UserInfo>> userInfo(
-    List<String> query, {
-    String? userId,
-  }) async {
-    final res = await Request().get(
-      _api(SponsorBlockApi.userInfo),
-      queryParameters: {
-        'userID': userId ?? Pref.blockUserID,
-        'values': jsonEncode(query),
-      },
-      options: options,
-    );
-    if (res.statusCode == 200) {
-      return Success(UserInfo.fromJson(res.data));
-    }
-    return getErrMsg(res);
   }
 
   static Future<LoadingState<List<SegmentItemModel>>> postSkipSegments({
@@ -165,38 +114,6 @@ abstract final class SponsorBlock {
     if (res.statusCode == 200) {
       if (res.data case final List list) {
         return Success(list.map((i) => SegmentItemModel.fromJson(i)).toList());
-      }
-    }
-    return getErrMsg(res);
-  }
-
-  /// {
-  ///   "bvID": string,     // B站视频BVID
-  ///   "cid": string,      // 视频CID
-  ///   "ytbID": string,    // YouTube视频ID
-  ///   "UUID": string,     // 绑定记录的UUID（不是视频中片段的UUID，是绑定记录本身的UUID）
-  ///   "votes": int,       // 绑定记录的投票数
-  ///   "locked": int,      // 绑定记录是否锁定
-  /// }
-  /// TODO: show port video info dialog
-  static Future<LoadingState<String>> getPortVideo({
-    required String bvid,
-    required int cid,
-  }) async {
-    final res = await Request().get(
-      _api(SponsorBlockApi.portVideo),
-      queryParameters: {
-        'videoID': bvid,
-        'cid': cid.toString(),
-      },
-      options: options,
-    );
-
-    if (res.statusCode == 200) {
-      if (res.data case final Map<String, dynamic> data) {
-        if (data['ytbID'] case String ytbId) {
-          return Success(ytbId);
-        }
       }
     }
     return getErrMsg(res);

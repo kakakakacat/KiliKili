@@ -10,6 +10,7 @@ import 'package:kilikili/rust/api/media_select.dart';
 import 'package:kilikili/rust/api/play_url.dart';
 import 'package:kilikili/rust/api/play_url_fetch.dart';
 import 'package:kilikili/rust/api/search_suggest.dart';
+import 'package:kilikili/rust/api/sponsor_block.dart';
 import 'package:kilikili/rust/api/subtitle.dart';
 import 'package:kilikili/rust/api/transport.dart';
 import 'package:kilikili/rust/api/video_detail.dart';
@@ -46,10 +47,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  double dco_decode_box_autoadd_f_64(dynamic raw);
+
+  @protected
   PlatformInt64 dco_decode_box_autoadd_i_64(dynamic raw);
 
   @protected
   PlayUrlRequest dco_decode_box_autoadd_play_url_request(dynamic raw);
+
+  @protected
+  SponsorBlockContext dco_decode_box_autoadd_sponsor_block_context(dynamic raw);
+
+  @protected
+  SponsorUserInfo dco_decode_box_autoadd_sponsor_user_info(dynamic raw);
 
   @protected
   TransportSettings dco_decode_box_autoadd_transport_settings(dynamic raw);
@@ -79,6 +89,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   DmViewSubtitlesParse dco_decode_dm_view_subtitles_parse(dynamic raw);
+
+  @protected
+  double dco_decode_f_64(dynamic raw);
 
   @protected
   FormatCandidateInput dco_decode_format_candidate_input(dynamic raw);
@@ -119,13 +132,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<(String, String)> dco_decode_list_record_string_string(dynamic raw);
 
   @protected
+  List<SkipSegment> dco_decode_list_skip_segment(dynamic raw);
+
+  @protected
   List<VideoCandidateInput> dco_decode_list_video_candidate_input(dynamic raw);
 
   @protected
   String? dco_decode_opt_String(dynamic raw);
 
   @protected
+  double? dco_decode_opt_box_autoadd_f_64(dynamic raw);
+
+  @protected
   PlatformInt64? dco_decode_opt_box_autoadd_i_64(dynamic raw);
+
+  @protected
+  SponsorUserInfo? dco_decode_opt_box_autoadd_sponsor_user_info(dynamic raw);
 
   @protected
   int? dco_decode_opt_box_autoadd_u_16(dynamic raw);
@@ -148,6 +170,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Int64List? dco_decode_opt_list_prim_i_64_strict(dynamic raw);
 
   @protected
+  List<SkipSegment>? dco_decode_opt_list_skip_segment(dynamic raw);
+
+  @protected
   PlayUrlFetch dco_decode_play_url_fetch(dynamic raw);
 
   @protected
@@ -161,6 +186,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SearchSuggestParse dco_decode_search_suggest_parse(dynamic raw);
+
+  @protected
+  SkipSegment dco_decode_skip_segment(dynamic raw);
+
+  @protected
+  SkipSegmentsResult dco_decode_skip_segments_result(dynamic raw);
+
+  @protected
+  SponsorBlockContext dco_decode_sponsor_block_context(dynamic raw);
+
+  @protected
+  SponsorStatusResult dco_decode_sponsor_status_result(dynamic raw);
+
+  @protected
+  SponsorTextResult dco_decode_sponsor_text_result(dynamic raw);
+
+  @protected
+  SponsorUserInfo dco_decode_sponsor_user_info(dynamic raw);
+
+  @protected
+  SponsorUserInfoResult dco_decode_sponsor_user_info_result(dynamic raw);
 
   @protected
   SubtitleConvert dco_decode_subtitle_convert(dynamic raw);
@@ -215,10 +261,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  double sse_decode_box_autoadd_f_64(SseDeserializer deserializer);
+
+  @protected
   PlatformInt64 sse_decode_box_autoadd_i_64(SseDeserializer deserializer);
 
   @protected
   PlayUrlRequest sse_decode_box_autoadd_play_url_request(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SponsorBlockContext sse_decode_box_autoadd_sponsor_block_context(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SponsorUserInfo sse_decode_box_autoadd_sponsor_user_info(
     SseDeserializer deserializer,
   );
 
@@ -262,6 +321,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   DmViewSubtitlesParse sse_decode_dm_view_subtitles_parse(
     SseDeserializer deserializer,
   );
+
+  @protected
+  double sse_decode_f_64(SseDeserializer deserializer);
 
   @protected
   FormatCandidateInput sse_decode_format_candidate_input(
@@ -308,6 +370,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<SkipSegment> sse_decode_list_skip_segment(SseDeserializer deserializer);
+
+  @protected
   List<VideoCandidateInput> sse_decode_list_video_candidate_input(
     SseDeserializer deserializer,
   );
@@ -316,7 +381,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String? sse_decode_opt_String(SseDeserializer deserializer);
 
   @protected
+  double? sse_decode_opt_box_autoadd_f_64(SseDeserializer deserializer);
+
+  @protected
   PlatformInt64? sse_decode_opt_box_autoadd_i_64(SseDeserializer deserializer);
+
+  @protected
+  SponsorUserInfo? sse_decode_opt_box_autoadd_sponsor_user_info(
+    SseDeserializer deserializer,
+  );
 
   @protected
   int? sse_decode_opt_box_autoadd_u_16(SseDeserializer deserializer);
@@ -341,6 +414,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Int64List? sse_decode_opt_list_prim_i_64_strict(SseDeserializer deserializer);
 
   @protected
+  List<SkipSegment>? sse_decode_opt_list_skip_segment(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   PlayUrlFetch sse_decode_play_url_fetch(SseDeserializer deserializer);
 
   @protected
@@ -356,6 +434,37 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SearchSuggestParse sse_decode_search_suggest_parse(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SkipSegment sse_decode_skip_segment(SseDeserializer deserializer);
+
+  @protected
+  SkipSegmentsResult sse_decode_skip_segments_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SponsorBlockContext sse_decode_sponsor_block_context(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SponsorStatusResult sse_decode_sponsor_status_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SponsorTextResult sse_decode_sponsor_text_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SponsorUserInfo sse_decode_sponsor_user_info(SseDeserializer deserializer);
+
+  @protected
+  SponsorUserInfoResult sse_decode_sponsor_user_info_result(
     SseDeserializer deserializer,
   );
 
@@ -420,6 +529,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_f_64(double self, SseSerializer serializer);
+
+  @protected
   void sse_encode_box_autoadd_i_64(
     PlatformInt64 self,
     SseSerializer serializer,
@@ -428,6 +540,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_play_url_request(
     PlayUrlRequest self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_sponsor_block_context(
+    SponsorBlockContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_sponsor_user_info(
+    SponsorUserInfo self,
     SseSerializer serializer,
   );
 
@@ -478,6 +602,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     DmViewSubtitlesParse self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_f_64(double self, SseSerializer serializer);
 
   @protected
   void sse_encode_format_candidate_input(
@@ -540,6 +667,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_skip_segment(
+    List<SkipSegment> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_video_candidate_input(
     List<VideoCandidateInput> self,
     SseSerializer serializer,
@@ -549,8 +682,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_opt_String(String? self, SseSerializer serializer);
 
   @protected
+  void sse_encode_opt_box_autoadd_f_64(double? self, SseSerializer serializer);
+
+  @protected
   void sse_encode_opt_box_autoadd_i_64(
     PlatformInt64? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_sponsor_user_info(
+    SponsorUserInfo? self,
     SseSerializer serializer,
   );
 
@@ -582,6 +724,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_list_skip_segment(
+    List<SkipSegment>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_play_url_fetch(PlayUrlFetch self, SseSerializer serializer);
 
   @protected
@@ -602,6 +750,45 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_search_suggest_parse(
     SearchSuggestParse self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_skip_segment(SkipSegment self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_skip_segments_result(
+    SkipSegmentsResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_sponsor_block_context(
+    SponsorBlockContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_sponsor_status_result(
+    SponsorStatusResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_sponsor_text_result(
+    SponsorTextResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_sponsor_user_info(
+    SponsorUserInfo self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_sponsor_user_info_result(
+    SponsorUserInfoResult self,
     SseSerializer serializer,
   );
 

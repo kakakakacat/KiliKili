@@ -11,6 +11,7 @@ pub mod playurl;
 pub mod redact;
 pub mod search;
 pub mod session;
+pub mod sponsor_block;
 pub mod subtitle;
 pub mod video;
 

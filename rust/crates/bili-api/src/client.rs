@@ -146,7 +146,7 @@ async fn send<T: HttpTransport>(
 ///
 /// 与 WBI 签名用的是同一套编码集（RFC 3986 unreserved），否则签名覆盖的
 /// 字符串与实际发送的不一致，服务端会以业务错误码拒绝，极难反推。
-fn encode_query(params: &[(String, String)]) -> String {
+pub(crate) fn encode_query(params: &[(String, String)]) -> String {
     use percent_encoding::{AsciiSet, NON_ALPHANUMERIC, utf8_percent_encode};
     const SET: &AsciiSet = &NON_ALPHANUMERIC
         .remove(b'-')

@@ -38,6 +38,7 @@ pub mod playurl;
 pub(crate) mod protobuf;
 pub mod request;
 pub mod search_suggest;
+pub mod sponsor_block;
 pub mod subtitle;
 #[cfg(feature = "reqwest-transport")]
 pub mod transport_reqwest;

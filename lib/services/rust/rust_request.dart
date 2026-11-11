@@ -22,11 +22,21 @@ abstract final class RustRequest {
     ('accept-encoding', 'br,gzip'),
   ];
 
-  /// 取某条接口该用哪个账号。
+  /// 按接口路径选账号。
   ///
-  /// 照搬 `AccountManager._findAccount` 的查表，不在各服务里硬编码：
-  /// 一个切片横跨多个账号桶时硬编码迟早错一个，而错了不会报错，只会
-  /// 悄悄换一批数据。
+  /// 与拦截器的选法必须一致，否则 Rust 路径与基线用的是**不同账号**
+  /// ——这不会报错，只会悄悄换一批结果（`api_type.dart` 里就写着
+  /// 「不同账号搜索结果可能不一样」）。
+  ///
+  /// 逻辑照搬 `AccountManager._findAccount`：在 `ApiType.apiTypeSet` 里
+  /// 查这条 path 属于哪个 `AccountType`，查不到落到 `main`。查表而不是
+  /// 在各自的服务里硬编码，是因为 S10 的八条接口横跨两个桶（索引与排行
+  /// 归 recommend，时间表/评论/追番状态落 main），硬编码迟早错一个。
+  ///
+  /// 登录类接口不走这里——那条分支由拦截器自己处理，Rust 侧暂无写操作。
+  ///
+  /// S11a 的直播接口横跨三个桶（分区与推荐归 recommend，H5 房间信息归
+  /// heartbeat，收藏分区与关注的直播落 main），同一个理由。
   static Account accountFor(String path) => Accounts.get(
     AccountType.values.firstWhere(
       (t) => ApiType.apiTypeSet[t]?.contains(path) == true,

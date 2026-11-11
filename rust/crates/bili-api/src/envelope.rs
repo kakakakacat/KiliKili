@@ -63,6 +63,19 @@ struct RawEnvelope<T> {
     data: Option<T>,
 }
 
+/// 载荷放在 `result` 而不是 `data` 的信封。
+///
+/// PGC 那一组接口两种都有：索引与 season 排行用 `data`，放送时间表、
+/// 追番状态与 web 排行用 `result`。不是历史包袱，是现状——按接口各取
+/// 各的，别猜。
+#[derive(Deserialize)]
+struct RawResultEnvelope<T> {
+    code: i64,
+    #[serde(default)]
+    message: String,
+    result: Option<T>,
+}
+
 /// 解开信封。
 ///
 /// 三种结果各自对应一类错误，不可合并：
@@ -88,4 +101,28 @@ pub fn unwrap_envelope<T: serde::de::DeserializeOwned>(body: &str) -> Result<T, 
 
     env.data
         .ok_or_else(|| DomainError::new(ErrorKind::Protocol, "code 为 0 但 data 缺失"))
+}
+
+/// 解开载荷在 `result` 里的信封。语义与 [`unwrap_envelope`] 完全一致，
+/// 只是键名不同。
+///
+/// # Errors
+/// 同 [`unwrap_envelope`]。
+pub fn unwrap_result_envelope<T: serde::de::DeserializeOwned>(
+    body: &str,
+) -> Result<T, DomainError> {
+    let env: RawResultEnvelope<T> = serde_json::from_str(body).map_err(|e| {
+        DomainError::new(ErrorKind::Protocol, format!("响应不是预期的信封结构: {e}"))
+    })?;
+
+    if env.code != 0 {
+        return Err(RemoteFailure {
+            code: env.code,
+            message: env.message,
+        }
+        .into_domain_error());
+    }
+
+    env.result
+        .ok_or_else(|| DomainError::new(ErrorKind::Protocol, "code 为 0 但 result 缺失"))
 }

@@ -6,7 +6,6 @@ import 'package:kilikili/rust/api/live.dart' as rust_api;
 import 'package:kilikili/services/rust/rust_request.dart';
 import 'package:kilikili/services/rust/rust_transport.dart';
 import 'package:kilikili/services/rust_core.dart';
-import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/accounts/account.dart';
 import 'package:flutter/foundation.dart';
 

@@ -3,15 +3,15 @@ import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/stat/stat.dart';
 import 'package:kilikili/models/common/stat_type.dart';
-import 'package:kilikili/models_new/pgc/pgc_rank/pgc_rank_item_model.dart';
 import 'package:kilikili/utils/app_scheme.dart';
 import 'package:kilikili/utils/platform_utils.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:material_ui/material_ui.dart';
 
-class PgcRankItem extends StatelessWidget {
-  const PgcRankItem({super.key, required this.item});
+class PgcRankCard extends StatelessWidget {
+  const PgcRankCard({super.key, required this.item});
 
-  final PgcRankItemModel item;
+  final PgcRankItem item;
 
   void onLongPress() => showPgcCover(title: item.title, cover: item.cover);
 
@@ -58,9 +58,9 @@ class PgcRankItem extends StatelessWidget {
                     Expanded(
                       child: Text(item.title!),
                     ),
-                    if (item.newEp?.indexShow?.isNotEmpty == true) ...[
+                    if (item.newEpIndexShow?.isNotEmpty == true) ...[
                       Text(
-                        item.newEp!.indexShow!,
+                        item.newEpIndexShow!,
                         maxLines: 1,
                         style: TextStyle(
                           fontSize: 12,
@@ -75,12 +75,12 @@ class PgcRankItem extends StatelessWidget {
                       children: [
                         StatWidget(
                           type: StatType.play,
-                          value: item.stat!.view,
+                          value: item.view,
                         ),
                         const SizedBox(width: 8),
                         StatWidget(
                           type: StatType.follow,
-                          value: item.stat!.follow,
+                          value: item.follow,
                         ),
                       ],
                     ),

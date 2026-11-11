@@ -1,0 +1,79 @@
+{
+  "count": 128,
+  "list": [
+    {
+      "article_id": null,
+      "author": {
+        "avatar": "//i1.example-cdn.test/bfs/face/0000000000000000000000000000000000000200.jpg",
+        "level": 6,
+        "mid": 100000201,
+        "uname": "示例用户甲",
+        "vip_status": 1,
+        "vip_type": 2
+      },
+      "content": "满分短评，示例内容。",
+      "push_time_str": "2026-11-01",
+      "review_id": 500000201,
+      "score": 5,
+      "stat": {
+        "disliked": 0,
+        "liked": 1,
+        "likes": 42
+      },
+      "title": null
+    },
+    {
+      "article_id": null,
+      "author": {
+        "avatar": "//i1.example-cdn.test/bfs/face/0000000000000000000000000000000000000201.jpg",
+        "level": 4,
+        "mid": 100000202,
+        "uname": "示例用户乙",
+        "vip_status": 0,
+        "vip_type": 1
+      },
+      "content": "九分会被整除成四星，这条专门钉住。",
+      "push_time_str": "2026-11-02",
+      "review_id": 500000202,
+      "score": 4,
+      "stat": {
+        "disliked": 0,
+        "liked": 0,
+        "likes": 3
+      },
+      "title": null
+    },
+    {
+      "article_id": 400000203,
+      "author": {
+        "avatar": "//i1.example-cdn.test/bfs/face/0000000000000000000000000000000000000202.jpg",
+        "level": 5,
+        "mid": 100000203,
+        "uname": "示例用户丙",
+        "vip_status": 0,
+        "vip_type": null
+      },
+      "content": "长评正文示例。",
+      "push_time_str": "2026-11-03",
+      "review_id": 500000203,
+      "score": 0,
+      "stat": {
+        "disliked": null,
+        "liked": null,
+        "likes": 7
+      },
+      "title": "一条长评"
+    },
+    {
+      "article_id": null,
+      "author": null,
+      "content": "没有作者也没有分数的条目",
+      "push_time_str": null,
+      "review_id": 500000204,
+      "score": 0,
+      "stat": null,
+      "title": null
+    }
+  ],
+  "next": "cursor_0000000001"
+}

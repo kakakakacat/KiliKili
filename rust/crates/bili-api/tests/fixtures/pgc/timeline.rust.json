@@ -1,0 +1,52 @@
+[
+  {
+    "date": "11-10",
+    "date_ts": 1762704000,
+    "day_of_week": 1,
+    "episodes": [
+      {
+        "cover": "//i0.example-cdn.test/bfs/bangumi/0000000000000000000000000000000000000110.jpg",
+        "episode_id": 900000110,
+        "follow": 1,
+        "pub_index": "第5话",
+        "pub_time": "19:00",
+        "season_id": 700000110,
+        "title": "示例番剧丙"
+      }
+    ],
+    "is_today": 0
+  },
+  {
+    "date": "11-11",
+    "date_ts": 1762790400,
+    "day_of_week": 2,
+    "episodes": [
+      {
+        "cover": "//i0.example-cdn.test/bfs/bangumi/0000000000000000000000000000000000000112.jpg",
+        "episode_id": 900000112,
+        "follow": 0,
+        "pub_index": "第6话",
+        "pub_time": "23:30",
+        "season_id": 700000111,
+        "title": "示例番剧丁"
+      },
+      {
+        "cover": null,
+        "episode_id": 900000113,
+        "follow": null,
+        "pub_index": null,
+        "pub_time": null,
+        "season_id": 700000112,
+        "title": "缺字段的条目"
+      }
+    ],
+    "is_today": 1
+  },
+  {
+    "date": "11-12",
+    "date_ts": 1762876800,
+    "day_of_week": 3,
+    "episodes": [],
+    "is_today": 0
+  }
+]

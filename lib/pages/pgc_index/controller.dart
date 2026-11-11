@@ -1,10 +1,8 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/pgc.dart';
 import 'package:kilikili/models_new/pgc/pgc_index_condition/data.dart';
-import 'package:kilikili/models_new/pgc/pgc_index_condition/sort.dart';
 import 'package:kilikili/models_new/pgc/pgc_index_result/data.dart';
-import 'package:kilikili/models_new/pgc/pgc_index_result/list.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:get/get.dart';
 
 class PgcIndexController
@@ -25,7 +23,7 @@ class PgcIndexController
   }
 
   Future<void> getPgcIndexCondition() async {
-    final res = await PgcHttp.pgcIndexCondition(
+    final res = await RustPgc.indexCondition(
       seasonType: indexType == null ? 1 : null,
       type: 0,
       indexType: indexType,
@@ -36,7 +34,7 @@ class PgcIndexController
       }
       if (response.filter?.isNotEmpty == true) {
         for (PgcConditionFilter item in response.filter!) {
-          indexParams['${item.field}'] = item.values?.firstOrNull?.keyword;
+          indexParams['${item.field}'] = item.values.firstOrNull?.keyword;
         }
       }
       queryData();
@@ -46,7 +44,7 @@ class PgcIndexController
 
   @override
   Future<LoadingState<PgcIndexResult>> customGetData() =>
-      PgcHttp.pgcIndexResult(
+      RustPgc.indexResult(
         page: page,
         params: indexParams,
         seasonType: indexType == null ? 1 : null,

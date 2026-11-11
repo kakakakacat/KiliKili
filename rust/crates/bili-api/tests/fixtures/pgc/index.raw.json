@@ -1,0 +1,39 @@
+{
+  "code": 0,
+  "message": "success",
+  "ttl": 1,
+  "data": {
+    "has_next": 1,
+    "num_pages": 48,
+    "total": 1000,
+    "list": [
+      {
+        "badge": "会员",
+        "badge_info": { "bg_color": "#FB7299", "text": "会员" },
+        "badge_type": 0,
+        "cover": "//i0.example-cdn.test/bfs/bangumi/0000000000000000000000000000000000000100.jpg",
+        "index_show": "全12话",
+        "is_finish": 1,
+        "media_id": 800000101,
+        "order": "1.2万追番",
+        "order_type": "show_follow",
+        "season_id": 700000101,
+        "season_type": 1,
+        "title": "示例番剧甲",
+        "subTitle": "示例副标题"
+      },
+      {
+        "badge": "",
+        "cover": "//i0.example-cdn.test/bfs/bangumi/0000000000000000000000000000000000000101.jpg",
+        "index_show": "更新至第5话",
+        "order": "3456播放",
+        "season_id": 700000102,
+        "title": "示例番剧乙"
+      },
+      {
+        "season_id": 700000103,
+        "title": "只有标题的条目"
+      }
+    ]
+  }
+}

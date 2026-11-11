@@ -38,6 +38,7 @@ pub mod live;
 pub mod match_info;
 pub mod music;
 pub mod nav;
+pub mod pgc;
 pub mod playurl;
 pub(crate) mod protobuf;
 pub mod reply;

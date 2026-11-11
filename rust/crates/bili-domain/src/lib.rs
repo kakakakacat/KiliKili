@@ -10,6 +10,7 @@ pub mod error;
 pub mod live;
 pub mod match_info;
 pub mod music;
+pub mod pgc;
 pub mod player;
 pub mod playurl;
 pub mod redact;

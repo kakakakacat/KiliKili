@@ -21,7 +21,32 @@
       "url": "https://www.bilibili.com/blackboard/example.html"
     }
   ],
-  "esports_json": "{\"ID\":500000001,\"awayScore\":1,\"awayTeam\":{\"title\":\"示例战队乙\"},\"contestStatus\":3,\"gameStage\":\"小组赛\",\"homeScore\":2,\"homeTeam\":{\"title\":\"示例战队甲\"},\"liveRoom\":7000002,\"playback\":\"\",\"season\":{\"title\":\"示例赛季\"},\"stime\":1700002000}",
+  "esports": [
+    {
+      "away_score": 1,
+      "away_team": {
+        "logo": null,
+        "logo_full": null,
+        "title": "示例战队乙"
+      },
+      "contest_status": 3,
+      "game_stage": "小组赛",
+      "home_score": 2,
+      "home_team": {
+        "logo": null,
+        "logo_full": null,
+        "title": "示例战队甲"
+      },
+      "id": 500000001,
+      "live_room": 7000002,
+      "playback": "",
+      "season": {
+        "logo": null,
+        "title": "示例赛季"
+      },
+      "stime": 1700002000
+    }
+  ],
   "medias": [
     {
       "areas": "日本",

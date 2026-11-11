@@ -4,6 +4,7 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import 'package:kilikili/rust/frb_generated.dart';
+import 'package:kilikili/rust/api/misc.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:kilikili/rust/api/transport.dart';
 
@@ -186,13 +187,12 @@ class SearchAllData {
   final List<SearchPgcItem> medias;
   final List<SearchActivityItem> activities;
 
-  /// 赛事卡片的原始 JSON。
+  /// 赛事卡片。
   ///
-  /// 不展开成 typed 结构：它的实体是 `MatchContest`，而那个模型还有一个
-  /// 未迁的生产者（`lib/http/match.dart`，S15）。按 ADR-011 决策六，共享
-  /// 模型要等所有生产者迁完才能动。Dart 侧用既有的 `fromSearch` 吃这段
-  /// JSON，随 S15 一起收尾。
-  final String? esportsJson;
+  /// 类型来自 [`crate::api::misc`]：赛事详情（S15 / #66）与这里是同一个
+  /// 实体的两套字段名。S9 当时只能原样带回 JSON 串，因为 `MatchContest`
+  /// 还有一个未迁的生产者；S15 迁完后按 ADR-011 决策六在这里展开。
+  final List<MatchContest> esports;
 
   const SearchAllData({
     this.numResults,
@@ -200,7 +200,7 @@ class SearchAllData {
     required this.users,
     required this.medias,
     required this.activities,
-    this.esportsJson,
+    required this.esports,
   });
 
   @override
@@ -210,7 +210,7 @@ class SearchAllData {
       users.hashCode ^
       medias.hashCode ^
       activities.hashCode ^
-      esportsJson.hashCode;
+      esports.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -222,7 +222,7 @@ class SearchAllData {
           users == other.users &&
           medias == other.medias &&
           activities == other.activities &&
-          esportsJson == other.esportsJson;
+          esports == other.esports;
 }
 
 /// 综合搜索的结果。

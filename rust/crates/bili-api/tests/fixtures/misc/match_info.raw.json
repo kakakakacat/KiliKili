@@ -1,0 +1,49 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "contest": {
+      "id": 1,
+      "game_stage": "夏季赛第一周",
+      "stime": 1528707600,
+      "etime": 1528714800,
+      "home_score": 1,
+      "away_score": 2,
+      "live_room": 6,
+      "contest_status": 3,
+      "playback": "",
+      "season": {
+        "id": 1,
+        "title": "2018LPL夏季赛",
+        "sub_title": "",
+        "logo": "/bfs/example/season.png",
+        "stime": 1528646400,
+        "etime": 1535760000,
+        "url": "https://www.bilibili.com/v/game/match/schedule?mid=0",
+        "game_type": 1
+      },
+      "home_team": {
+        "id": 13,
+        "title": "JDG",
+        "sub_title": "",
+        "logo": "/bfs/example/team-13.png",
+        "uid": 10013,
+        "region_id": 1
+      },
+      "away_team": {
+        "id": 3,
+        "title": "IG",
+        "sub_title": "InvictusGaming",
+        "logo": "/bfs/example/team-3.png",
+        "uid": 10003,
+        "region_id": 1
+      },
+      "game_state": 0,
+      "status": 0,
+      "live_status": 1,
+      "live_title": "【预告】15号3点GEN vs BLG",
+      "title": "夏季赛第一周"
+    }
+  }
+}

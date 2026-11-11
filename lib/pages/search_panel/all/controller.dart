@@ -1,6 +1,6 @@
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/search/result.dart';
-import 'package:kilikili/models/search/search_esports.dart';
+import 'package:kilikili/services/rust/rust_misc.dart' show MatchContest;
 import 'package:kilikili/pages/search_panel/video/controller.dart';
 import 'package:kilikili/services/rust/rust_search.dart';
 
@@ -14,7 +14,7 @@ class SearchAllController extends SearchVideoController with SearchVideoMixin {
   List<SearchUserCard>? searchUser;
   List<SearchPgcItem>? searchMedia;
   List<SearchActivityItem>? searchActivity;
-  SearchEsports? searchEsports;
+  List<MatchContest>? searchEsports;
 
   @override
   bool customHandleResponse(bool isRefresh, Success<SearchVideoData> response) {

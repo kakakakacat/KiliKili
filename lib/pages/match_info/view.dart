@@ -4,7 +4,7 @@ import 'package:kilikili/common/widgets/view_safe_area.dart';
 import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/match/match_info/contest.dart';
+import 'package:kilikili/services/rust/rust_misc.dart';
 import 'package:kilikili/pages/common/dyn/common_dyn_page.dart';
 import 'package:kilikili/pages/match_info/controller.dart';
 import 'package:kilikili/pages/match_info/widgets/match_info_item.dart';

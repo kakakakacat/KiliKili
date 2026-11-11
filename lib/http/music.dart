@@ -1,28 +1,13 @@
 import 'package:kilikili/http/api.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/music/bgm_detail.dart';
-import 'package:kilikili/models_new/music/bgm_recommend_list.dart';
 import 'package:kilikili/utils/accounts.dart';
-import 'package:kilikili/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 
+/// 音乐页的**写操作**。两条只读接口（BGM 详情、相关推荐）已迁到
+/// `lib/services/rust/rust_misc.dart`（S15 / issue #66）；点「想听」等
+/// ADR-013（issue #50）。
 abstract final class MusicHttp {
-  static Future<LoadingState<MusicDetail>> bgmDetail(String musicId) async {
-    final res = await Request().get(
-      Api.bgmDetail,
-      queryParameters: await WbiSign.makSign({
-        'music_id': musicId,
-        'relation_from': 'bgm_page',
-      }),
-    );
-    if (res.data['code'] == 0) {
-      return Success(MusicDetail.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   static Future<LoadingState<void>> wishUpdate(
     String musicId,
     bool hasLike,
@@ -38,26 +23,6 @@ abstract final class MusicHttp {
     );
     if (res.data['code'] == 0) {
       return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<List<BgmRecommend>?>> bgmRecommend(
-    String musicId,
-  ) async {
-    final res = await Request().get(
-      Api.bgmRecommend,
-      queryParameters: {
-        'music_id': musicId,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(
-        (res.data['data']?['list'] as List?)
-            ?.map((i) => BgmRecommend.fromJson(i))
-            .toList(),
-      );
     } else {
       return Error(res.data['message']);
     }

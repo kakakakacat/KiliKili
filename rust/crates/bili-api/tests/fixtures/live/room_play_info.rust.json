@@ -1,0 +1,139 @@
+{
+  "is_portrait": false,
+  "live_status": 1,
+  "live_time": 1762800000,
+  "room_id": 100001,
+  "short_id": 1001,
+  "streams": [
+    {
+      "format": [
+        {
+          "codec": [
+            {
+              "accept_qn": [
+                {
+                  "code": 10000,
+                  "desc": "原画"
+                },
+                {
+                  "code": 400,
+                  "desc": "蓝光"
+                },
+                {
+                  "code": 250,
+                  "desc": "超清"
+                },
+                {
+                  "code": 150,
+                  "desc": null
+                }
+              ],
+              "base_url": "/live-bvc/000001/live_200001_0000001.flv",
+              "codec_name": "avc",
+              "current_qn": {
+                "code": 10000,
+                "desc": "原画"
+              },
+              "url_info": [
+                {
+                  "extra": "?expires=0000000000&len=0&oi=0&pt=web&trid=0000000000000001",
+                  "host": "https://d1--cn-live.example-cdn.test"
+                },
+                {
+                  "extra": "?expires=0000000000&len=0&oi=0&pt=web&trid=0000000000000002",
+                  "host": "https://d2--cn-live.example-cdn.test"
+                }
+              ]
+            }
+          ],
+          "format_name": "flv"
+        }
+      ],
+      "protocol_name": "http_stream"
+    },
+    {
+      "format": [
+        {
+          "codec": [
+            {
+              "accept_qn": [
+                {
+                  "code": 10000,
+                  "desc": "原画"
+                },
+                {
+                  "code": 400,
+                  "desc": "蓝光"
+                }
+              ],
+              "base_url": "/live-bvc/000002/live_200001_0000001/index.m3u8",
+              "codec_name": "avc",
+              "current_qn": {
+                "code": 400,
+                "desc": "蓝光"
+              },
+              "url_info": [
+                {
+                  "extra": "?expires=0000000000&len=0&oi=0&pt=web&trid=0000000000000003",
+                  "host": "https://d3--cn-live.example-cdn.test"
+                }
+              ]
+            }
+          ],
+          "format_name": "ts"
+        },
+        {
+          "codec": [
+            {
+              "accept_qn": [
+                {
+                  "code": 7777,
+                  "desc": "7777"
+                },
+                {
+                  "code": 30000,
+                  "desc": null
+                }
+              ],
+              "base_url": "/live-bvc/000003/live_200001_0000001/index.m3u8",
+              "codec_name": "hevc",
+              "current_qn": {
+                "code": 7777,
+                "desc": "7777"
+              },
+              "url_info": [
+                {
+                  "extra": "?expires=0000000000&len=0&oi=0&pt=web&trid=0000000000000004",
+                  "host": "https://d4--cn-live.example-cdn.test"
+                }
+              ]
+            },
+            {
+              "accept_qn": [
+                {
+                  "code": 250,
+                  "desc": "超清"
+                }
+              ],
+              "base_url": "/live-bvc/000004/live_200001_0000001/index.m3u8",
+              "codec_name": "av1",
+              "current_qn": {
+                "code": 250,
+                "desc": "超清"
+              },
+              "url_info": [
+                {
+                  "extra": "?expires=0000000000&len=0&oi=0&pt=web&trid=0000000000000005",
+                  "host": "https://d5--cn-live.example-cdn.test"
+                }
+              ]
+            }
+          ],
+          "format_name": "fmp4"
+        }
+      ],
+      "protocol_name": "http_hls"
+    }
+  ],
+  "uid": 200001
+}

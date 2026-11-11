@@ -7,33 +7,38 @@ import 'package:kilikili/services/rust/rust_request.dart';
 import 'package:kilikili/services/rust/rust_transport.dart';
 import 'package:kilikili/services/rust_core.dart';
 import 'package:kilikili/utils/accounts/account.dart';
+import 'package:kilikili/utils/wbi_sign.dart';
 import 'package:flutter/foundation.dart';
 
 export 'package:kilikili/rust/api/live.dart'
     show
         LiveArea,
         LiveAreaGroup,
+        LiveCodec,
         LiveFeedback,
         LiveFeedbackReason,
         LiveFollowItem,
         LiveFollowSection,
         LiveFollowingPage,
+        LiveFormat,
         LiveIndexPage,
+        LiveQn,
         LiveRoomCard,
         LiveRoomH5,
+        LiveRoomPlayInfo,
         LiveSecondPage,
-        LiveSecondTag;
+        LiveSecondTag,
+        LiveStream,
+        LiveUrlInfo;
 
-/// 直播只读接口的取数路径（S11a 第一批 / issue #61）。**typed 直连**。
+/// 直播只读接口的取数路径（S11a 第一、二批 / issue #61）。**typed 直连**。
 ///
 /// ## 覆盖范围
 ///
 /// 全部分区、某一级分区下的二级分区、收藏分区、首页推荐、分区二级列表、
-/// 关注的直播、H5 房间信息。
+/// 关注的直播、H5 房间信息，以及取流（`liveRoomInfo`，第二批）。
 ///
-/// **不在这里**：`liveRoomInfo`（取流）仍走 `lib/http/live.dart`，它要
-/// 产出共享的 `LiveQuality`，留到第二批；弹幕长连接归 S11b（#62）；
-/// 全部写操作归 ADR-013（#50）。
+/// **不在这里**：弹幕长连接归 S11b（#62）；全部写操作归 ADR-013（#50）。
 ///
 /// ## 没有降级开关
 ///
@@ -235,6 +240,41 @@ abstract final class RustLive {
       return Success(data);
     } catch (e, st) {
       if (kDebugMode) debugPrint('[rust] 取直播间信息出错: $e\n$st');
+      return Error('$e');
+    }
+  }
+
+  /// 取流。本文件唯一走 **WBI 签名**的一条。
+  ///
+  /// [qn] 是期望档位而非保证：房间不提供该档时服务端会降档，真正给到的
+  /// 那一档在 `LiveCodec.currentQn`，调用方要以它为准回填画质选择器。
+  ///
+  /// 取不到 WBI 密钥时直接报错而不是用空串继续签名。基线
+  /// （`WbiSign.encWbi`）会用空串签下去，换回一个业务错误码——那只是把
+  /// 失败推后，还更难诊断。
+  static Future<LoadingState<rust_api.LiveRoomPlayInfo>> roomPlayInfo({
+    required int roomId,
+    int? qn,
+    bool onlyAudio = false,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final mixinKey = await WbiSign.getWbiKeys();
+      if (mixinKey.isEmpty) return const Error('WBI 密钥获取失败，请稍后重试');
+
+      final res = await rust_api.fetchLiveRoomPlayInfo(
+        context: await _context(Api.liveRoomInfo),
+        roomId: roomId,
+        qn: qn,
+        onlyAudio: onlyAudio,
+        mixinKey: mixinKey,
+        wts: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      );
+      final data = res.data;
+      if (data == null) return _failure(res.errorDetail, res.errorCode);
+      return Success(data);
+    } catch (e, st) {
+      if (kDebugMode) debugPrint('[rust] 取直播流出错: $e\n$st');
       return Error('$e');
     }
   }

@@ -112,3 +112,122 @@ fn room_h5_matches_the_frozen_snapshot() {
         value(&bili_api::live::parse_room_h5(raw).expect("样本应解析成功"))
     });
 }
+
+#[test]
+fn room_play_info_matches_the_frozen_snapshot() {
+    check(
+        "room_play_info.raw.json",
+        "room_play_info.rust.json",
+        |raw| value(&bili_api::live::parse_room_play_info(raw).expect("样本应解析成功")),
+    );
+}
+
+#[test]
+fn room_play_info_offline_matches_the_frozen_snapshot() {
+    check(
+        "room_play_info_offline.raw.json",
+        "room_play_info_offline.rust.json",
+        |raw| value(&bili_api::live::parse_room_play_info(raw).expect("样本应解析成功")),
+    );
+}
+
+/// 取流的**请求面**快照：参数集与 WBI 签名。
+///
+/// 解析快照只管响应，管不住请求。而取流那串参数里有好几个看不出含义、
+/// 又必须逐字正确的常量——`web_location` 是浮点字面量 `444.8`，
+/// `ptype=8` / `dolby=5` / `panorama=1` 决定响应里有哪些档位。它们一旦
+/// 被「顺手规整」成 `444` 或少写一项，`w_rid` 跟着变，服务端回的是业务
+/// 错误码而不是解析失败，从现象完全反推不出是签名参数错了。
+///
+/// 期望值由 `test/services/rust/live_playurl_parity_test.dart` 用基线
+/// `WbiSign.encWbi` 的逐字拷贝独立算一遍核对（ADR-008 决策三）。
+#[test]
+fn room_play_info_request_matches_the_frozen_snapshot() {
+    // 固定的测试用 mixin_key 与 wts，使签名可复现。不是真实密钥。
+    const MIXIN_KEY: &str = "ea1db124af3c7062474693fa704f4ff8";
+    const WTS: i64 = 1_762_800_000;
+
+    let cases = [
+        (
+            "常规：指定画质、含视频",
+            100_001_i64,
+            Some(10_000_i64),
+            false,
+        ),
+        ("仅音频：不指定画质", 100_002, None, true),
+    ];
+
+    let got: Vec<serde_json::Value> = cases
+        .iter()
+        .map(|&(name, room_id, qn, only_audio)| {
+            let req = bili_api::live::build_room_play_info_request(
+                room_id, qn, only_audio, MIXIN_KEY, WTS,
+            );
+            serde_json::json!({
+                "case": name,
+                "mixin_key": MIXIN_KEY,
+                "wts": WTS,
+                "path": req.path,
+                "query": req
+                    .query
+                    .iter()
+                    .map(|(k, v)| serde_json::json!([k, v]))
+                    .collect::<Vec<_>>(),
+            })
+        })
+        .collect();
+
+    let snapshot_path = fixture("room_play_info_request.rust.json");
+    let got = serde_json::Value::Array(got);
+
+    if std::env::var_os("UPDATE_GOLDEN").is_some() {
+        let pretty = serde_json::to_string_pretty(&got).expect("可序列化");
+        fs::write(&snapshot_path, format!("{pretty}\n")).expect("快照可写");
+        return;
+    }
+
+    let expected: serde_json::Value = serde_json::from_str(
+        &fs::read_to_string(&snapshot_path).expect("缺少快照，用 UPDATE_GOLDEN=1 重新生成"),
+    )
+    .expect("快照必须是合法 JSON");
+
+    assert_eq!(got, expected, "取流请求面与冻结快照不一致");
+}
+
+/// `base_url` 缺失必须让整次解析失败，而不是填空串继续。
+///
+/// 基线 `CodecItem.fromJson` 写的是 `json['base_url'] as String`，缺了
+/// 就抛，被 `liveRoomInfo` 的 `catch` 收成 `Error`。如果这里退化成
+/// `unwrap_or_default`，调用方会拿到一个拼得出来、但指向
+/// `host + "" + extra` 的地址——播放器拿它去请求，失败在更远的地方。
+#[test]
+fn missing_base_url_is_an_error_not_an_empty_string() {
+    let raw = r#"{
+        "code": 0,
+        "data": {
+            "room_id": 1,
+            "playurl_info": {
+                "playurl": {
+                    "g_qn_desc": [],
+                    "stream": [{
+                        "protocol_name": "http_stream",
+                        "format": [{
+                            "format_name": "flv",
+                            "codec": [{
+                                "codec_name": "avc",
+                                "current_qn": 400,
+                                "accept_qn": [400],
+                                "url_info": []
+                            }]
+                        }]
+                    }]
+                }
+            }
+        }
+    }"#;
+
+    assert!(
+        bili_api::live::parse_room_play_info(raw).is_err(),
+        "缺 base_url 应解析失败"
+    );
+}

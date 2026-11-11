@@ -135,6 +135,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveRoomH5 dco_decode_box_autoadd_live_room_h_5(dynamic raw);
 
   @protected
+  LiveRoomPlayInfo dco_decode_box_autoadd_live_room_play_info(dynamic raw);
+
+  @protected
   LiveSecondPage dco_decode_box_autoadd_live_second_page(dynamic raw);
 
   @protected
@@ -400,6 +403,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<LiveAreaGroup> dco_decode_list_live_area_group(dynamic raw);
 
   @protected
+  List<LiveCodec> dco_decode_list_live_codec(dynamic raw);
+
+  @protected
   List<LiveFeedback> dco_decode_list_live_feedback(dynamic raw);
 
   @protected
@@ -409,10 +415,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<LiveFollowItem> dco_decode_list_live_follow_item(dynamic raw);
 
   @protected
+  List<LiveFormat> dco_decode_list_live_format(dynamic raw);
+
+  @protected
+  List<LiveQn> dco_decode_list_live_qn(dynamic raw);
+
+  @protected
   List<LiveRoomCard> dco_decode_list_live_room_card(dynamic raw);
 
   @protected
   List<LiveSecondTag> dco_decode_list_live_second_tag(dynamic raw);
+
+  @protected
+  List<LiveStream> dco_decode_list_live_stream(dynamic raw);
+
+  @protected
+  List<LiveUrlInfo> dco_decode_list_live_url_info(dynamic raw);
 
   @protected
   List<MatchContest> dco_decode_list_match_contest(dynamic raw);
@@ -543,6 +561,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveAreasResult dco_decode_live_areas_result(dynamic raw);
 
   @protected
+  LiveCodec dco_decode_live_codec(dynamic raw);
+
+  @protected
   LiveContext dco_decode_live_context(dynamic raw);
 
   @protected
@@ -564,10 +585,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveFollowingPage dco_decode_live_following_page(dynamic raw);
 
   @protected
+  LiveFormat dco_decode_live_format(dynamic raw);
+
+  @protected
   LiveIndexPage dco_decode_live_index_page(dynamic raw);
 
   @protected
   LiveIndexResult dco_decode_live_index_result(dynamic raw);
+
+  @protected
+  LiveQn dco_decode_live_qn(dynamic raw);
 
   @protected
   LiveRoomCard dco_decode_live_room_card(dynamic raw);
@@ -579,6 +606,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveRoomH5Result dco_decode_live_room_h_5_result(dynamic raw);
 
   @protected
+  LiveRoomPlayInfo dco_decode_live_room_play_info(dynamic raw);
+
+  @protected
+  LiveRoomPlayInfoResult dco_decode_live_room_play_info_result(dynamic raw);
+
+  @protected
   LiveSecondPage dco_decode_live_second_page(dynamic raw);
 
   @protected
@@ -586,6 +619,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LiveSecondTag dco_decode_live_second_tag(dynamic raw);
+
+  @protected
+  LiveStream dco_decode_live_stream(dynamic raw);
+
+  @protected
+  LiveUrlInfo dco_decode_live_url_info(dynamic raw);
 
   @protected
   MatchContest dco_decode_match_contest(dynamic raw);
@@ -680,6 +719,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LiveRoomH5? dco_decode_opt_box_autoadd_live_room_h_5(dynamic raw);
+
+  @protected
+  LiveRoomPlayInfo? dco_decode_opt_box_autoadd_live_room_play_info(dynamic raw);
 
   @protected
   LiveSecondPage? dco_decode_opt_box_autoadd_live_second_page(dynamic raw);
@@ -1302,6 +1344,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveRoomH5 sse_decode_box_autoadd_live_room_h_5(SseDeserializer deserializer);
 
   @protected
+  LiveRoomPlayInfo sse_decode_box_autoadd_live_room_play_info(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   LiveSecondPage sse_decode_box_autoadd_live_second_page(
     SseDeserializer deserializer,
   );
@@ -1651,6 +1698,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<LiveCodec> sse_decode_list_live_codec(SseDeserializer deserializer);
+
+  @protected
   List<LiveFeedback> sse_decode_list_live_feedback(
     SseDeserializer deserializer,
   );
@@ -1666,6 +1716,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<LiveFormat> sse_decode_list_live_format(SseDeserializer deserializer);
+
+  @protected
+  List<LiveQn> sse_decode_list_live_qn(SseDeserializer deserializer);
+
+  @protected
   List<LiveRoomCard> sse_decode_list_live_room_card(
     SseDeserializer deserializer,
   );
@@ -1674,6 +1730,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<LiveSecondTag> sse_decode_list_live_second_tag(
     SseDeserializer deserializer,
   );
+
+  @protected
+  List<LiveStream> sse_decode_list_live_stream(SseDeserializer deserializer);
+
+  @protected
+  List<LiveUrlInfo> sse_decode_list_live_url_info(SseDeserializer deserializer);
 
   @protected
   List<MatchContest> sse_decode_list_match_contest(
@@ -1848,6 +1910,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveAreasResult sse_decode_live_areas_result(SseDeserializer deserializer);
 
   @protected
+  LiveCodec sse_decode_live_codec(SseDeserializer deserializer);
+
+  @protected
   LiveContext sse_decode_live_context(SseDeserializer deserializer);
 
   @protected
@@ -1875,10 +1940,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  LiveFormat sse_decode_live_format(SseDeserializer deserializer);
+
+  @protected
   LiveIndexPage sse_decode_live_index_page(SseDeserializer deserializer);
 
   @protected
   LiveIndexResult sse_decode_live_index_result(SseDeserializer deserializer);
+
+  @protected
+  LiveQn sse_decode_live_qn(SseDeserializer deserializer);
 
   @protected
   LiveRoomCard sse_decode_live_room_card(SseDeserializer deserializer);
@@ -1892,6 +1963,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  LiveRoomPlayInfo sse_decode_live_room_play_info(SseDeserializer deserializer);
+
+  @protected
+  LiveRoomPlayInfoResult sse_decode_live_room_play_info_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   LiveSecondPage sse_decode_live_second_page(SseDeserializer deserializer);
 
   @protected
@@ -1899,6 +1978,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LiveSecondTag sse_decode_live_second_tag(SseDeserializer deserializer);
+
+  @protected
+  LiveStream sse_decode_live_stream(SseDeserializer deserializer);
+
+  @protected
+  LiveUrlInfo sse_decode_live_url_info(SseDeserializer deserializer);
 
   @protected
   MatchContest sse_decode_match_contest(SseDeserializer deserializer);
@@ -2011,6 +2096,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LiveRoomH5? sse_decode_opt_box_autoadd_live_room_h_5(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveRoomPlayInfo? sse_decode_opt_box_autoadd_live_room_play_info(
     SseDeserializer deserializer,
   );
 
@@ -2829,6 +2919,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_live_room_play_info(
+    LiveRoomPlayInfo self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_live_second_page(
     LiveSecondPage self,
     SseSerializer serializer,
@@ -3291,6 +3387,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_live_codec(
+    List<LiveCodec> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_live_feedback(
     List<LiveFeedback> self,
     SseSerializer serializer,
@@ -3309,6 +3411,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_live_format(
+    List<LiveFormat> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_live_qn(List<LiveQn> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_live_room_card(
     List<LiveRoomCard> self,
     SseSerializer serializer,
@@ -3317,6 +3428,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_live_second_tag(
     List<LiveSecondTag> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_live_stream(
+    List<LiveStream> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_live_url_info(
+    List<LiveUrlInfo> self,
     SseSerializer serializer,
   );
 
@@ -3558,6 +3681,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_live_codec(LiveCodec self, SseSerializer serializer);
+
+  @protected
   void sse_encode_live_context(LiveContext self, SseSerializer serializer);
 
   @protected
@@ -3594,6 +3720,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_live_format(LiveFormat self, SseSerializer serializer);
+
+  @protected
   void sse_encode_live_index_page(LiveIndexPage self, SseSerializer serializer);
 
   @protected
@@ -3601,6 +3730,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     LiveIndexResult self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_live_qn(LiveQn self, SseSerializer serializer);
 
   @protected
   void sse_encode_live_room_card(LiveRoomCard self, SseSerializer serializer);
@@ -3611,6 +3743,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_live_room_h_5_result(
     LiveRoomH5Result self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_room_play_info(
+    LiveRoomPlayInfo self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_room_play_info_result(
+    LiveRoomPlayInfoResult self,
     SseSerializer serializer,
   );
 
@@ -3628,6 +3772,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_live_second_tag(LiveSecondTag self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_live_stream(LiveStream self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_live_url_info(LiveUrlInfo self, SseSerializer serializer);
 
   @protected
   void sse_encode_match_contest(MatchContest self, SseSerializer serializer);
@@ -3764,6 +3914,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_live_room_h_5(
     LiveRoomH5? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_room_play_info(
+    LiveRoomPlayInfo? self,
     SseSerializer serializer,
   );
 

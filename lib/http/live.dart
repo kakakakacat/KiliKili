@@ -15,7 +15,6 @@ import 'package:kilikili/models_new/live/live_dm_info/data.dart';
 import 'package:kilikili/models_new/live/live_emote/data.dart';
 import 'package:kilikili/models_new/live/live_emote/datum.dart';
 import 'package:kilikili/models_new/live/live_medal_wall/data.dart';
-import 'package:kilikili/models_new/live/live_room_play_info/data.dart';
 import 'package:kilikili/models_new/live/live_search/data.dart';
 import 'package:kilikili/models_new/live/live_superchat/data.dart';
 import 'package:kilikili/utils/accounts.dart';
@@ -26,11 +25,10 @@ import 'package:dio/dio.dart';
 
 /// 直播接口中**尚未迁到 Rust** 的那些。
 ///
-/// 只读部分的七条（分区三条、首页推荐、分区二级列表、关注的直播、H5
-/// 房间信息）已迁走，见 `lib/services/rust/rust_live.dart`。这里剩下的
-/// 是三类：
+/// 只读部分的八条（分区三条、首页推荐、分区二级列表、关注的直播、H5
+/// 房间信息、取流）已迁走，见 `lib/services/rust/rust_live.dart`。
+/// 这里剩下的是两类：
 ///
-/// - `liveRoomInfo` 取流——要产出共享的 `LiveQuality`，S11a 第二批；
 /// - 弹幕长连接相关（`liveRoomDmPrefetch`/`liveRoomGetDanmakuToken`）
 ///   ——S11b（#62），阻塞在 ADR-012；
 /// - 全部写操作与剩余只读（搜索、屏蔽、贡献榜、粉丝勋章…）——归
@@ -77,38 +75,6 @@ abstract final class LiveHttp {
     );
     if (res.data['code'] == 0) {
       return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<RoomPlayInfoData>> liveRoomInfo({
-    required Object roomId,
-    int? qn,
-    bool onlyAudio = false,
-  }) async {
-    final res = await Request().get(
-      Api.liveRoomInfo,
-      queryParameters: await WbiSign.makSign({
-        'room_id': roomId,
-        'protocol': '0,1',
-        'format': '0,1,2',
-        'codec': '0,1,2',
-        'qn': ?qn,
-        'platform': 'web',
-        'ptype': 8,
-        'dolby': 5,
-        'panorama': 1,
-        if (onlyAudio) 'only_audio': 1,
-        'web_location': 444.8,
-      }),
-    );
-    if (res.data['code'] == 0) {
-      try {
-        return Success(RoomPlayInfoData.fromJson(res.data['data']));
-      } catch (e) {
-        return Error(e.toString());
-      }
     } else {
       return Error(res.data['message']);
     }

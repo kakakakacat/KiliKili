@@ -15,8 +15,7 @@ import 'package:kilikili/models_new/live/live_danmaku/danmaku_msg.dart';
 import 'package:kilikili/models_new/live/live_danmaku/live_emote.dart';
 import 'package:kilikili/models_new/live/live_dm_info/data.dart';
 import 'package:kilikili/models_new/live/live_medal_wall/uinfo_medal.dart';
-import 'package:kilikili/models_new/live/live_room_play_info/codec.dart';
-import 'package:kilikili/models_new/live/live_room_play_info/stream.dart';
+import 'package:kilikili/services/rust/live_playurl_compat.dart';
 import 'package:kilikili/models_new/live/live_superchat/item.dart';
 import 'package:kilikili/pages/common/publish/publish_route.dart';
 import 'package:kilikili/pages/danmaku/danmaku_model.dart';
@@ -244,7 +243,7 @@ class LiveRoomController extends GetxController {
           ? Pref.liveQuality
           : Pref.liveQualityCellular,
     );
-    final res = await LiveHttp.liveRoomInfo(
+    final res = await RustLive.roomPlayInfo(
       roomId: roomId,
       qn: currentQn.value!.code,
       onlyAudio: plPlayerController.onlyPlayAudio.value,
@@ -254,8 +253,11 @@ class LiveRoomController extends GetxController {
         _showDialog('当前直播间未开播');
         return;
       }
-      final playurl = response.playurlInfo?.playurl;
-      if (playurl == null) {
+      // 基线判的是 `playurlInfo?.playurl == null`。Rust 侧把那两层空壳
+      // 摊平了，于是「没有 playurl」与「playurl.stream 是空数组」在这里
+      // 都表现为空列表——对调用方本就是同一件事。基线在后一种情况下会
+      // 崩在 `stream.getOrFirst(0)` 上，这里一并挡掉。
+      if (response.streams.isEmpty) {
         _showDialog('无法获取播放地址');
         return;
       }
@@ -266,7 +268,7 @@ class LiveRoomController extends GetxController {
       liveTime.value = response.liveTime;
       startLiveTimer();
       isPortrait.value = response.isPortrait ?? false;
-      stream = playurl.stream;
+      stream = response.streams;
       _initStreamIndex();
       await Future.wait([
         ?initLiveUrl(
@@ -283,7 +285,7 @@ class LiveRoomController extends GetxController {
     }
   }
 
-  late List<Stream> stream;
+  late List<LiveStream> stream;
   int streamIndex = 0;
   int formatIndex = 0;
   int codecIndex = 0;
@@ -327,15 +329,15 @@ class LiveRoomController extends GetxController {
     this.codecIndex = codecIndex;
     this.liveUrlIndex = liveUrlIndex;
 
-    final CodecItem item = stream
+    final LiveCodec item = stream
         .getOrFirst(streamIndex)
         .format
         .getOrFirst(formatIndex)
         .codec
         .getOrFirst(codecIndex);
-    acceptQnList = item.acceptQn;
+    acceptQnList = toLiveQualityList(item.acceptQn);
     // 以服务端返回的码率为准
-    currentQn.value = item.currentQn;
+    currentQn.value = toLiveQuality(item.currentQn);
     videoUrl = VideoUtils.getLiveCdnUrl(item, index: liveUrlIndex);
     return playerInit()?.whenComplete(_startSizeSub);
   }

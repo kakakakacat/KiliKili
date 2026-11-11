@@ -3,7 +3,7 @@ import 'package:kilikili/models/common/video/cdn_type.dart';
 import 'package:kilikili/models/common/video/video_decode_type.dart';
 import 'package:kilikili/models/video/play/url.dart'
     show AudioItem, VideoItem, FormatItem;
-import 'package:kilikili/models_new/live/live_room_play_info/codec.dart';
+import 'package:kilikili/services/rust/rust_live.dart' show LiveCodec;
 import 'package:kilikili/services/rust/rust_media_select.dart';
 import 'package:kilikili/utils/extension/iterable_ext.dart';
 import 'package:kilikili/utils/storage_pref.dart';
@@ -105,7 +105,7 @@ abstract final class VideoUtils {
               .toString();
   }
 
-  static String getLiveCdnUrl(CodecItem e, {int index = 0}) {
+  static String getLiveCdnUrl(LiveCodec e, {int index = 0}) {
     final urlInfo = e.urlInfo.getOrFirst(index);
     return (liveCdnUrl ?? urlInfo.host) + e.baseUrl + urlInfo.extra;
   }

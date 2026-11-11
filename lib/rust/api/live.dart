@@ -7,8 +7,8 @@ import 'package:kilikili/rust/frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:kilikili/rust/api/transport.dart';
 
-// These functions are ignored because they are not marked as `pub`: `area_group`, `area`, `card`, `feedback`, `flatten`, `follow_page`, `index_page`, `into_api`, `room_h5`, `second_page`, `split`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These functions are ignored because they are not marked as `pub`: `area_group`, `area`, `card`, `feedback`, `flatten`, `follow_page`, `index_page`, `into_api`, `quality`, `room_h5`, `room_play_info`, `second_page`, `split`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// 取全部分区（按一级分区分组）。
 Future<LiveAreaGroupsResult> fetchLiveAreaList({
@@ -90,6 +90,35 @@ Future<LiveRoomH5Result> fetchLiveRoomH5({
 }) => RustLib.instance.api.crateApiLiveFetchLiveRoomH5(
   context: context,
   roomId: roomId,
+);
+
+/// 取流。**WBI 签名**。
+///
+/// `mixin_key` 与 `wts` 由 Dart 注入：前者的真相源是 nav 接口加本地
+/// 缓存（`WbiSign.getWbiKeys`，还有多条未迁接口在用），后者注入才能让
+/// 请求构造保持纯函数、被 golden fixture 锁死。
+///
+/// 这两个参数**没有放进 [`LiveContext`]**：那个结构是另外七条接口共用
+/// 的，它们都不签 WBI，为一条接口给它加两个恒为空的字段，等于让每个
+/// 调用点都要填一遍无关的值。pgc 那边放进 context 是因为多条接口都要
+/// 签。
+///
+/// `qn` 为 `None` 时由服务端选档；`only_audio` 为真时只要音频流。
+/// `room_id` 非正数时不发请求，理由同 [`fetch_live_room_h5`]。
+Future<LiveRoomPlayInfoResult> fetchLiveRoomPlayInfo({
+  required LiveContext context,
+  required PlatformInt64 roomId,
+  PlatformInt64? qn,
+  required bool onlyAudio,
+  required String mixinKey,
+  required PlatformInt64 wts,
+}) => RustLib.instance.api.crateApiLiveFetchLiveRoomPlayInfo(
+  context: context,
+  roomId: roomId,
+  qn: qn,
+  onlyAudio: onlyAudio,
+  mixinKey: mixinKey,
+  wts: wts,
 );
 
 /// 本机/本次会话的身份值。
@@ -297,6 +326,44 @@ class LiveAreasResult {
           errorKind == other.errorKind &&
           errorDetail == other.errorDetail &&
           errorCode == other.errorCode;
+}
+
+/// 一种编码（avc / hevc / av1）下的全部可选地址。
+class LiveCodec {
+  final String? codecName;
+
+  /// 服务端实际给的那一档，**以它为准**而非请求里的 `qn`。
+  final LiveQn currentQn;
+  final List<LiveQn> acceptQn;
+  final String baseUrl;
+  final List<LiveUrlInfo> urlInfo;
+
+  const LiveCodec({
+    this.codecName,
+    required this.currentQn,
+    required this.acceptQn,
+    required this.baseUrl,
+    required this.urlInfo,
+  });
+
+  @override
+  int get hashCode =>
+      codecName.hashCode ^
+      currentQn.hashCode ^
+      acceptQn.hashCode ^
+      baseUrl.hashCode ^
+      urlInfo.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveCodec &&
+          runtimeType == other.runtimeType &&
+          codecName == other.codecName &&
+          currentQn == other.currentQn &&
+          acceptQn == other.acceptQn &&
+          baseUrl == other.baseUrl &&
+          urlInfo == other.urlInfo;
 }
 
 /// 一次直播请求的公共参数。
@@ -534,6 +601,28 @@ class LiveFollowingPage {
           liveCount == other.liveCount;
 }
 
+/// 一种封装格式（flv / ts / fmp4）。
+class LiveFormat {
+  final String? formatName;
+  final List<LiveCodec> codec;
+
+  const LiveFormat({
+    this.formatName,
+    required this.codec,
+  });
+
+  @override
+  int get hashCode => formatName.hashCode ^ codec.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveFormat &&
+          runtimeType == other.runtimeType &&
+          formatName == other.formatName &&
+          codec == other.codec;
+}
+
 /// 首页推荐的一屏。
 class LiveIndexPage {
   final List<LiveRoomCard> cards;
@@ -600,6 +689,33 @@ class LiveIndexResult {
           errorKind == other.errorKind &&
           errorDetail == other.errorDetail &&
           errorCode == other.errorCode;
+}
+
+/// 一档画质。
+///
+/// `desc` 为 `None` 表示本次响应的 `g_qn_desc` 里没有这一档，**不是**
+/// 没有名字：Dart 侧用内置静态表补（`live_playurl_compat.dart` 的
+/// `toLiveQuality`）。那张表同时被设置页与 `Pref.liveQuality` 使用，
+/// 与取流无关，所以留在 Dart——ADR-011 决策六的单向适配。
+class LiveQn {
+  final PlatformInt64 code;
+  final String? desc;
+
+  const LiveQn({
+    required this.code,
+    this.desc,
+  });
+
+  @override
+  int get hashCode => code.hashCode ^ desc.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveQn &&
+          runtimeType == other.runtimeType &&
+          code == other.code &&
+          desc == other.desc;
 }
 
 /// 直播间卡片。首页推荐、分区二级列表、分区入口、关注区块共用一种。
@@ -746,6 +862,88 @@ class LiveRoomH5Result {
           errorCode == other.errorCode;
 }
 
+/// 取流响应。
+///
+/// 协议上的 `playurl_info.playurl` 两层空壳已经摊平：`streams` 为空即
+/// 「没有可播的地址」，调用方只需判一次空。理由见
+/// [`bili_domain::live::LiveRoomPlayInfo`]。
+class LiveRoomPlayInfo {
+  final PlatformInt64? roomId;
+  final PlatformInt64? shortId;
+  final PlatformInt64? uid;
+  final bool? isPortrait;
+
+  /// 1 为直播中。其余值都不可取流。
+  final PlatformInt64? liveStatus;
+  final PlatformInt64? liveTime;
+  final List<LiveStream> streams;
+
+  const LiveRoomPlayInfo({
+    this.roomId,
+    this.shortId,
+    this.uid,
+    this.isPortrait,
+    this.liveStatus,
+    this.liveTime,
+    required this.streams,
+  });
+
+  @override
+  int get hashCode =>
+      roomId.hashCode ^
+      shortId.hashCode ^
+      uid.hashCode ^
+      isPortrait.hashCode ^
+      liveStatus.hashCode ^
+      liveTime.hashCode ^
+      streams.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveRoomPlayInfo &&
+          runtimeType == other.runtimeType &&
+          roomId == other.roomId &&
+          shortId == other.shortId &&
+          uid == other.uid &&
+          isPortrait == other.isPortrait &&
+          liveStatus == other.liveStatus &&
+          liveTime == other.liveTime &&
+          streams == other.streams;
+}
+
+/// 取流。字段语义同 [`LiveAreaGroupsResult`]。
+class LiveRoomPlayInfoResult {
+  final LiveRoomPlayInfo? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const LiveRoomPlayInfoResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveRoomPlayInfoResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
 /// 分区二级列表的一屏。
 class LiveSecondPage {
   final PlatformInt64? count;
@@ -823,4 +1021,48 @@ class LiveSecondTag {
           runtimeType == other.runtimeType &&
           name == other.name &&
           sortType == other.sortType;
+}
+
+/// 一种传输协议（http_stream / http_hls）。
+class LiveStream {
+  final String? protocolName;
+  final List<LiveFormat> format;
+
+  const LiveStream({
+    this.protocolName,
+    required this.format,
+  });
+
+  @override
+  int get hashCode => protocolName.hashCode ^ format.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveStream &&
+          runtimeType == other.runtimeType &&
+          protocolName == other.protocolName &&
+          format == other.format;
+}
+
+/// 一个 CDN 节点。拼流地址时 `host + base_url + extra` 三段相连。
+class LiveUrlInfo {
+  final String host;
+  final String extra;
+
+  const LiveUrlInfo({
+    required this.host,
+    required this.extra,
+  });
+
+  @override
+  int get hashCode => host.hashCode ^ extra.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveUrlInfo &&
+          runtimeType == other.runtimeType &&
+          host == other.host &&
+          extra == other.extra;
 }

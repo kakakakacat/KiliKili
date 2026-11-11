@@ -1,11 +1,10 @@
-//! 直播只读接口的领域实体（S11a 第一批 / issue #61）。
+//! 直播只读接口的领域实体（S11a 第一、二批 / issue #61）。
 //!
 //! 覆盖：分区列表（全部分区、某一级分区下的二级分区、收藏分区）、
-//! 列表页（首页推荐、分区二级列表、关注的直播）、H5 房间信息。
+//! 列表页（首页推荐、分区二级列表、关注的直播）、H5 房间信息，
+//! 以及取流（`liveRoomInfo` 的 `playurl_info`，第二批）。
 //!
 //! **不在本模块**：
-//! - 取流（`liveRoomInfo` 的 `playurl_info`）——它缠着共享的
-//!   `BaseQuality` 体系与播放器的画质选择器，留到 S11a 第二批；
 //! - 弹幕长连接（S11b / issue #62）——阻塞在 ADR-012（#49）；
 //! - 发弹幕、屏蔽词、点赞上报等写操作——归 ADR-013（#50）。
 //!
@@ -165,6 +164,82 @@ pub struct LiveRoomH5 {
     pub anchor_face: Option<String>,
     /// `watched_show.text_large`。
     pub watched_text: Option<String>,
+}
+
+/// 一档画质。
+///
+/// `desc` 的来源**只有** `playurl.g_qn_desc`——那是本次响应自带的码率
+/// 描述表。`None` 不表示「这档没有名字」，而表示「本次响应没说」：基线
+/// `LiveQuality.fromFormat` 在表里查不到时会回退到客户端内置的静态表
+/// （`LiveQuality.fromCode`），内置表再查不到才用 code 的十进制串。
+///
+/// 那张静态表（原画 10000、蓝光 400、超清 250……）**没有跟着迁过来**，
+/// 因为它不是协议数据：设置页的画质下拉与 `Pref.liveQuality` 的默认值
+/// 都在吃它，而那两处与取流无关。所以这里只如实报告响应里有没有说，
+/// 补齐留给 `lib/services/rust/live_playurl_compat.dart`——这正是
+/// ADR-011 决策六所说的单向适配。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LiveQn {
+    pub code: i64,
+    pub desc: Option<String>,
+}
+
+/// 一个 CDN 节点。拼流地址时 `host + base_url + extra` 三段相连。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LiveUrlInfo {
+    pub host: String,
+    pub extra: String,
+}
+
+/// 一种编码（avc / hevc / av1）下的全部可选地址。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LiveCodec {
+    pub codec_name: Option<String>,
+    /// 服务端实际给的那一档。**以它为准**，不是请求里的 `qn`：请求的
+    /// 档位不可用时服务端会自行降档，基线注释「以服务端返回的码率为准」
+    /// 说的就是这件事。
+    pub current_qn: LiveQn,
+    pub accept_qn: Vec<LiveQn>,
+    pub base_url: String,
+    pub url_info: Vec<LiveUrlInfo>,
+}
+
+/// 一种封装格式（flv / ts / fmp4）。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LiveFormat {
+    pub format_name: Option<String>,
+    pub codec: Vec<LiveCodec>,
+}
+
+/// 一种传输协议（http_stream / http_hls）。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LiveStream {
+    pub protocol_name: Option<String>,
+    pub format: Vec<LiveFormat>,
+}
+
+/// 取流响应。
+///
+/// ## 两层空壳摊平了
+///
+/// 协议上是 `playurl_info.playurl.stream`，两层都可空，基线因此写出
+/// `response.playurlInfo?.playurl` 再判 null。这两层没有各自的含义，
+/// 摊平成 [`streams`](Self::streams) 一个字段。
+///
+/// 代价是「`playurl` 为 null」与「`playurl.stream` 为空数组」在这里都
+/// 表现为空列表。这不丢信息：两种情况对调用方是同一件事——没有可播的
+/// 地址。基线反而在第二种情况下会崩（`stream.getOrFirst(0)` 对空列表
+/// 取元素），摊平后调用方只需判一次空。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LiveRoomPlayInfo {
+    pub room_id: Option<i64>,
+    pub short_id: Option<i64>,
+    pub uid: Option<i64>,
+    pub is_portrait: Option<bool>,
+    /// 1 为直播中。其余值（0 未开播、2 轮播）都不可取流。
+    pub live_status: Option<i64>,
+    pub live_time: Option<i64>,
+    pub streams: Vec<LiveStream>,
 }
 
 /// 分区入口的兜底数据。

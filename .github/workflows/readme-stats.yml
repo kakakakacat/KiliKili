@@ -1,5 +1,23 @@
 name: README charts
 
+# 图表不再直接推 main：`main regression gate` 这条 ruleset 把
+# `regression gate` 设成必过检查，而直推绕不过它，推送会被 GH013 拒绝
+# （实测：每次合并后都留一条红）。个人账号仓库又无法给 ruleset 加
+# GitHub Actions 的 bypass（422：actor 必须属于 source 或所属组织）。
+#
+# 因此改成「有差异就开 PR」：图表改动推到固定分支 `chore/readme-stats`，
+# 开一个 PR 并挂上 auto-merge，CI 绿了自己合进去。
+#
+# 两个前提，缺一个这条流水线就只会卡住而不是出错，所以写在这里：
+#
+# 1. `ci.yml` 必须对**推送到本分支**也触发。GITHUB_TOKEN 开的 PR 不会
+#    触发 `pull_request` 事件（GitHub 防递归的既定行为），没有这条
+#    push 触发，PR 上就永远没有 `regression gate` 这个检查，auto-merge
+#    会无限等待。
+# 2. 仓库设置里要允许 Actions 创建 PR（Settings → Actions → General →
+#    Workflow permissions → "Allow GitHub Actions to create and approve
+#    pull requests"）。关着的话 `gh pr create` 会以 403 失败。
+
 on:
   push:
     branches: [main]
@@ -11,10 +29,14 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: readme-charts-main
   cancel-in-progress: true
+
+env:
+  CHARTS_BRANCH: chore/readme-stats
 
 jobs:
   update:
@@ -28,14 +50,53 @@ jobs:
       - name: Generate charts
         run: python3 tool/generate_readme_stats.py
 
-      - name: Commit updated charts
+      - name: Open or refresh the charts pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          set -euo pipefail
+
           git add assets/stats/commits.svg assets/stats/code-changes.svg
           if git diff --cached --quiet; then
             echo "Charts are up to date"
             exit 0
           fi
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "chore(stats): refresh README charts"
-          git push origin HEAD:main
+
+          # 固定分支，每次整个重写：图表是 main 的函数，旧的那版没有保留
+          # 价值。这里用 --force 而不是 --force-with-lease——checkout 只取了
+          # 当前 ref，本地没有该分支的远端跟踪引用，lease 会以 "stale info"
+          # 失败。分支由本工作流独占，强推是它的正常工作方式。
+          git branch -f "$CHARTS_BRANCH" HEAD
+          git push --force origin "$CHARTS_BRANCH"
+
+          existing="$(gh pr list --head "$CHARTS_BRANCH" --state open \
+            --json number --jq '.[0].number // empty')"
+          if [ -z "$existing" ]; then
+            # 用 printf 而不是 heredoc：YAML 块标量要求每行保持缩进，
+            # heredoc 的内容会连着缩进一起进正文。
+            printf '%s\n\n%s\n' \
+              'README 的提交与代码变更图表按 main 的最新状态重新生成。' \
+              '本 PR 由 `readme-stats.yml` 自动开出，并挂了 auto-merge；改动只有 `assets/stats/*.svg` 两个文件，不涉及代码。内容过时时不必手工修，下一次定时任务会整个覆盖。' \
+              > /tmp/charts-pr-body.md
+            if ! gh pr create \
+              --base main \
+              --head "$CHARTS_BRANCH" \
+              --title "chore(stats): refresh README charts" \
+              --body-file /tmp/charts-pr-body.md
+            then
+              echo "::error::开 PR 失败。最常见的原因是仓库设置里没有允许 Actions 创建 PR：Settings → Actions → General → Workflow permissions → Allow GitHub Actions to create and approve pull requests。图表改动已推到 $CHARTS_BRANCH，手工开 PR 即可。"
+              exit 1
+            fi
+          else
+            echo "Reusing pull request #$existing"
+          fi
+
+          # 绿了自己合。仓库已开启 auto-merge；未开启时该命令会报错，
+          # 此时 PR 仍在，等人工合并即可。
+          gh pr merge "$CHARTS_BRANCH" --squash --auto || {
+            echo "::warning::auto-merge 挂载失败，PR 已开出，需要人工合并"
+          }

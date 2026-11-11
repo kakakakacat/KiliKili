@@ -185,6 +185,17 @@ PiliPlus-Rust/
 - `upgrade tests`：复制旧版用户数据，验证首次启动、数据库迁移、登录状态、下载任务和缓存兼容性。
 - 重要外部 API 的变化通过协议适配层修复，避免污染 Domain。
 
+> **2026-11-11 修订（[ADR-011](adr/ADR-011-typed-ffi-direct.md) 决策四、
+> 决策五）**：上面的 `shadow mode` 与 `feature flags` 只适用于**早期那七条
+> JSON 往返路径**（videoDetail、playurl、danmaku、dmView、subtitle、
+> searchSuggest、mediaSelect）。业务层其余接口改为 **typed 结构直连**：迁一条
+> 路径就连同 Dart 原实现一起删，**不加 `rust.*` 开关、没有降级分支**，因而
+> 也没有可比对的第二份实现。这些路径的对照物只剩两样——Rust 侧的冻结
+> golden 快照，以及迁移当次的一次性 parity 测试（把迁移前的 `fromJson`
+> 逐行转写进测试文件）。代价是失去运行时兜底，补偿措施是
+> [QA-001 §2.1](../qa/RELEASE-VALIDATION.md) 的真机待确认项清单与 Phase 2
+> 的统一回归。取流（playurl）那条的 typed 化单独跟踪在 issue #79。
+
 ### 5.4 阶段 1 定义完成（DoD）
 
 1. 按已审计的范围完成核心业务模块 Rust 化；剩余 Dart 仅承担 UI、播放渲染、平台桥接及有记录的遗留功能。

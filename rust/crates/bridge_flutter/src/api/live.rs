@@ -1,11 +1,11 @@
-//! 直播只读接口的 Dart 导出（S11a 第一批 / issue #61）。
+//! 直播只读接口的 Dart 导出（S11a 第一、二批 / issue #61）。
 //!
 //! 照 ADR-011 的 typed 直连样板写：结果用**值**表达失败而不是 `Result`，
 //! 实体字段保持 `Option`，凭据按请求传入。
 //!
 //! ## 逐个写开，不要用宏收
 //!
-//! 下面七个结果结构的字段完全相同，七个取数函数的骨架也相同。**刻意不用
+//! 下面八个结果结构的字段完全相同，八个取数函数的骨架也相同。**刻意不用
 //! `macro_rules!`**：flutter_rust_bridge 的 codegen 用 `syn` 解析源码、
 //! 不展开宏，宏生成的结构体与导出函数它一个都看不见，而且**不报错**
 //! ——生成的绑定会静默少掉这些类型。详见 ADR-011 的 S9 补充一。
@@ -14,8 +14,14 @@
 //!
 //! `ApiType.apiTypeSet` 把 `liveAreaList` / `liveFeedIndex` /
 //! `liveSecondList` / `liveRoomAreaList` 归在 `recommend`，
-//! `liveRoomInfoH5` 归在 `heartbeat`，`getLiveFavTag` 与 `liveFollow`
-//! 没有列进去、落到默认的 `main`。Dart 侧按 path 查表选账号，不在这里猜。
+//! `liveRoomInfoH5` 与 `liveRoomInfo`（取流）归在 `heartbeat`，
+//! `getLiveFavTag` 与 `liveFollow` 没有列进去、落到默认的 `main`。
+//! Dart 侧按 path 查表选账号，不在这里猜。
+//!
+//! 取流归 `heartbeat` 而不是 `video` 是容易弄错的一处：`ApiType` 里
+//! `video` 那个桶装的是**视频**取流（`ugcUrl`/`pgcUrl`/…），直播取流
+//! 不在其中。按 path 查表就不会错，硬编码迟早错，且错了不报错——只是
+//! 悄悄换了一个账号的 Cookie。
 
 use std::time::Duration;
 
@@ -229,6 +235,67 @@ pub struct LiveRoomH5 {
     pub watched_text: Option<String>,
 }
 
+/// 一档画质。
+///
+/// `desc` 为 `None` 表示本次响应的 `g_qn_desc` 里没有这一档，**不是**
+/// 没有名字：Dart 侧用内置静态表补（`live_playurl_compat.dart` 的
+/// `toLiveQuality`）。那张表同时被设置页与 `Pref.liveQuality` 使用，
+/// 与取流无关，所以留在 Dart——ADR-011 决策六的单向适配。
+#[derive(Debug, Clone)]
+pub struct LiveQn {
+    pub code: i64,
+    pub desc: Option<String>,
+}
+
+/// 一个 CDN 节点。拼流地址时 `host + base_url + extra` 三段相连。
+#[derive(Debug, Clone)]
+pub struct LiveUrlInfo {
+    pub host: String,
+    pub extra: String,
+}
+
+/// 一种编码（avc / hevc / av1）下的全部可选地址。
+#[derive(Debug, Clone)]
+pub struct LiveCodec {
+    pub codec_name: Option<String>,
+    /// 服务端实际给的那一档，**以它为准**而非请求里的 `qn`。
+    pub current_qn: LiveQn,
+    pub accept_qn: Vec<LiveQn>,
+    pub base_url: String,
+    pub url_info: Vec<LiveUrlInfo>,
+}
+
+/// 一种封装格式（flv / ts / fmp4）。
+#[derive(Debug, Clone)]
+pub struct LiveFormat {
+    pub format_name: Option<String>,
+    pub codec: Vec<LiveCodec>,
+}
+
+/// 一种传输协议（http_stream / http_hls）。
+#[derive(Debug, Clone)]
+pub struct LiveStream {
+    pub protocol_name: Option<String>,
+    pub format: Vec<LiveFormat>,
+}
+
+/// 取流响应。
+///
+/// 协议上的 `playurl_info.playurl` 两层空壳已经摊平：`streams` 为空即
+/// 「没有可播的地址」，调用方只需判一次空。理由见
+/// [`bili_domain::live::LiveRoomPlayInfo`]。
+#[derive(Debug, Clone)]
+pub struct LiveRoomPlayInfo {
+    pub room_id: Option<i64>,
+    pub short_id: Option<i64>,
+    pub uid: Option<i64>,
+    pub is_portrait: Option<bool>,
+    /// 1 为直播中。其余值都不可取流。
+    pub live_status: Option<i64>,
+    pub live_time: Option<i64>,
+    pub streams: Vec<LiveStream>,
+}
+
 // ------------------------------------------------------------------ 结果
 
 /// 全部分区。失败时 `data` 为 `None`，错误以值的形式带回。
@@ -283,6 +350,15 @@ pub struct LiveFollowResult {
 #[derive(Debug, Clone)]
 pub struct LiveRoomH5Result {
     pub data: Option<LiveRoomH5>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+/// 取流。字段语义同 [`LiveAreaGroupsResult`]。
+#[derive(Debug, Clone)]
+pub struct LiveRoomPlayInfoResult {
+    pub data: Option<LiveRoomPlayInfo>,
     pub error_kind: Option<String>,
     pub error_detail: Option<String>,
     pub error_code: Option<i64>,
@@ -400,6 +476,56 @@ fn room_h5(value: bili_domain::live::LiveRoomH5) -> LiveRoomH5 {
         anchor_name: value.anchor_name,
         anchor_face: value.anchor_face,
         watched_text: value.watched_text,
+    }
+}
+
+fn quality(value: bili_domain::live::LiveQn) -> LiveQn {
+    LiveQn {
+        code: value.code,
+        desc: value.desc,
+    }
+}
+
+fn room_play_info(value: bili_domain::live::LiveRoomPlayInfo) -> LiveRoomPlayInfo {
+    LiveRoomPlayInfo {
+        room_id: value.room_id,
+        short_id: value.short_id,
+        uid: value.uid,
+        is_portrait: value.is_portrait,
+        live_status: value.live_status,
+        live_time: value.live_time,
+        streams: value
+            .streams
+            .into_iter()
+            .map(|s| LiveStream {
+                protocol_name: s.protocol_name,
+                format: s
+                    .format
+                    .into_iter()
+                    .map(|f| LiveFormat {
+                        format_name: f.format_name,
+                        codec: f
+                            .codec
+                            .into_iter()
+                            .map(|c| LiveCodec {
+                                codec_name: c.codec_name,
+                                current_qn: quality(c.current_qn),
+                                accept_qn: c.accept_qn.into_iter().map(quality).collect(),
+                                base_url: c.base_url,
+                                url_info: c
+                                    .url_info
+                                    .into_iter()
+                                    .map(|u| LiveUrlInfo {
+                                        host: u.host,
+                                        extra: u.extra,
+                                    })
+                                    .collect(),
+                            })
+                            .collect(),
+                    })
+                    .collect(),
+            })
+            .collect(),
     }
 }
 
@@ -629,6 +755,61 @@ pub async fn fetch_live_room_h5(context: LiveContext, room_id: i64) -> LiveRoomH
             error_code: None,
         },
         Err(e) => LiveRoomH5Result {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+
+/// 取流。**WBI 签名**。
+///
+/// `mixin_key` 与 `wts` 由 Dart 注入：前者的真相源是 nav 接口加本地
+/// 缓存（`WbiSign.getWbiKeys`，还有多条未迁接口在用），后者注入才能让
+/// 请求构造保持纯函数、被 golden fixture 锁死。
+///
+/// 这两个参数**没有放进 [`LiveContext`]**：那个结构是另外七条接口共用
+/// 的，它们都不签 WBI，为一条接口给它加两个恒为空的字段，等于让每个
+/// 调用点都要填一遍无关的值。pgc 那边放进 context 是因为多条接口都要
+/// 签。
+///
+/// `qn` 为 `None` 时由服务端选档；`only_audio` 为真时只要音频流。
+/// `room_id` 非正数时不发请求，理由同 [`fetch_live_room_h5`]。
+pub async fn fetch_live_room_play_info(
+    context: LiveContext,
+    room_id: i64,
+    qn: Option<i64>,
+    only_audio: bool,
+    mixin_key: String,
+    wts: i64,
+) -> LiveRoomPlayInfoResult {
+    if let Err(e) = live::check_room_id(room_id) {
+        return LiveRoomPlayInfoResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        };
+    }
+
+    let (ctx, transport) = context.split();
+
+    let joined = init::runtime()
+        .spawn(async move {
+            live::fetch_room_play_info(&transport, &ctx, room_id, qn, only_audio, &mixin_key, wts)
+                .await
+        })
+        .await;
+
+    match flatten(joined) {
+        Ok(info) => LiveRoomPlayInfoResult {
+            data: Some(room_play_info(info)),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => LiveRoomPlayInfoResult {
             data: None,
             error_kind: Some(e.kind().to_string()),
             error_detail: Some(e.detail().to_owned()),

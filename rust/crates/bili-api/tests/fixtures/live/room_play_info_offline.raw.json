@@ -1,0 +1,19 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "room_id": 100002,
+    "short_id": 0,
+    "uid": 200002,
+    "is_portrait": true,
+    "live_status": 0,
+    "live_time": -62170012800,
+    "is_locked": false,
+    "encrypted": false,
+    "playurl_info": {
+      "conf_json": "{}",
+      "playurl": null
+    }
+  }
+}

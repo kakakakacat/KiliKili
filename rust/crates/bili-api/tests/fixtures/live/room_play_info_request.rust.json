@@ -1,0 +1,114 @@
+[
+  {
+    "case": "常规：指定画质、含视频",
+    "mixin_key": "ea1db124af3c7062474693fa704f4ff8",
+    "path": "/xlive/web-room/v2/index/getRoomPlayInfo",
+    "query": [
+      [
+        "codec",
+        "0,1,2"
+      ],
+      [
+        "dolby",
+        "5"
+      ],
+      [
+        "format",
+        "0,1,2"
+      ],
+      [
+        "panorama",
+        "1"
+      ],
+      [
+        "platform",
+        "web"
+      ],
+      [
+        "protocol",
+        "0,1"
+      ],
+      [
+        "ptype",
+        "8"
+      ],
+      [
+        "qn",
+        "10000"
+      ],
+      [
+        "room_id",
+        "100001"
+      ],
+      [
+        "web_location",
+        "444.8"
+      ],
+      [
+        "wts",
+        "1762800000"
+      ],
+      [
+        "w_rid",
+        "7489a5a0d0c18edfcf2c5d90f321ac6a"
+      ]
+    ],
+    "wts": 1762800000
+  },
+  {
+    "case": "仅音频：不指定画质",
+    "mixin_key": "ea1db124af3c7062474693fa704f4ff8",
+    "path": "/xlive/web-room/v2/index/getRoomPlayInfo",
+    "query": [
+      [
+        "codec",
+        "0,1,2"
+      ],
+      [
+        "dolby",
+        "5"
+      ],
+      [
+        "format",
+        "0,1,2"
+      ],
+      [
+        "only_audio",
+        "1"
+      ],
+      [
+        "panorama",
+        "1"
+      ],
+      [
+        "platform",
+        "web"
+      ],
+      [
+        "protocol",
+        "0,1"
+      ],
+      [
+        "ptype",
+        "8"
+      ],
+      [
+        "room_id",
+        "100002"
+      ],
+      [
+        "web_location",
+        "444.8"
+      ],
+      [
+        "wts",
+        "1762800000"
+      ],
+      [
+        "w_rid",
+        "e7b38bfc9fcdd7462d2af2a608cb478b"
+      ]
+    ],
+    "wts": 1762800000
+  }
+]

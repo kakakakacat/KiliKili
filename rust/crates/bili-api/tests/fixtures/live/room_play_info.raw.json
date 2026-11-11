@@ -1,0 +1,120 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "room_id": 100001,
+    "short_id": 1001,
+    "uid": 200001,
+    "is_portrait": false,
+    "live_status": 1,
+    "live_time": 1762800000,
+    "is_locked": false,
+    "encrypted": false,
+    "playurl_info": {
+      "conf_json": "{\"cdn_rate\":10000}",
+      "playurl": {
+        "cid": 100001,
+        "g_qn_desc": [
+          { "qn": 10000, "desc": "原画", "hdr_desc": "", "attr_desc": null },
+          { "qn": 400, "desc": "蓝光", "hdr_desc": "", "attr_desc": null },
+          { "qn": 250, "desc": "超清", "hdr_desc": "", "attr_desc": null },
+          { "qn": 7777, "hdr_desc": "", "attr_desc": null },
+          { "desc": "缺码率的一档", "hdr_desc": "" }
+        ],
+        "stream": [
+          {
+            "protocol_name": "http_stream",
+            "format": [
+              {
+                "format_name": "flv",
+                "codec": [
+                  {
+                    "codec_name": "avc",
+                    "current_qn": 10000,
+                    "accept_qn": [10000, 400, 250, 150],
+                    "base_url": "/live-bvc/000001/live_200001_0000001.flv",
+                    "url_info": [
+                      {
+                        "host": "https://d1--cn-live.example-cdn.test",
+                        "extra": "?expires=0000000000&len=0&oi=0&pt=web&trid=0000000000000001",
+                        "stream_ttl": 3600
+                      },
+                      {
+                        "host": "https://d2--cn-live.example-cdn.test",
+                        "extra": "?expires=0000000000&len=0&oi=0&pt=web&trid=0000000000000002",
+                        "stream_ttl": 3600
+                      }
+                    ],
+                    "hdr_qn": null,
+                    "dolby_type": 0
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "protocol_name": "http_hls",
+            "format": [
+              {
+                "format_name": "ts",
+                "codec": [
+                  {
+                    "codec_name": "avc",
+                    "current_qn": 400,
+                    "accept_qn": [10000, 400],
+                    "base_url": "/live-bvc/000002/live_200001_0000001/index.m3u8",
+                    "url_info": [
+                      {
+                        "host": "https://d3--cn-live.example-cdn.test",
+                        "extra": "?expires=0000000000&len=0&oi=0&pt=web&trid=0000000000000003",
+                        "stream_ttl": 3600
+                      }
+                    ],
+                    "hdr_qn": null,
+                    "dolby_type": 0
+                  }
+                ]
+              },
+              {
+                "format_name": "fmp4",
+                "codec": [
+                  {
+                    "codec_name": "hevc",
+                    "current_qn": 7777,
+                    "accept_qn": [7777, 30000],
+                    "base_url": "/live-bvc/000003/live_200001_0000001/index.m3u8",
+                    "url_info": [
+                      {
+                        "host": "https://d4--cn-live.example-cdn.test",
+                        "extra": "?expires=0000000000&len=0&oi=0&pt=web&trid=0000000000000004",
+                        "stream_ttl": 3600
+                      }
+                    ],
+                    "hdr_qn": null,
+                    "dolby_type": 0
+                  },
+                  {
+                    "codec_name": "av1",
+                    "current_qn": 250,
+                    "accept_qn": [250],
+                    "base_url": "/live-bvc/000004/live_200001_0000001/index.m3u8",
+                    "url_info": [
+                      {
+                        "host": "https://d5--cn-live.example-cdn.test",
+                        "extra": "?expires=0000000000&len=0&oi=0&pt=web&trid=0000000000000005",
+                        "stream_ttl": 3600
+                      }
+                    ],
+                    "hdr_qn": null,
+                    "dolby_type": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

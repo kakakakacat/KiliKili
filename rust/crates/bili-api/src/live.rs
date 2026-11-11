@@ -1,21 +1,24 @@
 //! 直播只读接口：请求构造、响应解析与到领域实体的映射。
 //!
 //! 覆盖 S11a 第一批的七条只读接口：全部分区、某一级分区下的二级分区、
-//! 收藏分区、首页推荐、分区二级列表、关注的直播、H5 房间信息。
+//! 收藏分区、首页推荐、分区二级列表、关注的直播、H5 房间信息；
+//! 以及第二批的取流（`liveRoomInfo`）。
 //!
-//! **不在本模块**：取流（`liveRoomInfo`）、弹幕长连接（S11b）、以及
-//! `lib/http/live.dart` 里的全部写操作。边界与理由见
-//! [`bili_domain::live`]。
+//! **不在本模块**：弹幕长连接（S11b）、以及 `lib/http/live.dart` 里的
+//! 全部写操作。边界与理由见 [`bili_domain::live`]。
 //!
-//! ## 两类接口，两套签名
+//! ## 三类接口，三套签名
 //!
 //! | 接口 | 主机 | 签名 |
 //! |---|---|---|
 //! | 分区三条、首页推荐、分区二级列表 | `api.live.bilibili.com` | APP 签名（`appkey`/`ts`/`sign`） |
 //! | 关注的直播、H5 房间信息 | 同上 | 不签名 |
+//! | 取流 | 同上 | **WBI**（`wts`/`w_rid`） |
 //!
-//! APP 签名的算法在 [`bili_protocol::app_sign`]，它与 WBI 不是一回事，
-//! 那里有对照表。
+//! APP 签名的算法在 [`bili_protocol::app_sign`]，WBI 在
+//! [`bili_protocol::wbi`]，两者不是一回事，前者那里有对照表。取流是本
+//! 模块唯一走 WBI 的接口——它虽挂在直播主机上，用的却是 web 端那套参数
+//! （`platform=web`、`web_location`），签名也跟着是 web 端的。
 //!
 //! ## 身份值从调用方传入，结构由本模块决定
 //!
@@ -30,8 +33,9 @@
 
 use bili_domain::error::{DomainError, ErrorKind};
 use bili_domain::live::{
-    LiveArea, LiveAreaGroup, LiveFeedback, LiveFeedbackReason, LiveFollowItem, LiveFollowSection,
-    LiveFollowingPage, LiveIndexPage, LiveRoomCard, LiveRoomH5, LiveSecondPage, LiveSecondTag,
+    LiveArea, LiveAreaGroup, LiveCodec, LiveFeedback, LiveFeedbackReason, LiveFollowItem,
+    LiveFollowSection, LiveFollowingPage, LiveFormat, LiveIndexPage, LiveQn, LiveRoomCard,
+    LiveRoomH5, LiveRoomPlayInfo, LiveSecondPage, LiveSecondTag, LiveStream, LiveUrlInfo,
     default_area_entrance,
 };
 use serde::Deserialize;
@@ -60,6 +64,8 @@ pub mod path {
     pub const FOLLOW: &str = "/xlive/web-ucenter/user/following";
     /// H5 房间信息。
     pub const ROOM_H5: &str = "/xlive/web-room/v1/index/getH5InfoByRoom";
+    /// 取流。
+    pub const ROOM_PLAY_INFO: &str = "/xlive/web-room/v2/index/getRoomPlayInfo";
 }
 
 // ------------------------------------------------------------ 请求构造
@@ -238,6 +244,65 @@ pub fn build_room_h5_request(room_id: i64) -> PreparedRequest {
     PreparedRequest {
         path: path::ROOM_H5,
         query: vec![("room_id".to_owned(), room_id.to_string())],
+    }
+}
+
+/// 取流请求。本模块唯一走 WBI 签名的一条。
+///
+/// 参数逐字复制自基线 `LiveHttp.liveRoomInfo`，包括几个看不出含义的
+/// 常量——它们是服务端的能力声明，不是可调项：
+///
+/// - `protocol=0,1`：允许 http_stream 与 http_hls 两种传输；
+/// - `format=0,1,2` / `codec=0,1,2`：允许 flv/ts/fmp4 与 avc/hevc/av1。
+///   三者共同决定响应里 `stream → format → codec` 这棵树有多少枝；
+/// - `ptype=8` / `dolby=5` / `panorama=1`：声明本端支持的播放器类型、
+///   杜比与全景档位。少报一项，响应里对应的档位就不出现；
+/// - `web_location=444.8`：**基线写的是浮点数**，`toString()` 后是
+///   `"444.8"`。签名覆盖参数值，写成 `"444"` 或 `"444.80"` 都会让
+///   `w_rid` 对不上而被服务端拒绝，且错误形式是业务码而非解析失败。
+///
+/// `qn` 为 `None` 时整个键不出现（基线的 `'qn': ?qn`），由服务端自行
+/// 选档。`only_audio` 为假时同理不出现——基线用的是 `if (onlyAudio)`，
+/// 不是传 0。
+///
+/// `wts` 由调用方注入（Unix 秒），使本函数保持纯函数可被 fixture 锁死。
+/// 参数按 key 升序排列后再签名，`w_rid` 追加在末尾——与
+/// [`PreparedRequest::query`] 的契约和其余 WBI 接口一致。基线那边顺序
+/// 来自 Map 字面量，但签名两边都是排序后算的，`w_rid` 不受影响。
+#[must_use]
+pub fn build_room_play_info_request(
+    room_id: i64,
+    qn: Option<i64>,
+    only_audio: bool,
+    mixin_key: &str,
+    wts: i64,
+) -> PreparedRequest {
+    let mut query = vec![
+        ("room_id".to_owned(), room_id.to_string()),
+        ("protocol".to_owned(), "0,1".to_owned()),
+        ("format".to_owned(), "0,1,2".to_owned()),
+        ("codec".to_owned(), "0,1,2".to_owned()),
+        ("platform".to_owned(), "web".to_owned()),
+        ("ptype".to_owned(), "8".to_owned()),
+        ("dolby".to_owned(), "5".to_owned()),
+        ("panorama".to_owned(), "1".to_owned()),
+        ("web_location".to_owned(), "444.8".to_owned()),
+        ("wts".to_owned(), wts.to_string()),
+    ];
+    if let Some(qn) = qn {
+        query.push(("qn".to_owned(), qn.to_string()));
+    }
+    if only_audio {
+        query.push(("only_audio".to_owned(), "1".to_owned()));
+    }
+    query.sort_by(|a, b| a.0.cmp(&b.0));
+
+    let w_rid = bili_protocol::wbi::sign(&query, mixin_key);
+    query.push(("w_rid".to_owned(), w_rid));
+
+    PreparedRequest {
+        path: path::ROOM_PLAY_INFO,
+        query,
     }
 }
 
@@ -765,6 +830,169 @@ pub fn parse_room_h5(body: &str) -> Result<LiveRoomH5, DomainError> {
     })
 }
 
+// --- 取流 ---
+//
+// 可空性逐字对着基线 `lib/models_new/live/live_room_play_info/*.dart`：
+// 房间那几个字段在基线里是 `as int?`，而 `base_url` / `host` / `extra` /
+// `current_qn` / `accept_qn` 以及三层列表都是不带 `?` 的强制转换——缺了
+// 就抛，被 `liveRoomInfo` 的 `catch` 收成 `Error`。这里用必填字段复刻：
+// serde 缺字段即 `Err`，同样走错误路径，而不是悄悄填个默认值。
+
+#[derive(Deserialize)]
+struct RoomPlayInfoDto {
+    room_id: Option<i64>,
+    short_id: Option<i64>,
+    uid: Option<i64>,
+    is_portrait: Option<bool>,
+    live_status: Option<i64>,
+    live_time: Option<i64>,
+    playurl_info: Option<PlayurlInfoDto>,
+}
+
+#[derive(Deserialize)]
+struct PlayurlInfoDto {
+    playurl: Option<PlayurlDto>,
+}
+
+#[derive(Deserialize)]
+struct PlayurlDto {
+    /// 本次响应自带的码率描述表。基线是 `as List?`，可缺。
+    g_qn_desc: Option<Vec<GQnDescDto>>,
+    stream: Vec<StreamDto>,
+}
+
+#[derive(Deserialize)]
+struct GQnDescDto {
+    qn: Option<i64>,
+    desc: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct StreamDto {
+    protocol_name: Option<String>,
+    format: Vec<FormatDto>,
+}
+
+#[derive(Deserialize)]
+struct FormatDto {
+    format_name: Option<String>,
+    codec: Vec<CodecDto>,
+}
+
+#[derive(Deserialize)]
+struct CodecDto {
+    codec_name: Option<String>,
+    current_qn: i64,
+    accept_qn: Vec<i64>,
+    base_url: String,
+    url_info: Vec<UrlInfoDto>,
+}
+
+#[derive(Deserialize)]
+struct UrlInfoDto {
+    host: String,
+    extra: String,
+}
+
+/// 把 `g_qn_desc` 一项转成领域的一档画质。
+///
+/// 复刻基线 `LiveQuality.fromJson`：`qn` 缺失时 code 取 `-1`，`desc`
+/// 缺失时退到 `qn` 的十进制串。`qn` 与 `desc` 同时缺失时基线算的是
+/// Dart 的 `null.toString()`，结果是字面量 `"null"`——照搬，因为这张表
+/// 会被下面按 code 查，而 `-1` 这一档存在与否要和基线一致。
+fn qn_from_desc_entry(dto: GQnDescDto) -> LiveQn {
+    let code = dto.qn.unwrap_or(-1);
+    let desc = dto.desc.unwrap_or_else(|| match dto.qn {
+        Some(qn) => qn.to_string(),
+        None => "null".to_owned(),
+    });
+    LiveQn {
+        code,
+        desc: Some(desc),
+    }
+}
+
+/// 按 code 在 `g_qn_desc` 表里查一档画质。
+///
+/// 复刻基线 `LiveQuality.fromFormat` 的前半段：表非空且命中就用表里那
+/// 一项。未命中时基线回退到客户端静态表，那张表没迁（见
+/// [`bili_domain::live::LiveQn`]），所以这里产出 `desc: None` 交给
+/// Dart 侧补——这是两边的分工点，不是信息丢失。
+fn resolve_qn(code: i64, table: &[LiveQn]) -> LiveQn {
+    table
+        .iter()
+        .find(|qn| qn.code == code)
+        .cloned()
+        .unwrap_or(LiveQn { code, desc: None })
+}
+
+/// 解析取流响应。
+///
+/// # Errors
+/// 信封非 0、JSON 结构不符（含上面那几个必填字段缺失）。
+pub fn parse_room_play_info(body: &str) -> Result<LiveRoomPlayInfo, DomainError> {
+    let dto: RoomPlayInfoDto = unwrap_envelope(body)?;
+
+    let playurl = dto.playurl_info.and_then(|info| info.playurl);
+    let (table, stream_dtos) = match playurl {
+        Some(p) => (
+            p.g_qn_desc
+                .unwrap_or_default()
+                .into_iter()
+                .map(qn_from_desc_entry)
+                .collect::<Vec<_>>(),
+            p.stream,
+        ),
+        None => (Vec::new(), Vec::new()),
+    };
+
+    let streams = stream_dtos
+        .into_iter()
+        .map(|s| LiveStream {
+            protocol_name: s.protocol_name,
+            format: s
+                .format
+                .into_iter()
+                .map(|f| LiveFormat {
+                    format_name: f.format_name,
+                    codec: f
+                        .codec
+                        .into_iter()
+                        .map(|c| LiveCodec {
+                            codec_name: c.codec_name,
+                            current_qn: resolve_qn(c.current_qn, &table),
+                            accept_qn: c
+                                .accept_qn
+                                .into_iter()
+                                .map(|code| resolve_qn(code, &table))
+                                .collect(),
+                            base_url: c.base_url,
+                            url_info: c
+                                .url_info
+                                .into_iter()
+                                .map(|u| LiveUrlInfo {
+                                    host: u.host,
+                                    extra: u.extra,
+                                })
+                                .collect(),
+                        })
+                        .collect(),
+                })
+                .collect(),
+        })
+        .collect();
+
+    Ok(LiveRoomPlayInfo {
+        room_id: dto.room_id,
+        short_id: dto.short_id,
+        uid: dto.uid,
+        is_portrait: dto.is_portrait,
+        live_status: dto.live_status,
+        live_time: dto.live_time,
+        streams,
+    })
+}
+
 // ------------------------------------------------------------------ 取数
 
 async fn send<T: HttpTransport>(
@@ -903,6 +1131,32 @@ pub async fn fetch_room_h5<T: HttpTransport>(
 ) -> Result<LiveRoomH5, DomainError> {
     let body = send(transport, ctx, &build_room_h5_request(room_id), Vec::new()).await?;
     parse_room_h5(&body)
+}
+
+/// 取流。
+///
+/// `qn` 是**期望**档位，不是保证：服务端会按房间实际可用的流降档，
+/// 真正给到的那一档在 [`LiveCodec::current_qn`]。
+///
+/// # Errors
+/// 传输失败、信封非 0、JSON 结构不符。
+pub async fn fetch_room_play_info<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    room_id: i64,
+    qn: Option<i64>,
+    only_audio: bool,
+    mixin_key: &str,
+    wts: i64,
+) -> Result<LiveRoomPlayInfo, DomainError> {
+    let body = send(
+        transport,
+        ctx,
+        &build_room_play_info_request(room_id, qn, only_audio, mixin_key, wts),
+        Vec::new(),
+    )
+    .await?;
+    parse_room_play_info(&body)
 }
 
 /// 房间 id 必须是正数。

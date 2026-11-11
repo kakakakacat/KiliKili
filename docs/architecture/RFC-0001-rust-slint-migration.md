@@ -294,6 +294,9 @@ PiliPlus-Rust/
 - **E2E**：账号、首页、搜索、详情、播放、Seek、全屏、弹幕、评论与数据升级。
 - **Performance**：固定机器、网络、视频样本、分辨率、弹幕密度，重复采样。
 
+候选版本的逐项操作、判定标准、性能记录和发布前清单见
+[QA-001 端到端功能矩阵](../qa/RELEASE-VALIDATION.md)。
+
 ### 9.3 平台覆盖注意
 
 > 完整的实测能力矩阵、硬件探测证据与排除记录见 [docs/m0/VALIDATION-CAPABILITY.md](../m0/VALIDATION-CAPABILITY.md)。

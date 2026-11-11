@@ -148,15 +148,21 @@ fn room_play_info_request_matches_the_frozen_snapshot() {
     const WTS: i64 = 1_762_800_000;
 
     let cases = [
-        ("常规：指定画质、含视频", 100_001_i64, Some(10_000_i64), false),
+        (
+            "常规：指定画质、含视频",
+            100_001_i64,
+            Some(10_000_i64),
+            false,
+        ),
         ("仅音频：不指定画质", 100_002, None, true),
     ];
 
     let got: Vec<serde_json::Value> = cases
         .iter()
         .map(|&(name, room_id, qn, only_audio)| {
-            let req =
-                bili_api::live::build_room_play_info_request(room_id, qn, only_audio, MIXIN_KEY, WTS);
+            let req = bili_api::live::build_room_play_info_request(
+                room_id, qn, only_audio, MIXIN_KEY, WTS,
+            );
             serde_json::json!({
                 "case": name,
                 "mixin_key": MIXIN_KEY,

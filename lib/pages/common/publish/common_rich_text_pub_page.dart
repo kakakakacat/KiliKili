@@ -11,10 +11,10 @@ import 'package:kilikili/models/common/publish_panel_type.dart';
 import 'package:kilikili/models/dynamics/result.dart'
     show PicModel, FilePicModel, OpusPicModel;
 import 'package:kilikili/models_new/dynamic/dyn_mention/item.dart';
-import 'package:kilikili/models_new/emote/emote.dart' as e;
 import 'package:kilikili/models_new/live/live_emote/emoticon.dart';
 import 'package:kilikili/pages/common/publish/common_publish_page.dart';
 import 'package:kilikili/pages/dynamics_mention/view.dart';
+import 'package:kilikili/services/rust/rust_reply.dart' as e;
 import 'package:kilikili/utils/cache_manager.dart';
 import 'package:kilikili/utils/extension/file_ext.dart';
 import 'package:kilikili/utils/extension/num_ext.dart';

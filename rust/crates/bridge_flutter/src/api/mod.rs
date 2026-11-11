@@ -7,6 +7,7 @@ pub mod media_select;
 pub mod pgc;
 pub mod play_url;
 pub mod play_url_fetch;
+pub mod reply;
 pub mod search;
 pub mod search_suggest;
 pub mod sponsor_block;

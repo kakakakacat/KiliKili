@@ -1,11 +1,11 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/reply.dart';
-import 'package:kilikili/models_new/emote/package.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_reply.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
-class EmotePanelController extends CommonListController<List<Package>?, Package>
+class EmotePanelController
+    extends CommonListController<List<EmotePackage>?, EmotePackage>
     with GetSingleTickerProviderStateMixin {
   TabController? tabController;
 
@@ -16,7 +16,10 @@ class EmotePanelController extends CommonListController<List<Package>?, Package>
   }
 
   @override
-  bool customHandleResponse(bool isRefresh, Success<List<Package>?> response) {
+  bool customHandleResponse(
+    bool isRefresh,
+    Success<List<EmotePackage>?> response,
+  ) {
     if (response.response?.isNotEmpty == true) {
       tabController = TabController(
         length: response.response!.length,
@@ -28,8 +31,8 @@ class EmotePanelController extends CommonListController<List<Package>?, Package>
   }
 
   @override
-  Future<LoadingState<List<Package>?>> customGetData() =>
-      ReplyHttp.getEmoteList(business: 'reply');
+  Future<LoadingState<List<EmotePackage>?>> customGetData() =>
+      RustReply.emoteList(business: 'reply');
 
   @override
   void onClose() {

@@ -10,6 +10,7 @@ import 'package:kilikili/rust/api/media_select.dart';
 import 'package:kilikili/rust/api/pgc.dart';
 import 'package:kilikili/rust/api/play_url.dart';
 import 'package:kilikili/rust/api/play_url_fetch.dart';
+import 'package:kilikili/rust/api/reply.dart';
 import 'package:kilikili/rust/api/search.dart';
 import 'package:kilikili/rust/api/search_suggest.dart';
 import 'package:kilikili/rust/api/sponsor_block.dart';
@@ -86,7 +87,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 2058784001;
+  int get rustContentHash => 1915089303;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -129,6 +130,11 @@ abstract class RustLibApi extends BaseApi {
     required String bvid,
     required PlatformInt64 cid,
     PlatformInt64? upMid,
+  });
+
+  Future<EmotePanelResult> crateApiReplyFetchEmotePanel({
+    required ReplyContext context,
+    required String business,
   });
 
   Future<FeedListResult> crateApiVideoFeedFetchHotVideos({
@@ -240,6 +246,37 @@ abstract class RustLibApi extends BaseApi {
   Future<FeedListResult> crateApiVideoFeedFetchRelatedVideos({
     required FeedContext context,
     required String bvid,
+  });
+
+  Future<ReplyInteractResult> crateApiReplyFetchReplyInteraction({
+    required ReplyContext context,
+    required PlatformInt64 oid,
+    required PlatformInt64 kind,
+  });
+
+  Future<ReplyListResult> crateApiReplyFetchReplyListAnonymous({
+    required ReplyContext context,
+    required PlatformInt64 oid,
+    required PlatformInt64 kind,
+    required String offset,
+    required PlatformInt64 sort,
+  });
+
+  Future<ReplyListResult> crateApiReplyFetchReplyListPaged({
+    required ReplyContext context,
+    required PlatformInt64 oid,
+    required PlatformInt64 kind,
+    required PlatformInt64 sort,
+    required PlatformInt64 page,
+  });
+
+  Future<ReplyReplyListResult> crateApiReplyFetchReplyReplyList({
+    required ReplyContext context,
+    required PlatformInt64 oid,
+    required PlatformInt64 root,
+    required PlatformInt64 kind,
+    required PlatformInt64 page,
+    String? csrf,
   });
 
   Future<SeasonStatusResult> crateApiPgcFetchSeasonStatus({
@@ -621,6 +658,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<EmotePanelResult> crateApiReplyFetchEmotePanel({
+    required ReplyContext context,
+    required String business,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_reply_context(context, serializer);
+          sse_encode_String(business, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 9,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_emote_panel_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiReplyFetchEmotePanelConstMeta,
+        argValues: [context, business],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiReplyFetchEmotePanelConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_emote_panel",
+        argNames: ["context", "business"],
+      );
+
+  @override
   Future<FeedListResult> crateApiVideoFeedFetchHotVideos({
     required FeedContext context,
     required PlatformInt64 pn,
@@ -636,7 +708,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 9,
+            funcId: 10,
             port: port_,
           );
         },
@@ -677,7 +749,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 10,
+            funcId: 11,
             port: port_,
           );
         },
@@ -716,7 +788,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 11,
+            funcId: 12,
             port: port_,
           );
         },
@@ -753,7 +825,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 12,
+            funcId: 13,
             port: port_,
           );
         },
@@ -788,7 +860,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 13,
+            funcId: 14,
             port: port_,
           );
         },
@@ -826,7 +898,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 14,
+            funcId: 15,
             port: port_,
           );
         },
@@ -865,7 +937,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 15,
+            funcId: 16,
             port: port_,
           );
         },
@@ -905,7 +977,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 16,
+            funcId: 17,
             port: port_,
           );
         },
@@ -943,7 +1015,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 17,
+            funcId: 18,
             port: port_,
           );
         },
@@ -986,7 +1058,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 18,
+            funcId: 19,
             port: port_,
           );
         },
@@ -1033,7 +1105,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 19,
+            funcId: 20,
             port: port_,
           );
         },
@@ -1086,7 +1158,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 20,
+            funcId: 21,
             port: port_,
           );
         },
@@ -1119,7 +1191,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 21,
+            funcId: 22,
             port: port_,
           );
         },
@@ -1154,7 +1226,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 22,
+            funcId: 23,
             port: port_,
           );
         },
@@ -1191,7 +1263,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 23,
+            funcId: 24,
             port: port_,
           );
         },
@@ -1226,7 +1298,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 24,
+            funcId: 25,
             port: port_,
           );
         },
@@ -1261,7 +1333,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 25,
+            funcId: 26,
             port: port_,
           );
         },
@@ -1283,6 +1355,168 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<ReplyInteractResult> crateApiReplyFetchReplyInteraction({
+    required ReplyContext context,
+    required PlatformInt64 oid,
+    required PlatformInt64 kind,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_reply_context(context, serializer);
+          sse_encode_i_64(oid, serializer);
+          sse_encode_i_64(kind, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 27,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_reply_interact_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiReplyFetchReplyInteractionConstMeta,
+        argValues: [context, oid, kind],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiReplyFetchReplyInteractionConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_reply_interaction",
+        argNames: ["context", "oid", "kind"],
+      );
+
+  @override
+  Future<ReplyListResult> crateApiReplyFetchReplyListAnonymous({
+    required ReplyContext context,
+    required PlatformInt64 oid,
+    required PlatformInt64 kind,
+    required String offset,
+    required PlatformInt64 sort,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_reply_context(context, serializer);
+          sse_encode_i_64(oid, serializer);
+          sse_encode_i_64(kind, serializer);
+          sse_encode_String(offset, serializer);
+          sse_encode_i_64(sort, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 28,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_reply_list_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiReplyFetchReplyListAnonymousConstMeta,
+        argValues: [context, oid, kind, offset, sort],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiReplyFetchReplyListAnonymousConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_reply_list_anonymous",
+        argNames: ["context", "oid", "kind", "offset", "sort"],
+      );
+
+  @override
+  Future<ReplyListResult> crateApiReplyFetchReplyListPaged({
+    required ReplyContext context,
+    required PlatformInt64 oid,
+    required PlatformInt64 kind,
+    required PlatformInt64 sort,
+    required PlatformInt64 page,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_reply_context(context, serializer);
+          sse_encode_i_64(oid, serializer);
+          sse_encode_i_64(kind, serializer);
+          sse_encode_i_64(sort, serializer);
+          sse_encode_i_64(page, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 29,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_reply_list_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiReplyFetchReplyListPagedConstMeta,
+        argValues: [context, oid, kind, sort, page],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiReplyFetchReplyListPagedConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_reply_list_paged",
+        argNames: ["context", "oid", "kind", "sort", "page"],
+      );
+
+  @override
+  Future<ReplyReplyListResult> crateApiReplyFetchReplyReplyList({
+    required ReplyContext context,
+    required PlatformInt64 oid,
+    required PlatformInt64 root,
+    required PlatformInt64 kind,
+    required PlatformInt64 page,
+    String? csrf,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_reply_context(context, serializer);
+          sse_encode_i_64(oid, serializer);
+          sse_encode_i_64(root, serializer);
+          sse_encode_i_64(kind, serializer);
+          sse_encode_i_64(page, serializer);
+          sse_encode_opt_String(csrf, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 30,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_reply_reply_list_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiReplyFetchReplyReplyListConstMeta,
+        argValues: [context, oid, root, kind, page, csrf],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiReplyFetchReplyReplyListConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_reply_reply_list",
+        argNames: ["context", "oid", "root", "kind", "page", "csrf"],
+      );
+
+  @override
   Future<SeasonStatusResult> crateApiPgcFetchSeasonStatus({
     required PgcContext context,
     required PlatformInt64 seasonId,
@@ -1296,7 +1530,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 26,
+            funcId: 31,
             port: port_,
           );
         },
@@ -1333,7 +1567,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 27,
+            funcId: 32,
             port: port_,
           );
         },
@@ -1366,7 +1600,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 28,
+            funcId: 33,
             port: port_,
           );
         },
@@ -1403,7 +1637,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 29,
+            funcId: 34,
             port: port_,
           );
         },
@@ -1450,7 +1684,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 30,
+            funcId: 35,
             port: port_,
           );
         },
@@ -1505,7 +1739,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 31,
+            funcId: 36,
             port: port_,
           );
         },
@@ -1536,7 +1770,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 32,
+            funcId: 37,
             port: port_,
           );
         },
@@ -1568,7 +1802,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 33,
+            funcId: 38,
             port: port_,
           );
         },
@@ -1605,7 +1839,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 34,
+            funcId: 39,
             port: port_,
           );
         },
@@ -1638,7 +1872,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 35,
+            funcId: 40,
             port: port_,
           );
         },
@@ -1671,7 +1905,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 36,
+            funcId: 41,
             port: port_,
           );
         },
@@ -1706,7 +1940,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 37,
+            funcId: 42,
             port: port_,
           );
         },
@@ -1740,7 +1974,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 38,
+            funcId: 43,
             port: port_,
           );
         },
@@ -1775,7 +2009,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 39,
+            funcId: 44,
             port: port_,
           );
         },
@@ -1809,7 +2043,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 40,
+            funcId: 45,
             port: port_,
           );
         },
@@ -1841,7 +2075,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 41,
+            funcId: 46,
             port: port_,
           );
         },
@@ -1878,7 +2112,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 42,
+            funcId: 47,
             port: port_,
           );
         },
@@ -1913,7 +2147,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 43,
+            funcId: 48,
             port: port_,
           );
         },
@@ -1947,7 +2181,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 44,
+            funcId: 49,
             port: port_,
           );
         },
@@ -1978,7 +2212,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_list_prim_i_64_strict(audioIds, serializer);
           sse_encode_i_64(preferQuality, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 45)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 50)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_audio_selection_result,
@@ -2014,7 +2248,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_opt_list_prim_i_64_strict(acceptQuality, serializer);
           sse_encode_list_format_candidate_input(supportFormats, serializer);
           sse_encode_list_prim_i_32_loose(preferCodecIndices, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 46)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 51)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_video_selection_result,
@@ -2059,7 +2293,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 47,
+            funcId: 52,
             port: port_,
           );
         },
@@ -2093,7 +2327,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 48,
+            funcId: 53,
             port: port_,
           );
         },
@@ -2206,6 +2440,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_danmaku_engine_options(raw);
+  }
+
+  @protected
+  EmoteMeta dco_decode_box_autoadd_emote_meta(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_emote_meta(raw);
   }
 
   @protected
@@ -2334,6 +2574,54 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PopularSeriesOne dco_decode_box_autoadd_popular_series_one(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_popular_series_one(raw);
+  }
+
+  @protected
+  ReplyContext dco_decode_box_autoadd_reply_context(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_reply_context(raw);
+  }
+
+  @protected
+  ReplyCursor dco_decode_box_autoadd_reply_cursor(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_reply_cursor(raw);
+  }
+
+  @protected
+  ReplyInteract dco_decode_box_autoadd_reply_interact(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_reply_interact(raw);
+  }
+
+  @protected
+  ReplyItem dco_decode_box_autoadd_reply_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_reply_item(raw);
+  }
+
+  @protected
+  ReplyList dco_decode_box_autoadd_reply_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_reply_list(raw);
+  }
+
+  @protected
+  ReplyMember dco_decode_box_autoadd_reply_member(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_reply_member(raw);
+  }
+
+  @protected
+  ReplyPage dco_decode_box_autoadd_reply_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_reply_page(raw);
+  }
+
+  @protected
+  ReplyReplyList dco_decode_box_autoadd_reply_reply_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_reply_reply_list(raw);
   }
 
   @protected
@@ -2494,6 +2782,58 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  Emote dco_decode_emote(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return Emote(
+      text: dco_decode_opt_String(arr[0]),
+      url: dco_decode_opt_String(arr[1]),
+      meta: dco_decode_opt_box_autoadd_emote_meta(arr[2]),
+    );
+  }
+
+  @protected
+  EmoteMeta dco_decode_emote_meta(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return EmoteMeta(
+      size: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      alias: dco_decode_opt_String(arr[1]),
+    );
+  }
+
+  @protected
+  EmotePackage dco_decode_emote_package(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return EmotePackage(
+      url: dco_decode_opt_String(arr[0]),
+      kind: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      emote: dco_decode_list_emote(arr[2]),
+    );
+  }
+
+  @protected
+  EmotePanelResult dco_decode_emote_panel_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return EmotePanelResult(
+      data: dco_decode_opt_list_emote_package(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
   double dco_decode_f_64(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as double;
@@ -2644,6 +2984,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  InteractStatus dco_decode_interact_status(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return InteractStatus(
+      canModify: dco_decode_bool(arr[0]),
+      status: dco_decode_i_64(arr[1]),
+    );
+  }
+
+  @protected
   Interaction dco_decode_interaction(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -2677,6 +3029,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<DanmakuBucketItem> dco_decode_list_danmaku_bucket_item(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_danmaku_bucket_item).toList();
+  }
+
+  @protected
+  List<Emote> dco_decode_list_emote(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_emote).toList();
+  }
+
+  @protected
+  List<EmotePackage> dco_decode_list_emote_package(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_emote_package).toList();
   }
 
   @protected
@@ -2787,6 +3151,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<(String, String)> dco_decode_list_record_string_string(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_record_string_string).toList();
+  }
+
+  @protected
+  List<ReplyItem> dco_decode_list_reply_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_reply_item).toList();
   }
 
   @protected
@@ -2979,6 +3349,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  EmoteMeta? dco_decode_opt_box_autoadd_emote_meta(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_emote_meta(raw);
+  }
+
+  @protected
   double? dco_decode_opt_box_autoadd_f_64(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_f_64(raw);
@@ -3087,6 +3463,48 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ReplyCursor? dco_decode_opt_box_autoadd_reply_cursor(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_reply_cursor(raw);
+  }
+
+  @protected
+  ReplyInteract? dco_decode_opt_box_autoadd_reply_interact(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_reply_interact(raw);
+  }
+
+  @protected
+  ReplyItem? dco_decode_opt_box_autoadd_reply_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_reply_item(raw);
+  }
+
+  @protected
+  ReplyList? dco_decode_opt_box_autoadd_reply_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_reply_list(raw);
+  }
+
+  @protected
+  ReplyMember? dco_decode_opt_box_autoadd_reply_member(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_reply_member(raw);
+  }
+
+  @protected
+  ReplyPage? dco_decode_opt_box_autoadd_reply_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_reply_page(raw);
+  }
+
+  @protected
+  ReplyReplyList? dco_decode_opt_box_autoadd_reply_reply_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_reply_reply_list(raw);
+  }
+
+  @protected
   SearchAllData? dco_decode_opt_box_autoadd_search_all_data(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_search_all_data(raw);
@@ -3156,6 +3574,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_list_danmaku_bucket_item(raw);
+  }
+
+  @protected
+  List<EmotePackage>? dco_decode_opt_list_emote_package(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_list_emote_package(raw);
   }
 
   @protected
@@ -3705,6 +4129,178 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     return (
       dco_decode_String(arr[0]),
       dco_decode_String(arr[1]),
+    );
+  }
+
+  @protected
+  ReplyContext dco_decode_reply_context(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return ReplyContext(
+      baseUrl: dco_decode_String(arr[0]),
+      cookie: dco_decode_opt_String(arr[1]),
+      headers: dco_decode_list_record_string_string(arr[2]),
+      timeoutMs: dco_decode_u_64(arr[3]),
+      transport: dco_decode_transport_settings(arr[4]),
+    );
+  }
+
+  @protected
+  ReplyCursor dco_decode_reply_cursor(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 9)
+      throw Exception('unexpected arr length: expect 9 but see ${arr.length}');
+    return ReplyCursor(
+      isBegin: dco_decode_opt_box_autoadd_bool(arr[0]),
+      isEnd: dco_decode_opt_box_autoadd_bool(arr[1]),
+      prev: dco_decode_opt_box_autoadd_i_64(arr[2]),
+      next: dco_decode_opt_box_autoadd_i_64(arr[3]),
+      nextOffset: dco_decode_opt_String(arr[4]),
+      mode: dco_decode_opt_box_autoadd_i_64(arr[5]),
+      modeText: dco_decode_opt_String(arr[6]),
+      allCount: dco_decode_opt_box_autoadd_i_64(arr[7]),
+      name: dco_decode_opt_String(arr[8]),
+    );
+  }
+
+  @protected
+  ReplyInteract dco_decode_reply_interact(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return ReplyInteract(
+      upReplySelection: dco_decode_interact_status(arr[0]),
+      upReply: dco_decode_interact_status(arr[1]),
+    );
+  }
+
+  @protected
+  ReplyInteractResult dco_decode_reply_interact_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return ReplyInteractResult(
+      data: dco_decode_opt_box_autoadd_reply_interact(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  ReplyItem dco_decode_reply_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 18)
+      throw Exception('unexpected arr length: expect 18 but see ${arr.length}');
+    return ReplyItem(
+      rpid: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      oid: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      kind: dco_decode_opt_box_autoadd_i_64(arr[2]),
+      mid: dco_decode_opt_box_autoadd_i_64(arr[3]),
+      root: dco_decode_opt_box_autoadd_i_64(arr[4]),
+      parent: dco_decode_opt_box_autoadd_i_64(arr[5]),
+      dialog: dco_decode_opt_box_autoadd_i_64(arr[6]),
+      count: dco_decode_opt_box_autoadd_i_64(arr[7]),
+      rcount: dco_decode_opt_box_autoadd_i_64(arr[8]),
+      state: dco_decode_opt_box_autoadd_i_64(arr[9]),
+      fansgrade: dco_decode_opt_box_autoadd_i_64(arr[10]),
+      attr: dco_decode_opt_box_autoadd_i_64(arr[11]),
+      ctime: dco_decode_opt_box_autoadd_i_64(arr[12]),
+      like: dco_decode_opt_box_autoadd_i_64(arr[13]),
+      action: dco_decode_opt_box_autoadd_i_64(arr[14]),
+      invisible: dco_decode_opt_box_autoadd_bool(arr[15]),
+      message: dco_decode_opt_String(arr[16]),
+      member: dco_decode_opt_box_autoadd_reply_member(arr[17]),
+    );
+  }
+
+  @protected
+  ReplyList dco_decode_reply_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return ReplyList(
+      cursor: dco_decode_opt_box_autoadd_reply_cursor(arr[0]),
+      page: dco_decode_opt_box_autoadd_reply_page(arr[1]),
+      replies: dco_decode_list_reply_item(arr[2]),
+      topReplies: dco_decode_list_reply_item(arr[3]),
+      topUpper: dco_decode_opt_box_autoadd_reply_item(arr[4]),
+      upperMid: dco_decode_opt_box_autoadd_i_64(arr[5]),
+    );
+  }
+
+  @protected
+  ReplyListResult dco_decode_reply_list_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return ReplyListResult(
+      data: dco_decode_opt_box_autoadd_reply_list(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  ReplyMember dco_decode_reply_member(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return ReplyMember(
+      mid: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      uname: dco_decode_opt_String(arr[1]),
+      avatar: dco_decode_opt_String(arr[2]),
+    );
+  }
+
+  @protected
+  ReplyPage dco_decode_reply_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return ReplyPage(
+      num: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      size: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      count: dco_decode_opt_box_autoadd_i_64(arr[2]),
+    );
+  }
+
+  @protected
+  ReplyReplyList dco_decode_reply_reply_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return ReplyReplyList(
+      page: dco_decode_opt_box_autoadd_reply_page(arr[0]),
+      root: dco_decode_opt_box_autoadd_reply_item(arr[1]),
+      upperMid: dco_decode_opt_box_autoadd_i_64(arr[2]),
+      replies: dco_decode_list_reply_item(arr[3]),
+    );
+  }
+
+  @protected
+  ReplyReplyListResult dco_decode_reply_reply_list_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return ReplyReplyListResult(
+      data: dco_decode_opt_box_autoadd_reply_reply_list(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
     );
   }
 
@@ -4575,6 +5171,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  EmoteMeta sse_decode_box_autoadd_emote_meta(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_emote_meta(deserializer));
+  }
+
+  @protected
   double sse_decode_box_autoadd_f_64(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_f_64(deserializer));
@@ -4724,6 +5326,64 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_popular_series_one(deserializer));
+  }
+
+  @protected
+  ReplyContext sse_decode_box_autoadd_reply_context(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_reply_context(deserializer));
+  }
+
+  @protected
+  ReplyCursor sse_decode_box_autoadd_reply_cursor(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_reply_cursor(deserializer));
+  }
+
+  @protected
+  ReplyInteract sse_decode_box_autoadd_reply_interact(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_reply_interact(deserializer));
+  }
+
+  @protected
+  ReplyItem sse_decode_box_autoadd_reply_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_reply_item(deserializer));
+  }
+
+  @protected
+  ReplyList sse_decode_box_autoadd_reply_list(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_reply_list(deserializer));
+  }
+
+  @protected
+  ReplyMember sse_decode_box_autoadd_reply_member(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_reply_member(deserializer));
+  }
+
+  @protected
+  ReplyPage sse_decode_box_autoadd_reply_page(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_reply_page(deserializer));
+  }
+
+  @protected
+  ReplyReplyList sse_decode_box_autoadd_reply_reply_list(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_reply_reply_list(deserializer));
   }
 
   @protected
@@ -4924,6 +5584,47 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  Emote sse_decode_emote(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_text = sse_decode_opt_String(deserializer);
+    var var_url = sse_decode_opt_String(deserializer);
+    var var_meta = sse_decode_opt_box_autoadd_emote_meta(deserializer);
+    return Emote(text: var_text, url: var_url, meta: var_meta);
+  }
+
+  @protected
+  EmoteMeta sse_decode_emote_meta(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_size = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_alias = sse_decode_opt_String(deserializer);
+    return EmoteMeta(size: var_size, alias: var_alias);
+  }
+
+  @protected
+  EmotePackage sse_decode_emote_package(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_url = sse_decode_opt_String(deserializer);
+    var var_kind = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_emote = sse_decode_list_emote(deserializer);
+    return EmotePackage(url: var_url, kind: var_kind, emote: var_emote);
+  }
+
+  @protected
+  EmotePanelResult sse_decode_emote_panel_result(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_list_emote_package(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return EmotePanelResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
   double sse_decode_f_64(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getFloat64();
@@ -5112,6 +5813,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  InteractStatus sse_decode_interact_status(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_canModify = sse_decode_bool(deserializer);
+    var var_status = sse_decode_i_64(deserializer);
+    return InteractStatus(canModify: var_canModify, status: var_status);
+  }
+
+  @protected
   Interaction sse_decode_interaction(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_graphVersion = sse_decode_opt_box_autoadd_i_64(deserializer);
@@ -5170,6 +5879,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <DanmakuBucketItem>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_danmaku_bucket_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<Emote> sse_decode_list_emote(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <Emote>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_emote(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<EmotePackage> sse_decode_list_emote_package(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <EmotePackage>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_emote_package(deserializer));
     }
     return ans_;
   }
@@ -5371,6 +6106,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <(String, String)>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_record_string_string(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<ReplyItem> sse_decode_list_reply_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <ReplyItem>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_reply_item(deserializer));
     }
     return ans_;
   }
@@ -5682,6 +6429,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  EmoteMeta? sse_decode_opt_box_autoadd_emote_meta(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_emote_meta(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   double? sse_decode_opt_box_autoadd_f_64(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -5895,6 +6655,97 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ReplyCursor? sse_decode_opt_box_autoadd_reply_cursor(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_reply_cursor(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  ReplyInteract? sse_decode_opt_box_autoadd_reply_interact(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_reply_interact(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  ReplyItem? sse_decode_opt_box_autoadd_reply_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_reply_item(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  ReplyList? sse_decode_opt_box_autoadd_reply_list(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_reply_list(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  ReplyMember? sse_decode_opt_box_autoadd_reply_member(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_reply_member(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  ReplyPage? sse_decode_opt_box_autoadd_reply_page(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_reply_page(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  ReplyReplyList? sse_decode_opt_box_autoadd_reply_reply_list(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_reply_reply_list(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   SearchAllData? sse_decode_opt_box_autoadd_search_all_data(
     SseDeserializer deserializer,
   ) {
@@ -6026,6 +6877,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_list_danmaku_bucket_item(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  List<EmotePackage>? sse_decode_opt_list_emote_package(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_list_emote_package(deserializer));
     } else {
       return null;
     }
@@ -6715,6 +7579,203 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_field0 = sse_decode_String(deserializer);
     var var_field1 = sse_decode_String(deserializer);
     return (var_field0, var_field1);
+  }
+
+  @protected
+  ReplyContext sse_decode_reply_context(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_baseUrl = sse_decode_String(deserializer);
+    var var_cookie = sse_decode_opt_String(deserializer);
+    var var_headers = sse_decode_list_record_string_string(deserializer);
+    var var_timeoutMs = sse_decode_u_64(deserializer);
+    var var_transport = sse_decode_transport_settings(deserializer);
+    return ReplyContext(
+      baseUrl: var_baseUrl,
+      cookie: var_cookie,
+      headers: var_headers,
+      timeoutMs: var_timeoutMs,
+      transport: var_transport,
+    );
+  }
+
+  @protected
+  ReplyCursor sse_decode_reply_cursor(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_isBegin = sse_decode_opt_box_autoadd_bool(deserializer);
+    var var_isEnd = sse_decode_opt_box_autoadd_bool(deserializer);
+    var var_prev = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_next = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_nextOffset = sse_decode_opt_String(deserializer);
+    var var_mode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_modeText = sse_decode_opt_String(deserializer);
+    var var_allCount = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_name = sse_decode_opt_String(deserializer);
+    return ReplyCursor(
+      isBegin: var_isBegin,
+      isEnd: var_isEnd,
+      prev: var_prev,
+      next: var_next,
+      nextOffset: var_nextOffset,
+      mode: var_mode,
+      modeText: var_modeText,
+      allCount: var_allCount,
+      name: var_name,
+    );
+  }
+
+  @protected
+  ReplyInteract sse_decode_reply_interact(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_upReplySelection = sse_decode_interact_status(deserializer);
+    var var_upReply = sse_decode_interact_status(deserializer);
+    return ReplyInteract(
+      upReplySelection: var_upReplySelection,
+      upReply: var_upReply,
+    );
+  }
+
+  @protected
+  ReplyInteractResult sse_decode_reply_interact_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_reply_interact(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return ReplyInteractResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  ReplyItem sse_decode_reply_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_rpid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_oid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_kind = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_mid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_root = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_parent = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_dialog = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_count = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_rcount = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_state = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_fansgrade = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_attr = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_ctime = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_like = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_action = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_invisible = sse_decode_opt_box_autoadd_bool(deserializer);
+    var var_message = sse_decode_opt_String(deserializer);
+    var var_member = sse_decode_opt_box_autoadd_reply_member(deserializer);
+    return ReplyItem(
+      rpid: var_rpid,
+      oid: var_oid,
+      kind: var_kind,
+      mid: var_mid,
+      root: var_root,
+      parent: var_parent,
+      dialog: var_dialog,
+      count: var_count,
+      rcount: var_rcount,
+      state: var_state,
+      fansgrade: var_fansgrade,
+      attr: var_attr,
+      ctime: var_ctime,
+      like: var_like,
+      action: var_action,
+      invisible: var_invisible,
+      message: var_message,
+      member: var_member,
+    );
+  }
+
+  @protected
+  ReplyList sse_decode_reply_list(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_cursor = sse_decode_opt_box_autoadd_reply_cursor(deserializer);
+    var var_page = sse_decode_opt_box_autoadd_reply_page(deserializer);
+    var var_replies = sse_decode_list_reply_item(deserializer);
+    var var_topReplies = sse_decode_list_reply_item(deserializer);
+    var var_topUpper = sse_decode_opt_box_autoadd_reply_item(deserializer);
+    var var_upperMid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return ReplyList(
+      cursor: var_cursor,
+      page: var_page,
+      replies: var_replies,
+      topReplies: var_topReplies,
+      topUpper: var_topUpper,
+      upperMid: var_upperMid,
+    );
+  }
+
+  @protected
+  ReplyListResult sse_decode_reply_list_result(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_reply_list(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return ReplyListResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  ReplyMember sse_decode_reply_member(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_mid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_uname = sse_decode_opt_String(deserializer);
+    var var_avatar = sse_decode_opt_String(deserializer);
+    return ReplyMember(mid: var_mid, uname: var_uname, avatar: var_avatar);
+  }
+
+  @protected
+  ReplyPage sse_decode_reply_page(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_num = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_size = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_count = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return ReplyPage(num: var_num, size: var_size, count: var_count);
+  }
+
+  @protected
+  ReplyReplyList sse_decode_reply_reply_list(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_page = sse_decode_opt_box_autoadd_reply_page(deserializer);
+    var var_root = sse_decode_opt_box_autoadd_reply_item(deserializer);
+    var var_upperMid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_replies = sse_decode_list_reply_item(deserializer);
+    return ReplyReplyList(
+      page: var_page,
+      root: var_root,
+      upperMid: var_upperMid,
+      replies: var_replies,
+    );
+  }
+
+  @protected
+  ReplyReplyListResult sse_decode_reply_reply_list_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_reply_reply_list(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return ReplyReplyListResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
   }
 
   @protected
@@ -7764,6 +8825,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_emote_meta(
+    EmoteMeta self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_emote_meta(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_f_64(double self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_f_64(self, serializer);
@@ -7950,6 +9020,78 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_reply_context(
+    ReplyContext self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_reply_context(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_reply_cursor(
+    ReplyCursor self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_reply_cursor(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_reply_interact(
+    ReplyInteract self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_reply_interact(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_reply_item(
+    ReplyItem self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_reply_item(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_reply_list(
+    ReplyList self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_reply_list(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_reply_member(
+    ReplyMember self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_reply_member(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_reply_page(
+    ReplyPage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_reply_page(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_reply_reply_list(
+    ReplyReplyList self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_reply_reply_list(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_search_all_data(
     SearchAllData self,
     SseSerializer serializer,
@@ -8123,6 +9265,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_emote(Emote self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.text, serializer);
+    sse_encode_opt_String(self.url, serializer);
+    sse_encode_opt_box_autoadd_emote_meta(self.meta, serializer);
+  }
+
+  @protected
+  void sse_encode_emote_meta(EmoteMeta self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.size, serializer);
+    sse_encode_opt_String(self.alias, serializer);
+  }
+
+  @protected
+  void sse_encode_emote_package(EmotePackage self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.url, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.kind, serializer);
+    sse_encode_list_emote(self.emote, serializer);
+  }
+
+  @protected
+  void sse_encode_emote_panel_result(
+    EmotePanelResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_list_emote_package(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
   void sse_encode_f_64(double self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putFloat64(self);
@@ -8250,6 +9427,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_interact_status(
+    InteractStatus self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_bool(self.canModify, serializer);
+    sse_encode_i_64(self.status, serializer);
+  }
+
+  @protected
   void sse_encode_interaction(Interaction self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_opt_box_autoadd_i_64(self.graphVersion, serializer);
@@ -8298,6 +9485,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_danmaku_bucket_item(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_emote(List<Emote> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_emote(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_emote_package(
+    List<EmotePackage> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_emote_package(item, serializer);
     }
   }
 
@@ -8496,6 +9704,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_record_string_string(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_reply_item(
+    List<ReplyItem> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_reply_item(item, serializer);
     }
   }
 
@@ -8762,6 +9982,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_emote_meta(
+    EmoteMeta? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_emote_meta(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_box_autoadd_f_64(double? self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -8980,6 +10213,97 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_reply_cursor(
+    ReplyCursor? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_reply_cursor(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_reply_interact(
+    ReplyInteract? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_reply_interact(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_reply_item(
+    ReplyItem? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_reply_item(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_reply_list(
+    ReplyList? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_reply_list(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_reply_member(
+    ReplyMember? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_reply_member(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_reply_page(
+    ReplyPage? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_reply_page(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_reply_reply_list(
+    ReplyReplyList? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_reply_reply_list(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_box_autoadd_search_all_data(
     SearchAllData? self,
     SseSerializer serializer,
@@ -9113,6 +10437,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_list_danmaku_bucket_item(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_list_emote_package(
+    List<EmotePackage>? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_list_emote_package(self, serializer);
     }
   }
 
@@ -9674,6 +11011,135 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.$1, serializer);
     sse_encode_String(self.$2, serializer);
+  }
+
+  @protected
+  void sse_encode_reply_context(ReplyContext self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.baseUrl, serializer);
+    sse_encode_opt_String(self.cookie, serializer);
+    sse_encode_list_record_string_string(self.headers, serializer);
+    sse_encode_u_64(self.timeoutMs, serializer);
+    sse_encode_transport_settings(self.transport, serializer);
+  }
+
+  @protected
+  void sse_encode_reply_cursor(ReplyCursor self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_bool(self.isBegin, serializer);
+    sse_encode_opt_box_autoadd_bool(self.isEnd, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.prev, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.next, serializer);
+    sse_encode_opt_String(self.nextOffset, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.mode, serializer);
+    sse_encode_opt_String(self.modeText, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.allCount, serializer);
+    sse_encode_opt_String(self.name, serializer);
+  }
+
+  @protected
+  void sse_encode_reply_interact(ReplyInteract self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_interact_status(self.upReplySelection, serializer);
+    sse_encode_interact_status(self.upReply, serializer);
+  }
+
+  @protected
+  void sse_encode_reply_interact_result(
+    ReplyInteractResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_reply_interact(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_reply_item(ReplyItem self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.rpid, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.oid, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.kind, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.mid, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.root, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.parent, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.dialog, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.count, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.rcount, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.state, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.fansgrade, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.attr, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.ctime, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.like, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.action, serializer);
+    sse_encode_opt_box_autoadd_bool(self.invisible, serializer);
+    sse_encode_opt_String(self.message, serializer);
+    sse_encode_opt_box_autoadd_reply_member(self.member, serializer);
+  }
+
+  @protected
+  void sse_encode_reply_list(ReplyList self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_reply_cursor(self.cursor, serializer);
+    sse_encode_opt_box_autoadd_reply_page(self.page, serializer);
+    sse_encode_list_reply_item(self.replies, serializer);
+    sse_encode_list_reply_item(self.topReplies, serializer);
+    sse_encode_opt_box_autoadd_reply_item(self.topUpper, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.upperMid, serializer);
+  }
+
+  @protected
+  void sse_encode_reply_list_result(
+    ReplyListResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_reply_list(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_reply_member(ReplyMember self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.mid, serializer);
+    sse_encode_opt_String(self.uname, serializer);
+    sse_encode_opt_String(self.avatar, serializer);
+  }
+
+  @protected
+  void sse_encode_reply_page(ReplyPage self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.num, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.size, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.count, serializer);
+  }
+
+  @protected
+  void sse_encode_reply_reply_list(
+    ReplyReplyList self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_reply_page(self.page, serializer);
+    sse_encode_opt_box_autoadd_reply_item(self.root, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.upperMid, serializer);
+    sse_encode_list_reply_item(self.replies, serializer);
+  }
+
+  @protected
+  void sse_encode_reply_reply_list_result(
+    ReplyReplyListResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_reply_reply_list(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
   }
 
   @protected

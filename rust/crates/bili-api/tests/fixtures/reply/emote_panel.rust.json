@@ -1,0 +1,43 @@
+[
+  {
+    "emote": [
+      {
+        "meta": {
+          "alias": "doge",
+          "size": 1
+        },
+        "text": "[doge]",
+        "url": "https://example.invalid/emote/doge.png"
+      },
+      {
+        "meta": {
+          "alias": null,
+          "size": 1
+        },
+        "text": "[妙啊]",
+        "url": "https://example.invalid/emote/miao.png"
+      }
+    ],
+    "kind": 4,
+    "url": "https://example.invalid/emote/pkg1.png"
+  },
+  {
+    "emote": [
+      {
+        "meta": {
+          "alias": "",
+          "size": 2
+        },
+        "text": "[示例_开心]",
+        "url": "https://example.invalid/emote/happy.png"
+      }
+    ],
+    "kind": 1,
+    "url": "https://example.invalid/emote/pkg2.png"
+  },
+  {
+    "emote": [],
+    "kind": 1,
+    "url": "https://example.invalid/emote/pkg3.png"
+  }
+]

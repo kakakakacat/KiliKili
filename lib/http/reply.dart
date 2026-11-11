@@ -2,91 +2,22 @@ import 'package:kilikili/common/constants.dart';
 import 'package:kilikili/http/api.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/emote/data.dart';
-import 'package:kilikili/models_new/emote/package.dart';
-import 'package:kilikili/models_new/reply/data.dart';
-import 'package:kilikili/models_new/reply2reply/data.dart';
-import 'package:kilikili/models_new/reply_interaction/data.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/accounts/account.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
+/// 评论的**写操作**。只读部分（评论列表、楼中楼、评论区开关、表情包）已
+/// 迁到 `lib/services/rust/rust_reply.dart`（S1 / issue #51）；这里剩下的
+/// 五个写操作等 ADR-013（issue #50）定了幂等与重试策略再迁。
 abstract final class ReplyHttp {
+  /// 「刻意不带账号」的请求选项。评论这边已不再用它（匿名请求由 Rust 侧
+  /// 按 ADR-011 自己构造上下文），保留是因为 `lib/http/dynamics.dart` 还在
+  /// 用——它随 S5（#55）迁走时这里可以一并删掉。
   static final Options options = Options(
     headers: {...Constants.baseHeaders, 'cookie': ''},
     extra: {'account': const NoAccount()},
   );
-
-  static Future<LoadingState<ReplyData>> replyList({
-    required bool isLogin,
-    required int oid,
-    required String nextOffset,
-    required int type,
-    required int page,
-    int sort = 1,
-  }) async {
-    final res = !isLogin
-        ? await Request().get(
-            '${Api.replyList}/main',
-            queryParameters: {
-              'oid': oid,
-              'type': type,
-              'pagination_str':
-                  '{"offset":"${nextOffset.replaceAll('"', '\\"')}"}',
-              'mode': sort + 2, //2:按时间排序；3：按热度排序
-            },
-            options: !isLogin ? options : null,
-          )
-        : await Request().get(
-            Api.replyList,
-            queryParameters: {
-              'oid': oid,
-              'type': type,
-              'sort': sort,
-              'pn': page,
-              'ps': 20,
-            },
-            options: !isLogin ? options : null,
-          );
-    if (res.data['code'] == 0) {
-      return Success(ReplyData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<ReplyReplyData>> replyReplyList({
-    required bool isLogin,
-    required int oid,
-    required int root,
-    required int pageNum,
-    required int type,
-    bool isCheck = false,
-  }) async {
-    final res = await Request().get(
-      Api.replyReplyList,
-      queryParameters: {
-        'oid': oid,
-        'root': root,
-        'pn': pageNum,
-        'type': type,
-        'sort': 1,
-        if (isLogin) 'csrf': Accounts.main.csrf,
-      },
-      options: !isLogin ? options : null,
-    );
-    if (res.data['code'] == 0) {
-      ReplyReplyData replyData = ReplyReplyData.fromJson(res.data['data']);
-      return Success(replyData);
-    } else {
-      return Error(
-        isCheck
-            ? '${res.data['code']}${res.data['message']}'
-            : res.data['message'],
-      );
-    }
-  }
 
   static Future<LoadingState<void>> hateReply({
     required int type,
@@ -132,23 +63,6 @@ abstract final class ReplyHttp {
     );
     if (res.data['code'] == 0) {
       return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<List<Package>?>> getEmoteList({
-    String? business,
-  }) async {
-    final res = await Request().get(
-      Api.myEmote,
-      queryParameters: {
-        'business': business ?? 'reply',
-        'web_location': '333.1245',
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(EmoteModelData.fromJson(res.data['data']).packages);
     } else {
       return Error(res.data['message']);
     }
@@ -204,29 +118,6 @@ abstract final class ReplyHttp {
 
     if (res.data['code'] == 0) {
       return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<ReplyInteractData>> replyInteraction({
-    required Object oid,
-    required Object type,
-  }) async {
-    final res = await Request().get(
-      Api.replyInteraction,
-      queryParameters: {
-        'oid': oid,
-        'type': type,
-        'web_location': 333.1369,
-      },
-    );
-    if (res.data['code'] == 0) {
-      try {
-        return Success(ReplyInteractData.fromJson(res.data['data']));
-      } catch (e) {
-        return Error(e.toString());
-      }
     } else {
       return Error(res.data['message']);
     }

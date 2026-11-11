@@ -6,9 +6,8 @@ import 'package:kilikili/common/widgets/scroll_physics.dart'
     show tabBarView, platformClampingPhysics;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/image_type.dart';
-import 'package:kilikili/models_new/emote/emote.dart';
-import 'package:kilikili/models_new/emote/package.dart';
 import 'package:kilikili/pages/emote/controller.dart';
+import 'package:kilikili/services/rust/rust_reply.dart';
 import 'package:kilikili/utils/extension/theme_ext.dart';
 import 'package:kilikili/utils/theme_utils.dart';
 import 'package:get/get.dart';
@@ -43,7 +42,7 @@ class _EmotePanelState extends State<EmotePanel>
 
   Widget _buildBody(
     ThemeData theme,
-    LoadingState<List<Package>?> loadingState,
+    LoadingState<List<EmotePackage>?> loadingState,
   ) {
     return switch (loadingState) {
       Loading() => m3eLoading,
@@ -57,12 +56,12 @@ class _EmotePanelState extends State<EmotePanel>
                       children: response.map(
                         (e) {
                           final emote = e.emote;
-                          if (emote == null || emote.isEmpty) {
+                          if (emote.isEmpty) {
                             return const SizedBox.shrink();
                           }
                           final flag = emote.first.meta?.size == 1;
                           final size = flag ? 40.0 : 60.0;
-                          final isTextEmote = e.type == 4;
+                          final isTextEmote = e.kind == 4;
                           return GridView.builder(
                             physics: platformClampingPhysics,
                             padding: const EdgeInsets.only(

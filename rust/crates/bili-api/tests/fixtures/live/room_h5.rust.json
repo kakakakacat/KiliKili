@@ -1,0 +1,9 @@
+{
+  "anchor_face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000011.jpg",
+  "anchor_name": "示例主播甲",
+  "app_background": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000041.jpg",
+  "cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000021.jpg",
+  "title": "示例直播间甲",
+  "uid": 200001,
+  "watched_text": "1.2万人看过"
+}

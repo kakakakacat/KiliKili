@@ -6,6 +6,7 @@
 
 pub mod danmaku;
 pub mod error;
+pub mod live;
 pub mod player;
 pub mod playurl;
 pub mod redact;

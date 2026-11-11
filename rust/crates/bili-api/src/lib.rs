@@ -33,6 +33,7 @@ pub mod danmaku;
 pub mod dm_view;
 pub mod envelope;
 pub mod http;
+pub mod live;
 pub mod nav;
 pub mod playurl;
 pub(crate) mod protobuf;

@@ -13,6 +13,7 @@
 //! 协议变更记录与 fixture 版本约定见
 //! `docs/architecture/adr/ADR-008-protocol-versioning.md`。
 
+pub mod app_sign;
 pub mod keys;
 pub mod risk;
 pub mod wbi;

@@ -1,0 +1,25 @@
+{
+  "count": 12,
+  "items": [
+    {
+      "area_name": "示例分区甲",
+      "room_cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000027.jpg",
+      "roomid": 100021,
+      "text_small": "1.2万",
+      "title": "示例直播间己",
+      "uname": "示例主播己"
+    },
+    {
+      "area_name": null,
+      "room_cover": null,
+      "roomid": 100024,
+      "text_small": "888",
+      "title": "示例直播间壬",
+      "uname": "示例主播壬"
+    }
+  ],
+  "live_count": 2,
+  "page_size": 9,
+  "title": "我的关注",
+  "total_page": 2
+}

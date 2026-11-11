@@ -1,0 +1,268 @@
+{
+  "protocol_version": 1,
+  "appkey": "dfca71928277209b",
+  "appsec": "b5475a8825547a4fc26c7d518eaaa02e",
+  "ts": 1700000000,
+  "cases": [
+    {
+      "name": "area_list",
+      "params": {
+        "actionKey": "appkey",
+        "build": 8430300,
+        "channel": "master",
+        "version": "8.43.0",
+        "c_locale": "zh_CN",
+        "device": "android",
+        "disable_rcmd": 0,
+        "mobi_app": "android",
+        "platform": "android",
+        "s_locale": "zh_CN",
+        "statistics": "{\"appId\":1,\"platform\":3,\"version\":\"8.43.0\",\"abtest\":\"\"}"
+      },
+      "signed": [
+        [
+          "actionKey",
+          "appkey"
+        ],
+        [
+          "appkey",
+          "dfca71928277209b"
+        ],
+        [
+          "build",
+          "8430300"
+        ],
+        [
+          "c_locale",
+          "zh_CN"
+        ],
+        [
+          "channel",
+          "master"
+        ],
+        [
+          "device",
+          "android"
+        ],
+        [
+          "disable_rcmd",
+          "0"
+        ],
+        [
+          "mobi_app",
+          "android"
+        ],
+        [
+          "platform",
+          "android"
+        ],
+        [
+          "s_locale",
+          "zh_CN"
+        ],
+        [
+          "statistics",
+          "{\"appId\":1,\"platform\":3,\"version\":\"8.43.0\",\"abtest\":\"\"}"
+        ],
+        [
+          "ts",
+          "1700000000"
+        ],
+        [
+          "version",
+          "8.43.0"
+        ],
+        [
+          "sign",
+          "26d1f8922bf116ab4c600189404b76b3"
+        ]
+      ],
+      "sign": "26d1f8922bf116ab4c600189404b76b3"
+    },
+    {
+      "name": "feed_index",
+      "params": {
+        "channel": "master",
+        "actionKey": "appkey",
+        "build": 8430300,
+        "version": "8.43.0",
+        "c_locale": "zh_CN",
+        "device": "android",
+        "device_name": "android",
+        "device_type": 0,
+        "fnval": 912,
+        "disable_rcmd": 0,
+        "https_url_req": 1,
+        "mobi_app": "android",
+        "network": "wifi",
+        "page": 1,
+        "platform": "android",
+        "s_locale": "zh_CN",
+        "scale": 2,
+        "statistics": "{\"appId\":1,\"platform\":3,\"version\":\"8.43.0\",\"abtest\":\"\"}"
+      },
+      "signed": [
+        [
+          "actionKey",
+          "appkey"
+        ],
+        [
+          "appkey",
+          "dfca71928277209b"
+        ],
+        [
+          "build",
+          "8430300"
+        ],
+        [
+          "c_locale",
+          "zh_CN"
+        ],
+        [
+          "channel",
+          "master"
+        ],
+        [
+          "device",
+          "android"
+        ],
+        [
+          "device_name",
+          "android"
+        ],
+        [
+          "device_type",
+          "0"
+        ],
+        [
+          "disable_rcmd",
+          "0"
+        ],
+        [
+          "fnval",
+          "912"
+        ],
+        [
+          "https_url_req",
+          "1"
+        ],
+        [
+          "mobi_app",
+          "android"
+        ],
+        [
+          "network",
+          "wifi"
+        ],
+        [
+          "page",
+          "1"
+        ],
+        [
+          "platform",
+          "android"
+        ],
+        [
+          "s_locale",
+          "zh_CN"
+        ],
+        [
+          "scale",
+          "2"
+        ],
+        [
+          "statistics",
+          "{\"appId\":1,\"platform\":3,\"version\":\"8.43.0\",\"abtest\":\"\"}"
+        ],
+        [
+          "ts",
+          "1700000000"
+        ],
+        [
+          "version",
+          "8.43.0"
+        ],
+        [
+          "sign",
+          "d9fdd479e513e45e9b7855d9cfbca155"
+        ]
+      ],
+      "sign": "d9fdd479e513e45e9b7855d9cfbca155"
+    },
+    {
+      "name": "chars_kept",
+      "params": {
+        "q": "a!b'c(d)e*f"
+      },
+      "signed": [
+        [
+          "appkey",
+          "dfca71928277209b"
+        ],
+        [
+          "q",
+          "a!b'c(d)e*f"
+        ],
+        [
+          "ts",
+          "1700000000"
+        ],
+        [
+          "sign",
+          "4947076c4bfbf8c034b0e258e0e6fc8b"
+        ]
+      ],
+      "sign": "4947076c4bfbf8c034b0e258e0e6fc8b"
+    },
+    {
+      "name": "needs_percent_encoding",
+      "params": {
+        "q": "测试 & =+#"
+      },
+      "signed": [
+        [
+          "appkey",
+          "dfca71928277209b"
+        ],
+        [
+          "q",
+          "测试 & =+#"
+        ],
+        [
+          "ts",
+          "1700000000"
+        ],
+        [
+          "sign",
+          "e8a956513a73d94b990798faba54ad86"
+        ]
+      ],
+      "sign": "e8a956513a73d94b990798faba54ad86"
+    },
+    {
+      "name": "empty_value",
+      "params": {
+        "q": ""
+      },
+      "signed": [
+        [
+          "appkey",
+          "dfca71928277209b"
+        ],
+        [
+          "q",
+          ""
+        ],
+        [
+          "ts",
+          "1700000000"
+        ],
+        [
+          "sign",
+          "44c0b54c1481162afaf7f77be8d6bc74"
+        ]
+      ],
+      "sign": "44c0b54c1481162afaf7f77be8d6bc74"
+    }
+  ]
+}

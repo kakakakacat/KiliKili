@@ -1,0 +1,32 @@
+{
+  "font_size": 0.4,
+  "font_color": "#FFFFFF",
+  "background_alpha": 0.5,
+  "Stroke": "none",
+  "body": [
+    {
+      "from": 0,
+      "to": 2.5,
+      "location": 2,
+      "content": "大家好"
+    },
+    {
+      "from": 2.5,
+      "to": 5.75,
+      "location": 2,
+      "content": "  前后有空白  "
+    },
+    {
+      "from": 65.25,
+      "to": 68.0,
+      "location": 2,
+      "content": "多行\n第二行"
+    },
+    {
+      "from": 3661.125,
+      "to": 3663.5,
+      "location": 2,
+      "content": "一小时之后"
+    }
+  ]
+}

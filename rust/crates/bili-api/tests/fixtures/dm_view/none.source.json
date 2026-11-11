@@ -1,0 +1,6 @@
+{
+  "comment": "没有字幕的视频：subtitle 字段整个缺席，其余字段照常下发。基线此时返回 null，Rust 返回空列表——两者在调用方是同一种处理。",
+  "closed": true,
+  "send_box_style": 1,
+  "kv": "{}"
+}

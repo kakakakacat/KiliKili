@@ -30,6 +30,7 @@
 
 pub mod client;
 pub mod danmaku;
+pub mod dm_view;
 pub mod envelope;
 pub mod http;
 pub mod nav;
@@ -37,6 +38,7 @@ pub mod playurl;
 pub(crate) mod protobuf;
 pub mod request;
 pub mod search_suggest;
+pub mod subtitle;
 #[cfg(feature = "reqwest-transport")]
 pub mod transport_reqwest;
 pub mod video_detail;

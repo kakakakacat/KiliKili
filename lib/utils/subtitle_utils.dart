@@ -6,7 +6,7 @@ import 'package:kilikili/models/common/enum_with_label.dart';
 import 'package:kilikili/utils/accounts/account.dart';
 import 'package:kilikili/utils/extension/string_ext.dart';
 import 'package:kilikili/utils/path_utils.dart';
-import 'package:collection/collection.dart' show IterableExtension;
+import 'package:kilikili/utils/subtitle_format.dart' as subtitle_format;
 import 'package:dio/dio.dart' show Options;
 
 enum SubtitleFormat implements EnumWithLabel {
@@ -29,48 +29,12 @@ abstract final class SubtitleUtils {
 
   static const exts = [_json, 'vtt', 'srt', 'ass', _bcc, PathUtils.subtitleExt];
 
-  static String _vttTimecode(num seconds) {
-    final h = (seconds ~/ 3600).toString().padLeft(2, '0');
-    seconds %= 3600;
-    final m = (seconds ~/ 60).toString().padLeft(2, '0');
-    seconds %= 60;
-    final sms = seconds.toStringAsFixed(3).padLeft(6, '0');
-    return "$h:$m:$sms";
-  }
+  /// 转换实现搬到了 `subtitle_format.dart`（纯 dart，无 flutter/dio 依赖），
+  /// 以便 fixture 生成器直接用**基线自己**产出 golden，与 Rust 侧
+  /// `bili-core::subtitle_format` 对照。这里保留入口，调用方不受影响。
+  static String json2Vtt(List list) => subtitle_format.json2Vtt(list);
 
-  static String json2Vtt(List list) {
-    final sb = StringBuffer('WEBVTT\n\n')
-      ..writeAll(
-        list.map(
-          (item) =>
-              '${_vttTimecode(item['from'])} --> ${_vttTimecode(item['to'])}\n${item['content'].trim()}',
-        ),
-        '\n\n',
-      );
-    return sb.toString();
-  }
-
-  static String _srtTimecode(num seconds) {
-    final h = (seconds ~/ 3600).toString().padLeft(2, '0');
-    seconds %= 3600;
-    final m = (seconds ~/ 60).toString().padLeft(2, '0');
-    seconds %= 60;
-    final s = seconds.toInt();
-    final ms = ((seconds - s) * 1000).round().toString().padLeft(3, '0');
-    return '$h:$m:${s.toString().padLeft(2, '0')},$ms';
-  }
-
-  static String json2Srt(List list) {
-    final sb = StringBuffer()
-      ..writeAll(
-        list.mapIndexed(
-          (i, e) =>
-              '${i + 1}\n${_srtTimecode(e['from'])} --> ${_srtTimecode(e['to'])}\n${e['content'].trim()}',
-        ),
-        '\n\n',
-      );
-    return sb.toString();
-  }
+  static String json2Srt(List list) => subtitle_format.json2Srt(list);
 
   static Future<Uint8List?> getSubtitle(String url) async {
     final res = await Request.dio.get<Uint8List>(

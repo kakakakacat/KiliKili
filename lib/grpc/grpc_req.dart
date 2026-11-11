@@ -57,6 +57,50 @@ abstract final class GrpcReq {
     T Function(Uint8List) grpcParser, {
     bool isolate = false,
   }) async {
+    final frames = await _post(url, request);
+    if (frames case Success(:final response)) {
+      return isolate && response.length > _isolateSize
+          ? compute(_parse, (response, grpcParser))
+          : _parse((response, grpcParser));
+    }
+    // Error / Loading 都是 LoadingState<Never>，对任何 T 都成立。
+    return frames as LoadingState<T>;
+  }
+
+  /// 只取回**解帧并解压后**的 protobuf 字节，不在 Dart 侧解析。
+  ///
+  /// 给 Rust 解析路径用（见 `lib/services/rust/rust_danmaku.dart`）：它要
+  /// 的是字节，而 [request] 的产物是解析好的对象，再 `writeToBuffer` 一次
+  /// 等于把要省的那次解析又做了一遍。
+  ///
+  /// 解帧与解压留在 Dart：它们属于传输外壳，而传输这条链路还没迁移
+  /// （见 `rust/crates/bili-api/src/danmaku.rs` 的模块文档）。等 Rust 接管
+  /// 传输时，这一步一并过去。
+  static Future<LoadingState<Uint8List>> requestRaw(
+    String url,
+    GeneratedMessage request,
+  ) async {
+    final frames = await _post(url, request);
+    if (frames case Success(:final response)) {
+      try {
+        return Success(decompressProtobuf(response));
+      } catch (e) {
+        return Error(e.toString());
+      }
+    }
+    return frames;
+  }
+
+  /// 发请求并处理 gRPC 状态，返回**未解帧**的响应体。
+  ///
+  /// [request] 与 [requestRaw] 的共同部分。抽出来是为了让两条路径的
+  /// 错误处理（业务错误体、`Grpc-Status`、`Grpc-Status-Details-Bin`）
+  /// 只有一份——两份迟早会漂移，而漂移的表现是同一个服务端故障在两条
+  /// 路径上给出不同的提示。
+  static Future<LoadingState<Uint8List>> _post(
+    String url,
+    GeneratedMessage request,
+  ) async {
     final response = await Request().post<Uint8List>(
       HttpString.appBaseUrl + url,
       data: compressProtobuf(request.writeToBuffer()),
@@ -70,9 +114,7 @@ abstract final class GrpcReq {
     if (response.headers.value('Grpc-Status') == '0') {
       final data = response.data;
       if (data is Uint8List) {
-        return isolate && data.length > _isolateSize
-            ? compute(_parse, (data, grpcParser))
-            : _parse((data, grpcParser));
+        return Success(data);
       } else {
         return Error('grpc: ${data.runtimeType} is not Uint8List');
       }

@@ -482,12 +482,10 @@ class DownloadService extends GetxService {
         final subtitles =
             response.subtitle?.subtitles ??
             (!Accounts.main.isLogin
-                ? DmGrpc.dmViewToSubtitle(
-                    (await DmGrpc.dmView(
-                      entry.avid,
-                      pageData.cid,
-                    )).dataOrNull,
-                  )
+                ? (await DmGrpc.dmViewSubtitles(
+                    entry.avid,
+                    pageData.cid,
+                  )).dataOrNull
                 : null);
 
         if (subtitles != null && subtitles.isNotEmpty) {

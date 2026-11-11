@@ -144,7 +144,21 @@ dependencies = [
 name = "bili-core"
 version = "0.1.0"
 dependencies = [
+ "bili-api",
  "bili-domain",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
+name = "bili-danmaku"
+version = "0.1.0"
+dependencies = [
+ "bili-api",
+ "bili-domain",
+ "regex",
+ "serde",
+ "serde_json",
  "tracing",
 ]
 
@@ -190,6 +204,7 @@ version = "0.1.0"
 dependencies = [
  "bili-api",
  "bili-core",
+ "bili-danmaku",
  "bili-domain",
  "bili-protocol",
  "flutter_rust_bridge",

@@ -1218,11 +1218,10 @@ class VideoDetailController extends GetxController
       if (response.subtitle?.subtitles case final sub? when (sub.isNotEmpty)) {
         _setSubtitle(sub);
       } else if (!Accounts.main.isLogin) {
-        final res = await DmGrpc.dmView(aid, cid.value);
+        final res = await DmGrpc.dmViewSubtitles(aid, cid.value);
         if (res case Success(:final response)) {
-          if (DmGrpc.dmViewToSubtitle(response) case final sub?
-              when (sub.isNotEmpty)) {
-            _setSubtitle(sub);
+          if (response.isNotEmpty) {
+            _setSubtitle(response);
           }
         } else {
           res.toast();

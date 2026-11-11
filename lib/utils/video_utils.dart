@@ -4,6 +4,7 @@ import 'package:kilikili/models/common/video/video_decode_type.dart';
 import 'package:kilikili/models/video/play/url.dart'
     show AudioItem, VideoItem, FormatItem;
 import 'package:kilikili/models_new/live/live_room_play_info/codec.dart';
+import 'package:kilikili/services/rust/rust_media_select.dart';
 import 'package:kilikili/utils/extension/iterable_ext.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
@@ -165,6 +166,25 @@ abstract final class VideoUtils {
   ) {
     assert(videoList.isNotEmpty);
 
+    // Rust 路径（开关默认关闭）。失败返回 null，落回下面的原实现——
+    // 包括本方法会抛异常的那几种输入，Rust 不替它「修」。
+    if (RustMediaSelect.selectVideo(
+          videoList: videoList,
+          preferQuality: preferQuality,
+          acceptQuality: acceptQuality,
+          supportFormats: supportFormats,
+          preferCodecs: preferCodecs,
+        )
+        case final selection?) {
+      final video = videoList[selection.videoIndex];
+      return (
+        video.id,
+        supportFormats[selection.formatIndex],
+        selection.codec,
+        video,
+      );
+    }
+
     final targetQuality = _findAvailableVideoQuality(
       videoList,
       acceptQuality,
@@ -198,6 +218,15 @@ abstract final class VideoUtils {
     int preferQuality,
   ) {
     assert(audioList.isNotEmpty);
+
+    // Rust 路径（开关默认关闭），同 findTargetVideo。
+    if (RustMediaSelect.selectAudio(
+          audioList: audioList,
+          preferQuality: preferQuality,
+        )
+        case final index?) {
+      return audioList[index];
+    }
 
     final preferredRank = AudioQuality.fromCode(preferQuality).rank;
     return audioList.findTargetMedia(

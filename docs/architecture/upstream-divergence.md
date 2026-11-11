@@ -5,6 +5,13 @@
 修订：2026-11-11 —— 按 §6 的方法重算。实质改动 15 → **16**（新增
 `lib/pages/setting/models/play_settings.dart`，`9d1d5c3c9` 默认开启自动播放），
 仅重命名波及 951 → 950，新增文件 167 → **187**（弹幕解码 `9d1d5c3c9`）
+修订：2026-11-11（弹幕引擎 issue #42、DmView 字幕、清晰度/音质选择、
+字幕格式转换）—— 实质改动 16 → **23**，仅重命名波及 950 → **943**
+（`lib/grpc/dm.dart`、`lib/grpc/grpc_req.dart`、
+`lib/pages/danmaku/controller.dart`、`lib/pages/video/controller.dart`、
+`lib/services/download/download_service.dart`、`lib/utils/video_utils.dart`、
+`lib/utils/subtitle_utils.dart` 七个文件从「只有重命名」变成有逻辑改动），
+新增文件 187 → **255**。本次数字含**尚未提交**的工作树改动
 关联：RFC-0001 §10.1（分支与 upstream 同步）
 
 RFC §10.1 规定了要固定 `UPSTREAM_COMMIT` 并记录 rebase/merge 策略，但没有
@@ -29,9 +36,9 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 类别 | 数量 |
 | --- | ---: |
 | 修改的上游既有文件 | 966 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 950 |
-| &nbsp;&nbsp;其中：有实质改动 | **16** |
-| 新增文件 | 187 |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 943 |
+| &nbsp;&nbsp;其中：有实质改动 | **23** |
+| 新增文件 | 255 |
 | 删除文件 | 0 |
 
 ## 3. 包名重命名：分叉面的主体
@@ -56,9 +63,16 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | `README.md` / `README.en.md` | `e0b32bfda` `c7dc17c1a` `f92a9890c` | 改写为 KiliKili 的说明与路线图 |
 | `pubspec.yaml` / `pubspec.lock` | `ee41df52c` `57485ede8` | 引入 `flutter_rust_bridge` 与 `rust_builder` |
 | `lib/main.dart` | `ee41df52c` | 启动时初始化 Rust Core |
-| `lib/http/video.dart` | `f321aea73` `43827d42f` `9385cf06d` | 视频详情与取流接入 Rust 路径（带开关与回退） |
+| `lib/http/video.dart` | `f321aea73` `43827d42f` `9385cf06d` 及本次 | 视频详情与取流接入 Rust 路径（带开关与回退）；`getSubtitles` 的字幕转换同样接入 |
 | `lib/http/search.dart` | `130b9f533` | 搜索建议接入 Rust 解析（带回退） |
 | `lib/pages/setting/models/play_settings.dart` | `9d1d5c3c9` | 自动播放默认值改为开启（issue #16） |
+| `lib/pages/danmaku/controller.dart` | 本次（issue #42） | 分段改走 Rust 弹幕引擎（带开关与运行中降级）；原 `handleDanmaku` 的循环原样移入新文件 `lib/pages/danmaku/engine.dart` |
+| `lib/grpc/dm.dart` | 本次（issue #42、DmView 字幕） | 新增 `dmSegMobileRaw`（只取回字节交给 Rust）与 `dmViewSubtitles`（字幕解析走 Rust，带开关与回退） |
+| `lib/pages/video/controller.dart` | 本次（DmView 字幕） | 取字幕改调 `DmGrpc.dmViewSubtitles` |
+| `lib/services/download/download_service.dart` | 本次（DmView 字幕） | 同上 |
+| `lib/utils/video_utils.dart` | 本次（清晰度/音质选择） | `findTargetVideo` / `findTargetAudio` 先走 Rust，失败回退原实现 |
+| `lib/utils/subtitle_utils.dart` | 本次（字幕转换） | `json2Vtt` / `json2Srt` 的实现移到纯 dart 的 `lib/utils/subtitle_format.dart`，此处只保留委托 |
+| `lib/grpc/grpc_req.dart` | 本次（issue #42） | 抽出 `_post`，新增 `requestRaw`；`request` 行为不变 |
 | `test/utils/accounts/deleted_account_test.dart` | `83244c723` | 适配 CI 上打补丁后的 Flutter |
 | `assets/linux/DEBIAN/control` | `5ecebd8f8` 及本次 | 依赖声明改由构建期生成（见 §5） |
 | `.github/workflows/linux_x64.yml` | `d9b23ba4e` `45cfe832c` `6d35ee6e9` 及本次 | RPM 选包修复、产物体积闸门、依赖自动生成 |
@@ -81,17 +95,19 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 5. 新增文件
 
-187 个，不与上游冲突，按区域分布：
+255 个，不与上游冲突，按区域分布：
 
 | 区域 | 文件数 | 内容 |
 | --- | ---: | --- |
-| `rust/` | 87 | Rust workspace：5 个 crate 与 fixture |
+| `rust/` | 136 | Rust workspace：6 个 crate 与 fixture |
 | `rust_builder/` | 46 | cargokit，把 Rust 接入 Flutter 各端构建 |
-| `lib/services/` | 15 | Rust 开关、shadow mode、取数封装、规范化 |
-| `lib/rust/` | 10 | FRB 生成的 Dart 绑定 |
-| `tool/` | 10 | 构建准备、FRB 生成、README 统计、产物核对、fixture 生成 |
-| `docs/` | 9 | RFC、ADR、M0 记录 |
-| 其他 | 10 | workflow、测试、资源 |
+| `lib/services/` | 20 | Rust 开关、shadow mode、取数封装、规范化 |
+| `lib/rust/` | 14 | FRB 生成的 Dart 绑定 |
+| `tool/` | 13 | 构建准备、FRB 生成、README 统计、产物核对、fixture 生成 |
+| `docs/` | 10 | RFC、ADR、M0 记录 |
+| `lib/pages/` | 1 | 从控制器里搬出来的基线弹幕引擎（`danmaku/engine.dart`） |
+| `lib/utils/` | 1 | 从 `SubtitleUtils` 里搬出来的基线字幕转换（`subtitle_format.dart`） |
+| 其他 | 14 | workflow、测试、资源 |
 
 ## 6. 如何重新计算
 

@@ -1,0 +1,42 @@
+{
+  "comment": "常见形态：一条人工中文、一条 AI 中文、一条英文，外加几个没有消费方的字段（Rust 必须跳过它们）。期望顺序是中文优先、同为中文时人工在前。",
+  "closed": false,
+  "special_dms": ["https://example.invalid/special/1.json"],
+  "send_box_style": 2,
+  "check_box_show_msg": "发送弹幕即表示同意",
+  "text_placeholder": "发个友善的弹幕见证当下",
+  "kv": "{\"placeholder\":1}",
+  "subtitle": {
+    "lan": "zh-CN",
+    "lan_doc": "中文（中国）",
+    "subtitles": [
+      {
+        "id": 1183516938024452352,
+        "id_str": "1183516938024452352",
+        "lan": "en-US",
+        "lan_doc": "English",
+        "subtitle_url": "//aisubtitle.example.invalid/en.json",
+        "type": 0,
+        "lan_doc_brief": "英"
+      },
+      {
+        "id": 1183516938024452353,
+        "id_str": "1183516938024452353",
+        "lan": "ai-zh",
+        "lan_doc": "中文（自动翻译）",
+        "subtitle_url": "//aisubtitle.example.invalid/ai-zh.json",
+        "type": 1,
+        "lan_doc_brief": "中"
+      },
+      {
+        "id": 1183516938024452354,
+        "id_str": "1183516938024452354",
+        "lan": "zh-CN",
+        "lan_doc": "中文（中国）",
+        "subtitle_url": "//s1.example.invalid/zh-CN.json",
+        "type": 0,
+        "lan_doc_brief": "中"
+      }
+    ]
+  }
+}

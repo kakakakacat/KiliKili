@@ -1,0 +1,21 @@
+[package]
+name = "bili-danmaku"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "弹幕引擎：标记自己、合并、过滤、按 100ms 分桶。不含协议解码。"
+
+[dependencies]
+bili-domain = { path = "../bili-domain" }
+regex = { workspace = true }
+serde.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+bili-api = { path = "../bili-api", default-features = false }
+serde_json.workspace = true
+
+[lints]
+workspace = true

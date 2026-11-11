@@ -96,6 +96,84 @@ abstract final class RustFlags {
   static Future<void> setRustSearchSuggest(bool value) =>
       _box.put(rustSearchSuggestKey, value);
 
+  /// 字幕文件由 Rust 解析并转成 WebVTT / SRT。
+  ///
+  /// 默认关闭。开启后 Dart 连那份 JSON 都不解（按纯文本取回直接交给
+  /// Rust），基线为此开的 `compute` 由 FRB 的工作线程替代。失败回退到
+  /// 基线的 `SubtitleUtils`，用的是同一份正文，不重新请求。
+  static const String rustSubtitleConvertKey = 'rust.convert.subtitle';
+
+  static bool get rustSubtitleConvert =>
+      RustCore.isReady &&
+      (_box.get(
+            rustSubtitleConvertKey,
+            defaultValue: _defaultOn(rustSubtitleConvertKey),
+          )
+          as bool);
+
+  static Future<void> setRustSubtitleConvert(bool value) =>
+      _box.put(rustSubtitleConvertKey, value);
+
+  /// 清晰度 / 编码 / 音质选择走 Rust（RFC-0001 §16.1 把清晰度选择划给
+  /// Rust Player Orchestrator）。
+  ///
+  /// 默认关闭。它影响的是**用户看到的画质**：选错一档不会报错，只会
+  /// 「今天画质怎么不一样」。任何一步失败（包括基线会抛异常的那几种
+  /// 输入）都回到 `VideoUtils` 的原实现，见 [RustMediaSelect]。
+  static const String rustMediaSelectKey = 'rust.select.media';
+
+  static bool get rustMediaSelect =>
+      RustCore.isReady &&
+      (_box.get(
+            rustMediaSelectKey,
+            defaultValue: _defaultOn(rustMediaSelectKey),
+          )
+          as bool);
+
+  static Future<void> setRustMediaSelect(bool value) =>
+      _box.put(rustMediaSelectKey, value);
+
+  /// `DmView` 的字幕轨由 Rust 解析。请求仍由现有 Dart 路径发出。
+  ///
+  /// 默认关闭；解析失败会回退到 `DmGrpc.dmViewToSubtitle`。与弹幕引擎
+  /// 不同，这条路径无状态、一次调用结束，失败只影响本次取字幕。
+  static const String rustDmViewSubtitleKey = 'rust.parse.dmViewSubtitle';
+
+  static bool get rustDmViewSubtitle =>
+      RustCore.isReady &&
+      (_box.get(
+            rustDmViewSubtitleKey,
+            defaultValue: _defaultOn(rustDmViewSubtitleKey),
+          )
+          as bool);
+
+  static Future<void> setRustDmViewSubtitle(bool value) =>
+      _box.put(rustDmViewSubtitleKey, value);
+
+  /// 弹幕引擎走 Rust：分段解码、标记自己、合并、过滤、分桶都在 Rust，
+  /// Dart 只按播放进度取**一桶**（100ms）。
+  ///
+  /// 默认关闭。与解析类开关不同，这条路径持有状态（一个视频的全部弹幕
+  /// 都在 Rust 侧的会话里），出问题的表现是「这段没人发弹幕」——没有
+  /// 任何报错，只有空白。因此任何一步失败都整条降级回 Dart，见
+  /// [RustDanmakuSession] 与 `PlDanmakuController`。
+  ///
+  /// 还有一处**不保证等价**：用户的正则屏蔽规则。Dart `RegExp` 与 Rust
+  /// `regex` 的语法和语义不是一个集合，编不过或语义不同的规则会让开会话
+  /// 直接失败，于是整条回到 Dart（ADR-010）。
+  static const String rustDanmakuEngineKey = 'rust.engine.danmaku';
+
+  static bool get rustDanmakuEngine =>
+      RustCore.isReady &&
+      (_box.get(
+            rustDanmakuEngineKey,
+            defaultValue: _defaultOn(rustDanmakuEngineKey),
+          )
+          as bool);
+
+  static Future<void> setRustDanmakuEngine(bool value) =>
+      _box.put(rustDanmakuEngineKey, value);
+
   /// 构建期指定的初始值，用于真机验证。
   ///
   /// 取数开关没有设置项入口（见类文档：不往上游的设置页里加东西），
@@ -112,6 +190,14 @@ abstract final class RustFlags {
     rustPlayUrlKey => const bool.fromEnvironment('rust.fetch.playUrl'),
     rustSearchSuggestKey => const bool.fromEnvironment(
       'rust.parse.searchSuggest',
+    ),
+    rustDanmakuEngineKey => const bool.fromEnvironment('rust.engine.danmaku'),
+    rustDmViewSubtitleKey => const bool.fromEnvironment(
+      'rust.parse.dmViewSubtitle',
+    ),
+    rustMediaSelectKey => const bool.fromEnvironment('rust.select.media'),
+    rustSubtitleConvertKey => const bool.fromEnvironment(
+      'rust.convert.subtitle',
     ),
     _ => false,
   };

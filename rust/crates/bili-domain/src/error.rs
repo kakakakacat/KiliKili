@@ -27,6 +27,14 @@ pub enum ErrorKind {
     Player,
     /// 请求被主动取消（路由切换、seek、输入变更）。
     Cancelled,
+    /// 输入合法，但 Rust 这条实现**不保证**与基线等价，因此拒绝处理。
+    ///
+    /// 与 [`Self::Protocol`] 的区别是责任方：那边是对面变了，这边是
+    /// 我们自己做不到。调用方唯一正确的反应是**整条路径降级回 Dart**，
+    /// 而不是跳过这一项继续——典型例子是弹幕屏蔽正则，Dart `RegExp`
+    /// 支持而 Rust `regex` 不支持（或语义不同）的那些，少过滤一条弹幕
+    /// 在界面上没有任何提示（见 `bili-danmaku::rule`、ADR-010）。
+    Unsupported,
 }
 
 impl ErrorKind {
@@ -53,6 +61,7 @@ impl fmt::Display for ErrorKind {
             Self::Storage => "storage",
             Self::Player => "player",
             Self::Cancelled => "cancelled",
+            Self::Unsupported => "unsupported",
         };
         f.write_str(s)
     }

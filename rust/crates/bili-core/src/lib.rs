@@ -2,7 +2,9 @@
 //!
 //! 本 crate 不得依赖 Flutter Widget 或 Slint 具体类型。
 
+pub mod media_select;
 pub mod player_session;
+pub mod subtitle_format;
 
 #[cfg(test)]
 mod tests {

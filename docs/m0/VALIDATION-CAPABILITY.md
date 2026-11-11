@@ -167,6 +167,42 @@ Android 的 Rust 交叉编译改为手动 dispatch（§2.1）；五个 app workf
 只给标准库，不给链接器与 C 编译器，而 FRB 依赖链含 C 代码）。NDK 刻意不用
 `local-cache`，否则恢复出的 NDK 残缺、故障只在第二次之后出现。
 
+### 2.2 回归门（`ci.yml` 的 `regression gate`）
+
+2026-11-11 加。仓库 ruleset「main regression gate」把一个名为
+`regression gate` 的状态检查设成合并到 main 的必需项。产出这个检查的是
+`.github/workflows/ci.yml`（工作流名 **Regression CI**）里的 `gate` job——
+**job 的 `name:` 就是 ruleset 认的那个检查名**，改掉它 ruleset 就对不上，
+所有 PR 会永久停在 `BLOCKED`。这是本机制唯一会静默失效的方式。
+
+门本身**只聚合、不跑测试**：`needs: [rust, flutter, android, ios, macos,
+windows, linux]`，再逐个核对 `needs.*.result`。真正的回归在被聚合的工作流
+里，在门里重跑一遍只会让同一份测试跑两次。`rust.yml` 与 `flutter-test.yml`
+为此改成纯 `workflow_call`，只由 ci.yml 调用，不再自己监听事件。
+
+四处判断值得记住：
+
+- **`if: always()` 不能去掉。** 默认语义下任一 `needs` 失败就会把 `gate`
+  置为 skipped，必需检查于是永远不上报——失败的 PR 会卡在 pending，比通过的
+  PR 更难看出原因。
+- **被聚合的两条可复用工作流刻意不加 `paths` 过滤。** 必需检查一旦在某些 PR
+  上缺席就是永久 pending，只改 fixture 或 workflow 的 PR 会卡死。ci.yml 里
+  那条注释说的就是这件事。
+- **只有 rust / flutter / android 三项强制 `success`。** ios / macos /
+  windows / linux 带 `if: github.event_name == 'schedule' ||
+  inputs.full_platforms`，平时是 skipped；门只在 `full_platforms` 为真时才
+  核对这四项。
+- **`chore/readme-stats` 的推送要单独触发一次。** 那条分支的 PR 由
+  `GITHUB_TOKEN` 创建，GitHub 防递归，不发 `pull_request` 事件，于是 PR 上
+  不会有 `regression gate`，auto-merge 永远完不成。ci.yml 的
+  `push: branches` 里列上该分支，就是为了补这一次触发。
+
+**等 CI 的时间尺度**：每个 PR 都会打一次 Android APK（`Android package and
+native library`，`timeout-minutes: 60`），是全流程最慢的一项，实测约 15
+分钟。`gh pr checks <n> --watch` 会超过 600 秒，要放后台跑。判断一个 PR 能
+不能合看 `mergeable=MERGEABLE` 且 `mergeStateStatus=CLEAN`；只要
+`regression gate` 还没上报就是 `BLOCKED`，那通常只代表 Android 那项还没跑完。
+
 ## 3. Linux：明确降级为 best-effort
 
 ### 3.1 保留的保障

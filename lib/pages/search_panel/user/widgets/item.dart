@@ -1,18 +1,18 @@
 import 'package:kilikili/common/widgets/pendant_avatar.dart';
-import 'package:kilikili/models/search/result.dart';
 import 'package:kilikili/utils/bili_utils.dart';
 import 'package:kilikili/utils/num_utils.dart';
+import 'package:kilikili/services/rust/rust_search.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:material_ui/material_ui.dart';
 
-class SearchUserItem extends StatelessWidget {
-  const SearchUserItem({
+class SearchUserTile extends StatelessWidget {
+  const SearchUserTile({
     super.key,
     required this.item,
   });
 
-  final SearchUserItemModel item;
+  final SearchUserItem item;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,7 @@ class SearchUserItem extends StatelessWidget {
             PendantAvatar(
               item.upic,
               size: 42,
-              officialType: item.officialVerify?.type,
+              officialType: item.officialVerify?.kind,
               liveBottom: -5,
               liveFontSize: 11,
               roomId: item.isLive == 1 ? item.roomId : null,

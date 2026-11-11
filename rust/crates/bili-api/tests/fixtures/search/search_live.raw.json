@@ -1,0 +1,40 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "numResults": 88,
+    "page": 1,
+    "result": [
+      {
+        "type": "live_room",
+        "rank_offset": 0,
+        "uid": 100000040,
+        "tags": "示例标签,测试",
+        "live_time": "2026-11-11 10:00:00",
+        "uname": "示例主播甲",
+        "uface": "//i1.example-cdn.test/bfs/face/0000000000000000000000000000000000000060.jpg",
+        "user_cover": "//i0.example-cdn.test/bfs/live/0000000000000000000000000000000000000061.jpg",
+        "title": "正在直播<em class=\"keyword\">测试</em>内容",
+        "cover": "//i0.example-cdn.test/bfs/live/0000000000000000000000000000000000000062.jpg",
+        "online": 12345,
+        "rank_index": 1,
+        "rank_score": 999999,
+        "roomid": 7000004,
+        "attentions": 23456,
+        "cate_name": "<span class=\"keyword\">网游</span>",
+        "watched_show": { "num": 1234, "text_small": "1234" }
+      },
+      {
+        "type": "live_room",
+        "uid": 100000041,
+        "uname": "示例主播乙",
+        "title": "没有分区标签的直播间",
+        "cover": "//i0.example-cdn.test/bfs/live/0000000000000000000000000000000000000063.jpg",
+        "online": 7,
+        "roomid": 7000005,
+        "cate_name": "手游"
+      }
+    ]
+  }
+}

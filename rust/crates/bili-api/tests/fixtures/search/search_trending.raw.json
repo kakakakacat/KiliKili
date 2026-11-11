@@ -1,0 +1,34 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "trackid": "0000000000000000000",
+    "top_list": [
+      {
+        "keyword": "置顶示例词",
+        "show_name": "置顶示例词",
+        "icon": "//i0.example-cdn.test/bfs/trending/0000000000000000000000000000000000000080.png",
+        "show_live_icon": true,
+        "recommend_reason": "热点·示例解读"
+      }
+    ],
+    "list": [
+      {
+        "keyword": "示例热搜一",
+        "show_name": "示例热搜一",
+        "icon": "//i0.example-cdn.test/bfs/trending/0000000000000000000000000000000000000081.png",
+        "show_live_icon": false,
+        "recommend_reason": "新番·示例"
+      },
+      {
+        "keyword": "示例热搜二",
+        "icon": "",
+        "show_live_icon": false
+      },
+      {
+        "show_name": "缺少 keyword 的条目"
+      }
+    ]
+  }
+}

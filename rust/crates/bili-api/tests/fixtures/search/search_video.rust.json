@@ -1,0 +1,149 @@
+{
+  "items": [
+    {
+      "aid": 900000001,
+      "arcurl": "http://www.bilibili.com/video/av900000001",
+      "bvid": "BV1aa4y1a0a1",
+      "description": "简介文本，含实体 &amp; 与 &lt;符号&gt;",
+      "duration_secs": 754,
+      "id": 900000001,
+      "is_union_video": 1,
+      "item_type": "video",
+      "owner": {
+        "face": "//i1.example-cdn.test/bfs/face/0000000000000000000000000000000000000002.jpg",
+        "mid": 100000001,
+        "name": "示例UP主甲"
+      },
+      "pic": "//i0.example-cdn.test/bfs/archive/0000000000000000000000000000000000000001.jpg",
+      "pubdate": 1700000000,
+      "roomid": null,
+      "senddate": 1700000001,
+      "stat": {
+        "danmaku": 789,
+        "favorite": 2345,
+        "like": 9876,
+        "reply": 456,
+        "view": 123456
+      },
+      "tag": "测试,示例,标签",
+      "title": "这是一个测试标题",
+      "title_spans": [
+        {
+          "is_em": false,
+          "text": "这是一个"
+        },
+        {
+          "is_em": true,
+          "text": "测试"
+        },
+        {
+          "is_em": false,
+          "text": "标题"
+        }
+      ]
+    },
+    {
+      "aid": 900000002,
+      "arcurl": "http://www.bilibili.com/cheese/play/ep900000002",
+      "bvid": "BV1bb4y1b0b2",
+      "description": "",
+      "duration_secs": 3723,
+      "id": 900000002,
+      "is_union_video": 0,
+      "item_type": "ketang",
+      "owner": {
+        "face": "//i1.example-cdn.test/bfs/face/0000000000000000000000000000000000000004.jpg",
+        "mid": 100000002,
+        "name": "示例UP主乙"
+      },
+      "pic": "//i0.example-cdn.test/bfs/archive/0000000000000000000000000000000000000003.jpg",
+      "pubdate": 1700000100,
+      "roomid": null,
+      "senddate": 1700000101,
+      "stat": {
+        "danmaku": 12,
+        "favorite": 34,
+        "like": 56,
+        "reply": 21,
+        "view": 54321
+      },
+      "tag": null,
+      "title": "课堂类型条目",
+      "title_spans": [
+        {
+          "is_em": false,
+          "text": "课堂类型条目"
+        }
+      ]
+    },
+    {
+      "aid": null,
+      "arcurl": null,
+      "bvid": null,
+      "description": null,
+      "duration_secs": 0,
+      "id": 900000003,
+      "is_union_video": null,
+      "item_type": "live_room",
+      "owner": {
+        "face": "//i1.example-cdn.test/bfs/face/0000000000000000000000000000000000000006.jpg",
+        "mid": 100000003,
+        "name": "示例主播丙"
+      },
+      "pic": "//i0.example-cdn.test/bfs/live/0000000000000000000000000000000000000005.jpg",
+      "pubdate": null,
+      "roomid": 7000001,
+      "senddate": null,
+      "stat": {
+        "danmaku": null,
+        "favorite": null,
+        "like": null,
+        "reply": null,
+        "view": 0
+      },
+      "tag": null,
+      "title": "直播间条目",
+      "title_spans": [
+        {
+          "is_em": false,
+          "text": "直播间条目"
+        }
+      ]
+    },
+    {
+      "aid": 900000004,
+      "arcurl": null,
+      "bvid": "BV1cc4y1c0c3",
+      "description": null,
+      "duration_secs": 0,
+      "id": 900000004,
+      "is_union_video": null,
+      "item_type": "video",
+      "owner": {
+        "face": "//i1.example-cdn.test/bfs/face/0000000000000000000000000000000000000008.jpg",
+        "mid": 100000004,
+        "name": "示例UP主丁"
+      },
+      "pic": "//i0.example-cdn.test/bfs/archive/0000000000000000000000000000000000000007.jpg",
+      "pubdate": null,
+      "roomid": null,
+      "senddate": null,
+      "stat": {
+        "danmaku": null,
+        "favorite": null,
+        "like": null,
+        "reply": null,
+        "view": 42
+      },
+      "tag": null,
+      "title": "时长读不出来的条目",
+      "title_spans": [
+        {
+          "is_em": false,
+          "text": "时长读不出来的条目"
+        }
+      ]
+    }
+  ],
+  "num_results": 1000
+}

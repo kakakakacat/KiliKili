@@ -1,0 +1,61 @@
+{
+  "items": [
+    {
+      "attentions": 23456,
+      "cate_name": "网游",
+      "cover": "//i0.example-cdn.test/bfs/live/0000000000000000000000000000000000000062.jpg",
+      "item_type": "live_room",
+      "live_time": "2026-11-11 10:00:00",
+      "online": 12345,
+      "rank_index": 1,
+      "rank_offset": 0,
+      "rank_score": 999999,
+      "roomid": 7000004,
+      "tags": "示例标签,测试",
+      "title": "正在直播测试内容",
+      "title_spans": [
+        {
+          "is_em": false,
+          "text": "正在直播"
+        },
+        {
+          "is_em": true,
+          "text": "测试"
+        },
+        {
+          "is_em": false,
+          "text": "内容"
+        }
+      ],
+      "uface": "//i1.example-cdn.test/bfs/face/0000000000000000000000000000000000000060.jpg",
+      "uid": 100000040,
+      "uname": "示例主播甲",
+      "user_cover": "//i0.example-cdn.test/bfs/live/0000000000000000000000000000000000000061.jpg"
+    },
+    {
+      "attentions": null,
+      "cate_name": "手游",
+      "cover": "//i0.example-cdn.test/bfs/live/0000000000000000000000000000000000000063.jpg",
+      "item_type": "live_room",
+      "live_time": null,
+      "online": 7,
+      "rank_index": null,
+      "rank_offset": null,
+      "rank_score": null,
+      "roomid": 7000005,
+      "tags": null,
+      "title": "没有分区标签的直播间",
+      "title_spans": [
+        {
+          "is_em": false,
+          "text": "没有分区标签的直播间"
+        }
+      ],
+      "uface": null,
+      "uid": 100000041,
+      "uname": "示例主播乙",
+      "user_cover": null
+    }
+  ],
+  "num_results": 88
+}

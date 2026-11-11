@@ -1,16 +1,16 @@
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/models/search/result.dart';
 import 'package:kilikili/pages/article/view.dart';
 import 'package:kilikili/utils/date_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
+import 'package:kilikili/services/rust/rust_search.dart';
 import 'package:material_ui/material_ui.dart';
 
-class SearchArticleItem extends StatelessWidget {
-  const SearchArticleItem({super.key, required this.item});
+class SearchArticleTile extends StatelessWidget {
+  const SearchArticleTile({super.key, required this.item});
 
-  final SearchArticleItemModel item;
+  final SearchArticleItem item;
 
   @override
   Widget build(BuildContext context) {
@@ -20,8 +20,8 @@ class SearchArticleItem extends StatelessWidget {
       color: theme.colorScheme.outline,
     );
     void onLongPress() => imageSaveDialog(
-      title: item.title.map((item) => item.text).join(),
-      cover: item.imageUrls?.firstOrNull,
+      title: item.title,
+      cover: item.imageUrls.firstOrNull,
     );
     return Material(
       type: MaterialType.transparency,
@@ -38,7 +38,7 @@ class SearchArticleItem extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              if (item.imageUrls?.isNotEmpty == true)
+              if (item.imageUrls.isNotEmpty)
                 AspectRatio(
                   aspectRatio: Style.aspectRatio,
                   child: LayoutBuilder(
@@ -48,7 +48,7 @@ class SearchArticleItem extends StatelessWidget {
                       return NetworkImgLayer(
                         width: maxWidth,
                         height: maxHeight,
-                        src: item.imageUrls?.firstOrNull,
+                        src: item.imageUrls.firstOrNull,
                       );
                     },
                   ),
@@ -62,7 +62,7 @@ class SearchArticleItem extends StatelessWidget {
                     Text.rich(
                       maxLines: 2,
                       TextSpan(
-                        children: item.title
+                        children: item.titleSpans
                             .map(
                               (e) => TextSpan(
                                 text: e.text,

@@ -2,6 +2,7 @@ import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/search/result.dart';
 import 'package:kilikili/models/search/search_esports.dart';
 import 'package:kilikili/pages/search_panel/video/controller.dart';
+import 'package:kilikili/services/rust/rust_search.dart';
 
 class SearchAllController extends SearchVideoController with SearchVideoMixin {
   SearchAllController({
@@ -10,9 +11,9 @@ class SearchAllController extends SearchVideoController with SearchVideoMixin {
     required super.tag,
   });
 
-  List<SearchUser>? searchUser;
-  List<SearchPgcItemModel>? searchMedia;
-  List<SearchActivity>? searchActivity;
+  List<SearchUserCard>? searchUser;
+  List<SearchPgcItem>? searchMedia;
+  List<SearchActivityItem>? searchActivity;
   SearchEsports? searchEsports;
 
   @override

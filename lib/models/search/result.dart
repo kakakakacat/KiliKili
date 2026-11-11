@@ -1,16 +1,34 @@
-import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/models/horizontal_video_model.dart';
-import 'package:kilikili/models/model_avatar.dart';
 import 'package:kilikili/models/model_owner.dart';
 import 'package:kilikili/models/model_video.dart';
 import 'package:kilikili/models/search/search_esports.dart';
-import 'package:kilikili/utils/duration_utils.dart';
-import 'package:kilikili/utils/em.dart';
-import 'package:kilikili/utils/extension/iterable_ext.dart';
-import 'package:kilikili/utils/global_data.dart';
-import 'package:kilikili/utils/parse_int.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:kilikili/services/rust/rust_search.dart'
+    show
+        SearchActivityItem,
+        SearchArticleItem,
+        SearchLiveItem,
+        SearchPgcItem,
+        SearchUserCard,
+        SearchUserItem;
 
+/// 搜索结果的**列表容器**。
+///
+/// ## 这里还剩什么，为什么
+///
+/// S9（issue #59）把搜索接口迁到了 Rust 的 typed 直连，`fromJson` 那一层
+/// 协议模型随之删除——用户、直播间、番剧、专栏、活动的条目现在直接是
+/// `lib/rust/api/search.dart` 里的 FRB 类型。
+///
+/// 留下来的只有两类：
+///
+/// 1. **UI 容器**（本文件的 `Search*Data`）。它们不解析任何东西，只是
+///    `CommonListController<R, T>` 这套分页框架要求的形状（`numResults`
+///    + `list`）。那是界面基础设施，不是协议模型。
+/// 2. **[SearchVideoItemModel]**。它继承 `HorizontalVideoModel`，而那个
+///    共享运行时模型还有三个未迁的生产者（`HotVideoItemModel`、
+///    `VListItemModel`、`SeasonArchive`）。按 ADR-011 决策六，共享模型要
+///    等它的**所有**生产者迁完才能删，所以这里保留一个单向适配
+///    （`lib/services/rust/search_compat.dart`）。
 abstract class SearchNumData<T> {
   SearchNumData({
     this.numResults,
@@ -21,169 +39,57 @@ abstract class SearchNumData<T> {
   List<T>? list;
 }
 
+/// 视频搜索结果，以及综合搜索的其余分区。
+///
+/// 综合搜索把视频、用户、番剧、活动、赛事装在同一次响应里，基线因此让
+/// 视频容器兼做综合容器。保持这个形状：拆开的话 `SearchPanelController`
+/// 的泛型参数要跟着分裂，而那是纯粹的界面代价。
 class SearchVideoData extends SearchNumData<SearchVideoItemModel> {
   SearchVideoData({
     super.numResults,
     super.list,
+    this.searchUser,
+    this.searchMedia,
+    this.searchActivity,
+    this.searchEsports,
   });
 
-  SearchVideoData.fromJson(Map<String, dynamic> json) {
-    numResults = (json['numResults'] as num?)?.toInt();
-    list = (json['result'] as List?)
-        ?.whereNotBlocked((e) => e['mid'])
-        .map((e) => SearchVideoItemModel.fromJson(e))
-        .toList();
-  }
-
-  List<SearchUser>? searchUser;
-  List<SearchPgcItemModel>? searchMedia;
-  List<SearchActivity>? searchActivity;
+  /// 以下四项只有综合搜索才有值。
+  List<SearchUserCard>? searchUser;
+  List<SearchPgcItem>? searchMedia;
+  List<SearchActivityItem>? searchActivity;
   SearchEsports? searchEsports;
-
-  SearchVideoData.fromSearchAll(Map<String, dynamic> json) {
-    numResults = (json['numResults'] as num?)?.toInt();
-    if (json['result'] case List result when result.isNotEmpty) {
-      for (final item in result) {
-        switch (item['result_type']) {
-          case 'video':
-            list = (item['data'] as List?)
-                ?.whereNotBlocked((e) => e['mid'])
-                .map((e) => SearchVideoItemModel.fromJson(e))
-                .toList();
-          case 'bili_user':
-            if (item['data'] case List users when users.isNotEmpty) {
-              for (final e in users) {
-                if (!GlobalData().blackMids.contains(e['mid'])) {
-                  (searchUser ??= <SearchUser>[]).add(SearchUser.fromJson(e));
-                }
-              }
-            }
-          case 'media_bangumi' || 'media_ft':
-            if (item['data'] case List medias when medias.isNotEmpty) {
-              (searchMedia ??= <SearchPgcItemModel>[]).addAll(
-                medias.map((e) => SearchPgcItemModel.fromJson(e)),
-              );
-            }
-          case 'activity':
-            if (item['data'] case List activities when activities.isNotEmpty) {
-              for (final e in activities) {
-                if (e['url'] case final String url
-                    when url.startsWith(HttpString.liveUrl)) {
-                  final model = SearchActivity.fromJson(e, url);
-                  (searchActivity ??= <SearchActivity>[]).add(model);
-                }
-              }
-            }
-          case 'esports':
-            if (item['data'] case List esports when esports.isNotEmpty) {
-              try {
-                searchEsports = SearchEsports.fromJson(esports.first);
-              } catch (_) {
-                if (kDebugMode) rethrow;
-              }
-            }
-        }
-      }
-    }
-  }
 }
 
-class SearchActivity {
-  int? id;
-  String? title;
-  String? desc;
-  String? cover;
-  String url;
-  int? state;
-  int? status;
-  String? author;
-
-  SearchActivity({
-    this.id,
-    this.title,
-    this.desc,
-    this.cover,
-    required this.url,
-    this.state,
-    this.status,
-    this.author,
-  });
-
-  factory SearchActivity.fromJson(Map<String, dynamic> json, String url) {
-    return SearchActivity(
-      id: json['id'] as int?,
-      title: json['title'] as String?,
-      desc: json['desc'] as String?,
-      cover: json['cover'] as String?,
-      url: url,
-      state: json['state'] as int?,
-      status: json['status'] as int?,
-      author: json['author'] as String?,
-    );
-  }
+class SearchUserData extends SearchNumData<SearchUserItem> {
+  SearchUserData({super.numResults, super.list});
 }
 
-class SearchUser {
-  int? mid;
-  String? uname;
-  String? usign;
-  int? fans;
-  int? videos;
-  String? upic;
-  String? verifyInfo;
-  int? level;
-  int? gender;
-  int? isUpuser;
-  int? isLive;
-  int? roomId;
-  List<SearchVideoItemModel>? res;
-  BaseOfficialVerify? officialVerify;
-  int? isSeniorMember;
-
-  SearchUser({
-    this.mid,
-    this.uname,
-    this.usign,
-    this.fans,
-    this.videos,
-    this.upic,
-    this.verifyInfo,
-    this.level,
-    this.gender,
-    this.isUpuser,
-    this.isLive,
-    this.roomId,
-    this.res,
-    this.officialVerify,
-    this.isSeniorMember,
-  });
-
-  factory SearchUser.fromJson(Map<String, dynamic> json) => SearchUser(
-    mid: json['mid'] as int?,
-    uname: json['uname'] as String?,
-    usign: json['usign'] as String?,
-    fans: json['fans'] as int?,
-    videos: json['videos'] as int?,
-    upic: json['upic'] as String?,
-    verifyInfo: json['verify_info'] as String?,
-    level: json['level'] as int?,
-    gender: json['gender'] as int?,
-    isUpuser: json['is_upuser'] as int?,
-    isLive: json['is_live'] as int?,
-    roomId: json['room_id'] as int?,
-    res: (json['res'] as List<dynamic>?)
-        ?.map((e) => SearchVideoItemModel.fromJson(e as Map<String, dynamic>))
-        .toList(),
-    officialVerify: json['official_verify'] == null
-        ? null
-        : BaseOfficialVerify.fromJson(
-            json['official_verify'] as Map<String, dynamic>,
-          ),
-    isSeniorMember: json['is_senior_member'] as int?,
-  );
+class SearchLiveData extends SearchNumData<SearchLiveItem> {
+  SearchLiveData({super.numResults, super.list});
 }
 
+class SearchPgcData extends SearchNumData<SearchPgcItem> {
+  SearchPgcData({super.numResults, super.list});
+}
+
+class SearchArticleData extends SearchNumData<SearchArticleItem> {
+  SearchArticleData({super.numResults, super.list});
+}
+
+/// 搜索到的视频条目。
+///
+/// **这个类是共享运行时模型的适配点，不是协议模型。** 它继承
+/// `HorizontalVideoModel`，才能进那些按基类接收的通用列表组件
+/// （`lib/pages/member_video_web/base/view.dart` 等）。解析已经在 Rust，
+/// 构造见 `lib/services/rust/search_compat.dart` 的
+/// `RustSearchVideoCompat.toItemModel()`。
+///
+/// `HorizontalVideoModel` 的另外三个生产者迁完之后，这个类连同基类一起
+/// 重新评估（ADR-011 决策六）。
 class SearchVideoItemModel extends HorizontalVideoModel {
+  SearchVideoItemModel();
+
   int? id;
   String? arcurl;
   String? tag;
@@ -191,382 +97,21 @@ class SearchVideoItemModel extends HorizontalVideoModel {
 
   @override
   int? get seasonId => aid;
-
-  SearchVideoItemModel.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    arcurl = json['arcurl'];
-    aid = json['aid'];
-    bvid = json['bvid'];
-    titleList = Em.regTitle(json['title']);
-    title = titleList!.map((i) => i.text).join();
-    desc = json['description'];
-    cover = json['pic'];
-    pubdate = json['pubdate'];
-    ctime = json['senddate'];
-    duration = DurationUtils.parseDuration(json['duration']);
-    owner = SearchOwner.fromJson(json);
-    stat = SearchStat.fromJson(json);
-    switch (json['type']) {
-      case 'ketang':
-        badge = '课堂';
-        isPugv = true;
-      case 'live_room':
-        badge = '直播';
-        isLive = true;
-        roomId = json['roomid'];
-      default:
-        if (json['is_union_video'] == 1) {
-          badge = '合作';
-        }
-    }
-  }
 }
 
+/// 条目统计。字段取自搜索接口的扁平形状，与 `Stat` 的嵌套形状不同。
 class SearchStat extends BaseStat {
-  // 收藏数
+  SearchStat();
+
+  /// 收藏数。
   int? favorite;
-  // 评论数
-  int? reply;
 
-  SearchStat.fromJson(Map<String, dynamic> json) {
-    view = safeToInt(json['play']);
-    danmu = safeToInt(json['danmaku']);
-    favorite = safeToInt(json['favorite']);
-    reply = safeToInt(json['review']);
-    like = safeToInt(json['like']);
-  }
+  /// 评论数。
+  int? reply;
 }
 
+/// UP 主。搜索接口把它扁平在条目上（`mid` / `author` / `upic`），
+/// 不是嵌套的 `owner` 对象。
 class SearchOwner extends Owner {
-  SearchOwner.fromJson(Map<String, dynamic> json) {
-    mid = json["mid"];
-    name = json["author"];
-    face = json['upic'];
-  }
-}
-
-class SearchUserData extends SearchNumData<SearchUserItemModel> {
-  SearchUserData({
-    super.numResults,
-    super.list,
-  });
-
-  SearchUserData.fromJson(Map<String, dynamic> json) {
-    numResults = (json['numResults'] as num?)?.toInt();
-    list = (json['result'] as List?)
-        ?.whereNotBlocked((e) => e['mid'])
-        .map<SearchUserItemModel>((e) => SearchUserItemModel.fromJson(e))
-        .toList();
-  }
-}
-
-class SearchUserItemModel {
-  SearchUserItemModel({
-    this.type,
-    this.mid,
-    this.uname,
-    this.usign,
-    this.fans,
-    this.videos,
-    this.upic,
-    this.faceNft,
-    this.faceNftType,
-    this.verifyInfo,
-    this.level,
-    this.gender,
-    this.isUpUser,
-    this.isLive,
-    this.roomId,
-    this.officialVerify,
-    this.isSeniorMember,
-  });
-
-  String? type;
-  int? mid;
-  String? uname;
-  String? usign;
-  int? fans;
-  int? videos;
-  String? upic;
-  int? faceNft;
-  int? faceNftType;
-  String? verifyInfo;
-  int? level;
-  int? gender;
-  int? isUpUser;
-  int? isLive;
-  int? roomId;
-  BaseOfficialVerify? officialVerify;
-  int? isSeniorMember;
-
-  SearchUserItemModel.fromJson(Map<String, dynamic> json) {
-    type = json['type'];
-    mid = json['mid'];
-    uname = json['uname'];
-    usign = json['usign'];
-    fans = json['fans'];
-    videos = json['videos'];
-    upic = json['upic'];
-    faceNft = json['face_nft'];
-    faceNftType = json['face_nft_type'];
-    verifyInfo = json['verify_info'];
-    level = json['level'];
-    gender = json['gender'];
-    isUpUser = json['is_upuser'];
-    isLive = json['is_live'];
-    roomId = json['room_id'];
-    officialVerify = json['official_verify'] == null
-        ? null
-        : BaseOfficialVerify.fromJson(json['official_verify']);
-    isSeniorMember = json['is_senior_member'];
-  }
-}
-
-class SearchLiveData extends SearchNumData<SearchLiveItemModel> {
-  SearchLiveData({
-    super.numResults,
-    super.list,
-  });
-
-  SearchLiveData.fromJson(Map<String, dynamic> json) {
-    numResults = (json['numResults'] as num?)?.toInt();
-    list = (json['result'] as List?)
-        ?.whereNotBlocked((e) => e['uid'])
-        .map((e) => SearchLiveItemModel.fromJson(e))
-        .toList();
-  }
-}
-
-class SearchLiveItemModel {
-  SearchLiveItemModel({
-    this.rankOffset,
-    this.uid,
-    this.tags,
-    this.liveTime,
-    this.uname,
-    this.uface,
-    this.face,
-    this.userCover,
-    this.type,
-    required this.title,
-    this.cover,
-    this.pic,
-    this.online,
-    this.rankIndex,
-    this.rankScore,
-    this.roomid,
-    this.attentions,
-    this.cateName,
-  });
-
-  int? rankOffset;
-  int? uid;
-  String? tags;
-  String? liveTime;
-  String? uname;
-  String? uface;
-  String? face;
-  String? userCover;
-  String? type;
-  late List<({bool isEm, String text})> title;
-  String? cover;
-  String? pic;
-  int? online;
-  int? rankIndex;
-  int? rankScore;
-  int? roomid;
-  int? attentions;
-  String? cateName;
-  Map? watchedShow;
-
-  SearchLiveItemModel.fromJson(Map<String, dynamic> json) {
-    rankOffset = json['rank_offset'];
-    uid = json['uid'];
-    tags = json['tags'];
-    liveTime = json['live_time'];
-    uname = json['uname'];
-    uface = json['uface'];
-    face = json['uface'];
-    userCover = json['user_cover'];
-    type = json['type'];
-    title = Em.regTitle(json['title']);
-    cover = json['cover'];
-    pic = json['cover'];
-    online = json['online'];
-    rankIndex = json['rank_index'];
-    rankScore = json['rank_score'];
-    roomid = json['roomid'];
-    attentions = json['attentions'];
-    cateName = Em.regCate(json['cate_name']);
-  }
-}
-
-class SearchPgcData extends SearchNumData<SearchPgcItemModel> {
-  SearchPgcData({
-    super.numResults,
-    super.list,
-  });
-
-  SearchPgcData.fromJson(Map<String, dynamic> json) {
-    numResults = (json['numResults'] as num?)?.toInt();
-    list = (json['result'] as List?)
-        ?.map<SearchPgcItemModel>((e) => SearchPgcItemModel.fromJson(e))
-        .toList();
-  }
-}
-
-class SearchPgcItemModel {
-  SearchPgcItemModel({
-    this.type,
-    this.mediaId,
-    required this.title,
-    this.orgTitle,
-    this.mediaType,
-    this.cv,
-    this.staff,
-    this.seasonId,
-    this.isAvid,
-    this.hitEpids,
-    this.seasonType,
-    this.seasonTypeName,
-    this.url,
-    this.buttonText,
-    this.isFollow,
-    this.isSelection,
-    this.cover,
-    this.areas,
-    this.styles,
-    this.gotoUrl,
-    this.desc,
-    this.pubtime,
-    this.mediaMode,
-    this.mediaScore,
-    this.indexShow,
-  });
-
-  String? type;
-  int? mediaId;
-  late List<({bool isEm, String text})> title;
-  String? orgTitle;
-  int? mediaType;
-  String? cv;
-  String? staff;
-  int? seasonId;
-  bool? isAvid;
-  String? hitEpids;
-  int? seasonType;
-  String? seasonTypeName;
-  String? url;
-  String? buttonText;
-  int? isFollow;
-  int? isSelection;
-  String? cover;
-  String? areas;
-  String? styles;
-  String? gotoUrl;
-  String? desc;
-  int? pubtime;
-  int? mediaMode;
-  Map? mediaScore;
-  String? indexShow;
-
-  SearchPgcItemModel.fromJson(Map<String, dynamic> json) {
-    type = json['type'];
-    mediaId = json['media_id'];
-    title = Em.regTitle(json['title']);
-    orgTitle = json['org_title'];
-    mediaType = json['media_type'];
-    cv = json['cv'];
-    staff = json['staff'];
-    seasonId = json['season_id'];
-    isAvid = json['is_avid'];
-    hitEpids = json['hit_epids'];
-    seasonType = json['season_type'];
-    seasonTypeName = json['season_type_name'];
-    url = json['url'];
-    buttonText = json['button_text'];
-    isFollow = json['is_follow'];
-    isSelection = json['is_selection'];
-    cover = json['cover'];
-    areas = json['areas'];
-    styles = json['styles'];
-    gotoUrl = json['goto_url'];
-    desc = json['desc'];
-    pubtime = json['pubtime'];
-    mediaMode = json['media_mode'];
-    mediaScore = json['media_score'];
-    indexShow = json['index_show'];
-  }
-}
-
-class SearchArticleData extends SearchNumData<SearchArticleItemModel> {
-  SearchArticleData({
-    super.numResults,
-    super.list,
-  });
-
-  SearchArticleData.fromJson(Map<String, dynamic> json) {
-    numResults = (json['numResults'] as num?)?.toInt();
-    list = (json['result'] as List?)
-        ?.whereNotBlocked((e) => e['mid'])
-        .map((e) => SearchArticleItemModel.fromJson(e))
-        .toList();
-  }
-}
-
-class SearchArticleItemModel {
-  SearchArticleItemModel({
-    this.pubTime,
-    this.like,
-    required this.title,
-    this.subTitle,
-    this.rankOffset,
-    this.mid,
-    this.imageUrls,
-    this.id,
-    this.categoryId,
-    this.view,
-    this.reply,
-    this.desc,
-    this.rankScore,
-    this.type,
-    this.templateId,
-    this.categoryName,
-  });
-
-  int? pubTime;
-  int? like;
-  late List<({bool isEm, String text})> title;
-  String? subTitle;
-  int? rankOffset;
-  int? mid;
-  List<String>? imageUrls;
-  int? id;
-  int? categoryId;
-  int? view;
-  int? reply;
-  String? desc;
-  int? rankScore;
-  String? type;
-  int? templateId;
-  String? categoryName;
-
-  SearchArticleItemModel.fromJson(Map<String, dynamic> json) {
-    pubTime = json['pub_time'];
-    like = json['like'];
-    title = Em.regTitle(json['title']);
-    subTitle = title.map((e) => e.text).join();
-    rankOffset = json['rank_offset'];
-    mid = json['mid'];
-    imageUrls = (json['image_urls'] as List?)?.fromCast();
-    id = json['id'];
-    categoryId = json['category_id'];
-    view = json['view'];
-    reply = json['reply'];
-    desc = json['desc'];
-    rankScore = json['rank_score'];
-    type = json['type'];
-    templateId = json['templateId'];
-    categoryName = json['category_name'];
-  }
+  SearchOwner();
 }

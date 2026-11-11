@@ -6,6 +6,7 @@ import 'package:kilikili/pages/search_panel/user/controller.dart';
 import 'package:kilikili/pages/search_panel/user/widgets/item.dart';
 import 'package:kilikili/pages/search_panel/view.dart';
 import 'package:kilikili/utils/grid.dart';
+import 'package:kilikili/services/rust/rust_search.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart'
     hide SliverGridDelegateWithMaxCrossAxisExtent;
@@ -27,7 +28,7 @@ class _SearchUserPanelState
         CommonSearchPanelState<
           SearchUserPanel,
           SearchUserData,
-          SearchUserItemModel
+          SearchUserItem
         > {
   @override
   late final SearchUserController controller;
@@ -97,14 +98,14 @@ class _SearchUserPanelState
   );
 
   @override
-  Widget buildList(List<SearchUserItemModel> list) {
+  Widget buildList(List<SearchUserItem> list) {
     return SliverGrid.builder(
       gridDelegate: gridDelegate,
       itemBuilder: (BuildContext context, int index) {
         if (index == list.length - 1) {
           controller.onLoadMore();
         }
-        return SearchUserItem(
+        return SearchUserTile(
           item: list[index],
         );
       },

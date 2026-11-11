@@ -1,26 +1,44 @@
 import 'package:kilikili/http/api.dart';
-import 'package:kilikili/http/browser_ua.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models/common/search/search_type.dart';
-import 'package:kilikili/models/search/result.dart';
 import 'package:kilikili/models/search/suggest.dart';
-import 'package:kilikili/services/rust/rust_search_suggest.dart';
-import 'package:kilikili/services/rust/search_suggest_result.dart';
 import 'package:kilikili/models_new/dynamic/dyn_topic_pub_search/data.dart';
 import 'package:kilikili/models_new/pagelist/page_item.dart';
 import 'package:kilikili/models_new/pgc/pgc_info_model/result.dart';
-import 'package:kilikili/models_new/search/search_rcmd/data.dart';
-import 'package:kilikili/models_new/search/search_trending/data.dart';
+import 'package:kilikili/services/rust/rust_search_suggest.dart';
+import 'package:kilikili/services/rust/search_suggest_result.dart';
 import 'package:kilikili/utils/extension/iterable_ext.dart';
 import 'package:kilikili/utils/wbi_sign.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:material_ui/material_ui.dart';
 
+/// 搜索结果、热搜与默认词已经迁到 Rust 的 typed 直连（S9 / issue #59）：
+/// `searchByType`、`searchTrending`、`searchRecommend` 现在在
+/// `lib/services/rust/rust_search.dart`。
+///
+/// 本文件剩下的五个函数分两类，都刻意留在原地：
+///
+/// **1. `searchSuggest`——已迁但形态不同，本切片不动它。**
+/// 它走的是更早的「Rust 解析 → JSON 字符串 → Dart 模型」往返形态
+/// （`bili-api/src/search_suggest.rs`）。EPIC #67 定下：已迁的七条往返
+/// 路径暂不改造成 typed 直连，留到 Phase 2 统一评估。顺手改掉会让本 PR
+/// 多出一份与 S9 无关的回归面，而那条路径现在是好的。
+///
+/// 评估结论记在这里：改造它是**划算**的——它只有一个调用点、模型只有
+/// 23 行（`lib/models/search/suggest.dart`）、没有共享运行时模型，是七条
+/// 里最便宜的一条。建议在 Phase 2 第一个做。
+///
+/// **2. 另外四个不属于搜索域，各有归属：**
+///
+/// - `ab2c` / `ab2cWithDimension`：取分 P 列表，属视频页（S3 / #53）
+/// - `pgcInfo` / `pugvInfo`：番剧与课堂详情，属 PGC（S10 / #60）
+/// - `topicPubSearch`：话题发布页的搜索，属动态（S5 / #55）
+///
+/// 它们住在 `search.dart` 里只是历史归档位置的问题。顺手一起迁会把三个
+/// 切片的模型拖进搜索的 PR，与 ADR-011 决策六「不要为共享模型把别的切片
+/// 拖进自己的 PR」是同一个理由。本文件在最后一个切片迁完后删除。
 abstract final class SearchHttp {
-  // 获取搜索建议
+  // 获取搜索建议。仍是 JSON 往返形态，见类文档第 1 条。
   @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<SearchSuggestModel>> searchSuggest({
     required String term,
@@ -45,84 +63,6 @@ abstract final class SearchHttp {
       }
     }
     return const Error(null);
-  }
-
-  // 分类搜索
-  @pragma('vm:notify-debugger-on-exception')
-  static Future<LoadingState<R>> searchByType<R extends SearchNumData>({
-    required SearchType searchType,
-    required String keyword,
-    required page,
-    String? order,
-    int? duration,
-    int? tids,
-    int? orderSort,
-    int? userType,
-    int? categoryId,
-    int? pubBegin,
-    int? pubEnd,
-    String? gaiaVtoken,
-    required ValueChanged<String> onSuccess,
-  }) async {
-    final params = await WbiSign.makSign({
-      'search_type': searchType.name,
-      'keyword': keyword,
-      'page': page,
-      if (order != null && order.isNotEmpty) 'order': order,
-      'duration': ?duration,
-      'tids': ?tids,
-      'order_sort': ?orderSort,
-      'user_type': ?userType,
-      'category_id': ?categoryId,
-      'pubtime_begin_s': ?pubBegin,
-      'pubtime_end_s': ?pubEnd,
-      'page_size': 20,
-      'platform': 'pc',
-      'web_location': 1430654,
-      'gaia_vtoken': ?gaiaVtoken,
-    });
-    final res = await Request().get(
-      searchType.api,
-      queryParameters: params,
-      options: Options(
-        headers: {
-          if (gaiaVtoken != null) 'cookie': 'x-bili-gaia-vtoken=$gaiaVtoken',
-          'origin': 'https://search.bilibili.com',
-          'referer':
-              'https://search.bilibili.com/${searchType.name}?keyword=${Uri.encodeFull(keyword)}',
-          'user-agent': BrowserUa.pc,
-        },
-      ),
-    );
-    final resData = res.data;
-    if (resData is Map) {
-      if (resData['code'] == 0) {
-        final Map<String, dynamic> dataData = resData['data'];
-        final vVoucher = dataData['v_voucher'];
-        if (vVoucher != null) {
-          // RequestUtils.validate(vVoucher, onSuccess);
-          return const Error('触发风控');
-        }
-        try {
-          return Success(
-            switch (searchType) {
-              .all => SearchVideoData.fromSearchAll(dataData),
-              .video => SearchVideoData.fromJson(dataData),
-              .media_bangumi || .media_ft => SearchPgcData.fromJson(dataData),
-              .live_room => SearchLiveData.fromJson(dataData),
-              .bili_user => SearchUserData.fromJson(dataData),
-              .article => SearchArticleData.fromJson(dataData),
-            } as R,
-          );
-        } catch (e, s) {
-          return Error('$e\n\n$s');
-        }
-      } else {
-        return Error(resData['message'], code: resData['code']);
-      }
-    } else {
-      return const Error('服务器错误');
-    }
   }
 
   static Future<int?> ab2c({dynamic aid, dynamic bvid, int? part}) async {
@@ -185,60 +125,6 @@ abstract final class SearchHttp {
     );
     if (res.data['code'] == 0) {
       return Success(PgcInfoModel.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  // static Future<LoadingState> episodeInfo({dynamic epId}) async {
-  //   final res = await Request().get(
-  //     Api.episodeInfo,
-  //     queryParameters: {
-  //       'ep_id': ?epId,
-  //     },
-  //   );
-  //   if (res.data['code'] == 0) {
-  //     return Success(res.data['data']);
-  //   } else {
-  //     return Error(res.data['message']);
-  //   }
-  // }
-
-  static Future<LoadingState<SearchTrendingData>> searchTrending({
-    int limit = 30,
-    bool needsTop = false,
-  }) async {
-    final res = await Request().get(
-      Api.searchTrending,
-      queryParameters: {
-        'limit': limit,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(
-        SearchTrendingData.fromJson(res.data['data'], needsTop: needsTop),
-      );
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<SearchRcmdData>> searchRecommend() async {
-    final res = await Request().get(
-      Api.searchRecommend,
-      queryParameters: {
-        'build': 8430300,
-        'channel': 'master',
-        'version': '8.43.0',
-        'c_locale': 'zh_CN',
-        'mobi_app': 'android',
-        'platform': 'android',
-        's_locale': 'zh_CN',
-        'from': 2,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(SearchRcmdData.fromJson(res.data['data']));
     } else {
       return Error(res.data['message']);
     }

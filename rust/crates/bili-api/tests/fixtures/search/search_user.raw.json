@@ -1,0 +1,43 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "numResults": 300,
+    "page": 1,
+    "result": [
+      {
+        "type": "bili_user",
+        "mid": 100000030,
+        "uname": "示例用户甲",
+        "usign": "个性签名含实体 &amp; 符号",
+        "fans": 54321,
+        "videos": 120,
+        "upic": "//i1.example-cdn.test/bfs/face/0000000000000000000000000000000000000050.jpg",
+        "face_nft": 0,
+        "face_nft_type": 0,
+        "verify_info": "bilibili 示例认证",
+        "level": 6,
+        "gender": 2,
+        "is_upuser": 1,
+        "is_live": 1,
+        "room_id": 7000003,
+        "is_senior_member": 1,
+        "official_verify": { "type": 1, "desc": "示例机构认证" }
+      },
+      {
+        "type": "bili_user",
+        "mid": 100000031,
+        "uname": "示例用户乙",
+        "fans": 12,
+        "videos": 0,
+        "upic": "//i1.example-cdn.test/bfs/face/0000000000000000000000000000000000000051.jpg",
+        "level": 3,
+        "gender": 0,
+        "is_upuser": 0,
+        "is_live": 0,
+        "official_verify": null
+      }
+    ]
+  }
+}

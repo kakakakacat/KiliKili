@@ -1,29 +1,32 @@
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/models/search/result.dart';
 import 'package:kilikili/utils/app_scheme.dart';
 import 'package:kilikili/utils/platform_utils.dart';
+import 'package:kilikili/services/rust/rust_search.dart';
 import 'package:material_ui/material_ui.dart';
 
-class SearchActivityItem extends StatelessWidget {
-  const SearchActivityItem({
+class SearchActivityCard extends StatelessWidget {
+  const SearchActivityCard({
     super.key,
     required this.item,
   });
 
-  final SearchActivity item;
+  final SearchActivityItem item;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.of(context);
-    void onLongPress() => imageSaveDialog(title: item.title, cover: item.cover);
+    void onLongPress() =>
+        imageSaveDialog(title: item.title ?? '', cover: item.cover);
     return Material(
       type: .transparency,
       child: Column(
         children: [
           InkWell(
-            onTap: () => PiliScheme.routePushFromUrl(item.url),
+            onTap: item.url == null
+                ? null
+                : () => PiliScheme.routePushFromUrl(item.url!),
             onLongPress: PlatformUtils.isMobile ? onLongPress : null,
             onSecondaryTap: PlatformUtils.isDesktop ? onLongPress : null,
             child: Padding(

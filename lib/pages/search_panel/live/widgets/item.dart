@@ -1,14 +1,14 @@
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/models/search/result.dart';
 import 'package:kilikili/utils/num_utils.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
+import 'package:kilikili/services/rust/rust_search.dart';
 import 'package:material_ui/material_ui.dart';
 
 class LiveItem extends StatelessWidget {
-  final SearchLiveItemModel liveItem;
+  final SearchLiveItem liveItem;
 
   const LiveItem({super.key, required this.liveItem});
 
@@ -16,7 +16,7 @@ class LiveItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     void onLongPress() => imageSaveDialog(
-      title: liveItem.title.map((item) => item.text).join(),
+      title: liveItem.title,
       cover: liveItem.cover,
     );
     return Card(
@@ -73,7 +73,7 @@ class LiveItem extends StatelessWidget {
         children: [
           Text.rich(
             TextSpan(
-              children: liveItem.title
+              children: liveItem.titleSpans
                   .map(
                     (e) => TextSpan(
                       text: e.text,

@@ -81,7 +81,13 @@ class SliverHotKeyword extends StatelessWidget {
                               ),
                             )
                           else if (i.recommendReason?.isNotEmpty == true)
-                            Text(i.recommendReason!, style: style),
+                            // 首个中点换成空格。基线把这一步做在模型的
+                            // fromJson 里；S9 之后解析在 Rust，而这属于
+                            // 排版（ADR-011 决策二），所以落在这里。
+                            Text(
+                              i.recommendReason!.replaceFirst('·', ' '),
+                              style: style,
+                            ),
                         ],
                       ),
                     ),

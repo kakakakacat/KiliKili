@@ -1,0 +1,16 @@
+{
+  "code": 0,
+  "message": "success",
+  "ttl": 1,
+  "result": {
+    "area_limit": 0,
+    "ban_area_show": 0,
+    "follow": 1,
+    "follow_status": 2,
+    "login": 1,
+    "pay": 0,
+    "sponsor": 0,
+    "vip": 1,
+    "vip_frozen": 0
+  }
+}

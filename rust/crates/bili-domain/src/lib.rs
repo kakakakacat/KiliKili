@@ -9,6 +9,7 @@ pub mod danmaku_filter;
 pub mod error;
 pub mod match_info;
 pub mod music;
+pub mod pgc;
 pub mod player;
 pub mod playurl;
 pub mod redact;

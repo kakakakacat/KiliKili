@@ -1,0 +1,18 @@
+{
+  "code": 0,
+  "message": "success",
+  "ttl": 1,
+  "data": {
+    "list": [
+      {
+        "cover": "//i0.example-cdn.test/bfs/bangumi/0000000000000000000000000000000000000130.jpg",
+        "new_ep": { "index_show": "全24话" },
+        "rank": 1,
+        "season_id": 700000130,
+        "stat": { "follow": 98765, "view": 4321000 },
+        "title": "示例 season 排行甲",
+        "url": "https://www.bilibili.com/bangumi/play/ss700000130"
+      }
+    ]
+  }
+}

@@ -1,18 +1,10 @@
-import 'package:kilikili/models_new/pgc/pgc_index_condition/sort.dart';
+import 'package:kilikili/rust/api/pgc.dart'
+    show PgcConditionFilter, PgcConditionOrder;
 
+/// 索引页筛选条件的容器。解析已在 Rust，见 S10 第一批（issue #60）。
 class PgcIndexConditionData {
   List<PgcConditionFilter>? filter;
   List<PgcConditionOrder>? order;
 
   PgcIndexConditionData({this.filter, this.order});
-
-  factory PgcIndexConditionData.fromJson(Map<String, dynamic> json) =>
-      PgcIndexConditionData(
-        filter: (json['filter'] as List<dynamic>?)
-            ?.map((e) => PgcConditionFilter.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        order: (json['order'] as List<dynamic>?)
-            ?.map((e) => PgcConditionOrder.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
 }

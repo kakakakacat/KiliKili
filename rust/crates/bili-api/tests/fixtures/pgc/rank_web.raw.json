@@ -1,0 +1,28 @@
+{
+  "code": 0,
+  "message": "success",
+  "ttl": 1,
+  "result": {
+    "note": "示例说明",
+    "list": [
+      {
+        "badge": "会员",
+        "cover": "//i0.example-cdn.test/bfs/bangumi/0000000000000000000000000000000000000120.jpg",
+        "new_ep": { "index_show": "更新至第5话", "cover": "" },
+        "rank": 1,
+        "rating": "9.7分",
+        "season_id": 700000120,
+        "stat": { "danmaku": 1234, "follow": 567890, "series_follow": 567890, "view": 12345678 },
+        "title": "示例排行番剧甲",
+        "url": "https://www.bilibili.com/bangumi/play/ss700000120"
+      },
+      {
+        "cover": "//i0.example-cdn.test/bfs/bangumi/0000000000000000000000000000000000000121.jpg",
+        "rank": 2,
+        "season_id": 700000121,
+        "title": "没有 new_ep 与 stat 的条目",
+        "url": "https://www.bilibili.com/bangumi/play/ss700000121"
+      }
+    ]
+  }
+}

@@ -12,7 +12,6 @@ import 'package:kilikili/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/image_type.dart';
 import 'package:kilikili/models/common/pgc_review_type.dart';
-import 'package:kilikili/models_new/pgc/pgc_review/list.dart';
 import 'package:kilikili/pages/article/view.dart';
 import 'package:kilikili/pages/pgc_review/child/controller.dart';
 import 'package:kilikili/pages/pgc_review/post/view.dart';
@@ -21,6 +20,7 @@ import 'package:kilikili/utils/bili_utils.dart';
 import 'package:kilikili/utils/extension/theme_ext.dart';
 import 'package:kilikili/utils/num_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -89,7 +89,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
 
   Widget _buildBody(
     ThemeData theme,
-    LoadingState<List<PgcReviewItemModel>?> loadingState,
+    LoadingState<List<PgcReviewItem>?> loadingState,
   ) {
     switch (loadingState) {
       case Loading():
@@ -126,7 +126,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
     }
   }
 
-  Widget _itemWidget(ThemeData theme, int index, PgcReviewItemModel item) {
+  Widget _itemWidget(ThemeData theme, int index, PgcReviewItem item) {
     final author = item.author!;
     void showMore() => showDialog(
       context: context,
@@ -227,9 +227,8 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                               author.uname!,
                               style: TextStyle(
                                 color:
-                                    author.vip != null &&
-                                        author.vip!.status > 0 &&
-                                        author.vip!.type == 2
+                                    author.vipStatus > 0 &&
+                                        author.vipType == 2
                                     ? theme.colorScheme.vipColor
                                     : theme.colorScheme.outline,
                                 fontSize: 13,

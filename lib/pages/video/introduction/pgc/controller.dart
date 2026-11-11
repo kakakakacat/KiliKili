@@ -5,7 +5,6 @@ import 'package:kilikili/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/pgc.dart';
 import 'package:kilikili/http/search.dart';
 import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/common/pgc_episode_type.dart';
@@ -30,6 +29,7 @@ import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:kilikili/utils/share_utils.dart';
 import 'package:kilikili/utils/utils.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -476,10 +476,13 @@ class PgcIntroController extends CommonIntroController {
     //   }
     // });
 
-    final res = await PgcHttp.seasonStatus(seasonId);
+    final res = await RustPgc.seasonStatus(seasonId);
     if (res case Success(:final response)) {
-      isFollowed.value = response['follow'] == 1;
-      followStatus.value = response['follow_status'];
+      isFollowed.value = response.follow == 1;
+      // 基线这里是 `response['follow_status']`，Map 取值给的是 dynamic，
+      // 接口缺这个字段时会把 null 塞进 RxInt。typed 之后它是可空的，
+      // 缺失落回初始值 -1（「未知」），与 followStatus 的声明一致。
+      followStatus.value = response.followStatus ?? -1;
     }
   }
 

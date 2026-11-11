@@ -12,8 +12,6 @@ import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/fav_type.dart';
 import 'package:kilikili/models/common/home_tab_type.dart';
 import 'package:kilikili/models_new/fav/fav_pgc/list.dart';
-import 'package:kilikili/models_new/pgc/pgc_index_result/list.dart';
-import 'package:kilikili/models_new/pgc/pgc_timeline/result.dart';
 import 'package:kilikili/pages/pgc/controller.dart';
 import 'package:kilikili/pages/pgc/widgets/pgc_card_v.dart';
 import 'package:kilikili/pages/pgc/widgets/pgc_card_v_timeline.dart';
@@ -21,6 +19,7 @@ import 'package:kilikili/pages/pgc_index/controller.dart';
 import 'package:kilikili/pages/pgc_index/view.dart';
 import 'package:kilikili/pages/pgc_index/widgets/pgc_card_v_pgc_index.dart';
 import 'package:kilikili/utils/grid.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -82,7 +81,7 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
 
   Widget _buildTimeline(
     ThemeData theme,
-    LoadingState<List<TimelineResult>?> loadingState,
+    LoadingState<List<TimelineDay>?> loadingState,
   ) => switch (loadingState) {
     Loading() => m3eLoading,
     Success(:final response) =>
@@ -160,7 +159,7 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
                           physics: const NeverScrollableScrollPhysics(),
                           children: response.map((item) {
                             final episodes = item.episodes;
-                            if (episodes == null || episodes.isEmpty) {
+                            if (episodes.isEmpty) {
                               return const SizedBox.shrink();
                             }
                             return ListView.builder(

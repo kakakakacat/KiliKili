@@ -1,0 +1,18 @@
+[
+  {
+    "cover": "//i0.example-cdn.test/bfs/bangumi/0000000000000000000000000000000000000120.jpg",
+    "follow": 567890,
+    "new_ep_index_show": "更新至第5话",
+    "title": "示例排行番剧甲",
+    "url": "https://www.bilibili.com/bangumi/play/ss700000120",
+    "view": 12345678
+  },
+  {
+    "cover": "//i0.example-cdn.test/bfs/bangumi/0000000000000000000000000000000000000121.jpg",
+    "follow": 0,
+    "new_ep_index_show": null,
+    "title": "没有 new_ep 与 stat 的条目",
+    "url": "https://www.bilibili.com/bangumi/play/ss700000121",
+    "view": 0
+  }
+]

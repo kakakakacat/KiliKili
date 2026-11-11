@@ -1,0 +1,63 @@
+{
+  "code": 0,
+  "message": "success",
+  "ttl": 1,
+  "data": {
+    "total": 128,
+    "next": "cursor_0000000001",
+    "list": [
+      {
+        "review_id": 500000201,
+        "mid": 100000201,
+        "score": 10,
+        "progress": "看过",
+        "content": "满分短评，示例内容。",
+        "ctime": 1700010000,
+        "mtime": 1700010000,
+        "push_time_str": "2026-11-01",
+        "is_open": 1,
+        "disable_edit": 0,
+        "author": {
+          "mid": 100000201,
+          "uname": "示例用户甲",
+          "avatar": "//i1.example-cdn.test/bfs/face/0000000000000000000000000000000000000200.jpg",
+          "level": 6,
+          "vip": { "type": 2, "status": 1, "due_date": 1800000000 }
+        },
+        "stat": { "disliked": 0, "liked": 1, "likes": 42 }
+      },
+      {
+        "review_id": 500000202,
+        "score": 9,
+        "content": "九分会被整除成四星，这条专门钉住。",
+        "push_time_str": "2026-11-02",
+        "author": {
+          "mid": 100000202,
+          "uname": "示例用户乙",
+          "avatar": "//i1.example-cdn.test/bfs/face/0000000000000000000000000000000000000201.jpg",
+          "level": 4,
+          "vip": { "type": 1, "status": 0 }
+        },
+        "stat": { "disliked": 0, "liked": 0, "likes": 3 }
+      },
+      {
+        "review_id": 500000203,
+        "article_id": 400000203,
+        "title": "一条长评",
+        "content": "长评正文示例。",
+        "push_time_str": "2026-11-03",
+        "author": {
+          "mid": 100000203,
+          "uname": "示例用户丙",
+          "avatar": "//i1.example-cdn.test/bfs/face/0000000000000000000000000000000000000202.jpg",
+          "level": 5
+        },
+        "stat": { "likes": 7 }
+      },
+      {
+        "review_id": 500000204,
+        "content": "没有作者也没有分数的条目"
+      }
+    ]
+  }
+}

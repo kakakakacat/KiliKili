@@ -1,0 +1,56 @@
+{
+  "code": 0,
+  "message": "success",
+  "ttl": 1,
+  "result": [
+    {
+      "date": "11-10",
+      "date_ts": 1762704000,
+      "day_of_week": 1,
+      "is_today": 0,
+      "episodes": [
+        {
+          "cover": "//i0.example-cdn.test/bfs/bangumi/0000000000000000000000000000000000000110.jpg",
+          "delay": 0,
+          "episode_id": 900000110,
+          "follow": 1,
+          "pub_index": "第5话",
+          "pub_time": "19:00",
+          "pub_ts": 1762772400,
+          "season_id": 700000110,
+          "square_cover": "//i0.example-cdn.test/bfs/bangumi/0000000000000000000000000000000000000111.jpg",
+          "title": "示例番剧丙"
+        }
+      ]
+    },
+    {
+      "date": "11-11",
+      "date_ts": 1762790400,
+      "day_of_week": 2,
+      "is_today": 1,
+      "episodes": [
+        {
+          "cover": "//i0.example-cdn.test/bfs/bangumi/0000000000000000000000000000000000000112.jpg",
+          "episode_id": 900000112,
+          "follow": 0,
+          "pub_index": "第6话",
+          "pub_time": "23:30",
+          "season_id": 700000111,
+          "title": "示例番剧丁"
+        },
+        {
+          "episode_id": 900000113,
+          "season_id": 700000112,
+          "title": "缺字段的条目"
+        }
+      ]
+    },
+    {
+      "date": "11-12",
+      "date_ts": 1762876800,
+      "day_of_week": 3,
+      "is_today": 0,
+      "episodes": []
+    }
+  ]
+}

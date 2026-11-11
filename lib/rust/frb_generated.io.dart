@@ -6,6 +6,7 @@
 import 'package:kilikili/rust/api/danmaku.dart';
 import 'package:kilikili/rust/api/dm_view.dart';
 import 'package:kilikili/rust/api/init.dart';
+import 'package:kilikili/rust/api/live.dart';
 import 'package:kilikili/rust/api/media_select.dart';
 import 'package:kilikili/rust/api/misc.dart';
 import 'package:kilikili/rust/api/pgc.dart';
@@ -114,6 +115,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Interaction dco_decode_box_autoadd_interaction(dynamic raw);
+
+  @protected
+  LiveAppIdentity dco_decode_box_autoadd_live_app_identity(dynamic raw);
+
+  @protected
+  LiveContext dco_decode_box_autoadd_live_context(dynamic raw);
+
+  @protected
+  LiveFollowSection dco_decode_box_autoadd_live_follow_section(dynamic raw);
+
+  @protected
+  LiveFollowingPage dco_decode_box_autoadd_live_following_page(dynamic raw);
+
+  @protected
+  LiveIndexPage dco_decode_box_autoadd_live_index_page(dynamic raw);
+
+  @protected
+  LiveRoomH5 dco_decode_box_autoadd_live_room_h_5(dynamic raw);
+
+  @protected
+  LiveSecondPage dco_decode_box_autoadd_live_second_page(dynamic raw);
 
   @protected
   MatchContest dco_decode_box_autoadd_match_contest(dynamic raw);
@@ -360,6 +382,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<LiveArea> dco_decode_list_live_area(dynamic raw);
+
+  @protected
+  List<LiveAreaGroup> dco_decode_list_live_area_group(dynamic raw);
+
+  @protected
+  List<LiveFeedback> dco_decode_list_live_feedback(dynamic raw);
+
+  @protected
+  List<LiveFeedbackReason> dco_decode_list_live_feedback_reason(dynamic raw);
+
+  @protected
+  List<LiveFollowItem> dco_decode_list_live_follow_item(dynamic raw);
+
+  @protected
+  List<LiveRoomCard> dco_decode_list_live_room_card(dynamic raw);
+
+  @protected
+  List<LiveSecondTag> dco_decode_list_live_second_tag(dynamic raw);
+
+  @protected
   List<MatchContest> dco_decode_list_match_contest(dynamic raw);
 
   @protected
@@ -458,6 +501,66 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<ViewPoint> dco_decode_list_view_point(dynamic raw);
 
   @protected
+  LiveAppIdentity dco_decode_live_app_identity(dynamic raw);
+
+  @protected
+  LiveArea dco_decode_live_area(dynamic raw);
+
+  @protected
+  LiveAreaGroup dco_decode_live_area_group(dynamic raw);
+
+  @protected
+  LiveAreaGroupsResult dco_decode_live_area_groups_result(dynamic raw);
+
+  @protected
+  LiveAreasResult dco_decode_live_areas_result(dynamic raw);
+
+  @protected
+  LiveContext dco_decode_live_context(dynamic raw);
+
+  @protected
+  LiveFeedback dco_decode_live_feedback(dynamic raw);
+
+  @protected
+  LiveFeedbackReason dco_decode_live_feedback_reason(dynamic raw);
+
+  @protected
+  LiveFollowItem dco_decode_live_follow_item(dynamic raw);
+
+  @protected
+  LiveFollowResult dco_decode_live_follow_result(dynamic raw);
+
+  @protected
+  LiveFollowSection dco_decode_live_follow_section(dynamic raw);
+
+  @protected
+  LiveFollowingPage dco_decode_live_following_page(dynamic raw);
+
+  @protected
+  LiveIndexPage dco_decode_live_index_page(dynamic raw);
+
+  @protected
+  LiveIndexResult dco_decode_live_index_result(dynamic raw);
+
+  @protected
+  LiveRoomCard dco_decode_live_room_card(dynamic raw);
+
+  @protected
+  LiveRoomH5 dco_decode_live_room_h_5(dynamic raw);
+
+  @protected
+  LiveRoomH5Result dco_decode_live_room_h_5_result(dynamic raw);
+
+  @protected
+  LiveSecondPage dco_decode_live_second_page(dynamic raw);
+
+  @protected
+  LiveSecondResult dco_decode_live_second_result(dynamic raw);
+
+  @protected
+  LiveSecondTag dco_decode_live_second_tag(dynamic raw);
+
+  @protected
   MatchContest dco_decode_match_contest(dynamic raw);
 
   @protected
@@ -534,6 +637,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Interaction? dco_decode_opt_box_autoadd_interaction(dynamic raw);
+
+  @protected
+  LiveFollowSection? dco_decode_opt_box_autoadd_live_follow_section(
+    dynamic raw,
+  );
+
+  @protected
+  LiveFollowingPage? dco_decode_opt_box_autoadd_live_following_page(
+    dynamic raw,
+  );
+
+  @protected
+  LiveIndexPage? dco_decode_opt_box_autoadd_live_index_page(dynamic raw);
+
+  @protected
+  LiveRoomH5? dco_decode_opt_box_autoadd_live_room_h_5(dynamic raw);
+
+  @protected
+  LiveSecondPage? dco_decode_opt_box_autoadd_live_second_page(dynamic raw);
 
   @protected
   MatchContest? dco_decode_opt_box_autoadd_match_contest(dynamic raw);
@@ -660,6 +782,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<FeedVideoItem>? dco_decode_opt_list_feed_video_item(dynamic raw);
+
+  @protected
+  List<LiveArea>? dco_decode_opt_list_live_area(dynamic raw);
+
+  @protected
+  List<LiveAreaGroup>? dco_decode_opt_list_live_area_group(dynamic raw);
 
   @protected
   List<NoteItem>? dco_decode_opt_list_note_item(dynamic raw);
@@ -1079,6 +1207,37 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Interaction sse_decode_box_autoadd_interaction(SseDeserializer deserializer);
 
   @protected
+  LiveAppIdentity sse_decode_box_autoadd_live_app_identity(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveContext sse_decode_box_autoadd_live_context(SseDeserializer deserializer);
+
+  @protected
+  LiveFollowSection sse_decode_box_autoadd_live_follow_section(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveFollowingPage sse_decode_box_autoadd_live_following_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveIndexPage sse_decode_box_autoadd_live_index_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveRoomH5 sse_decode_box_autoadd_live_room_h_5(SseDeserializer deserializer);
+
+  @protected
+  LiveSecondPage sse_decode_box_autoadd_live_second_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   MatchContest sse_decode_box_autoadd_match_contest(
     SseDeserializer deserializer,
   );
@@ -1397,6 +1556,39 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<LiveArea> sse_decode_list_live_area(SseDeserializer deserializer);
+
+  @protected
+  List<LiveAreaGroup> sse_decode_list_live_area_group(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<LiveFeedback> sse_decode_list_live_feedback(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<LiveFeedbackReason> sse_decode_list_live_feedback_reason(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<LiveFollowItem> sse_decode_list_live_follow_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<LiveRoomCard> sse_decode_list_live_room_card(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<LiveSecondTag> sse_decode_list_live_second_tag(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<MatchContest> sse_decode_list_match_contest(
     SseDeserializer deserializer,
   );
@@ -1531,6 +1723,76 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<ViewPoint> sse_decode_list_view_point(SseDeserializer deserializer);
 
   @protected
+  LiveAppIdentity sse_decode_live_app_identity(SseDeserializer deserializer);
+
+  @protected
+  LiveArea sse_decode_live_area(SseDeserializer deserializer);
+
+  @protected
+  LiveAreaGroup sse_decode_live_area_group(SseDeserializer deserializer);
+
+  @protected
+  LiveAreaGroupsResult sse_decode_live_area_groups_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveAreasResult sse_decode_live_areas_result(SseDeserializer deserializer);
+
+  @protected
+  LiveContext sse_decode_live_context(SseDeserializer deserializer);
+
+  @protected
+  LiveFeedback sse_decode_live_feedback(SseDeserializer deserializer);
+
+  @protected
+  LiveFeedbackReason sse_decode_live_feedback_reason(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveFollowItem sse_decode_live_follow_item(SseDeserializer deserializer);
+
+  @protected
+  LiveFollowResult sse_decode_live_follow_result(SseDeserializer deserializer);
+
+  @protected
+  LiveFollowSection sse_decode_live_follow_section(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveFollowingPage sse_decode_live_following_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveIndexPage sse_decode_live_index_page(SseDeserializer deserializer);
+
+  @protected
+  LiveIndexResult sse_decode_live_index_result(SseDeserializer deserializer);
+
+  @protected
+  LiveRoomCard sse_decode_live_room_card(SseDeserializer deserializer);
+
+  @protected
+  LiveRoomH5 sse_decode_live_room_h_5(SseDeserializer deserializer);
+
+  @protected
+  LiveRoomH5Result sse_decode_live_room_h_5_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveSecondPage sse_decode_live_second_page(SseDeserializer deserializer);
+
+  @protected
+  LiveSecondResult sse_decode_live_second_result(SseDeserializer deserializer);
+
+  @protected
+  LiveSecondTag sse_decode_live_second_tag(SseDeserializer deserializer);
+
+  @protected
   MatchContest sse_decode_match_contest(SseDeserializer deserializer);
 
   @protected
@@ -1621,6 +1883,31 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Interaction? sse_decode_opt_box_autoadd_interaction(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveFollowSection? sse_decode_opt_box_autoadd_live_follow_section(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveFollowingPage? sse_decode_opt_box_autoadd_live_following_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveIndexPage? sse_decode_opt_box_autoadd_live_index_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveRoomH5? sse_decode_opt_box_autoadd_live_room_h_5(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveSecondPage? sse_decode_opt_box_autoadd_live_second_page(
     SseDeserializer deserializer,
   );
 
@@ -1809,6 +2096,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<FeedVideoItem>? sse_decode_opt_list_feed_video_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<LiveArea>? sse_decode_opt_list_live_area(SseDeserializer deserializer);
+
+  @protected
+  List<LiveAreaGroup>? sse_decode_opt_list_live_area_group(
     SseDeserializer deserializer,
   );
 
@@ -2338,6 +2633,48 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_live_app_identity(
+    LiveAppIdentity self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_live_context(
+    LiveContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_live_follow_section(
+    LiveFollowSection self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_live_following_page(
+    LiveFollowingPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_live_index_page(
+    LiveIndexPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_live_room_h_5(
+    LiveRoomH5 self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_live_second_page(
+    LiveSecondPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_match_contest(
     MatchContest self,
     SseSerializer serializer,
@@ -2761,6 +3098,45 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_live_area(List<LiveArea> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_live_area_group(
+    List<LiveAreaGroup> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_live_feedback(
+    List<LiveFeedback> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_live_feedback_reason(
+    List<LiveFeedbackReason> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_live_follow_item(
+    List<LiveFollowItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_live_room_card(
+    List<LiveRoomCard> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_live_second_tag(
+    List<LiveSecondTag> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_match_contest(
     List<MatchContest> self,
     SseSerializer serializer,
@@ -2944,6 +3320,102 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_live_app_identity(
+    LiveAppIdentity self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_area(LiveArea self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_live_area_group(LiveAreaGroup self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_live_area_groups_result(
+    LiveAreaGroupsResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_areas_result(
+    LiveAreasResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_context(LiveContext self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_live_feedback(LiveFeedback self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_live_feedback_reason(
+    LiveFeedbackReason self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_follow_item(
+    LiveFollowItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_follow_result(
+    LiveFollowResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_follow_section(
+    LiveFollowSection self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_following_page(
+    LiveFollowingPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_index_page(LiveIndexPage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_live_index_result(
+    LiveIndexResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_room_card(LiveRoomCard self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_live_room_h_5(LiveRoomH5 self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_live_room_h_5_result(
+    LiveRoomH5Result self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_second_page(
+    LiveSecondPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_second_result(
+    LiveSecondResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_second_tag(LiveSecondTag self, SseSerializer serializer);
+
+  @protected
   void sse_encode_match_contest(MatchContest self, SseSerializer serializer);
 
   @protected
@@ -3054,6 +3526,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_interaction(
     Interaction? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_follow_section(
+    LiveFollowSection? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_following_page(
+    LiveFollowingPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_index_page(
+    LiveIndexPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_room_h_5(
+    LiveRoomH5? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_second_page(
+    LiveSecondPage? self,
     SseSerializer serializer,
   );
 
@@ -3285,6 +3787,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_feed_video_item(
     List<FeedVideoItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_live_area(
+    List<LiveArea>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_live_area_group(
+    List<LiveAreaGroup>? self,
     SseSerializer serializer,
   );
 

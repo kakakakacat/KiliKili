@@ -1,0 +1,16 @@
+[
+  {
+    "id": 86,
+    "name": "示例分区丙",
+    "parent_id": -1,
+    "parent_name": null,
+    "pic": null
+  },
+  {
+    "id": 145,
+    "name": "示例分区甲",
+    "parent_id": 1,
+    "parent_name": "娱乐",
+    "pic": null
+  }
+]

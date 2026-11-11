@@ -1,14 +1,14 @@
 import 'package:kilikili/http/live.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/live/live_area_list/area_item.dart';
-import 'package:kilikili/models_new/live/live_area_list/area_list.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart' show TabController;
 
-class LiveAreaController extends CommonListController<List<AreaList>?, AreaList>
+class LiveAreaController
+    extends CommonListController<List<LiveAreaGroup>?, LiveAreaGroup>
     with GetSingleTickerProviderStateMixin {
   late final isLogin = Accounts.main.isLogin;
 
@@ -35,7 +35,10 @@ class LiveAreaController extends CommonListController<List<AreaList>?, AreaList>
   }
 
   @override
-  bool customHandleResponse(bool isRefresh, Success<List<AreaList>?> response) {
+  bool customHandleResponse(
+    bool isRefresh,
+    Success<List<LiveAreaGroup>?> response,
+  ) {
     assert(tabController == null);
     final length = response.response?.length;
     if (length != null && length != 0) {
@@ -44,15 +47,15 @@ class LiveAreaController extends CommonListController<List<AreaList>?, AreaList>
     return super.customHandleResponse(isRefresh, response);
   }
 
-  Rx<LoadingState<List<AreaItem>>> favState =
-      LoadingState<List<AreaItem>>.loading().obs;
+  Rx<LoadingState<List<LiveArea>>> favState =
+      LoadingState<List<LiveArea>>.loading().obs;
 
   @override
-  Future<LoadingState<List<AreaList>?>> customGetData() =>
-      LiveHttp.liveAreaList();
+  Future<LoadingState<List<LiveAreaGroup>?>> customGetData() =>
+      RustLive.areaList();
 
   Future<void> queryFavTags() async {
-    favState.value = await LiveHttp.getLiveFavTag();
+    favState.value = await RustLive.favTags();
   }
 
   Future<void> setFavTag() async {

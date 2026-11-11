@@ -6,9 +6,8 @@ import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/image_type.dart';
-import 'package:kilikili/models_new/live/live_area_list/area_item.dart';
-import 'package:kilikili/models_new/live/live_area_list/area_list.dart';
 import 'package:kilikili/pages/live_area/controller.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/pages/live_area_detail/view.dart';
 import 'package:kilikili/pages/search/widgets/search_text.dart';
 import 'package:kilikili/utils/extension/iterable_ext.dart';
@@ -74,7 +73,7 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
   Widget _buildBody(
     ThemeData theme,
     double bottom,
-    LoadingState<List<AreaList>?> loadingState,
+    LoadingState<List<LiveAreaGroup>?> loadingState,
   ) {
     return switch (loadingState) {
       Loading() => const SizedBox.shrink(),
@@ -95,7 +94,7 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
                       children: response
                           .map(
                             (e) => KeepAliveWrapper(
-                              child: e.areaList.isNullOrEmpty
+                              child: e.areas.isEmpty
                                   ? const SizedBox.shrink()
                                   : GridView.builder(
                                       padding: EdgeInsets.only(
@@ -109,9 +108,9 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
                                             crossAxisSpacing: 10,
                                             mainAxisExtent: 80,
                                           ),
-                                      itemCount: e.areaList!.length,
+                                      itemCount: e.areas.length,
                                       itemBuilder: (context, index) {
-                                        final item = e.areaList![index];
+                                        final item = e.areas[index];
                                         return _tagItem(
                                           theme: theme,
                                           item: item,
@@ -163,7 +162,7 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
 
   Widget _buildFavWidget(
     ThemeData theme,
-    LoadingState<List<AreaItem>?> loadingState,
+    LoadingState<List<LiveArea>?> loadingState,
   ) {
     if (loadingState case Success(:final response)) {
       return Padding(
@@ -221,7 +220,7 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
 
   Widget _tagItem({
     required ThemeData theme,
-    required AreaItem item,
+    required LiveArea item,
     required VoidCallback onPressed,
   }) {
     return GestureDetector(
@@ -304,7 +303,7 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
 
   Widget _favTagItem({
     required ThemeData theme,
-    required AreaItem item,
+    required LiveArea item,
     required VoidCallback onPressed,
   }) {
     return Stack(

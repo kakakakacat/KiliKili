@@ -1,9 +1,9 @@
 import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/models/common/account_type.dart';
 import 'package:kilikili/utils/accounts.dart';
-import 'package:kilikili/utils/accounts/api_type.dart';
 import 'package:kilikili/utils/accounts/account.dart';
 import 'package:kilikili/utils/accounts/account_manager/account_mgr.dart';
+import 'package:kilikili/utils/accounts/api_type.dart';
 
 /// Rust 取数路径共用的请求头与 Cookie 取法。
 ///
@@ -34,6 +34,9 @@ abstract final class RustRequest {
   /// 归 recommend，时间表/评论/追番状态落 main），硬编码迟早错一个。
   ///
   /// 登录类接口不走这里——那条分支由拦截器自己处理，Rust 侧暂无写操作。
+  ///
+  /// S11a 的直播接口横跨三个桶（分区与推荐归 recommend，H5 房间信息归
+  /// heartbeat，收藏分区与关注的直播落 main），同一个理由。
   static Account accountFor(String path) => Accounts.get(
     AccountType.values.firstWhere(
       (t) => ApiType.apiTypeSet[t]?.contains(path) == true,
@@ -41,10 +44,18 @@ abstract final class RustRequest {
     ),
   );
 
-  /// 取某条接口路径对应的 Cookie 头。未登录时为 null。
-  static Future<String?> cookieFor(Account account, String path) async {
+  /// 取某条接口对应的 Cookie 头。未登录时为 null。
+  ///
+  /// [endpoint] 可以是相对路径（拼到 `api.bilibili.com`），也可以是完整
+  /// URL——直播接口挂在 `api.live.bilibili.com`，`Api.live*` 常量本身
+  /// 就是完整 URL。按错主机取 Cookie 不会报错，只会少带几条。
+  static Future<String?> cookieFor(Account account, String endpoint) async {
     if (account is NoAccount) return null;
-    final uri = Uri.parse('${HttpString.apiBaseUrl}$path');
+    final uri = Uri.parse(
+      endpoint.startsWith('http')
+          ? endpoint
+          : '${HttpString.apiBaseUrl}$endpoint',
+    );
     final cookies = await account.cookieJar.loadForRequest(uri);
     final value = AccountManager.getCookies(cookies);
     return value.isEmpty ? null : value;

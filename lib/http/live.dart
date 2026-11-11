@@ -6,8 +6,6 @@ import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/account_type.dart';
 import 'package:kilikili/models/common/live/live_contribution_rank_type.dart';
 import 'package:kilikili/models/common/live/live_search_type.dart';
-import 'package:kilikili/models_new/live/live_area_list/area_item.dart';
-import 'package:kilikili/models_new/live/live_area_list/area_list.dart';
 import 'package:kilikili/models_new/live/live_contribution_rank/data.dart';
 import 'package:kilikili/models_new/live/live_danmaku/danmaku_msg.dart';
 import 'package:kilikili/models_new/live/live_dm_block/data.dart';
@@ -16,13 +14,9 @@ import 'package:kilikili/models_new/live/live_dm_block/shield_user_list.dart';
 import 'package:kilikili/models_new/live/live_dm_info/data.dart';
 import 'package:kilikili/models_new/live/live_emote/data.dart';
 import 'package:kilikili/models_new/live/live_emote/datum.dart';
-import 'package:kilikili/models_new/live/live_feed_index/data.dart';
-import 'package:kilikili/models_new/live/live_follow/data.dart';
 import 'package:kilikili/models_new/live/live_medal_wall/data.dart';
-import 'package:kilikili/models_new/live/live_room_info_h5/data.dart';
 import 'package:kilikili/models_new/live/live_room_play_info/data.dart';
 import 'package:kilikili/models_new/live/live_search/data.dart';
-import 'package:kilikili/models_new/live/live_second_list/data.dart';
 import 'package:kilikili/models_new/live/live_superchat/data.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/accounts/account.dart';
@@ -30,6 +24,17 @@ import 'package:kilikili/utils/app_sign.dart';
 import 'package:kilikili/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 
+/// 直播接口中**尚未迁到 Rust** 的那些。
+///
+/// 只读部分的七条（分区三条、首页推荐、分区二级列表、关注的直播、H5
+/// 房间信息）已迁走，见 `lib/services/rust/rust_live.dart`。这里剩下的
+/// 是三类：
+///
+/// - `liveRoomInfo` 取流——要产出共享的 `LiveQuality`，S11a 第二批；
+/// - 弹幕长连接相关（`liveRoomDmPrefetch`/`liveRoomGetDanmakuToken`）
+///   ——S11b（#62），阻塞在 ADR-012；
+/// - 全部写操作与剩余只读（搜索、屏蔽、贡献榜、粉丝勋章…）——归
+///   ADR-013（#50）或后续批次。
 abstract final class LiveHttp {
   static Account get recommend => Accounts.get(AccountType.recommend);
 
@@ -109,20 +114,6 @@ abstract final class LiveHttp {
     }
   }
 
-  static Future<LoadingState<RoomInfoH5Data>> liveRoomInfoH5({
-    required Object roomId,
-  }) async {
-    final res = await Request().get(
-      Api.liveRoomInfoH5,
-      queryParameters: {'room_id': roomId},
-    );
-    if (res.data['code'] == 0) {
-      return Success(RoomInfoH5Data.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   static Future<LoadingState<List<DanmakuMsg>?>> liveRoomDmPrefetch({
     required Object roomId,
   }) async {
@@ -189,202 +180,6 @@ abstract final class LiveHttp {
     }
   }
 
-  static Future<LoadingState<LiveIndexData>> liveFeedIndex({
-    required int pn,
-    bool moduleSelect = false,
-  }) async {
-    final params = {
-      'access_key': ?recommend.accessKey,
-      'channel': 'master',
-      'actionKey': 'appkey',
-      'build': 8430300,
-      'version': '8.43.0',
-      'c_locale': 'zh_CN',
-      'device': 'android',
-      'device_name': 'android',
-      'device_type': 0,
-      'fnval': 912,
-      'disable_rcmd': 0,
-      'https_url_req': 1,
-      if (moduleSelect) 'module_select': 1,
-      'mobi_app': 'android',
-      'network': 'wifi',
-      'page': pn,
-      'platform': 'android',
-      if (recommend.isLogin) 'relation_page': 1,
-      's_locale': 'zh_CN',
-      'scale': 2,
-      'statistics': Constants.statisticsApp,
-    };
-    AppSign.appSign(params);
-    final res = await Request().get(
-      Api.liveFeedIndex,
-      queryParameters: params,
-      options: Options(
-        headers: {
-          'buvid': recommend.buvid,
-          'fp_local': '1111111111111111111111111111111111111111111111111111111111111111',
-          'fp_remote': '1111111111111111111111111111111111111111111111111111111111111111',
-          'session_id': '11111111',
-          'env': 'prod',
-          'app-key': 'android',
-          'User-Agent': Constants.userAgentApp,
-          'x-bili-trace-id': Constants.traceId,
-          'x-bili-aurora-eid': '',
-          'x-bili-aurora-zone': '',
-          'bili-http-engine': 'cronet',
-        },
-      ),
-    );
-    if (res.data['code'] == 0) {
-      return Success(LiveIndexData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<LiveFollowData>> liveFollow(int page) async {
-    final res = await Request().get(
-      Api.liveFollow,
-      queryParameters: {
-        'page': page,
-        'page_size': 9,
-        'ignoreRecord': 1,
-        'hit_ab': true,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(LiveFollowData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<LiveSecondData>> liveSecondList({
-    required int pn,
-    required Object? areaId,
-    required Object? parentAreaId,
-    String? sortType,
-  }) async {
-    final params = {
-      'access_key': ?recommend.accessKey,
-      'actionKey': 'appkey',
-      'channel': 'master',
-      'area_id': ?areaId,
-      'parent_area_id': ?parentAreaId,
-      'build': 8430300,
-      'version': '8.43.0',
-      'c_locale': 'zh_CN',
-      'device': 'android',
-      'device_name': 'android',
-      'device_type': 0,
-      'fnval': 912,
-      'disable_rcmd': 0,
-      'https_url_req': 1,
-      'mobi_app': 'android',
-      'module_select': 0,
-      'network': 'wifi',
-      'page': pn,
-      'page_size': 20,
-      'platform': 'android',
-      'qn': 0,
-      'sort_type': ?sortType,
-      'tag_version': 1,
-      's_locale': 'zh_CN',
-      'scale': 2,
-      'statistics': Constants.statisticsApp,
-    };
-    AppSign.appSign(params);
-    final res = await Request().get(
-      Api.liveSecondList,
-      queryParameters: params,
-      options: Options(
-        headers: {
-          'buvid': recommend.buvid,
-          'fp_local': '1111111111111111111111111111111111111111111111111111111111111111',
-          'fp_remote': '1111111111111111111111111111111111111111111111111111111111111111',
-          'session_id': '11111111',
-          'env': 'prod',
-          'app-key': 'android',
-          'User-Agent': Constants.userAgentApp,
-          'x-bili-trace-id': Constants.traceId,
-          'x-bili-aurora-eid': '',
-          'x-bili-aurora-zone': '',
-          'bili-http-engine': 'cronet',
-        },
-      ),
-    );
-    if (res.data['code'] == 0) {
-      return Success(LiveSecondData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<List<AreaList>?>> liveAreaList() async {
-    final params = {
-      'access_key': ?recommend.accessKey,
-      'actionKey': 'appkey',
-      'build': 8430300,
-      'channel': 'master',
-      'version': '8.43.0',
-      'c_locale': 'zh_CN',
-      'device': 'android',
-      'disable_rcmd': 0,
-      'mobi_app': 'android',
-      'platform': 'android',
-      's_locale': 'zh_CN',
-      'statistics': Constants.statisticsApp,
-    };
-    AppSign.appSign(params);
-    final res = await Request().get(
-      Api.liveAreaList,
-      queryParameters: params,
-    );
-    if (res.data['code'] == 0) {
-      return Success(
-        (res.data['data']?['list'] as List?)
-            ?.map((e) => AreaList.fromJson(e))
-            .toList(),
-      );
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<List<AreaItem>>> getLiveFavTag() async {
-    final params = {
-      'access_key': ?Accounts.main.accessKey,
-      'actionKey': 'appkey',
-      'build': 8430300,
-      'channel': 'master',
-      'version': '8.43.0',
-      'c_locale': 'zh_CN',
-      'device': 'android',
-      'disable_rcmd': 0,
-      'mobi_app': 'android',
-      'platform': 'android',
-      's_locale': 'zh_CN',
-      'statistics': Constants.statisticsApp,
-    };
-    AppSign.appSign(params);
-    final res = await Request().get(
-      Api.getLiveFavTag,
-      queryParameters: params,
-    );
-
-    if (res.data['code'] == 0) {
-      return Success(
-        (res.data['data']?['tags'] as List?)
-                ?.map((e) => AreaItem.fromJson(e))
-                .toList() ??
-            <AreaItem>[],
-      );
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   static Future<LoadingState<void>> setLiveFavTag({
     required String ids,
   }) async {
@@ -412,40 +207,6 @@ abstract final class LiveHttp {
 
     if (res.data['code'] == 0) {
       return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<List<AreaItem>?>> liveRoomAreaList({
-    required Object parentid,
-  }) async {
-    final params = {
-      'access_key': ?recommend.accessKey,
-      'actionKey': 'appkey',
-      'build': 8430300,
-      'channel': 'master',
-      'version': '8.43.0',
-      'c_locale': 'zh_CN',
-      'device': 'android',
-      'disable_rcmd': 0,
-      'need_entrance': 1,
-      'parent_id': parentid,
-      'source_id': 2,
-      'mobi_app': 'android',
-      'platform': 'android',
-      's_locale': 'zh_CN',
-      'statistics': Constants.statisticsApp,
-    };
-    AppSign.appSign(params);
-    final res = await Request().get(
-      Api.liveRoomAreaList,
-      queryParameters: params,
-    );
-    if (res.data['code'] == 0) {
-      return Success(
-        (res.data['data'] as List?)?.map((e) => AreaItem.fromJson(e)).toList(),
-      );
     } else {
       return Error(res.data['message']);
     }

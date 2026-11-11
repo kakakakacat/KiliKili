@@ -3,6 +3,7 @@
 pub mod danmaku;
 pub mod dm_view;
 pub mod init;
+pub mod live;
 pub mod media_select;
 pub mod misc;
 pub mod pgc;

@@ -1,0 +1,37 @@
+[
+  {
+    "areas": [
+      {
+        "id": 145,
+        "name": "示例分区甲",
+        "parent_id": 1,
+        "parent_name": "娱乐",
+        "pic": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000001.png"
+      },
+      {
+        "id": 21,
+        "name": "示例分区乙",
+        "parent_id": 1,
+        "parent_name": "娱乐",
+        "pic": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000002.png"
+      }
+    ],
+    "name": "娱乐"
+  },
+  {
+    "areas": [
+      {
+        "id": 86,
+        "name": "示例分区丙",
+        "parent_id": 2,
+        "parent_name": "网游",
+        "pic": null
+      }
+    ],
+    "name": "网游"
+  },
+  {
+    "areas": [],
+    "name": ""
+  }
+]

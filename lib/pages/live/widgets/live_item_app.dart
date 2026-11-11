@@ -2,8 +2,7 @@ import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/http/live.dart';
-import 'package:kilikili/models_new/live/live_feed_index/card_data_list_item.dart';
-import 'package:kilikili/models_new/live/live_feed_index/feedback.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/pages/search/widgets/search_text.dart';
 import 'package:kilikili/utils/extension/iterable_ext.dart';
 import 'package:kilikili/utils/page_utils.dart';
@@ -14,7 +13,7 @@ import 'package:material_ui/material_ui.dart';
 
 // 视频卡片 - 垂直布局
 class LiveCardVApp extends StatelessWidget {
-  final CardLiveItem item;
+  final LiveRoomCard item;
   final bool showFirstFrame;
 
   const LiveCardVApp({
@@ -68,7 +67,7 @@ class LiveCardVApp extends StatelessWidget {
             ),
           ),
         ),
-        if (!item.feedback.isNullOrEmpty)
+        if (item.feedback.isNotEmpty)
           Positioned(
             right: -5,
             bottom: -2,
@@ -77,7 +76,7 @@ class LiveCardVApp extends StatelessWidget {
             child: IconButton(
               padding: .zero,
               onPressed: () {
-                Widget actionButton(Reason r) => SearchText(
+                Widget actionButton(LiveFeedbackReason r) => SearchText(
                   text: r.name!,
                   onTap: (_) async {
                     Get.back();
@@ -96,7 +95,7 @@ class LiveCardVApp extends StatelessWidget {
                   },
                 );
 
-                final feedback = item.feedback!;
+                final feedback = item.feedback;
                 showDialog(
                   context: context,
                   builder: (context) {
@@ -125,7 +124,7 @@ class LiveCardVApp extends StatelessWidget {
                           Wrap(
                             spacing: 8.0,
                             runSpacing: 8.0,
-                            children: i.reasons!.map(actionButton).toList(),
+                            children: i.reasons.map(actionButton).toList(),
                           ),
                         ],
                         const Divider(),
@@ -204,7 +203,7 @@ class LiveCardVApp extends StatelessWidget {
             item.areaName.toString(),
             style: const TextStyle(fontSize: 11, color: Colors.white),
           ),
-          if (item.watchedShow?.textLarge case final textLarge?)
+          if (item.watchedText case final textLarge?)
             Text(
               textLarge,
               style: const TextStyle(fontSize: 11, color: Colors.white),

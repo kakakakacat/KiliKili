@@ -1,0 +1,33 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "count": 137,
+    "new_tags": [
+      { "name": "推荐", "sort_type": "" },
+      { "name": "最热", "sort_type": "online" },
+      { "name": "最新", "sort_type": "live_time" }
+    ],
+    "list": [
+      {
+        "id": 100011,
+        "uid": 200011,
+        "uname": "示例主播戊",
+        "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000015.jpg",
+        "cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000025.jpg",
+        "system_cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000035.jpg",
+        "title": "示例直播间戊",
+        "area_name": "示例分区甲",
+        "area_v2_id": 145,
+        "area_v2_parent_id": 1,
+        "watched_show": { "text_large": "789人看过" }
+      },
+      {
+        "id": 100012,
+        "title": "只有标题与封面的条目",
+        "cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000026.jpg"
+      }
+    ]
+  }
+}

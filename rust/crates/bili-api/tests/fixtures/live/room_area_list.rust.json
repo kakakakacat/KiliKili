@@ -1,0 +1,23 @@
+[
+  {
+    "id": 145,
+    "name": "示例分区甲",
+    "parent_id": 1,
+    "parent_name": "娱乐",
+    "pic": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000001.png"
+  },
+  {
+    "id": 21,
+    "name": "示例分区乙",
+    "parent_id": 1,
+    "parent_name": null,
+    "pic": null
+  },
+  {
+    "id": 1013,
+    "name": "整数型 id 的同一接口",
+    "parent_id": 1,
+    "parent_name": null,
+    "pic": null
+  }
+]

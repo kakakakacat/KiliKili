@@ -1,12 +1,10 @@
-import 'package:kilikili/http/live.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/live/live_follow/data.dart';
-import 'package:kilikili/models_new/live/live_follow/item.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:get/get.dart';
 
 class LiveFollowController
-    extends CommonListController<LiveFollowData, LiveFollowItem> {
+    extends CommonListController<LiveFollowingPage, LiveFollowItem> {
   @override
   void onInit() {
     super.onInit();
@@ -24,12 +22,12 @@ class LiveFollowController
   }
 
   @override
-  List<LiveFollowItem>? getDataList(LiveFollowData response) {
+  List<LiveFollowItem>? getDataList(LiveFollowingPage response) {
     count.value = response.liveCount;
-    return response.list;
+    return response.items;
   }
 
   @override
-  Future<LoadingState<LiveFollowData>> customGetData() =>
-      LiveHttp.liveFollow(page);
+  Future<LoadingState<LiveFollowingPage>> customGetData() =>
+      RustLive.follow(page);
 }

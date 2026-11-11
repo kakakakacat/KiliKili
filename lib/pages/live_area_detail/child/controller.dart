@@ -1,19 +1,16 @@
 import 'dart:math';
 
-import 'package:kilikili/http/live.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/live/live_feed_index/card_data_list_item.dart';
-import 'package:kilikili/models_new/live/live_second_list/data.dart';
-import 'package:kilikili/models_new/live/live_second_list/tag.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/utils/extension/scroll_controller_ext.dart';
 import 'package:get/get.dart';
 
 class LiveAreaChildController
-    extends CommonListController<LiveSecondData, CardLiveItem> {
+    extends CommonListController<LiveSecondPage, LiveRoomCard> {
   LiveAreaChildController(this.areaId, this.parentAreaId);
-  final dynamic areaId;
-  final dynamic parentAreaId;
+  final int areaId;
+  final int parentAreaId;
 
   int? count;
 
@@ -37,24 +34,23 @@ class LiveAreaChildController
   }
 
   @override
-  List<CardLiveItem>? getDataList(LiveSecondData response) {
+  List<LiveRoomCard>? getDataList(LiveSecondPage response) {
     count = response.count;
-    newTags = response.newTags;
+    newTags = response.tags;
     tagIndex.value = max(
       0,
       newTags?.indexWhere((e) => e.sortType == sortType) ?? 0,
     );
-    return response.cardList;
+    return response.cards;
   }
 
   @override
-  Future<LoadingState<LiveSecondData>> customGetData() =>
-      LiveHttp.liveSecondList(
-        pn: page,
-        areaId: areaId,
-        parentAreaId: parentAreaId,
-        sortType: sortType,
-      );
+  Future<LoadingState<LiveSecondPage>> customGetData() => RustLive.secondList(
+    pn: page,
+    areaId: areaId,
+    parentAreaId: parentAreaId,
+    sortType: sortType,
+  );
 
   void onSelectTag(int index, String? sortType) {
     if (isLoading) {

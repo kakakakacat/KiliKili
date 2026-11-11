@@ -142,13 +142,17 @@ PiliPlus-Rust/
 实际落地与上表的偏离（2026-11-11）：
 
 - 当前存在的 crate 是 `bili-domain` / `bili-api` / `bili-protocol` / `bili-core` /
-  `bridge_flutter` 五个。`bili-protocol` 不在上表里，是 Review 后按 §16.7 从
-  `bili-api` 里拆出来的——易变协议与稳定数据层的改动频率差一个量级。
-- **弹幕解码没有建 `bili-danmaku`**：`DmSegMobileReply` 的解码落在 `bili-api`
-  （data 层的协议解码），实体落在 `bili-domain`。按上表单开一个 crate，等于让
-  一个 protobuf 解码器自己占一层，而它与视频详情、取流的解析是同一类工作。
-  `bili-danmaku` 留给**引擎**（过滤、合并、分桶、调度，见 issue #42）——那才是
-  上表所说「解码、索引、过滤、调度」里真正独立于协议的部分。
+  `bili-danmaku` / `bridge_flutter` 六个。`bili-protocol` 不在上表里，是 Review
+  后按 §16.7 从 `bili-api` 里拆出来的——易变协议与稳定数据层的改动频率差一个
+  量级。
+- **弹幕解码没有放进 `bili-danmaku`**：`DmSegMobileReply` 的解码落在 `bili-api`
+  （data 层的协议解码），实体落在 `bili-domain`。让一个 protobuf 解码器自己
+  占一层没有意义，它与视频详情、取流的解析是同一类工作。
+- `bili-danmaku`（issue #42，2026-11-11 落地）只装**引擎**：标记自己、合并、
+  过滤、分桶，以及按会话缓存分桶结果。分界线是「换一种弹幕协议，本 crate
+  不用改」——这才是上表所说「解码、索引、过滤、调度」里真正独立于协议的
+  部分。跨 FFI 的形状（Rust 持有分桶结果，Dart 每 100ms 取一桶）与正则不
+  等价时的处理见 [ADR-010](adr/ADR-010-danmaku-engine-ffi-and-regex.md)。
 
 ## 5. 第一阶段：Flutter → Rust Core（P0）
 
@@ -336,6 +340,7 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 | ADR-007 | Slint 视频/列表/富文本/IME/无障碍及失败回退 | M0/M4 |
 | ADR-008 | WBI、协议版本化与上游同步 | M1 |
 | ADR-009 | GPL、播放器依赖和分发合规 | 发布前 |
+| ADR-010 | 弹幕引擎的跨 FFI 形状；正则不等价时整条降级 | P1-05（已批准） |
 
 ### 10.3 发布与合规
 
@@ -419,6 +424,12 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 - Rust Player Orchestrator 负责播放意图、清晰度选择、业务状态、错误恢复策略、进度持久化以及对 UI 发布状态快照；不自行累计时间模拟播放器时钟。
 - 播放器事件附加 sequence/generation。Flutter/Slint 消费 Rust 快照，Seek/暂停/倍速/缓冲时弹幕以真实播放器时钟重新定位。跨 FFI 使用合并/限频快照，避免每帧调用。
 - P1-04 与 P1-05 开始前完成 ADR-003、Player Port 资源/音轨/事件/渲染表面/生命周期接口评审。
+- 落地（2026-11-11）：其中的**清晰度选择**已在 `bili-core::media_select`
+  （清晰度 / 编码 / 音质三者），基线 `VideoUtils.findTargetVideo` 在开关后面
+  改调它、失败回退。跨 FFI 传的是下标而非对象——Stage 1 的取流响应仍由
+  Dart 持有。对照用例两边共用一份
+  （`rust/crates/bili-core/tests/fixtures/media_select/cases.json`），判据是
+  跑真正 `VideoUtils` 的 `test/utils/media_select_golden_test.dart`。
 
 ### 16.2 ADR-004：播放器后端选择（P0）
 - libmpv 为五端统一的首选验证方案，因现有 media-kit 已与 mpv 相关；不能预设它在移动端具备完整 PiP、后台音频、硬解和 Slint 表面合成能力。

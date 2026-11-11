@@ -1,0 +1,43 @@
+# 把 Rust 与 Flutter tests 两条工作流汇成一个状态检查，供 ruleset
+# 「main regression gate」作为必需检查。
+#
+# **刻意不加 paths 过滤**：必需检查一旦没人上报就是永久 pending，PR 会卡死。
+# 只改 docs 的 PR 同样要有人给出这个检查，此时它放行（脚本里判为未触发）。
+#
+# 这个 job 本身只做等待与汇总，不跑测试——真正的回归在那两条工作流里，
+# 在这里再跑一遍只会让同一份测试跑两次。
+name: Regression gate
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: regression-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    # 必须与 ruleset 里填的 context 逐字一致。
+    name: regression gate
+    runs-on: ubuntu-latest
+    # 比脚本的 TIMEOUT_SECONDS 多留几分钟，让脚本先超时并打印出卡在谁身上，
+    # 而不是被 runner 掐掉只留一句 "The job running has exceeded the maximum"。
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+
+      - name: 等待 Rust 与 Flutter tests 的结论
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # pull_request 事件里 github.sha 是合并提交，那两条工作流的 run
+          # 挂在 PR 的 head 上，取错就永远找不到它们。
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: bash .github/scripts/regression-gate.sh

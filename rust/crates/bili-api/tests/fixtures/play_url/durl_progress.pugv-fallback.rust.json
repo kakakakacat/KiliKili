@@ -1,0 +1,68 @@
+{
+  "accept_description": [
+    "高清 720P",
+    "清晰 480P"
+  ],
+  "accept_format": "flv720,flv480,mp4",
+  "accept_quality": [
+    64,
+    32
+  ],
+  "clip_info_list": null,
+  "cur_language": null,
+  "dash": null,
+  "durl": [
+    {
+      "ahead": "",
+      "backup_url": [
+        "https://backup.example.invalid/pugv-1.flv?token=PLACEHOLDER"
+      ],
+      "length": 603000,
+      "order": 1,
+      "size": 52428800,
+      "url": "https://cdn.example.invalid/pugv-1.flv?token=PLACEHOLDER",
+      "vhead": ""
+    }
+  ],
+  "format": "flv720",
+  "from": "local",
+  "language": null,
+  "last_play_cid": 0,
+  "last_play_time": 71000,
+  "message": "",
+  "quality": 64,
+  "result": "suee",
+  "seek_param": "start",
+  "seek_type": "offset",
+  "support_formats": [
+    {
+      "codecs": [
+        "avc1.640028"
+      ],
+      "display_desc": "720P",
+      "format": "flv720",
+      "new_desc": "720P 高清",
+      "quality": 64
+    },
+    {
+      "codecs": [
+        "avc1.64001F"
+      ],
+      "display_desc": "480P",
+      "format": "flv480",
+      "new_desc": "480P 清晰",
+      "quality": 32
+    }
+  ],
+  "time_length": 603000,
+  "video_codecid": 7,
+  "volume": {
+    "measured_i": -21.3,
+    "measured_lra": 6.7,
+    "measured_threshold": -31.5,
+    "measured_tp": -0.8,
+    "target_i": -14.0,
+    "target_offset": 0.2,
+    "target_tp": -1.0
+  }
+}

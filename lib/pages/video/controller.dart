@@ -26,7 +26,9 @@ import 'package:kilikili/models/common/video/base_quality.dart';
 import 'package:kilikili/models/common/video/source_type.dart';
 import 'package:kilikili/models/common/video/video_decode_type.dart';
 import 'package:kilikili/models/common/video/video_type.dart';
-import 'package:kilikili/models/video/play/url.dart';
+import 'package:kilikili/services/rust/play_url_ext.dart';
+import 'package:kilikili/services/rust/sponsor_block_compat.dart';
+import 'package:kilikili/services/rust/rust_play_url.dart';
 import 'package:kilikili/models_new/download/bili_download_entry_info.dart';
 import 'package:kilikili/models_new/media_list/media_list.dart';
 import 'package:kilikili/models_new/video/video_detail/data.dart';
@@ -119,7 +121,7 @@ class VideoDetailController extends GetxController
   late TabController tabCtr;
 
   // 请求返回的视频信息
-  late PlayUrlModel data;
+  late PlayUrl data;
   final RxBool videoState = false.obs;
 
   /// 播放器配置 画质 音质 解码格式
@@ -139,7 +141,7 @@ class VideoDetailController extends GetxController
   bool get removeSafeArea => plPlayerController.removeSafeArea;
   double get uiScale => plPlayerController.uiScale;
 
-  late VideoItem firstVideo;
+  late MediaStream firstVideo;
   String? videoUrl;
   String? audioUrl;
   Duration? defaultST;
@@ -382,12 +384,14 @@ class VideoDetailController extends GetxController
     }
     // volume
     volume = entry.volume;
-    firstVideo = VideoItem(
+    firstVideo = MediaStream(
       id: entry.preferedVideoQuality,
-      quality: VideoQuality.fromCode(entry.preferedVideoQuality),
       width: entry.ep?.width ?? entry.pageData?.width ?? 1,
       height: entry.ep?.height ?? entry.pageData?.height ?? 1,
     );
+    // 基线把画质挂在 `VideoItem.quality` 上，流结构里没有这个字段了；
+    // 本来就只有画质菜单读它，直接写进 `currentVideoQa`。
+    currentVideoQa.value = VideoQuality.fromCode(entry.preferedVideoQuality);
     if (watchProgress.get(cid.value.toString()) case final int progress?) {
       if (progress >= entry.totalTimeMilli - 400) {
         defaultST = Duration.zero;
@@ -397,7 +401,7 @@ class VideoDetailController extends GetxController
     } else {
       defaultST = Duration.zero;
     }
-    data = PlayUrlModel(timeLength: entry.totalTimeMilli);
+    data = PlayUrl(lastPlayTime: 0, timeLength: entry.totalTimeMilli);
     _setVideoHeight();
   }
 
@@ -686,12 +690,12 @@ class VideoDetailController extends GetxController
     }
   }
 
-  VideoItem findVideoByQa(int qa, {bool setCodecs = false}) {
+  MediaStream findVideoByQa(int qa, {bool setCodecs = false}) {
     /// 根据currentVideoQa和currentDecodeFormats 重新设置videoUrl
     final videoList = data.dash!.video!.where((i) => i.id == qa).toList();
 
     final currentCodes = currentDecodeFormats.codes;
-    VideoItem? bestVideo;
+    MediaStream? bestVideo;
     int bestIndex = preferCodecs.length;
     for (final video in videoList) {
       final codecs = video.codecs!;
@@ -834,8 +838,8 @@ class VideoDetailController extends GetxController
     queryVideoUrl(fromReset: true);
   }
 
-  Future<LoadingState<PlayUrlModel>> _getVideoUrl(int quality) {
-    return VideoHttp.videoUrl(
+  Future<LoadingState<PlayUrl>> _getVideoUrl(int quality) {
+    return RustPlayUrl.fetch(
       cid: cid.value,
       bvid: bvid,
       qn: quality,
@@ -850,10 +854,21 @@ class VideoDetailController extends GetxController
 
   Future<void> _supplementVideoQualities() async {
     final quality = data.missingVideoQualityBelowHighest;
-    if (quality == -1) return;
+    if (quality == null) return;
     final result = await _getVideoUrl(quality);
     if (result case Success(:final response)) {
-      data.dash!.video!.merge(response.dash?.video);
+      // 基线是就地改那个列表的；FRB 结构不可变，改成把补齐后的 dash
+      // 换进 `data`。其余字段原样带过去——补档那次请求只为多要几档
+      // 清晰度，它的进度、音轨、片段信息都不该覆盖首次的结果。
+      final dash = data.dash!;
+      data = data.copyWithDash(
+        Dash(
+          duration: dash.duration,
+          minBufferTime: dash.minBufferTime,
+          video: dash.video!.merged(response.dash?.video),
+          audio: dash.audio,
+        ),
+      );
     }
   }
 
@@ -904,7 +919,7 @@ class VideoDetailController extends GetxController
       data = response;
       if (data.dash != null) await _supplementVideoQualities();
 
-      languages.value = data.language?.items;
+      languages.value = data.languageItems;
       currLang.value = data.curLanguage;
 
       volume = data.volume;
@@ -919,13 +934,14 @@ class VideoDetailController extends GetxController
       }
 
       if (!isUgc && !fromReset && plPlayerController.enablePgcSkip) {
-        if (data.clipInfoList case final clipInfoList?) {
+        final segments = pgcClipSegments(data.clipInfoList, data.timeLength);
+        if (segments.isNotEmpty) {
           resetBlock();
-          handleSBData(clipInfoList);
+          handleSBData(segments.map((e) => e.toItemModel()).toList());
         }
       }
 
-      if (data.acceptDesc?.contains('试看') == true) {
+      if (data.acceptDescription?.contains('试看') == true) {
         SmartDialog.showToast(
           '该视频为专属视频，仅提供试看',
           displayTime: const Duration(seconds: 3),
@@ -950,15 +966,14 @@ class VideoDetailController extends GetxController
           audioUrl = '';
 
           // 实际为FLV/MP4格式，但已被淘汰，这里仅做兜底处理
-          final videoQuality = VideoQuality.fromFormat(
+          final videoQuality = videoQualityOf(
             data.quality!,
             data.supportFormats,
           );
-          firstVideo = VideoItem(
+          firstVideo = MediaStream(
             id: data.quality!,
             baseUrl: videoUrl,
             codecs: 'avc1',
-            quality: videoQuality,
           );
           _setVideoHeight();
           currentDecodeFormats = VideoDecodeFormatType.AVC;
@@ -979,13 +994,13 @@ class VideoDetailController extends GetxController
       final cacheVideoQa = plPlayerController.cacheVideoQa!;
       final (
         int targetQuality,
-        FormatItem targetFormat,
+        PlayFormat targetFormat,
         VideoDecodeFormatType targetDecode,
-        VideoItem targetVideo,
+        MediaStream targetVideo,
       ) = VideoUtils.findTargetVideo(
         dash.video!,
         cacheVideoQa,
-        response.acceptQuality,
+        response.acceptQuality?.map((e) => e.toInt()).toList(),
         response.supportFormats!,
         preferCodecs,
       );
@@ -995,7 +1010,7 @@ class VideoDetailController extends GetxController
       _setVideoHeight();
       videoUrl = VideoUtils.getCdnUrl(firstVideo.playUrls);
 
-      AudioItem? firstAudio;
+      MediaStream? firstAudio;
       final audioList = dash.audio;
       if (audioList != null && audioList.isNotEmpty) {
         firstAudio = VideoUtils.findTargetAudio(
@@ -1618,12 +1633,11 @@ class VideoDetailController extends GetxController
     );
     SmartDialog.dismiss();
     if (res case Success(:final response)) {
-      final first = response.durl?.firstOrNull;
-      if (first == null || first.playUrls.isEmpty) {
+      if (response.isEmpty) {
         SmartDialog.showToast('不支持投屏');
         return;
       }
-      final url = VideoUtils.getCdnUrl(first.playUrls);
+      final url = VideoUtils.getCdnUrl(response);
 
       String? title;
       try {

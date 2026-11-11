@@ -6,7 +6,8 @@ import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/common/video/base_quality.dart';
 import 'package:kilikili/models/common/video/cdn_type.dart';
 import 'package:kilikili/models/common/video/video_type.dart';
-import 'package:kilikili/models/video/play/url.dart';
+import 'package:kilikili/services/rust/play_url_ext.dart';
+import 'package:kilikili/services/rust/rust_play_url.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:kilikili/utils/video_utils.dart';
 import 'package:dio/dio.dart';
@@ -70,7 +71,7 @@ class SelectDialog<T> extends StatelessWidget {
 }
 
 class CdnSelectDialog extends StatefulWidget {
-  final BaseItem? sample;
+  final MediaStream? sample;
 
   const CdnSelectDialog({
     super.key,
@@ -126,8 +127,8 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
     super.dispose();
   }
 
-  Future<BaseItem> _getSampleUrl() async {
-    final result = await VideoHttp.videoUrl(
+  Future<MediaStream> _getSampleUrl() async {
+    final result = await RustPlayUrl.fetch(
       cid: 196018899,
       bvid: 'BV1fK4y1t7hj',
       qn: VideoQuality.high1080.code,
@@ -148,14 +149,14 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
     }
   }
 
-  Future<void> _testAllCdnServices(BaseItem videoItem) async {
+  Future<void> _testAllCdnServices(MediaStream videoItem) async {
     for (final item in CDNService.values) {
       if (!mounted) break;
       await _testSingleCdn(item, videoItem);
     }
   }
 
-  Future<void> _testSingleCdn(CDNService item, BaseItem videoItem) async {
+  Future<void> _testSingleCdn(CDNService item, MediaStream videoItem) async {
     try {
       final cdnUrl = VideoUtils.getCdnUrl(
         videoItem.playUrls,

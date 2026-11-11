@@ -1,7 +1,8 @@
 import 'dart:io' show Platform;
 import 'dart:math' as math;
 
-import 'package:kilikili/models/video/play/url.dart' show Volume;
+import 'package:kilikili/services/rust/play_url_ext.dart';
+import 'package:kilikili/services/rust/rust_play_url.dart' show Volume;
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:media_kit/media_kit.dart' show Player;
 

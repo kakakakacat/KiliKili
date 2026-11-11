@@ -12,11 +12,14 @@
 //! 「播放器需要的三五个字段」要先确定播放器后端（RFC §13 问题 4 未决，
 //! 见 issue #12），现在收窄等于提前替那个决策下注。
 //!
-//! ## 刻意不做的归一
+//! ## 归一到什么程度
 //!
-//! 清晰度描述（`VideoQuality` / `AudioQuality`）、多语言条目的排序与
-//! 「（AI）」后缀，都留在 Dart：它们是**展示**规则，不是协议。Rust 若
-//! 一并做掉，shadow 比对就得连带比对展示规则，差异来源会变得不可归因。
+//! 凡是**换掉宿主框架就得重写一遍**的规则都在这一侧做掉：多语言条目的
+//! 排序、AI 配音的判定都在解析时定下来。宿主只负责把它们画出来。
+//!
+//! 留给宿主的只剩字符串本身：「（AI）」这个后缀是中文 UI 文案，
+//! 清晰度/音质的档位名则来自一张宿主的静态表（见 `base_quality.dart`）。
+//! 它们换框架时本来就要重写，放在这里反而是把 UI 文案焊进协议层。
 
 use serde::Serialize;
 
@@ -142,8 +145,10 @@ pub struct Volume {
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct LanguageOptions {
     pub support: Option<bool>,
-    /// 条目**未排序**：排序与「（AI）」标注是 Dart 的展示规则，见本模块
-    /// 文档。
+    /// 条目**已按展示顺序排好**：中文在前，AI 配音在后。
+    ///
+    /// 顺序是业务规则而不是协议内容，但它与宿主框架无关——换一套 UI
+    /// 也是同一个顺序，所以在这一侧定下来（见本模块文档）。
     pub items: Option<Vec<LanguageItem>>,
 }
 
@@ -155,6 +160,9 @@ pub struct LanguageItem {
     pub subtitle_lang: Option<String>,
     /// 制作方式。基线只认 `2 == AI 配音`。
     pub production_type: Option<i64>,
+    /// 是否 AI 配音。由 [`Self::production_type`] 判定，解析时定下来——
+    /// 宿主不该再认一遍那个魔数。
+    pub is_ai: bool,
 }
 
 /// 可跳过片段。

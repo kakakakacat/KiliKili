@@ -44,3 +44,18 @@ APP 签名与 WBI 是两套，差异（盐、时间字段、签名字段、值�
 能钉住「Rust 的字符串 `"444.8"` 等于 Dart 的 `444.8.toString()`」——写成
 `444` 或 `444.80` 都会让 `w_rid` 变成另一个值，而服务端回的是业务错误码，
 从现象完全反推不出是参数类型错了。
+
+## 2026-11-11：取流请求面的核对变成单侧（issue #79）
+
+取流的请求组装（WBI 参数集与签名）**没有改**，但**基线那一侧删除了**：
+`VideoHttp.videoUrl` 随 typed 直连一并消失，发请求的只剩
+`bili_api::request::play_url`。
+
+因此 `tool/fixture-gen/playurl_fixture.dart` 的性质变了——它原本逐字复制
+基线的参数组装，上游改了就会与 Rust 产生差异、测试变红；现在它是一份
+**冻结的基线快照**，不再跟着上游走。
+
+**同步上游时要手动比对取流参数**：上游若增删了 `fnval` / `fourk` /
+`gaia_source` 之类，CI 不会红，只有服务端的风控画像会变。比对位置是上游的
+`lib/http/video.dart::videoUrl` 与 `rust/crates/bili-api/src/request.rs` 的
+`play_url`。

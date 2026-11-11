@@ -13,14 +13,11 @@ import 'package:kilikili/models/common/video/video_type.dart';
 import 'package:kilikili/models/home/rcmd/result.dart';
 import 'package:kilikili/models/model_rec_video_item.dart';
 import 'package:kilikili/models/pgc_lcf.dart';
-import 'package:kilikili/models/video/play/url.dart';
 import 'package:kilikili/models_new/triple/pgc_triple.dart';
 import 'package:kilikili/models_new/triple/ugc_triple.dart';
 import 'package:kilikili/models_new/video/video_detail/data.dart';
 import 'package:kilikili/models_new/video/video_relation/data.dart';
-import 'package:kilikili/services/rust/play_url_shadow.dart';
 import 'package:kilikili/services/rust/rust_flags.dart';
-import 'package:kilikili/services/rust/rust_play_url.dart';
 import 'package:kilikili/services/rust/rust_subtitle.dart';
 import 'package:kilikili/services/rust/rust_video_detail.dart';
 import 'package:kilikili/services/rust/video_detail_shadow.dart';
@@ -195,173 +192,11 @@ abstract final class VideoHttp {
     }
   }
 
-  // 视频流
-  @pragma('vm:notify-debugger-on-exception')
-  static Future<LoadingState<PlayUrlModel>> videoUrl({
-    int? avid,
-    String? bvid,
-    required int cid,
-    required int qn,
-    dynamic epid,
-    dynamic seasonId,
-    required bool tryLook,
-    required VideoType videoType,
-    String? language,
-    bool voiceBalance = false,
-    bool fallback = false,
-
-    /// 是否允许走 Rust 取数路径。
-    ///
-    /// 下面那三处递归都传 false：它们是 Dart 路径自己的重试分支（DRM
-    /// 降级、UGC→PGC），而 Rust 路径有自己的同名分支。让递归再进一次
-    /// Rust，同一次取流就会在两套重试逻辑之间来回跳。
-    bool allowRust = true,
-  }) async {
-    if (allowRust) {
-      // 功能开关打开且取流成功时走 Rust；返回 null 即降级回下面的 Dart
-      // 路径（RFC-0001 §5.3）。开关默认关闭。
-      final viaRust = await RustPlayUrl.fetch(
-        avid: avid,
-        bvid: bvid,
-        cid: cid,
-        qn: qn,
-        epid: epid is int ? epid : int.tryParse('$epid'),
-        seasonId: seasonId is int ? seasonId : int.tryParse('$seasonId'),
-        tryLook: tryLook,
-        videoType: videoType,
-        language: language,
-        voiceBalance: voiceBalance,
-      );
-      if (viaRust != null) return viaRust;
-    }
-
-    final dmImgStr = Utils.base64EncodeRandomString(16, 64);
-    final dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
-    final params = await WbiSign.makSign({
-      'avid': ?avid,
-      'bvid': ?bvid,
-      'ep_id': ?epid,
-      'season_id': ?seasonId,
-      'cid': cid,
-      'qn': qn,
-      // 获取所有格式的视频
-      'fnval': 4048,
-      'fourk': 1,
-      'fnver': 0,
-      'voice_balance': voiceBalance ? 1 : 0,
-      'gaia_source': 'pre-load',
-      'isGaiaAvoided': true,
-      'web_location': 1315873,
-      if (videoType != .ugc && !fallback) ...{
-        'biz_type': ?videoType.bizType,
-        'scene': 'normal',
-        'from_client': 'BROWSER',
-        'drm_tech_type': 0,
-        'app_id': 100,
-      },
-      // 免登录查看1080p
-      if (tryLook) 'try_look': 1,
-      'dm_img_list': '[]',
-      'dm_img_str': dmImgStr,
-      'dm_cover_img_str': dmCoverImgStr,
-      'dm_img_inter': '{"ds":[],"wh":[0,0,0],"of":[0,0,0]}',
-      'cur_language': ?language,
-    });
-
-    try {
-      final res = await Request().get(
-        fallback ? videoType.fallbackApi : videoType.api,
-        queryParameters: params,
-      );
-
-      if (res.data['code'] == 0) {
-        // shadow mode：Dart 与 Rust 对同一份响应各自规范化后比对，播放
-        // 仍用下面的 Dart 结果。比对不等待、不抛出，详见 PlayUrlShadow。
-        unawaited(PlayUrlShadow.compare(res.data, videoType, fallback));
-
-        late PlayUrlModel data;
-        switch (videoType) {
-          case .ugc:
-            data = PlayUrlModel.fromJson(res.data['data']);
-
-          // ogv
-          case .pgc || .pugv when !fallback:
-            final result = res.data['data'];
-            final videoInfo = result['video_info'];
-            if (videoInfo != null) {
-              data = PlayUrlModel.fromJson(videoInfo);
-              final progress = result['watch_progress'];
-              if (progress != null) {
-                data.lastPlayTime =
-                    progress['current_watch_progress'] ??
-                    progress['current_progress'];
-              }
-            } else if (result['arc']?['is_drm'] == true) {
-              return await videoUrl(
-                avid: avid,
-                bvid: bvid,
-                cid: cid,
-                qn: qn,
-                epid: epid,
-                seasonId: seasonId,
-                tryLook: tryLook,
-                videoType: videoType,
-                language: language,
-                voiceBalance: voiceBalance,
-                fallback: true,
-                allowRust: false,
-              );
-            } else {
-              final reason = result['not_playable_reason'];
-              if (reason != null) {
-                return Error(_parseVideoErr(reason['code'], reason['message']));
-              } else {
-                return Error(result.toString());
-              }
-            }
-
-          case .pgc:
-            final result = res.data['result'];
-            data = PlayUrlModel.fromJson(result['video_info'])
-              ..lastPlayTime =
-                  result['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
-
-          case .pugv:
-            final result = res.data['data'];
-            data = PlayUrlModel.fromJson(result)
-              ..lastPlayTime =
-                  result['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
-        }
-        return Success(data);
-      } else if (epid != null && videoType == .ugc) {
-        return await videoUrl(
-          avid: avid,
-          bvid: bvid,
-          cid: cid,
-          qn: qn,
-          epid: epid,
-          seasonId: seasonId,
-          tryLook: tryLook,
-          videoType: .pgc,
-          language: language,
-          voiceBalance: voiceBalance,
-          fallback: fallback,
-          allowRust: false,
-        );
-      }
-      return Error(_parseVideoErr(res.data['code'], res.data['message']));
-    } catch (e, s) {
-      return Error('$e\n\n$s');
-    }
-  }
-
-  static String _parseVideoErr(int? code, String? msg) {
-    return switch (code) {
-      -404 => '视频不存在或已被删除',
-      87008 => '当前视频可能是专属视频，可能需包月充电观看($msg})',
-      _ => '错误($code): $msg',
-    };
-  }
+  // 取流已整条迁到 Rust（issue #79 / ADR-011 决策四）：
+  // `lib/services/rust/rust_play_url.dart` 的 `RustPlayUrl.fetch`。
+  // 基线的 `videoUrl` 连同三条重试分支、shadow 比对与 `_parseVideoErr`
+  // 一并删除——重试分支现在只在 `bili_api::client::fetch_play_url` 里有
+  // 一份，错误文案搬到了 `playUrlErrorMessage`。
 
   // 视频信息 标题、简介
   static Future<LoadingState<VideoDetailData>> videoIntro({
@@ -889,7 +724,20 @@ abstract final class VideoHttp {
   // `lib/services/rust/rust_pgc.dart` 的 `RustPgc.rank`。
   // 它们原本住在本文件只是归档位置的问题，模型（PgcRankItem）属 PGC 域。
 
-  static Future<LoadingState<PlayUrlModel>> tvPlayUrl({
+  /// 投屏取流（TV 接口，APP 签名，与上面那条 WBI 的取流不是一回事）。
+  ///
+  /// 返回**第一段整段流的候选地址**，不是整棵取流结构：唯一的调用点
+  /// （`VideoDetailController.onCast`）就只取 `durl.first.playUrls`，
+  /// 再交给 `VideoUtils.getCdnUrl` 挑一个。随 `PlayUrlModel` 删除，这里
+  /// 不再为一个只用到两个字段的地方解析二十余个嵌套类型。
+  ///
+  /// 空列表表示拿到了响应但没有可投屏的整段流，调用点据此提示「不支持
+  /// 投屏」——与基线 `durl?.firstOrNull == null || playUrls.isEmpty`
+  /// 两种情况合并后的行为一致。
+  ///
+  /// **没迁到 Rust**：它走 `AppSign` 而非 WBI，与取流切片的请求面不同源；
+  /// 真要迁应与其余 TV 接口一起，归杂项切片（#66）。
+  static Future<LoadingState<List<String>>> tvPlayUrl({
     required int cid,
     required int objectId, // aid, epid
     required int playurlType, // ugc 1, pgc 2
@@ -913,7 +761,12 @@ abstract final class VideoHttp {
     AppSign.appSign(params);
     final res = await Request().get(Api.tvPlayUrl, queryParameters: params);
     if (res.data['code'] == 0) {
-      return Success(PlayUrlModel.fromJson(res.data['data']));
+      final first = (res.data['data']?['durl'] as List?)?.firstOrNull;
+      if (first == null) return const Success([]);
+      return Success([
+        if (first['url'] case final String url when url.isNotEmpty) url,
+        ...?(first['backup_url'] as List?)?.whereType<String>(),
+      ]);
     } else {
       return Error(res.data['message']);
     }

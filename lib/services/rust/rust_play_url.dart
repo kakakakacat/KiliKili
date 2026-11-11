@@ -1,30 +1,44 @@
-import 'dart:convert';
-
 import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/video/video_type.dart';
-import 'package:kilikili/models/video/play/url.dart';
+import 'package:kilikili/rust/api/play_url.dart' show PlayUrl;
 import 'package:kilikili/rust/api/play_url_fetch.dart' as rust_api;
-import 'package:kilikili/services/rust/play_url_denormalize.dart';
-import 'package:kilikili/services/rust/rust_flags.dart';
 import 'package:kilikili/services/rust/rust_request.dart';
 import 'package:kilikili/services/rust/rust_transport.dart';
+import 'package:kilikili/services/rust_core.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/wbi_sign.dart';
 import 'package:flutter/foundation.dart';
 
-/// 取流的 Rust 取数路径：请求由 Rust 发出、Rust 解析。
+export 'package:kilikili/rust/api/play_url.dart'
+    show
+        ClipInfo,
+        Dash,
+        Durl,
+        LanguageItem,
+        LanguageOptions,
+        MediaStream,
+        PlayFormat,
+        PlayUrl,
+        SegmentBase,
+        Volume;
+
+/// 取流的取数路径（issue #79）。**typed 直连，没有第二条路。**
 ///
-/// 开关 `rust.fetch.playUrl` 默认关闭。任何一步不成立都返回 `null`，
-/// 由调用方走原来的 Dart 路径——**降级是默认行为**，不是异常分支
-/// （RFC-0001 §5.3）。
+/// ## 这里是取流的唯一实现
 ///
-/// ## 失败也降级，哪怕失败来自内容本身
+/// 基线的 `VideoHttp.videoUrl`、`rust.fetch.playUrl` 开关、
+/// `play_url_normalize/denormalize/shadow` 三组胶水与 `PlayUrlModel`
+/// 整棵模型树都随本切片删除（ADR-011 决策四：迁一条路径就连旧实现一起
+/// 删，不留降级）。取流失败时用户看到的是错误文案，不再是「悄悄换一条
+/// 路再试一次」。
 ///
-/// 服务端明确拒绝（番剧需充电、稿件已删）时，降级回 Dart 会再失败一次，
-/// 多一次请求。仍然这么做：错误文案由基线 `VideoHttp._parseVideoErr`
-/// 统一产出，两条路径给出不同措辞，比多一次只读请求糟糕得多。等 Rust
-/// 成为默认路径时，这里才值得改成直接报错。
+/// ## 重试分支在 Rust 那边
+///
+/// 基线有三条：PGC 内容是 DRM 时改走降级接口、UGC 带 `ep_id` 失败后改
+/// 按 PGC 重取、两者不叠加。它们现在只存在于
+/// `bili_api::client::fetch_play_url`，由响应驱动，不由这里指定——迁移前
+/// Dart 与 Rust 各有一份，那正是「某些番剧在某条路径下播不了」的来源。
 ///
 /// ## 凭据
 ///
@@ -33,11 +47,13 @@ abstract final class RustPlayUrl {
   /// 与基线 `BaseOptions` 一致的超时（`lib/http/init.dart`）。
   static const int _timeoutMs = 10000;
 
-  /// 取一次流。返回 `null` 表示本次不走 Rust，调用方应走 Dart 路径。
+  static const String _notReady = 'Rust Core 未就绪，无法取流';
+
+  /// 取一次流。
   ///
-  /// 参数与 `VideoHttp.videoUrl` 一一对应，但**没有** `fallback`：
-  /// 降级（DRM）由 Rust 按响应自行决定，与基线的递归同样是响应驱动的。
-  static Future<LoadingState<PlayUrlModel>?> fetch({
+  /// 参数与基线 `VideoHttp.videoUrl` 一一对应，但**没有** `fallback`
+  /// 与 `allowRust`：前者由响应决定，后者随开关一起删了。
+  static Future<LoadingState<PlayUrl>> fetch({
     int? avid,
     String? bvid,
     required int cid,
@@ -49,20 +65,19 @@ abstract final class RustPlayUrl {
     String? language,
     bool voiceBalance = false,
   }) async {
-    if (!RustFlags.rustPlayUrl) return null;
+    if (!RustCore.isReady) return const Error(_notReady);
 
     try {
       final mixinKey = await WbiSign.getWbiKeys();
-      // 取 key 失败时基线会用空串继续签名并换来一个业务错误码。那是基线
-      // 的既有行为，不是我们要复制的行为——没有 key 就降级。
-      if (mixinKey.isEmpty) return null;
+      // 基线取 key 失败时会用空串继续签名、换来一个业务错误码。照搬那个
+      // 行为没有意义——空签名的请求必然失败，不如直接说清楚。
+      if (mixinKey.isEmpty) return const Error('WBI 签名密钥获取失败');
 
-      // 取流绑定 video 账号（lib/utils/accounts/api_type.dart），必须与
-      // 拦截器的选择一致，否则两条路径用的是不同账号。
+      // 取流绑定 video 账号（lib/utils/accounts/api_type.dart）。
       final account = Accounts.video;
       final cookie = await RustRequest.cookieFor(account, videoType.api);
 
-      final result = await rust_api.fetchPlayUrl(
+      final res = await rust_api.fetchPlayUrl(
         baseUrl: HttpString.apiBaseUrl,
         request: rust_api.PlayUrlRequest(
           avid: avid,
@@ -84,25 +99,36 @@ abstract final class RustPlayUrl {
         transport: RustTransport.current(),
       );
 
-      final json = result.json;
-      if (json == null) {
+      final data = res.data;
+      if (data == null) {
         if (kDebugMode) {
           debugPrint(
-            '[rust] 取流失败，降级回 Dart: '
-            '${result.errorKind} / ${result.errorCode} / ${result.errorDetail}',
+            '[rust] 取流失败: '
+            '${res.errorKind} / ${res.errorCode} / ${res.errorDetail}',
           );
         }
-        return null;
+        return Error(
+          playUrlErrorMessage(res.errorCode, res.errorDetail),
+          code: res.errorCode,
+        );
       }
-
-      final normalized = jsonDecode(json) as Map<String, dynamic>;
-      final playUrl = PlayUrlModel.fromJson(denormalizePlayUrl(normalized));
-      if (kDebugMode) debugPrint('[rust] 取流成功 (cookie=${cookie != null})');
-      return Success(playUrl);
+      return Success(data);
     } catch (e, st) {
-      // 包括桥接未就绪、账号状态异常在内的一切意外：降级，不抛。
-      if (kDebugMode) debugPrint('[rust] 取流路径自身出错，降级: $e\n$st');
-      return null;
+      // 桥接未就绪、账号状态异常之类的意外：转成错误值，不抛。
+      if (kDebugMode) debugPrint('[rust] 取流路径自身出错: $e\n$st');
+      return Error('$e');
     }
   }
 }
+
+/// 取流失败的用户文案。
+///
+/// 从基线 `VideoHttp._parseVideoErr` 原样搬来——那两条特判是用户能看懂
+/// 这件事的全部：`-404` 与 `87008` 的服务端 message 本身都不足以说明
+/// 发生了什么。码由 Rust 从接口信封原样带回（见 `PlayUrlResult`）。
+String playUrlErrorMessage(int? code, String? message) => switch (code) {
+  -404 => '视频不存在或已被删除',
+  87008 => '当前视频可能是专属视频，可能需包月充电观看($message})',
+  null => message ?? '取流失败',
+  _ => '错误($code): $message',
+};

@@ -6,59 +6,470 @@
 import 'package:kilikili/rust/frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `fmt`
+// These functions are ignored because they are not marked as `pub`: `clip_info`, `dash`, `durl`, `language_item`, `language_options`, `media_stream`, `play_format`, `play_url`, `segment_base`, `to_domain_clip`, `to_domain_stream`, `volume`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
-/// 解析一次 playurl 响应。
-///
-/// `body` 是整个响应体（含信封）。`video_type` 取 `ugc`/`pgc`/`pugv`，
-/// `fallback` 表示这次响应来自降级接口——响应本身不足以区分这两点
-/// （PUGV 降级与 UGC 的外层形状相同）。
-Future<PlayUrlParse> parsePlayUrl({
-  required String body,
-  required String videoType,
-  required bool fallback,
-}) => RustLib.instance.api.crateApiPlayUrlParsePlayUrl(
-  body: body,
-  videoType: videoType,
-  fallback: fallback,
-);
+/// 可跳过片段。
+class ClipInfo {
+  /// 起止（秒）。转成毫秒是展示侧的事，此处保持接口单位。
+  final double? start;
+  final double? end;
 
-/// 解析结果。不用 `Result`：shadow mode 下失败也不该打断主流程。
-class PlayUrlParse {
-  /// 规范化后的 JSON。失败或需要降级时为 `None`。
-  final String? json;
+  /// `CLIP_TYPE_OP` / `CLIP_TYPE_ED` / 其他。
+  final String? clipType;
 
-  /// 内容为 DRM、应改走降级接口。此时 `json` 为 `None` 而
-  /// `error_kind` 也为 `None`——它不是失败。
-  final bool needsFallback;
-
-  /// 失败大类：`network|remote|protocol|auth|storage|player|cancelled`。
-  final String? errorKind;
-
-  /// 失败详情。**不含请求参数与凭据。**
-  final String? errorDetail;
-
-  const PlayUrlParse({
-    this.json,
-    required this.needsFallback,
-    this.errorKind,
-    this.errorDetail,
+  const ClipInfo({
+    this.start,
+    this.end,
+    this.clipType,
   });
 
   @override
-  int get hashCode =>
-      json.hashCode ^
-      needsFallback.hashCode ^
-      errorKind.hashCode ^
-      errorDetail.hashCode;
+  int get hashCode => start.hashCode ^ end.hashCode ^ clipType.hashCode;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is PlayUrlParse &&
+      other is ClipInfo &&
           runtimeType == other.runtimeType &&
-          json == other.json &&
-          needsFallback == other.needsFallback &&
-          errorKind == other.errorKind &&
-          errorDetail == other.errorDetail;
+          start == other.start &&
+          end == other.end &&
+          clipType == other.clipType;
+}
+
+/// DASH 流。
+class Dash {
+  final PlatformInt64? duration;
+  final double? minBufferTime;
+  final List<MediaStream>? video;
+
+  /// 音频流。接口把无损、杜比与普通音轨放在三处，解析时已按
+  /// flac → dolby → 普通的顺序合并成一个列表——顺序是行为的一部分
+  /// （列表首项即默认音轨）。
+  final List<MediaStream>? audio;
+
+  const Dash({
+    this.duration,
+    this.minBufferTime,
+    this.video,
+    this.audio,
+  });
+
+  @override
+  int get hashCode =>
+      duration.hashCode ^
+      minBufferTime.hashCode ^
+      video.hashCode ^
+      audio.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Dash &&
+          runtimeType == other.runtimeType &&
+          duration == other.duration &&
+          minBufferTime == other.minBufferTime &&
+          video == other.video &&
+          audio == other.audio;
+}
+
+/// 整段流。
+class Durl {
+  final PlatformInt64? order;
+
+  /// 本段时长（毫秒）。
+  final PlatformInt64? length;
+  final PlatformInt64? size;
+  final String? ahead;
+  final String? vhead;
+  final String? url;
+  final List<String>? backupUrl;
+
+  const Durl({
+    this.order,
+    this.length,
+    this.size,
+    this.ahead,
+    this.vhead,
+    this.url,
+    this.backupUrl,
+  });
+
+  @override
+  int get hashCode =>
+      order.hashCode ^
+      length.hashCode ^
+      size.hashCode ^
+      ahead.hashCode ^
+      vhead.hashCode ^
+      url.hashCode ^
+      backupUrl.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Durl &&
+          runtimeType == other.runtimeType &&
+          order == other.order &&
+          length == other.length &&
+          size == other.size &&
+          ahead == other.ahead &&
+          vhead == other.vhead &&
+          url == other.url &&
+          backupUrl == other.backupUrl;
+}
+
+/// 一条音轨。
+class LanguageItem {
+  final String? lang;
+  final String? title;
+  final String? subtitleLang;
+
+  /// 制作方式。基线只认 `2 == AI 配音`。
+  final PlatformInt64? productionType;
+
+  /// 是否 AI 配音。解析时就判定好，宿主不再认那个魔数。
+  final bool isAi;
+
+  const LanguageItem({
+    this.lang,
+    this.title,
+    this.subtitleLang,
+    this.productionType,
+    required this.isAi,
+  });
+
+  @override
+  int get hashCode =>
+      lang.hashCode ^
+      title.hashCode ^
+      subtitleLang.hashCode ^
+      productionType.hashCode ^
+      isAi.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LanguageItem &&
+          runtimeType == other.runtimeType &&
+          lang == other.lang &&
+          title == other.title &&
+          subtitleLang == other.subtitleLang &&
+          productionType == other.productionType &&
+          isAi == other.isAi;
+}
+
+/// 多语言音轨。
+class LanguageOptions {
+  final bool? support;
+
+  /// 条目**未排序**：排序与「（AI）」标注是展示规则，留在 Dart。
+  final List<LanguageItem>? items;
+
+  const LanguageOptions({
+    this.support,
+    this.items,
+  });
+
+  @override
+  int get hashCode => support.hashCode ^ items.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LanguageOptions &&
+          runtimeType == other.runtimeType &&
+          support == other.support &&
+          items == other.items;
+}
+
+/// 一路 DASH 流。视频与音频共用一种形状，差别只在哪些字段有值。
+class MediaStream {
+  /// 视频是清晰度代码，音频是音质代码。
+  final PlatformInt64 id;
+  final String? baseUrl;
+  final List<String>? backupUrl;
+  final PlatformInt64? bandWidth;
+  final String? mimeType;
+  final String? codecs;
+  final PlatformInt64? width;
+  final PlatformInt64? height;
+
+  /// 帧率。接口给的是字符串（可能是 `"16000/672"` 这类分数）。
+  final String? frameRate;
+  final String? sar;
+  final PlatformInt64? startWithSap;
+  final SegmentBase? segmentBase;
+  final PlatformInt64? codecid;
+
+  const MediaStream({
+    required this.id,
+    this.baseUrl,
+    this.backupUrl,
+    this.bandWidth,
+    this.mimeType,
+    this.codecs,
+    this.width,
+    this.height,
+    this.frameRate,
+    this.sar,
+    this.startWithSap,
+    this.segmentBase,
+    this.codecid,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      baseUrl.hashCode ^
+      backupUrl.hashCode ^
+      bandWidth.hashCode ^
+      mimeType.hashCode ^
+      codecs.hashCode ^
+      width.hashCode ^
+      height.hashCode ^
+      frameRate.hashCode ^
+      sar.hashCode ^
+      startWithSap.hashCode ^
+      segmentBase.hashCode ^
+      codecid.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is MediaStream &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          baseUrl == other.baseUrl &&
+          backupUrl == other.backupUrl &&
+          bandWidth == other.bandWidth &&
+          mimeType == other.mimeType &&
+          codecs == other.codecs &&
+          width == other.width &&
+          height == other.height &&
+          frameRate == other.frameRate &&
+          sar == other.sar &&
+          startWithSap == other.startWithSap &&
+          segmentBase == other.segmentBase &&
+          codecid == other.codecid;
+}
+
+/// 可选清晰度的描述。
+class PlayFormat {
+  final PlatformInt64? quality;
+  final String? format;
+
+  /// 接口字段 `new_description`。
+  final String? newDesc;
+  final String? displayDesc;
+  final List<String>? codecs;
+
+  const PlayFormat({
+    this.quality,
+    this.format,
+    this.newDesc,
+    this.displayDesc,
+    this.codecs,
+  });
+
+  @override
+  int get hashCode =>
+      quality.hashCode ^
+      format.hashCode ^
+      newDesc.hashCode ^
+      displayDesc.hashCode ^
+      codecs.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PlayFormat &&
+          runtimeType == other.runtimeType &&
+          quality == other.quality &&
+          format == other.format &&
+          newDesc == other.newDesc &&
+          displayDesc == other.displayDesc &&
+          codecs == other.codecs;
+}
+
+/// 一次取流的结果。对应被删除的基线 `PlayUrlModel`。
+class PlayUrl {
+  final String? from;
+  final String? result;
+  final String? message;
+
+  /// 当前清晰度代码。
+  final PlatformInt64? quality;
+  final String? format;
+
+  /// 时长（毫秒）。接口字段名是 `timelength`。
+  final PlatformInt64? timeLength;
+  final String? acceptFormat;
+  final List<String>? acceptDescription;
+  final Int64List? acceptQuality;
+  final PlatformInt64? videoCodecid;
+  final String? seekParam;
+  final String? seekType;
+  final List<PlayFormat>? supportFormats;
+  final Dash? dash;
+
+  /// 非 DASH 的整段流（老视频、试看片段）。与 `dash` 互斥，但协议上
+  /// 两者都可能缺失，因此各自可空。
+  final List<Durl>? durl;
+  final Volume? volume;
+
+  /// 上次播放进度（毫秒）。null 与非正数已在解析时归零。
+  final PlatformInt64 lastPlayTime;
+  final PlatformInt64? lastPlayCid;
+
+  /// 当前音轨语言（接口字段 `cur_language`）。
+  final String? curLanguage;
+  final LanguageOptions? language;
+
+  /// 片头片尾等可跳过片段（PGC）。
+  final List<ClipInfo>? clipInfoList;
+
+  const PlayUrl({
+    this.from,
+    this.result,
+    this.message,
+    this.quality,
+    this.format,
+    this.timeLength,
+    this.acceptFormat,
+    this.acceptDescription,
+    this.acceptQuality,
+    this.videoCodecid,
+    this.seekParam,
+    this.seekType,
+    this.supportFormats,
+    this.dash,
+    this.durl,
+    this.volume,
+    required this.lastPlayTime,
+    this.lastPlayCid,
+    this.curLanguage,
+    this.language,
+    this.clipInfoList,
+  });
+
+  @override
+  int get hashCode =>
+      from.hashCode ^
+      result.hashCode ^
+      message.hashCode ^
+      quality.hashCode ^
+      format.hashCode ^
+      timeLength.hashCode ^
+      acceptFormat.hashCode ^
+      acceptDescription.hashCode ^
+      acceptQuality.hashCode ^
+      videoCodecid.hashCode ^
+      seekParam.hashCode ^
+      seekType.hashCode ^
+      supportFormats.hashCode ^
+      dash.hashCode ^
+      durl.hashCode ^
+      volume.hashCode ^
+      lastPlayTime.hashCode ^
+      lastPlayCid.hashCode ^
+      curLanguage.hashCode ^
+      language.hashCode ^
+      clipInfoList.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PlayUrl &&
+          runtimeType == other.runtimeType &&
+          from == other.from &&
+          result == other.result &&
+          message == other.message &&
+          quality == other.quality &&
+          format == other.format &&
+          timeLength == other.timeLength &&
+          acceptFormat == other.acceptFormat &&
+          acceptDescription == other.acceptDescription &&
+          acceptQuality == other.acceptQuality &&
+          videoCodecid == other.videoCodecid &&
+          seekParam == other.seekParam &&
+          seekType == other.seekType &&
+          supportFormats == other.supportFormats &&
+          dash == other.dash &&
+          durl == other.durl &&
+          volume == other.volume &&
+          lastPlayTime == other.lastPlayTime &&
+          lastPlayCid == other.lastPlayCid &&
+          curLanguage == other.curLanguage &&
+          language == other.language &&
+          clipInfoList == other.clipInfoList;
+}
+
+/// DASH 的初始化段与索引段范围。
+class SegmentBase {
+  final String? initialization;
+  final String? indexRange;
+
+  const SegmentBase({
+    this.initialization,
+    this.indexRange,
+  });
+
+  @override
+  int get hashCode => initialization.hashCode ^ indexRange.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SegmentBase &&
+          runtimeType == other.runtimeType &&
+          initialization == other.initialization &&
+          indexRange == other.indexRange;
+}
+
+/// 音量均衡参数（FFmpeg loudnorm）。
+///
+/// 全部非空：基线对每个字段都用了 `?? 0`，缺失按 0 处理是既定行为，
+/// 而「是否全为 0」正是要不要启用均衡的判据。
+class Volume {
+  final double measuredI;
+  final double measuredLra;
+  final double measuredTp;
+  final double measuredThreshold;
+  final double targetOffset;
+  final double targetI;
+  final double targetTp;
+
+  const Volume({
+    required this.measuredI,
+    required this.measuredLra,
+    required this.measuredTp,
+    required this.measuredThreshold,
+    required this.targetOffset,
+    required this.targetI,
+    required this.targetTp,
+  });
+
+  @override
+  int get hashCode =>
+      measuredI.hashCode ^
+      measuredLra.hashCode ^
+      measuredTp.hashCode ^
+      measuredThreshold.hashCode ^
+      targetOffset.hashCode ^
+      targetI.hashCode ^
+      targetTp.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Volume &&
+          runtimeType == other.runtimeType &&
+          measuredI == other.measuredI &&
+          measuredLra == other.measuredLra &&
+          measuredTp == other.measuredTp &&
+          measuredThreshold == other.measuredThreshold &&
+          targetOffset == other.targetOffset &&
+          targetI == other.targetI &&
+          targetTp == other.targetTp;
 }

@@ -49,19 +49,10 @@ final class VideoQuality extends BaseQuality {
 
   static VideoQuality? safeFromCode(int code) => _codeMap[code];
 
-  factory VideoQuality.fromFormat(int code, List<FormatItem>? formats) {
-    if (formats != null && formats.isNotEmpty) {
-      for (final format in formats) {
-        if (format.quality == code) {
-          return VideoQuality(
-            code,
-            format.newDesc ?? format.displayDesc ?? code.toString(),
-            format.displayDesc ?? format.newDesc ?? code.toString(),
-          );
-        }
-      }
-    }
-
-    return .fromCode(code);
-  }
+  // `fromFormat` 随 `PlayUrlModel` 一起删了（issue #79）。
+  // 它只是「响应给了名字就用响应的，否则查静态表」这条三级回退，现在
+  // 挂在取流结构旁边：`lib/services/rust/play_url_ext.dart` 的
+  // `videoQualityOf`。放在那里而不是这里，是为了让本层级不再 import
+  // 取流模型——`BaseQuality` 的三个子类（画质、音质、直播画质）都是
+  // 客户端静态表，不该依赖任何一条取数路径。
 }

@@ -273,7 +273,7 @@ fn flatten<T>(
 }
 
 impl SkipSegment {
-    fn from_domain(s: bili_domain::sponsor_block::SkipSegment) -> Self {
+    pub(crate) fn from_domain(s: bili_domain::sponsor_block::SkipSegment) -> Self {
         Self {
             uuid: s.uuid,
             category: s.category,

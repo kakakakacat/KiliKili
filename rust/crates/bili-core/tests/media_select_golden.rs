@@ -1,11 +1,21 @@
 #![allow(clippy::expect_used)]
 
-//! 清晰度 / 编码 / 音质选择的对照用例，与基线共用一份输入和期望值
+//! 清晰度 / 编码 / 音质选择的对照用例
 //! （`tests/fixtures/media_select/cases.json`）。
 //!
-//! 基线那侧在 `test/utils/media_select_golden_test.dart`，跑的是真正的
-//! `VideoUtils`。期望值是人写的（理由见 fixture 顶部的 comment），因此
-//! **判据是那个 Dart 测试**：期望值与基线不符时，它在 CI 里会红。
+//! ## 期望值的来历
+//!
+//! 它是**人写的**（理由见 fixture 顶部的 comment），迁移期由
+//! `test/utils/media_select_golden_test.dart` 用真正的 Dart 基线
+//! `VideoUtils` 去验——判据在那一侧，期望值与基线不符时它在 CI 里会红。
+//!
+//! 取流迁成 typed 直连时（issue #79）Dart 原实现删除，`VideoUtils` 改成
+//! 转发到本 crate，那个 Dart 测试就变成了「Rust 与一份 Rust 也在用的
+//! 文件自洽」，于是随原实现一并删除。**这份期望值在删除前与基线逐条
+//! 对过**，此后由本测试冻结。
+//!
+//! 跨 FFI 那一层另有判据：`test/bridge/media_select_bridge_test.dart`
+//! 经真正的动态库跑同一份用例，验的是下标映射与枚举序号的对齐。
 
 use std::fs;
 use std::path::Path;

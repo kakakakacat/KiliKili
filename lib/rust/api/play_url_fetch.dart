@@ -5,6 +5,7 @@
 
 import 'package:kilikili/rust/frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'package:kilikili/rust/api/play_url.dart';
 import 'package:kilikili/rust/api/transport.dart';
 
 // These functions are ignored because they are not marked as `pub`: `failure`, `into_params`
@@ -15,7 +16,7 @@ import 'package:kilikili/rust/api/transport.dart';
 /// `mixin_key` 由 Dart 的 WBI key 缓存提供，`wts` 为当前 Unix 秒。
 /// 风控 token 由 Rust 现生成（每次尝试都重新生成），不经过 Dart：它们
 /// 没有任何需要与 Dart 共享的状态。
-Future<PlayUrlFetch> fetchPlayUrl({
+Future<PlayUrlResult> fetchPlayUrl({
   required String baseUrl,
   required PlayUrlRequest request,
   required String mixinKey,
@@ -34,49 +35,6 @@ Future<PlayUrlFetch> fetchPlayUrl({
   timeoutMs: timeoutMs,
   transport: transport,
 );
-
-/// 取流结果。失败不抛异常，由 Dart 决定降级。
-class PlayUrlFetch {
-  /// 规范化后的 JSON。失败时为 `None`。
-  final String? json;
-
-  /// 失败大类：`network|remote|protocol|auth|storage|player|cancelled`。
-  final String? errorKind;
-
-  /// 失败详情。**不含凭据**，也不含完整 URL。
-  final String? errorDetail;
-
-  /// 服务端业务错误码。仅当失败来自接口信封时才有值。
-  ///
-  /// 带给 Dart 是为了让它能判断「这是内容本身的问题还是 Rust 路径的
-  /// 问题」——前者降级回 Dart 只会再失败一次，但仍照做：错误文案由
-  /// 基线统一产出，两条路径给出不同措辞才是更糟的事。
-  final PlatformInt64? errorCode;
-
-  const PlayUrlFetch({
-    this.json,
-    this.errorKind,
-    this.errorDetail,
-    this.errorCode,
-  });
-
-  @override
-  int get hashCode =>
-      json.hashCode ^
-      errorKind.hashCode ^
-      errorDetail.hashCode ^
-      errorCode.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is PlayUrlFetch &&
-          runtimeType == other.runtimeType &&
-          json == other.json &&
-          errorKind == other.errorKind &&
-          errorDetail == other.errorDetail &&
-          errorCode == other.errorCode;
-}
 
 /// 取流的业务入参。与基线 `VideoHttp.videoUrl` 的签名一一对应。
 class PlayUrlRequest {
@@ -140,4 +98,50 @@ class PlayUrlRequest {
           tryLook == other.tryLook &&
           voiceBalance == other.voiceBalance &&
           language == other.language;
+}
+
+/// 取流结果。失败不抛异常，由 Dart 按 `error_kind` 产出文案。
+///
+/// 迁移前这里是一个 JSON 字符串 + Dart 侧的 `denormalizePlayUrl` 还原，
+/// 现在直接给 typed 结构（ADR-011）。
+class PlayUrlResult {
+  /// 取流结果。失败时为 `None`。
+  final PlayUrl? data;
+
+  /// 失败大类：`network|remote|protocol|auth|storage|player|cancelled`。
+  final String? errorKind;
+
+  /// 失败详情。**不含凭据**，也不含完整 URL。
+  final String? errorDetail;
+
+  /// 服务端业务错误码。仅当失败来自接口信封时才有值。
+  ///
+  /// 基线 `VideoHttp._parseVideoErr` 的文案就是按这个码分支的
+  /// （-404 稿件不存在、87008 需要充电…），迁移后由 Dart 侧的
+  /// `playUrlErrorMessage` 接手，码必须原样带过去。
+  final PlatformInt64? errorCode;
+
+  const PlayUrlResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PlayUrlResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
 }

@@ -1,7 +1,9 @@
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/models/common/video/base_quality.dart';
 import 'package:kilikili/models/common/video/video_type.dart';
-import 'package:kilikili/models/video/play/url.dart' show Volume;
+import 'package:kilikili/services/rust/play_url_ext.dart'
+    show VolumeExt, Volumes;
+import 'package:kilikili/services/rust/rust_play_url.dart' show Volume;
 import 'package:kilikili/models_new/download/download_info.dart';
 import 'package:kilikili/models_new/sponsor_block/segment_item.dart';
 import 'package:kilikili/models_new/video/video_play_info/subtitle.dart';
@@ -245,7 +247,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
         : null,
     subtitles: LocalSubtitle.fromCache(json['subtitles'], entryDirPath),
     viewPoints: ViewPoint.fromCache(json['view_points']),
-    volume: .fromCache(json['volume']),
+    volume: Volumes.fromCache(json['volume']),
   );
 
   Map<String, dynamic> toJson() => <String, dynamic>{

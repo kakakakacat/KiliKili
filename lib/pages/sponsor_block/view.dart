@@ -2,10 +2,11 @@ import 'package:kilikili/common/widgets/pair.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/sponsor_block.dart';
 import 'package:kilikili/models/common/sponsor_block/segment_type.dart';
 import 'package:kilikili/models/common/sponsor_block/skip_type.dart';
-import 'package:kilikili/models_new/sponsor_block/user_info.dart';
+import 'package:kilikili/services/rust/rust_sponsor_block.dart';
+import 'package:kilikili/utils/duration_utils.dart';
+import 'package:kilikili/utils/num_utils.dart';
 import 'package:kilikili/pages/setting/slide_color_picker.dart';
 import 'package:kilikili/utils/accounts/account_manager/account_mgr.dart';
 import 'package:kilikili/utils/filtering_text.dart';
@@ -40,7 +41,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
   String _blockServer = Pref.blockServer;
   bool _blockTrack = Pref.blockTrack;
   final _serverStatus = Rxn<bool>();
-  final _userInfo = LoadingState<UserInfo>.loading().obs;
+  final _userInfo = LoadingState<SponsorUserInfo>.loading().obs;
 
   Box setting = GStorage.setting;
 
@@ -58,15 +59,35 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
   }
 
   Future<void> _checkServerStatus() async {
-    _serverStatus.value = (await SponsorBlock.uptimeStatus()).isSuccess;
+    _serverStatus.value = await RustSponsorBlock.uptimeStatus();
   }
 
   Future<void> _getUserInfo() async {
-    _userInfo.value = await SponsorBlock.userInfo(const [
+    final result = await RustSponsorBlock.userInfo(const [
       'viewCount',
       'minutesSaved',
       'segmentCount',
     ], userId: _userId);
+    final data = result.data;
+    _userInfo.value = data != null
+        ? Success(data)
+        : Error(result.errorDetail ?? '服务器错误');
+  }
+
+  /// 统计信息的展示文案。
+  ///
+  /// 原先挂在 `UserInfo.toString()` 上。typed 直连后实体由 Rust 给出，
+  /// 而这段措辞与单位换算是界面的事，留在界面侧。
+  static String _userInfoText(SponsorUserInfo info) {
+    String minutes = DurationUtils.formatTimeDuration(
+      Duration(minutes: info.minutesSaved.round()),
+    );
+    if (minutes.isEmpty) {
+      minutes = '0分钟';
+    }
+    return '您提交了 ${NumUtils.formatPositiveDecimal(info.segmentCount)} 片段\n'
+        '您为大家节省了 ${NumUtils.formatPositiveDecimal(info.viewCount)} 片段\n'
+        '($minutes 的生命)';
   }
 
   Widget _blockLimitItem(
@@ -291,8 +312,8 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
         ),
         subtitle: switch (_userInfo.value) {
           Loading() => const SizedBox.shrink(),
-          Success<UserInfo>(:final response) => Text(
-            response.toString(),
+          Success<SponsorUserInfo>(:final response) => Text(
+            _userInfoText(response),
             style: subTitleStyle,
           ),
           Error(:final errMsg) => Text(

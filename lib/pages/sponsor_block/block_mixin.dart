@@ -3,12 +3,13 @@ import 'dart:math' as math;
 
 import 'package:kilikili/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:kilikili/common/widgets/progress_bar/segment_progress_bar.dart';
-import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/sponsor_block.dart';
 import 'package:kilikili/models/common/sponsor_block/segment_model.dart';
 import 'package:kilikili/models/common/sponsor_block/segment_type.dart';
 import 'package:kilikili/models/common/sponsor_block/skip_type.dart';
 import 'package:kilikili/models_new/sponsor_block/segment_item.dart';
+import 'package:kilikili/services/rust/rust_sponsor_block.dart';
+import 'package:kilikili/services/rust/sponsor_block_compat.dart';
 import 'package:kilikili/utils/duration_utils.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:easy_debounce/easy_throttle.dart';
@@ -65,15 +66,17 @@ mixin BlockMixin on GetxController {
   }) async {
     resetBlock();
 
-    final result = await SponsorBlock.getSkipSegments(bvid: bvid, cid: cid);
-    switch (result) {
-      case Success<List<SegmentItemModel>>(:final response):
-        handleSBData(response);
-      case Error(:final code) when code != 404:
-        if (kDebugMode) {
-          result.toast();
-        }
-      default:
+    // 取片段走 Rust（typed 直连，见 RustSponsorBlock）。这里把结果映射回
+    // SegmentItemModel：该类型还有三个未迁移的生产者，见 sponsor_block_compat。
+    final result = await RustSponsorBlock.getSkipSegments(bvid: bvid, cid: cid);
+    final segments = result.data;
+    if (segments != null) {
+      handleSBData(segments.map((e) => e.toItemModel()).toList());
+    } else if (result.errorCode != 404) {
+      // 404 是「这个视频没有片段」，不是故障，静默处理。
+      if (kDebugMode) {
+        SmartDialog.showToast(result.errorDetail ?? '获取跳过片段失败');
+      }
     }
   }
 

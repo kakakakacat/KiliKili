@@ -6,7 +6,8 @@ import 'package:kilikili/grpc/dm.dart';
 import 'package:kilikili/http/download.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/sponsor_block.dart';
+import 'package:kilikili/services/rust/rust_sponsor_block.dart';
+import 'package:kilikili/services/rust/sponsor_block_compat.dart';
 import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/common/video/base_quality.dart';
 import 'package:kilikili/models_new/download/bili_download_entry_info.dart';
@@ -408,13 +409,15 @@ class DownloadService extends GetxService {
   }
 
   Future<bool> updateUgcSegments(BiliDownloadEntryInfo entry) async {
-    final res = await SponsorBlock.getSkipSegments(
+    final res = await RustSponsorBlock.getSkipSegments(
       bvid: entry.bvid,
       cid: entry.pageData!.cid,
     );
-    if (res case Success(:final response)) {
-      if (response.isNotEmpty) {
-        entry.segments = response;
+    final segments = res.data;
+    if (segments != null) {
+      if (segments.isNotEmpty) {
+        // 下载条目的缓存仍是基线模型，见 sponsor_block_compat 的说明。
+        entry.segments = segments.map((e) => e.toItemModel()).toList();
         await _updateBiliDownloadEntryJson(entry);
       }
       return true;

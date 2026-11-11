@@ -3,9 +3,9 @@ import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/models/common/badge_type.dart';
-import 'package:kilikili/models_new/pgc/pgc_timeline/episode.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:material_ui/material_ui.dart';
 
 // 视频卡片 - 垂直布局
@@ -15,7 +15,7 @@ class PgcCardVTimeline extends StatelessWidget {
     required this.item,
   });
 
-  final Episode item;
+  final TimelineEpisode item;
 
   void onLongPress() => showPgcCover(title: item.title, cover: item.cover);
 

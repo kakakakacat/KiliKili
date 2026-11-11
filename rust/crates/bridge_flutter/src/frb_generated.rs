@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -460684000;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1545819490;
 
 // Section: executor
 
@@ -311,6 +311,280 @@ fn wire__crate__api__video_feed__fetch_hot_videos_impl(
                         let output_ok = Ok::<_, ()>(
                             crate::api::video_feed::fetch_hot_videos(api_context, api_pn, api_ps)
                                 .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__pgc__fetch_pgc_default_index_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_pgc_default_index",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::pgc::PgcContext>::sse_decode(&mut deserializer);
+            let api_page = <Option<i64>>::sse_decode(&mut deserializer);
+            let api_index_type = <Option<i64>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::pgc::fetch_pgc_default_index(
+                                api_context,
+                                api_page,
+                                api_index_type,
+                            )
+                            .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__pgc__fetch_pgc_index_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_pgc_index",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::pgc::PgcContext>::sse_decode(&mut deserializer);
+            let api_query = <crate::api::pgc::PgcIndexQuery>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::pgc::fetch_pgc_index(api_context, api_query).await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__pgc__fetch_pgc_index_condition_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_pgc_index_condition",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::pgc::PgcContext>::sse_decode(&mut deserializer);
+            let api_season_type = <Option<i64>>::sse_decode(&mut deserializer);
+            let api_type_ = <i64>::sse_decode(&mut deserializer);
+            let api_index_type = <Option<i64>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::pgc::fetch_pgc_index_condition(
+                                api_context,
+                                api_season_type,
+                                api_type_,
+                                api_index_type,
+                            )
+                            .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__pgc__fetch_pgc_rank_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_pgc_rank",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::pgc::PgcContext>::sse_decode(&mut deserializer);
+            let api_season = <bool>::sse_decode(&mut deserializer);
+            let api_day = <i64>::sse_decode(&mut deserializer);
+            let api_season_type = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::pgc::fetch_pgc_rank(
+                                api_context,
+                                api_season,
+                                api_day,
+                                api_season_type,
+                            )
+                            .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__pgc__fetch_pgc_reviews_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_pgc_reviews",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::pgc::PgcContext>::sse_decode(&mut deserializer);
+            let api_long = <bool>::sse_decode(&mut deserializer);
+            let api_media_id = <i64>::sse_decode(&mut deserializer);
+            let api_sort = <i64>::sse_decode(&mut deserializer);
+            let api_cursor = <Option<String>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::pgc::fetch_pgc_reviews(
+                                api_context,
+                                api_long,
+                                api_media_id,
+                                api_sort,
+                                api_cursor,
+                            )
+                            .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__pgc__fetch_pgc_timeline_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_pgc_timeline",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::pgc::PgcContext>::sse_decode(&mut deserializer);
+            let api_types = <i64>::sse_decode(&mut deserializer);
+            let api_before = <i64>::sse_decode(&mut deserializer);
+            let api_after = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::pgc::fetch_pgc_timeline(
+                                api_context,
+                                api_types,
+                                api_before,
+                                api_after,
+                            )
+                            .await,
                         )?;
                         std::result::Result::Ok(output_ok)
                     })()
@@ -614,6 +888,45 @@ fn wire__crate__api__video_feed__fetch_related_videos_impl(
                         let output_ok = Ok::<_, ()>(
                             crate::api::video_feed::fetch_related_videos(api_context, api_bvid)
                                 .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__pgc__fetch_season_status_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_season_status",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::pgc::PgcContext>::sse_decode(&mut deserializer);
+            let api_season_id = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::pgc::fetch_season_status(api_context, api_season_id).await,
                         )?;
                         std::result::Result::Ok(output_ok)
                     })()
@@ -1823,6 +2136,84 @@ impl SseDecode for Vec<crate::api::media_select::FormatCandidateInput> {
     }
 }
 
+impl SseDecode for Vec<crate::api::pgc::PgcConditionFilter> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::pgc::PgcConditionFilter>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::pgc::PgcConditionOrder> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::pgc::PgcConditionOrder>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::pgc::PgcConditionValue> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::pgc::PgcConditionValue>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::pgc::PgcIndexItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::pgc::PgcIndexItem>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::pgc::PgcRankItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::pgc::PgcRankItem>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::pgc::PgcReviewItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::pgc::PgcReviewItem>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::api::video_feed::PopularSeriesListItem> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -2011,6 +2402,30 @@ impl SseDecode for Vec<crate::api::sponsor_block::SkipSegment> {
     }
 }
 
+impl SseDecode for Vec<crate::api::pgc::TimelineDay> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::pgc::TimelineDay>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::pgc::TimelineEpisode> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::pgc::TimelineEpisode>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::api::search::TitleSpan> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -2129,6 +2544,63 @@ impl SseDecode for Option<crate::api::search::OfficialVerify> {
     }
 }
 
+impl SseDecode for Option<crate::api::pgc::PgcIndexCondition> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::pgc::PgcIndexCondition>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::pgc::PgcIndexPage> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::pgc::PgcIndexPage>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::pgc::PgcReviewAuthor> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::pgc::PgcReviewAuthor>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::pgc::PgcReviewPage> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::pgc::PgcReviewPage>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::pgc::PgcReviewStat> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::pgc::PgcReviewStat>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
 impl SseDecode for Option<crate::api::video_feed::PopularPrecious> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -2175,6 +2647,17 @@ impl SseDecode for Option<crate::api::search::SearchAllData> {
             return Some(<crate::api::search::SearchAllData>::sse_decode(
                 deserializer,
             ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::pgc::SeasonStatus> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::pgc::SeasonStatus>::sse_decode(deserializer));
         } else {
             return None;
         }
@@ -2258,6 +2741,19 @@ impl SseDecode for Option<Vec<crate::api::video_feed::FeedVideoItem>> {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         if (<bool>::sse_decode(deserializer)) {
             return Some(<Vec<crate::api::video_feed::FeedVideoItem>>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<Vec<crate::api::pgc::PgcRankItem>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<Vec<crate::api::pgc::PgcRankItem>>::sse_decode(
                 deserializer,
             ));
         } else {
@@ -2378,6 +2874,316 @@ impl SseDecode for Option<Vec<crate::api::sponsor_block::SkipSegment>> {
         } else {
             return None;
         }
+    }
+}
+
+impl SseDecode for Option<Vec<crate::api::pgc::TimelineDay>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<Vec<crate::api::pgc::TimelineDay>>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for crate::api::pgc::PgcConditionFilter {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_field = <Option<String>>::sse_decode(deserializer);
+        let mut var_name = <Option<String>>::sse_decode(deserializer);
+        let mut var_values = <Vec<crate::api::pgc::PgcConditionValue>>::sse_decode(deserializer);
+        return crate::api::pgc::PgcConditionFilter {
+            field: var_field,
+            name: var_name,
+            values: var_values,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::PgcConditionOrder {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_field = <Option<String>>::sse_decode(deserializer);
+        let mut var_name = <Option<String>>::sse_decode(deserializer);
+        let mut var_sort = <Option<String>>::sse_decode(deserializer);
+        return crate::api::pgc::PgcConditionOrder {
+            field: var_field,
+            name: var_name,
+            sort: var_sort,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::PgcConditionValue {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_keyword = <Option<String>>::sse_decode(deserializer);
+        let mut var_name = <Option<String>>::sse_decode(deserializer);
+        return crate::api::pgc::PgcConditionValue {
+            keyword: var_keyword,
+            name: var_name,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::PgcContext {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_baseUrl = <String>::sse_decode(deserializer);
+        let mut var_cookie = <Option<String>>::sse_decode(deserializer);
+        let mut var_headers = <Vec<(String, String)>>::sse_decode(deserializer);
+        let mut var_mixinKey = <String>::sse_decode(deserializer);
+        let mut var_wts = <i64>::sse_decode(deserializer);
+        let mut var_timeoutMs = <u64>::sse_decode(deserializer);
+        let mut var_transport =
+            <crate::api::transport::TransportSettings>::sse_decode(deserializer);
+        return crate::api::pgc::PgcContext {
+            base_url: var_baseUrl,
+            cookie: var_cookie,
+            headers: var_headers,
+            mixin_key: var_mixinKey,
+            wts: var_wts,
+            timeout_ms: var_timeoutMs,
+            transport: var_transport,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::PgcIndexCondition {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_filter = <Vec<crate::api::pgc::PgcConditionFilter>>::sse_decode(deserializer);
+        let mut var_order = <Vec<crate::api::pgc::PgcConditionOrder>>::sse_decode(deserializer);
+        return crate::api::pgc::PgcIndexCondition {
+            filter: var_filter,
+            order: var_order,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::PgcIndexConditionResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data = <Option<crate::api::pgc::PgcIndexCondition>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::pgc::PgcIndexConditionResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::PgcIndexItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_badge = <Option<String>>::sse_decode(deserializer);
+        let mut var_cover = <Option<String>>::sse_decode(deserializer);
+        let mut var_indexShow = <Option<String>>::sse_decode(deserializer);
+        let mut var_order = <Option<String>>::sse_decode(deserializer);
+        let mut var_seasonId = <Option<i64>>::sse_decode(deserializer);
+        let mut var_title = <Option<String>>::sse_decode(deserializer);
+        return crate::api::pgc::PgcIndexItem {
+            badge: var_badge,
+            cover: var_cover,
+            index_show: var_indexShow,
+            order: var_order,
+            season_id: var_seasonId,
+            title: var_title,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::PgcIndexPage {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_hasNext = <Option<i64>>::sse_decode(deserializer);
+        let mut var_list = <Vec<crate::api::pgc::PgcIndexItem>>::sse_decode(deserializer);
+        return crate::api::pgc::PgcIndexPage {
+            has_next: var_hasNext,
+            list: var_list,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::PgcIndexQuery {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_page = <i64>::sse_decode(deserializer);
+        let mut var_filters = <Vec<(String, String)>>::sse_decode(deserializer);
+        let mut var_seasonType = <Option<i64>>::sse_decode(deserializer);
+        let mut var_indexType = <Option<i64>>::sse_decode(deserializer);
+        let mut var_type = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::pgc::PgcIndexQuery {
+            page: var_page,
+            filters: var_filters,
+            season_type: var_seasonType,
+            index_type: var_indexType,
+            type_: var_type,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::PgcIndexResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data = <Option<crate::api::pgc::PgcIndexPage>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::pgc::PgcIndexResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::PgcRankItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_cover = <Option<String>>::sse_decode(deserializer);
+        let mut var_newEpIndexShow = <Option<String>>::sse_decode(deserializer);
+        let mut var_follow = <i64>::sse_decode(deserializer);
+        let mut var_view = <i64>::sse_decode(deserializer);
+        let mut var_title = <Option<String>>::sse_decode(deserializer);
+        let mut var_url = <Option<String>>::sse_decode(deserializer);
+        return crate::api::pgc::PgcRankItem {
+            cover: var_cover,
+            new_ep_index_show: var_newEpIndexShow,
+            follow: var_follow,
+            view: var_view,
+            title: var_title,
+            url: var_url,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::PgcRankResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data = <Option<Vec<crate::api::pgc::PgcRankItem>>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::pgc::PgcRankResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::PgcReviewAuthor {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_avatar = <Option<String>>::sse_decode(deserializer);
+        let mut var_level = <Option<i64>>::sse_decode(deserializer);
+        let mut var_mid = <Option<i64>>::sse_decode(deserializer);
+        let mut var_uname = <Option<String>>::sse_decode(deserializer);
+        let mut var_vipType = <Option<i64>>::sse_decode(deserializer);
+        let mut var_vipStatus = <i64>::sse_decode(deserializer);
+        return crate::api::pgc::PgcReviewAuthor {
+            avatar: var_avatar,
+            level: var_level,
+            mid: var_mid,
+            uname: var_uname,
+            vip_type: var_vipType,
+            vip_status: var_vipStatus,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::PgcReviewItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_articleId = <Option<i64>>::sse_decode(deserializer);
+        let mut var_author = <Option<crate::api::pgc::PgcReviewAuthor>>::sse_decode(deserializer);
+        let mut var_title = <Option<String>>::sse_decode(deserializer);
+        let mut var_content = <Option<String>>::sse_decode(deserializer);
+        let mut var_pushTimeStr = <Option<String>>::sse_decode(deserializer);
+        let mut var_reviewId = <Option<i64>>::sse_decode(deserializer);
+        let mut var_score = <i64>::sse_decode(deserializer);
+        let mut var_stat = <Option<crate::api::pgc::PgcReviewStat>>::sse_decode(deserializer);
+        return crate::api::pgc::PgcReviewItem {
+            article_id: var_articleId,
+            author: var_author,
+            title: var_title,
+            content: var_content,
+            push_time_str: var_pushTimeStr,
+            review_id: var_reviewId,
+            score: var_score,
+            stat: var_stat,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::PgcReviewPage {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_list = <Vec<crate::api::pgc::PgcReviewItem>>::sse_decode(deserializer);
+        let mut var_next = <Option<String>>::sse_decode(deserializer);
+        let mut var_count = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::pgc::PgcReviewPage {
+            list: var_list,
+            next: var_next,
+            count: var_count,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::PgcReviewResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data = <Option<crate::api::pgc::PgcReviewPage>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::pgc::PgcReviewResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::PgcReviewStat {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_disliked = <Option<i64>>::sse_decode(deserializer);
+        let mut var_liked = <Option<i64>>::sse_decode(deserializer);
+        let mut var_likes = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::pgc::PgcReviewStat {
+            disliked: var_disliked,
+            liked: var_liked,
+            likes: var_likes,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::PgcTimelineResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data = <Option<Vec<crate::api::pgc::TimelineDay>>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::pgc::PgcTimelineResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
     }
 }
 
@@ -3122,6 +3928,34 @@ impl SseDecode for crate::api::search::SearchVideoResult {
     }
 }
 
+impl SseDecode for crate::api::pgc::SeasonStatus {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_follow = <Option<i64>>::sse_decode(deserializer);
+        let mut var_followStatus = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::pgc::SeasonStatus {
+            follow: var_follow,
+            follow_status: var_followStatus,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::SeasonStatusResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data = <Option<crate::api::pgc::SeasonStatus>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::pgc::SeasonStatusResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
 impl SseDecode for crate::api::sponsor_block::SkipSegment {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -3255,6 +4089,46 @@ impl SseDecode for crate::api::subtitle::SubtitleConvert {
             missing_body: var_missingBody,
             error_kind: var_errorKind,
             error_detail: var_errorDetail,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::TimelineDay {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_date = <Option<String>>::sse_decode(deserializer);
+        let mut var_dateTs = <Option<i64>>::sse_decode(deserializer);
+        let mut var_dayOfWeek = <Option<i64>>::sse_decode(deserializer);
+        let mut var_episodes = <Vec<crate::api::pgc::TimelineEpisode>>::sse_decode(deserializer);
+        let mut var_isToday = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::pgc::TimelineDay {
+            date: var_date,
+            date_ts: var_dateTs,
+            day_of_week: var_dayOfWeek,
+            episodes: var_episodes,
+            is_today: var_isToday,
+        };
+    }
+}
+
+impl SseDecode for crate::api::pgc::TimelineEpisode {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_cover = <Option<String>>::sse_decode(deserializer);
+        let mut var_episodeId = <Option<i64>>::sse_decode(deserializer);
+        let mut var_follow = <Option<i64>>::sse_decode(deserializer);
+        let mut var_pubIndex = <Option<String>>::sse_decode(deserializer);
+        let mut var_pubTime = <Option<String>>::sse_decode(deserializer);
+        let mut var_seasonId = <Option<i64>>::sse_decode(deserializer);
+        let mut var_title = <Option<String>>::sse_decode(deserializer);
+        return crate::api::pgc::TimelineEpisode {
+            cover: var_cover,
+            episode_id: var_episodeId,
+            follow: var_follow,
+            pub_index: var_pubIndex,
+            pub_time: var_pubTime,
+            season_id: var_seasonId,
+            title: var_title,
         };
     }
 }
@@ -3410,96 +4284,105 @@ fn pde_ffi_dispatcher_primary_impl(
             wire__crate__api__danmaku__danmaku_push_segment_impl(port, ptr, rust_vec_len, data_len)
         }
         8 => wire__crate__api__video_feed__fetch_hot_videos_impl(port, ptr, rust_vec_len, data_len),
-        9 => {
+        9 => wire__crate__api__pgc__fetch_pgc_default_index_impl(port, ptr, rust_vec_len, data_len),
+        10 => wire__crate__api__pgc__fetch_pgc_index_impl(port, ptr, rust_vec_len, data_len),
+        11 => {
+            wire__crate__api__pgc__fetch_pgc_index_condition_impl(port, ptr, rust_vec_len, data_len)
+        }
+        12 => wire__crate__api__pgc__fetch_pgc_rank_impl(port, ptr, rust_vec_len, data_len),
+        13 => wire__crate__api__pgc__fetch_pgc_reviews_impl(port, ptr, rust_vec_len, data_len),
+        14 => wire__crate__api__pgc__fetch_pgc_timeline_impl(port, ptr, rust_vec_len, data_len),
+        15 => {
             wire__crate__api__play_url_fetch__fetch_play_url_impl(port, ptr, rust_vec_len, data_len)
         }
-        10 => wire__crate__api__video_feed__fetch_popular_precious_impl(
+        16 => wire__crate__api__video_feed__fetch_popular_precious_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        11 => wire__crate__api__video_feed__fetch_popular_series_list_impl(
+        17 => wire__crate__api__video_feed__fetch_popular_series_list_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        12 => wire__crate__api__video_feed__fetch_popular_series_one_impl(
+        18 => wire__crate__api__video_feed__fetch_popular_series_one_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        13 => wire__crate__api__sponsor_block__fetch_port_video_impl(
+        19 => wire__crate__api__sponsor_block__fetch_port_video_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        14 => {
+        20 => {
             wire__crate__api__video_feed__fetch_rank_videos_impl(port, ptr, rust_vec_len, data_len)
         }
-        15 => wire__crate__api__video_feed__fetch_related_videos_impl(
+        21 => wire__crate__api__video_feed__fetch_related_videos_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        16 => wire__crate__api__sponsor_block__fetch_skip_segments_impl(
+        22 => wire__crate__api__pgc__fetch_season_status_impl(port, ptr, rust_vec_len, data_len),
+        23 => wire__crate__api__sponsor_block__fetch_skip_segments_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        17 => wire__crate__api__sponsor_block__fetch_sponsor_uptime_impl(
+        24 => wire__crate__api__sponsor_block__fetch_sponsor_uptime_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        18 => wire__crate__api__sponsor_block__fetch_sponsor_user_info_impl(
+        25 => wire__crate__api__sponsor_block__fetch_sponsor_user_info_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        19 => wire__crate__api__video_detail_fetch__fetch_video_detail_impl(
+        26 => wire__crate__api__video_detail_fetch__fetch_video_detail_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        20 => wire__crate__api__init__init_app_impl(port, ptr, rust_vec_len, data_len),
-        21 => wire__crate__api__dm_view__parse_dm_view_subtitles_impl(
+        27 => wire__crate__api__init__init_app_impl(port, ptr, rust_vec_len, data_len),
+        28 => wire__crate__api__dm_view__parse_dm_view_subtitles_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        22 => wire__crate__api__play_url__parse_play_url_impl(port, ptr, rust_vec_len, data_len),
-        23 => wire__crate__api__search_suggest__parse_search_suggest_impl(
+        29 => wire__crate__api__play_url__parse_play_url_impl(port, ptr, rust_vec_len, data_len),
+        30 => wire__crate__api__search_suggest__parse_search_suggest_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        24 => wire__crate__api__video_detail__parse_video_detail_impl(
+        31 => wire__crate__api__video_detail__parse_video_detail_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        25 => wire__crate__api__search__search_all_impl(port, ptr, rust_vec_len, data_len),
-        26 => wire__crate__api__search__search_article_impl(port, ptr, rust_vec_len, data_len),
-        27 => wire__crate__api__search__search_live_impl(port, ptr, rust_vec_len, data_len),
-        28 => wire__crate__api__search__search_pgc_impl(port, ptr, rust_vec_len, data_len),
-        29 => wire__crate__api__search__search_recommend_impl(port, ptr, rust_vec_len, data_len),
-        30 => wire__crate__api__search__search_trending_impl(port, ptr, rust_vec_len, data_len),
-        31 => wire__crate__api__search__search_user_impl(port, ptr, rust_vec_len, data_len),
-        32 => wire__crate__api__search__search_video_impl(port, ptr, rust_vec_len, data_len),
-        35 => wire__crate__api__wbi__wbi_mixin_key_impl(port, ptr, rust_vec_len, data_len),
-        36 => wire__crate__api__wbi__wbi_sign_impl(port, ptr, rust_vec_len, data_len),
+        32 => wire__crate__api__search__search_all_impl(port, ptr, rust_vec_len, data_len),
+        33 => wire__crate__api__search__search_article_impl(port, ptr, rust_vec_len, data_len),
+        34 => wire__crate__api__search__search_live_impl(port, ptr, rust_vec_len, data_len),
+        35 => wire__crate__api__search__search_pgc_impl(port, ptr, rust_vec_len, data_len),
+        36 => wire__crate__api__search__search_recommend_impl(port, ptr, rust_vec_len, data_len),
+        37 => wire__crate__api__search__search_trending_impl(port, ptr, rust_vec_len, data_len),
+        38 => wire__crate__api__search__search_user_impl(port, ptr, rust_vec_len, data_len),
+        39 => wire__crate__api__search__search_video_impl(port, ptr, rust_vec_len, data_len),
+        42 => wire__crate__api__wbi__wbi_mixin_key_impl(port, ptr, rust_vec_len, data_len),
+        43 => wire__crate__api__wbi__wbi_sign_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -3518,8 +4401,8 @@ fn pde_ffi_dispatcher_sync_impl(
         6 => {
             wire__crate__api__danmaku__danmaku_open_session_count_impl(ptr, rust_vec_len, data_len)
         }
-        33 => wire__crate__api__media_select__select_target_audio_impl(ptr, rust_vec_len, data_len),
-        34 => wire__crate__api__media_select__select_target_video_impl(ptr, rust_vec_len, data_len),
+        40 => wire__crate__api__media_select__select_target_audio_impl(ptr, rust_vec_len, data_len),
+        41 => wire__crate__api__media_select__select_target_video_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -3886,6 +4769,412 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::search::OfficialVerify>
     for crate::api::search::OfficialVerify
 {
     fn into_into_dart(self) -> crate::api::search::OfficialVerify {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::PgcConditionFilter {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.field.into_into_dart().into_dart(),
+            self.name.into_into_dart().into_dart(),
+            self.values.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::pgc::PgcConditionFilter
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::PgcConditionFilter>
+    for crate::api::pgc::PgcConditionFilter
+{
+    fn into_into_dart(self) -> crate::api::pgc::PgcConditionFilter {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::PgcConditionOrder {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.field.into_into_dart().into_dart(),
+            self.name.into_into_dart().into_dart(),
+            self.sort.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::pgc::PgcConditionOrder
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::PgcConditionOrder>
+    for crate::api::pgc::PgcConditionOrder
+{
+    fn into_into_dart(self) -> crate::api::pgc::PgcConditionOrder {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::PgcConditionValue {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.keyword.into_into_dart().into_dart(),
+            self.name.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::pgc::PgcConditionValue
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::PgcConditionValue>
+    for crate::api::pgc::PgcConditionValue
+{
+    fn into_into_dart(self) -> crate::api::pgc::PgcConditionValue {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::PgcContext {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.base_url.into_into_dart().into_dart(),
+            self.cookie.into_into_dart().into_dart(),
+            self.headers.into_into_dart().into_dart(),
+            self.mixin_key.into_into_dart().into_dart(),
+            self.wts.into_into_dart().into_dart(),
+            self.timeout_ms.into_into_dart().into_dart(),
+            self.transport.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::pgc::PgcContext {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::PgcContext>
+    for crate::api::pgc::PgcContext
+{
+    fn into_into_dart(self) -> crate::api::pgc::PgcContext {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::PgcIndexCondition {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.filter.into_into_dart().into_dart(),
+            self.order.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::pgc::PgcIndexCondition
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::PgcIndexCondition>
+    for crate::api::pgc::PgcIndexCondition
+{
+    fn into_into_dart(self) -> crate::api::pgc::PgcIndexCondition {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::PgcIndexConditionResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::pgc::PgcIndexConditionResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::PgcIndexConditionResult>
+    for crate::api::pgc::PgcIndexConditionResult
+{
+    fn into_into_dart(self) -> crate::api::pgc::PgcIndexConditionResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::PgcIndexItem {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.badge.into_into_dart().into_dart(),
+            self.cover.into_into_dart().into_dart(),
+            self.index_show.into_into_dart().into_dart(),
+            self.order.into_into_dart().into_dart(),
+            self.season_id.into_into_dart().into_dart(),
+            self.title.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::pgc::PgcIndexItem {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::PgcIndexItem>
+    for crate::api::pgc::PgcIndexItem
+{
+    fn into_into_dart(self) -> crate::api::pgc::PgcIndexItem {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::PgcIndexPage {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.has_next.into_into_dart().into_dart(),
+            self.list.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::pgc::PgcIndexPage {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::PgcIndexPage>
+    for crate::api::pgc::PgcIndexPage
+{
+    fn into_into_dart(self) -> crate::api::pgc::PgcIndexPage {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::PgcIndexQuery {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.page.into_into_dart().into_dart(),
+            self.filters.into_into_dart().into_dart(),
+            self.season_type.into_into_dart().into_dart(),
+            self.index_type.into_into_dart().into_dart(),
+            self.type_.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::pgc::PgcIndexQuery
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::PgcIndexQuery>
+    for crate::api::pgc::PgcIndexQuery
+{
+    fn into_into_dart(self) -> crate::api::pgc::PgcIndexQuery {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::PgcIndexResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::pgc::PgcIndexResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::PgcIndexResult>
+    for crate::api::pgc::PgcIndexResult
+{
+    fn into_into_dart(self) -> crate::api::pgc::PgcIndexResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::PgcRankItem {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.cover.into_into_dart().into_dart(),
+            self.new_ep_index_show.into_into_dart().into_dart(),
+            self.follow.into_into_dart().into_dart(),
+            self.view.into_into_dart().into_dart(),
+            self.title.into_into_dart().into_dart(),
+            self.url.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::pgc::PgcRankItem {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::PgcRankItem>
+    for crate::api::pgc::PgcRankItem
+{
+    fn into_into_dart(self) -> crate::api::pgc::PgcRankItem {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::PgcRankResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::pgc::PgcRankResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::PgcRankResult>
+    for crate::api::pgc::PgcRankResult
+{
+    fn into_into_dart(self) -> crate::api::pgc::PgcRankResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::PgcReviewAuthor {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.avatar.into_into_dart().into_dart(),
+            self.level.into_into_dart().into_dart(),
+            self.mid.into_into_dart().into_dart(),
+            self.uname.into_into_dart().into_dart(),
+            self.vip_type.into_into_dart().into_dart(),
+            self.vip_status.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::pgc::PgcReviewAuthor
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::PgcReviewAuthor>
+    for crate::api::pgc::PgcReviewAuthor
+{
+    fn into_into_dart(self) -> crate::api::pgc::PgcReviewAuthor {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::PgcReviewItem {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.article_id.into_into_dart().into_dart(),
+            self.author.into_into_dart().into_dart(),
+            self.title.into_into_dart().into_dart(),
+            self.content.into_into_dart().into_dart(),
+            self.push_time_str.into_into_dart().into_dart(),
+            self.review_id.into_into_dart().into_dart(),
+            self.score.into_into_dart().into_dart(),
+            self.stat.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::pgc::PgcReviewItem
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::PgcReviewItem>
+    for crate::api::pgc::PgcReviewItem
+{
+    fn into_into_dart(self) -> crate::api::pgc::PgcReviewItem {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::PgcReviewPage {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.list.into_into_dart().into_dart(),
+            self.next.into_into_dart().into_dart(),
+            self.count.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::pgc::PgcReviewPage
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::PgcReviewPage>
+    for crate::api::pgc::PgcReviewPage
+{
+    fn into_into_dart(self) -> crate::api::pgc::PgcReviewPage {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::PgcReviewResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::pgc::PgcReviewResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::PgcReviewResult>
+    for crate::api::pgc::PgcReviewResult
+{
+    fn into_into_dart(self) -> crate::api::pgc::PgcReviewResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::PgcReviewStat {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.disliked.into_into_dart().into_dart(),
+            self.liked.into_into_dart().into_dart(),
+            self.likes.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::pgc::PgcReviewStat
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::PgcReviewStat>
+    for crate::api::pgc::PgcReviewStat
+{
+    fn into_into_dart(self) -> crate::api::pgc::PgcReviewStat {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::PgcTimelineResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::pgc::PgcTimelineResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::PgcTimelineResult>
+    for crate::api::pgc::PgcTimelineResult
+{
+    fn into_into_dart(self) -> crate::api::pgc::PgcTimelineResult {
         self
     }
 }
@@ -4713,6 +6002,47 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::search::SearchVideoResult>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::SeasonStatus {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.follow.into_into_dart().into_dart(),
+            self.follow_status.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::pgc::SeasonStatus {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::SeasonStatus>
+    for crate::api::pgc::SeasonStatus
+{
+    fn into_into_dart(self) -> crate::api::pgc::SeasonStatus {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::SeasonStatusResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::pgc::SeasonStatusResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::SeasonStatusResult>
+    for crate::api::pgc::SeasonStatusResult
+{
+    fn into_into_dart(self) -> crate::api::pgc::SeasonStatusResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::sponsor_block::SkipSegment {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -4896,6 +6226,53 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::subtitle::SubtitleConvert>
     for crate::api::subtitle::SubtitleConvert
 {
     fn into_into_dart(self) -> crate::api::subtitle::SubtitleConvert {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::TimelineDay {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.date.into_into_dart().into_dart(),
+            self.date_ts.into_into_dart().into_dart(),
+            self.day_of_week.into_into_dart().into_dart(),
+            self.episodes.into_into_dart().into_dart(),
+            self.is_today.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::pgc::TimelineDay {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::TimelineDay>
+    for crate::api::pgc::TimelineDay
+{
+    fn into_into_dart(self) -> crate::api::pgc::TimelineDay {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::pgc::TimelineEpisode {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.cover.into_into_dart().into_dart(),
+            self.episode_id.into_into_dart().into_dart(),
+            self.follow.into_into_dart().into_dart(),
+            self.pub_index.into_into_dart().into_dart(),
+            self.pub_time.into_into_dart().into_dart(),
+            self.season_id.into_into_dart().into_dart(),
+            self.title.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::pgc::TimelineEpisode
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::pgc::TimelineEpisode>
+    for crate::api::pgc::TimelineEpisode
+{
+    fn into_into_dart(self) -> crate::api::pgc::TimelineEpisode {
         self
     }
 }
@@ -5293,6 +6670,66 @@ impl SseEncode for Vec<crate::api::media_select::FormatCandidateInput> {
     }
 }
 
+impl SseEncode for Vec<crate::api::pgc::PgcConditionFilter> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::pgc::PgcConditionFilter>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::pgc::PgcConditionOrder> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::pgc::PgcConditionOrder>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::pgc::PgcConditionValue> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::pgc::PgcConditionValue>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::pgc::PgcIndexItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::pgc::PgcIndexItem>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::pgc::PgcRankItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::pgc::PgcRankItem>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::pgc::PgcReviewItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::pgc::PgcReviewItem>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::api::video_feed::PopularSeriesListItem> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -5433,6 +6870,26 @@ impl SseEncode for Vec<crate::api::sponsor_block::SkipSegment> {
     }
 }
 
+impl SseEncode for Vec<crate::api::pgc::TimelineDay> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::pgc::TimelineDay>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::pgc::TimelineEpisode> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::pgc::TimelineEpisode>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::api::search::TitleSpan> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -5529,6 +6986,56 @@ impl SseEncode for Option<crate::api::search::OfficialVerify> {
     }
 }
 
+impl SseEncode for Option<crate::api::pgc::PgcIndexCondition> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::pgc::PgcIndexCondition>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::pgc::PgcIndexPage> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::pgc::PgcIndexPage>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::pgc::PgcReviewAuthor> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::pgc::PgcReviewAuthor>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::pgc::PgcReviewPage> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::pgc::PgcReviewPage>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::pgc::PgcReviewStat> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::pgc::PgcReviewStat>::sse_encode(value, serializer);
+        }
+    }
+}
+
 impl SseEncode for Option<crate::api::video_feed::PopularPrecious> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -5565,6 +7072,16 @@ impl SseEncode for Option<crate::api::search::SearchAllData> {
         <bool>::sse_encode(self.is_some(), serializer);
         if let Some(value) = self {
             <crate::api::search::SearchAllData>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::pgc::SeasonStatus> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::pgc::SeasonStatus>::sse_encode(value, serializer);
         }
     }
 }
@@ -5635,6 +7152,16 @@ impl SseEncode for Option<Vec<crate::api::video_feed::FeedVideoItem>> {
         <bool>::sse_encode(self.is_some(), serializer);
         if let Some(value) = self {
             <Vec<crate::api::video_feed::FeedVideoItem>>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<Vec<crate::api::pgc::PgcRankItem>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <Vec<crate::api::pgc::PgcRankItem>>::sse_encode(value, serializer);
         }
     }
 }
@@ -5726,6 +7253,200 @@ impl SseEncode for Option<Vec<crate::api::sponsor_block::SkipSegment>> {
         if let Some(value) = self {
             <Vec<crate::api::sponsor_block::SkipSegment>>::sse_encode(value, serializer);
         }
+    }
+}
+
+impl SseEncode for Option<Vec<crate::api::pgc::TimelineDay>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <Vec<crate::api::pgc::TimelineDay>>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for crate::api::pgc::PgcConditionFilter {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<String>>::sse_encode(self.field, serializer);
+        <Option<String>>::sse_encode(self.name, serializer);
+        <Vec<crate::api::pgc::PgcConditionValue>>::sse_encode(self.values, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::PgcConditionOrder {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<String>>::sse_encode(self.field, serializer);
+        <Option<String>>::sse_encode(self.name, serializer);
+        <Option<String>>::sse_encode(self.sort, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::PgcConditionValue {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<String>>::sse_encode(self.keyword, serializer);
+        <Option<String>>::sse_encode(self.name, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::PgcContext {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.base_url, serializer);
+        <Option<String>>::sse_encode(self.cookie, serializer);
+        <Vec<(String, String)>>::sse_encode(self.headers, serializer);
+        <String>::sse_encode(self.mixin_key, serializer);
+        <i64>::sse_encode(self.wts, serializer);
+        <u64>::sse_encode(self.timeout_ms, serializer);
+        <crate::api::transport::TransportSettings>::sse_encode(self.transport, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::PgcIndexCondition {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<crate::api::pgc::PgcConditionFilter>>::sse_encode(self.filter, serializer);
+        <Vec<crate::api::pgc::PgcConditionOrder>>::sse_encode(self.order, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::PgcIndexConditionResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<crate::api::pgc::PgcIndexCondition>>::sse_encode(self.data, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::PgcIndexItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<String>>::sse_encode(self.badge, serializer);
+        <Option<String>>::sse_encode(self.cover, serializer);
+        <Option<String>>::sse_encode(self.index_show, serializer);
+        <Option<String>>::sse_encode(self.order, serializer);
+        <Option<i64>>::sse_encode(self.season_id, serializer);
+        <Option<String>>::sse_encode(self.title, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::PgcIndexPage {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.has_next, serializer);
+        <Vec<crate::api::pgc::PgcIndexItem>>::sse_encode(self.list, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::PgcIndexQuery {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i64>::sse_encode(self.page, serializer);
+        <Vec<(String, String)>>::sse_encode(self.filters, serializer);
+        <Option<i64>>::sse_encode(self.season_type, serializer);
+        <Option<i64>>::sse_encode(self.index_type, serializer);
+        <Option<i64>>::sse_encode(self.type_, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::PgcIndexResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<crate::api::pgc::PgcIndexPage>>::sse_encode(self.data, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::PgcRankItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<String>>::sse_encode(self.cover, serializer);
+        <Option<String>>::sse_encode(self.new_ep_index_show, serializer);
+        <i64>::sse_encode(self.follow, serializer);
+        <i64>::sse_encode(self.view, serializer);
+        <Option<String>>::sse_encode(self.title, serializer);
+        <Option<String>>::sse_encode(self.url, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::PgcRankResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<Vec<crate::api::pgc::PgcRankItem>>>::sse_encode(self.data, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::PgcReviewAuthor {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<String>>::sse_encode(self.avatar, serializer);
+        <Option<i64>>::sse_encode(self.level, serializer);
+        <Option<i64>>::sse_encode(self.mid, serializer);
+        <Option<String>>::sse_encode(self.uname, serializer);
+        <Option<i64>>::sse_encode(self.vip_type, serializer);
+        <i64>::sse_encode(self.vip_status, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::PgcReviewItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.article_id, serializer);
+        <Option<crate::api::pgc::PgcReviewAuthor>>::sse_encode(self.author, serializer);
+        <Option<String>>::sse_encode(self.title, serializer);
+        <Option<String>>::sse_encode(self.content, serializer);
+        <Option<String>>::sse_encode(self.push_time_str, serializer);
+        <Option<i64>>::sse_encode(self.review_id, serializer);
+        <i64>::sse_encode(self.score, serializer);
+        <Option<crate::api::pgc::PgcReviewStat>>::sse_encode(self.stat, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::PgcReviewPage {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<crate::api::pgc::PgcReviewItem>>::sse_encode(self.list, serializer);
+        <Option<String>>::sse_encode(self.next, serializer);
+        <Option<i64>>::sse_encode(self.count, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::PgcReviewResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<crate::api::pgc::PgcReviewPage>>::sse_encode(self.data, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::PgcReviewStat {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.disliked, serializer);
+        <Option<i64>>::sse_encode(self.liked, serializer);
+        <Option<i64>>::sse_encode(self.likes, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::PgcTimelineResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<Vec<crate::api::pgc::TimelineDay>>>::sse_encode(self.data, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
     }
 }
 
@@ -6159,6 +7880,24 @@ impl SseEncode for crate::api::search::SearchVideoResult {
     }
 }
 
+impl SseEncode for crate::api::pgc::SeasonStatus {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.follow, serializer);
+        <Option<i64>>::sse_encode(self.follow_status, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::SeasonStatusResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<crate::api::pgc::SeasonStatus>>::sse_encode(self.data, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
 impl SseEncode for crate::api::sponsor_block::SkipSegment {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -6239,6 +7978,30 @@ impl SseEncode for crate::api::subtitle::SubtitleConvert {
         <bool>::sse_encode(self.missing_body, serializer);
         <Option<String>>::sse_encode(self.error_kind, serializer);
         <Option<String>>::sse_encode(self.error_detail, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::TimelineDay {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<String>>::sse_encode(self.date, serializer);
+        <Option<i64>>::sse_encode(self.date_ts, serializer);
+        <Option<i64>>::sse_encode(self.day_of_week, serializer);
+        <Vec<crate::api::pgc::TimelineEpisode>>::sse_encode(self.episodes, serializer);
+        <Option<i64>>::sse_encode(self.is_today, serializer);
+    }
+}
+
+impl SseEncode for crate::api::pgc::TimelineEpisode {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<String>>::sse_encode(self.cover, serializer);
+        <Option<i64>>::sse_encode(self.episode_id, serializer);
+        <Option<i64>>::sse_encode(self.follow, serializer);
+        <Option<String>>::sse_encode(self.pub_index, serializer);
+        <Option<String>>::sse_encode(self.pub_time, serializer);
+        <Option<i64>>::sse_encode(self.season_id, serializer);
+        <Option<String>>::sse_encode(self.title, serializer);
     }
 }
 

@@ -4,6 +4,7 @@ pub mod danmaku;
 pub mod dm_view;
 pub mod init;
 pub mod media_select;
+pub mod pgc;
 pub mod play_url;
 pub mod play_url_fetch;
 pub mod search;

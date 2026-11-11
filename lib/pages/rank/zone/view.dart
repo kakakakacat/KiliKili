@@ -71,7 +71,7 @@ class _ZonePageState extends State<ZonePage>
                         ..refresh(),
                     );
                   }
-                  return PgcRankItem(item: item);
+                  return PgcRankCard(item: item);
                 },
                 itemCount: response.length,
               )

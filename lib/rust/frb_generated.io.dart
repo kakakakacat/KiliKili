@@ -7,6 +7,7 @@ import 'package:kilikili/rust/api/danmaku.dart';
 import 'package:kilikili/rust/api/dm_view.dart';
 import 'package:kilikili/rust/api/init.dart';
 import 'package:kilikili/rust/api/media_select.dart';
+import 'package:kilikili/rust/api/pgc.dart';
 import 'package:kilikili/rust/api/play_url.dart';
 import 'package:kilikili/rust/api/play_url_fetch.dart';
 import 'package:kilikili/rust/api/search.dart';
@@ -67,6 +68,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   OfficialVerify dco_decode_box_autoadd_official_verify(dynamic raw);
 
   @protected
+  PgcContext dco_decode_box_autoadd_pgc_context(dynamic raw);
+
+  @protected
+  PgcIndexCondition dco_decode_box_autoadd_pgc_index_condition(dynamic raw);
+
+  @protected
+  PgcIndexPage dco_decode_box_autoadd_pgc_index_page(dynamic raw);
+
+  @protected
+  PgcIndexQuery dco_decode_box_autoadd_pgc_index_query(dynamic raw);
+
+  @protected
+  PgcReviewAuthor dco_decode_box_autoadd_pgc_review_author(dynamic raw);
+
+  @protected
+  PgcReviewPage dco_decode_box_autoadd_pgc_review_page(dynamic raw);
+
+  @protected
+  PgcReviewStat dco_decode_box_autoadd_pgc_review_stat(dynamic raw);
+
+  @protected
   PlayUrlRequest dco_decode_box_autoadd_play_url_request(dynamic raw);
 
   @protected
@@ -86,6 +108,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SearchQuery dco_decode_box_autoadd_search_query(dynamic raw);
+
+  @protected
+  SeasonStatus dco_decode_box_autoadd_season_status(dynamic raw);
 
   @protected
   SponsorBlockContext dco_decode_box_autoadd_sponsor_block_context(dynamic raw);
@@ -164,6 +189,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<PgcConditionFilter> dco_decode_list_pgc_condition_filter(dynamic raw);
+
+  @protected
+  List<PgcConditionOrder> dco_decode_list_pgc_condition_order(dynamic raw);
+
+  @protected
+  List<PgcConditionValue> dco_decode_list_pgc_condition_value(dynamic raw);
+
+  @protected
+  List<PgcIndexItem> dco_decode_list_pgc_index_item(dynamic raw);
+
+  @protected
+  List<PgcRankItem> dco_decode_list_pgc_rank_item(dynamic raw);
+
+  @protected
+  List<PgcReviewItem> dco_decode_list_pgc_review_item(dynamic raw);
+
+  @protected
   List<PopularSeriesListItem> dco_decode_list_popular_series_list_item(
     dynamic raw,
   );
@@ -214,6 +257,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<SkipSegment> dco_decode_list_skip_segment(dynamic raw);
 
   @protected
+  List<TimelineDay> dco_decode_list_timeline_day(dynamic raw);
+
+  @protected
+  List<TimelineEpisode> dco_decode_list_timeline_episode(dynamic raw);
+
+  @protected
   List<TitleSpan> dco_decode_list_title_span(dynamic raw);
 
   @protected
@@ -244,6 +293,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   OfficialVerify? dco_decode_opt_box_autoadd_official_verify(dynamic raw);
 
   @protected
+  PgcIndexCondition? dco_decode_opt_box_autoadd_pgc_index_condition(
+    dynamic raw,
+  );
+
+  @protected
+  PgcIndexPage? dco_decode_opt_box_autoadd_pgc_index_page(dynamic raw);
+
+  @protected
+  PgcReviewAuthor? dco_decode_opt_box_autoadd_pgc_review_author(dynamic raw);
+
+  @protected
+  PgcReviewPage? dco_decode_opt_box_autoadd_pgc_review_page(dynamic raw);
+
+  @protected
+  PgcReviewStat? dco_decode_opt_box_autoadd_pgc_review_stat(dynamic raw);
+
+  @protected
   PopularPrecious? dco_decode_opt_box_autoadd_popular_precious(dynamic raw);
 
   @protected
@@ -256,6 +322,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SearchAllData? dco_decode_opt_box_autoadd_search_all_data(dynamic raw);
+
+  @protected
+  SeasonStatus? dco_decode_opt_box_autoadd_season_status(dynamic raw);
 
   @protected
   SponsorUserInfo? dco_decode_opt_box_autoadd_sponsor_user_info(dynamic raw);
@@ -279,6 +348,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<FeedVideoItem>? dco_decode_opt_list_feed_video_item(dynamic raw);
+
+  @protected
+  List<PgcRankItem>? dco_decode_opt_list_pgc_rank_item(dynamic raw);
 
   @protected
   List<PopularSeriesListItem>? dco_decode_opt_list_popular_series_list_item(
@@ -310,6 +382,63 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SkipSegment>? dco_decode_opt_list_skip_segment(dynamic raw);
+
+  @protected
+  List<TimelineDay>? dco_decode_opt_list_timeline_day(dynamic raw);
+
+  @protected
+  PgcConditionFilter dco_decode_pgc_condition_filter(dynamic raw);
+
+  @protected
+  PgcConditionOrder dco_decode_pgc_condition_order(dynamic raw);
+
+  @protected
+  PgcConditionValue dco_decode_pgc_condition_value(dynamic raw);
+
+  @protected
+  PgcContext dco_decode_pgc_context(dynamic raw);
+
+  @protected
+  PgcIndexCondition dco_decode_pgc_index_condition(dynamic raw);
+
+  @protected
+  PgcIndexConditionResult dco_decode_pgc_index_condition_result(dynamic raw);
+
+  @protected
+  PgcIndexItem dco_decode_pgc_index_item(dynamic raw);
+
+  @protected
+  PgcIndexPage dco_decode_pgc_index_page(dynamic raw);
+
+  @protected
+  PgcIndexQuery dco_decode_pgc_index_query(dynamic raw);
+
+  @protected
+  PgcIndexResult dco_decode_pgc_index_result(dynamic raw);
+
+  @protected
+  PgcRankItem dco_decode_pgc_rank_item(dynamic raw);
+
+  @protected
+  PgcRankResult dco_decode_pgc_rank_result(dynamic raw);
+
+  @protected
+  PgcReviewAuthor dco_decode_pgc_review_author(dynamic raw);
+
+  @protected
+  PgcReviewItem dco_decode_pgc_review_item(dynamic raw);
+
+  @protected
+  PgcReviewPage dco_decode_pgc_review_page(dynamic raw);
+
+  @protected
+  PgcReviewResult dco_decode_pgc_review_result(dynamic raw);
+
+  @protected
+  PgcReviewStat dco_decode_pgc_review_stat(dynamic raw);
+
+  @protected
+  PgcTimelineResult dco_decode_pgc_timeline_result(dynamic raw);
 
   @protected
   PlayUrlFetch dco_decode_play_url_fetch(dynamic raw);
@@ -408,6 +537,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SearchVideoResult dco_decode_search_video_result(dynamic raw);
 
   @protected
+  SeasonStatus dco_decode_season_status(dynamic raw);
+
+  @protected
+  SeasonStatusResult dco_decode_season_status_result(dynamic raw);
+
+  @protected
   SkipSegment dco_decode_skip_segment(dynamic raw);
 
   @protected
@@ -430,6 +565,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SubtitleConvert dco_decode_subtitle_convert(dynamic raw);
+
+  @protected
+  TimelineDay dco_decode_timeline_day(dynamic raw);
+
+  @protected
+  TimelineEpisode dco_decode_timeline_episode(dynamic raw);
 
   @protected
   TitleSpan dco_decode_title_span(dynamic raw);
@@ -504,6 +645,39 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  PgcContext sse_decode_box_autoadd_pgc_context(SseDeserializer deserializer);
+
+  @protected
+  PgcIndexCondition sse_decode_box_autoadd_pgc_index_condition(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcIndexPage sse_decode_box_autoadd_pgc_index_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcIndexQuery sse_decode_box_autoadd_pgc_index_query(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcReviewAuthor sse_decode_box_autoadd_pgc_review_author(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcReviewPage sse_decode_box_autoadd_pgc_review_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcReviewStat sse_decode_box_autoadd_pgc_review_stat(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   PlayUrlRequest sse_decode_box_autoadd_play_url_request(
     SseDeserializer deserializer,
   );
@@ -535,6 +709,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SearchQuery sse_decode_box_autoadd_search_query(SseDeserializer deserializer);
+
+  @protected
+  SeasonStatus sse_decode_box_autoadd_season_status(
+    SseDeserializer deserializer,
+  );
 
   @protected
   SponsorBlockContext sse_decode_box_autoadd_sponsor_block_context(
@@ -637,6 +816,34 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<PgcConditionFilter> sse_decode_list_pgc_condition_filter(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<PgcConditionOrder> sse_decode_list_pgc_condition_order(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<PgcConditionValue> sse_decode_list_pgc_condition_value(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<PgcIndexItem> sse_decode_list_pgc_index_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<PgcRankItem> sse_decode_list_pgc_rank_item(SseDeserializer deserializer);
+
+  @protected
+  List<PgcReviewItem> sse_decode_list_pgc_review_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<PopularSeriesListItem> sse_decode_list_popular_series_list_item(
     SseDeserializer deserializer,
   );
@@ -705,6 +912,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<SkipSegment> sse_decode_list_skip_segment(SseDeserializer deserializer);
 
   @protected
+  List<TimelineDay> sse_decode_list_timeline_day(SseDeserializer deserializer);
+
+  @protected
+  List<TimelineEpisode> sse_decode_list_timeline_episode(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<TitleSpan> sse_decode_list_title_span(SseDeserializer deserializer);
 
   @protected
@@ -741,6 +956,31 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  PgcIndexCondition? sse_decode_opt_box_autoadd_pgc_index_condition(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcIndexPage? sse_decode_opt_box_autoadd_pgc_index_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcReviewAuthor? sse_decode_opt_box_autoadd_pgc_review_author(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcReviewPage? sse_decode_opt_box_autoadd_pgc_review_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcReviewStat? sse_decode_opt_box_autoadd_pgc_review_stat(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   PopularPrecious? sse_decode_opt_box_autoadd_popular_precious(
     SseDeserializer deserializer,
   );
@@ -757,6 +997,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SearchAllData? sse_decode_opt_box_autoadd_search_all_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SeasonStatus? sse_decode_opt_box_autoadd_season_status(
     SseDeserializer deserializer,
   );
 
@@ -786,6 +1031,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<FeedVideoItem>? sse_decode_opt_list_feed_video_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<PgcRankItem>? sse_decode_opt_list_pgc_rank_item(
     SseDeserializer deserializer,
   );
 
@@ -829,6 +1079,77 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SkipSegment>? sse_decode_opt_list_skip_segment(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<TimelineDay>? sse_decode_opt_list_timeline_day(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcConditionFilter sse_decode_pgc_condition_filter(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcConditionOrder sse_decode_pgc_condition_order(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcConditionValue sse_decode_pgc_condition_value(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcContext sse_decode_pgc_context(SseDeserializer deserializer);
+
+  @protected
+  PgcIndexCondition sse_decode_pgc_index_condition(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcIndexConditionResult sse_decode_pgc_index_condition_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcIndexItem sse_decode_pgc_index_item(SseDeserializer deserializer);
+
+  @protected
+  PgcIndexPage sse_decode_pgc_index_page(SseDeserializer deserializer);
+
+  @protected
+  PgcIndexQuery sse_decode_pgc_index_query(SseDeserializer deserializer);
+
+  @protected
+  PgcIndexResult sse_decode_pgc_index_result(SseDeserializer deserializer);
+
+  @protected
+  PgcRankItem sse_decode_pgc_rank_item(SseDeserializer deserializer);
+
+  @protected
+  PgcRankResult sse_decode_pgc_rank_result(SseDeserializer deserializer);
+
+  @protected
+  PgcReviewAuthor sse_decode_pgc_review_author(SseDeserializer deserializer);
+
+  @protected
+  PgcReviewItem sse_decode_pgc_review_item(SseDeserializer deserializer);
+
+  @protected
+  PgcReviewPage sse_decode_pgc_review_page(SseDeserializer deserializer);
+
+  @protected
+  PgcReviewResult sse_decode_pgc_review_result(SseDeserializer deserializer);
+
+  @protected
+  PgcReviewStat sse_decode_pgc_review_stat(SseDeserializer deserializer);
+
+  @protected
+  PgcTimelineResult sse_decode_pgc_timeline_result(
     SseDeserializer deserializer,
   );
 
@@ -955,6 +1276,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SeasonStatus sse_decode_season_status(SseDeserializer deserializer);
+
+  @protected
+  SeasonStatusResult sse_decode_season_status_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SkipSegment sse_decode_skip_segment(SseDeserializer deserializer);
 
   @protected
@@ -987,6 +1316,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SubtitleConvert sse_decode_subtitle_convert(SseDeserializer deserializer);
+
+  @protected
+  TimelineDay sse_decode_timeline_day(SseDeserializer deserializer);
+
+  @protected
+  TimelineEpisode sse_decode_timeline_episode(SseDeserializer deserializer);
 
   @protected
   TitleSpan sse_decode_title_span(SseDeserializer deserializer);
@@ -1079,6 +1414,48 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_pgc_context(
+    PgcContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_pgc_index_condition(
+    PgcIndexCondition self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_pgc_index_page(
+    PgcIndexPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_pgc_index_query(
+    PgcIndexQuery self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_pgc_review_author(
+    PgcReviewAuthor self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_pgc_review_page(
+    PgcReviewPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_pgc_review_stat(
+    PgcReviewStat self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_play_url_request(
     PlayUrlRequest self,
     SseSerializer serializer,
@@ -1117,6 +1494,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_search_query(
     SearchQuery self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_season_status(
+    SeasonStatus self,
     SseSerializer serializer,
   );
 
@@ -1238,6 +1621,42 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_pgc_condition_filter(
+    List<PgcConditionFilter> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_pgc_condition_order(
+    List<PgcConditionOrder> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_pgc_condition_value(
+    List<PgcConditionValue> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_pgc_index_item(
+    List<PgcIndexItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_pgc_rank_item(
+    List<PgcRankItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_pgc_review_item(
+    List<PgcReviewItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_popular_series_list_item(
     List<PopularSeriesListItem> self,
     SseSerializer serializer,
@@ -1331,6 +1750,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_timeline_day(
+    List<TimelineDay> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_timeline_episode(
+    List<TimelineEpisode> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_title_span(
     List<TitleSpan> self,
     SseSerializer serializer,
@@ -1379,6 +1810,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_pgc_index_condition(
+    PgcIndexCondition? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_pgc_index_page(
+    PgcIndexPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_pgc_review_author(
+    PgcReviewAuthor? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_pgc_review_page(
+    PgcReviewPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_pgc_review_stat(
+    PgcReviewStat? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_popular_precious(
     PopularPrecious? self,
     SseSerializer serializer,
@@ -1399,6 +1860,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_search_all_data(
     SearchAllData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_season_status(
+    SeasonStatus? self,
     SseSerializer serializer,
   );
 
@@ -1432,6 +1899,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_feed_video_item(
     List<FeedVideoItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_pgc_rank_item(
+    List<PgcRankItem>? self,
     SseSerializer serializer,
   );
 
@@ -1486,6 +1959,93 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_skip_segment(
     List<SkipSegment>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_timeline_day(
+    List<TimelineDay>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_pgc_condition_filter(
+    PgcConditionFilter self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_pgc_condition_order(
+    PgcConditionOrder self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_pgc_condition_value(
+    PgcConditionValue self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_pgc_context(PgcContext self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_pgc_index_condition(
+    PgcIndexCondition self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_pgc_index_condition_result(
+    PgcIndexConditionResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_pgc_index_item(PgcIndexItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_pgc_index_page(PgcIndexPage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_pgc_index_query(PgcIndexQuery self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_pgc_index_result(
+    PgcIndexResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_pgc_rank_item(PgcRankItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_pgc_rank_result(PgcRankResult self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_pgc_review_author(
+    PgcReviewAuthor self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_pgc_review_item(PgcReviewItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_pgc_review_page(PgcReviewPage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_pgc_review_result(
+    PgcReviewResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_pgc_review_stat(PgcReviewStat self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_pgc_timeline_result(
+    PgcTimelineResult self,
     SseSerializer serializer,
   );
 
@@ -1658,6 +2218,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_season_status(SeasonStatus self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_season_status_result(
+    SeasonStatusResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_skip_segment(SkipSegment self, SseSerializer serializer);
 
   @protected
@@ -1699,6 +2268,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_subtitle_convert(
     SubtitleConvert self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_timeline_day(TimelineDay self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_timeline_episode(
+    TimelineEpisode self,
     SseSerializer serializer,
   );
 

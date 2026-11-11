@@ -6,13 +6,11 @@ import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/self_sized_horizontal_list.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models_new/pgc/pgc_index_condition/data.dart';
-import 'package:kilikili/models_new/pgc/pgc_index_condition/sort.dart';
-import 'package:kilikili/models_new/pgc/pgc_index_condition/value.dart';
-import 'package:kilikili/models_new/pgc/pgc_index_result/list.dart';
 import 'package:kilikili/pages/pgc_index/controller.dart';
 import 'package:kilikili/pages/pgc_index/widgets/pgc_card_v_pgc_index.dart';
 import 'package:kilikili/pages/search/widgets/search_text.dart';
 import 'package:kilikili/utils/grid.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 

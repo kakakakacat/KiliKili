@@ -14,7 +14,6 @@ import 'package:kilikili/models/home/rcmd/result.dart';
 import 'package:kilikili/models/model_rec_video_item.dart';
 import 'package:kilikili/models/pgc_lcf.dart';
 import 'package:kilikili/models/video/play/url.dart';
-import 'package:kilikili/models_new/pgc/pgc_rank/pgc_rank_item_model.dart';
 import 'package:kilikili/models_new/triple/pgc_triple.dart';
 import 'package:kilikili/models_new/triple/ugc_triple.dart';
 import 'package:kilikili/models_new/video/video_ai_conclusion/data.dart';
@@ -956,52 +955,9 @@ abstract final class VideoHttp {
     return null;
   }
 
-  // 视频排行
-  // pgc 排行
-  static Future<LoadingState<List<PgcRankItemModel>?>> pgcRankList({
-    int day = 3,
-    required int seasonType,
-  }) async {
-    final res = await Request().get(
-      Api.pgcRank,
-      queryParameters: await WbiSign.makSign({
-        'day': day,
-        'season_type': seasonType,
-      }),
-    );
-    if (res.data['code'] == 0) {
-      return Success(
-        (res.data['result']?['list'] as List?)
-            ?.map((e) => PgcRankItemModel.fromJson(e))
-            .toList(),
-      );
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  // pgc season 排行
-  static Future<LoadingState<List<PgcRankItemModel>?>> pgcSeasonRankList({
-    int day = 3,
-    required int seasonType,
-  }) async {
-    final res = await Request().get(
-      Api.pgcSeasonRank,
-      queryParameters: await WbiSign.makSign({
-        'day': day,
-        'season_type': seasonType,
-      }),
-    );
-    if (res.data['code'] == 0) {
-      return Success(
-        (res.data['data']?['list'] as List?)
-            ?.map((e) => PgcRankItemModel.fromJson(e))
-            .toList(),
-      );
-    } else {
-      return Error(res.data['message']);
-    }
-  }
+  // pgc 的两种排行榜已迁到 Rust（S10 第一批 / issue #60）：
+  // `lib/services/rust/rust_pgc.dart` 的 `RustPgc.rank`。
+  // 它们原本住在本文件只是归档位置的问题，模型（PgcRankItem）属 PGC 域。
 
   static Future<LoadingState<VideoNoteData>> getVideoNoteList({
     dynamic oid,

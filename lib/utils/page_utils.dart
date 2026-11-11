@@ -33,6 +33,8 @@ import 'package:kilikili/utils/reply_scheme_helper.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:kilikili/utils/url_utils.dart';
 import 'package:kilikili/utils/utils.dart';
+import 'package:kilikili/services/rust/pgc_detail_compat.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -41,6 +43,17 @@ import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 abstract final class PageUtils {
+  /// 把 `Object?` 形态的 id 归一成 int。
+  ///
+  /// 番剧入口的 seasonId 有的调用点给 int、有的从 URL 里取到字符串，
+  /// 基线把它原样拼进查询串所以两种都能用。迁到 Rust 之后参数是 i64，
+  /// 这里按同样的宽容度转一次，而不是让字符串那一路静默失效。
+  static int? _asInt(Object? value) => switch (value) {
+    final int v => v,
+    final String v => int.tryParse(v),
+    _ => null,
+  };
+
   static RelativeRect menuPosition(Offset offset) {
     return .fromLTRB(offset.dx, offset.dy, offset.dx, 0);
   }
@@ -619,10 +632,14 @@ abstract final class PageUtils {
   }) async {
     try {
       SmartDialog.showLoading(msg: '资源获取中');
-      final res = await SearchHttp.pgcInfo(seasonId: seasonId, epId: epId);
+      final res = await RustPgc.seasonDetail(
+        pugv: false,
+        seasonId: _asInt(seasonId),
+        epId: epId,
+      );
       SmartDialog.dismiss();
       if (res case Success(:final response)) {
-        final (EpisodeItem? episode, int? sectionIndex) = response.findEpisode(
+        final (PgcEpisode? episode, int? sectionIndex) = response.findEpisode(
           epId,
         );
 
@@ -666,16 +683,20 @@ abstract final class PageUtils {
   }) async {
     try {
       SmartDialog.showLoading(msg: '资源获取中');
-      final res = await SearchHttp.pugvInfo(seasonId: seasonId, epId: epId);
+      final res = await RustPgc.seasonDetail(
+        pugv: true,
+        seasonId: _asInt(seasonId),
+        epId: epId,
+      );
       SmartDialog.dismiss();
       if (res case Success(:final response)) {
         final episodes = response.episodes;
-        if (episodes != null && episodes.isNotEmpty) {
-          EpisodeItem? episode;
+        if (episodes.isNotEmpty) {
+          PgcEpisode? episode;
           if (aid != null) {
             episode = episodes.firstWhereOrNull((e) => e.aid == aid);
           } else {
-            epId ??= response.userStatus?.progress?.lastEpId;
+            epId ??= response.userStatus?.lastEpId;
             if (epId != null) {
               episode = episodes.firstWhereOrNull((e) => e.id == epId);
             }

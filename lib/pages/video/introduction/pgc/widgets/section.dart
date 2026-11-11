@@ -4,7 +4,6 @@ import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/models_new/pgc/pgc_info_model/episode.dart';
-import 'package:kilikili/models_new/pgc/pgc_info_model/section.dart';
 import 'package:kilikili/models_new/video/video_detail/episode.dart'
     hide EpisodeItem;
 import 'package:kilikili/pages/video/introduction/pgc/controller.dart';
@@ -14,6 +13,8 @@ import 'package:kilikili/utils/duration_utils.dart';
 import 'package:kilikili/utils/extension/iterable_ext.dart';
 import 'package:kilikili/utils/extension/scroll_controller_ext.dart';
 import 'package:kilikili/utils/scroll_offset_helper.dart';
+import 'package:kilikili/services/rust/pgc_detail_compat.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
@@ -40,7 +41,7 @@ class _SectionPanelState extends State<SectionPanel> {
   int? _seasonId;
   int get _index => _pgcController.pvIndex;
   bool get _isSection => _pgcController.episodeType == .section;
-  late List<Section> _sections;
+  late List<PgcSection> _sections;
   late List<EpisodeItem> _episodes;
 
   late final _pgcController = widget.pgcController;
@@ -122,8 +123,8 @@ class _SectionPanelState extends State<SectionPanel> {
     final item = _pgcController.pgcItem;
     if (!item.hasSections) return const (true, true);
     _seasonId = _pgcController.seasonId;
-    _sections = item.sections!;
-    _episodes = _sections[_sectionIndex].episodes!;
+    _sections = item.sections;
+    _episodes = _pgcController.sectionEpisodes[_sectionIndex];
     return const (true, false);
   }
 
@@ -141,7 +142,7 @@ class _SectionPanelState extends State<SectionPanel> {
   void _updateSection(int sectionIndex) {
     if (_sectionIndex == sectionIndex) return;
     _pgcController.sectionIndex = sectionIndex;
-    _episodes = _sections[sectionIndex].episodes!;
+    _episodes = _pgcController.sectionEpisodes[sectionIndex];
     setState(() {});
     final episode = _episodes.getOrNull(_index);
     if (episode?.cid == _pgcController.cid.rawValue) {

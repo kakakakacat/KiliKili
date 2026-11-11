@@ -29,7 +29,6 @@ import 'package:kilikili/models/common/video/video_type.dart';
 import 'package:kilikili/models/video/play/url.dart';
 import 'package:kilikili/models_new/download/bili_download_entry_info.dart';
 import 'package:kilikili/models_new/media_list/media_list.dart';
-import 'package:kilikili/models_new/pgc/pgc_info_model/result.dart';
 import 'package:kilikili/models_new/video/video_detail/data.dart';
 import 'package:kilikili/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:kilikili/models_new/video/video_pbp/data.dart';
@@ -70,6 +69,7 @@ import 'package:kilikili/utils/subtitle_utils.dart';
 import 'package:kilikili/utils/theme_utils.dart';
 import 'package:kilikili/utils/utils.dart';
 import 'package:kilikili/utils/video_utils.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart' show Options;
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart'
@@ -1474,7 +1474,7 @@ class VideoDetailController extends GetxController
   Future<void> onDownload(BuildContext context) async {
     VideoDetailData? videoDetail;
     List<ugc.BaseEpisodeItem>? episodes;
-    PgcInfoModel? pgcItem;
+    PgcSeasonDetail? pgcItem;
     if (isUgc) {
       try {
         videoDetail = ugcIntroCtr.videoDetail.value;
@@ -1496,7 +1496,8 @@ class VideoDetailController extends GetxController
     } else {
       try {
         pgcItem = pgcIntroCtr.pgcItem;
-        episodes = pgcItem.episodes;
+        // 下载面板也走共享基类，取适配过的那一份。
+        episodes = pgcIntroCtr.mainEpisodes;
       } catch (e, s) {
         if (kDebugMode) {
           debugPrint('download pgc: $e\n\n$s');

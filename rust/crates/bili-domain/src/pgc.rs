@@ -184,3 +184,168 @@ pub struct PgcRankItem {
     pub title: Option<String>,
     pub url: Option<String>,
 }
+
+// ------------------------------------------------------------ 番剧详情
+
+/// 番剧 / 课堂详情（`pgcInfo` / `pugvInfo`，S10 第二批 / issue #60）。
+///
+/// ## 单字段包装一律摊平
+///
+/// 基线有五个只装着一个字段的壳：`Area{name}`、`NewEp{desc,title}`、
+/// `Publish{pub_time_show}`、`Rating{score}`、`Brief{img}`。它们在协议上
+/// 没有各自的含义，摊平后调用点少一层 `?.`，也少五个只为穿透而存在的
+/// Dart 模型。
+///
+/// ## 没有摊平的那几个
+///
+/// `stat` / `up` / `user_status` 保留结构：它们各自有多个字段，摊平会让
+/// 根结构多出十来个前缀字段，反而看不出哪些是一组。
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct PgcSeasonDetail {
+    pub actors: Option<String>,
+    /// 基线是 `List<Area>`，而 `Area` 只有 `name`。
+    pub areas: Vec<String>,
+    pub cover: Option<String>,
+    /// 正片。`sections` 是正片之外的 PV、花絮等。
+    pub episodes: Vec<PgcEpisode>,
+    pub evaluate: Option<String>,
+    pub media_id: Option<i64>,
+    pub new_ep_desc: Option<String>,
+    pub new_ep_title: Option<String>,
+    pub pub_time_show: Option<String>,
+    pub rating_score: Option<f64>,
+    pub season_id: Option<i64>,
+    pub season_title: Option<String>,
+    /// 响应里的键是 **`section`**（单数），不是 `sections`。
+    pub sections: Vec<PgcSection>,
+    pub stat: Option<PgcSeasonStat>,
+    pub subtitle: Option<String>,
+    pub title: Option<String>,
+    /// 响应里叫 `type`，Rust 的关键字。番剧/国创/电影…的区分。
+    pub kind: Option<i64>,
+    pub up: Option<PgcUpInfo>,
+    pub user_status: Option<PgcUserStatus>,
+    pub cooperators: Vec<PgcCooperator>,
+    /// 基线 `brief.img`。
+    pub brief_images: Vec<PgcBriefImage>,
+    /// 同系列的其他季。
+    pub seasons: Vec<PgcSeasonBrief>,
+}
+
+/// 一集。
+///
+/// `width` / `height` **已按 `rotate` 校正**，见
+/// [`crate::pgc::apply_rotate`]。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct PgcEpisode {
+    pub id: Option<i64>,
+    pub aid: Option<i64>,
+    pub cid: Option<i64>,
+    pub ep_id: Option<i64>,
+    pub bvid: Option<String>,
+    pub badge: Option<String>,
+    pub title: Option<String>,
+    pub cover: Option<String>,
+    pub width: Option<i64>,
+    pub height: Option<i64>,
+    /// **单位随接口变**：`pgcInfo` 是毫秒，`pugvInfo` 是秒。基线原样透传
+    /// 并在界面上按 `from == 'pugv'` 分流，这里照搬——在这里统一成一种
+    /// 单位需要知道自己是哪条接口，而那是调用方才知道的事。
+    pub duration: Option<i64>,
+    pub from: Option<String>,
+    pub link: Option<String>,
+    pub long_title: Option<String>,
+    /// 基线 `pub_time ?? release_date`：两个键表示同一件事。
+    pub pub_time: Option<i64>,
+    pub share_copy: Option<String>,
+    pub share_url: Option<String>,
+    pub show_title: Option<String>,
+    pub play: Option<i64>,
+}
+
+/// 正片之外的一组（PV、花絮、特别篇…）。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct PgcSection {
+    pub title: Option<String>,
+    pub episodes: Vec<PgcEpisode>,
+}
+
+/// 季度统计。
+///
+/// 基线 `PgcStat.fromJson` 对七个字段的处理**不对称**：`coins` /
+/// `favorite` / `likes` 缺失时取 0，`danmakus` / `reply` / `share` /
+/// `views` 缺失时留 null。照搬——界面对这两组的处理不同（前三个总是
+/// 显示数字，后四个缺失时整块隐藏），统一成 0 会让隐藏逻辑失效。
+///
+/// 另注意键名：是 `coins` / `likes` / `views` 的复数形式，而
+/// `favorite` / `reply` / `share` 是单数。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct PgcSeasonStat {
+    pub coin: i64,
+    pub favorite: i64,
+    pub like: i64,
+    pub danmaku: Option<i64>,
+    pub reply: Option<i64>,
+    pub share: Option<i64>,
+    pub view: Option<i64>,
+}
+
+/// 出品方 / UP 主。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct PgcUpInfo {
+    pub mid: Option<i64>,
+    pub avatar: Option<String>,
+    pub uname: Option<String>,
+}
+
+/// 当前用户对这一季的状态。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct PgcUserStatus {
+    /// 0/1，是否已收藏（追番）。
+    pub favored: Option<i64>,
+    /// 基线 `progress.last_ep_id`，只有这一个字段，摊平。
+    pub last_ep_id: Option<i64>,
+}
+
+/// 参与的创作者。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct PgcCooperator {
+    pub mid: Option<i64>,
+    pub avatar: Option<String>,
+    pub nick_name: Option<String>,
+    pub role: Option<String>,
+}
+
+/// 简介里的一张图。
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct PgcBriefImage {
+    /// 缺失时为 1，与基线 `?? 1` 一致：0 会让布局除零。
+    pub aspect_ratio: f64,
+    pub url: Option<String>,
+}
+
+/// 同系列的另一季。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct PgcSeasonBrief {
+    pub media_id: Option<i64>,
+    pub season_id: Option<i64>,
+    pub season_title: Option<String>,
+}
+
+/// 按 `rotate` 校正宽高。
+///
+/// 移植自基线 `Dimension.fromJson`：`rotate == 1` 时响应里的 `width` 与
+/// `height` 是**交换过的**，要换回来。不校正的话竖屏片源会被当成横屏，
+/// 播放器按错误的比例铺画面——这种错不会报错，只是画面比例不对。
+#[must_use]
+pub fn apply_rotate(
+    width: Option<i64>,
+    height: Option<i64>,
+    rotate: Option<i64>,
+) -> (Option<i64>, Option<i64>) {
+    if rotate == Some(1) {
+        (height, width)
+    } else {
+        (width, height)
+    }
+}

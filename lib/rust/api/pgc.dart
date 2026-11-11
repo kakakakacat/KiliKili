@@ -7,8 +7,8 @@ import 'package:kilikili/rust/frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:kilikili/rust/api/transport.dart';
 
-// These functions are ignored because they are not marked as `pub`: `flatten`, `index_page`, `split`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These functions are ignored because they are not marked as `pub`: `episode`, `fetch_season_detail_of`, `flatten`, `index_page`, `season_detail`, `split`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// 取一页索引结果。
 Future<PgcIndexResult> fetchPgcIndex({
@@ -98,6 +98,53 @@ Future<PgcRankResult> fetchPgcRank({
   day: day,
   seasonType: seasonType,
 );
+
+/// 取番剧详情（`pgcInfo`，载荷在 `result`）。
+///
+/// `season_id` 与 `ep_id` 至少要给一个，两个都缺时不发请求，直接返回
+/// `protocol` 错误。
+Future<PgcSeasonDetailResult> fetchPgcSeasonDetail({
+  required PgcContext context,
+  PlatformInt64? seasonId,
+  PlatformInt64? epId,
+}) => RustLib.instance.api.crateApiPgcFetchPgcSeasonDetail(
+  context: context,
+  seasonId: seasonId,
+  epId: epId,
+);
+
+/// 取课堂详情（`pugvInfo`，载荷在 `data`）。
+Future<PgcSeasonDetailResult> fetchPugvSeasonDetail({
+  required PgcContext context,
+  PlatformInt64? seasonId,
+  PlatformInt64? epId,
+}) => RustLib.instance.api.crateApiPgcFetchPugvSeasonDetail(
+  context: context,
+  seasonId: seasonId,
+  epId: epId,
+);
+
+/// 简介里的一张图。`aspect_ratio` 缺失时为 1，不是 0。
+class PgcBriefImage {
+  final double aspectRatio;
+  final String? url;
+
+  const PgcBriefImage({
+    required this.aspectRatio,
+    this.url,
+  });
+
+  @override
+  int get hashCode => aspectRatio.hashCode ^ url.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PgcBriefImage &&
+          runtimeType == other.runtimeType &&
+          aspectRatio == other.aspectRatio &&
+          url == other.url;
+}
 
 /// 一组筛选项。
 class PgcConditionFilter {
@@ -219,6 +266,139 @@ class PgcContext {
           wts == other.wts &&
           timeoutMs == other.timeoutMs &&
           transport == other.transport;
+}
+
+/// 参与的创作者。
+class PgcCooperator {
+  final PlatformInt64? mid;
+  final String? avatar;
+  final String? nickName;
+  final String? role;
+
+  const PgcCooperator({
+    this.mid,
+    this.avatar,
+    this.nickName,
+    this.role,
+  });
+
+  @override
+  int get hashCode =>
+      mid.hashCode ^ avatar.hashCode ^ nickName.hashCode ^ role.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PgcCooperator &&
+          runtimeType == other.runtimeType &&
+          mid == other.mid &&
+          avatar == other.avatar &&
+          nickName == other.nickName &&
+          role == other.role;
+}
+
+/// 一集。
+///
+/// **不是** `lib/models_new/pgc/pgc_info_model/episode.dart` 的替代品：
+/// 那个类继承共享的 `BaseEpisodeItem`，剧集面板按基类做多态消费，而
+/// `BaseEpisodeItem` 还有四个未迁的生产者（UGC 分 P、合集、媒体列表、
+/// 互动视频）。按 ADR-011 决策六，共享模型要等**所有**生产者迁完才能删，
+/// 所以 Dart 侧留了一个单向适配 `lib/services/rust/pgc_detail_compat.dart`，
+/// 只在需要那条多态列表的地方把本结构转过去。
+class PgcEpisode {
+  final PlatformInt64? id;
+  final PlatformInt64? aid;
+  final PlatformInt64? cid;
+  final PlatformInt64? epId;
+  final String? bvid;
+  final String? badge;
+  final String? title;
+  final String? cover;
+
+  /// 已按 `rotate` 校正：响应在 `rotate == 1` 时给的是交换过的宽高。
+  final PlatformInt64? width;
+  final PlatformInt64? height;
+
+  /// **单位随接口变**：番剧是毫秒，课堂是秒。按 `from == "pugv"` 分流，
+  /// 与基线一致。
+  final PlatformInt64? duration;
+  final String? from;
+  final String? link;
+  final String? longTitle;
+  final PlatformInt64? pubTime;
+  final String? shareCopy;
+  final String? shareUrl;
+  final String? showTitle;
+  final PlatformInt64? play;
+
+  const PgcEpisode({
+    this.id,
+    this.aid,
+    this.cid,
+    this.epId,
+    this.bvid,
+    this.badge,
+    this.title,
+    this.cover,
+    this.width,
+    this.height,
+    this.duration,
+    this.from,
+    this.link,
+    this.longTitle,
+    this.pubTime,
+    this.shareCopy,
+    this.shareUrl,
+    this.showTitle,
+    this.play,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      aid.hashCode ^
+      cid.hashCode ^
+      epId.hashCode ^
+      bvid.hashCode ^
+      badge.hashCode ^
+      title.hashCode ^
+      cover.hashCode ^
+      width.hashCode ^
+      height.hashCode ^
+      duration.hashCode ^
+      from.hashCode ^
+      link.hashCode ^
+      longTitle.hashCode ^
+      pubTime.hashCode ^
+      shareCopy.hashCode ^
+      shareUrl.hashCode ^
+      showTitle.hashCode ^
+      play.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PgcEpisode &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          aid == other.aid &&
+          cid == other.cid &&
+          epId == other.epId &&
+          bvid == other.bvid &&
+          badge == other.badge &&
+          title == other.title &&
+          cover == other.cover &&
+          width == other.width &&
+          height == other.height &&
+          duration == other.duration &&
+          from == other.from &&
+          link == other.link &&
+          longTitle == other.longTitle &&
+          pubTime == other.pubTime &&
+          shareCopy == other.shareCopy &&
+          shareUrl == other.shareUrl &&
+          showTitle == other.showTitle &&
+          play == other.play;
 }
 
 /// 索引页的筛选条件。
@@ -675,6 +855,242 @@ class PgcReviewStat {
           likes == other.likes;
 }
 
+/// 同系列的另一季。
+class PgcSeasonBrief {
+  final PlatformInt64? mediaId;
+  final PlatformInt64? seasonId;
+  final String? seasonTitle;
+
+  const PgcSeasonBrief({
+    this.mediaId,
+    this.seasonId,
+    this.seasonTitle,
+  });
+
+  @override
+  int get hashCode =>
+      mediaId.hashCode ^ seasonId.hashCode ^ seasonTitle.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PgcSeasonBrief &&
+          runtimeType == other.runtimeType &&
+          mediaId == other.mediaId &&
+          seasonId == other.seasonId &&
+          seasonTitle == other.seasonTitle;
+}
+
+/// 番剧 / 课堂详情。
+///
+/// 基线 `PgcInfoModel` 的五个单字段壳（`Area`/`NewEp`/`Publish`/
+/// `Rating`/`Brief`）已摊平；`stat`/`up`/`user_status` 保留结构。
+class PgcSeasonDetail {
+  final String? actors;
+  final List<String> areas;
+  final String? cover;
+  final List<PgcEpisode> episodes;
+  final String? evaluate;
+  final PlatformInt64? mediaId;
+  final String? newEpDesc;
+  final String? newEpTitle;
+  final String? pubTimeShow;
+  final double? ratingScore;
+  final PlatformInt64? seasonId;
+  final String? seasonTitle;
+  final List<PgcSection> sections;
+  final PgcSeasonStat? stat;
+  final String? subtitle;
+  final String? title;
+
+  /// 响应里叫 `type`。
+  final PlatformInt64? kind;
+  final PgcUpInfo? up;
+  final PgcUserStatus? userStatus;
+  final List<PgcCooperator> cooperators;
+  final List<PgcBriefImage> briefImages;
+  final List<PgcSeasonBrief> seasons;
+
+  const PgcSeasonDetail({
+    this.actors,
+    required this.areas,
+    this.cover,
+    required this.episodes,
+    this.evaluate,
+    this.mediaId,
+    this.newEpDesc,
+    this.newEpTitle,
+    this.pubTimeShow,
+    this.ratingScore,
+    this.seasonId,
+    this.seasonTitle,
+    required this.sections,
+    this.stat,
+    this.subtitle,
+    this.title,
+    this.kind,
+    this.up,
+    this.userStatus,
+    required this.cooperators,
+    required this.briefImages,
+    required this.seasons,
+  });
+
+  @override
+  int get hashCode =>
+      actors.hashCode ^
+      areas.hashCode ^
+      cover.hashCode ^
+      episodes.hashCode ^
+      evaluate.hashCode ^
+      mediaId.hashCode ^
+      newEpDesc.hashCode ^
+      newEpTitle.hashCode ^
+      pubTimeShow.hashCode ^
+      ratingScore.hashCode ^
+      seasonId.hashCode ^
+      seasonTitle.hashCode ^
+      sections.hashCode ^
+      stat.hashCode ^
+      subtitle.hashCode ^
+      title.hashCode ^
+      kind.hashCode ^
+      up.hashCode ^
+      userStatus.hashCode ^
+      cooperators.hashCode ^
+      briefImages.hashCode ^
+      seasons.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PgcSeasonDetail &&
+          runtimeType == other.runtimeType &&
+          actors == other.actors &&
+          areas == other.areas &&
+          cover == other.cover &&
+          episodes == other.episodes &&
+          evaluate == other.evaluate &&
+          mediaId == other.mediaId &&
+          newEpDesc == other.newEpDesc &&
+          newEpTitle == other.newEpTitle &&
+          pubTimeShow == other.pubTimeShow &&
+          ratingScore == other.ratingScore &&
+          seasonId == other.seasonId &&
+          seasonTitle == other.seasonTitle &&
+          sections == other.sections &&
+          stat == other.stat &&
+          subtitle == other.subtitle &&
+          title == other.title &&
+          kind == other.kind &&
+          up == other.up &&
+          userStatus == other.userStatus &&
+          cooperators == other.cooperators &&
+          briefImages == other.briefImages &&
+          seasons == other.seasons;
+}
+
+/// 番剧 / 课堂详情。字段语义同 [`PgcIndexResult`]。
+class PgcSeasonDetailResult {
+  final PgcSeasonDetail? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const PgcSeasonDetailResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PgcSeasonDetailResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+/// 季度统计。
+///
+/// 前三个字段缺失时为 0，后四个保持 `None`——基线就是这样不对称的，
+/// 界面对两组的处理不同（前三个总显示数字，后四个缺失时整块隐藏）。
+class PgcSeasonStat {
+  final PlatformInt64 coin;
+  final PlatformInt64 favorite;
+  final PlatformInt64 like;
+  final PlatformInt64? danmaku;
+  final PlatformInt64? reply;
+  final PlatformInt64? share;
+  final PlatformInt64? view;
+
+  const PgcSeasonStat({
+    required this.coin,
+    required this.favorite,
+    required this.like,
+    this.danmaku,
+    this.reply,
+    this.share,
+    this.view,
+  });
+
+  @override
+  int get hashCode =>
+      coin.hashCode ^
+      favorite.hashCode ^
+      like.hashCode ^
+      danmaku.hashCode ^
+      reply.hashCode ^
+      share.hashCode ^
+      view.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PgcSeasonStat &&
+          runtimeType == other.runtimeType &&
+          coin == other.coin &&
+          favorite == other.favorite &&
+          like == other.like &&
+          danmaku == other.danmaku &&
+          reply == other.reply &&
+          share == other.share &&
+          view == other.view;
+}
+
+/// 正片之外的一组（PV、花絮、特别篇…）。空组也会保留。
+class PgcSection {
+  final String? title;
+  final List<PgcEpisode> episodes;
+
+  const PgcSection({
+    this.title,
+    required this.episodes,
+  });
+
+  @override
+  int get hashCode => title.hashCode ^ episodes.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PgcSection &&
+          runtimeType == other.runtimeType &&
+          title == other.title &&
+          episodes == other.episodes;
+}
+
 /// 放送时间表。字段语义同 [`PgcIndexResult`]。
 class PgcTimelineResult {
   final List<TimelineDay>? data;
@@ -705,6 +1121,54 @@ class PgcTimelineResult {
           errorKind == other.errorKind &&
           errorDetail == other.errorDetail &&
           errorCode == other.errorCode;
+}
+
+/// 出品方 / UP 主。
+class PgcUpInfo {
+  final PlatformInt64? mid;
+  final String? avatar;
+  final String? uname;
+
+  const PgcUpInfo({
+    this.mid,
+    this.avatar,
+    this.uname,
+  });
+
+  @override
+  int get hashCode => mid.hashCode ^ avatar.hashCode ^ uname.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PgcUpInfo &&
+          runtimeType == other.runtimeType &&
+          mid == other.mid &&
+          avatar == other.avatar &&
+          uname == other.uname;
+}
+
+/// 当前用户对这一季的状态。
+class PgcUserStatus {
+  /// 0/1，是否已追。
+  final PlatformInt64? favored;
+  final PlatformInt64? lastEpId;
+
+  const PgcUserStatus({
+    this.favored,
+    this.lastEpId,
+  });
+
+  @override
+  int get hashCode => favored.hashCode ^ lastEpId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PgcUserStatus &&
+          runtimeType == other.runtimeType &&
+          favored == other.favored &&
+          lastEpId == other.lastEpId;
 }
 
 /// 追番状态。

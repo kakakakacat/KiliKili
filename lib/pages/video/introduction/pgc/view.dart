@@ -10,7 +10,6 @@ import 'package:kilikili/common/widgets/image_viewer/hero.dart';
 import 'package:kilikili/common/widgets/stat/stat.dart';
 import 'package:kilikili/models/common/image_preview_type.dart';
 import 'package:kilikili/models/common/image_type.dart';
-import 'package:kilikili/models_new/pgc/pgc_info_model/result.dart';
 import 'package:kilikili/models_new/pgc/pgc_info_model/stat.dart';
 import 'package:kilikili/models_new/video/video_detail/episode.dart';
 import 'package:kilikili/models_new/video/video_tag/data.dart';
@@ -23,6 +22,8 @@ import 'package:kilikili/pages/video/introduction/ugc/widgets/action_item.dart';
 import 'package:kilikili/utils/extension/get_ext.dart';
 import 'package:kilikili/utils/num_utils.dart';
 import 'package:kilikili/utils/page_utils.dart';
+import 'package:kilikili/services/rust/pgc_detail_compat.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -30,7 +31,7 @@ import 'package:material_ui/material_ui.dart';
 class PgcIntroPage extends StatefulWidget {
   final String heroTag;
   final ShowEpisodes showEpisodes;
-  final Function(PgcInfoModel videoDetail, List<VideoTagItem>? videoTags)
+  final Function(PgcSeasonDetail videoDetail, List<VideoTagItem>? videoTags)
   showIntroDetail;
   final double maxWidth;
   final bool isPortrait;
@@ -87,7 +88,8 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
           ),
           const SizedBox(height: 6),
           // 点赞收藏转发 布局样式2
-          if (introController.isPgc) actionGrid(item.stat!, introController),
+          if (introController.isPgc)
+            actionGrid(introController.stat!, introController),
           if (isPortrait ||
               !videoDetailCtr.plPlayerController.horizontalSeasonPanel) ...[
             // seasons
@@ -135,9 +137,9 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
     );
   }
 
-  Widget? _buildBrief(PgcInfoModel item) {
-    final img = item.brief?.img;
-    if (img != null && img.isNotEmpty) {
+  Widget? _buildBrief(PgcSeasonDetail item) {
+    final img = item.briefImages;
+    if (img.isNotEmpty) {
       final maxWidth = widget.maxWidth - 24;
       double padding = max(0, maxWidth - 400);
       final imgWidth = maxWidth - padding;
@@ -161,7 +163,7 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
     return null;
   }
 
-  Widget _buildCover(PgcInfoModel item) {
+  Widget _buildCover(PgcSeasonDetail item) {
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -178,9 +180,9 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
             ),
           ),
         ),
-        if (item.rating != null)
+        if (item.ratingScore case final score?)
           PBadge(
-            text: '评分 ${item.rating!.score!}',
+            text: '评分 $score',
             top: null,
             right: 6,
             bottom: 6,
@@ -213,7 +215,7 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
     );
   }
 
-  Widget _buildInfoPanel(bool isPortrait, PgcInfoModel item) {
+  Widget _buildInfoPanel(bool isPortrait, PgcSeasonDetail item) {
     if (introController.isPgc) {
       Widget subBtn() => Obx(
         () {
@@ -277,16 +279,16 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
       );
       List<Widget> desc() => [
         Text(
-          item.newEp!.desc!,
+          item.newEpDesc ?? '',
           style: TextStyle(fontSize: 12, color: colorScheme.outline),
         ),
         Text.rich(
           TextSpan(
             children: [
-              if (item.areas?.isNotEmpty == true)
-                TextSpan(text: '${item.areas!.first.name!}  '),
+              if (item.areas.isNotEmpty)
+                TextSpan(text: '${item.areas.first}  '),
               TextSpan(
-                text: item.publish!.pubTimeShow!,
+                text: item.pubTimeShow ?? '',
               ),
             ],
           ),
@@ -377,11 +379,11 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
             ),
           ),
           const SizedBox(height: 6),
-        ] else if (item.upInfo?.mid != null) ...[
+        ] else if (item.up?.mid != null) ...[
           upInfo(
-            item.upInfo!.mid!,
-            item.upInfo!.avatar!,
-            item.upInfo!.uname!,
+            item.up!.mid!,
+            item.up!.avatar!,
+            item.up!.uname!,
           ),
           const SizedBox(height: 6),
         ],

@@ -4,18 +4,18 @@ import 'package:kilikili/common/widgets/scroll_physics.dart'
 import 'package:kilikili/common/widgets/selection_text.dart';
 import 'package:kilikili/common/widgets/stat/stat.dart';
 import 'package:kilikili/models/common/stat_type.dart';
-import 'package:kilikili/models_new/pgc/pgc_info_model/result.dart';
 import 'package:kilikili/models_new/video/video_tag/data.dart';
 import 'package:kilikili/pages/common/slide/common_slide_page.dart';
 import 'package:kilikili/pages/pgc_review/view.dart';
 import 'package:kilikili/pages/search/widgets/search_text.dart';
 import 'package:kilikili/utils/extension/scroll_controller_ext.dart';
 import 'package:kilikili/utils/utils.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class PgcIntroPanel extends CommonSlidePage {
-  final PgcInfoModel item;
+  final PgcSeasonDetail item;
   final List<VideoTagItem>? videoTags;
 
   const PgcIntroPanel({
@@ -148,17 +148,17 @@ class _IntroDetailState extends State<PgcIntroPanel>
         Row(
           spacing: 6,
           children: [
-            if (widget.item.areas?.isNotEmpty ?? false)
+            if (widget.item.areas.isNotEmpty)
               Text(
-                widget.item.areas!.first.name!,
+                widget.item.areas.first,
                 style: smallTitle,
               ),
             Text(
-              widget.item.publish!.pubTimeShow!,
+              widget.item.pubTimeShow ?? '',
               style: smallTitle,
             ),
             Text(
-              widget.item.newEp!.desc!,
+              widget.item.newEpDesc ?? '',
               style: smallTitle,
             ),
           ],

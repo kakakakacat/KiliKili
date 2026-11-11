@@ -1,0 +1,103 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "has_more": 1,
+    "card_list": [
+      {
+        "card_type": "banner_v2",
+        "card_data": {
+          "banner_v2": {
+            "list": [
+              { "id": 1, "title": "基线把这张卡注释掉了，必须被忽略" }
+            ]
+          }
+        }
+      },
+      {
+        "card_type": "my_idol_v1",
+        "card_data": {
+          "my_idol_v1": {
+            "extra_info": { "total_count": 3 },
+            "list": [
+              {
+                "roomid": 100001,
+                "uid": 200001,
+                "uname": "示例主播甲",
+                "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000011.jpg",
+                "cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000021.jpg",
+                "title": "示例直播间甲",
+                "area_name": "示例分区甲",
+                "area_v2_id": 145,
+                "area_v2_parent_id": 1,
+                "watched_show": { "text_large": "1.2万人看过" }
+              },
+              {
+                "roomid": 100002,
+                "uname": "示例主播乙",
+                "title": "示例直播间乙"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "card_type": "area_entrance_v3",
+        "card_data": {
+          "area_entrance_v3": {
+            "list": [
+              { "area_v2_id": 0, "area_v2_parent_id": 0, "title": "人气" },
+              { "area_v2_id": 145, "area_v2_parent_id": 1, "title": "示例分区甲" },
+              { "area_v2_id": 86, "area_v2_parent_id": 2, "title": "示例分区丙" }
+            ]
+          }
+        }
+      },
+      {
+        "card_type": "small_card_v1",
+        "card_data": {
+          "small_card_v1": {
+            "roomid": 100003,
+            "uid": 200003,
+            "uname": "示例主播丙",
+            "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000013.jpg",
+            "cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000023.jpg",
+            "system_cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000033.jpg",
+            "title": "示例直播间丙",
+            "area_name": "示例分区丙",
+            "area_v2_id": 86,
+            "area_v2_parent_id": 2,
+            "watched_show": { "text_large": "3456人看过" },
+            "feedback": [
+              {
+                "title": "不感兴趣",
+                "subtitle": "减少此类推荐",
+                "type": "dislike",
+                "reasons": [
+                  { "id": 1, "name": "不想看这个分区", "id_type": "area", "reason_id": 11 },
+                  { "id": 2, "name": "不想看这个主播", "id_type": "up", "reason_id": 12 }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "card_type": "small_card_v1",
+        "card_data": {
+          "small_card_v1": {
+            "roomid": 100004,
+            "title": "示例直播间丁",
+            "cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000024.jpg",
+            "system_cover": ""
+          }
+        }
+      },
+      {
+        "card_type": "brand_new_card_type_v9",
+        "card_data": { "brand_new_card_type_v9": { "list": [] } }
+      }
+    ]
+  }
+}

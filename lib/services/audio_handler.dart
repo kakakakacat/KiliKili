@@ -4,7 +4,6 @@ import 'dart:ui' show PlatformDispatcher;
 import 'package:kilikili/common/constants.dart';
 import 'package:kilikili/grpc/bilibili/app/listener/v1.pb.dart' show DetailItem;
 import 'package:kilikili/models_new/download/bili_download_entry_info.dart';
-import 'package:kilikili/models_new/live/live_room_info_h5/data.dart';
 import 'package:kilikili/models_new/pgc/pgc_info_model/episode.dart';
 import 'package:kilikili/models_new/video/video_detail/data.dart';
 import 'package:kilikili/models_new/video/video_detail/page.dart';
@@ -15,6 +14,7 @@ import 'package:kilikili/pages/video/introduction/pgc/controller.dart';
 import 'package:kilikili/pages/video/introduction/ugc/controller.dart';
 import 'package:kilikili/plugin/pl_player/controller.dart';
 import 'package:kilikili/plugin/pl_player/models/play_status.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/utils/android/bindings.g.dart';
 import 'package:kilikili/utils/device_utils.dart';
 import 'package:kilikili/utils/image_utils.dart';
@@ -301,12 +301,12 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
               : Duration(milliseconds: data.duration ?? 0),
           artUri: getUri(data.cover),
         );
-      case RoomInfoH5Data():
+      case LiveRoomH5():
         mediaItem = MediaItem(
           id: id,
-          title: data.roomInfo?.title ?? '',
-          artist: data.anchorInfo?.baseInfo?.uname,
-          artUri: getUri(data.roomInfo?.cover),
+          title: data.title ?? '',
+          artist: data.anchorName,
+          artUri: getUri(data.cover),
           isLive: true,
         );
       case Part():

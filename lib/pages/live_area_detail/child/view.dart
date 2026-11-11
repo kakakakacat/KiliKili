@@ -5,10 +5,10 @@ import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/live/live_feed_index/card_data_list_item.dart';
 import 'package:kilikili/pages/live/widgets/live_item_app.dart';
 import 'package:kilikili/pages/live_area_detail/child/controller.dart';
 import 'package:kilikili/pages/search/widgets/search_text.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/utils/grid.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -21,8 +21,8 @@ class LiveAreaChildPage extends StatefulWidget {
     required this.showFirstFrame,
   });
 
-  final dynamic areaId;
-  final dynamic parentAreaId;
+  final int areaId;
+  final int parentAreaId;
   final bool showFirstFrame;
 
   @override
@@ -80,7 +80,7 @@ class _LiveAreaChildPageState extends State<LiveAreaChildPage>
     mainAxisExtent: MediaQuery.textScalerOf(context).scale(90),
   );
 
-  Widget _buildBody(LoadingState<List<CardLiveItem>?> loadingState) {
+  Widget _buildBody(LoadingState<List<LiveRoomCard>?> loadingState) {
     switch (loadingState) {
       case Loading():
         return SliverPadding(

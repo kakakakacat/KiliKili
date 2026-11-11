@@ -1,0 +1,28 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "room_info": {
+      "room_id": 100001,
+      "uid": 200001,
+      "title": "示例直播间甲",
+      "cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000021.jpg",
+      "app_background": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000041.jpg",
+      "live_status": 1
+    },
+    "anchor_info": {
+      "base_info": {
+        "uname": "示例主播甲",
+        "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000011.jpg",
+        "gender": ""
+      }
+    },
+    "watched_show": {
+      "switch": true,
+      "num": 12345,
+      "text_small": "1.2万",
+      "text_large": "1.2万人看过"
+    }
+  }
+}

@@ -15,7 +15,6 @@ import 'package:kilikili/models_new/live/live_danmaku/danmaku_msg.dart';
 import 'package:kilikili/models_new/live/live_danmaku/live_emote.dart';
 import 'package:kilikili/models_new/live/live_dm_info/data.dart';
 import 'package:kilikili/models_new/live/live_medal_wall/uinfo_medal.dart';
-import 'package:kilikili/models_new/live/live_room_info_h5/data.dart';
 import 'package:kilikili/models_new/live/live_room_play_info/codec.dart';
 import 'package:kilikili/models_new/live/live_room_play_info/stream.dart';
 import 'package:kilikili/models_new/live/live_superchat/item.dart';
@@ -26,6 +25,7 @@ import 'package:kilikili/pages/video/widgets/header_control.dart';
 import 'package:kilikili/plugin/pl_player/controller.dart';
 import 'package:kilikili/plugin/pl_player/models/data_source.dart';
 import 'package:kilikili/plugin/pl_player/utils/danmaku_options.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/services/service_locator.dart';
 import 'package:kilikili/tcp/live.dart';
 import 'package:kilikili/utils/accounts.dart';
@@ -67,7 +67,7 @@ class LiveRoomController extends GetxController {
   );
 
   final isLoaded = false.obs;
-  final roomInfoH5 = Rxn<RoomInfoH5Data>();
+  final roomInfoH5 = Rxn<LiveRoomH5>();
 
   final liveTime = Rxn<int>();
   Timer? liveTimeTimer;
@@ -341,11 +341,11 @@ class LiveRoomController extends GetxController {
   }
 
   Future<void> queryLiveInfoH5() async {
-    final res = await LiveHttp.liveRoomInfoH5(roomId: roomId);
+    final res = await RustLive.roomInfoH5(roomId: roomId);
     if (res case Success(:final response)) {
       roomInfoH5.value = response;
-      title.value = response.roomInfo?.title ?? '';
-      watchedShow.value = response.watchedShow?.textLarge;
+      title.value = response.title ?? '';
+      watchedShow.value = response.watchedText;
       videoPlayerServiceHandler?.onVideoDetailChange(response, roomId, heroTag);
     } else {
       res.toast();
@@ -721,7 +721,7 @@ class LiveRoomController extends GetxController {
       clickTime: likeClickTime.value,
       roomId: roomId,
       uid: mid,
-      anchorId: roomInfoH5.value?.roomInfo?.uid,
+      anchorId: roomInfoH5.value?.uid,
     );
     if (res.isSuccess) {
       SmartDialog.showToast('点赞成功');

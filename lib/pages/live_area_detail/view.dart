@@ -4,10 +4,10 @@ import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/image_type.dart';
-import 'package:kilikili/models_new/live/live_area_list/area_item.dart';
 import 'package:kilikili/pages/live_area_detail/child/controller.dart';
 import 'package:kilikili/pages/live_area_detail/child/view.dart';
 import 'package:kilikili/pages/live_area_detail/controller.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/pages/live_search/view.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -21,8 +21,8 @@ class LiveAreaDetailPage extends StatefulWidget {
     required this.parentName,
   });
 
-  final dynamic areaId;
-  final dynamic parentAreaId;
+  final int areaId;
+  final int parentAreaId;
   final String parentName;
 
   @override
@@ -35,8 +35,12 @@ class _LiveAreaDetailPageState extends State<LiveAreaDetailPage> {
   @override
   void initState() {
     super.initState();
+    // 基线这里有一句 `widget.areaId?.toString()`，而 controller 随后用
+    // `e.id == areaId` 去定位初始 Tab——一边字符串一边原值，比较恒为假，
+    // 初始 Tab 永远落在第一个。分区 id 归一成 int 后这个转换要一并去掉，
+    // 否则等于把那个 bug 原样保留。
     _controller = Get.put(
-      LiveAreaDetailController(widget.areaId?.toString(), widget.parentAreaId),
+      LiveAreaDetailController(widget.areaId, widget.parentAreaId),
     );
   }
 
@@ -68,7 +72,7 @@ class _LiveAreaDetailPageState extends State<LiveAreaDetailPage> {
   Widget _buildBody(
     ThemeData theme,
     double bottom,
-    LoadingState<List<AreaItem>?> loadingState,
+    LoadingState<List<LiveArea>?> loadingState,
   ) {
     return switch (loadingState) {
       Loading() => const SizedBox.shrink(),
@@ -155,7 +159,7 @@ class _LiveAreaDetailPageState extends State<LiveAreaDetailPage> {
 
   Widget _tagItem({
     required ThemeData theme,
-    required AreaItem item,
+    required LiveArea item,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -186,7 +190,7 @@ class _LiveAreaDetailPageState extends State<LiveAreaDetailPage> {
     BuildContext context,
     ThemeData theme,
     double bottom,
-    List<AreaItem> list,
+    List<LiveArea> list,
   ) {
     showModalBottomSheet(
       context: context,

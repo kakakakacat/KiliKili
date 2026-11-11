@@ -9,14 +9,13 @@ import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/pair.dart';
 import 'package:kilikili/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/live/live_feed_index/card_data_list_item.dart';
-import 'package:kilikili/models_new/live/live_feed_index/card_list.dart';
 import 'package:kilikili/pages/live/controller.dart';
 import 'package:kilikili/pages/live/widgets/live_item_app.dart';
 import 'package:kilikili/pages/live/widgets/sliver_pinned_header.dart';
 import 'package:kilikili/pages/live_area/view.dart';
 import 'package:kilikili/pages/live_follow/view.dart';
 import 'package:kilikili/pages/search/widgets/search_text.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/utils/extension/theme_ext.dart';
 import 'package:kilikili/utils/grid.dart';
 import 'package:kilikili/utils/page_utils.dart';
@@ -72,8 +71,8 @@ class _LivePageState extends State<LivePage>
     );
   }
 
-  Widget _buildTop(Pair<LiveCardList?, LiveCardList?> data) {
-    final list = data.second?.cardData?.areaEntranceV3?.list;
+  Widget _buildTop(Pair<LiveFollowSection?, List<LiveRoomCard>?> data) {
+    final list = data.second;
     if (list == null) return const SliverToBoxAdapter();
 
     final areaHeight = 10.0 + textScaler.scale(14);
@@ -98,7 +97,7 @@ class _LivePageState extends State<LivePage>
     );
   }
 
-  Widget _buildLiveArea(List<CardLiveItem> list, double areaHeight) {
+  Widget _buildLiveArea(List<LiveRoomCard> list, double areaHeight) {
     return Padding(
       padding: const .symmetric(vertical: 8.0),
       child: Row(
@@ -248,15 +247,11 @@ class _LivePageState extends State<LivePage>
                     if (index == response.length - 1) {
                       controller.onLoadMore();
                     }
-                    final item = response[index];
-                    if (item is LiveCardList) {
-                      return LiveCardVApp(
-                        item: item.cardData!.smallCardV1!,
-                        showFirstFrame: controller.showFirstFrame,
-                      );
-                    }
+                    // 两条接口的列表元素现在是同一种卡片，基线那句
+                    // `if (item is LiveCardList) ... else ...` 的运行时
+                    // 类型判断随之消失。
                     return LiveCardVApp(
-                      item: item,
+                      item: response[index],
                       showFirstFrame: controller.showFirstFrame,
                     );
                   },
@@ -272,10 +267,10 @@ class _LivePageState extends State<LivePage>
     };
   }
 
-  Iterable<Widget> _buildFollowList(LiveCardList item) sync* {
-    final totalCount = item.cardData?.myIdolV1?.extraInfo?.totalCount ?? 0;
-    final list = item.cardData?.myIdolV1?.list;
-    final hasFollow = list != null && list.isNotEmpty;
+  Iterable<Widget> _buildFollowList(LiveFollowSection item) sync* {
+    final totalCount = item.totalCount;
+    final list = item.items;
+    final hasFollow = list.isNotEmpty;
     yield Padding(
       padding: hasFollow
           ? const .symmetric(vertical: 8.0)
@@ -317,7 +312,7 @@ class _LivePageState extends State<LivePage>
   }
 
   Widget _buildFollowBody(
-    List<CardLiveItem> followList,
+    List<LiveRoomCard> followList,
     int totalCount,
   ) {
     final listLength = followList.length;

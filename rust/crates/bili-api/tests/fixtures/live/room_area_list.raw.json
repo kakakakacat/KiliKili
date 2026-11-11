@@ -1,0 +1,24 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": [
+    {
+      "id": "145",
+      "parent_id": "1",
+      "name": "示例分区甲",
+      "parent_name": "娱乐",
+      "pic": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000001.png"
+    },
+    {
+      "id": "21",
+      "parent_id": "1",
+      "name": "示例分区乙"
+    },
+    {
+      "id": 1013,
+      "parent_id": 1,
+      "name": "整数型 id 的同一接口"
+    }
+  ]
+}

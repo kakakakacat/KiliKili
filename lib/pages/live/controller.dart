@@ -1,11 +1,6 @@
 import 'package:kilikili/common/widgets/pair.dart';
-import 'package:kilikili/http/live.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/live/live_feed_index/card_data_list_item.dart';
-import 'package:kilikili/models_new/live/live_feed_index/card_list.dart';
-import 'package:kilikili/models_new/live/live_feed_index/data.dart';
-import 'package:kilikili/models_new/live/live_second_list/data.dart';
-import 'package:kilikili/models_new/live/live_second_list/tag.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/pages/common/common_controller.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
 import 'package:kilikili/services/account_service.dart';
@@ -38,8 +33,15 @@ class LiveController extends CommonListController
     _topHeight = value;
   }
 
-  final Rx<Pair<LiveCardList?, LiveCardList?>> topState =
-      Pair<LiveCardList?, LiveCardList?>(first: null, second: null).obs;
+  /// 顶部两块：关注区块、分区入口。
+  ///
+  /// 分区入口在 Rust 侧已对「服务端不下发」兜过底，为 null 只可能是
+  /// 还没取过。
+  final Rx<Pair<LiveFollowSection?, List<LiveRoomCard>?>> topState =
+      Pair<LiveFollowSection?, List<LiveRoomCard>?>(
+        first: null,
+        second: null,
+      ).obs;
 
   final followController = ScrollController();
 
@@ -54,24 +56,24 @@ class LiveController extends CommonListController
 
   @override
   List? getDataList(response) {
-    return response.cardList;
+    return response.cards;
   }
 
   @override
   bool customHandleResponse(bool isRefresh, Success response) {
     if (isRefresh) {
       final res = response.response;
-      if (res is LiveIndexData) {
-        if (res.hasMore == 0) {
+      if (res is LiveIndexPage) {
+        if (!res.hasMore) {
           isEnd = true;
         }
         topState.value = Pair(
-          first: res.followItem,
-          second: res.areaItem,
+          first: res.follow,
+          second: res.areaEntrance,
         );
-      } else if (res is LiveSecondData) {
+      } else if (res is LiveSecondPage) {
         count = res.count;
-        newTags = res.newTags;
+        newTags = res.tags;
         if (sortType != null) {
           tagIndex.value =
               newTags?.indexWhere((e) => e.sortType == sortType) ?? -1;
@@ -84,14 +86,14 @@ class LiveController extends CommonListController
   @override
   Future<LoadingState> customGetData() {
     if (areaIndex.value != 0) {
-      return LiveHttp.liveSecondList(
+      return RustLive.secondList(
         pn: page,
         areaId: areaId,
         parentAreaId: parentAreaId,
         sortType: sortType,
       );
     }
-    return LiveHttp.liveFeedIndex(pn: page);
+    return RustLive.feedIndex(pn: page);
   }
 
   @override
@@ -107,22 +109,24 @@ class LiveController extends CommonListController
   }
 
   Future<void> queryTop() async {
-    final res = await LiveHttp.liveFeedIndex(pn: page, moduleSelect: true);
+    final res = await RustLive.feedIndex(pn: page, moduleSelect: true);
     if (res case Success(:final response)) {
       topState.value = Pair(
-        first: response.followItem,
-        second: response.areaItem,
+        first: response.follow,
+        second: response.areaEntrance,
       );
+      // +1 让出列表头部那个「推荐」；找不到时 indexWhere 回 -1，
+      // +1 后正好落在「推荐」上。基线另有一条「列表为 null → -1，
+      // 两者都不高亮」的分支，分区入口现在由 Rust 兜底，不会再为 null。
       areaIndex.value =
-          (response.areaItem?.cardData?.areaEntranceV3?.list?.indexWhere(
-                (e) => e.areaV2Id == areaId && e.areaV2ParentId == parentAreaId,
-              ) ??
-              -2) +
+          response.areaEntrance.indexWhere(
+            (e) => e.areaV2Id == areaId && e.areaV2ParentId == parentAreaId,
+          ) +
           1;
     }
   }
 
-  void onSelectArea(int index, CardLiveItem? cardLiveItem) {
+  void onSelectArea(int index, LiveRoomCard? cardLiveItem) {
     if (isLoading) {
       return; // areaIndex conflict
     }

@@ -1,0 +1,41 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "title": "我的关注",
+    "pageSize": 9,
+    "totalPage": 2,
+    "count": 12,
+    "live_count": 2,
+    "list": [
+      {
+        "roomid": 100021,
+        "uname": "示例主播己",
+        "title": "示例直播间己",
+        "area_name": "示例分区甲",
+        "text_small": "1.2万",
+        "room_cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000027.jpg",
+        "live_status": 1
+      },
+      {
+        "roomid": 100022,
+        "uname": "示例主播庚",
+        "title": "未开播，必须被过滤掉",
+        "live_status": 0
+      },
+      {
+        "roomid": 100023,
+        "uname": "示例主播辛",
+        "title": "没有 live_status，同样过滤掉"
+      },
+      {
+        "roomid": 100024,
+        "uname": "示例主播壬",
+        "title": "示例直播间壬",
+        "text_small": "888",
+        "live_status": 1
+      }
+    ]
+  }
+}

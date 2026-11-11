@@ -1,0 +1,130 @@
+{
+  "area_entrance": [
+    {
+      "area_name": null,
+      "area_v2_id": 0,
+      "area_v2_parent_id": 0,
+      "cover": null,
+      "face": null,
+      "feedback": [],
+      "roomid": null,
+      "system_cover": null,
+      "title": "人气",
+      "uid": null,
+      "uname": null,
+      "watched_text": null
+    },
+    {
+      "area_name": null,
+      "area_v2_id": 145,
+      "area_v2_parent_id": 1,
+      "cover": null,
+      "face": null,
+      "feedback": [],
+      "roomid": null,
+      "system_cover": null,
+      "title": "示例分区甲",
+      "uid": null,
+      "uname": null,
+      "watched_text": null
+    },
+    {
+      "area_name": null,
+      "area_v2_id": 86,
+      "area_v2_parent_id": 2,
+      "cover": null,
+      "face": null,
+      "feedback": [],
+      "roomid": null,
+      "system_cover": null,
+      "title": "示例分区丙",
+      "uid": null,
+      "uname": null,
+      "watched_text": null
+    }
+  ],
+  "cards": [
+    {
+      "area_name": "示例分区丙",
+      "area_v2_id": 86,
+      "area_v2_parent_id": 2,
+      "cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000023.jpg",
+      "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000013.jpg",
+      "feedback": [
+        {
+          "kind": "dislike",
+          "reasons": [
+            {
+              "id": 1,
+              "id_type": "area",
+              "name": "不想看这个分区",
+              "reason_id": 11
+            },
+            {
+              "id": 2,
+              "id_type": "up",
+              "name": "不想看这个主播",
+              "reason_id": 12
+            }
+          ],
+          "subtitle": "减少此类推荐",
+          "title": "不感兴趣"
+        }
+      ],
+      "roomid": 100003,
+      "system_cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000033.jpg",
+      "title": "示例直播间丙",
+      "uid": 200003,
+      "uname": "示例主播丙",
+      "watched_text": "3456人看过"
+    },
+    {
+      "area_name": null,
+      "area_v2_id": null,
+      "area_v2_parent_id": null,
+      "cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000024.jpg",
+      "face": null,
+      "feedback": [],
+      "roomid": 100004,
+      "system_cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000024.jpg",
+      "title": "示例直播间丁",
+      "uid": null,
+      "uname": null,
+      "watched_text": null
+    }
+  ],
+  "follow": {
+    "items": [
+      {
+        "area_name": "示例分区甲",
+        "area_v2_id": 145,
+        "area_v2_parent_id": 1,
+        "cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000021.jpg",
+        "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000011.jpg",
+        "feedback": [],
+        "roomid": 100001,
+        "system_cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000021.jpg",
+        "title": "示例直播间甲",
+        "uid": 200001,
+        "uname": "示例主播甲",
+        "watched_text": "1.2万人看过"
+      },
+      {
+        "area_name": null,
+        "area_v2_id": null,
+        "area_v2_parent_id": null,
+        "cover": null,
+        "face": null,
+        "feedback": [],
+        "roomid": 100002,
+        "system_cover": null,
+        "title": "示例直播间乙",
+        "uid": null,
+        "uname": "示例主播乙",
+        "watched_text": null
+      }
+    ],
+    "total_count": 3
+  },
+  "has_more": true
+}

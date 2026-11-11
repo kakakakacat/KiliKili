@@ -6,7 +6,8 @@ import 'package:kilikili/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:kilikili/common/widgets/view_sliver_safe_area.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/live/live_contribution_rank_type.dart';
-import 'package:kilikili/models_new/live/live_contribution_rank/item.dart';
+import 'package:kilikili/services/rust/live_rest_compat.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/pages/live_room/contribution_rank/controller.dart';
 import 'package:kilikili/pages/member/widget/medal_widget.dart';
 import 'package:kilikili/utils/color_utils.dart';
@@ -23,8 +24,8 @@ class ContributionRankPanel extends StatefulWidget {
     required this.roomId,
   });
 
-  final Object ruid;
-  final Object roomId;
+  final int ruid;
+  final int roomId;
 
   @override
   State<ContributionRankPanel> createState() => _ContributionRankPanelState();
@@ -99,8 +100,8 @@ class _ContributionRankType extends StatefulWidget {
     required this.type,
   });
 
-  final Object ruid;
-  final Object roomId;
+  final int ruid;
+  final int roomId;
   final LiveContributionRankType type;
 
   @override
@@ -194,7 +195,7 @@ class _Item extends StatelessWidget {
   Widget build(BuildContext context) {
     late final colorScheme = ColorScheme.of(context);
     Widget child = Text(item.name!);
-    if (item.uinfoMedal case final uinfoMedal?) {
+    if (toUinfoMedalOrNull(item.medal) case final uinfoMedal?) {
       try {
         child = Column(
           spacing: 4,

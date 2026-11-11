@@ -1,0 +1,33 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "room": {
+      "list": [
+        {
+          "roomid": 100001,
+          "cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000021.jpg",
+          "title": "示例直播间甲",
+          "name": "示例主播甲",
+          "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000011.jpg",
+          "watched_show": {
+            "switch": true,
+            "num": 12345,
+            "text_small": "1.2万",
+            "text_large": "1.2万人看过"
+          }
+        },
+        {
+          "roomid": 100002,
+          "cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000022.jpg",
+          "title": "没有看过人数的房间",
+          "name": "示例主播乙",
+          "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000012.jpg"
+        }
+      ],
+      "total_room": 2
+    },
+    "user": null
+  }
+}

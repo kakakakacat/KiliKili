@@ -7,7 +7,7 @@ import 'package:kilikili/common/widgets/scroll_physics.dart'
     show tabBarScrollPhysics;
 import 'package:kilikili/common/widgets/selection_text.dart';
 import 'package:kilikili/common/widgets/view_safe_area.dart';
-import 'package:kilikili/http/live.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/image_preview_type.dart';
 import 'package:kilikili/models/common/member/user_info_type.dart';
@@ -374,7 +374,13 @@ class UserInfoCard extends StatelessWidget {
                   onTap: hasMedalName
                       ? () => Utils.copyText(medalName)
                       : () async {
-                          final res = await LiveHttp.liveMedalName(card.mid!);
+                          // `SpaceCard.mid` 是 `String?`，而基线
+                          // `liveMedalName(Object uid)` 把它原样拼进查询
+                          // 串。Rust 侧收 int，这里显式解析：解析不出来
+                          // 就不发请求，而不是让服务端回一个业务错误码。
+                          final mid = int.tryParse(card.mid ?? '');
+                          if (mid == null) return;
+                          final res = await RustLive.medalName(uid: mid);
                           if (res case Success(:final response)) {
                             if (response != null) {
                               card.medalName = response;

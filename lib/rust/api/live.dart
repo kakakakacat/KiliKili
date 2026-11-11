@@ -7,8 +7,8 @@ import 'package:kilikili/rust/frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:kilikili/rust/api/transport.dart';
 
-// These functions are ignored because they are not marked as `pub`: `area_group`, `area`, `card`, `feedback`, `flatten`, `follow_page`, `index_page`, `into_api`, `quality`, `room_h5`, `room_play_info`, `second_page`, `split`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These functions are ignored because they are not marked as `pub`: `area_group`, `area`, `card`, `contribution_rank_item`, `emote_package`, `feedback`, `flatten`, `follow_page`, `index_page`, `into_api`, `medal_wall`, `medal`, `quality`, `room_h5`, `room_play_info`, `search_page`, `second_page`, `shield_info`, `split`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// 取全部分区（按一级分区分组）。
 Future<LiveAreaGroupsResult> fetchLiveAreaList({
@@ -119,6 +119,85 @@ Future<LiveRoomPlayInfoResult> fetchLiveRoomPlayInfo({
   onlyAudio: onlyAudio,
   mixinKey: mixinKey,
   wts: wts,
+);
+
+/// 取房间表情包。不签名。
+Future<LiveEmotePackagesResult> fetchLiveEmoticons({
+  required LiveContext context,
+  required PlatformInt64 roomId,
+}) => RustLib.instance.api.crateApiLiveFetchLiveEmoticons(
+  context: context,
+  roomId: roomId,
+);
+
+/// 直播搜索。**APP 签名**。
+///
+/// `kind` 取 `room` 或 `user`，与 Dart 的 `LiveSearchType.name` 对应。
+/// 不在这里定义枚举：它同时是 Dart 侧 Tab 的标识，两边各定义一份就会
+/// 漂移。
+Future<LiveSearchResult> fetchLiveSearch({
+  required LiveContext context,
+  required LiveAppIdentity identity,
+  required PlatformInt64 page,
+  required String keyword,
+  required String kind,
+}) => RustLib.instance.api.crateApiLiveFetchLiveSearch(
+  context: context,
+  identity: identity,
+  page: page,
+  keyword: keyword,
+  kind: kind,
+);
+
+/// 取房间的屏蔽设置。**WBI 签名**。
+Future<LiveShieldInfoResult> fetchLiveShieldInfo({
+  required LiveContext context,
+  required PlatformInt64 roomId,
+  required String mixinKey,
+  required PlatformInt64 wts,
+}) => RustLib.instance.api.crateApiLiveFetchLiveShieldInfo(
+  context: context,
+  roomId: roomId,
+  mixinKey: mixinKey,
+  wts: wts,
+);
+
+/// 取贡献榜。**WBI 签名**。
+///
+/// `kind` 与 `switch_name` 成对出现（在线榜 `online_rank` /
+/// `contribution_rank`、日榜 `daily_rank` / `today_rank`…），只带其一
+/// 服务端会回一个空榜而不是报错。
+Future<LiveContributionRankResult> fetchLiveContributionRank({
+  required LiveContext context,
+  required LiveRankQuery query,
+  required String mixinKey,
+  required PlatformInt64 wts,
+}) => RustLib.instance.api.crateApiLiveFetchLiveContributionRank(
+  context: context,
+  query: query,
+  mixinKey: mixinKey,
+  wts: wts,
+);
+
+/// 取某个用户的勋章墙。不签名。
+Future<LiveMedalWallResult> fetchLiveMedalWall({
+  required LiveContext context,
+  required PlatformInt64 targetId,
+}) => RustLib.instance.api.crateApiLiveFetchLiveMedalWall(
+  context: context,
+  targetId: targetId,
+);
+
+/// 取主播的粉丝团勋章名。不签名。
+///
+/// 成功但没有粉丝团时 `data` 是 `Some(None)`，不是错误——基线把这种
+/// 情况也报成了错误提示。
+Future<LiveMedalNameResult> fetchLiveMedalName({
+  required LiveContext context,
+  required PlatformInt64 uid,
+}) => RustLib.instance.api.crateApiLiveFetchLiveMedalName(
+  context: context,
+  uid: uid,
 );
 
 /// 本机/本次会话的身份值。
@@ -407,6 +486,168 @@ class LiveContext {
           transport == other.transport;
 }
 
+/// 贡献榜的一项。
+class LiveContributionRankItem {
+  final PlatformInt64? uid;
+  final String? name;
+  final String? face;
+  final PlatformInt64? score;
+  final LiveMedal? medal;
+
+  const LiveContributionRankItem({
+    this.uid,
+    this.name,
+    this.face,
+    this.score,
+    this.medal,
+  });
+
+  @override
+  int get hashCode =>
+      uid.hashCode ^
+      name.hashCode ^
+      face.hashCode ^
+      score.hashCode ^
+      medal.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveContributionRankItem &&
+          runtimeType == other.runtimeType &&
+          uid == other.uid &&
+          name == other.name &&
+          face == other.face &&
+          score == other.score &&
+          medal == other.medal;
+}
+
+/// 贡献榜。字段语义同 [`LiveAreaGroupsResult`]。
+class LiveContributionRankResult {
+  final List<LiveContributionRankItem>? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const LiveContributionRankResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveContributionRankResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+/// 一个表情包。
+class LiveEmotePackage {
+  final List<LiveEmoticon> emoticons;
+  final PlatformInt64? pkgType;
+  final String? currentCover;
+
+  const LiveEmotePackage({
+    required this.emoticons,
+    this.pkgType,
+    this.currentCover,
+  });
+
+  @override
+  int get hashCode =>
+      emoticons.hashCode ^ pkgType.hashCode ^ currentCover.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveEmotePackage &&
+          runtimeType == other.runtimeType &&
+          emoticons == other.emoticons &&
+          pkgType == other.pkgType &&
+          currentCover == other.currentCover;
+}
+
+/// 房间表情包。字段语义同 [`LiveAreaGroupsResult`]。
+class LiveEmotePackagesResult {
+  final List<LiveEmotePackage>? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const LiveEmotePackagesResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveEmotePackagesResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+/// 直播间表情包里的一个表情。
+class LiveEmoticon {
+  final String? emoji;
+  final String? url;
+  final PlatformInt64? width;
+  final PlatformInt64? height;
+  final String? emoticonUnique;
+
+  const LiveEmoticon({
+    this.emoji,
+    this.url,
+    this.width,
+    this.height,
+    this.emoticonUnique,
+  });
+
+  @override
+  int get hashCode =>
+      emoji.hashCode ^
+      url.hashCode ^
+      width.hashCode ^
+      height.hashCode ^
+      emoticonUnique.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveEmoticon &&
+          runtimeType == other.runtimeType &&
+          emoji == other.emoji &&
+          url == other.url &&
+          width == other.width &&
+          height == other.height &&
+          emoticonUnique == other.emoticonUnique;
+}
+
 /// 卡片上的「不感兴趣」入口。
 class LiveFeedback {
   final String? title;
@@ -691,6 +932,197 @@ class LiveIndexResult {
           errorCode == other.errorCode;
 }
 
+/// 粉丝勋章。
+///
+/// **跨切片共享**：本模块的贡献榜与勋章墙产出它，而 SuperChat 与弹幕
+/// 长连接里的每条消息也带同一结构（S11b / #62，阻塞在 ADR-012）。
+/// Dart 的 `UinfoMedal` 因此删不掉，由 `live_rest_compat.dart` 单向
+/// 适配，随 S11b 迁完一并删。
+class LiveMedal {
+  final String? name;
+  final PlatformInt64? level;
+  final PlatformInt64? id;
+  final PlatformInt64? ruid;
+  final String? colorStart;
+  final String? colorText;
+
+  const LiveMedal({
+    this.name,
+    this.level,
+    this.id,
+    this.ruid,
+    this.colorStart,
+    this.colorText,
+  });
+
+  @override
+  int get hashCode =>
+      name.hashCode ^
+      level.hashCode ^
+      id.hashCode ^
+      ruid.hashCode ^
+      colorStart.hashCode ^
+      colorText.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveMedal &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          level == other.level &&
+          id == other.id &&
+          ruid == other.ruid &&
+          colorStart == other.colorStart &&
+          colorText == other.colorText;
+}
+
+/// 主播的粉丝团勋章名。
+///
+/// **这个结果没有 `data` 字段**，与上面几个不同：勋章名本身就是可空的
+/// （主播没开粉丝团），而 `Option<Option<String>>` 是 FRB 不支持的类型
+/// ——codegen 会直接 panic，不是生成一个将就能用的绑定。
+///
+/// 于是改用 `error_kind` 区分两种 `None`：它为 `None` 表示请求成功，
+/// 此时 `name` 为 `None` 意味着该主播没有粉丝团（基线把这种情况也报成
+/// 了错误提示）。
+class LiveMedalNameResult {
+  final String? name;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const LiveMedalNameResult({
+    this.name,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      name.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveMedalNameResult &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+/// 某个用户的勋章墙。
+class LiveMedalWall {
+  final List<LiveMedalWallItem> list;
+  final PlatformInt64? count;
+  final String? name;
+  final String? icon;
+
+  const LiveMedalWall({
+    required this.list,
+    this.count,
+    this.name,
+    this.icon,
+  });
+
+  @override
+  int get hashCode =>
+      list.hashCode ^ count.hashCode ^ name.hashCode ^ icon.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveMedalWall &&
+          runtimeType == other.runtimeType &&
+          list == other.list &&
+          count == other.count &&
+          name == other.name &&
+          icon == other.icon;
+}
+
+/// 勋章墙的一项。
+class LiveMedalWallItem {
+  /// `medal_info.wearing_status`，1 为正在佩戴。壳已摊平。
+  final PlatformInt64? wearingStatus;
+  final String? targetName;
+  final String? targetIcon;
+  final String? link;
+  final PlatformInt64? liveStatus;
+  final PlatformInt64? official;
+  final LiveMedal? medal;
+
+  const LiveMedalWallItem({
+    this.wearingStatus,
+    this.targetName,
+    this.targetIcon,
+    this.link,
+    this.liveStatus,
+    this.official,
+    this.medal,
+  });
+
+  @override
+  int get hashCode =>
+      wearingStatus.hashCode ^
+      targetName.hashCode ^
+      targetIcon.hashCode ^
+      link.hashCode ^
+      liveStatus.hashCode ^
+      official.hashCode ^
+      medal.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveMedalWallItem &&
+          runtimeType == other.runtimeType &&
+          wearingStatus == other.wearingStatus &&
+          targetName == other.targetName &&
+          targetIcon == other.targetIcon &&
+          link == other.link &&
+          liveStatus == other.liveStatus &&
+          official == other.official &&
+          medal == other.medal;
+}
+
+/// 勋章墙。字段语义同 [`LiveAreaGroupsResult`]。
+class LiveMedalWallResult {
+  final LiveMedalWall? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const LiveMedalWallResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveMedalWallResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
 /// 一档画质。
 ///
 /// `desc` 为 `None` 表示本次响应的 `g_qn_desc` 里没有这一档，**不是**
@@ -716,6 +1148,56 @@ class LiveQn {
           runtimeType == other.runtimeType &&
           code == other.code &&
           desc == other.desc;
+}
+
+/// 贡献榜的查询条件。
+///
+/// 打包成结构体而不是五个平铺参数，是因为它们**两两同型且相邻**：
+/// `ruid` 与 `room_id` 都是 i64，`kind` 与 `switch_name` 都是 String。
+/// 平铺时传反了编译器一声不吭，服务端也只回一个空榜——表现成「这个榜
+/// 没人」，从现象反推不出是参数顺序错了。Dart 侧用命名参数构造本结构，
+/// 顺序就不再有意义。
+class LiveRankQuery {
+  /// 主播 uid。
+  final PlatformInt64 ruid;
+  final PlatformInt64 roomId;
+  final PlatformInt64 page;
+
+  /// `LiveContributionRankType.name`，如 `online_rank`。
+  final String kind;
+
+  /// 同一枚举的 `sw1tch`，如 `contribution_rank`。**必须与 [`kind`]
+  /// 成对**，只带其一服务端回空榜而不是报错。
+  ///
+  /// [`kind`]: Self::kind
+  final String switchName;
+
+  const LiveRankQuery({
+    required this.ruid,
+    required this.roomId,
+    required this.page,
+    required this.kind,
+    required this.switchName,
+  });
+
+  @override
+  int get hashCode =>
+      ruid.hashCode ^
+      roomId.hashCode ^
+      page.hashCode ^
+      kind.hashCode ^
+      switchName.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveRankQuery &&
+          runtimeType == other.runtimeType &&
+          ruid == other.ruid &&
+          roomId == other.roomId &&
+          page == other.page &&
+          kind == other.kind &&
+          switchName == other.switchName;
 }
 
 /// 直播间卡片。首页推荐、分区二级列表、分区入口、关注区块共用一种。
@@ -944,6 +1426,149 @@ class LiveRoomPlayInfoResult {
           errorCode == other.errorCode;
 }
 
+/// 直播搜索的一页。同一次请求只会有 `rooms` 或 `users` 其中一侧非空。
+class LiveSearchData {
+  final List<LiveSearchRoom> rooms;
+  final PlatformInt64? totalRoom;
+  final List<LiveSearchUser> users;
+  final PlatformInt64? totalUser;
+
+  const LiveSearchData({
+    required this.rooms,
+    this.totalRoom,
+    required this.users,
+    this.totalUser,
+  });
+
+  @override
+  int get hashCode =>
+      rooms.hashCode ^ totalRoom.hashCode ^ users.hashCode ^ totalUser.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveSearchData &&
+          runtimeType == other.runtimeType &&
+          rooms == other.rooms &&
+          totalRoom == other.totalRoom &&
+          users == other.users &&
+          totalUser == other.totalUser;
+}
+
+/// 直播搜索。字段语义同 [`LiveAreaGroupsResult`]。
+class LiveSearchResult {
+  final LiveSearchData? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const LiveSearchResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveSearchResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+/// 直播搜索结果里的一个直播间。
+class LiveSearchRoom {
+  final PlatformInt64? roomid;
+  final String? cover;
+  final String? title;
+  final String? name;
+  final String? face;
+
+  /// `watched_show.text_large`，壳已摊平。
+  final String? watchedText;
+
+  const LiveSearchRoom({
+    this.roomid,
+    this.cover,
+    this.title,
+    this.name,
+    this.face,
+    this.watchedText,
+  });
+
+  @override
+  int get hashCode =>
+      roomid.hashCode ^
+      cover.hashCode ^
+      title.hashCode ^
+      name.hashCode ^
+      face.hashCode ^
+      watchedText.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveSearchRoom &&
+          runtimeType == other.runtimeType &&
+          roomid == other.roomid &&
+          cover == other.cover &&
+          title == other.title &&
+          name == other.name &&
+          face == other.face &&
+          watchedText == other.watchedText;
+}
+
+/// 直播搜索结果里的一个主播。
+class LiveSearchUser {
+  final PlatformInt64? roomid;
+  final String? name;
+  final String? face;
+  final PlatformInt64? liveStatus;
+  final String? areaName;
+  final PlatformInt64? fansNum;
+
+  const LiveSearchUser({
+    this.roomid,
+    this.name,
+    this.face,
+    this.liveStatus,
+    this.areaName,
+    this.fansNum,
+  });
+
+  @override
+  int get hashCode =>
+      roomid.hashCode ^
+      name.hashCode ^
+      face.hashCode ^
+      liveStatus.hashCode ^
+      areaName.hashCode ^
+      fansNum.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveSearchUser &&
+          runtimeType == other.runtimeType &&
+          roomid == other.roomid &&
+          name == other.name &&
+          face == other.face &&
+          liveStatus == other.liveStatus &&
+          areaName == other.areaName &&
+          fansNum == other.fansNum;
+}
+
 /// 分区二级列表的一屏。
 class LiveSecondPage {
   final PlatformInt64? count;
@@ -1021,6 +1646,85 @@ class LiveSecondTag {
           runtimeType == other.runtimeType &&
           name == other.name &&
           sortType == other.sortType;
+}
+
+/// 房间的屏蔽设置。
+class LiveShieldInfo {
+  final List<LiveShieldUser> shieldUsers;
+  final List<String> keywords;
+
+  const LiveShieldInfo({
+    required this.shieldUsers,
+    required this.keywords,
+  });
+
+  @override
+  int get hashCode => shieldUsers.hashCode ^ keywords.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveShieldInfo &&
+          runtimeType == other.runtimeType &&
+          shieldUsers == other.shieldUsers &&
+          keywords == other.keywords;
+}
+
+/// 屏蔽设置。字段语义同 [`LiveAreaGroupsResult`]。
+class LiveShieldInfoResult {
+  final LiveShieldInfo? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const LiveShieldInfoResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveShieldInfoResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+/// 被屏蔽的一个用户。
+///
+/// 增删屏蔽用户的写操作仍在 Dart（归 ADR-013 / #50），但它**直接构造
+/// 本结构的 Dart 绑定**，读写共用一个类型。
+class LiveShieldUser {
+  final PlatformInt64 uid;
+  final String uname;
+
+  const LiveShieldUser({
+    required this.uid,
+    required this.uname,
+  });
+
+  @override
+  int get hashCode => uid.hashCode ^ uname.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LiveShieldUser &&
+          runtimeType == other.runtimeType &&
+          uid == other.uid &&
+          uname == other.uname;
 }
 
 /// 一种传输协议（http_stream / http_hls）。

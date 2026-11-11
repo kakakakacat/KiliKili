@@ -1,0 +1,42 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "fans_brand": 1,
+    "data": [
+      {
+        "pkg_id": 1,
+        "pkg_name": "官方表情",
+        "pkg_type": 1,
+        "current_cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000051.png",
+        "emoticons": [
+          {
+            "emoji": "[妙啊]",
+            "url": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000061.png",
+            "width": 20,
+            "height": 20,
+            "emoticon_unique": "official_001"
+          },
+          {
+            "emoji": "[生气]",
+            "url": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000062.png",
+            "width": 20,
+            "height": 20,
+            "emoticon_unique": "official_002"
+          }
+        ]
+      },
+      {
+        "pkg_id": 2,
+        "pkg_name": "房间专属",
+        "pkg_type": 2,
+        "emoticons": []
+      },
+      {
+        "pkg_id": 3,
+        "pkg_name": "缺字段的包"
+      }
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000021.jpg",
+    "medal": {
+      "color_start": "#4C7DFF99",
+      "color_text": "#FFFFFF",
+      "id": 301,
+      "level": 21,
+      "name": "示例牌",
+      "ruid": 200001
+    },
+    "name": "榜一示例",
+    "score": 98765,
+    "uid": 200021
+  },
+  {
+    "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000022.jpg",
+    "medal": null,
+    "name": "没有勋章的榜二",
+    "score": 4321,
+    "uid": 200022
+  },
+  {
+    "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000023.jpg",
+    "medal": null,
+    "name": "连 uinfo 都没有的榜三",
+    "score": 100,
+    "uid": 200023
+  }
+]

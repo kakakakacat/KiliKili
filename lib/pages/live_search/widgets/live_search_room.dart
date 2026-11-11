@@ -1,14 +1,14 @@
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/models_new/live/live_search/room_item.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
 // 视频卡片 - 垂直布局
 class LiveCardVSearch extends StatelessWidget {
-  final LiveSearchRoomItemModel item;
+  final LiveSearchRoom item;
 
   const LiveCardVSearch({
     super.key,
@@ -96,7 +96,7 @@ class LiveCardVSearch extends StatelessWidget {
             item.name.toString(),
             style: const TextStyle(fontSize: 11, color: Colors.white),
           ),
-          if (item.watchedShow?.textLarge case final textLarge?)
+          if (item.watchedText case final textLarge?)
             Text(
               textLarge,
               style: const TextStyle(fontSize: 11, color: Colors.white),

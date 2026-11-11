@@ -451,14 +451,11 @@ class LiveRoomController extends GetxController {
   }
 
   Future<void> _fetchBlockRules() async {
-    final res = await LiveHttp.getLiveInfoByUser(roomId);
-    if (res case Success(:final response?)) {
-      if (response.keywordList case final keywordList?) {
-        _keywordList = keywordList;
-      }
-      if (response.shieldUserList case final shieldUserList?) {
-        _shieldUids = shieldUserList.map((e) => e.uid).toSet();
-      }
+    final res = await RustLive.shieldInfo(roomId: roomId);
+    if (res case Success(:final response)) {
+      // 没有屏蔽设置时 Rust 给空列表而不是 null，直接赋值即可。
+      _keywordList = response.keywords;
+      _shieldUids = response.shieldUsers.map((e) => e.uid).toSet();
     }
   }
 

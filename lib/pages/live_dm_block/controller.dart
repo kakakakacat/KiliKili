@@ -1,6 +1,6 @@
 import 'package:kilikili/http/live.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/live/live_dm_block/shield_user_list.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/pages/live_room/controller.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -25,19 +25,16 @@ class LiveDmBlockController extends GetxController
 
   bool _isLoaded = false;
   final RxList<String> keywordList = <String>[].obs;
-  final RxList<ShieldUserList> shieldUserList = <ShieldUserList>[].obs;
+  final RxList<LiveShieldUser> shieldUserList = <LiveShieldUser>[].obs;
 
   Future<void> queryData() async {
-    final res = await LiveHttp.getLiveInfoByUser(roomId);
+    final res = await RustLive.shieldInfo(roomId: int.parse(roomId));
     if (res case Success(:final response)) {
       _isLoaded = true;
-      if (response == null) return;
-      if (response.keywordList case final list? when list.isNotEmpty) {
-        keywordList.addAll(list);
-      }
-      if (response.shieldUserList case final list? when list.isNotEmpty) {
-        shieldUserList.addAll(list);
-      }
+      // 未登录或没有任何屏蔽设置时 Rust 给两个空列表而不是 null——
+      // 基线那边是 `ShieldInfo?` 为 null，调用点同样当空处理。
+      keywordList.addAll(response.keywords);
+      shieldUserList.addAll(response.shieldUsers);
     } else {
       res.toast();
     }
@@ -76,8 +73,8 @@ class LiveDmBlockController extends GetxController
   }
 
   Future<void> onRemove(int index, Object item) async {
-    assert(item is ShieldUserList || item is String);
-    if (item is ShieldUserList) {
+    assert(item is LiveShieldUser || item is String);
+    if (item is LiveShieldUser) {
       final res = await LiveHttp.liveShieldUser(
         uid: item.uid,
         roomid: roomId,

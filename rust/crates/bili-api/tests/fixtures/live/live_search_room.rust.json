@@ -1,0 +1,23 @@
+{
+  "rooms": [
+    {
+      "cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000021.jpg",
+      "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000011.jpg",
+      "name": "示例主播甲",
+      "roomid": 100001,
+      "title": "示例直播间甲",
+      "watched_text": "1.2万人看过"
+    },
+    {
+      "cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000022.jpg",
+      "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000012.jpg",
+      "name": "示例主播乙",
+      "roomid": 100002,
+      "title": "没有看过人数的房间",
+      "watched_text": null
+    }
+  ],
+  "total_room": 2,
+  "total_user": null,
+  "users": []
+}

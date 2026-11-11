@@ -33,10 +33,11 @@
 
 use bili_domain::error::{DomainError, ErrorKind};
 use bili_domain::live::{
-    LiveArea, LiveAreaGroup, LiveCodec, LiveFeedback, LiveFeedbackReason, LiveFollowItem,
-    LiveFollowSection, LiveFollowingPage, LiveFormat, LiveIndexPage, LiveQn, LiveRoomCard,
-    LiveRoomH5, LiveRoomPlayInfo, LiveSecondPage, LiveSecondTag, LiveStream, LiveUrlInfo,
-    default_area_entrance,
+    LiveArea, LiveAreaGroup, LiveCodec, LiveContributionRankItem, LiveEmotePackage, LiveEmoticon,
+    LiveFeedback, LiveFeedbackReason, LiveFollowItem, LiveFollowSection, LiveFollowingPage,
+    LiveFormat, LiveIndexPage, LiveMedal, LiveMedalWall, LiveMedalWallItem, LiveQn, LiveRoomCard,
+    LiveRoomH5, LiveRoomPlayInfo, LiveSearchData, LiveSearchRoom, LiveSearchUser, LiveSecondPage,
+    LiveSecondTag, LiveShieldInfo, LiveShieldUser, LiveStream, LiveUrlInfo, default_area_entrance,
 };
 use serde::Deserialize;
 
@@ -66,6 +67,18 @@ pub mod path {
     pub const ROOM_H5: &str = "/xlive/web-room/v1/index/getH5InfoByRoom";
     /// 取流。
     pub const ROOM_PLAY_INFO: &str = "/xlive/web-room/v2/index/getRoomPlayInfo";
+    /// 房间表情包。
+    pub const EMOTICONS: &str = "/xlive/web-ucenter/v2/emoticon/GetEmoticons";
+    /// 直播搜索（房间 / 主播）。
+    pub const SEARCH: &str = "/xlive/app-interface/v2/search_live";
+    /// 房间的屏蔽设置（屏蔽用户 + 屏蔽词）。
+    pub const INFO_BY_USER: &str = "/xlive/web-room/v1/index/getInfoByUser";
+    /// 贡献榜。
+    pub const CONTRIBUTION_RANK: &str = "/xlive/general-interface/v1/rank/queryContributionRank";
+    /// 勋章墙。
+    pub const MEDAL_WALL: &str = "/xlive/web-ucenter/user/MedalWall";
+    /// 主播信息。本模块只用它取 `medal_name` 一个字段。
+    pub const MASTER_INFO: &str = "/live_user/v1/Master/info";
 }
 
 // ------------------------------------------------------------ 请求构造
@@ -303,6 +316,114 @@ pub fn build_room_play_info_request(
     PreparedRequest {
         path: path::ROOM_PLAY_INFO,
         query,
+    }
+}
+
+/// 房间表情包。不签名。
+#[must_use]
+pub fn build_emoticons_request(room_id: i64) -> PreparedRequest {
+    PreparedRequest {
+        path: path::EMOTICONS,
+        query: vec![
+            ("platform".to_owned(), "pc".to_owned()),
+            ("room_id".to_owned(), room_id.to_string()),
+        ],
+    }
+}
+
+/// 直播搜索。**APP 签名**，与分区三条同一套。
+///
+/// `kind` 是基线 `LiveSearchType` 的 `name`，只有 `room` 与 `user` 两个
+/// 取值；由调用方传字符串而不是在这里定义枚举，是因为它同时还是 Dart
+/// 侧 Tab 的标识，两边各定义一份就会漂移。
+#[must_use]
+pub fn build_search_request(
+    id: &AppIdentity,
+    page: i64,
+    keyword: &str,
+    kind: &str,
+) -> PreparedRequest {
+    let mut query = app_base(id);
+    put(&mut query, "page", page.to_string());
+    put(&mut query, "pagesize", "30");
+    put(&mut query, "keyword", keyword.to_owned());
+    put(&mut query, "type", kind.to_owned());
+    signed(query, id, path::SEARCH)
+}
+
+/// 房间的屏蔽设置。**WBI 签名**。
+///
+/// `web_location=444.8` 与取流那条是同一个浮点字面量，同样必须逐字
+/// 一致，理由见 [`build_room_play_info_request`]。
+#[must_use]
+pub fn build_info_by_user_request(room_id: i64, mixin_key: &str, wts: i64) -> PreparedRequest {
+    let mut query = vec![
+        ("room_id".to_owned(), room_id.to_string()),
+        ("from".to_owned(), "0".to_owned()),
+        ("not_mock_enter_effect".to_owned(), "1".to_owned()),
+        ("web_location".to_owned(), "444.8".to_owned()),
+        ("wts".to_owned(), wts.to_string()),
+    ];
+    query.sort_by(|a, b| a.0.cmp(&b.0));
+    let w_rid = bili_protocol::wbi::sign(&query, mixin_key);
+    query.push(("w_rid".to_owned(), w_rid));
+    PreparedRequest {
+        path: path::INFO_BY_USER,
+        query,
+    }
+}
+
+/// 贡献榜。**WBI 签名**。
+///
+/// `kind` 与 `switch_name` 是基线 `LiveContributionRankType` 的 `name`
+/// 与 `sw1tch`，成对出现（在线榜 `online_rank`/`contribution_rank`、
+/// 日榜 `daily_rank`/`today_rank`…）。**两个都要带**：只带其一服务端会
+/// 回一个空榜而不是报错。
+#[must_use]
+pub fn build_contribution_rank_request(
+    ruid: i64,
+    room_id: i64,
+    page: i64,
+    kind: &str,
+    switch_name: &str,
+    mixin_key: &str,
+    wts: i64,
+) -> PreparedRequest {
+    let mut query = vec![
+        ("ruid".to_owned(), ruid.to_string()),
+        ("room_id".to_owned(), room_id.to_string()),
+        ("page".to_owned(), page.to_string()),
+        ("page_size".to_owned(), "100".to_owned()),
+        ("type".to_owned(), kind.to_owned()),
+        ("switch".to_owned(), switch_name.to_owned()),
+        ("platform".to_owned(), "web".to_owned()),
+        ("web_location".to_owned(), "444.8".to_owned()),
+        ("wts".to_owned(), wts.to_string()),
+    ];
+    query.sort_by(|a, b| a.0.cmp(&b.0));
+    let w_rid = bili_protocol::wbi::sign(&query, mixin_key);
+    query.push(("w_rid".to_owned(), w_rid));
+    PreparedRequest {
+        path: path::CONTRIBUTION_RANK,
+        query,
+    }
+}
+
+/// 勋章墙。不签名。
+#[must_use]
+pub fn build_medal_wall_request(target_id: i64) -> PreparedRequest {
+    PreparedRequest {
+        path: path::MEDAL_WALL,
+        query: vec![("target_id".to_owned(), target_id.to_string())],
+    }
+}
+
+/// 主播信息。不签名。本模块只取其中的 `medal_name`。
+#[must_use]
+pub fn build_master_info_request(uid: i64) -> PreparedRequest {
+    PreparedRequest {
+        path: path::MASTER_INFO,
+        query: vec![("uid".to_owned(), uid.to_string())],
     }
 }
 
@@ -993,6 +1114,328 @@ pub fn parse_room_play_info(body: &str) -> Result<LiveRoomPlayInfo, DomainError>
     })
 }
 
+// --- 剩余只读五条 + 勋章名 ---
+
+/// 勋章 DTO。贡献榜在 `uinfo.medal`，勋章墙在 `uinfo_medal`，字段相同。
+#[derive(Deserialize)]
+struct MedalDto {
+    name: Option<String>,
+    level: Option<i64>,
+    id: Option<i64>,
+    ruid: Option<i64>,
+    v2_medal_color_start: Option<String>,
+    v2_medal_color_text: Option<String>,
+}
+
+impl MedalDto {
+    fn into_domain(self) -> LiveMedal {
+        LiveMedal {
+            name: self.name,
+            level: self.level,
+            id: self.id,
+            ruid: self.ruid,
+            color_start: self.v2_medal_color_start,
+            color_text: self.v2_medal_color_text,
+        }
+    }
+}
+
+#[derive(Deserialize)]
+struct EmoticonsDto {
+    data: Option<Vec<EmotePackageDto>>,
+}
+
+#[derive(Deserialize)]
+struct EmotePackageDto {
+    emoticons: Option<Vec<EmoticonDto>>,
+    pkg_type: Option<i64>,
+    current_cover: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct EmoticonDto {
+    emoji: Option<String>,
+    url: Option<String>,
+    width: Option<i64>,
+    height: Option<i64>,
+    emoticon_unique: Option<String>,
+}
+
+/// 解析房间表情包。
+///
+/// # Errors
+/// 信封非 0、JSON 结构不符。
+pub fn parse_emoticons(body: &str) -> Result<Vec<LiveEmotePackage>, DomainError> {
+    let dto: EmoticonsDto = unwrap_envelope(body)?;
+    Ok(dto
+        .data
+        .unwrap_or_default()
+        .into_iter()
+        .map(|p| LiveEmotePackage {
+            emoticons: p
+                .emoticons
+                .unwrap_or_default()
+                .into_iter()
+                .map(|e| LiveEmoticon {
+                    emoji: e.emoji,
+                    url: e.url,
+                    width: e.width,
+                    height: e.height,
+                    emoticon_unique: e.emoticon_unique,
+                })
+                .collect(),
+            pkg_type: p.pkg_type,
+            current_cover: p.current_cover,
+        })
+        .collect())
+}
+
+#[derive(Deserialize)]
+struct SearchDto {
+    room: Option<SearchRoomsDto>,
+    user: Option<SearchUsersDto>,
+}
+
+#[derive(Deserialize)]
+struct SearchRoomsDto {
+    list: Option<Vec<SearchRoomDto>>,
+    total_room: Option<i64>,
+}
+
+#[derive(Deserialize)]
+struct SearchRoomDto {
+    roomid: Option<i64>,
+    cover: Option<String>,
+    title: Option<String>,
+    name: Option<String>,
+    face: Option<String>,
+    /// 复用 S11a 第一批为卡片定义的那个 DTO，字段相同。
+    watched_show: Option<WatchedShowDto>,
+}
+
+#[derive(Deserialize)]
+struct SearchUsersDto {
+    list: Option<Vec<SearchUserDto>>,
+    total_user: Option<i64>,
+}
+
+/// 注意 `areaName` 与 `fansNum` 是 **camelCase**。
+///
+/// 同一个响应里 `roomid` / `face` / `name` / `live_status` 却是
+/// snake_case——上游在这条接口上的命名不一致，不是笔误。照抄，别「顺手
+/// 统一」：改成 snake_case 会让这两个字段静默变成 `None`，表现为搜索
+/// 结果里分区名与粉丝数空着，而不是解析失败。
+#[derive(Deserialize)]
+struct SearchUserDto {
+    roomid: Option<i64>,
+    name: Option<String>,
+    face: Option<String>,
+    live_status: Option<i64>,
+    #[serde(rename = "areaName")]
+    area_name: Option<String>,
+    #[serde(rename = "fansNum")]
+    fans_num: Option<i64>,
+}
+
+/// 解析直播搜索。
+///
+/// # Errors
+/// 信封非 0、JSON 结构不符。
+pub fn parse_search(body: &str) -> Result<LiveSearchData, DomainError> {
+    let dto: SearchDto = unwrap_envelope(body)?;
+    let room = dto.room;
+    let user = dto.user;
+    Ok(LiveSearchData {
+        rooms: room
+            .as_ref()
+            .and_then(|r| r.list.as_ref())
+            .map(|list| {
+                list.iter()
+                    .map(|r| LiveSearchRoom {
+                        roomid: r.roomid,
+                        cover: r.cover.clone(),
+                        title: r.title.clone(),
+                        name: r.name.clone(),
+                        face: r.face.clone(),
+                        watched_text: r.watched_show.as_ref().and_then(|w| w.text_large.clone()),
+                    })
+                    .collect()
+            })
+            .unwrap_or_default(),
+        total_room: room.and_then(|r| r.total_room),
+        users: user
+            .as_ref()
+            .and_then(|u| u.list.as_ref())
+            .map(|list| {
+                list.iter()
+                    .map(|u| LiveSearchUser {
+                        roomid: u.roomid,
+                        name: u.name.clone(),
+                        face: u.face.clone(),
+                        live_status: u.live_status,
+                        area_name: u.area_name.clone(),
+                        fans_num: u.fans_num,
+                    })
+                    .collect()
+            })
+            .unwrap_or_default(),
+        total_user: user.and_then(|u| u.total_user),
+    })
+}
+
+#[derive(Deserialize)]
+struct InfoByUserDto {
+    shield_info: Option<ShieldInfoDto>,
+}
+
+#[derive(Deserialize)]
+struct ShieldInfoDto {
+    shield_user_list: Option<Vec<ShieldUserDto>>,
+    keyword_list: Option<Vec<String>>,
+}
+
+#[derive(Deserialize)]
+struct ShieldUserDto {
+    uid: i64,
+    uname: String,
+}
+
+/// 解析房间的屏蔽设置。
+///
+/// `shield_info` 缺失时产出两个空列表而非错误：未登录或没有任何屏蔽
+/// 设置时服务端就是不给这一节，基线那边 `ShieldInfo?` 为 null，调用点
+/// 把两个列表都当空处理。
+///
+/// # Errors
+/// 信封非 0、JSON 结构不符。
+pub fn parse_shield_info(body: &str) -> Result<LiveShieldInfo, DomainError> {
+    let dto: InfoByUserDto = unwrap_envelope(body)?;
+    let info = dto.shield_info;
+    Ok(LiveShieldInfo {
+        shield_users: info
+            .as_ref()
+            .and_then(|i| i.shield_user_list.as_ref())
+            .map(|list| {
+                list.iter()
+                    .map(|u| LiveShieldUser {
+                        uid: u.uid,
+                        uname: u.uname.clone(),
+                    })
+                    .collect()
+            })
+            .unwrap_or_default(),
+        keywords: info.and_then(|i| i.keyword_list).unwrap_or_default(),
+    })
+}
+
+#[derive(Deserialize)]
+struct ContributionRankDto {
+    item: Option<Vec<ContributionRankItemDto>>,
+}
+
+#[derive(Deserialize)]
+struct ContributionRankItemDto {
+    uid: Option<i64>,
+    name: Option<String>,
+    face: Option<String>,
+    score: Option<i64>,
+    uinfo: Option<UinfoDto>,
+}
+
+#[derive(Deserialize)]
+struct UinfoDto {
+    medal: Option<MedalDto>,
+}
+
+/// 解析贡献榜。
+///
+/// # Errors
+/// 信封非 0、JSON 结构不符。
+pub fn parse_contribution_rank(body: &str) -> Result<Vec<LiveContributionRankItem>, DomainError> {
+    let dto: ContributionRankDto = unwrap_envelope(body)?;
+    Ok(dto
+        .item
+        .unwrap_or_default()
+        .into_iter()
+        .map(|i| LiveContributionRankItem {
+            uid: i.uid,
+            name: i.name,
+            face: i.face,
+            score: i.score,
+            medal: i.uinfo.and_then(|u| u.medal).map(MedalDto::into_domain),
+        })
+        .collect())
+}
+
+#[derive(Deserialize)]
+struct MedalWallDto {
+    list: Option<Vec<MedalWallItemDto>>,
+    count: Option<i64>,
+    name: Option<String>,
+    icon: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct MedalWallItemDto {
+    medal_info: Option<MedalInfoDto>,
+    target_name: Option<String>,
+    target_icon: Option<String>,
+    link: Option<String>,
+    live_status: Option<i64>,
+    official: Option<i64>,
+    uinfo_medal: Option<MedalDto>,
+}
+
+#[derive(Deserialize)]
+struct MedalInfoDto {
+    wearing_status: Option<i64>,
+}
+
+/// 解析勋章墙。
+///
+/// # Errors
+/// 信封非 0、JSON 结构不符。
+pub fn parse_medal_wall(body: &str) -> Result<LiveMedalWall, DomainError> {
+    let dto: MedalWallDto = unwrap_envelope(body)?;
+    Ok(LiveMedalWall {
+        list: dto
+            .list
+            .unwrap_or_default()
+            .into_iter()
+            .map(|i| LiveMedalWallItem {
+                wearing_status: i.medal_info.and_then(|m| m.wearing_status),
+                target_name: i.target_name,
+                target_icon: i.target_icon,
+                link: i.link,
+                live_status: i.live_status,
+                official: i.official,
+                medal: i.uinfo_medal.map(MedalDto::into_domain),
+            })
+            .collect(),
+        count: dto.count,
+        name: dto.name,
+        icon: dto.icon,
+    })
+}
+
+#[derive(Deserialize)]
+struct MasterInfoDto {
+    medal_name: Option<String>,
+}
+
+/// 解析主播信息里的勋章名。
+///
+/// 基线取的是 `data['medal_name'] as String`，缺失会抛并被收成 `Error`。
+/// 这里产出 `None`——主播没开粉丝团时该字段就是空串或缺失，那是正常
+/// 状态而不是失败，基线在这条上把「没有勋章」显示成了一次错误提示。
+///
+/// # Errors
+/// 信封非 0、JSON 结构不符。
+pub fn parse_medal_name(body: &str) -> Result<Option<String>, DomainError> {
+    let dto: MasterInfoDto = unwrap_envelope(body)?;
+    Ok(dto.medal_name.filter(|s| !s.is_empty()))
+}
+
 // ------------------------------------------------------------------ 取数
 
 async fn send<T: HttpTransport>(
@@ -1157,6 +1600,126 @@ pub async fn fetch_room_play_info<T: HttpTransport>(
     )
     .await?;
     parse_room_play_info(&body)
+}
+
+/// 取房间表情包。
+///
+/// # Errors
+/// 传输失败、信封非 0、JSON 结构不符。
+pub async fn fetch_emoticons<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    room_id: i64,
+) -> Result<Vec<LiveEmotePackage>, DomainError> {
+    let body = send(
+        transport,
+        ctx,
+        &build_emoticons_request(room_id),
+        Vec::new(),
+    )
+    .await?;
+    parse_emoticons(&body)
+}
+
+/// 直播搜索。
+///
+/// # Errors
+/// 传输失败、信封非 0、JSON 结构不符。
+pub async fn fetch_search<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    id: &AppIdentity,
+    page: i64,
+    keyword: &str,
+    kind: &str,
+) -> Result<LiveSearchData, DomainError> {
+    let body = send(
+        transport,
+        ctx,
+        &build_search_request(id, page, keyword, kind),
+        Vec::new(),
+    )
+    .await?;
+    parse_search(&body)
+}
+
+/// 取房间的屏蔽设置。
+///
+/// # Errors
+/// 传输失败、信封非 0、JSON 结构不符。
+pub async fn fetch_shield_info<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    room_id: i64,
+    mixin_key: &str,
+    wts: i64,
+) -> Result<LiveShieldInfo, DomainError> {
+    let body = send(
+        transport,
+        ctx,
+        &build_info_by_user_request(room_id, mixin_key, wts),
+        Vec::new(),
+    )
+    .await?;
+    parse_shield_info(&body)
+}
+
+/// 取贡献榜。
+///
+/// # Errors
+/// 传输失败、信封非 0、JSON 结构不符。
+#[allow(clippy::too_many_arguments)]
+pub async fn fetch_contribution_rank<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    ruid: i64,
+    room_id: i64,
+    page: i64,
+    kind: &str,
+    switch_name: &str,
+    mixin_key: &str,
+    wts: i64,
+) -> Result<Vec<LiveContributionRankItem>, DomainError> {
+    let body = send(
+        transport,
+        ctx,
+        &build_contribution_rank_request(ruid, room_id, page, kind, switch_name, mixin_key, wts),
+        Vec::new(),
+    )
+    .await?;
+    parse_contribution_rank(&body)
+}
+
+/// 取勋章墙。
+///
+/// # Errors
+/// 传输失败、信封非 0、JSON 结构不符。
+pub async fn fetch_medal_wall<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    target_id: i64,
+) -> Result<LiveMedalWall, DomainError> {
+    let body = send(
+        transport,
+        ctx,
+        &build_medal_wall_request(target_id),
+        Vec::new(),
+    )
+    .await?;
+    parse_medal_wall(&body)
+}
+
+/// 取主播的粉丝团勋章名。
+///
+/// # Errors
+/// 传输失败、信封非 0、JSON 结构不符。
+pub async fn fetch_medal_name<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    uid: i64,
+) -> Result<Option<String>, DomainError> {
+    let body = send(transport, ctx, &build_master_info_request(uid), Vec::new()).await?;
+    parse_medal_name(&body)
 }
 
 /// 房间 id 必须是正数。

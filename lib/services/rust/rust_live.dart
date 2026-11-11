@@ -15,6 +15,17 @@ export 'package:kilikili/rust/api/live.dart'
         LiveArea,
         LiveAreaGroup,
         LiveCodec,
+        LiveContributionRankItem,
+        LiveEmotePackage,
+        LiveEmoticon,
+        LiveMedal,
+        LiveMedalWall,
+        LiveMedalWallItem,
+        LiveSearchData,
+        LiveSearchRoom,
+        LiveSearchUser,
+        LiveShieldInfo,
+        LiveShieldUser,
         LiveFeedback,
         LiveFeedbackReason,
         LiveFollowItem,
@@ -23,6 +34,7 @@ export 'package:kilikili/rust/api/live.dart'
         LiveFormat,
         LiveIndexPage,
         LiveQn,
+        LiveRankQuery,
         LiveRoomCard,
         LiveRoomH5,
         LiveRoomPlayInfo,
@@ -275,6 +287,161 @@ abstract final class RustLive {
       return Success(data);
     } catch (e, st) {
       if (kDebugMode) debugPrint('[rust] 取直播流出错: $e\n$st');
+      return Error('$e');
+    }
+  }
+
+  /// 取房间表情包。不签名。
+  static Future<LoadingState<List<rust_api.LiveEmotePackage>>> emoticons({
+    required int roomId,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final res = await rust_api.fetchLiveEmoticons(
+        context: await _context(Api.getLiveEmoticons),
+        roomId: roomId,
+      );
+      final data = res.data;
+      if (data == null) return _failure(res.errorDetail, res.errorCode);
+      return Success(data);
+    } catch (e, st) {
+      if (kDebugMode) debugPrint('[rust] 取直播表情包出错: $e\n$st');
+      return Error('$e');
+    }
+  }
+
+  /// 直播搜索。**APP 签名**。
+  ///
+  /// [kind] 用 `LiveSearchType.name`（`room` / `user`）。同一次请求只会
+  /// 有返回页的 `rooms` 或 `users` 其中一侧非空。
+  static Future<LoadingState<rust_api.LiveSearchData>> search({
+    required int page,
+    required String keyword,
+    required String kind,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final res = await rust_api.fetchLiveSearch(
+        context: await _context(Api.liveSearch),
+        identity: _identity(RustRequest.accountFor(Api.liveSearch)),
+        page: page,
+        keyword: keyword,
+        kind: kind,
+      );
+      final data = res.data;
+      if (data == null) return _failure(res.errorDetail, res.errorCode);
+      return Success(data);
+    } catch (e, st) {
+      if (kDebugMode) debugPrint('[rust] 直播搜索出错: $e\n$st');
+      return Error('$e');
+    }
+  }
+
+  /// 取房间的屏蔽设置（屏蔽用户 + 屏蔽词）。**WBI 签名**。
+  ///
+  /// 未登录或没有任何屏蔽设置时返回两个空列表，不是错误。
+  static Future<LoadingState<rust_api.LiveShieldInfo>> shieldInfo({
+    required int roomId,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final mixinKey = await WbiSign.getWbiKeys();
+      if (mixinKey.isEmpty) return const Error('WBI 密钥获取失败，请稍后重试');
+
+      final res = await rust_api.fetchLiveShieldInfo(
+        context: await _context(Api.getLiveInfoByUser),
+        roomId: roomId,
+        mixinKey: mixinKey,
+        wts: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      );
+      final data = res.data;
+      if (data == null) return _failure(res.errorDetail, res.errorCode);
+      return Success(data);
+    } catch (e, st) {
+      if (kDebugMode) debugPrint('[rust] 取直播屏蔽设置出错: $e\n$st');
+      return Error('$e');
+    }
+  }
+
+  /// 取贡献榜。**WBI 签名**。
+  ///
+  /// [kind] 与 [switchName] 用 `LiveContributionRankType` 的 `name` 与
+  /// `sw1tch`，**必须成对**——只带其一服务端会回一个空榜而不是报错。
+  static Future<LoadingState<List<rust_api.LiveContributionRankItem>>>
+  contributionRank({
+    required int ruid,
+    required int roomId,
+    required int page,
+    required String kind,
+    required String switchName,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final mixinKey = await WbiSign.getWbiKeys();
+      if (mixinKey.isEmpty) return const Error('WBI 密钥获取失败，请稍后重试');
+
+      final res = await rust_api.fetchLiveContributionRank(
+        context: await _context(Api.liveContributionRank),
+        // 五个条件打包成结构体，用命名参数构造——`ruid`/`roomId` 与
+        // `kind`/`switchName` 两两同型，平铺传参时传反了只会回一个空榜。
+        query: rust_api.LiveRankQuery(
+          ruid: ruid,
+          roomId: roomId,
+          page: page,
+          kind: kind,
+          switchName: switchName,
+        ),
+        mixinKey: mixinKey,
+        wts: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      );
+      final data = res.data;
+      if (data == null) return _failure(res.errorDetail, res.errorCode);
+      return Success(data);
+    } catch (e, st) {
+      if (kDebugMode) debugPrint('[rust] 取贡献榜出错: $e\n$st');
+      return Error('$e');
+    }
+  }
+
+  /// 取某个用户的勋章墙。不签名。
+  static Future<LoadingState<rust_api.LiveMedalWall>> medalWall({
+    required int mid,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final res = await rust_api.fetchLiveMedalWall(
+        context: await _context(Api.liveMedalWall),
+        targetId: mid,
+      );
+      final data = res.data;
+      if (data == null) return _failure(res.errorDetail, res.errorCode);
+      return Success(data);
+    } catch (e, st) {
+      if (kDebugMode) debugPrint('[rust] 取勋章墙出错: $e\n$st');
+      return Error('$e');
+    }
+  }
+
+  /// 取主播的粉丝团勋章名。不签名。
+  ///
+  /// 成功但主播没开粉丝团时返回 `Success(null)`，**不是** `Error`——
+  /// 基线取的是 `data['medal_name'] as String`，空串原样返回、缺失则
+  /// 抛异常被收成错误提示，两种都把「没有粉丝团」说成了失败。
+  static Future<LoadingState<String?>> medalName({required int uid}) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final res = await rust_api.fetchLiveMedalName(
+        context: await _context(Api.liveMasterInfo),
+        uid: uid,
+      );
+      // 这个结果没有 data 字段：勋章名本身可空，用 errorKind 区分
+      // 「请求失败」与「没有粉丝团」。
+      if (res.errorKind != null) {
+        return _failure(res.errorDetail, res.errorCode);
+      }
+      return Success(res.name);
+    } catch (e, st) {
+      if (kDebugMode) debugPrint('[rust] 取勋章名出错: $e\n$st');
       return Error('$e');
     }
   }

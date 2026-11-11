@@ -1,0 +1,43 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "item": [
+      {
+        "uid": 200021,
+        "name": "榜一示例",
+        "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000021.jpg",
+        "score": 98765,
+        "rank": 1,
+        "uinfo": {
+          "uid": 200021,
+          "medal": {
+            "name": "示例牌",
+            "level": 21,
+            "id": 301,
+            "ruid": 200001,
+            "is_light": 1,
+            "v2_medal_color_start": "#4C7DFF99",
+            "v2_medal_color_text": "#FFFFFF"
+          }
+        }
+      },
+      {
+        "uid": 200022,
+        "name": "没有勋章的榜二",
+        "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000022.jpg",
+        "score": 4321,
+        "rank": 2,
+        "uinfo": { "uid": 200022 }
+      },
+      {
+        "uid": 200023,
+        "name": "连 uinfo 都没有的榜三",
+        "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000023.jpg",
+        "score": 100,
+        "rank": 3
+      }
+    ]
+  }
+}

@@ -242,6 +242,140 @@ pub struct LiveRoomPlayInfo {
     pub streams: Vec<LiveStream>,
 }
 
+/// 粉丝勋章。
+///
+/// **这是跨切片共享的实体**：本模块的贡献榜与勋章墙产出它，而
+/// `SUPER_CHAT_MESSAGE` 与弹幕长连接里的每条消息也带同一结构（S11b /
+/// issue #62，阻塞在 ADR-012）。Dart 侧的 `UinfoMedal` 因此删不掉，
+/// 由 `lib/services/rust/live_rest_compat.dart` 做单向适配，**随 S11b
+/// 迁完一并删**。
+///
+/// 字段名去掉了协议里的 `v2_` 前缀：那是上游的字段版本号，不是语义。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LiveMedal {
+    pub name: Option<String>,
+    pub level: Option<i64>,
+    pub id: Option<i64>,
+    /// 勋章对应主播的 uid。
+    pub ruid: Option<i64>,
+    /// `v2_medal_color_start`，渐变起始色。
+    pub color_start: Option<String>,
+    /// `v2_medal_color_text`，文字色。
+    pub color_text: Option<String>,
+}
+
+/// 直播间表情包里的一个表情。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LiveEmoticon {
+    pub emoji: Option<String>,
+    pub url: Option<String>,
+    pub width: Option<i64>,
+    pub height: Option<i64>,
+    pub emoticon_unique: Option<String>,
+}
+
+/// 一个表情包（房间专属、通用等，由 `pkg_type` 区分）。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LiveEmotePackage {
+    pub emoticons: Vec<LiveEmoticon>,
+    pub pkg_type: Option<i64>,
+    pub current_cover: Option<String>,
+}
+
+/// 直播搜索结果里的一个直播间。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LiveSearchRoom {
+    pub roomid: Option<i64>,
+    pub cover: Option<String>,
+    pub title: Option<String>,
+    /// 主播名。
+    pub name: Option<String>,
+    pub face: Option<String>,
+    /// `watched_show.text_large`。基线那层单字段的壳
+    /// （`WatchedShow`）在这里摊平，与 [`LiveRoomCard`] 一致。
+    pub watched_text: Option<String>,
+}
+
+/// 直播搜索结果里的一个主播。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LiveSearchUser {
+    pub roomid: Option<i64>,
+    pub name: Option<String>,
+    pub face: Option<String>,
+    /// 1 为直播中。
+    pub live_status: Option<i64>,
+    pub area_name: Option<String>,
+    pub fans_num: Option<i64>,
+}
+
+/// 直播搜索的一页。
+///
+/// 协议上 `room` 与 `user` 各是一层 `{list, total_*}` 的壳，且**同一次
+/// 请求只会有其中一个非空**（由 `type` 参数决定）。这里摊平成四个字段，
+/// 空的那一侧是空列表 + `None`。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LiveSearchData {
+    pub rooms: Vec<LiveSearchRoom>,
+    pub total_room: Option<i64>,
+    pub users: Vec<LiveSearchUser>,
+    pub total_user: Option<i64>,
+}
+
+/// 被屏蔽的一个用户。
+///
+/// 写操作（增删屏蔽用户，`liveShieldUser`）仍在 Dart 且归 ADR-013
+/// （#50），但它**直接构造本结构的 Dart 绑定**而不是另留一个等价模型
+/// ——ADR-011 补充七的做法，读写共用一个类型就没有两边漂移的机会。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LiveShieldUser {
+    pub uid: i64,
+    pub uname: String,
+}
+
+/// 房间的屏蔽设置。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LiveShieldInfo {
+    pub shield_users: Vec<LiveShieldUser>,
+    pub keywords: Vec<String>,
+}
+
+/// 贡献榜的一项。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LiveContributionRankItem {
+    pub uid: Option<i64>,
+    pub name: Option<String>,
+    pub face: Option<String>,
+    pub score: Option<i64>,
+    /// 协议上在 `uinfo.medal`。
+    pub medal: Option<LiveMedal>,
+}
+
+/// 勋章墙的一项。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LiveMedalWallItem {
+    /// `medal_info.wearing_status`，1 为正在佩戴。基线那层单字段的壳
+    /// （`MedalInfo`）在这里摊平。
+    pub wearing_status: Option<i64>,
+    pub target_name: Option<String>,
+    pub target_icon: Option<String>,
+    pub link: Option<String>,
+    /// 1 为该主播正在直播。
+    pub live_status: Option<i64>,
+    pub official: Option<i64>,
+    /// 协议上在 `uinfo_medal`。
+    pub medal: Option<LiveMedal>,
+}
+
+/// 某个用户的勋章墙。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LiveMedalWall {
+    pub list: Vec<LiveMedalWallItem>,
+    pub count: Option<i64>,
+    /// 墙主的昵称。
+    pub name: Option<String>,
+    pub icon: Option<String>,
+}
+
 /// 分区入口的兜底数据。
 ///
 /// 逐条复制自基线 `CardDataItem.kAreaEntrance`（`card_data_item.dart`）。

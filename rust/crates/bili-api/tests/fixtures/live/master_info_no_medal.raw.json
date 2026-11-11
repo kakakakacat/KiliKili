@@ -1,0 +1,11 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "info": { "uid": 200009, "uname": "没开粉丝团的主播" },
+    "room_id": 100009,
+    "medal_name": "",
+    "follower_num": 12
+  }
+}

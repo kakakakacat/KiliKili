@@ -1,0 +1,32 @@
+[
+  {
+    "current_cover": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000051.png",
+    "emoticons": [
+      {
+        "emoji": "[妙啊]",
+        "emoticon_unique": "official_001",
+        "height": 20,
+        "url": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000061.png",
+        "width": 20
+      },
+      {
+        "emoji": "[生气]",
+        "emoticon_unique": "official_002",
+        "height": 20,
+        "url": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000062.png",
+        "width": 20
+      }
+    ],
+    "pkg_type": 1
+  },
+  {
+    "current_cover": null,
+    "emoticons": [],
+    "pkg_type": 2
+  },
+  {
+    "current_cover": null,
+    "emoticons": [],
+    "pkg_type": null
+  }
+]

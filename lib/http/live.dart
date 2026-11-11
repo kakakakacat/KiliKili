@@ -4,18 +4,9 @@ import 'package:kilikili/http/browser_ua.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/account_type.dart';
-import 'package:kilikili/models/common/live/live_contribution_rank_type.dart';
-import 'package:kilikili/models/common/live/live_search_type.dart';
-import 'package:kilikili/models_new/live/live_contribution_rank/data.dart';
 import 'package:kilikili/models_new/live/live_danmaku/danmaku_msg.dart';
-import 'package:kilikili/models_new/live/live_dm_block/data.dart';
-import 'package:kilikili/models_new/live/live_dm_block/shield_info.dart';
-import 'package:kilikili/models_new/live/live_dm_block/shield_user_list.dart';
+import 'package:kilikili/services/rust/rust_live.dart' show LiveShieldUser;
 import 'package:kilikili/models_new/live/live_dm_info/data.dart';
-import 'package:kilikili/models_new/live/live_emote/data.dart';
-import 'package:kilikili/models_new/live/live_emote/datum.dart';
-import 'package:kilikili/models_new/live/live_medal_wall/data.dart';
-import 'package:kilikili/models_new/live/live_search/data.dart';
 import 'package:kilikili/models_new/live/live_superchat/data.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/accounts/account.dart';
@@ -25,14 +16,23 @@ import 'package:dio/dio.dart';
 
 /// 直播接口中**尚未迁到 Rust** 的那些。
 ///
-/// 只读部分的八条（分区三条、首页推荐、分区二级列表、关注的直播、H5
-/// 房间信息、取流）已迁走，见 `lib/services/rust/rust_live.dart`。
-/// 这里剩下的是两类：
+/// 只读部分已迁走十四条，见 `lib/services/rust/rust_live.dart`：分区三条、
+/// 首页推荐、分区二级列表、关注的直播、H5 房间信息、取流、表情包、
+/// 直播搜索、屏蔽设置、贡献榜、勋章墙、勋章名。这里剩下的是三类：
 ///
+/// - **SuperChat（`superChatMsg`）**——它虽然是只读，却归 S11b（#62）：
+///   `SuperChatItem` 的第二个生产者是弹幕长连接的 `SUPER_CHAT_MESSAGE`
+///   （见 `live_room/controller.dart`），只迁 REST 这条，模型一行都删不
+///   掉。它还有 `expired`/`deleted` 两个可变的客户端状态，而 FRB 结构
+///   不可变；解析时还读 `GlobalData().showMedal` 这个全局设置。
 /// - 弹幕长连接相关（`liveRoomDmPrefetch`/`liveRoomGetDanmakuToken`）
-///   ——S11b（#62），阻塞在 ADR-012；
-/// - 全部写操作与剩余只读（搜索、屏蔽、贡献榜、粉丝勋章…）——归
-///   ADR-013（#50）或后续批次。
+///   ——S11b（#62），阻塞在 ADR-012（#49）；
+/// - 全部写操作（发弹幕、收藏分区、禁言、增删屏蔽词与屏蔽用户、点赞
+///   上报、弹幕举报、SC 上报、反馈）——归 ADR-013（#50）。
+///
+/// **`liveShieldUser` 名字像查询，实际是写**：`type: 1` 添加屏蔽用户、
+/// `type: 0` 移除，返回值只是新增那条的回显。它因此留在这里，但已经改成
+/// 直接构造 FRB 的 `LiveShieldUser`（ADR-011 补充七）。
 abstract final class LiveHttp {
   static Account get recommend => Accounts.get(AccountType.recommend);
 
@@ -129,23 +129,6 @@ abstract final class LiveHttp {
     }
   }
 
-  static Future<LoadingState<List<LiveEmoteDatum>?>> getLiveEmoticons({
-    required int roomId,
-  }) async {
-    final res = await Request().get(
-      Api.getLiveEmoticons,
-      queryParameters: {
-        'platform': 'pc',
-        'room_id': roomId,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(LiveEmoteData.fromJson(res.data['data']).data);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   static Future<LoadingState<void>> setLiveFavTag({
     required String ids,
   }) async {
@@ -173,60 +156,6 @@ abstract final class LiveHttp {
 
     if (res.data['code'] == 0) {
       return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<LiveSearchData>> liveSearch({
-    required int page,
-    required String keyword,
-    required LiveSearchType type,
-  }) async {
-    final params = {
-      'access_key': ?recommend.accessKey,
-      'actionKey': 'appkey',
-      'build': 8430300,
-      'channel': 'master',
-      'version': '8.43.0',
-      'c_locale': 'zh_CN',
-      'device': 'android',
-      'page': page,
-      'pagesize': 30,
-      'keyword': keyword,
-      'disable_rcmd': 0,
-      'mobi_app': 'android',
-      'platform': 'android',
-      's_locale': 'zh_CN',
-      'statistics': Constants.statisticsApp,
-      'type': type.name,
-    };
-    AppSign.appSign(params);
-    final res = await Request().get(
-      Api.liveSearch,
-      queryParameters: params,
-    );
-    if (res.data['code'] == 0) {
-      return Success(LiveSearchData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<ShieldInfo?>> getLiveInfoByUser(
-    Object roomId,
-  ) async {
-    final res = await Request().get(
-      Api.getLiveInfoByUser,
-      queryParameters: await WbiSign.makSign({
-        'room_id': roomId,
-        'from': 0,
-        'not_mock_enter_effect': 1,
-        'web_location': 444.8,
-      }),
-    );
-    if (res.data['code'] == 0) {
-      return Success(LiveDmBlockData.fromJson(res.data['data']).shieldInfo);
     } else {
       return Error(res.data['message']);
     }
@@ -294,7 +223,7 @@ abstract final class LiveHttp {
     }
   }
 
-  static Future<LoadingState<ShieldUserList>> liveShieldUser({
+  static Future<LoadingState<LiveShieldUser>> liveShieldUser({
     required Object uid,
     required Object roomid,
     required int type,
@@ -312,7 +241,14 @@ abstract final class LiveHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return Success(ShieldUserList.fromJson(res.data['data']));
+      // 读那一侧（`getInfoByUser`）已迁到 Rust，这里直接构造 FRB 的
+      // 同一个类而不是另留一个等价的 Dart 模型——ADR-011 补充七：读写
+      // 共用一个类型，就没有两边各自漂移的机会。本函数随写操作统一迁移
+      // （ADR-013 / #50）。
+      final data = res.data['data'] as Map<String, dynamic>;
+      return Success(
+        LiveShieldUser(uid: data['uid'] as int, uname: data['uname'] as String),
+      );
     } else {
       return Error(res.data['message']);
     }
@@ -404,36 +340,6 @@ abstract final class LiveHttp {
     }
   }
 
-  static Future<LoadingState<LiveContributionRankData>> liveContributionRank({
-    required Object ruid,
-    required Object roomId,
-    required int page,
-    required LiveContributionRankType type,
-  }) async {
-    final res = await Request().get(
-      Api.liveContributionRank,
-      queryParameters: await WbiSign.makSign({
-        'ruid': ruid,
-        'room_id': roomId,
-        'page': page,
-        'page_size': 100,
-        'type': type.name,
-        'switch': type.sw1tch,
-        'platform': 'web',
-        'web_location': 444.8,
-      }),
-    );
-    if (res.data['code'] == 0) {
-      try {
-        return Success(LiveContributionRankData.fromJson(res.data['data']));
-      } catch (e, s) {
-        return Error('$e\n\n$s');
-      }
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   static Future<LoadingState<void>> superChatReport({
     required int id,
     required Object roomId,
@@ -465,20 +371,6 @@ abstract final class LiveHttp {
     );
     if (res.data['code'] == 0) {
       return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<MedalWallData>> liveMedalWall({
-    required Object mid,
-  }) async {
-    final res = await Request().get(
-      Api.liveMedalWall,
-      queryParameters: {'target_id': mid},
-    );
-    if (res.data['code'] == 0) {
-      return Success(MedalWallData.fromJson(res.data['data']));
     } else {
       return Error(res.data['message']);
     }
@@ -516,22 +408,6 @@ abstract final class LiveHttp {
     );
     if (res.data['code'] == 0) {
       return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<String?>> liveMedalName(Object uid) async {
-    final res = await Request().get(
-      Api.liveMasterInfo,
-      queryParameters: {'uid': uid},
-    );
-    if (res.data['code'] == 0) {
-      try {
-        return Success(res.data['data']['medal_name'] as String);
-      } catch (e) {
-        return Error(e.toString());
-      }
     } else {
       return Error(res.data['message']);
     }

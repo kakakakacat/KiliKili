@@ -1,7 +1,7 @@
 import 'package:kilikili/common/assets.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/models/common/image_type.dart';
-import 'package:kilikili/models_new/live/live_search/user_item.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/utils/extension/num_ext.dart';
 import 'package:kilikili/utils/num_utils.dart';
 import 'package:kilikili/utils/page_utils.dart';
@@ -13,7 +13,7 @@ class LiveSearchUserItem extends StatelessWidget {
     required this.item,
   });
 
-  final LiveSearchUserItemModel item;
+  final LiveSearchUser item;
 
   @override
   Widget build(BuildContext context) {

@@ -296,6 +296,143 @@ pub struct LiveRoomPlayInfo {
     pub streams: Vec<LiveStream>,
 }
 
+/// 粉丝勋章。
+///
+/// **跨切片共享**：本模块的贡献榜与勋章墙产出它，而 SuperChat 与弹幕
+/// 长连接里的每条消息也带同一结构（S11b / #62，阻塞在 ADR-012）。
+/// Dart 的 `UinfoMedal` 因此删不掉，由 `live_rest_compat.dart` 单向
+/// 适配，随 S11b 迁完一并删。
+#[derive(Debug, Clone)]
+pub struct LiveMedal {
+    pub name: Option<String>,
+    pub level: Option<i64>,
+    pub id: Option<i64>,
+    pub ruid: Option<i64>,
+    pub color_start: Option<String>,
+    pub color_text: Option<String>,
+}
+
+/// 直播间表情包里的一个表情。
+#[derive(Debug, Clone)]
+pub struct LiveEmoticon {
+    pub emoji: Option<String>,
+    pub url: Option<String>,
+    pub width: Option<i64>,
+    pub height: Option<i64>,
+    pub emoticon_unique: Option<String>,
+}
+
+/// 一个表情包。
+#[derive(Debug, Clone)]
+pub struct LiveEmotePackage {
+    pub emoticons: Vec<LiveEmoticon>,
+    pub pkg_type: Option<i64>,
+    pub current_cover: Option<String>,
+}
+
+/// 直播搜索结果里的一个直播间。
+#[derive(Debug, Clone)]
+pub struct LiveSearchRoom {
+    pub roomid: Option<i64>,
+    pub cover: Option<String>,
+    pub title: Option<String>,
+    pub name: Option<String>,
+    pub face: Option<String>,
+    /// `watched_show.text_large`，壳已摊平。
+    pub watched_text: Option<String>,
+}
+
+/// 直播搜索结果里的一个主播。
+#[derive(Debug, Clone)]
+pub struct LiveSearchUser {
+    pub roomid: Option<i64>,
+    pub name: Option<String>,
+    pub face: Option<String>,
+    pub live_status: Option<i64>,
+    pub area_name: Option<String>,
+    pub fans_num: Option<i64>,
+}
+
+/// 直播搜索的一页。同一次请求只会有 `rooms` 或 `users` 其中一侧非空。
+#[derive(Debug, Clone)]
+pub struct LiveSearchData {
+    pub rooms: Vec<LiveSearchRoom>,
+    pub total_room: Option<i64>,
+    pub users: Vec<LiveSearchUser>,
+    pub total_user: Option<i64>,
+}
+
+/// 被屏蔽的一个用户。
+///
+/// 增删屏蔽用户的写操作仍在 Dart（归 ADR-013 / #50），但它**直接构造
+/// 本结构的 Dart 绑定**，读写共用一个类型。
+#[derive(Debug, Clone)]
+pub struct LiveShieldUser {
+    pub uid: i64,
+    pub uname: String,
+}
+
+/// 房间的屏蔽设置。
+#[derive(Debug, Clone)]
+pub struct LiveShieldInfo {
+    pub shield_users: Vec<LiveShieldUser>,
+    pub keywords: Vec<String>,
+}
+
+/// 贡献榜的查询条件。
+///
+/// 打包成结构体而不是五个平铺参数，是因为它们**两两同型且相邻**：
+/// `ruid` 与 `room_id` 都是 i64，`kind` 与 `switch_name` 都是 String。
+/// 平铺时传反了编译器一声不吭，服务端也只回一个空榜——表现成「这个榜
+/// 没人」，从现象反推不出是参数顺序错了。Dart 侧用命名参数构造本结构，
+/// 顺序就不再有意义。
+#[derive(Debug, Clone)]
+pub struct LiveRankQuery {
+    /// 主播 uid。
+    pub ruid: i64,
+    pub room_id: i64,
+    pub page: i64,
+    /// `LiveContributionRankType.name`，如 `online_rank`。
+    pub kind: String,
+    /// 同一枚举的 `sw1tch`，如 `contribution_rank`。**必须与 [`kind`]
+    /// 成对**，只带其一服务端回空榜而不是报错。
+    ///
+    /// [`kind`]: Self::kind
+    pub switch_name: String,
+}
+
+/// 贡献榜的一项。
+#[derive(Debug, Clone)]
+pub struct LiveContributionRankItem {
+    pub uid: Option<i64>,
+    pub name: Option<String>,
+    pub face: Option<String>,
+    pub score: Option<i64>,
+    pub medal: Option<LiveMedal>,
+}
+
+/// 勋章墙的一项。
+#[derive(Debug, Clone)]
+pub struct LiveMedalWallItem {
+    /// `medal_info.wearing_status`，1 为正在佩戴。壳已摊平。
+    pub wearing_status: Option<i64>,
+    pub target_name: Option<String>,
+    pub target_icon: Option<String>,
+    pub link: Option<String>,
+    pub live_status: Option<i64>,
+    pub official: Option<i64>,
+    pub medal: Option<LiveMedal>,
+}
+
+/// 某个用户的勋章墙。
+#[derive(Debug, Clone)]
+pub struct LiveMedalWall {
+    pub list: Vec<LiveMedalWallItem>,
+    pub count: Option<i64>,
+    pub name: Option<String>,
+    pub icon: Option<String>,
+}
+
 // ------------------------------------------------------------------ 结果
 
 /// 全部分区。失败时 `data` 为 `None`，错误以值的形式带回。
@@ -359,6 +496,68 @@ pub struct LiveRoomH5Result {
 #[derive(Debug, Clone)]
 pub struct LiveRoomPlayInfoResult {
     pub data: Option<LiveRoomPlayInfo>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+/// 房间表情包。字段语义同 [`LiveAreaGroupsResult`]。
+#[derive(Debug, Clone)]
+pub struct LiveEmotePackagesResult {
+    pub data: Option<Vec<LiveEmotePackage>>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+/// 直播搜索。字段语义同 [`LiveAreaGroupsResult`]。
+#[derive(Debug, Clone)]
+pub struct LiveSearchResult {
+    pub data: Option<LiveSearchData>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+/// 屏蔽设置。字段语义同 [`LiveAreaGroupsResult`]。
+#[derive(Debug, Clone)]
+pub struct LiveShieldInfoResult {
+    pub data: Option<LiveShieldInfo>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+/// 贡献榜。字段语义同 [`LiveAreaGroupsResult`]。
+#[derive(Debug, Clone)]
+pub struct LiveContributionRankResult {
+    pub data: Option<Vec<LiveContributionRankItem>>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+/// 勋章墙。字段语义同 [`LiveAreaGroupsResult`]。
+#[derive(Debug, Clone)]
+pub struct LiveMedalWallResult {
+    pub data: Option<LiveMedalWall>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+/// 主播的粉丝团勋章名。
+///
+/// **这个结果没有 `data` 字段**，与上面几个不同：勋章名本身就是可空的
+/// （主播没开粉丝团），而 `Option<Option<String>>` 是 FRB 不支持的类型
+/// ——codegen 会直接 panic，不是生成一个将就能用的绑定。
+///
+/// 于是改用 `error_kind` 区分两种 `None`：它为 `None` 表示请求成功，
+/// 此时 `name` 为 `None` 意味着该主播没有粉丝团（基线把这种情况也报成
+/// 了错误提示）。
+#[derive(Debug, Clone)]
+pub struct LiveMedalNameResult {
+    pub name: Option<String>,
     pub error_kind: Option<String>,
     pub error_detail: Option<String>,
     pub error_code: Option<i64>,
@@ -476,6 +675,113 @@ fn room_h5(value: bili_domain::live::LiveRoomH5) -> LiveRoomH5 {
         anchor_name: value.anchor_name,
         anchor_face: value.anchor_face,
         watched_text: value.watched_text,
+    }
+}
+
+fn medal(value: bili_domain::live::LiveMedal) -> LiveMedal {
+    LiveMedal {
+        name: value.name,
+        level: value.level,
+        id: value.id,
+        ruid: value.ruid,
+        color_start: value.color_start,
+        color_text: value.color_text,
+    }
+}
+
+fn emote_package(value: bili_domain::live::LiveEmotePackage) -> LiveEmotePackage {
+    LiveEmotePackage {
+        emoticons: value
+            .emoticons
+            .into_iter()
+            .map(|e| LiveEmoticon {
+                emoji: e.emoji,
+                url: e.url,
+                width: e.width,
+                height: e.height,
+                emoticon_unique: e.emoticon_unique,
+            })
+            .collect(),
+        pkg_type: value.pkg_type,
+        current_cover: value.current_cover,
+    }
+}
+
+fn search_page(value: bili_domain::live::LiveSearchData) -> LiveSearchData {
+    LiveSearchData {
+        rooms: value
+            .rooms
+            .into_iter()
+            .map(|r| LiveSearchRoom {
+                roomid: r.roomid,
+                cover: r.cover,
+                title: r.title,
+                name: r.name,
+                face: r.face,
+                watched_text: r.watched_text,
+            })
+            .collect(),
+        total_room: value.total_room,
+        users: value
+            .users
+            .into_iter()
+            .map(|u| LiveSearchUser {
+                roomid: u.roomid,
+                name: u.name,
+                face: u.face,
+                live_status: u.live_status,
+                area_name: u.area_name,
+                fans_num: u.fans_num,
+            })
+            .collect(),
+        total_user: value.total_user,
+    }
+}
+
+fn shield_info(value: bili_domain::live::LiveShieldInfo) -> LiveShieldInfo {
+    LiveShieldInfo {
+        shield_users: value
+            .shield_users
+            .into_iter()
+            .map(|u| LiveShieldUser {
+                uid: u.uid,
+                uname: u.uname,
+            })
+            .collect(),
+        keywords: value.keywords,
+    }
+}
+
+fn contribution_rank_item(
+    value: bili_domain::live::LiveContributionRankItem,
+) -> LiveContributionRankItem {
+    LiveContributionRankItem {
+        uid: value.uid,
+        name: value.name,
+        face: value.face,
+        score: value.score,
+        medal: value.medal.map(medal),
+    }
+}
+
+fn medal_wall(value: bili_domain::live::LiveMedalWall) -> LiveMedalWall {
+    LiveMedalWall {
+        list: value
+            .list
+            .into_iter()
+            .map(|i| LiveMedalWallItem {
+                wearing_status: i.wearing_status,
+                target_name: i.target_name,
+                target_icon: i.target_icon,
+                link: i.link,
+                live_status: i.live_status,
+                official: i.official,
+                medal: i.medal.map(medal),
+            })
+            .collect(),
+        count: value.count,
+        name: value.name,
+        icon: value.icon,
     }
 }
 
@@ -811,6 +1117,231 @@ pub async fn fetch_live_room_play_info(
         },
         Err(e) => LiveRoomPlayInfoResult {
             data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+
+/// 取房间表情包。不签名。
+pub async fn fetch_live_emoticons(context: LiveContext, room_id: i64) -> LiveEmotePackagesResult {
+    if let Err(e) = live::check_room_id(room_id) {
+        return LiveEmotePackagesResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        };
+    }
+
+    let (ctx, transport) = context.split();
+
+    let joined = init::runtime()
+        .spawn(async move { live::fetch_emoticons(&transport, &ctx, room_id).await })
+        .await;
+
+    match flatten(joined) {
+        Ok(packages) => LiveEmotePackagesResult {
+            data: Some(packages.into_iter().map(emote_package).collect()),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => LiveEmotePackagesResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+
+/// 直播搜索。**APP 签名**。
+///
+/// `kind` 取 `room` 或 `user`，与 Dart 的 `LiveSearchType.name` 对应。
+/// 不在这里定义枚举：它同时是 Dart 侧 Tab 的标识，两边各定义一份就会
+/// 漂移。
+pub async fn fetch_live_search(
+    context: LiveContext,
+    identity: LiveAppIdentity,
+    page: i64,
+    keyword: String,
+    kind: String,
+) -> LiveSearchResult {
+    let (ctx, transport) = context.split();
+    let id = identity.into_api();
+
+    let joined = init::runtime()
+        .spawn(
+            async move { live::fetch_search(&transport, &ctx, &id, page, &keyword, &kind).await },
+        )
+        .await;
+
+    match flatten(joined) {
+        Ok(page) => LiveSearchResult {
+            data: Some(search_page(page)),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => LiveSearchResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+
+/// 取房间的屏蔽设置。**WBI 签名**。
+pub async fn fetch_live_shield_info(
+    context: LiveContext,
+    room_id: i64,
+    mixin_key: String,
+    wts: i64,
+) -> LiveShieldInfoResult {
+    if let Err(e) = live::check_room_id(room_id) {
+        return LiveShieldInfoResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        };
+    }
+
+    let (ctx, transport) = context.split();
+
+    let joined =
+        init::runtime()
+            .spawn(async move {
+                live::fetch_shield_info(&transport, &ctx, room_id, &mixin_key, wts).await
+            })
+            .await;
+
+    match flatten(joined) {
+        Ok(info) => LiveShieldInfoResult {
+            data: Some(shield_info(info)),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => LiveShieldInfoResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+
+/// 取贡献榜。**WBI 签名**。
+///
+/// `kind` 与 `switch_name` 成对出现（在线榜 `online_rank` /
+/// `contribution_rank`、日榜 `daily_rank` / `today_rank`…），只带其一
+/// 服务端会回一个空榜而不是报错。
+pub async fn fetch_live_contribution_rank(
+    context: LiveContext,
+    query: LiveRankQuery,
+    mixin_key: String,
+    wts: i64,
+) -> LiveContributionRankResult {
+    let LiveRankQuery {
+        ruid,
+        room_id,
+        page,
+        kind,
+        switch_name,
+    } = query;
+
+    if let Err(e) = live::check_room_id(room_id) {
+        return LiveContributionRankResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        };
+    }
+
+    let (ctx, transport) = context.split();
+
+    let joined = init::runtime()
+        .spawn(async move {
+            live::fetch_contribution_rank(
+                &transport,
+                &ctx,
+                ruid,
+                room_id,
+                page,
+                &kind,
+                &switch_name,
+                &mixin_key,
+                wts,
+            )
+            .await
+        })
+        .await;
+
+    match flatten(joined) {
+        Ok(items) => LiveContributionRankResult {
+            data: Some(items.into_iter().map(contribution_rank_item).collect()),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => LiveContributionRankResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+
+/// 取某个用户的勋章墙。不签名。
+pub async fn fetch_live_medal_wall(context: LiveContext, target_id: i64) -> LiveMedalWallResult {
+    let (ctx, transport) = context.split();
+
+    let joined = init::runtime()
+        .spawn(async move { live::fetch_medal_wall(&transport, &ctx, target_id).await })
+        .await;
+
+    match flatten(joined) {
+        Ok(wall) => LiveMedalWallResult {
+            data: Some(medal_wall(wall)),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => LiveMedalWallResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+
+/// 取主播的粉丝团勋章名。不签名。
+///
+/// 成功但没有粉丝团时 `data` 是 `Some(None)`，不是错误——基线把这种
+/// 情况也报成了错误提示。
+pub async fn fetch_live_medal_name(context: LiveContext, uid: i64) -> LiveMedalNameResult {
+    let (ctx, transport) = context.split();
+
+    let joined = init::runtime()
+        .spawn(async move { live::fetch_medal_name(&transport, &ctx, uid).await })
+        .await;
+
+    match flatten(joined) {
+        Ok(name) => LiveMedalNameResult {
+            name,
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => LiveMedalNameResult {
+            name: None,
             error_kind: Some(e.kind().to_string()),
             error_detail: Some(e.detail().to_owned()),
             error_code: e.code(),

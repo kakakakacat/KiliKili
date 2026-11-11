@@ -1,12 +1,11 @@
-import 'package:kilikili/http/live.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/live/live_emote/datum.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class LiveEmotePanelController
-    extends CommonListController<List<LiveEmoteDatum>?, LiveEmoteDatum>
+    extends CommonListController<List<LiveEmotePackage>, LiveEmotePackage>
     with GetSingleTickerProviderStateMixin {
   LiveEmotePanelController(this.roomId);
   final int roomId;
@@ -21,11 +20,11 @@ class LiveEmotePanelController
   @override
   bool customHandleResponse(
     bool isRefresh,
-    Success<List<LiveEmoteDatum>?> response,
+    Success<List<LiveEmotePackage>> response,
   ) {
-    if (response.response?.isNotEmpty == true) {
+    if (response.response.isNotEmpty) {
       tabController = TabController(
-        length: response.response!.length,
+        length: response.response.length,
         vsync: this,
       );
     }
@@ -34,8 +33,8 @@ class LiveEmotePanelController
   }
 
   @override
-  Future<LoadingState<List<LiveEmoteDatum>?>> customGetData() =>
-      LiveHttp.getLiveEmoticons(roomId: roomId);
+  Future<LoadingState<List<LiveEmotePackage>>> customGetData() =>
+      RustLive.emoticons(roomId: roomId);
 
   @override
   void onClose() {

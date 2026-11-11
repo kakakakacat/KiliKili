@@ -11,7 +11,7 @@ import 'package:kilikili/models/common/publish_panel_type.dart';
 import 'package:kilikili/models/dynamics/result.dart'
     show PicModel, FilePicModel, OpusPicModel;
 import 'package:kilikili/models_new/dynamic/dyn_mention/item.dart';
-import 'package:kilikili/models_new/live/live_emote/emoticon.dart';
+import 'package:kilikili/services/rust/rust_live.dart' show LiveEmoticon;
 import 'package:kilikili/pages/common/publish/common_publish_page.dart';
 import 'package:kilikili/pages/dynamics_mention/view.dart';
 import 'package:kilikili/services/rust/rust_reply.dart' as e;
@@ -267,7 +267,7 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
                 height: height,
               ),
       );
-    } else if (emote is Emoticon) {
+    } else if (emote is LiveEmoticon) {
       onInsertText(
         Style.placeHolder,
         .emoji,

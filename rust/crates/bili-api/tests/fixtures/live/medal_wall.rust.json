@@ -1,0 +1,48 @@
+{
+  "count": 3,
+  "icon": "//i0.example-cdn.test/bfs/live/00000000000000000000000000000071.png",
+  "list": [
+    {
+      "link": "//live.example.test/100001",
+      "live_status": 1,
+      "medal": {
+        "color_start": "#4C7DFF99",
+        "color_text": "#FFFFFF",
+        "id": 301,
+        "level": 21,
+        "name": "示例牌",
+        "ruid": 200001
+      },
+      "official": 0,
+      "target_icon": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000011.jpg",
+      "target_name": "示例主播甲",
+      "wearing_status": 1
+    },
+    {
+      "link": "//live.example.test/100002",
+      "live_status": 0,
+      "medal": {
+        "color_start": "#5D7B9799",
+        "color_text": "#FFFFFF",
+        "id": 302,
+        "level": 5,
+        "name": "乙牌",
+        "ruid": 200002
+      },
+      "official": 1,
+      "target_icon": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000012.jpg",
+      "target_name": "示例主播乙",
+      "wearing_status": 0
+    },
+    {
+      "link": "//live.example.test/100003",
+      "live_status": null,
+      "medal": null,
+      "official": null,
+      "target_icon": null,
+      "target_name": "缺 medal_info 与 uinfo_medal 的一项",
+      "wearing_status": null
+    }
+  ],
+  "name": "示例用户"
+}

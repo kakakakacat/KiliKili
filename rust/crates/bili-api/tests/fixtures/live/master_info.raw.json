@@ -1,0 +1,11 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "info": { "uid": 200001, "uname": "示例主播甲" },
+    "room_id": 100001,
+    "medal_name": "示例牌",
+    "follower_num": 123456
+  }
+}

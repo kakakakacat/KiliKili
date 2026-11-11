@@ -1,0 +1,27 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "room": null,
+    "user": {
+      "list": [
+        {
+          "roomid": 100001,
+          "name": "示例主播甲",
+          "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000011.jpg",
+          "live_status": 1,
+          "areaName": "虚拟主播",
+          "fansNum": 54321
+        },
+        {
+          "roomid": 100003,
+          "name": "未开播的主播",
+          "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000013.jpg",
+          "live_status": 0
+        }
+      ],
+      "total_user": 2
+    }
+  }
+}

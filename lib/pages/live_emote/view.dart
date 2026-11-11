@@ -7,16 +7,15 @@ import 'package:kilikili/common/widgets/scroll_physics.dart'
     show tabBarView, platformClampingPhysics;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/image_type.dart';
-import 'package:kilikili/models_new/live/live_emote/datum.dart';
-import 'package:kilikili/models_new/live/live_emote/emoticon.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/pages/live_emote/controller.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class LiveEmotePanel extends StatefulWidget {
   final int roomId;
-  final Function(Emoticon emote, double? width, double? height) onChoose;
-  final ValueChanged<Emoticon> onSendEmoticonUnique;
+  final Function(LiveEmoticon emote, double? width, double? height) onChoose;
+  final ValueChanged<LiveEmoticon> onSendEmoticonUnique;
   const LiveEmotePanel({
     super.key,
     required this.roomId,
@@ -50,7 +49,7 @@ class _LiveEmotePanelState extends State<LiveEmotePanel>
     return Obx(() => _buildBody(_emotePanelController.loadingState.value));
   }
 
-  Widget _buildBody(LoadingState<List<LiveEmoteDatum>?> loadingState) {
+  Widget _buildBody(LoadingState<List<LiveEmotePackage>?> loadingState) {
     late final theme = Theme.of(context);
     return switch (loadingState) {
       Loading() => m3eLoading,
@@ -64,7 +63,7 @@ class _LiveEmotePanelState extends State<LiveEmotePanel>
                       children: response.map(
                         (item) {
                           final emote = item.emoticons;
-                          if (emote == null || emote.isEmpty) {
+                          if (emote.isEmpty) {
                             return const SizedBox.shrink();
                           }
                           final first = emote.first;

@@ -1,0 +1,199 @@
+{
+  "activities": [
+    {
+      "author": "示例主办方",
+      "cover": "//i0.example-cdn.test/bfs/activity/0000000000000000000000000000000000000040.jpg",
+      "desc": "活动说明",
+      "id": 600000001,
+      "state": 1,
+      "status": 2,
+      "title": "示例直播活动",
+      "url": "https://live.bilibili.com/p/eden/example"
+    },
+    {
+      "author": "示例主办方",
+      "cover": "//i0.example-cdn.test/bfs/activity/0000000000000000000000000000000000000041.jpg",
+      "desc": "这条基线会丢掉，但解析层原样带回",
+      "id": 600000002,
+      "state": 1,
+      "status": 2,
+      "title": "非直播域名的活动",
+      "url": "https://www.bilibili.com/blackboard/example.html"
+    }
+  ],
+  "esports_json": "{\"ID\":500000001,\"awayScore\":1,\"awayTeam\":{\"title\":\"示例战队乙\"},\"contestStatus\":3,\"gameStage\":\"小组赛\",\"homeScore\":2,\"homeTeam\":{\"title\":\"示例战队甲\"},\"liveRoom\":7000002,\"playback\":\"\",\"season\":{\"title\":\"示例赛季\"},\"stime\":1700002000}",
+  "medias": [
+    {
+      "areas": "日本",
+      "button_text": "立即观看",
+      "cover": "//i0.example-cdn.test/bfs/bangumi/0000000000000000000000000000000000000030.jpg",
+      "cv": "示例声优甲/示例声优乙",
+      "desc": "示例番剧简介",
+      "goto_url": "https://www.bilibili.com/bangumi/play/ss700000001",
+      "hit_epids": "",
+      "index_show": "全12话",
+      "is_avid": false,
+      "is_follow": 0,
+      "is_selection": 1,
+      "item_type": "media_bangumi",
+      "media_id": 800000001,
+      "media_mode": 2,
+      "media_score_json": "{\"score\":9.7,\"user_count\":123456}",
+      "media_type": 1,
+      "org_title": "Example Bangumi",
+      "pubtime": 1600000000,
+      "season_id": 700000001,
+      "season_type": 1,
+      "season_type_name": "番剧",
+      "staff": "原作:示例/导演:示例",
+      "styles": "漫画改,奇幻",
+      "title": "示例番剧名",
+      "title_spans": [
+        {
+          "is_em": false,
+          "text": "示例"
+        },
+        {
+          "is_em": true,
+          "text": "番剧"
+        },
+        {
+          "is_em": false,
+          "text": "名"
+        }
+      ],
+      "url": "https://www.bilibili.com/bangumi/play/ss700000001"
+    },
+    {
+      "areas": null,
+      "button_text": null,
+      "cover": "//i0.example-cdn.test/bfs/bangumi/0000000000000000000000000000000000000031.jpg",
+      "cv": null,
+      "desc": null,
+      "goto_url": null,
+      "hit_epids": null,
+      "index_show": "已完结",
+      "is_avid": null,
+      "is_follow": null,
+      "is_selection": null,
+      "item_type": "media_ft",
+      "media_id": 800000002,
+      "media_mode": null,
+      "media_score_json": null,
+      "media_type": 2,
+      "org_title": null,
+      "pubtime": 1610000000,
+      "season_id": 700000002,
+      "season_type": null,
+      "season_type_name": "电影",
+      "staff": null,
+      "styles": null,
+      "title": "示例影视名",
+      "title_spans": [
+        {
+          "is_em": false,
+          "text": "示例影视名"
+        }
+      ],
+      "url": null
+    }
+  ],
+  "num_results": 2000,
+  "users": [
+    {
+      "fans": 12345,
+      "gender": 1,
+      "is_live": 0,
+      "is_senior_member": 0,
+      "is_up_user": 1,
+      "level": 5,
+      "mid": 100000020,
+      "official_verify": {
+        "desc": "示例认证说明",
+        "kind": 0
+      },
+      "res": [
+        {
+          "aid": 900000021,
+          "arcurl": null,
+          "bvid": "BV1ee4y1e0e5",
+          "description": null,
+          "duration_secs": 300,
+          "id": null,
+          "is_union_video": null,
+          "item_type": null,
+          "owner": {
+            "face": "//i1.example-cdn.test/bfs/face/0000000000000000000000000000000000000020.jpg",
+            "mid": 100000020,
+            "name": "综合示例用户"
+          },
+          "pic": "//i0.example-cdn.test/bfs/archive/0000000000000000000000000000000000000021.jpg",
+          "pubdate": null,
+          "roomid": null,
+          "senddate": null,
+          "stat": {
+            "danmaku": null,
+            "favorite": null,
+            "like": null,
+            "reply": null,
+            "view": 8888
+          },
+          "tag": null,
+          "title": "该用户的代表作",
+          "title_spans": [
+            {
+              "is_em": false,
+              "text": "该用户的代表作"
+            }
+          ]
+        }
+      ],
+      "room_id": 0,
+      "uname": "综合示例用户",
+      "upic": "//i1.example-cdn.test/bfs/face/0000000000000000000000000000000000000020.jpg",
+      "usign": "这是签名",
+      "verify_info": "",
+      "videos": 67
+    }
+  ],
+  "videos": [
+    {
+      "aid": 900000010,
+      "arcurl": null,
+      "bvid": "BV1dd4y1d0d4",
+      "description": "综合搜索视频简介",
+      "duration_secs": 201,
+      "id": 900000010,
+      "is_union_video": 0,
+      "item_type": "video",
+      "owner": {
+        "face": "//i1.example-cdn.test/bfs/face/0000000000000000000000000000000000000011.jpg",
+        "mid": 100000010,
+        "name": "综合示例UP甲"
+      },
+      "pic": "//i0.example-cdn.test/bfs/archive/0000000000000000000000000000000000000010.jpg",
+      "pubdate": 1700001000,
+      "roomid": null,
+      "senddate": 1700001001,
+      "stat": {
+        "danmaku": 222,
+        "favorite": 333,
+        "like": 555,
+        "reply": 444,
+        "view": 111111
+      },
+      "tag": null,
+      "title": "综合搜索里的视频",
+      "title_spans": [
+        {
+          "is_em": false,
+          "text": "综合搜索里的"
+        },
+        {
+          "is_em": true,
+          "text": "视频"
+        }
+      ]
+    }
+  ]
+}

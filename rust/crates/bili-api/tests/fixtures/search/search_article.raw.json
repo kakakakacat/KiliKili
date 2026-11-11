@@ -1,0 +1,41 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "numResults": 55,
+    "page": 1,
+    "result": [
+      {
+        "type": "article",
+        "id": 400000001,
+        "mid": 100000050,
+        "title": "专栏<em class=\"keyword\">标题</em>示例",
+        "desc": "专栏摘要文本",
+        "category_id": 3,
+        "category_name": "数码",
+        "pub_time": 1700003000,
+        "like": 321,
+        "view": 65432,
+        "reply": 21,
+        "rank_offset": 0,
+        "rank_score": 888888,
+        "templateId": 4,
+        "image_urls": [
+          "//i0.example-cdn.test/bfs/article/0000000000000000000000000000000000000070.jpg",
+          "//i0.example-cdn.test/bfs/article/0000000000000000000000000000000000000071.jpg"
+        ]
+      },
+      {
+        "type": "article",
+        "id": 400000002,
+        "mid": 100000051,
+        "title": "没有配图的专栏",
+        "pub_time": 1700003100,
+        "view": 1,
+        "templateId": 0,
+        "image_urls": []
+      }
+    ]
+  }
+}

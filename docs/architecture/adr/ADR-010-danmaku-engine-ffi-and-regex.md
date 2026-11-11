@@ -143,6 +143,18 @@ Dart。** 不接受「跳过这一条规则继续」——少过滤一条弹幕�
 
 ## 待验证（真机）
 
+四个开关都没有设置页入口（见 `RustFlags` 的类文档：不往上游的设置页里加
+东西），真机验证靠构建期指定初始值：
+
+```bash
+flutter run --release   --dart-define=rust.engine.danmaku=true   --dart-define=rust.parse.dmViewSubtitle=true   --dart-define=rust.select.media=true   --dart-define=rust.convert.subtitle=true
+```
+
+只在 Hive 里没存过该键时生效，所以同一台设备改了值要先清数据。弹幕那条
+的降级日志、会话计数都走 `debugPrint`，只在 debug 构建打印——要看它们就
+去掉 `--release`。
+
+
 1. 长视频连续播放：分桶时延（取桶是同步调用，必须远小于一帧）与内存
    （一个视频的全部弹幕常驻 Rust 侧，需与基线的 `_dmSegMap` 对比）。
 2. 切 P / 切视频 / 退出页面后 `danmaku_open_session_count()` 归零——

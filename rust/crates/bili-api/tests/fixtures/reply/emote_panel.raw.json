@@ -1,0 +1,70 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "setting": {
+      "recent_limit": 150,
+      "attr": -1,
+      "focus_pkg_id": 1
+    },
+    "packages": [
+      {
+        "id": 1,
+        "text": "小黄脸",
+        "url": "https://example.invalid/emote/pkg1.png",
+        "type": 4,
+        "attr": 0,
+        "emote": [
+          {
+            "id": 101,
+            "package_id": 1,
+            "text": "[doge]",
+            "url": "https://example.invalid/emote/doge.png",
+            "meta": {
+              "size": 1,
+              "alias": "doge"
+            },
+            "flags": {
+              "unlocked": true
+            }
+          },
+          {
+            "id": 102,
+            "package_id": 1,
+            "text": "[妙啊]",
+            "url": "https://example.invalid/emote/miao.png",
+            "meta": {
+              "size": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "text": "示例表情包",
+        "url": "https://example.invalid/emote/pkg2.png",
+        "type": 1,
+        "emote": [
+          {
+            "id": 201,
+            "package_id": 2,
+            "text": "[示例_开心]",
+            "url": "https://example.invalid/emote/happy.png",
+            "meta": {
+              "size": 2,
+              "alias": ""
+            }
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "text": "空包",
+        "url": "https://example.invalid/emote/pkg3.png",
+        "type": 1,
+        "emote": null
+      }
+    ]
+  }
+}

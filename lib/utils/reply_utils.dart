@@ -4,12 +4,11 @@ import 'package:kilikili/common/widgets/selection_text.dart';
 import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/reply.dart';
 import 'package:kilikili/models/common/reply/reply_sort_type.dart';
+import 'package:kilikili/services/rust/rust_reply.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/accounts/account.dart';
 import 'package:kilikili/utils/android/android_helper.dart';
-import 'package:kilikili/utils/extension/iterable_ext.dart';
 import 'package:kilikili/utils/extension/theme_ext.dart';
 import 'package:kilikili/utils/id_utils.dart';
 import 'package:kilikili/utils/theme_utils.dart';
@@ -173,21 +172,18 @@ abstract final class ReplyUtils {
     // root reply
     if (root == 0) {
       // no cookie check
-      final res = await ReplyHttp.replyList(
-        isLogin: false,
+      final res = await RustReply.replyListAnonymous(
         oid: oid,
-        nextOffset: '',
         type: type,
+        nextOffset: '',
         sort: ReplySortType.time.index,
-        page: 1,
       );
 
       if (res case Error(:final errMsg)) {
         SmartDialog.showToast('获取评论主列表时发生错误：$errMsg');
         return;
       } else if (res case Success(:final response)) {
-        final index =
-            response.replies?.indexWhere((item) => item.rpid == id) ?? -1;
+        final index = response.replies.indexWhere((item) => item.rpid == id);
         if (index != -1) {
           // found
           showReplyCheckResult('无账号状态下找到了你的评论，评论正常！\n\n你的评论：$message');
@@ -195,7 +191,7 @@ abstract final class ReplyUtils {
           // not found
 
           // cookie check
-          final res1 = await ReplyHttp.replyReplyList(
+          final res1 = await RustReply.replyReplyList(
             isLogin: true,
             oid: oid,
             root: id,
@@ -210,19 +206,18 @@ abstract final class ReplyUtils {
             // found
 
             // no cookie check
-            final res2 = await ReplyHttp.replyReplyList(
+            final res2 = await RustReply.replyReplyList(
               isLogin: false,
               oid: oid,
               root: id,
               pageNum: 1,
               type: type,
-              isCheck: true,
             );
 
             if (res2 is Error) {
               // not found
               showReplyCheckResult(
-                res2.errMsg?.startsWith('12022') == true
+                res2.code == RustReply.codeReplyInvisible
                     ? '你的评论被shadow ban（仅自己可见）！\n\n你的评论: $message'
                     : '评论不可见(${res2.errMsg}): $message',
                 isBan: true,
@@ -245,22 +240,21 @@ https://api.bilibili.com/x/v2/reply/reply?oid=$oid&pn=1&ps=20&root=$id&type=$typ
       }
     } else {
       for (int i = 1; ; i++) {
-        final res3 = await ReplyHttp.replyReplyList(
+        final res3 = await RustReply.replyReplyList(
           isLogin: false,
           oid: oid,
           root: root,
           pageNum: i,
           type: type,
-          isCheck: true,
         );
         if (res3 is Error) {
           break;
         } else {
           final data = res3.data;
-          if (data.replies.isNullOrEmpty) {
+          if (data.replies.isEmpty) {
             break;
           }
-          int index = data.replies!.indexWhere((item) => item.rpid == id);
+          int index = data.replies.indexWhere((item) => item.rpid == id);
           if (index == -1) {
             // not found
           } else {
@@ -272,22 +266,21 @@ https://api.bilibili.com/x/v2/reply/reply?oid=$oid&pn=1&ps=20&root=$id&type=$typ
       }
 
       for (int i = 1; ; i++) {
-        final res4 = await ReplyHttp.replyReplyList(
+        final res4 = await RustReply.replyReplyList(
           isLogin: true,
           oid: oid,
           root: root,
           pageNum: i,
           type: type,
-          isCheck: true,
         );
         if (res4 is Error) {
           break;
         } else {
           final data = res4.data;
-          if (data.replies.isNullOrEmpty) {
+          if (data.replies.isEmpty) {
             break;
           }
-          int index = data.replies!.indexWhere((item) => item.rpid == id);
+          int index = data.replies.indexWhere((item) => item.rpid == id);
           if (index == -1) {
             // not found
           } else {

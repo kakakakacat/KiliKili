@@ -8,12 +8,12 @@ import 'package:kilikili/common/widgets/pendant_avatar.dart';
 import 'package:kilikili/common/widgets/translucent_row.dart';
 import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/reply.dart';
 import 'package:kilikili/http/user.dart';
 import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/pages/dynamics/controller.dart';
 import 'package:kilikili/pages/save_panel/view.dart';
+import 'package:kilikili/services/rust/rust_reply.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/bili_utils.dart';
 import 'package:kilikili/utils/color_utils.dart';
@@ -422,8 +422,10 @@ class AuthorPanel extends StatelessWidget {
                   ListTile(
                     onTap: () async {
                       Get.back();
-                      final res = await ReplyHttp.replyInteraction(
-                        oid: item.basic!.commentIdStr!,
+                      final res = await RustReply.replyInteraction(
+                        // 服务端给的是字符串形式的 oid（绕开 JS 精度），
+                        // Rust 侧按整数收。
+                        oid: int.parse(item.basic!.commentIdStr!),
                         type: commentType!,
                       );
                       if (res case Success(:final response)) {

@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1470928188;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1793249791;
 
 // Section: executor
 
@@ -318,6 +318,45 @@ fn wire__crate__api__video_page__fetch_ai_conclusion_impl(
                                 api_up_mid,
                             )
                             .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__reply__fetch_emote_panel_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_emote_panel",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::reply::ReplyContext>::sse_decode(&mut deserializer);
+            let api_business = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::reply::fetch_emote_panel(api_context, api_business).await,
                         )?;
                         std::result::Result::Ok(output_ok)
                     })()
@@ -812,6 +851,200 @@ fn wire__crate__api__video_feed__fetch_related_videos_impl(
                         let output_ok = Ok::<_, ()>(
                             crate::api::video_feed::fetch_related_videos(api_context, api_bvid)
                                 .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__reply__fetch_reply_interaction_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_reply_interaction",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::reply::ReplyContext>::sse_decode(&mut deserializer);
+            let api_oid = <i64>::sse_decode(&mut deserializer);
+            let api_kind = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::reply::fetch_reply_interaction(
+                                api_context,
+                                api_oid,
+                                api_kind,
+                            )
+                            .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__reply__fetch_reply_list_anonymous_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_reply_list_anonymous",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::reply::ReplyContext>::sse_decode(&mut deserializer);
+            let api_oid = <i64>::sse_decode(&mut deserializer);
+            let api_kind = <i64>::sse_decode(&mut deserializer);
+            let api_offset = <String>::sse_decode(&mut deserializer);
+            let api_sort = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::reply::fetch_reply_list_anonymous(
+                                api_context,
+                                api_oid,
+                                api_kind,
+                                api_offset,
+                                api_sort,
+                            )
+                            .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__reply__fetch_reply_list_paged_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_reply_list_paged",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::reply::ReplyContext>::sse_decode(&mut deserializer);
+            let api_oid = <i64>::sse_decode(&mut deserializer);
+            let api_kind = <i64>::sse_decode(&mut deserializer);
+            let api_sort = <i64>::sse_decode(&mut deserializer);
+            let api_page = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::reply::fetch_reply_list_paged(
+                                api_context,
+                                api_oid,
+                                api_kind,
+                                api_sort,
+                                api_page,
+                            )
+                            .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__reply__fetch_reply_reply_list_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_reply_reply_list",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::reply::ReplyContext>::sse_decode(&mut deserializer);
+            let api_oid = <i64>::sse_decode(&mut deserializer);
+            let api_root = <i64>::sse_decode(&mut deserializer);
+            let api_kind = <i64>::sse_decode(&mut deserializer);
+            let api_page = <i64>::sse_decode(&mut deserializer);
+            let api_csrf = <Option<String>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::reply::fetch_reply_reply_list(
+                                api_context,
+                                api_oid,
+                                api_root,
+                                api_kind,
+                                api_page,
+                                api_csrf,
+                            )
+                            .await,
                         )?;
                         std::result::Result::Ok(output_ok)
                     })()
@@ -1880,6 +2113,62 @@ impl SseDecode for crate::api::dm_view::DmViewSubtitlesParse {
     }
 }
 
+impl SseDecode for crate::api::reply::Emote {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_text = <Option<String>>::sse_decode(deserializer);
+        let mut var_url = <Option<String>>::sse_decode(deserializer);
+        let mut var_meta = <Option<crate::api::reply::EmoteMeta>>::sse_decode(deserializer);
+        return crate::api::reply::Emote {
+            text: var_text,
+            url: var_url,
+            meta: var_meta,
+        };
+    }
+}
+
+impl SseDecode for crate::api::reply::EmoteMeta {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_size = <Option<i64>>::sse_decode(deserializer);
+        let mut var_alias = <Option<String>>::sse_decode(deserializer);
+        return crate::api::reply::EmoteMeta {
+            size: var_size,
+            alias: var_alias,
+        };
+    }
+}
+
+impl SseDecode for crate::api::reply::EmotePackage {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_url = <Option<String>>::sse_decode(deserializer);
+        let mut var_kind = <Option<i64>>::sse_decode(deserializer);
+        let mut var_emote = <Vec<crate::api::reply::Emote>>::sse_decode(deserializer);
+        return crate::api::reply::EmotePackage {
+            url: var_url,
+            kind: var_kind,
+            emote: var_emote,
+        };
+    }
+}
+
+impl SseDecode for crate::api::reply::EmotePanelResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data = <Option<Vec<crate::api::reply::EmotePackage>>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::reply::EmotePanelResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
 impl SseDecode for f64 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -2083,6 +2372,18 @@ impl SseDecode for i64 {
     }
 }
 
+impl SseDecode for crate::api::reply::InteractStatus {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_canModify = <bool>::sse_decode(deserializer);
+        let mut var_status = <i64>::sse_decode(deserializer);
+        return crate::api::reply::InteractStatus {
+            can_modify: var_canModify,
+            status: var_status,
+        };
+    }
+}
+
 impl SseDecode for crate::api::video_page::Interaction {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -2145,6 +2446,30 @@ impl SseDecode for Vec<crate::api::danmaku::DanmakuBucketItem> {
             ans_.push(<crate::api::danmaku::DanmakuBucketItem>::sse_decode(
                 deserializer,
             ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::reply::Emote> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::reply::Emote>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::reply::EmotePackage> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::reply::EmotePackage>::sse_decode(deserializer));
         }
         return ans_;
     }
@@ -2259,6 +2584,18 @@ impl SseDecode for Vec<(String, String)> {
         let mut ans_ = Vec::with_capacity(len_ as usize);
         for idx_ in 0..len_ {
             ans_.push(<(String, String)>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::reply::ReplyItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::reply::ReplyItem>::sse_decode(deserializer));
         }
         return ans_;
     }
@@ -2564,6 +2901,17 @@ impl SseDecode for Option<bool> {
     }
 }
 
+impl SseDecode for Option<crate::api::reply::EmoteMeta> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::reply::EmoteMeta>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
 impl SseDecode for Option<f64> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -2710,6 +3058,85 @@ impl SseDecode for Option<crate::api::video_feed::PopularSeriesOne> {
     }
 }
 
+impl SseDecode for Option<crate::api::reply::ReplyCursor> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::reply::ReplyCursor>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::reply::ReplyInteract> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::reply::ReplyInteract>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::reply::ReplyItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::reply::ReplyItem>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::reply::ReplyList> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::reply::ReplyList>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::reply::ReplyMember> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::reply::ReplyMember>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::reply::ReplyPage> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::reply::ReplyPage>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::reply::ReplyReplyList> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::reply::ReplyReplyList>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
 impl SseDecode for Option<crate::api::search::SearchAllData> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -2826,6 +3253,19 @@ impl SseDecode for Option<Vec<crate::api::danmaku::DanmakuBucketItem>> {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         if (<bool>::sse_decode(deserializer)) {
             return Some(<Vec<crate::api::danmaku::DanmakuBucketItem>>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<Vec<crate::api::reply::EmotePackage>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<Vec<crate::api::reply::EmotePackage>>::sse_decode(
                 deserializer,
             ));
         } else {
@@ -3230,6 +3670,220 @@ impl SseDecode for (String, String) {
         let mut var_field0 = <String>::sse_decode(deserializer);
         let mut var_field1 = <String>::sse_decode(deserializer);
         return (var_field0, var_field1);
+    }
+}
+
+impl SseDecode for crate::api::reply::ReplyContext {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_baseUrl = <String>::sse_decode(deserializer);
+        let mut var_cookie = <Option<String>>::sse_decode(deserializer);
+        let mut var_headers = <Vec<(String, String)>>::sse_decode(deserializer);
+        let mut var_timeoutMs = <u64>::sse_decode(deserializer);
+        let mut var_transport =
+            <crate::api::transport::TransportSettings>::sse_decode(deserializer);
+        return crate::api::reply::ReplyContext {
+            base_url: var_baseUrl,
+            cookie: var_cookie,
+            headers: var_headers,
+            timeout_ms: var_timeoutMs,
+            transport: var_transport,
+        };
+    }
+}
+
+impl SseDecode for crate::api::reply::ReplyCursor {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_isBegin = <Option<bool>>::sse_decode(deserializer);
+        let mut var_isEnd = <Option<bool>>::sse_decode(deserializer);
+        let mut var_prev = <Option<i64>>::sse_decode(deserializer);
+        let mut var_next = <Option<i64>>::sse_decode(deserializer);
+        let mut var_nextOffset = <Option<String>>::sse_decode(deserializer);
+        let mut var_mode = <Option<i64>>::sse_decode(deserializer);
+        let mut var_modeText = <Option<String>>::sse_decode(deserializer);
+        let mut var_allCount = <Option<i64>>::sse_decode(deserializer);
+        let mut var_name = <Option<String>>::sse_decode(deserializer);
+        return crate::api::reply::ReplyCursor {
+            is_begin: var_isBegin,
+            is_end: var_isEnd,
+            prev: var_prev,
+            next: var_next,
+            next_offset: var_nextOffset,
+            mode: var_mode,
+            mode_text: var_modeText,
+            all_count: var_allCount,
+            name: var_name,
+        };
+    }
+}
+
+impl SseDecode for crate::api::reply::ReplyInteract {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_upReplySelection =
+            <crate::api::reply::InteractStatus>::sse_decode(deserializer);
+        let mut var_upReply = <crate::api::reply::InteractStatus>::sse_decode(deserializer);
+        return crate::api::reply::ReplyInteract {
+            up_reply_selection: var_upReplySelection,
+            up_reply: var_upReply,
+        };
+    }
+}
+
+impl SseDecode for crate::api::reply::ReplyInteractResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data = <Option<crate::api::reply::ReplyInteract>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::reply::ReplyInteractResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::reply::ReplyItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_rpid = <Option<i64>>::sse_decode(deserializer);
+        let mut var_oid = <Option<i64>>::sse_decode(deserializer);
+        let mut var_kind = <Option<i64>>::sse_decode(deserializer);
+        let mut var_mid = <Option<i64>>::sse_decode(deserializer);
+        let mut var_root = <Option<i64>>::sse_decode(deserializer);
+        let mut var_parent = <Option<i64>>::sse_decode(deserializer);
+        let mut var_dialog = <Option<i64>>::sse_decode(deserializer);
+        let mut var_count = <Option<i64>>::sse_decode(deserializer);
+        let mut var_rcount = <Option<i64>>::sse_decode(deserializer);
+        let mut var_state = <Option<i64>>::sse_decode(deserializer);
+        let mut var_fansgrade = <Option<i64>>::sse_decode(deserializer);
+        let mut var_attr = <Option<i64>>::sse_decode(deserializer);
+        let mut var_ctime = <Option<i64>>::sse_decode(deserializer);
+        let mut var_like = <Option<i64>>::sse_decode(deserializer);
+        let mut var_action = <Option<i64>>::sse_decode(deserializer);
+        let mut var_invisible = <Option<bool>>::sse_decode(deserializer);
+        let mut var_message = <Option<String>>::sse_decode(deserializer);
+        let mut var_member = <Option<crate::api::reply::ReplyMember>>::sse_decode(deserializer);
+        return crate::api::reply::ReplyItem {
+            rpid: var_rpid,
+            oid: var_oid,
+            kind: var_kind,
+            mid: var_mid,
+            root: var_root,
+            parent: var_parent,
+            dialog: var_dialog,
+            count: var_count,
+            rcount: var_rcount,
+            state: var_state,
+            fansgrade: var_fansgrade,
+            attr: var_attr,
+            ctime: var_ctime,
+            like: var_like,
+            action: var_action,
+            invisible: var_invisible,
+            message: var_message,
+            member: var_member,
+        };
+    }
+}
+
+impl SseDecode for crate::api::reply::ReplyList {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_cursor = <Option<crate::api::reply::ReplyCursor>>::sse_decode(deserializer);
+        let mut var_page = <Option<crate::api::reply::ReplyPage>>::sse_decode(deserializer);
+        let mut var_replies = <Vec<crate::api::reply::ReplyItem>>::sse_decode(deserializer);
+        let mut var_topReplies = <Vec<crate::api::reply::ReplyItem>>::sse_decode(deserializer);
+        let mut var_topUpper = <Option<crate::api::reply::ReplyItem>>::sse_decode(deserializer);
+        let mut var_upperMid = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::reply::ReplyList {
+            cursor: var_cursor,
+            page: var_page,
+            replies: var_replies,
+            top_replies: var_topReplies,
+            top_upper: var_topUpper,
+            upper_mid: var_upperMid,
+        };
+    }
+}
+
+impl SseDecode for crate::api::reply::ReplyListResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data = <Option<crate::api::reply::ReplyList>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::reply::ReplyListResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::reply::ReplyMember {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_mid = <Option<i64>>::sse_decode(deserializer);
+        let mut var_uname = <Option<String>>::sse_decode(deserializer);
+        let mut var_avatar = <Option<String>>::sse_decode(deserializer);
+        return crate::api::reply::ReplyMember {
+            mid: var_mid,
+            uname: var_uname,
+            avatar: var_avatar,
+        };
+    }
+}
+
+impl SseDecode for crate::api::reply::ReplyPage {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_num = <Option<i64>>::sse_decode(deserializer);
+        let mut var_size = <Option<i64>>::sse_decode(deserializer);
+        let mut var_count = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::reply::ReplyPage {
+            num: var_num,
+            size: var_size,
+            count: var_count,
+        };
+    }
+}
+
+impl SseDecode for crate::api::reply::ReplyReplyList {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_page = <Option<crate::api::reply::ReplyPage>>::sse_decode(deserializer);
+        let mut var_root = <Option<crate::api::reply::ReplyItem>>::sse_decode(deserializer);
+        let mut var_upperMid = <Option<i64>>::sse_decode(deserializer);
+        let mut var_replies = <Vec<crate::api::reply::ReplyItem>>::sse_decode(deserializer);
+        return crate::api::reply::ReplyReplyList {
+            page: var_page,
+            root: var_root,
+            upper_mid: var_upperMid,
+            replies: var_replies,
+        };
+    }
+}
+
+impl SseDecode for crate::api::reply::ReplyReplyListResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data = <Option<crate::api::reply::ReplyReplyList>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::reply::ReplyReplyListResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
     }
 }
 
@@ -4183,105 +4837,123 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        9 => wire__crate__api__video_feed__fetch_hot_videos_impl(port, ptr, rust_vec_len, data_len),
-        10 => wire__crate__api__video_page__fetch_note_list_impl(port, ptr, rust_vec_len, data_len),
-        11 => {
+        9 => wire__crate__api__reply__fetch_emote_panel_impl(port, ptr, rust_vec_len, data_len),
+        10 => {
+            wire__crate__api__video_feed__fetch_hot_videos_impl(port, ptr, rust_vec_len, data_len)
+        }
+        11 => wire__crate__api__video_page__fetch_note_list_impl(port, ptr, rust_vec_len, data_len),
+        12 => {
             wire__crate__api__video_page__fetch_online_total_impl(port, ptr, rust_vec_len, data_len)
         }
-        12 => wire__crate__api__video_page__fetch_play_info_impl(port, ptr, rust_vec_len, data_len),
-        13 => {
+        13 => wire__crate__api__video_page__fetch_play_info_impl(port, ptr, rust_vec_len, data_len),
+        14 => {
             wire__crate__api__play_url_fetch__fetch_play_url_impl(port, ptr, rust_vec_len, data_len)
         }
-        14 => wire__crate__api__video_feed__fetch_popular_precious_impl(
+        15 => wire__crate__api__video_feed__fetch_popular_precious_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        15 => wire__crate__api__video_feed__fetch_popular_series_list_impl(
+        16 => wire__crate__api__video_feed__fetch_popular_series_list_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        16 => wire__crate__api__video_feed__fetch_popular_series_one_impl(
+        17 => wire__crate__api__video_feed__fetch_popular_series_one_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        17 => wire__crate__api__sponsor_block__fetch_port_video_impl(
+        18 => wire__crate__api__sponsor_block__fetch_port_video_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        18 => {
+        19 => {
             wire__crate__api__video_feed__fetch_rank_videos_impl(port, ptr, rust_vec_len, data_len)
         }
-        19 => wire__crate__api__video_feed__fetch_related_videos_impl(
+        20 => wire__crate__api__video_feed__fetch_related_videos_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        20 => wire__crate__api__sponsor_block__fetch_skip_segments_impl(
+        21 => {
+            wire__crate__api__reply__fetch_reply_interaction_impl(port, ptr, rust_vec_len, data_len)
+        }
+        22 => wire__crate__api__reply__fetch_reply_list_anonymous_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        21 => wire__crate__api__sponsor_block__fetch_sponsor_uptime_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        22 => wire__crate__api__sponsor_block__fetch_sponsor_user_info_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        23 => wire__crate__api__video_detail_fetch__fetch_video_detail_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
+        23 => {
+            wire__crate__api__reply__fetch_reply_list_paged_impl(port, ptr, rust_vec_len, data_len)
+        }
         24 => {
+            wire__crate__api__reply__fetch_reply_reply_list_impl(port, ptr, rust_vec_len, data_len)
+        }
+        25 => wire__crate__api__sponsor_block__fetch_skip_segments_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        26 => wire__crate__api__sponsor_block__fetch_sponsor_uptime_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        27 => wire__crate__api__sponsor_block__fetch_sponsor_user_info_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        28 => wire__crate__api__video_detail_fetch__fetch_video_detail_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        29 => {
             wire__crate__api__video_page__fetch_video_shot_impl(port, ptr, rust_vec_len, data_len)
         }
-        25 => wire__crate__api__init__init_app_impl(port, ptr, rust_vec_len, data_len),
-        26 => wire__crate__api__dm_view__parse_dm_view_subtitles_impl(
+        30 => wire__crate__api__init__init_app_impl(port, ptr, rust_vec_len, data_len),
+        31 => wire__crate__api__dm_view__parse_dm_view_subtitles_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        27 => wire__crate__api__play_url__parse_play_url_impl(port, ptr, rust_vec_len, data_len),
-        28 => wire__crate__api__search_suggest__parse_search_suggest_impl(
+        32 => wire__crate__api__play_url__parse_play_url_impl(port, ptr, rust_vec_len, data_len),
+        33 => wire__crate__api__search_suggest__parse_search_suggest_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        29 => wire__crate__api__video_detail__parse_video_detail_impl(
+        34 => wire__crate__api__video_detail__parse_video_detail_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        30 => wire__crate__api__search__search_all_impl(port, ptr, rust_vec_len, data_len),
-        31 => wire__crate__api__search__search_article_impl(port, ptr, rust_vec_len, data_len),
-        32 => wire__crate__api__search__search_live_impl(port, ptr, rust_vec_len, data_len),
-        33 => wire__crate__api__search__search_pgc_impl(port, ptr, rust_vec_len, data_len),
-        34 => wire__crate__api__search__search_recommend_impl(port, ptr, rust_vec_len, data_len),
-        35 => wire__crate__api__search__search_trending_impl(port, ptr, rust_vec_len, data_len),
-        36 => wire__crate__api__search__search_user_impl(port, ptr, rust_vec_len, data_len),
-        37 => wire__crate__api__search__search_video_impl(port, ptr, rust_vec_len, data_len),
-        40 => wire__crate__api__wbi__wbi_mixin_key_impl(port, ptr, rust_vec_len, data_len),
-        41 => wire__crate__api__wbi__wbi_sign_impl(port, ptr, rust_vec_len, data_len),
+        35 => wire__crate__api__search__search_all_impl(port, ptr, rust_vec_len, data_len),
+        36 => wire__crate__api__search__search_article_impl(port, ptr, rust_vec_len, data_len),
+        37 => wire__crate__api__search__search_live_impl(port, ptr, rust_vec_len, data_len),
+        38 => wire__crate__api__search__search_pgc_impl(port, ptr, rust_vec_len, data_len),
+        39 => wire__crate__api__search__search_recommend_impl(port, ptr, rust_vec_len, data_len),
+        40 => wire__crate__api__search__search_trending_impl(port, ptr, rust_vec_len, data_len),
+        41 => wire__crate__api__search__search_user_impl(port, ptr, rust_vec_len, data_len),
+        42 => wire__crate__api__search__search_video_impl(port, ptr, rust_vec_len, data_len),
+        45 => wire__crate__api__wbi__wbi_mixin_key_impl(port, ptr, rust_vec_len, data_len),
+        46 => wire__crate__api__wbi__wbi_sign_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -4300,8 +4972,8 @@ fn pde_ffi_dispatcher_sync_impl(
         6 => {
             wire__crate__api__danmaku__danmaku_open_session_count_impl(ptr, rust_vec_len, data_len)
         }
-        38 => wire__crate__api__media_select__select_target_audio_impl(ptr, rust_vec_len, data_len),
-        39 => wire__crate__api__media_select__select_target_video_impl(ptr, rust_vec_len, data_len),
+        43 => wire__crate__api__media_select__select_target_audio_impl(ptr, rust_vec_len, data_len),
+        44 => wire__crate__api__media_select__select_target_video_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -4543,6 +5215,86 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::dm_view::DmViewSubtitlesParse
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply::Emote {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.text.into_into_dart().into_dart(),
+            self.url.into_into_dart().into_dart(),
+            self.meta.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::reply::Emote {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply::Emote> for crate::api::reply::Emote {
+    fn into_into_dart(self) -> crate::api::reply::Emote {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply::EmoteMeta {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.size.into_into_dart().into_dart(),
+            self.alias.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::reply::EmoteMeta {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply::EmoteMeta>
+    for crate::api::reply::EmoteMeta
+{
+    fn into_into_dart(self) -> crate::api::reply::EmoteMeta {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply::EmotePackage {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.url.into_into_dart().into_dart(),
+            self.kind.into_into_dart().into_dart(),
+            self.emote.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply::EmotePackage
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply::EmotePackage>
+    for crate::api::reply::EmotePackage
+{
+    fn into_into_dart(self) -> crate::api::reply::EmotePackage {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply::EmotePanelResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply::EmotePanelResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply::EmotePanelResult>
+    for crate::api::reply::EmotePanelResult
+{
+    fn into_into_dart(self) -> crate::api::reply::EmotePanelResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::video_feed::FeedContext {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -4734,6 +5486,27 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::video_page::HistoryNode>
     for crate::api::video_page::HistoryNode
 {
     fn into_into_dart(self) -> crate::api::video_page::HistoryNode {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply::InteractStatus {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.can_modify.into_into_dart().into_dart(),
+            self.status.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply::InteractStatus
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply::InteractStatus>
+    for crate::api::reply::InteractStatus
+{
+    fn into_into_dart(self) -> crate::api::reply::InteractStatus {
         self
     }
 }
@@ -5196,6 +5969,268 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::video_feed::PopularSeriesOneR
     for crate::api::video_feed::PopularSeriesOneResult
 {
     fn into_into_dart(self) -> crate::api::video_feed::PopularSeriesOneResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply::ReplyContext {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.base_url.into_into_dart().into_dart(),
+            self.cookie.into_into_dart().into_dart(),
+            self.headers.into_into_dart().into_dart(),
+            self.timeout_ms.into_into_dart().into_dart(),
+            self.transport.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply::ReplyContext
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply::ReplyContext>
+    for crate::api::reply::ReplyContext
+{
+    fn into_into_dart(self) -> crate::api::reply::ReplyContext {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply::ReplyCursor {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.is_begin.into_into_dart().into_dart(),
+            self.is_end.into_into_dart().into_dart(),
+            self.prev.into_into_dart().into_dart(),
+            self.next.into_into_dart().into_dart(),
+            self.next_offset.into_into_dart().into_dart(),
+            self.mode.into_into_dart().into_dart(),
+            self.mode_text.into_into_dart().into_dart(),
+            self.all_count.into_into_dart().into_dart(),
+            self.name.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply::ReplyCursor
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply::ReplyCursor>
+    for crate::api::reply::ReplyCursor
+{
+    fn into_into_dart(self) -> crate::api::reply::ReplyCursor {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply::ReplyInteract {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.up_reply_selection.into_into_dart().into_dart(),
+            self.up_reply.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply::ReplyInteract
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply::ReplyInteract>
+    for crate::api::reply::ReplyInteract
+{
+    fn into_into_dart(self) -> crate::api::reply::ReplyInteract {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply::ReplyInteractResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply::ReplyInteractResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply::ReplyInteractResult>
+    for crate::api::reply::ReplyInteractResult
+{
+    fn into_into_dart(self) -> crate::api::reply::ReplyInteractResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply::ReplyItem {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.rpid.into_into_dart().into_dart(),
+            self.oid.into_into_dart().into_dart(),
+            self.kind.into_into_dart().into_dart(),
+            self.mid.into_into_dart().into_dart(),
+            self.root.into_into_dart().into_dart(),
+            self.parent.into_into_dart().into_dart(),
+            self.dialog.into_into_dart().into_dart(),
+            self.count.into_into_dart().into_dart(),
+            self.rcount.into_into_dart().into_dart(),
+            self.state.into_into_dart().into_dart(),
+            self.fansgrade.into_into_dart().into_dart(),
+            self.attr.into_into_dart().into_dart(),
+            self.ctime.into_into_dart().into_dart(),
+            self.like.into_into_dart().into_dart(),
+            self.action.into_into_dart().into_dart(),
+            self.invisible.into_into_dart().into_dart(),
+            self.message.into_into_dart().into_dart(),
+            self.member.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::reply::ReplyItem {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply::ReplyItem>
+    for crate::api::reply::ReplyItem
+{
+    fn into_into_dart(self) -> crate::api::reply::ReplyItem {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply::ReplyList {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.cursor.into_into_dart().into_dart(),
+            self.page.into_into_dart().into_dart(),
+            self.replies.into_into_dart().into_dart(),
+            self.top_replies.into_into_dart().into_dart(),
+            self.top_upper.into_into_dart().into_dart(),
+            self.upper_mid.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::reply::ReplyList {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply::ReplyList>
+    for crate::api::reply::ReplyList
+{
+    fn into_into_dart(self) -> crate::api::reply::ReplyList {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply::ReplyListResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply::ReplyListResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply::ReplyListResult>
+    for crate::api::reply::ReplyListResult
+{
+    fn into_into_dart(self) -> crate::api::reply::ReplyListResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply::ReplyMember {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.mid.into_into_dart().into_dart(),
+            self.uname.into_into_dart().into_dart(),
+            self.avatar.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply::ReplyMember
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply::ReplyMember>
+    for crate::api::reply::ReplyMember
+{
+    fn into_into_dart(self) -> crate::api::reply::ReplyMember {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply::ReplyPage {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.num.into_into_dart().into_dart(),
+            self.size.into_into_dart().into_dart(),
+            self.count.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::reply::ReplyPage {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply::ReplyPage>
+    for crate::api::reply::ReplyPage
+{
+    fn into_into_dart(self) -> crate::api::reply::ReplyPage {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply::ReplyReplyList {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.page.into_into_dart().into_dart(),
+            self.root.into_into_dart().into_dart(),
+            self.upper_mid.into_into_dart().into_dart(),
+            self.replies.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply::ReplyReplyList
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply::ReplyReplyList>
+    for crate::api::reply::ReplyReplyList
+{
+    fn into_into_dart(self) -> crate::api::reply::ReplyReplyList {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply::ReplyReplyListResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply::ReplyReplyListResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply::ReplyReplyListResult>
+    for crate::api::reply::ReplyReplyListResult
+{
+    fn into_into_dart(self) -> crate::api::reply::ReplyReplyListResult {
         self
     }
 }
@@ -6374,6 +7409,42 @@ impl SseEncode for crate::api::dm_view::DmViewSubtitlesParse {
     }
 }
 
+impl SseEncode for crate::api::reply::Emote {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<String>>::sse_encode(self.text, serializer);
+        <Option<String>>::sse_encode(self.url, serializer);
+        <Option<crate::api::reply::EmoteMeta>>::sse_encode(self.meta, serializer);
+    }
+}
+
+impl SseEncode for crate::api::reply::EmoteMeta {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.size, serializer);
+        <Option<String>>::sse_encode(self.alias, serializer);
+    }
+}
+
+impl SseEncode for crate::api::reply::EmotePackage {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<String>>::sse_encode(self.url, serializer);
+        <Option<i64>>::sse_encode(self.kind, serializer);
+        <Vec<crate::api::reply::Emote>>::sse_encode(self.emote, serializer);
+    }
+}
+
+impl SseEncode for crate::api::reply::EmotePanelResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<Vec<crate::api::reply::EmotePackage>>>::sse_encode(self.data, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
 impl SseEncode for f64 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -6499,6 +7570,14 @@ impl SseEncode for i64 {
     }
 }
 
+impl SseEncode for crate::api::reply::InteractStatus {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.can_modify, serializer);
+        <i64>::sse_encode(self.status, serializer);
+    }
+}
+
 impl SseEncode for crate::api::video_page::Interaction {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -6543,6 +7622,26 @@ impl SseEncode for Vec<crate::api::danmaku::DanmakuBucketItem> {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <crate::api::danmaku::DanmakuBucketItem>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::reply::Emote> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::reply::Emote>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::reply::EmotePackage> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::reply::EmotePackage>::sse_encode(item, serializer);
         }
     }
 }
@@ -6633,6 +7732,16 @@ impl SseEncode for Vec<(String, String)> {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <(String, String)>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::reply::ReplyItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::reply::ReplyItem>::sse_encode(item, serializer);
         }
     }
 }
@@ -6848,6 +7957,16 @@ impl SseEncode for Option<bool> {
     }
 }
 
+impl SseEncode for Option<crate::api::reply::EmoteMeta> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::reply::EmoteMeta>::sse_encode(value, serializer);
+        }
+    }
+}
+
 impl SseEncode for Option<f64> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -6968,6 +8087,76 @@ impl SseEncode for Option<crate::api::video_feed::PopularSeriesOne> {
     }
 }
 
+impl SseEncode for Option<crate::api::reply::ReplyCursor> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::reply::ReplyCursor>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::reply::ReplyInteract> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::reply::ReplyInteract>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::reply::ReplyItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::reply::ReplyItem>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::reply::ReplyList> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::reply::ReplyList>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::reply::ReplyMember> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::reply::ReplyMember>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::reply::ReplyPage> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::reply::ReplyPage>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::reply::ReplyReplyList> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::reply::ReplyReplyList>::sse_encode(value, serializer);
+        }
+    }
+}
+
 impl SseEncode for Option<crate::api::search::SearchAllData> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -7064,6 +8253,16 @@ impl SseEncode for Option<Vec<crate::api::danmaku::DanmakuBucketItem>> {
         <bool>::sse_encode(self.is_some(), serializer);
         if let Some(value) = self {
             <Vec<crate::api::danmaku::DanmakuBucketItem>>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<Vec<crate::api::reply::EmotePackage>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <Vec<crate::api::reply::EmotePackage>>::sse_encode(value, serializer);
         }
     }
 }
@@ -7338,6 +8537,134 @@ impl SseEncode for (String, String) {
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <String>::sse_encode(self.0, serializer);
         <String>::sse_encode(self.1, serializer);
+    }
+}
+
+impl SseEncode for crate::api::reply::ReplyContext {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.base_url, serializer);
+        <Option<String>>::sse_encode(self.cookie, serializer);
+        <Vec<(String, String)>>::sse_encode(self.headers, serializer);
+        <u64>::sse_encode(self.timeout_ms, serializer);
+        <crate::api::transport::TransportSettings>::sse_encode(self.transport, serializer);
+    }
+}
+
+impl SseEncode for crate::api::reply::ReplyCursor {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<bool>>::sse_encode(self.is_begin, serializer);
+        <Option<bool>>::sse_encode(self.is_end, serializer);
+        <Option<i64>>::sse_encode(self.prev, serializer);
+        <Option<i64>>::sse_encode(self.next, serializer);
+        <Option<String>>::sse_encode(self.next_offset, serializer);
+        <Option<i64>>::sse_encode(self.mode, serializer);
+        <Option<String>>::sse_encode(self.mode_text, serializer);
+        <Option<i64>>::sse_encode(self.all_count, serializer);
+        <Option<String>>::sse_encode(self.name, serializer);
+    }
+}
+
+impl SseEncode for crate::api::reply::ReplyInteract {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <crate::api::reply::InteractStatus>::sse_encode(self.up_reply_selection, serializer);
+        <crate::api::reply::InteractStatus>::sse_encode(self.up_reply, serializer);
+    }
+}
+
+impl SseEncode for crate::api::reply::ReplyInteractResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<crate::api::reply::ReplyInteract>>::sse_encode(self.data, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::reply::ReplyItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.rpid, serializer);
+        <Option<i64>>::sse_encode(self.oid, serializer);
+        <Option<i64>>::sse_encode(self.kind, serializer);
+        <Option<i64>>::sse_encode(self.mid, serializer);
+        <Option<i64>>::sse_encode(self.root, serializer);
+        <Option<i64>>::sse_encode(self.parent, serializer);
+        <Option<i64>>::sse_encode(self.dialog, serializer);
+        <Option<i64>>::sse_encode(self.count, serializer);
+        <Option<i64>>::sse_encode(self.rcount, serializer);
+        <Option<i64>>::sse_encode(self.state, serializer);
+        <Option<i64>>::sse_encode(self.fansgrade, serializer);
+        <Option<i64>>::sse_encode(self.attr, serializer);
+        <Option<i64>>::sse_encode(self.ctime, serializer);
+        <Option<i64>>::sse_encode(self.like, serializer);
+        <Option<i64>>::sse_encode(self.action, serializer);
+        <Option<bool>>::sse_encode(self.invisible, serializer);
+        <Option<String>>::sse_encode(self.message, serializer);
+        <Option<crate::api::reply::ReplyMember>>::sse_encode(self.member, serializer);
+    }
+}
+
+impl SseEncode for crate::api::reply::ReplyList {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<crate::api::reply::ReplyCursor>>::sse_encode(self.cursor, serializer);
+        <Option<crate::api::reply::ReplyPage>>::sse_encode(self.page, serializer);
+        <Vec<crate::api::reply::ReplyItem>>::sse_encode(self.replies, serializer);
+        <Vec<crate::api::reply::ReplyItem>>::sse_encode(self.top_replies, serializer);
+        <Option<crate::api::reply::ReplyItem>>::sse_encode(self.top_upper, serializer);
+        <Option<i64>>::sse_encode(self.upper_mid, serializer);
+    }
+}
+
+impl SseEncode for crate::api::reply::ReplyListResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<crate::api::reply::ReplyList>>::sse_encode(self.data, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::reply::ReplyMember {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.mid, serializer);
+        <Option<String>>::sse_encode(self.uname, serializer);
+        <Option<String>>::sse_encode(self.avatar, serializer);
+    }
+}
+
+impl SseEncode for crate::api::reply::ReplyPage {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.num, serializer);
+        <Option<i64>>::sse_encode(self.size, serializer);
+        <Option<i64>>::sse_encode(self.count, serializer);
+    }
+}
+
+impl SseEncode for crate::api::reply::ReplyReplyList {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<crate::api::reply::ReplyPage>>::sse_encode(self.page, serializer);
+        <Option<crate::api::reply::ReplyItem>>::sse_encode(self.root, serializer);
+        <Option<i64>>::sse_encode(self.upper_mid, serializer);
+        <Vec<crate::api::reply::ReplyItem>>::sse_encode(self.replies, serializer);
+    }
+}
+
+impl SseEncode for crate::api::reply::ReplyReplyListResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<crate::api::reply::ReplyReplyList>>::sse_encode(self.data, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
     }
 }
 

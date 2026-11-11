@@ -10,6 +10,7 @@ pub mod player;
 pub mod playurl;
 pub mod redact;
 pub mod regex_compat;
+pub mod reply;
 pub mod search;
 pub mod session;
 pub mod sponsor_block;

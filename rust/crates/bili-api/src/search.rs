@@ -296,9 +296,13 @@ pub fn parse_all(body: &str) -> Result<SearchAllResult, DomainError> {
                 out.medias.extend(items.iter().filter_map(pgc_item));
             }
             Some("activity") => out.activities = items.iter().filter_map(activity_item).collect(),
-            // 赛事卡片原样带过去，理由见 `SearchAllResult::esports_json`。
+            // 赛事卡片的键名是 camelCase，与赛事详情接口不同，解析在
+            // `crate::match_info`——同一个实体两套字段名，见那里的说明。
             Some("esports") => {
-                out.esports_json = items.first().and_then(|v| serde_json::to_string(v).ok());
+                out.esports = items
+                    .first()
+                    .map(crate::match_info::parse_search_contests)
+                    .unwrap_or_default();
             }
             _ => {}
         }
@@ -740,14 +744,16 @@ mod tests {
     }
 
     #[test]
-    fn esports_block_is_passed_through_as_json() {
-        // MatchContest 还有一个未迁的生产者（S15），按 ADR-011 决策六不展开。
+    fn esports_block_is_parsed_into_contests() {
+        // S15（#66）把 MatchContest 的另一个生产者也迁了，这里不再原样
+        // 带回 JSON，而是解析成实体。
         let body = envelope(
-            r#"{"result":[{"result_type":"esports","data":[{"ID":77,"gameStage":"决赛"}]}]}"#,
+            r#"{"result":[{"result_type":"esports","data":[{"contest":[{"ID":77,"gameStage":"决赛"}]}]}]}"#,
         );
         let all = parse_all(&body).expect("应当解析成功");
-        let raw = all.esports_json.expect("应当带回原始 JSON");
-        assert!(raw.contains("\"ID\":77"));
+        assert_eq!(all.esports.len(), 1);
+        assert_eq!(all.esports[0].id, Some(77));
+        assert_eq!(all.esports[0].game_stage.as_deref(), Some("决赛"));
     }
 
     #[test]

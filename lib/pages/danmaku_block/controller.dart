@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:kilikili/http/danmaku_block.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/dm_block_type.dart';
-import 'package:kilikili/models/user/danmaku_block.dart';
+import 'package:kilikili/services/rust/rust_misc.dart';
 import 'package:archive/archive.dart' show getCrc32;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -11,9 +11,9 @@ import 'package:material_ui/material_ui.dart';
 
 class DanmakuBlockController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  late final List<RxList<SimpleRule>> rules = List.generate(
+  late final List<RxList<FilterRule>> rules = List.generate(
     DmBlockType.values.length,
-    (_) => <SimpleRule>[].obs,
+    (_) => <FilterRule>[].obs,
   );
 
   late TabController tabController;
@@ -33,12 +33,14 @@ class DanmakuBlockController extends GetxController
 
   Future<void> queryDanmakuFilter() async {
     SmartDialog.showLoading(msg: '正在同步弹幕屏蔽规则……');
-    final result = await DanmakuFilterHttp.danmakuFilter();
+    final result = await RustMisc.danmakuFilter();
     SmartDialog.dismiss();
     if (result case Success(:final response)) {
-      rules[0].addAll(response.rule);
-      rules[1].addAll(response.rule1);
-      rules[2].addAll(response.rule2);
+      // 按 type 分组在 Rust 侧完成（协议知识，ADR-011 决策二），这里只是
+      // 把三组接到三个 Tab 上，顺序与 DmBlockType 一致。
+      rules[0].addAll(response.keywords);
+      rules[1].addAll(response.patterns);
+      rules[2].addAll(response.users);
       if (response.toast case final toast?) {
         SmartDialog.showToast(toast);
       }

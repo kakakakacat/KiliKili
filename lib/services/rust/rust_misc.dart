@@ -1,0 +1,171 @@
+import 'package:kilikili/http/api.dart';
+import 'package:kilikili/http/constants.dart';
+import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/models/common/account_type.dart';
+import 'package:kilikili/rust/api/misc.dart' as rust_api;
+import 'package:kilikili/services/rust/rust_request.dart';
+import 'package:kilikili/services/rust/rust_transport.dart';
+import 'package:kilikili/services/rust_core.dart';
+import 'package:kilikili/utils/accounts.dart';
+import 'package:kilikili/utils/wbi_sign.dart';
+import 'package:flutter/foundation.dart';
+
+export 'package:kilikili/rust/api/misc.dart'
+    show
+        Artist,
+        BgmRecommend,
+        BlackList,
+        BlackListItem,
+        DanmakuFilter,
+        FilterRule,
+        HotSongHeat,
+        MatchContest,
+        MatchSeason,
+        MatchTeam,
+        MusicComment,
+        MusicDetail,
+        SongHeat;
+
+/// 杂项只读接口的取数路径：音乐页、黑名单、电竞赛事、云端弹幕屏蔽规则
+/// （S15 / issue #66）。
+///
+/// 基线对应的 `MusicHttp.bgmDetail` / `bgmRecommend`、`BlackHttp.blackList`、
+/// `MatchHttp.matchInfo`、`DanmakuFilterHttp.danmakuFilter` 已随本次迁移
+/// 删除，按 ADR-011 决策四不留降级开关。
+///
+/// 这几条接口在 `ApiType.apiTypeSet` 里都没有登记，因此与基线拦截器一样
+/// 走 `main` 账号。
+abstract final class RustMisc {
+  /// 与基线 `BaseOptions` 一致的超时（`lib/http/init.dart`）。
+  static const int _timeoutMs = 10000;
+
+  static const String _notReady = 'Rust Core 未就绪，该功能暂不可用';
+
+  /// 基线黑名单的固定页长。
+  static const int blackListPageSize = 50;
+
+  static Future<rust_api.MiscContext> _context({
+    required String path,
+    String mixinKey = '',
+  }) async {
+    final acc = Accounts.get(AccountType.main);
+    return rust_api.MiscContext(
+      baseUrl: HttpString.apiBaseUrl,
+      cookie: await RustRequest.cookieFor(acc, path),
+      headers: RustRequest.headersFor(acc),
+      timeoutMs: BigInt.from(_timeoutMs),
+      transport: RustTransport.current(),
+      mixinKey: mixinKey,
+      wts: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    );
+  }
+
+  /// 取 WBI mixin key。拿不到就别发请求——基线会用空串继续签名并换回一个
+  /// 业务错误码，那只是把失败推后，还更难诊断。
+  static Future<String?> _mixinKey() async {
+    final key = await WbiSign.getWbiKeys();
+    return key.isEmpty ? null : key;
+  }
+
+  /// BGM 详情。WBI 签名。
+  static Future<LoadingState<rust_api.MusicDetail>> bgmDetail(
+    String musicId,
+  ) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    final mixinKey = await _mixinKey();
+    if (mixinKey == null) return const Error('WBI 签名密钥获取失败');
+    try {
+      final result = await rust_api.fetchBgmDetail(
+        context: await _context(path: Api.bgmDetail, mixinKey: mixinKey),
+        musicId: musicId,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('BGM 详情', e, st);
+    }
+  }
+
+  /// BGM 的相关推荐。
+  static Future<LoadingState<List<rust_api.BgmRecommend>?>> bgmRecommend(
+    String musicId,
+  ) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await rust_api.fetchBgmRecommend(
+        context: await _context(path: Api.bgmRecommend),
+        musicId: musicId,
+      );
+      return _unwrap<List<rust_api.BgmRecommend>?>(
+        result.data,
+        result.errorDetail,
+        result.errorCode,
+      );
+    } catch (e, st) {
+      return _crashed('相关推荐', e, st);
+    }
+  }
+
+  /// 一页黑名单。只读接口却要 csrf，是服务端的要求；真相源在 Dart 的
+  /// 账号体系。
+  static Future<LoadingState<rust_api.BlackList>> blackList({
+    required int pn,
+    int ps = blackListPageSize,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await rust_api.fetchBlackList(
+        context: await _context(path: Api.blackList),
+        page: pn,
+        pageSize: ps,
+        csrf: Accounts.main.csrf,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('黑名单', e, st);
+    }
+  }
+
+  /// 一场比赛的详情。请求成功但服务端没给比赛时返回 `Success(null)`，
+  /// 与基线一致——界面显示空态，不是错误。
+  static Future<LoadingState<rust_api.MatchContest?>> matchInfo(
+    int contestId,
+  ) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await rust_api.fetchMatchInfo(
+        context: await _context(path: Api.matchInfo),
+        contestId: contestId,
+      );
+      final data = result.data;
+      if (data == null) {
+        return Error(result.errorDetail ?? '请求失败', code: result.errorCode);
+      }
+      return Success(data.contest);
+    } catch (e, st) {
+      return _crashed('赛事详情', e, st);
+    }
+  }
+
+  /// 云端弹幕屏蔽规则，已按类型分好组。
+  static Future<LoadingState<rust_api.DanmakuFilter>> danmakuFilter() async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await rust_api.fetchDanmakuFilter(
+        context: await _context(path: Api.danmakuFilter),
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('弹幕屏蔽规则', e, st);
+    }
+  }
+
+  /// Rust 侧的失败一律是值：`data` 为空就说明这次没拿到。
+  static LoadingState<T> _unwrap<T>(T? data, String? detail, int? code) =>
+      data == null ? Error(detail ?? '请求失败', code: code) : Success(data);
+
+  /// 桥接层自身出错（未就绪、参数编码失败等）。不抛给 UI。
+  static LoadingState<T> _crashed<T>(String what, Object e, StackTrace st) {
+    if (kDebugMode) debugPrint('[rust] 取$what出错: $e\n$st');
+    return Error('$e');
+  }
+}

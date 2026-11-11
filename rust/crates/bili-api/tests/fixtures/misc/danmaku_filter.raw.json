@@ -1,0 +1,18 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "rule": [
+      { "id": 101, "type": 0, "filter": "剧透" },
+      { "id": 102, "type": 0, "filter": "前方高能" },
+      { "id": 103, "type": 1, "filter": "/^\\d{4}年$/" },
+      { "id": 104, "type": 2, "filter": "800000201" },
+      { "id": 105, "type": 7, "filter": "未知类型，应被丢弃" },
+      { "id": 106, "type": 0 }
+    ],
+    "toast": "",
+    "valid": 1,
+    "ver": 12
+  }
+}

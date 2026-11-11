@@ -15,7 +15,7 @@ import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/music.dart';
 import 'package:kilikili/models/common/image_preview_type.dart';
 import 'package:kilikili/models/common/image_type.dart';
-import 'package:kilikili/models_new/music/bgm_detail.dart';
+import 'package:kilikili/services/rust/rust_misc.dart';
 import 'package:kilikili/pages/common/dyn/common_dyn_page.dart';
 import 'package:kilikili/pages/music/controller.dart';
 import 'package:kilikili/pages/music/video/view.dart';
@@ -23,8 +23,6 @@ import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/android/android_helper.dart';
 import 'package:kilikili/utils/date_utils.dart';
 import 'package:kilikili/utils/extension/get_ext.dart';
-import 'package:kilikili/utils/extension/iterable_ext.dart';
-import 'package:kilikili/utils/extension/num_ext.dart';
 import 'package:kilikili/utils/extension/string_ext.dart';
 import 'package:kilikili/utils/grid.dart';
 import 'package:kilikili/utils/num_utils.dart';
@@ -304,33 +302,28 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                   ),
                 ),
                 Expanded(
-                  child: Builder(
-                    builder: (context) => textIconButton(
+                  child: Obx(
+                    () => textIconButton(
                       icon: FontAwesomeIcons.thumbsUp,
                       activatedIcon: FontAwesomeIcons.solidThumbsUp,
                       text: '点赞',
-                      count: item.wishCount,
-                      status: item.wishListen ?? false,
+                      count: controller.wishCount.value,
+                      status: controller.wishListen.value,
                       onPressed: () async {
                         if (!Accounts.main.isLogin) {
                           SmartDialog.showToast('请先登录');
                           return;
                         }
-                        final hasLike = item.wishListen ?? false;
+                        final hasLike = controller.wishListen.value;
                         final res = await MusicHttp.wishUpdate(
                           controller.musicId,
                           hasLike,
                         );
                         if (res.isSuccess) {
-                          if (hasLike) {
-                            item.wishCount--;
-                          } else {
-                            item.wishCount++;
-                          }
-                          item.wishListen = !hasLike;
-                          if (context.mounted) {
-                            (context as Element).markNeedsBuild();
-                          }
+                          // 状态存在 controller 上：详情是 Rust 的 typed
+                          // 结构，不可变。
+                          controller.wishCount.value += hasLike ? -1 : 1;
+                          controller.wishListen.value = !hasLike;
                         } else {
                           res.toast();
                         }
@@ -461,8 +454,8 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                           spacing: 8,
                           runSpacing: 2,
                           children: [
-                            if (!item.artistsList.isNullOrEmpty)
-                              for (final artist in item.artistsList!)
+                            if (item.artistsList.isNotEmpty)
+                              for (final artist in item.artistsList)
                                 _buildArtist(artist, textTheme.bodySmall),
                             if (!item.musicPublish.isNullOrEmpty)
                               Text(

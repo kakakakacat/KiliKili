@@ -1,10 +1,8 @@
 import 'package:kilikili/common/widgets/dialog/dialog.dart';
-import 'package:kilikili/http/black.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/video.dart';
-import 'package:kilikili/models_new/blacklist/data.dart';
-import 'package:kilikili/models_new/blacklist/list.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_misc.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/extension/num_ext.dart';
 import 'package:kilikili/utils/global_data.dart';
@@ -13,7 +11,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:material_ui/material_ui.dart';
 
 class BlackListController
-    extends CommonListController<BlackListData, BlackListItem> {
+    extends CommonListController<BlackList, BlackListItem> {
   int? _total;
   final blackMids = GlobalData().blackMids;
 
@@ -28,7 +26,7 @@ class BlackListController
   }
 
   @override
-  List<BlackListItem>? getDataList(BlackListData response) {
+  List<BlackListItem>? getDataList(BlackList response) {
     _total = response.total;
     return response.list;
   }
@@ -60,8 +58,8 @@ class BlackListController
   }
 
   @override
-  Future<LoadingState<BlackListData>> customGetData() =>
-      BlackHttp.blackList(pn: page);
+  Future<LoadingState<BlackList>> customGetData() =>
+      RustMisc.blackList(pn: page);
 
   @override
   void onClose() {

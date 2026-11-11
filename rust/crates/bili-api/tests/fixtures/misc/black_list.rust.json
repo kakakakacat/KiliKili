@@ -1,0 +1,17 @@
+{
+  "list": [
+    {
+      "face": "https://example.invalid/bfs/face/x.jpg",
+      "mid": 800000101,
+      "mtime": 1700000001,
+      "uname": "示例用户甲"
+    },
+    {
+      "face": "https://example.invalid/bfs/face/y.jpg",
+      "mid": 800000102,
+      "mtime": 1700000002,
+      "uname": "示例用户乙"
+    }
+  ],
+  "total": 2
+}

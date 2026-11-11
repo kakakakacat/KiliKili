@@ -1,0 +1,27 @@
+[
+  {
+    "bvid": "BV1example1",
+    "cid": 900000011,
+    "cover": "https://example.invalid/bfs/archive/1.jpg",
+    "danmu": 789,
+    "duration": 213,
+    "labels": [
+      "鬼畜",
+      "音MAD"
+    ],
+    "play": 123456,
+    "title": "示例视频一",
+    "up_nick_name": "示例UP主甲"
+  },
+  {
+    "bvid": "BV1example2",
+    "cid": 900000012,
+    "cover": "https://example.invalid/bfs/archive/2.jpg",
+    "danmu": 0,
+    "duration": 95,
+    "labels": [],
+    "play": 654321,
+    "title": "示例视频二",
+    "up_nick_name": "示例UP主乙"
+  }
+]

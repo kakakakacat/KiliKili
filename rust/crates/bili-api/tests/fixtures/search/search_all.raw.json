@@ -53,7 +53,10 @@
             "is_live": 0,
             "room_id": 0,
             "is_senior_member": 0,
-            "official_verify": { "type": 0, "desc": "示例认证说明" },
+            "official_verify": {
+              "type": 0,
+              "desc": "示例认证说明"
+            },
             "res": [
               {
                 "aid": 900000021,
@@ -97,7 +100,10 @@
             "desc": "示例番剧简介",
             "pubtime": 1600000000,
             "media_mode": 2,
-            "media_score": { "score": 9.7, "user_count": 123456 },
+            "media_score": {
+              "score": 9.7,
+              "user_count": 123456
+            },
             "index_show": "全12话"
           }
         ]
@@ -148,23 +154,37 @@
         "result_type": "esports",
         "data": [
           {
-            "ID": 500000001,
-            "gameStage": "小组赛",
-            "stime": 1700002000,
-            "homeScore": 2,
-            "awayScore": 1,
-            "liveRoom": 7000002,
-            "contestStatus": 3,
-            "playback": "",
-            "season": { "title": "示例赛季" },
-            "homeTeam": { "title": "示例战队甲" },
-            "awayTeam": { "title": "示例战队乙" }
+            "contest": [
+              {
+                "ID": 500000001,
+                "gameStage": "小组赛",
+                "stime": 1700002000,
+                "homeScore": 2,
+                "awayScore": 1,
+                "liveRoom": 7000002,
+                "contestStatus": 3,
+                "playback": "",
+                "season": {
+                  "title": "示例赛季"
+                },
+                "homeTeam": {
+                  "title": "示例战队甲"
+                },
+                "awayTeam": {
+                  "title": "示例战队乙"
+                }
+              }
+            ]
           }
         ]
       },
       {
         "result_type": "brand_new_block_from_the_future",
-        "data": [{ "anything": "老客户端应当忽略整块，而不是整页失败" }]
+        "data": [
+          {
+            "anything": "老客户端应当忽略整块，而不是整页失败"
+          }
+        ]
       }
     ]
   }

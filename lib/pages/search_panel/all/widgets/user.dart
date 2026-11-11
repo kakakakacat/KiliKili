@@ -13,6 +13,8 @@ import 'package:kilikili/utils/date_utils.dart';
 import 'package:kilikili/utils/duration_utils.dart';
 import 'package:kilikili/utils/num_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
+import 'package:kilikili/services/rust/rust_search.dart';
+import 'package:kilikili/services/rust/search_compat.dart';
 import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
@@ -29,7 +31,7 @@ class SearchAllUserItem extends StatelessWidget {
     required this.item,
   });
 
-  final SearchUser item;
+  final SearchUserCard item;
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +55,7 @@ class SearchAllUserItem extends StatelessWidget {
                     size: 50,
                     liveBottom: -3,
                     liveFontSize: 11,
-                    officialType: item.officialVerify?.type,
+                    officialType: item.officialVerify?.kind,
                     roomId: item.isLive == 1 ? item.roomId : null,
                   ),
                   Expanded(
@@ -103,7 +105,7 @@ class SearchAllUserItem extends StatelessWidget {
               ),
             ),
           ),
-          if (item.res case final list? when list.isNotEmpty)
+          if (item.res case final list when list.isNotEmpty)
             Padding(
               padding: const .only(top: 5),
               child: SizedBox(
@@ -116,7 +118,10 @@ class SearchAllUserItem extends StatelessWidget {
                   padding: const .only(left: 12),
                   physics: const AlwaysScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
-                    final video = list[index];
+                    // 经 compat 转成 SearchVideoItemModel：下面的
+                    // pushVideoH 收的是 HorizontalVideoModel，那是尚未
+                    // 迁完的共享模型（见 search_compat.dart）。
+                    final video = list[index].toItemModel();
                     return _buildVideoItem(
                       colorScheme,
                       index == list.length - 1

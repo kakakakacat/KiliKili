@@ -2,22 +2,22 @@ import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/models/search/result.dart';
 import 'package:kilikili/utils/date_utils.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
+import 'package:kilikili/services/rust/rust_search.dart';
 import 'package:material_ui/material_ui.dart';
 
-class SearchPgcItem extends StatelessWidget {
-  const SearchPgcItem({
+class SearchPgcCard extends StatelessWidget {
+  const SearchPgcCard({
     super.key,
     required this.item,
   });
 
-  final SearchPgcItemModel item;
+  final SearchPgcItem item;
 
   void onLongPress() => showPgcCover(
-    title: item.title.map((item) => item.text).join(),
+    title: item.title,
     cover: item.cover,
   );
 
@@ -63,7 +63,7 @@ class SearchPgcItem extends StatelessWidget {
                   children: [
                     Text.rich(
                       TextSpan(
-                        children: item.title
+                        children: item.titleSpans
                             .map(
                               (e) => TextSpan(
                                 text: e.text,
@@ -78,7 +78,7 @@ class SearchPgcItem extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Text('评分:${item.mediaScore?['score']}', style: style),
+                    Text('评分:${item.mediaScore?.score}', style: style),
                     Text.rich(
                       style: style,
                       TextSpan(

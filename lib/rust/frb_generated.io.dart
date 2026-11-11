@@ -9,6 +9,7 @@ import 'package:kilikili/rust/api/init.dart';
 import 'package:kilikili/rust/api/media_select.dart';
 import 'package:kilikili/rust/api/play_url.dart';
 import 'package:kilikili/rust/api/play_url_fetch.dart';
+import 'package:kilikili/rust/api/search.dart';
 import 'package:kilikili/rust/api/search_suggest.dart';
 import 'package:kilikili/rust/api/sponsor_block.dart';
 import 'package:kilikili/rust/api/subtitle.dart';
@@ -59,6 +60,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AiConclusion dco_decode_box_autoadd_ai_conclusion(dynamic raw);
 
   @protected
+  bool dco_decode_box_autoadd_bool(dynamic raw);
+
+  @protected
   DanmakuEngineOptions dco_decode_box_autoadd_danmaku_engine_options(
     dynamic raw,
   );
@@ -79,10 +83,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Interaction dco_decode_box_autoadd_interaction(dynamic raw);
 
   @protected
+  MediaScore dco_decode_box_autoadd_media_score(dynamic raw);
+
+  @protected
   NoteAuthor dco_decode_box_autoadd_note_author(dynamic raw);
 
   @protected
   NoteList dco_decode_box_autoadd_note_list(dynamic raw);
+
+  @protected
+  OfficialVerify dco_decode_box_autoadd_official_verify(dynamic raw);
 
   @protected
   PlayInfo dco_decode_box_autoadd_play_info(dynamic raw);
@@ -98,6 +108,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PopularSeriesOne dco_decode_box_autoadd_popular_series_one(dynamic raw);
+
+  @protected
+  SearchAllData dco_decode_box_autoadd_search_all_data(dynamic raw);
+
+  @protected
+  SearchContext dco_decode_box_autoadd_search_context(dynamic raw);
+
+  @protected
+  SearchQuery dco_decode_box_autoadd_search_query(dynamic raw);
 
   @protected
   SponsorBlockContext dco_decode_box_autoadd_sponsor_block_context(dynamic raw);
@@ -223,13 +242,43 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<(String, String)> dco_decode_list_record_string_string(dynamic raw);
 
   @protected
+  List<SearchActivityItem> dco_decode_list_search_activity_item(dynamic raw);
+
+  @protected
+  List<SearchArticleItem> dco_decode_list_search_article_item(dynamic raw);
+
+  @protected
+  List<SearchLiveItem> dco_decode_list_search_live_item(dynamic raw);
+
+  @protected
+  List<SearchPgcItem> dco_decode_list_search_pgc_item(dynamic raw);
+
+  @protected
+  List<SearchTrendingItem> dco_decode_list_search_trending_item(dynamic raw);
+
+  @protected
+  List<SearchUserCard> dco_decode_list_search_user_card(dynamic raw);
+
+  @protected
+  List<SearchUserItem> dco_decode_list_search_user_item(dynamic raw);
+
+  @protected
+  List<SearchVideoItem> dco_decode_list_search_video_item(dynamic raw);
+
+  @protected
   List<SkipSegment> dco_decode_list_skip_segment(dynamic raw);
+
+  @protected
+  List<TitleSpan> dco_decode_list_title_span(dynamic raw);
 
   @protected
   List<VideoCandidateInput> dco_decode_list_video_candidate_input(dynamic raw);
 
   @protected
   List<ViewPoint> dco_decode_list_view_point(dynamic raw);
+
+  @protected
+  MediaScore dco_decode_media_score(dynamic raw);
 
   @protected
   NoteAuthor dco_decode_note_author(dynamic raw);
@@ -244,10 +293,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   NoteListResult dco_decode_note_list_result(dynamic raw);
 
   @protected
+  OfficialVerify dco_decode_official_verify(dynamic raw);
+
+  @protected
   String? dco_decode_opt_String(dynamic raw);
 
   @protected
   AiConclusion? dco_decode_opt_box_autoadd_ai_conclusion(dynamic raw);
+
+  @protected
+  bool? dco_decode_opt_box_autoadd_bool(dynamic raw);
 
   @protected
   double? dco_decode_opt_box_autoadd_f_64(dynamic raw);
@@ -262,10 +317,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Interaction? dco_decode_opt_box_autoadd_interaction(dynamic raw);
 
   @protected
+  MediaScore? dco_decode_opt_box_autoadd_media_score(dynamic raw);
+
+  @protected
   NoteAuthor? dco_decode_opt_box_autoadd_note_author(dynamic raw);
 
   @protected
   NoteList? dco_decode_opt_box_autoadd_note_list(dynamic raw);
+
+  @protected
+  OfficialVerify? dco_decode_opt_box_autoadd_official_verify(dynamic raw);
 
   @protected
   PlayInfo? dco_decode_opt_box_autoadd_play_info(dynamic raw);
@@ -280,6 +341,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PopularSeriesOne? dco_decode_opt_box_autoadd_popular_series_one(dynamic raw);
+
+  @protected
+  SearchAllData? dco_decode_opt_box_autoadd_search_all_data(dynamic raw);
 
   @protected
   SponsorUserInfo? dco_decode_opt_box_autoadd_sponsor_user_info(dynamic raw);
@@ -326,6 +390,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Int64List? dco_decode_opt_list_prim_i_64_strict(dynamic raw);
+
+  @protected
+  List<SearchArticleItem>? dco_decode_opt_list_search_article_item(dynamic raw);
+
+  @protected
+  List<SearchLiveItem>? dco_decode_opt_list_search_live_item(dynamic raw);
+
+  @protected
+  List<SearchPgcItem>? dco_decode_opt_list_search_pgc_item(dynamic raw);
+
+  @protected
+  List<SearchTrendingItem>? dco_decode_opt_list_search_trending_item(
+    dynamic raw,
+  );
+
+  @protected
+  List<SearchUserItem>? dco_decode_opt_list_search_user_item(dynamic raw);
+
+  @protected
+  List<SearchVideoItem>? dco_decode_opt_list_search_video_item(dynamic raw);
 
   @protected
   List<SkipSegment>? dco_decode_opt_list_skip_segment(dynamic raw);
@@ -376,7 +460,67 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   (String, String) dco_decode_record_string_string(dynamic raw);
 
   @protected
+  SearchActivityItem dco_decode_search_activity_item(dynamic raw);
+
+  @protected
+  SearchAllData dco_decode_search_all_data(dynamic raw);
+
+  @protected
+  SearchAllResult dco_decode_search_all_result(dynamic raw);
+
+  @protected
+  SearchArticleItem dco_decode_search_article_item(dynamic raw);
+
+  @protected
+  SearchArticleResult dco_decode_search_article_result(dynamic raw);
+
+  @protected
+  SearchContext dco_decode_search_context(dynamic raw);
+
+  @protected
+  SearchLiveItem dco_decode_search_live_item(dynamic raw);
+
+  @protected
+  SearchLiveResult dco_decode_search_live_result(dynamic raw);
+
+  @protected
+  SearchOwner dco_decode_search_owner(dynamic raw);
+
+  @protected
+  SearchPgcItem dco_decode_search_pgc_item(dynamic raw);
+
+  @protected
+  SearchPgcResult dco_decode_search_pgc_result(dynamic raw);
+
+  @protected
+  SearchQuery dco_decode_search_query(dynamic raw);
+
+  @protected
+  SearchStat dco_decode_search_stat(dynamic raw);
+
+  @protected
   SearchSuggestParse dco_decode_search_suggest_parse(dynamic raw);
+
+  @protected
+  SearchTrendingItem dco_decode_search_trending_item(dynamic raw);
+
+  @protected
+  SearchTrendingResult dco_decode_search_trending_result(dynamic raw);
+
+  @protected
+  SearchUserCard dco_decode_search_user_card(dynamic raw);
+
+  @protected
+  SearchUserItem dco_decode_search_user_item(dynamic raw);
+
+  @protected
+  SearchUserResult dco_decode_search_user_result(dynamic raw);
+
+  @protected
+  SearchVideoItem dco_decode_search_video_item(dynamic raw);
+
+  @protected
+  SearchVideoResult dco_decode_search_video_result(dynamic raw);
 
   @protected
   SkipSegment dco_decode_skip_segment(dynamic raw);
@@ -401,6 +545,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SubtitleConvert dco_decode_subtitle_convert(dynamic raw);
+
+  @protected
+  TitleSpan dco_decode_title_span(dynamic raw);
 
   @protected
   TransportSettings dco_decode_transport_settings(dynamic raw);
@@ -481,6 +628,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  bool sse_decode_box_autoadd_bool(SseDeserializer deserializer);
+
+  @protected
   DanmakuEngineOptions sse_decode_box_autoadd_danmaku_engine_options(
     SseDeserializer deserializer,
   );
@@ -501,10 +651,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Interaction sse_decode_box_autoadd_interaction(SseDeserializer deserializer);
 
   @protected
+  MediaScore sse_decode_box_autoadd_media_score(SseDeserializer deserializer);
+
+  @protected
   NoteAuthor sse_decode_box_autoadd_note_author(SseDeserializer deserializer);
 
   @protected
   NoteList sse_decode_box_autoadd_note_list(SseDeserializer deserializer);
+
+  @protected
+  OfficialVerify sse_decode_box_autoadd_official_verify(
+    SseDeserializer deserializer,
+  );
 
   @protected
   PlayInfo sse_decode_box_autoadd_play_info(SseDeserializer deserializer);
@@ -528,6 +686,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PopularSeriesOne sse_decode_box_autoadd_popular_series_one(
     SseDeserializer deserializer,
   );
+
+  @protected
+  SearchAllData sse_decode_box_autoadd_search_all_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SearchContext sse_decode_box_autoadd_search_context(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SearchQuery sse_decode_box_autoadd_search_query(SseDeserializer deserializer);
 
   @protected
   SponsorBlockContext sse_decode_box_autoadd_sponsor_block_context(
@@ -685,7 +856,50 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<SearchActivityItem> sse_decode_list_search_activity_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SearchArticleItem> sse_decode_list_search_article_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SearchLiveItem> sse_decode_list_search_live_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SearchPgcItem> sse_decode_list_search_pgc_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SearchTrendingItem> sse_decode_list_search_trending_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SearchUserCard> sse_decode_list_search_user_card(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SearchUserItem> sse_decode_list_search_user_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SearchVideoItem> sse_decode_list_search_video_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<SkipSegment> sse_decode_list_skip_segment(SseDeserializer deserializer);
+
+  @protected
+  List<TitleSpan> sse_decode_list_title_span(SseDeserializer deserializer);
 
   @protected
   List<VideoCandidateInput> sse_decode_list_video_candidate_input(
@@ -694,6 +908,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<ViewPoint> sse_decode_list_view_point(SseDeserializer deserializer);
+
+  @protected
+  MediaScore sse_decode_media_score(SseDeserializer deserializer);
 
   @protected
   NoteAuthor sse_decode_note_author(SseDeserializer deserializer);
@@ -708,12 +925,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   NoteListResult sse_decode_note_list_result(SseDeserializer deserializer);
 
   @protected
+  OfficialVerify sse_decode_official_verify(SseDeserializer deserializer);
+
+  @protected
   String? sse_decode_opt_String(SseDeserializer deserializer);
 
   @protected
   AiConclusion? sse_decode_opt_box_autoadd_ai_conclusion(
     SseDeserializer deserializer,
   );
+
+  @protected
+  bool? sse_decode_opt_box_autoadd_bool(SseDeserializer deserializer);
 
   @protected
   double? sse_decode_opt_box_autoadd_f_64(SseDeserializer deserializer);
@@ -732,12 +955,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  MediaScore? sse_decode_opt_box_autoadd_media_score(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   NoteAuthor? sse_decode_opt_box_autoadd_note_author(
     SseDeserializer deserializer,
   );
 
   @protected
   NoteList? sse_decode_opt_box_autoadd_note_list(SseDeserializer deserializer);
+
+  @protected
+  OfficialVerify? sse_decode_opt_box_autoadd_official_verify(
+    SseDeserializer deserializer,
+  );
 
   @protected
   PlayInfo? sse_decode_opt_box_autoadd_play_info(SseDeserializer deserializer);
@@ -754,6 +987,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PopularSeriesOne? sse_decode_opt_box_autoadd_popular_series_one(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SearchAllData? sse_decode_opt_box_autoadd_search_all_data(
     SseDeserializer deserializer,
   );
 
@@ -814,6 +1052,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Int64List? sse_decode_opt_list_prim_i_64_strict(SseDeserializer deserializer);
+
+  @protected
+  List<SearchArticleItem>? sse_decode_opt_list_search_article_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SearchLiveItem>? sse_decode_opt_list_search_live_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SearchPgcItem>? sse_decode_opt_list_search_pgc_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SearchTrendingItem>? sse_decode_opt_list_search_trending_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SearchUserItem>? sse_decode_opt_list_search_user_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SearchVideoItem>? sse_decode_opt_list_search_video_item(
+    SseDeserializer deserializer,
+  );
 
   @protected
   List<SkipSegment>? sse_decode_opt_list_skip_segment(
@@ -878,7 +1146,79 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SearchActivityItem sse_decode_search_activity_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SearchAllData sse_decode_search_all_data(SseDeserializer deserializer);
+
+  @protected
+  SearchAllResult sse_decode_search_all_result(SseDeserializer deserializer);
+
+  @protected
+  SearchArticleItem sse_decode_search_article_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SearchArticleResult sse_decode_search_article_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SearchContext sse_decode_search_context(SseDeserializer deserializer);
+
+  @protected
+  SearchLiveItem sse_decode_search_live_item(SseDeserializer deserializer);
+
+  @protected
+  SearchLiveResult sse_decode_search_live_result(SseDeserializer deserializer);
+
+  @protected
+  SearchOwner sse_decode_search_owner(SseDeserializer deserializer);
+
+  @protected
+  SearchPgcItem sse_decode_search_pgc_item(SseDeserializer deserializer);
+
+  @protected
+  SearchPgcResult sse_decode_search_pgc_result(SseDeserializer deserializer);
+
+  @protected
+  SearchQuery sse_decode_search_query(SseDeserializer deserializer);
+
+  @protected
+  SearchStat sse_decode_search_stat(SseDeserializer deserializer);
+
+  @protected
   SearchSuggestParse sse_decode_search_suggest_parse(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SearchTrendingItem sse_decode_search_trending_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SearchTrendingResult sse_decode_search_trending_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SearchUserCard sse_decode_search_user_card(SseDeserializer deserializer);
+
+  @protected
+  SearchUserItem sse_decode_search_user_item(SseDeserializer deserializer);
+
+  @protected
+  SearchUserResult sse_decode_search_user_result(SseDeserializer deserializer);
+
+  @protected
+  SearchVideoItem sse_decode_search_video_item(SseDeserializer deserializer);
+
+  @protected
+  SearchVideoResult sse_decode_search_video_result(
     SseDeserializer deserializer,
   );
 
@@ -915,6 +1255,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SubtitleConvert sse_decode_subtitle_convert(SseDeserializer deserializer);
+
+  @protected
+  TitleSpan sse_decode_title_span(SseDeserializer deserializer);
 
   @protected
   TransportSettings sse_decode_transport_settings(SseDeserializer deserializer);
@@ -1006,6 +1349,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_bool(bool self, SseSerializer serializer);
+
+  @protected
   void sse_encode_box_autoadd_danmaku_engine_options(
     DanmakuEngineOptions self,
     SseSerializer serializer,
@@ -1039,6 +1385,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_media_score(
+    MediaScore self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_note_author(
     NoteAuthor self,
     SseSerializer serializer,
@@ -1047,6 +1399,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_note_list(
     NoteList self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_official_verify(
+    OfficialVerify self,
     SseSerializer serializer,
   );
 
@@ -1077,6 +1435,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_popular_series_one(
     PopularSeriesOne self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_search_all_data(
+    SearchAllData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_search_context(
+    SearchContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_search_query(
+    SearchQuery self,
     SseSerializer serializer,
   );
 
@@ -1276,8 +1652,62 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_search_activity_item(
+    List<SearchActivityItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_search_article_item(
+    List<SearchArticleItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_search_live_item(
+    List<SearchLiveItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_search_pgc_item(
+    List<SearchPgcItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_search_trending_item(
+    List<SearchTrendingItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_search_user_card(
+    List<SearchUserCard> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_search_user_item(
+    List<SearchUserItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_search_video_item(
+    List<SearchVideoItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_skip_segment(
     List<SkipSegment> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_title_span(
+    List<TitleSpan> self,
     SseSerializer serializer,
   );
 
@@ -1292,6 +1722,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     List<ViewPoint> self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_media_score(MediaScore self, SseSerializer serializer);
 
   @protected
   void sse_encode_note_author(NoteAuthor self, SseSerializer serializer);
@@ -1309,6 +1742,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_official_verify(
+    OfficialVerify self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_String(String? self, SseSerializer serializer);
 
   @protected
@@ -1316,6 +1755,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     AiConclusion? self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_opt_box_autoadd_bool(bool? self, SseSerializer serializer);
 
   @protected
   void sse_encode_opt_box_autoadd_f_64(double? self, SseSerializer serializer);
@@ -1339,6 +1781,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_media_score(
+    MediaScore? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_note_author(
     NoteAuthor? self,
     SseSerializer serializer,
@@ -1347,6 +1795,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_note_list(
     NoteList? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_official_verify(
+    OfficialVerify? self,
     SseSerializer serializer,
   );
 
@@ -1371,6 +1825,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_popular_series_one(
     PopularSeriesOne? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_search_all_data(
+    SearchAllData? self,
     SseSerializer serializer,
   );
 
@@ -1446,6 +1906,42 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_prim_i_64_strict(
     Int64List? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_search_article_item(
+    List<SearchArticleItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_search_live_item(
+    List<SearchLiveItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_search_pgc_item(
+    List<SearchPgcItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_search_trending_item(
+    List<SearchTrendingItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_search_user_item(
+    List<SearchUserItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_search_video_item(
+    List<SearchVideoItem>? self,
     SseSerializer serializer,
   );
 
@@ -1534,8 +2030,110 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_search_activity_item(
+    SearchActivityItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_search_all_data(SearchAllData self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_search_all_result(
+    SearchAllResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_search_article_item(
+    SearchArticleItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_search_article_result(
+    SearchArticleResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_search_context(SearchContext self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_search_live_item(
+    SearchLiveItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_search_live_result(
+    SearchLiveResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_search_owner(SearchOwner self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_search_pgc_item(SearchPgcItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_search_pgc_result(
+    SearchPgcResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_search_query(SearchQuery self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_search_stat(SearchStat self, SseSerializer serializer);
+
+  @protected
   void sse_encode_search_suggest_parse(
     SearchSuggestParse self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_search_trending_item(
+    SearchTrendingItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_search_trending_result(
+    SearchTrendingResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_search_user_card(
+    SearchUserCard self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_search_user_item(
+    SearchUserItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_search_user_result(
+    SearchUserResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_search_video_item(
+    SearchVideoItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_search_video_result(
+    SearchVideoResult self,
     SseSerializer serializer,
   );
 
@@ -1583,6 +2181,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     SubtitleConvert self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_title_span(TitleSpan self, SseSerializer serializer);
 
   @protected
   void sse_encode_transport_settings(

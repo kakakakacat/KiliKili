@@ -1,0 +1,93 @@
+{
+  "items": [
+    {
+      "category_id": 3,
+      "category_name": "数码",
+      "desc": "专栏摘要文本",
+      "id": 400000001,
+      "image_urls": [
+        "//i0.example-cdn.test/bfs/article/0000000000000000000000000000000000000070.jpg",
+        "//i0.example-cdn.test/bfs/article/0000000000000000000000000000000000000071.jpg"
+      ],
+      "item_type": "article",
+      "like": 321,
+      "mid": 100000050,
+      "pub_time": 1700003000,
+      "rank_offset": 0,
+      "rank_score": 888888,
+      "reply": 21,
+      "template_id": 4,
+      "title": "专栏标题示例",
+      "title_spans": [
+        {
+          "is_em": false,
+          "text": "专栏"
+        },
+        {
+          "is_em": true,
+          "text": "标题"
+        },
+        {
+          "is_em": false,
+          "text": "示例"
+        }
+      ],
+      "view": 65432
+    },
+    {
+      "category_id": null,
+      "category_name": null,
+      "desc": null,
+      "id": 400000002,
+      "image_urls": [],
+      "item_type": "article",
+      "like": null,
+      "mid": 100000051,
+      "pub_time": 1700003100,
+      "rank_offset": null,
+      "rank_score": null,
+      "reply": null,
+      "template_id": 0,
+      "title": "没有配图的专栏",
+      "title_spans": [
+        {
+          "is_em": false,
+          "text": "没有配图的专栏"
+        }
+      ],
+      "view": 1
+    },
+    {
+      "category_id": null,
+      "category_name": null,
+      "desc": null,
+      "id": 400000003,
+      "image_urls": [],
+      "item_type": "article",
+      "like": null,
+      "mid": 100000052,
+      "pub_time": 1700003200,
+      "rank_offset": null,
+      "rank_score": null,
+      "reply": null,
+      "template_id": 0,
+      "title": "空命中段的专栏",
+      "title_spans": [
+        {
+          "is_em": false,
+          "text": "空命中段"
+        },
+        {
+          "is_em": true,
+          "text": ""
+        },
+        {
+          "is_em": false,
+          "text": "的专栏"
+        }
+      ],
+      "view": 2
+    }
+  ],
+  "num_results": 55
+}

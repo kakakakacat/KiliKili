@@ -1,0 +1,26 @@
+{
+  "list": [
+    {
+      "icon": "//i0.example-cdn.test/bfs/trending/0000000000000000000000000000000000000080.png",
+      "keyword": "置顶示例词",
+      "recommend_reason": "热点·示例解读",
+      "show_live_icon": true,
+      "show_name": "置顶示例词"
+    },
+    {
+      "icon": "//i0.example-cdn.test/bfs/trending/0000000000000000000000000000000000000081.png",
+      "keyword": "示例热搜一",
+      "recommend_reason": "新番·示例",
+      "show_live_icon": false,
+      "show_name": "示例热搜一"
+    },
+    {
+      "icon": "",
+      "keyword": "示例热搜二",
+      "recommend_reason": null,
+      "show_live_icon": false,
+      "show_name": "示例热搜二"
+    }
+  ],
+  "top_count": 1
+}

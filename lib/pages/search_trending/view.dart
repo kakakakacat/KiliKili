@@ -7,7 +7,7 @@ import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/common/widgets/sliver/trending_header.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/search/search_trending/list.dart';
+import 'package:kilikili/services/rust/rust_search.dart';
 import 'package:kilikili/pages/search_trending/controller.dart';
 import 'package:kilikili/utils/color_utils.dart';
 import 'package:kilikili/utils/extension/context_ext.dart';
@@ -128,7 +128,7 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
 
   Widget _buildBody(
     ThemeData theme,
-    LoadingState<List<SearchTrendingItemModel>?> loadingState,
+    LoadingState<List<SearchTrendingItem>?> loadingState,
   ) {
     switch (loadingState) {
       case Loading():

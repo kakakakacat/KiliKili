@@ -8,6 +8,7 @@ import 'package:kilikili/pages/search_panel/pgc/widgets/item.dart';
 import 'package:kilikili/pages/search_panel/video/view.dart';
 import 'package:kilikili/pages/search_panel/view.dart';
 import 'package:kilikili/utils/grid.dart';
+import 'package:kilikili/services/rust/rust_search.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart'
     hide SliverGridDelegateWithMaxCrossAxisExtent;
@@ -63,7 +64,7 @@ class _SearchAllPanelState
         ],
         ...?controller.searchActivity?.map((e) {
           return SliverToBoxAdapter(
-            child: SearchActivityItem(item: e),
+            child: SearchActivityCard(item: e),
           );
         }),
         ...?controller.searchUser?.map((e) {
@@ -89,10 +90,10 @@ class _SearchAllPanelState
     return SliverToBoxAdapter(child: SearchEsportsItem(item: item));
   }
 
-  static Widget _buildPgc(List<SearchPgcItemModel> list) {
+  static Widget _buildPgc(List<SearchPgcItem> list) {
     final Widget child;
     if (list.length == 1) {
-      child = SearchPgcItem(item: list.first);
+      child = SearchPgcCard(item: list.first);
     } else {
       child = ListView.builder(
         padding: .zero,
@@ -101,7 +102,7 @@ class _SearchAllPanelState
         scrollDirection: .horizontal,
         physics: const AlwaysScrollableScrollPhysics(),
         itemBuilder: (context, index) {
-          return SearchPgcItem(item: list[index]);
+          return SearchPgcCard(item: list[index]);
         },
       );
     }

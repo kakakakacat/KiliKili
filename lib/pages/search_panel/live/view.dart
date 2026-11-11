@@ -6,6 +6,7 @@ import 'package:kilikili/pages/search_panel/controller.dart';
 import 'package:kilikili/pages/search_panel/live/widgets/item.dart';
 import 'package:kilikili/pages/search_panel/view.dart';
 import 'package:kilikili/utils/grid.dart';
+import 'package:kilikili/services/rust/rust_search.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -26,17 +27,17 @@ class _SearchLivePanelState
         CommonSearchPanelState<
           SearchLivePanel,
           SearchLiveData,
-          SearchLiveItemModel
+          SearchLiveItem
         > {
   @override
-  late final SearchPanelController<SearchLiveData, SearchLiveItemModel>
+  late final SearchPanelController<SearchLiveData, SearchLiveItem>
   controller;
 
   @override
   void initState() {
     super.initState();
     controller = Get.put(
-      SearchPanelController<SearchLiveData, SearchLiveItemModel>(
+      SearchPanelController<SearchLiveData, SearchLiveItem>(
         keyword: widget.keyword,
         searchType: widget.searchType,
         tag: widget.tag,
@@ -54,7 +55,7 @@ class _SearchLivePanelState
   );
 
   @override
-  Widget buildList(List<SearchLiveItemModel> list) {
+  Widget buildList(List<SearchLiveItem> list) {
     return SliverPadding(
       padding: const .only(left: Style.safeSpace, right: Style.safeSpace),
       sliver: SliverGrid.builder(

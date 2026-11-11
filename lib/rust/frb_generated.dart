@@ -9,6 +9,7 @@ import 'package:kilikili/rust/api/init.dart';
 import 'package:kilikili/rust/api/media_select.dart';
 import 'package:kilikili/rust/api/play_url.dart';
 import 'package:kilikili/rust/api/play_url_fetch.dart';
+import 'package:kilikili/rust/api/search.dart';
 import 'package:kilikili/rust/api/search_suggest.dart';
 import 'package:kilikili/rust/api/sponsor_block.dart';
 import 'package:kilikili/rust/api/subtitle.dart';
@@ -84,7 +85,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -2029233956;
+  int get rustContentHash => 1470928188;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -251,6 +252,46 @@ abstract class RustLibApi extends BaseApi {
 
   Future<VideoDetailParse> crateApiVideoDetailParseVideoDetail({
     required String body,
+  });
+
+  Future<SearchAllResult> crateApiSearchSearchAll({
+    required SearchContext context,
+    required SearchQuery query,
+  });
+
+  Future<SearchArticleResult> crateApiSearchSearchArticle({
+    required SearchContext context,
+    required SearchQuery query,
+  });
+
+  Future<SearchLiveResult> crateApiSearchSearchLive({
+    required SearchContext context,
+    required SearchQuery query,
+  });
+
+  Future<SearchPgcResult> crateApiSearchSearchPgc({
+    required SearchContext context,
+    required SearchQuery query,
+  });
+
+  Future<SearchTrendingResult> crateApiSearchSearchRecommend({
+    required SearchContext context,
+  });
+
+  Future<SearchTrendingResult> crateApiSearchSearchTrending({
+    required SearchContext context,
+    required PlatformInt64 limit,
+    required bool needsTop,
+  });
+
+  Future<SearchUserResult> crateApiSearchSearchUser({
+    required SearchContext context,
+    required SearchQuery query,
+  });
+
+  Future<SearchVideoResult> crateApiSearchSearchVideo({
+    required SearchContext context,
+    required SearchQuery query,
   });
 
   AudioSelectionResult crateApiMediaSelectSelectTargetAudio({
@@ -1344,6 +1385,281 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<SearchAllResult> crateApiSearchSearchAll({
+    required SearchContext context,
+    required SearchQuery query,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_search_context(context, serializer);
+          sse_encode_box_autoadd_search_query(query, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 30,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_search_all_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiSearchSearchAllConstMeta,
+        argValues: [context, query],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSearchSearchAllConstMeta => const TaskConstMeta(
+    debugName: "search_all",
+    argNames: ["context", "query"],
+  );
+
+  @override
+  Future<SearchArticleResult> crateApiSearchSearchArticle({
+    required SearchContext context,
+    required SearchQuery query,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_search_context(context, serializer);
+          sse_encode_box_autoadd_search_query(query, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 31,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_search_article_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiSearchSearchArticleConstMeta,
+        argValues: [context, query],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSearchSearchArticleConstMeta =>
+      const TaskConstMeta(
+        debugName: "search_article",
+        argNames: ["context", "query"],
+      );
+
+  @override
+  Future<SearchLiveResult> crateApiSearchSearchLive({
+    required SearchContext context,
+    required SearchQuery query,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_search_context(context, serializer);
+          sse_encode_box_autoadd_search_query(query, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 32,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_search_live_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiSearchSearchLiveConstMeta,
+        argValues: [context, query],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSearchSearchLiveConstMeta => const TaskConstMeta(
+    debugName: "search_live",
+    argNames: ["context", "query"],
+  );
+
+  @override
+  Future<SearchPgcResult> crateApiSearchSearchPgc({
+    required SearchContext context,
+    required SearchQuery query,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_search_context(context, serializer);
+          sse_encode_box_autoadd_search_query(query, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 33,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_search_pgc_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiSearchSearchPgcConstMeta,
+        argValues: [context, query],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSearchSearchPgcConstMeta => const TaskConstMeta(
+    debugName: "search_pgc",
+    argNames: ["context", "query"],
+  );
+
+  @override
+  Future<SearchTrendingResult> crateApiSearchSearchRecommend({
+    required SearchContext context,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_search_context(context, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 34,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_search_trending_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiSearchSearchRecommendConstMeta,
+        argValues: [context],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSearchSearchRecommendConstMeta =>
+      const TaskConstMeta(
+        debugName: "search_recommend",
+        argNames: ["context"],
+      );
+
+  @override
+  Future<SearchTrendingResult> crateApiSearchSearchTrending({
+    required SearchContext context,
+    required PlatformInt64 limit,
+    required bool needsTop,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_search_context(context, serializer);
+          sse_encode_i_64(limit, serializer);
+          sse_encode_bool(needsTop, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 35,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_search_trending_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiSearchSearchTrendingConstMeta,
+        argValues: [context, limit, needsTop],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSearchSearchTrendingConstMeta =>
+      const TaskConstMeta(
+        debugName: "search_trending",
+        argNames: ["context", "limit", "needsTop"],
+      );
+
+  @override
+  Future<SearchUserResult> crateApiSearchSearchUser({
+    required SearchContext context,
+    required SearchQuery query,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_search_context(context, serializer);
+          sse_encode_box_autoadd_search_query(query, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 36,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_search_user_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiSearchSearchUserConstMeta,
+        argValues: [context, query],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSearchSearchUserConstMeta => const TaskConstMeta(
+    debugName: "search_user",
+    argNames: ["context", "query"],
+  );
+
+  @override
+  Future<SearchVideoResult> crateApiSearchSearchVideo({
+    required SearchContext context,
+    required SearchQuery query,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_search_context(context, serializer);
+          sse_encode_box_autoadd_search_query(query, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 37,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_search_video_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiSearchSearchVideoConstMeta,
+        argValues: [context, query],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSearchSearchVideoConstMeta => const TaskConstMeta(
+    debugName: "search_video",
+    argNames: ["context", "query"],
+  );
+
+  @override
   AudioSelectionResult crateApiMediaSelectSelectTargetAudio({
     required Int64List audioIds,
     required PlatformInt64 preferQuality,
@@ -1354,7 +1670,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_list_prim_i_64_strict(audioIds, serializer);
           sse_encode_i_64(preferQuality, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 30)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 38)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_audio_selection_result,
@@ -1390,7 +1706,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_opt_list_prim_i_64_strict(acceptQuality, serializer);
           sse_encode_list_format_candidate_input(supportFormats, serializer);
           sse_encode_list_prim_i_32_loose(preferCodecIndices, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 31)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 39)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_video_selection_result,
@@ -1435,7 +1751,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 32,
+            funcId: 40,
             port: port_,
           );
         },
@@ -1469,7 +1785,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 33,
+            funcId: 41,
             port: port_,
           );
         },
@@ -1571,6 +1887,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  bool dco_decode_box_autoadd_bool(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as bool;
+  }
+
+  @protected
   DanmakuEngineOptions dco_decode_box_autoadd_danmaku_engine_options(
     dynamic raw,
   ) {
@@ -1609,6 +1931,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  MediaScore dco_decode_box_autoadd_media_score(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_media_score(raw);
+  }
+
+  @protected
   NoteAuthor dco_decode_box_autoadd_note_author(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_note_author(raw);
@@ -1618,6 +1946,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   NoteList dco_decode_box_autoadd_note_list(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_note_list(raw);
+  }
+
+  @protected
+  OfficialVerify dco_decode_box_autoadd_official_verify(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_official_verify(raw);
   }
 
   @protected
@@ -1650,6 +1984,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PopularSeriesOne dco_decode_box_autoadd_popular_series_one(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_popular_series_one(raw);
+  }
+
+  @protected
+  SearchAllData dco_decode_box_autoadd_search_all_data(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_search_all_data(raw);
+  }
+
+  @protected
+  SearchContext dco_decode_box_autoadd_search_context(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_search_context(raw);
+  }
+
+  @protected
+  SearchQuery dco_decode_box_autoadd_search_query(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_search_query(raw);
   }
 
   @protected
@@ -2046,9 +2398,63 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<SearchActivityItem> dco_decode_list_search_activity_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_search_activity_item).toList();
+  }
+
+  @protected
+  List<SearchArticleItem> dco_decode_list_search_article_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_search_article_item).toList();
+  }
+
+  @protected
+  List<SearchLiveItem> dco_decode_list_search_live_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_search_live_item).toList();
+  }
+
+  @protected
+  List<SearchPgcItem> dco_decode_list_search_pgc_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_search_pgc_item).toList();
+  }
+
+  @protected
+  List<SearchTrendingItem> dco_decode_list_search_trending_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_search_trending_item).toList();
+  }
+
+  @protected
+  List<SearchUserCard> dco_decode_list_search_user_card(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_search_user_card).toList();
+  }
+
+  @protected
+  List<SearchUserItem> dco_decode_list_search_user_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_search_user_item).toList();
+  }
+
+  @protected
+  List<SearchVideoItem> dco_decode_list_search_video_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_search_video_item).toList();
+  }
+
+  @protected
   List<SkipSegment> dco_decode_list_skip_segment(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_skip_segment).toList();
+  }
+
+  @protected
+  List<TitleSpan> dco_decode_list_title_span(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_title_span).toList();
   }
 
   @protected
@@ -2063,6 +2469,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<ViewPoint> dco_decode_list_view_point(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_view_point).toList();
+  }
+
+  @protected
+  MediaScore dco_decode_media_score(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return MediaScore(
+      score: dco_decode_opt_box_autoadd_f_64(arr[0]),
+      userCount: dco_decode_opt_box_autoadd_i_64(arr[1]),
+    );
   }
 
   @protected
@@ -2127,6 +2545,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  OfficialVerify dco_decode_official_verify(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return OfficialVerify(
+      kind: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      desc: dco_decode_opt_String(arr[1]),
+    );
+  }
+
+  @protected
   String? dco_decode_opt_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_String(raw);
@@ -2136,6 +2566,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   AiConclusion? dco_decode_opt_box_autoadd_ai_conclusion(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_ai_conclusion(raw);
+  }
+
+  @protected
+  bool? dco_decode_opt_box_autoadd_bool(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_bool(raw);
   }
 
   @protected
@@ -2163,6 +2599,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  MediaScore? dco_decode_opt_box_autoadd_media_score(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_media_score(raw);
+  }
+
+  @protected
   NoteAuthor? dco_decode_opt_box_autoadd_note_author(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_note_author(raw);
@@ -2172,6 +2614,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   NoteList? dco_decode_opt_box_autoadd_note_list(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_note_list(raw);
+  }
+
+  @protected
+  OfficialVerify? dco_decode_opt_box_autoadd_official_verify(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_official_verify(raw);
   }
 
   @protected
@@ -2200,6 +2648,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PopularSeriesOne? dco_decode_opt_box_autoadd_popular_series_one(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_popular_series_one(raw);
+  }
+
+  @protected
+  SearchAllData? dco_decode_opt_box_autoadd_search_all_data(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_search_all_data(raw);
   }
 
   @protected
@@ -2292,6 +2746,46 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Int64List? dco_decode_opt_list_prim_i_64_strict(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_list_prim_i_64_strict(raw);
+  }
+
+  @protected
+  List<SearchArticleItem>? dco_decode_opt_list_search_article_item(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_list_search_article_item(raw);
+  }
+
+  @protected
+  List<SearchLiveItem>? dco_decode_opt_list_search_live_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_list_search_live_item(raw);
+  }
+
+  @protected
+  List<SearchPgcItem>? dco_decode_opt_list_search_pgc_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_list_search_pgc_item(raw);
+  }
+
+  @protected
+  List<SearchTrendingItem>? dco_decode_opt_list_search_trending_item(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_list_search_trending_item(raw);
+  }
+
+  @protected
+  List<SearchUserItem>? dco_decode_opt_list_search_user_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_list_search_user_item(raw);
+  }
+
+  @protected
+  List<SearchVideoItem>? dco_decode_opt_list_search_video_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_list_search_video_item(raw);
   }
 
   @protected
@@ -2505,6 +2999,256 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SearchActivityItem dco_decode_search_activity_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 8)
+      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
+    return SearchActivityItem(
+      id: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      title: dco_decode_opt_String(arr[1]),
+      desc: dco_decode_opt_String(arr[2]),
+      cover: dco_decode_opt_String(arr[3]),
+      url: dco_decode_opt_String(arr[4]),
+      state: dco_decode_opt_box_autoadd_i_64(arr[5]),
+      status: dco_decode_opt_box_autoadd_i_64(arr[6]),
+      author: dco_decode_opt_String(arr[7]),
+    );
+  }
+
+  @protected
+  SearchAllData dco_decode_search_all_data(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return SearchAllData(
+      numResults: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      videos: dco_decode_list_search_video_item(arr[1]),
+      users: dco_decode_list_search_user_card(arr[2]),
+      medias: dco_decode_list_search_pgc_item(arr[3]),
+      activities: dco_decode_list_search_activity_item(arr[4]),
+      esportsJson: dco_decode_opt_String(arr[5]),
+    );
+  }
+
+  @protected
+  SearchAllResult dco_decode_search_all_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return SearchAllResult(
+      data: dco_decode_opt_box_autoadd_search_all_data(arr[0]),
+      numResults: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      errorKind: dco_decode_opt_String(arr[2]),
+      errorDetail: dco_decode_opt_String(arr[3]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[4]),
+    );
+  }
+
+  @protected
+  SearchArticleItem dco_decode_search_article_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 16)
+      throw Exception('unexpected arr length: expect 16 but see ${arr.length}');
+    return SearchArticleItem(
+      pubTime: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      like: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      titleSpans: dco_decode_list_title_span(arr[2]),
+      title: dco_decode_String(arr[3]),
+      rankOffset: dco_decode_opt_box_autoadd_i_64(arr[4]),
+      mid: dco_decode_opt_box_autoadd_i_64(arr[5]),
+      imageUrls: dco_decode_list_String(arr[6]),
+      id: dco_decode_opt_box_autoadd_i_64(arr[7]),
+      categoryId: dco_decode_opt_box_autoadd_i_64(arr[8]),
+      view: dco_decode_opt_box_autoadd_i_64(arr[9]),
+      reply: dco_decode_opt_box_autoadd_i_64(arr[10]),
+      desc: dco_decode_opt_String(arr[11]),
+      rankScore: dco_decode_opt_box_autoadd_i_64(arr[12]),
+      itemType: dco_decode_opt_String(arr[13]),
+      templateId: dco_decode_opt_box_autoadd_i_64(arr[14]),
+      categoryName: dco_decode_opt_String(arr[15]),
+    );
+  }
+
+  @protected
+  SearchArticleResult dco_decode_search_article_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return SearchArticleResult(
+      data: dco_decode_opt_list_search_article_item(arr[0]),
+      numResults: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      errorKind: dco_decode_opt_String(arr[2]),
+      errorDetail: dco_decode_opt_String(arr[3]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[4]),
+    );
+  }
+
+  @protected
+  SearchContext dco_decode_search_context(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    return SearchContext(
+      baseUrl: dco_decode_String(arr[0]),
+      cookie: dco_decode_opt_String(arr[1]),
+      headers: dco_decode_list_record_string_string(arr[2]),
+      mixinKey: dco_decode_String(arr[3]),
+      wts: dco_decode_i_64(arr[4]),
+      timeoutMs: dco_decode_u_64(arr[5]),
+      transport: dco_decode_transport_settings(arr[6]),
+    );
+  }
+
+  @protected
+  SearchLiveItem dco_decode_search_live_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 17)
+      throw Exception('unexpected arr length: expect 17 but see ${arr.length}');
+    return SearchLiveItem(
+      rankOffset: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      uid: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      tags: dco_decode_opt_String(arr[2]),
+      liveTime: dco_decode_opt_String(arr[3]),
+      uname: dco_decode_opt_String(arr[4]),
+      uface: dco_decode_opt_String(arr[5]),
+      userCover: dco_decode_opt_String(arr[6]),
+      itemType: dco_decode_opt_String(arr[7]),
+      titleSpans: dco_decode_list_title_span(arr[8]),
+      title: dco_decode_String(arr[9]),
+      cover: dco_decode_opt_String(arr[10]),
+      online: dco_decode_opt_box_autoadd_i_64(arr[11]),
+      rankIndex: dco_decode_opt_box_autoadd_i_64(arr[12]),
+      rankScore: dco_decode_opt_box_autoadd_i_64(arr[13]),
+      roomid: dco_decode_opt_box_autoadd_i_64(arr[14]),
+      attentions: dco_decode_opt_box_autoadd_i_64(arr[15]),
+      cateName: dco_decode_opt_String(arr[16]),
+    );
+  }
+
+  @protected
+  SearchLiveResult dco_decode_search_live_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return SearchLiveResult(
+      data: dco_decode_opt_list_search_live_item(arr[0]),
+      numResults: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      errorKind: dco_decode_opt_String(arr[2]),
+      errorDetail: dco_decode_opt_String(arr[3]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[4]),
+    );
+  }
+
+  @protected
+  SearchOwner dco_decode_search_owner(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return SearchOwner(
+      mid: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      name: dco_decode_opt_String(arr[1]),
+      face: dco_decode_opt_String(arr[2]),
+    );
+  }
+
+  @protected
+  SearchPgcItem dco_decode_search_pgc_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 26)
+      throw Exception('unexpected arr length: expect 26 but see ${arr.length}');
+    return SearchPgcItem(
+      itemType: dco_decode_opt_String(arr[0]),
+      mediaId: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      titleSpans: dco_decode_list_title_span(arr[2]),
+      title: dco_decode_String(arr[3]),
+      orgTitle: dco_decode_opt_String(arr[4]),
+      mediaType: dco_decode_opt_box_autoadd_i_64(arr[5]),
+      cv: dco_decode_opt_String(arr[6]),
+      staff: dco_decode_opt_String(arr[7]),
+      seasonId: dco_decode_opt_box_autoadd_i_64(arr[8]),
+      isAvid: dco_decode_opt_box_autoadd_bool(arr[9]),
+      hitEpids: dco_decode_opt_String(arr[10]),
+      seasonType: dco_decode_opt_box_autoadd_i_64(arr[11]),
+      seasonTypeName: dco_decode_opt_String(arr[12]),
+      url: dco_decode_opt_String(arr[13]),
+      buttonText: dco_decode_opt_String(arr[14]),
+      isFollow: dco_decode_opt_box_autoadd_i_64(arr[15]),
+      isSelection: dco_decode_opt_box_autoadd_i_64(arr[16]),
+      cover: dco_decode_opt_String(arr[17]),
+      areas: dco_decode_opt_String(arr[18]),
+      styles: dco_decode_opt_String(arr[19]),
+      gotoUrl: dco_decode_opt_String(arr[20]),
+      desc: dco_decode_opt_String(arr[21]),
+      pubtime: dco_decode_opt_box_autoadd_i_64(arr[22]),
+      mediaMode: dco_decode_opt_box_autoadd_i_64(arr[23]),
+      mediaScore: dco_decode_opt_box_autoadd_media_score(arr[24]),
+      indexShow: dco_decode_opt_String(arr[25]),
+    );
+  }
+
+  @protected
+  SearchPgcResult dco_decode_search_pgc_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return SearchPgcResult(
+      data: dco_decode_opt_list_search_pgc_item(arr[0]),
+      numResults: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      errorKind: dco_decode_opt_String(arr[2]),
+      errorDetail: dco_decode_opt_String(arr[3]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[4]),
+    );
+  }
+
+  @protected
+  SearchQuery dco_decode_search_query(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 12)
+      throw Exception('unexpected arr length: expect 12 but see ${arr.length}');
+    return SearchQuery(
+      searchType: dco_decode_String(arr[0]),
+      keyword: dco_decode_String(arr[1]),
+      page: dco_decode_i_64(arr[2]),
+      order: dco_decode_opt_String(arr[3]),
+      duration: dco_decode_opt_box_autoadd_i_64(arr[4]),
+      tids: dco_decode_opt_box_autoadd_i_64(arr[5]),
+      orderSort: dco_decode_opt_box_autoadd_i_64(arr[6]),
+      userType: dco_decode_opt_box_autoadd_i_64(arr[7]),
+      categoryId: dco_decode_opt_box_autoadd_i_64(arr[8]),
+      pubBegin: dco_decode_opt_box_autoadd_i_64(arr[9]),
+      pubEnd: dco_decode_opt_box_autoadd_i_64(arr[10]),
+      gaiaVtoken: dco_decode_opt_String(arr[11]),
+    );
+  }
+
+  @protected
+  SearchStat dco_decode_search_stat(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return SearchStat(
+      view: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      danmaku: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      favorite: dco_decode_opt_box_autoadd_i_64(arr[2]),
+      reply: dco_decode_opt_box_autoadd_i_64(arr[3]),
+      like: dco_decode_opt_box_autoadd_i_64(arr[4]),
+    );
+  }
+
+  @protected
   SearchSuggestParse dco_decode_search_suggest_parse(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -2514,6 +3258,145 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       json: dco_decode_opt_String(arr[0]),
       errorKind: dco_decode_opt_String(arr[1]),
       errorDetail: dco_decode_opt_String(arr[2]),
+    );
+  }
+
+  @protected
+  SearchTrendingItem dco_decode_search_trending_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return SearchTrendingItem(
+      keyword: dco_decode_String(arr[0]),
+      showName: dco_decode_String(arr[1]),
+      icon: dco_decode_opt_String(arr[2]),
+      showLiveIcon: dco_decode_opt_box_autoadd_bool(arr[3]),
+      recommendReason: dco_decode_opt_String(arr[4]),
+    );
+  }
+
+  @protected
+  SearchTrendingResult dco_decode_search_trending_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return SearchTrendingResult(
+      data: dco_decode_opt_list_search_trending_item(arr[0]),
+      numResults: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      errorKind: dco_decode_opt_String(arr[2]),
+      errorDetail: dco_decode_opt_String(arr[3]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[4]),
+    );
+  }
+
+  @protected
+  SearchUserCard dco_decode_search_user_card(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 15)
+      throw Exception('unexpected arr length: expect 15 but see ${arr.length}');
+    return SearchUserCard(
+      mid: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      uname: dco_decode_opt_String(arr[1]),
+      usign: dco_decode_opt_String(arr[2]),
+      fans: dco_decode_opt_box_autoadd_i_64(arr[3]),
+      videos: dco_decode_opt_box_autoadd_i_64(arr[4]),
+      upic: dco_decode_opt_String(arr[5]),
+      verifyInfo: dco_decode_opt_String(arr[6]),
+      level: dco_decode_opt_box_autoadd_i_64(arr[7]),
+      gender: dco_decode_opt_box_autoadd_i_64(arr[8]),
+      isUpUser: dco_decode_opt_box_autoadd_i_64(arr[9]),
+      isLive: dco_decode_opt_box_autoadd_i_64(arr[10]),
+      roomId: dco_decode_opt_box_autoadd_i_64(arr[11]),
+      officialVerify: dco_decode_opt_box_autoadd_official_verify(arr[12]),
+      isSeniorMember: dco_decode_opt_box_autoadd_i_64(arr[13]),
+      res: dco_decode_list_search_video_item(arr[14]),
+    );
+  }
+
+  @protected
+  SearchUserItem dco_decode_search_user_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 17)
+      throw Exception('unexpected arr length: expect 17 but see ${arr.length}');
+    return SearchUserItem(
+      itemType: dco_decode_opt_String(arr[0]),
+      mid: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      uname: dco_decode_opt_String(arr[2]),
+      usign: dco_decode_opt_String(arr[3]),
+      fans: dco_decode_opt_box_autoadd_i_64(arr[4]),
+      videos: dco_decode_opt_box_autoadd_i_64(arr[5]),
+      upic: dco_decode_opt_String(arr[6]),
+      faceNft: dco_decode_opt_box_autoadd_i_64(arr[7]),
+      faceNftType: dco_decode_opt_box_autoadd_i_64(arr[8]),
+      verifyInfo: dco_decode_opt_String(arr[9]),
+      level: dco_decode_opt_box_autoadd_i_64(arr[10]),
+      gender: dco_decode_opt_box_autoadd_i_64(arr[11]),
+      isUpUser: dco_decode_opt_box_autoadd_i_64(arr[12]),
+      isLive: dco_decode_opt_box_autoadd_i_64(arr[13]),
+      roomId: dco_decode_opt_box_autoadd_i_64(arr[14]),
+      officialVerify: dco_decode_opt_box_autoadd_official_verify(arr[15]),
+      isSeniorMember: dco_decode_opt_box_autoadd_i_64(arr[16]),
+    );
+  }
+
+  @protected
+  SearchUserResult dco_decode_search_user_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return SearchUserResult(
+      data: dco_decode_opt_list_search_user_item(arr[0]),
+      numResults: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      errorKind: dco_decode_opt_String(arr[2]),
+      errorDetail: dco_decode_opt_String(arr[3]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[4]),
+    );
+  }
+
+  @protected
+  SearchVideoItem dco_decode_search_video_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 17)
+      throw Exception('unexpected arr length: expect 17 but see ${arr.length}');
+    return SearchVideoItem(
+      id: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      aid: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      bvid: dco_decode_opt_String(arr[2]),
+      arcurl: dco_decode_opt_String(arr[3]),
+      titleSpans: dco_decode_list_title_span(arr[4]),
+      title: dco_decode_String(arr[5]),
+      description: dco_decode_opt_String(arr[6]),
+      pic: dco_decode_opt_String(arr[7]),
+      pubdate: dco_decode_opt_box_autoadd_i_64(arr[8]),
+      senddate: dco_decode_opt_box_autoadd_i_64(arr[9]),
+      durationSecs: dco_decode_i_64(arr[10]),
+      owner: dco_decode_search_owner(arr[11]),
+      stat: dco_decode_search_stat(arr[12]),
+      itemType: dco_decode_opt_String(arr[13]),
+      roomid: dco_decode_opt_box_autoadd_i_64(arr[14]),
+      isUnionVideo: dco_decode_opt_box_autoadd_i_64(arr[15]),
+      tag: dco_decode_opt_String(arr[16]),
+    );
+  }
+
+  @protected
+  SearchVideoResult dco_decode_search_video_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return SearchVideoResult(
+      data: dco_decode_opt_list_search_video_item(arr[0]),
+      numResults: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      errorKind: dco_decode_opt_String(arr[2]),
+      errorDetail: dco_decode_opt_String(arr[3]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[4]),
     );
   }
 
@@ -2629,6 +3512,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       missingBody: dco_decode_bool(arr[1]),
       errorKind: dco_decode_opt_String(arr[2]),
       errorDetail: dco_decode_opt_String(arr[3]),
+    );
+  }
+
+  @protected
+  TitleSpan dco_decode_title_span(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return TitleSpan(
+      isEm: dco_decode_bool(arr[0]),
+      text: dco_decode_String(arr[1]),
     );
   }
 
@@ -2898,6 +3793,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  bool sse_decode_box_autoadd_bool(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_bool(deserializer));
+  }
+
+  @protected
   DanmakuEngineOptions sse_decode_box_autoadd_danmaku_engine_options(
     SseDeserializer deserializer,
   ) {
@@ -2940,6 +3841,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  MediaScore sse_decode_box_autoadd_media_score(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_media_score(deserializer));
+  }
+
+  @protected
   NoteAuthor sse_decode_box_autoadd_note_author(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_note_author(deserializer));
@@ -2949,6 +3856,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   NoteList sse_decode_box_autoadd_note_list(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_note_list(deserializer));
+  }
+
+  @protected
+  OfficialVerify sse_decode_box_autoadd_official_verify(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_official_verify(deserializer));
   }
 
   @protected
@@ -2987,6 +3902,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_popular_series_one(deserializer));
+  }
+
+  @protected
+  SearchAllData sse_decode_box_autoadd_search_all_data(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_search_all_data(deserializer));
+  }
+
+  @protected
+  SearchContext sse_decode_box_autoadd_search_context(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_search_context(deserializer));
+  }
+
+  @protected
+  SearchQuery sse_decode_box_autoadd_search_query(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_search_query(deserializer));
   }
 
   @protected
@@ -3523,6 +4462,118 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<SearchActivityItem> sse_decode_list_search_activity_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SearchActivityItem>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_search_activity_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SearchArticleItem> sse_decode_list_search_article_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SearchArticleItem>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_search_article_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SearchLiveItem> sse_decode_list_search_live_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SearchLiveItem>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_search_live_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SearchPgcItem> sse_decode_list_search_pgc_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SearchPgcItem>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_search_pgc_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SearchTrendingItem> sse_decode_list_search_trending_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SearchTrendingItem>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_search_trending_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SearchUserCard> sse_decode_list_search_user_card(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SearchUserCard>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_search_user_card(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SearchUserItem> sse_decode_list_search_user_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SearchUserItem>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_search_user_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SearchVideoItem> sse_decode_list_search_video_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SearchVideoItem>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_search_video_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<SkipSegment> sse_decode_list_skip_segment(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -3530,6 +4581,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <SkipSegment>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_skip_segment(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<TitleSpan> sse_decode_list_title_span(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <TitleSpan>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_title_span(deserializer));
     }
     return ans_;
   }
@@ -3558,6 +4621,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       ans_.add(sse_decode_view_point(deserializer));
     }
     return ans_;
+  }
+
+  @protected
+  MediaScore sse_decode_media_score(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_score = sse_decode_opt_box_autoadd_f_64(deserializer);
+    var var_userCount = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return MediaScore(score: var_score, userCount: var_userCount);
   }
 
   @protected
@@ -3628,6 +4699,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  OfficialVerify sse_decode_official_verify(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_kind = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_desc = sse_decode_opt_String(deserializer);
+    return OfficialVerify(kind: var_kind, desc: var_desc);
+  }
+
+  @protected
   String? sse_decode_opt_String(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -3646,6 +4725,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_box_autoadd_ai_conclusion(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  bool? sse_decode_opt_box_autoadd_bool(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_bool(deserializer));
     } else {
       return null;
     }
@@ -3700,6 +4790,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  MediaScore? sse_decode_opt_box_autoadd_media_score(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_media_score(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   NoteAuthor? sse_decode_opt_box_autoadd_note_author(
     SseDeserializer deserializer,
   ) {
@@ -3718,6 +4821,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_box_autoadd_note_list(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  OfficialVerify? sse_decode_opt_box_autoadd_official_verify(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_official_verify(deserializer));
     } else {
       return null;
     }
@@ -3768,6 +4884,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_box_autoadd_popular_series_one(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SearchAllData? sse_decode_opt_box_autoadd_search_all_data(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_search_all_data(deserializer));
     } else {
       return null;
     }
@@ -3942,6 +5071,84 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_list_prim_i_64_strict(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  List<SearchArticleItem>? sse_decode_opt_list_search_article_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_list_search_article_item(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  List<SearchLiveItem>? sse_decode_opt_list_search_live_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_list_search_live_item(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  List<SearchPgcItem>? sse_decode_opt_list_search_pgc_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_list_search_pgc_item(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  List<SearchTrendingItem>? sse_decode_opt_list_search_trending_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_list_search_trending_item(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  List<SearchUserItem>? sse_decode_opt_list_search_user_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_list_search_user_item(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  List<SearchVideoItem>? sse_decode_opt_list_search_video_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_list_search_video_item(deserializer));
     } else {
       return null;
     }
@@ -4194,6 +5401,339 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SearchActivityItem sse_decode_search_activity_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_desc = sse_decode_opt_String(deserializer);
+    var var_cover = sse_decode_opt_String(deserializer);
+    var var_url = sse_decode_opt_String(deserializer);
+    var var_state = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_status = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_author = sse_decode_opt_String(deserializer);
+    return SearchActivityItem(
+      id: var_id,
+      title: var_title,
+      desc: var_desc,
+      cover: var_cover,
+      url: var_url,
+      state: var_state,
+      status: var_status,
+      author: var_author,
+    );
+  }
+
+  @protected
+  SearchAllData sse_decode_search_all_data(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_numResults = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_videos = sse_decode_list_search_video_item(deserializer);
+    var var_users = sse_decode_list_search_user_card(deserializer);
+    var var_medias = sse_decode_list_search_pgc_item(deserializer);
+    var var_activities = sse_decode_list_search_activity_item(deserializer);
+    var var_esportsJson = sse_decode_opt_String(deserializer);
+    return SearchAllData(
+      numResults: var_numResults,
+      videos: var_videos,
+      users: var_users,
+      medias: var_medias,
+      activities: var_activities,
+      esportsJson: var_esportsJson,
+    );
+  }
+
+  @protected
+  SearchAllResult sse_decode_search_all_result(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_search_all_data(deserializer);
+    var var_numResults = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SearchAllResult(
+      data: var_data,
+      numResults: var_numResults,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  SearchArticleItem sse_decode_search_article_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_pubTime = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_like = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_titleSpans = sse_decode_list_title_span(deserializer);
+    var var_title = sse_decode_String(deserializer);
+    var var_rankOffset = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_mid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_imageUrls = sse_decode_list_String(deserializer);
+    var var_id = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_categoryId = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_view = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_reply = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_desc = sse_decode_opt_String(deserializer);
+    var var_rankScore = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_itemType = sse_decode_opt_String(deserializer);
+    var var_templateId = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_categoryName = sse_decode_opt_String(deserializer);
+    return SearchArticleItem(
+      pubTime: var_pubTime,
+      like: var_like,
+      titleSpans: var_titleSpans,
+      title: var_title,
+      rankOffset: var_rankOffset,
+      mid: var_mid,
+      imageUrls: var_imageUrls,
+      id: var_id,
+      categoryId: var_categoryId,
+      view: var_view,
+      reply: var_reply,
+      desc: var_desc,
+      rankScore: var_rankScore,
+      itemType: var_itemType,
+      templateId: var_templateId,
+      categoryName: var_categoryName,
+    );
+  }
+
+  @protected
+  SearchArticleResult sse_decode_search_article_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_list_search_article_item(deserializer);
+    var var_numResults = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SearchArticleResult(
+      data: var_data,
+      numResults: var_numResults,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  SearchContext sse_decode_search_context(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_baseUrl = sse_decode_String(deserializer);
+    var var_cookie = sse_decode_opt_String(deserializer);
+    var var_headers = sse_decode_list_record_string_string(deserializer);
+    var var_mixinKey = sse_decode_String(deserializer);
+    var var_wts = sse_decode_i_64(deserializer);
+    var var_timeoutMs = sse_decode_u_64(deserializer);
+    var var_transport = sse_decode_transport_settings(deserializer);
+    return SearchContext(
+      baseUrl: var_baseUrl,
+      cookie: var_cookie,
+      headers: var_headers,
+      mixinKey: var_mixinKey,
+      wts: var_wts,
+      timeoutMs: var_timeoutMs,
+      transport: var_transport,
+    );
+  }
+
+  @protected
+  SearchLiveItem sse_decode_search_live_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_rankOffset = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_uid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_tags = sse_decode_opt_String(deserializer);
+    var var_liveTime = sse_decode_opt_String(deserializer);
+    var var_uname = sse_decode_opt_String(deserializer);
+    var var_uface = sse_decode_opt_String(deserializer);
+    var var_userCover = sse_decode_opt_String(deserializer);
+    var var_itemType = sse_decode_opt_String(deserializer);
+    var var_titleSpans = sse_decode_list_title_span(deserializer);
+    var var_title = sse_decode_String(deserializer);
+    var var_cover = sse_decode_opt_String(deserializer);
+    var var_online = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_rankIndex = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_rankScore = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_roomid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_attentions = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_cateName = sse_decode_opt_String(deserializer);
+    return SearchLiveItem(
+      rankOffset: var_rankOffset,
+      uid: var_uid,
+      tags: var_tags,
+      liveTime: var_liveTime,
+      uname: var_uname,
+      uface: var_uface,
+      userCover: var_userCover,
+      itemType: var_itemType,
+      titleSpans: var_titleSpans,
+      title: var_title,
+      cover: var_cover,
+      online: var_online,
+      rankIndex: var_rankIndex,
+      rankScore: var_rankScore,
+      roomid: var_roomid,
+      attentions: var_attentions,
+      cateName: var_cateName,
+    );
+  }
+
+  @protected
+  SearchLiveResult sse_decode_search_live_result(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_list_search_live_item(deserializer);
+    var var_numResults = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SearchLiveResult(
+      data: var_data,
+      numResults: var_numResults,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  SearchOwner sse_decode_search_owner(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_mid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_name = sse_decode_opt_String(deserializer);
+    var var_face = sse_decode_opt_String(deserializer);
+    return SearchOwner(mid: var_mid, name: var_name, face: var_face);
+  }
+
+  @protected
+  SearchPgcItem sse_decode_search_pgc_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_itemType = sse_decode_opt_String(deserializer);
+    var var_mediaId = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_titleSpans = sse_decode_list_title_span(deserializer);
+    var var_title = sse_decode_String(deserializer);
+    var var_orgTitle = sse_decode_opt_String(deserializer);
+    var var_mediaType = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_cv = sse_decode_opt_String(deserializer);
+    var var_staff = sse_decode_opt_String(deserializer);
+    var var_seasonId = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_isAvid = sse_decode_opt_box_autoadd_bool(deserializer);
+    var var_hitEpids = sse_decode_opt_String(deserializer);
+    var var_seasonType = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_seasonTypeName = sse_decode_opt_String(deserializer);
+    var var_url = sse_decode_opt_String(deserializer);
+    var var_buttonText = sse_decode_opt_String(deserializer);
+    var var_isFollow = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_isSelection = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_cover = sse_decode_opt_String(deserializer);
+    var var_areas = sse_decode_opt_String(deserializer);
+    var var_styles = sse_decode_opt_String(deserializer);
+    var var_gotoUrl = sse_decode_opt_String(deserializer);
+    var var_desc = sse_decode_opt_String(deserializer);
+    var var_pubtime = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_mediaMode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_mediaScore = sse_decode_opt_box_autoadd_media_score(deserializer);
+    var var_indexShow = sse_decode_opt_String(deserializer);
+    return SearchPgcItem(
+      itemType: var_itemType,
+      mediaId: var_mediaId,
+      titleSpans: var_titleSpans,
+      title: var_title,
+      orgTitle: var_orgTitle,
+      mediaType: var_mediaType,
+      cv: var_cv,
+      staff: var_staff,
+      seasonId: var_seasonId,
+      isAvid: var_isAvid,
+      hitEpids: var_hitEpids,
+      seasonType: var_seasonType,
+      seasonTypeName: var_seasonTypeName,
+      url: var_url,
+      buttonText: var_buttonText,
+      isFollow: var_isFollow,
+      isSelection: var_isSelection,
+      cover: var_cover,
+      areas: var_areas,
+      styles: var_styles,
+      gotoUrl: var_gotoUrl,
+      desc: var_desc,
+      pubtime: var_pubtime,
+      mediaMode: var_mediaMode,
+      mediaScore: var_mediaScore,
+      indexShow: var_indexShow,
+    );
+  }
+
+  @protected
+  SearchPgcResult sse_decode_search_pgc_result(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_list_search_pgc_item(deserializer);
+    var var_numResults = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SearchPgcResult(
+      data: var_data,
+      numResults: var_numResults,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  SearchQuery sse_decode_search_query(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_searchType = sse_decode_String(deserializer);
+    var var_keyword = sse_decode_String(deserializer);
+    var var_page = sse_decode_i_64(deserializer);
+    var var_order = sse_decode_opt_String(deserializer);
+    var var_duration = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_tids = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_orderSort = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_userType = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_categoryId = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_pubBegin = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_pubEnd = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_gaiaVtoken = sse_decode_opt_String(deserializer);
+    return SearchQuery(
+      searchType: var_searchType,
+      keyword: var_keyword,
+      page: var_page,
+      order: var_order,
+      duration: var_duration,
+      tids: var_tids,
+      orderSort: var_orderSort,
+      userType: var_userType,
+      categoryId: var_categoryId,
+      pubBegin: var_pubBegin,
+      pubEnd: var_pubEnd,
+      gaiaVtoken: var_gaiaVtoken,
+    );
+  }
+
+  @protected
+  SearchStat sse_decode_search_stat(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_view = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_danmaku = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_favorite = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_reply = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_like = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SearchStat(
+      view: var_view,
+      danmaku: var_danmaku,
+      favorite: var_favorite,
+      reply: var_reply,
+      like: var_like,
+    );
+  }
+
+  @protected
   SearchSuggestParse sse_decode_search_suggest_parse(
     SseDeserializer deserializer,
   ) {
@@ -4205,6 +5745,203 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       json: var_json,
       errorKind: var_errorKind,
       errorDetail: var_errorDetail,
+    );
+  }
+
+  @protected
+  SearchTrendingItem sse_decode_search_trending_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_keyword = sse_decode_String(deserializer);
+    var var_showName = sse_decode_String(deserializer);
+    var var_icon = sse_decode_opt_String(deserializer);
+    var var_showLiveIcon = sse_decode_opt_box_autoadd_bool(deserializer);
+    var var_recommendReason = sse_decode_opt_String(deserializer);
+    return SearchTrendingItem(
+      keyword: var_keyword,
+      showName: var_showName,
+      icon: var_icon,
+      showLiveIcon: var_showLiveIcon,
+      recommendReason: var_recommendReason,
+    );
+  }
+
+  @protected
+  SearchTrendingResult sse_decode_search_trending_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_list_search_trending_item(deserializer);
+    var var_numResults = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SearchTrendingResult(
+      data: var_data,
+      numResults: var_numResults,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  SearchUserCard sse_decode_search_user_card(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_mid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_uname = sse_decode_opt_String(deserializer);
+    var var_usign = sse_decode_opt_String(deserializer);
+    var var_fans = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_videos = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_upic = sse_decode_opt_String(deserializer);
+    var var_verifyInfo = sse_decode_opt_String(deserializer);
+    var var_level = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_gender = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_isUpUser = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_isLive = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_roomId = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_officialVerify = sse_decode_opt_box_autoadd_official_verify(
+      deserializer,
+    );
+    var var_isSeniorMember = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_res = sse_decode_list_search_video_item(deserializer);
+    return SearchUserCard(
+      mid: var_mid,
+      uname: var_uname,
+      usign: var_usign,
+      fans: var_fans,
+      videos: var_videos,
+      upic: var_upic,
+      verifyInfo: var_verifyInfo,
+      level: var_level,
+      gender: var_gender,
+      isUpUser: var_isUpUser,
+      isLive: var_isLive,
+      roomId: var_roomId,
+      officialVerify: var_officialVerify,
+      isSeniorMember: var_isSeniorMember,
+      res: var_res,
+    );
+  }
+
+  @protected
+  SearchUserItem sse_decode_search_user_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_itemType = sse_decode_opt_String(deserializer);
+    var var_mid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_uname = sse_decode_opt_String(deserializer);
+    var var_usign = sse_decode_opt_String(deserializer);
+    var var_fans = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_videos = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_upic = sse_decode_opt_String(deserializer);
+    var var_faceNft = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_faceNftType = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_verifyInfo = sse_decode_opt_String(deserializer);
+    var var_level = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_gender = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_isUpUser = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_isLive = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_roomId = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_officialVerify = sse_decode_opt_box_autoadd_official_verify(
+      deserializer,
+    );
+    var var_isSeniorMember = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SearchUserItem(
+      itemType: var_itemType,
+      mid: var_mid,
+      uname: var_uname,
+      usign: var_usign,
+      fans: var_fans,
+      videos: var_videos,
+      upic: var_upic,
+      faceNft: var_faceNft,
+      faceNftType: var_faceNftType,
+      verifyInfo: var_verifyInfo,
+      level: var_level,
+      gender: var_gender,
+      isUpUser: var_isUpUser,
+      isLive: var_isLive,
+      roomId: var_roomId,
+      officialVerify: var_officialVerify,
+      isSeniorMember: var_isSeniorMember,
+    );
+  }
+
+  @protected
+  SearchUserResult sse_decode_search_user_result(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_list_search_user_item(deserializer);
+    var var_numResults = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SearchUserResult(
+      data: var_data,
+      numResults: var_numResults,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  SearchVideoItem sse_decode_search_video_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_aid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_bvid = sse_decode_opt_String(deserializer);
+    var var_arcurl = sse_decode_opt_String(deserializer);
+    var var_titleSpans = sse_decode_list_title_span(deserializer);
+    var var_title = sse_decode_String(deserializer);
+    var var_description = sse_decode_opt_String(deserializer);
+    var var_pic = sse_decode_opt_String(deserializer);
+    var var_pubdate = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_senddate = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_durationSecs = sse_decode_i_64(deserializer);
+    var var_owner = sse_decode_search_owner(deserializer);
+    var var_stat = sse_decode_search_stat(deserializer);
+    var var_itemType = sse_decode_opt_String(deserializer);
+    var var_roomid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_isUnionVideo = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_tag = sse_decode_opt_String(deserializer);
+    return SearchVideoItem(
+      id: var_id,
+      aid: var_aid,
+      bvid: var_bvid,
+      arcurl: var_arcurl,
+      titleSpans: var_titleSpans,
+      title: var_title,
+      description: var_description,
+      pic: var_pic,
+      pubdate: var_pubdate,
+      senddate: var_senddate,
+      durationSecs: var_durationSecs,
+      owner: var_owner,
+      stat: var_stat,
+      itemType: var_itemType,
+      roomid: var_roomid,
+      isUnionVideo: var_isUnionVideo,
+      tag: var_tag,
+    );
+  }
+
+  @protected
+  SearchVideoResult sse_decode_search_video_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_list_search_video_item(deserializer);
+    var var_numResults = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SearchVideoResult(
+      data: var_data,
+      numResults: var_numResults,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
     );
   }
 
@@ -4342,6 +6079,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       errorKind: var_errorKind,
       errorDetail: var_errorDetail,
     );
+  }
+
+  @protected
+  TitleSpan sse_decode_title_span(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_isEm = sse_decode_bool(deserializer);
+    var var_text = sse_decode_String(deserializer);
+    return TitleSpan(isEm: var_isEm, text: var_text);
   }
 
   @protected
@@ -4624,6 +6369,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_bool(bool self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_bool(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_danmaku_engine_options(
     DanmakuEngineOptions self,
     SseSerializer serializer,
@@ -4675,6 +6426,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_media_score(
+    MediaScore self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_media_score(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_note_author(
     NoteAuthor self,
     SseSerializer serializer,
@@ -4690,6 +6450,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_note_list(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_official_verify(
+    OfficialVerify self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_official_verify(self, serializer);
   }
 
   @protected
@@ -4735,6 +6504,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_popular_series_one(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_search_all_data(
+    SearchAllData self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_search_all_data(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_search_context(
+    SearchContext self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_search_context(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_search_query(
+    SearchQuery self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_search_query(self, serializer);
   }
 
   @protected
@@ -5180,6 +6976,102 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_search_activity_item(
+    List<SearchActivityItem> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_search_activity_item(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_search_article_item(
+    List<SearchArticleItem> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_search_article_item(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_search_live_item(
+    List<SearchLiveItem> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_search_live_item(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_search_pgc_item(
+    List<SearchPgcItem> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_search_pgc_item(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_search_trending_item(
+    List<SearchTrendingItem> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_search_trending_item(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_search_user_card(
+    List<SearchUserCard> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_search_user_card(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_search_user_item(
+    List<SearchUserItem> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_search_user_item(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_search_video_item(
+    List<SearchVideoItem> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_search_video_item(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_skip_segment(
     List<SkipSegment> self,
     SseSerializer serializer,
@@ -5188,6 +7080,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_skip_segment(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_title_span(
+    List<TitleSpan> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_title_span(item, serializer);
     }
   }
 
@@ -5213,6 +7117,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     for (final item in self) {
       sse_encode_view_point(item, serializer);
     }
+  }
+
+  @protected
+  void sse_encode_media_score(MediaScore self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_f_64(self.score, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.userCount, serializer);
   }
 
   @protected
@@ -5260,6 +7171,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_official_verify(
+    OfficialVerify self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.kind, serializer);
+    sse_encode_opt_String(self.desc, serializer);
+  }
+
+  @protected
   void sse_encode_opt_String(String? self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -5279,6 +7200,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_box_autoadd_ai_conclusion(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_bool(bool? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_bool(self, serializer);
     }
   }
 
@@ -5332,6 +7263,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_media_score(
+    MediaScore? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_media_score(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_box_autoadd_note_author(
     NoteAuthor? self,
     SseSerializer serializer,
@@ -5354,6 +7298,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_box_autoadd_note_list(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_official_verify(
+    OfficialVerify? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_official_verify(self, serializer);
     }
   }
 
@@ -5406,6 +7363,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_box_autoadd_popular_series_one(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_search_all_data(
+    SearchAllData? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_search_all_data(self, serializer);
     }
   }
 
@@ -5582,6 +7552,84 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_list_prim_i_64_strict(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_list_search_article_item(
+    List<SearchArticleItem>? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_list_search_article_item(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_list_search_live_item(
+    List<SearchLiveItem>? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_list_search_live_item(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_list_search_pgc_item(
+    List<SearchPgcItem>? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_list_search_pgc_item(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_list_search_trending_item(
+    List<SearchTrendingItem>? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_list_search_trending_item(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_list_search_user_item(
+    List<SearchUserItem>? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_list_search_user_item(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_list_search_video_item(
+    List<SearchVideoItem>? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_list_search_video_item(self, serializer);
     }
   }
 
@@ -5769,6 +7817,218 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_search_activity_item(
+    SearchActivityItem self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.id, serializer);
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_String(self.desc, serializer);
+    sse_encode_opt_String(self.cover, serializer);
+    sse_encode_opt_String(self.url, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.state, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.status, serializer);
+    sse_encode_opt_String(self.author, serializer);
+  }
+
+  @protected
+  void sse_encode_search_all_data(
+    SearchAllData self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.numResults, serializer);
+    sse_encode_list_search_video_item(self.videos, serializer);
+    sse_encode_list_search_user_card(self.users, serializer);
+    sse_encode_list_search_pgc_item(self.medias, serializer);
+    sse_encode_list_search_activity_item(self.activities, serializer);
+    sse_encode_opt_String(self.esportsJson, serializer);
+  }
+
+  @protected
+  void sse_encode_search_all_result(
+    SearchAllResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_search_all_data(self.data, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.numResults, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_search_article_item(
+    SearchArticleItem self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.pubTime, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.like, serializer);
+    sse_encode_list_title_span(self.titleSpans, serializer);
+    sse_encode_String(self.title, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.rankOffset, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.mid, serializer);
+    sse_encode_list_String(self.imageUrls, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.id, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.categoryId, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.view, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.reply, serializer);
+    sse_encode_opt_String(self.desc, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.rankScore, serializer);
+    sse_encode_opt_String(self.itemType, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.templateId, serializer);
+    sse_encode_opt_String(self.categoryName, serializer);
+  }
+
+  @protected
+  void sse_encode_search_article_result(
+    SearchArticleResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_list_search_article_item(self.data, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.numResults, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_search_context(SearchContext self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.baseUrl, serializer);
+    sse_encode_opt_String(self.cookie, serializer);
+    sse_encode_list_record_string_string(self.headers, serializer);
+    sse_encode_String(self.mixinKey, serializer);
+    sse_encode_i_64(self.wts, serializer);
+    sse_encode_u_64(self.timeoutMs, serializer);
+    sse_encode_transport_settings(self.transport, serializer);
+  }
+
+  @protected
+  void sse_encode_search_live_item(
+    SearchLiveItem self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.rankOffset, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.uid, serializer);
+    sse_encode_opt_String(self.tags, serializer);
+    sse_encode_opt_String(self.liveTime, serializer);
+    sse_encode_opt_String(self.uname, serializer);
+    sse_encode_opt_String(self.uface, serializer);
+    sse_encode_opt_String(self.userCover, serializer);
+    sse_encode_opt_String(self.itemType, serializer);
+    sse_encode_list_title_span(self.titleSpans, serializer);
+    sse_encode_String(self.title, serializer);
+    sse_encode_opt_String(self.cover, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.online, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.rankIndex, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.rankScore, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.roomid, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.attentions, serializer);
+    sse_encode_opt_String(self.cateName, serializer);
+  }
+
+  @protected
+  void sse_encode_search_live_result(
+    SearchLiveResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_list_search_live_item(self.data, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.numResults, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_search_owner(SearchOwner self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.mid, serializer);
+    sse_encode_opt_String(self.name, serializer);
+    sse_encode_opt_String(self.face, serializer);
+  }
+
+  @protected
+  void sse_encode_search_pgc_item(
+    SearchPgcItem self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.itemType, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.mediaId, serializer);
+    sse_encode_list_title_span(self.titleSpans, serializer);
+    sse_encode_String(self.title, serializer);
+    sse_encode_opt_String(self.orgTitle, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.mediaType, serializer);
+    sse_encode_opt_String(self.cv, serializer);
+    sse_encode_opt_String(self.staff, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.seasonId, serializer);
+    sse_encode_opt_box_autoadd_bool(self.isAvid, serializer);
+    sse_encode_opt_String(self.hitEpids, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.seasonType, serializer);
+    sse_encode_opt_String(self.seasonTypeName, serializer);
+    sse_encode_opt_String(self.url, serializer);
+    sse_encode_opt_String(self.buttonText, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.isFollow, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.isSelection, serializer);
+    sse_encode_opt_String(self.cover, serializer);
+    sse_encode_opt_String(self.areas, serializer);
+    sse_encode_opt_String(self.styles, serializer);
+    sse_encode_opt_String(self.gotoUrl, serializer);
+    sse_encode_opt_String(self.desc, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.pubtime, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.mediaMode, serializer);
+    sse_encode_opt_box_autoadd_media_score(self.mediaScore, serializer);
+    sse_encode_opt_String(self.indexShow, serializer);
+  }
+
+  @protected
+  void sse_encode_search_pgc_result(
+    SearchPgcResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_list_search_pgc_item(self.data, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.numResults, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_search_query(SearchQuery self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.searchType, serializer);
+    sse_encode_String(self.keyword, serializer);
+    sse_encode_i_64(self.page, serializer);
+    sse_encode_opt_String(self.order, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.duration, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.tids, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.orderSort, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.userType, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.categoryId, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.pubBegin, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.pubEnd, serializer);
+    sse_encode_opt_String(self.gaiaVtoken, serializer);
+  }
+
+  @protected
+  void sse_encode_search_stat(SearchStat self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.view, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.danmaku, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.favorite, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.reply, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.like, serializer);
+  }
+
+  @protected
   void sse_encode_search_suggest_parse(
     SearchSuggestParse self,
     SseSerializer serializer,
@@ -5777,6 +8037,131 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_opt_String(self.json, serializer);
     sse_encode_opt_String(self.errorKind, serializer);
     sse_encode_opt_String(self.errorDetail, serializer);
+  }
+
+  @protected
+  void sse_encode_search_trending_item(
+    SearchTrendingItem self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.keyword, serializer);
+    sse_encode_String(self.showName, serializer);
+    sse_encode_opt_String(self.icon, serializer);
+    sse_encode_opt_box_autoadd_bool(self.showLiveIcon, serializer);
+    sse_encode_opt_String(self.recommendReason, serializer);
+  }
+
+  @protected
+  void sse_encode_search_trending_result(
+    SearchTrendingResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_list_search_trending_item(self.data, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.numResults, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_search_user_card(
+    SearchUserCard self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.mid, serializer);
+    sse_encode_opt_String(self.uname, serializer);
+    sse_encode_opt_String(self.usign, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.fans, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.videos, serializer);
+    sse_encode_opt_String(self.upic, serializer);
+    sse_encode_opt_String(self.verifyInfo, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.level, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.gender, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.isUpUser, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.isLive, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.roomId, serializer);
+    sse_encode_opt_box_autoadd_official_verify(self.officialVerify, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.isSeniorMember, serializer);
+    sse_encode_list_search_video_item(self.res, serializer);
+  }
+
+  @protected
+  void sse_encode_search_user_item(
+    SearchUserItem self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.itemType, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.mid, serializer);
+    sse_encode_opt_String(self.uname, serializer);
+    sse_encode_opt_String(self.usign, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.fans, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.videos, serializer);
+    sse_encode_opt_String(self.upic, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.faceNft, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.faceNftType, serializer);
+    sse_encode_opt_String(self.verifyInfo, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.level, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.gender, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.isUpUser, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.isLive, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.roomId, serializer);
+    sse_encode_opt_box_autoadd_official_verify(self.officialVerify, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.isSeniorMember, serializer);
+  }
+
+  @protected
+  void sse_encode_search_user_result(
+    SearchUserResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_list_search_user_item(self.data, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.numResults, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_search_video_item(
+    SearchVideoItem self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.id, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.aid, serializer);
+    sse_encode_opt_String(self.bvid, serializer);
+    sse_encode_opt_String(self.arcurl, serializer);
+    sse_encode_list_title_span(self.titleSpans, serializer);
+    sse_encode_String(self.title, serializer);
+    sse_encode_opt_String(self.description, serializer);
+    sse_encode_opt_String(self.pic, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.pubdate, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.senddate, serializer);
+    sse_encode_i_64(self.durationSecs, serializer);
+    sse_encode_search_owner(self.owner, serializer);
+    sse_encode_search_stat(self.stat, serializer);
+    sse_encode_opt_String(self.itemType, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.roomid, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.isUnionVideo, serializer);
+    sse_encode_opt_String(self.tag, serializer);
+  }
+
+  @protected
+  void sse_encode_search_video_result(
+    SearchVideoResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_list_search_video_item(self.data, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.numResults, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
   }
 
   @protected
@@ -5873,6 +8258,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self.missingBody, serializer);
     sse_encode_opt_String(self.errorKind, serializer);
     sse_encode_opt_String(self.errorDetail, serializer);
+  }
+
+  @protected
+  void sse_encode_title_span(TitleSpan self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_bool(self.isEm, serializer);
+    sse_encode_String(self.text, serializer);
   }
 
   @protected

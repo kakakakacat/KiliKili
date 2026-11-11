@@ -10,6 +10,7 @@ import 'package:kilikili/rust/api/live.dart';
 import 'package:kilikili/rust/api/media_select.dart';
 import 'package:kilikili/rust/api/play_url.dart';
 import 'package:kilikili/rust/api/play_url_fetch.dart';
+import 'package:kilikili/rust/api/reply.dart';
 import 'package:kilikili/rust/api/search.dart';
 import 'package:kilikili/rust/api/search_suggest.dart';
 import 'package:kilikili/rust/api/sponsor_block.dart';
@@ -67,6 +68,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   DanmakuEngineOptions dco_decode_box_autoadd_danmaku_engine_options(
     dynamic raw,
   );
+
+  @protected
+  EmoteMeta dco_decode_box_autoadd_emote_meta(dynamic raw);
 
   @protected
   double dco_decode_box_autoadd_f_64(dynamic raw);
@@ -132,6 +136,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PopularSeriesOne dco_decode_box_autoadd_popular_series_one(dynamic raw);
 
   @protected
+  ReplyContext dco_decode_box_autoadd_reply_context(dynamic raw);
+
+  @protected
+  ReplyCursor dco_decode_box_autoadd_reply_cursor(dynamic raw);
+
+  @protected
+  ReplyInteract dco_decode_box_autoadd_reply_interact(dynamic raw);
+
+  @protected
+  ReplyItem dco_decode_box_autoadd_reply_item(dynamic raw);
+
+  @protected
+  ReplyList dco_decode_box_autoadd_reply_list(dynamic raw);
+
+  @protected
+  ReplyMember dco_decode_box_autoadd_reply_member(dynamic raw);
+
+  @protected
+  ReplyPage dco_decode_box_autoadd_reply_page(dynamic raw);
+
+  @protected
+  ReplyReplyList dco_decode_box_autoadd_reply_reply_list(dynamic raw);
+
+  @protected
   SearchAllData dco_decode_box_autoadd_search_all_data(dynamic raw);
 
   @protected
@@ -182,6 +210,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   DmViewSubtitlesParse dco_decode_dm_view_subtitles_parse(dynamic raw);
 
   @protected
+  Emote dco_decode_emote(dynamic raw);
+
+  @protected
+  EmoteMeta dco_decode_emote_meta(dynamic raw);
+
+  @protected
+  EmotePackage dco_decode_emote_package(dynamic raw);
+
+  @protected
+  EmotePanelResult dco_decode_emote_panel_result(dynamic raw);
+
+  @protected
   double dco_decode_f_64(dynamic raw);
 
   @protected
@@ -212,6 +252,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64 dco_decode_i_64(dynamic raw);
 
   @protected
+  InteractStatus dco_decode_interact_status(dynamic raw);
+
+  @protected
   Interaction dco_decode_interaction(dynamic raw);
 
   @protected
@@ -225,6 +268,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<DanmakuBucketItem> dco_decode_list_danmaku_bucket_item(dynamic raw);
+
+  @protected
+  List<Emote> dco_decode_list_emote(dynamic raw);
+
+  @protected
+  List<EmotePackage> dco_decode_list_emote_package(dynamic raw);
 
   @protected
   List<FeedVideoItem> dco_decode_list_feed_video_item(dynamic raw);
@@ -283,6 +332,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<(String, String)> dco_decode_list_record_string_string(dynamic raw);
+
+  @protected
+  List<ReplyItem> dco_decode_list_reply_item(dynamic raw);
 
   @protected
   List<SearchActivityItem> dco_decode_list_search_activity_item(dynamic raw);
@@ -408,6 +460,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool? dco_decode_opt_box_autoadd_bool(dynamic raw);
 
   @protected
+  EmoteMeta? dco_decode_opt_box_autoadd_emote_meta(dynamic raw);
+
+  @protected
   double? dco_decode_opt_box_autoadd_f_64(dynamic raw);
 
   @protected
@@ -465,6 +520,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PopularSeriesOne? dco_decode_opt_box_autoadd_popular_series_one(dynamic raw);
 
   @protected
+  ReplyCursor? dco_decode_opt_box_autoadd_reply_cursor(dynamic raw);
+
+  @protected
+  ReplyInteract? dco_decode_opt_box_autoadd_reply_interact(dynamic raw);
+
+  @protected
+  ReplyItem? dco_decode_opt_box_autoadd_reply_item(dynamic raw);
+
+  @protected
+  ReplyList? dco_decode_opt_box_autoadd_reply_list(dynamic raw);
+
+  @protected
+  ReplyMember? dco_decode_opt_box_autoadd_reply_member(dynamic raw);
+
+  @protected
+  ReplyPage? dco_decode_opt_box_autoadd_reply_page(dynamic raw);
+
+  @protected
+  ReplyReplyList? dco_decode_opt_box_autoadd_reply_reply_list(dynamic raw);
+
+  @protected
   SearchAllData? dco_decode_opt_box_autoadd_search_all_data(dynamic raw);
 
   @protected
@@ -495,6 +571,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<DanmakuBucketItem>? dco_decode_opt_list_danmaku_bucket_item(dynamic raw);
+
+  @protected
+  List<EmotePackage>? dco_decode_opt_list_emote_package(dynamic raw);
 
   @protected
   List<FeedVideoItem>? dco_decode_opt_list_feed_video_item(dynamic raw);
@@ -586,6 +665,39 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   (String, String) dco_decode_record_string_string(dynamic raw);
+
+  @protected
+  ReplyContext dco_decode_reply_context(dynamic raw);
+
+  @protected
+  ReplyCursor dco_decode_reply_cursor(dynamic raw);
+
+  @protected
+  ReplyInteract dco_decode_reply_interact(dynamic raw);
+
+  @protected
+  ReplyInteractResult dco_decode_reply_interact_result(dynamic raw);
+
+  @protected
+  ReplyItem dco_decode_reply_item(dynamic raw);
+
+  @protected
+  ReplyList dco_decode_reply_list(dynamic raw);
+
+  @protected
+  ReplyListResult dco_decode_reply_list_result(dynamic raw);
+
+  @protected
+  ReplyMember dco_decode_reply_member(dynamic raw);
+
+  @protected
+  ReplyPage dco_decode_reply_page(dynamic raw);
+
+  @protected
+  ReplyReplyList dco_decode_reply_reply_list(dynamic raw);
+
+  @protected
+  ReplyReplyListResult dco_decode_reply_reply_list_result(dynamic raw);
 
   @protected
   SearchActivityItem dco_decode_search_activity_item(dynamic raw);
@@ -764,6 +876,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  EmoteMeta sse_decode_box_autoadd_emote_meta(SseDeserializer deserializer);
+
+  @protected
   double sse_decode_box_autoadd_f_64(SseDeserializer deserializer);
 
   @protected
@@ -847,6 +962,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  ReplyContext sse_decode_box_autoadd_reply_context(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ReplyCursor sse_decode_box_autoadd_reply_cursor(SseDeserializer deserializer);
+
+  @protected
+  ReplyInteract sse_decode_box_autoadd_reply_interact(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ReplyItem sse_decode_box_autoadd_reply_item(SseDeserializer deserializer);
+
+  @protected
+  ReplyList sse_decode_box_autoadd_reply_list(SseDeserializer deserializer);
+
+  @protected
+  ReplyMember sse_decode_box_autoadd_reply_member(SseDeserializer deserializer);
+
+  @protected
+  ReplyPage sse_decode_box_autoadd_reply_page(SseDeserializer deserializer);
+
+  @protected
+  ReplyReplyList sse_decode_box_autoadd_reply_reply_list(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SearchAllData sse_decode_box_autoadd_search_all_data(
     SseDeserializer deserializer,
   );
@@ -919,6 +1064,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  Emote sse_decode_emote(SseDeserializer deserializer);
+
+  @protected
+  EmoteMeta sse_decode_emote_meta(SseDeserializer deserializer);
+
+  @protected
+  EmotePackage sse_decode_emote_package(SseDeserializer deserializer);
+
+  @protected
+  EmotePanelResult sse_decode_emote_panel_result(SseDeserializer deserializer);
+
+  @protected
   double sse_decode_f_64(SseDeserializer deserializer);
 
   @protected
@@ -953,6 +1110,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
 
   @protected
+  InteractStatus sse_decode_interact_status(SseDeserializer deserializer);
+
+  @protected
   Interaction sse_decode_interaction(SseDeserializer deserializer);
 
   @protected
@@ -968,6 +1128,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<DanmakuBucketItem> sse_decode_list_danmaku_bucket_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<Emote> sse_decode_list_emote(SseDeserializer deserializer);
+
+  @protected
+  List<EmotePackage> sse_decode_list_emote_package(
     SseDeserializer deserializer,
   );
 
@@ -1046,6 +1214,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<(String, String)> sse_decode_list_record_string_string(
     SseDeserializer deserializer,
   );
+
+  @protected
+  List<ReplyItem> sse_decode_list_reply_item(SseDeserializer deserializer);
 
   @protected
   List<SearchActivityItem> sse_decode_list_search_activity_item(
@@ -1201,6 +1372,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool? sse_decode_opt_box_autoadd_bool(SseDeserializer deserializer);
 
   @protected
+  EmoteMeta? sse_decode_opt_box_autoadd_emote_meta(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   double? sse_decode_opt_box_autoadd_f_64(SseDeserializer deserializer);
 
   @protected
@@ -1278,6 +1454,41 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  ReplyCursor? sse_decode_opt_box_autoadd_reply_cursor(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ReplyInteract? sse_decode_opt_box_autoadd_reply_interact(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ReplyItem? sse_decode_opt_box_autoadd_reply_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ReplyList? sse_decode_opt_box_autoadd_reply_list(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ReplyMember? sse_decode_opt_box_autoadd_reply_member(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ReplyPage? sse_decode_opt_box_autoadd_reply_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ReplyReplyList? sse_decode_opt_box_autoadd_reply_reply_list(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SearchAllData? sse_decode_opt_box_autoadd_search_all_data(
     SseDeserializer deserializer,
   );
@@ -1316,6 +1527,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<DanmakuBucketItem>? sse_decode_opt_list_danmaku_bucket_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<EmotePackage>? sse_decode_opt_list_emote_package(
     SseDeserializer deserializer,
   );
 
@@ -1437,6 +1653,43 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   (String, String) sse_decode_record_string_string(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ReplyContext sse_decode_reply_context(SseDeserializer deserializer);
+
+  @protected
+  ReplyCursor sse_decode_reply_cursor(SseDeserializer deserializer);
+
+  @protected
+  ReplyInteract sse_decode_reply_interact(SseDeserializer deserializer);
+
+  @protected
+  ReplyInteractResult sse_decode_reply_interact_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ReplyItem sse_decode_reply_item(SseDeserializer deserializer);
+
+  @protected
+  ReplyList sse_decode_reply_list(SseDeserializer deserializer);
+
+  @protected
+  ReplyListResult sse_decode_reply_list_result(SseDeserializer deserializer);
+
+  @protected
+  ReplyMember sse_decode_reply_member(SseDeserializer deserializer);
+
+  @protected
+  ReplyPage sse_decode_reply_page(SseDeserializer deserializer);
+
+  @protected
+  ReplyReplyList sse_decode_reply_reply_list(SseDeserializer deserializer);
+
+  @protected
+  ReplyReplyListResult sse_decode_reply_reply_list_result(
     SseDeserializer deserializer,
   );
 
@@ -1653,6 +1906,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_emote_meta(
+    EmoteMeta self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_f_64(double self, SseSerializer serializer);
 
   @protected
@@ -1776,6 +2035,54 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_reply_context(
+    ReplyContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_reply_cursor(
+    ReplyCursor self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_reply_interact(
+    ReplyInteract self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_reply_item(
+    ReplyItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_reply_list(
+    ReplyList self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_reply_member(
+    ReplyMember self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_reply_page(
+    ReplyPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_reply_reply_list(
+    ReplyReplyList self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_search_all_data(
     SearchAllData self,
     SseSerializer serializer,
@@ -1866,6 +2173,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_emote(Emote self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_emote_meta(EmoteMeta self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_emote_package(EmotePackage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_emote_panel_result(
+    EmotePanelResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_f_64(double self, SseSerializer serializer);
 
   @protected
@@ -1905,6 +2227,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
 
   @protected
+  void sse_encode_interact_status(
+    InteractStatus self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_interaction(Interaction self, SseSerializer serializer);
 
   @protected
@@ -1925,6 +2253,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_danmaku_bucket_item(
     List<DanmakuBucketItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_emote(List<Emote> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_emote_package(
+    List<EmotePackage> self,
     SseSerializer serializer,
   );
 
@@ -2024,6 +2361,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_record_string_string(
     List<(String, String)> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_reply_item(
+    List<ReplyItem> self,
     SseSerializer serializer,
   );
 
@@ -2232,6 +2575,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_opt_box_autoadd_bool(bool? self, SseSerializer serializer);
 
   @protected
+  void sse_encode_opt_box_autoadd_emote_meta(
+    EmoteMeta? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_f_64(double? self, SseSerializer serializer);
 
   @protected
@@ -2331,6 +2680,48 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_reply_cursor(
+    ReplyCursor? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_reply_interact(
+    ReplyInteract? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_reply_item(
+    ReplyItem? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_reply_list(
+    ReplyList? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_reply_member(
+    ReplyMember? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_reply_page(
+    ReplyPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_reply_reply_list(
+    ReplyReplyList? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_search_all_data(
     SearchAllData? self,
     SseSerializer serializer,
@@ -2378,6 +2769,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_danmaku_bucket_item(
     List<DanmakuBucketItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_emote_package(
+    List<EmotePackage>? self,
     SseSerializer serializer,
   );
 
@@ -2540,6 +2937,51 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_record_string_string(
     (String, String) self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_reply_context(ReplyContext self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_reply_cursor(ReplyCursor self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_reply_interact(ReplyInteract self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_reply_interact_result(
+    ReplyInteractResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_reply_item(ReplyItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_reply_list(ReplyList self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_reply_list_result(
+    ReplyListResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_reply_member(ReplyMember self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_reply_page(ReplyPage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_reply_reply_list(
+    ReplyReplyList self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_reply_reply_list_result(
+    ReplyReplyListResult self,
     SseSerializer serializer,
   );
 

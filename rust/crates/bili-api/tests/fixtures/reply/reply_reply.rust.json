@@ -1,0 +1,106 @@
+{
+  "page": {
+    "count": 1562,
+    "num": 1,
+    "size": 10
+  },
+  "replies": [
+    {
+      "action": 0,
+      "attr": 0,
+      "count": 0,
+      "ctime": 1479570959,
+      "dialog": 121564,
+      "fansgrade": 0,
+      "invisible": false,
+      "kind": 1,
+      "like": 655,
+      "member": {
+        "avatar": "https://example.invalid/face.jpg",
+        "mid": 32266,
+        "uname": "用户63"
+      },
+      "message": "（脱敏）这是一条评论正文 773",
+      "mid": 32266,
+      "oid": 713377,
+      "parent": 303701,
+      "rcount": 0,
+      "root": 356362,
+      "rpid": 273857,
+      "state": 0
+    },
+    {
+      "action": 0,
+      "attr": 0,
+      "count": 0,
+      "ctime": 1483285839,
+      "dialog": 600514,
+      "fansgrade": 0,
+      "invisible": false,
+      "kind": 1,
+      "like": 66,
+      "member": {
+        "avatar": "https://example.invalid/face.jpg",
+        "mid": 689919,
+        "uname": "用户19"
+      },
+      "message": "（脱敏）这是一条评论正文 268",
+      "mid": 689919,
+      "oid": 713377,
+      "parent": 303701,
+      "rcount": 0,
+      "root": 356362,
+      "rpid": 448221,
+      "state": 0
+    },
+    {
+      "action": 0,
+      "attr": 0,
+      "count": 0,
+      "ctime": 1485686724,
+      "dialog": 421734,
+      "fansgrade": 0,
+      "invisible": false,
+      "kind": 1,
+      "like": 40,
+      "member": {
+        "avatar": "https://example.invalid/face.jpg",
+        "mid": 827943,
+        "uname": "用户40"
+      },
+      "message": "（脱敏）这是一条评论正文 848",
+      "mid": 827943,
+      "oid": 713377,
+      "parent": 303701,
+      "rcount": 0,
+      "root": 356362,
+      "rpid": 269441,
+      "state": 0
+    }
+  ],
+  "root": {
+    "action": 0,
+    "attr": 0,
+    "count": 1763,
+    "ctime": 1291918239,
+    "dialog": 0,
+    "fansgrade": 0,
+    "invisible": false,
+    "kind": 1,
+    "like": 55835,
+    "member": {
+      "avatar": "https://example.invalid/face.jpg",
+      "mid": 483524,
+      "uname": "用户77"
+    },
+    "message": "（脱敏）这是一条评论正文 296",
+    "mid": 483524,
+    "oid": 713377,
+    "parent": 0,
+    "rcount": 1562,
+    "root": 0,
+    "rpid": 628415,
+    "state": 2
+  },
+  "upper_mid": 483524
+}

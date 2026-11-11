@@ -1,0 +1,91 @@
+{
+  "cursor": {
+    "all_count": 89667,
+    "is_begin": true,
+    "is_end": false,
+    "mode": 3,
+    "mode_text": "",
+    "name": "热门评论",
+    "next": 2,
+    "next_offset": "CAEiAggC",
+    "prev": 0
+  },
+  "page": null,
+  "replies": [
+    {
+      "action": 0,
+      "attr": 0,
+      "count": 1763,
+      "ctime": 1291918239,
+      "dialog": 0,
+      "fansgrade": 0,
+      "invisible": false,
+      "kind": 1,
+      "like": 55835,
+      "member": {
+        "avatar": "https://example.invalid/face.jpg",
+        "mid": 124399,
+        "uname": "用户74"
+      },
+      "message": "（脱敏）这是一条评论正文 79",
+      "mid": 124399,
+      "oid": 54569,
+      "parent": 0,
+      "rcount": 1562,
+      "root": 0,
+      "rpid": 264040,
+      "state": 2
+    },
+    {
+      "action": 0,
+      "attr": 32768,
+      "count": 1257,
+      "ctime": 1584945297,
+      "dialog": 0,
+      "fansgrade": 0,
+      "invisible": false,
+      "kind": 1,
+      "like": 55062,
+      "member": {
+        "avatar": "https://example.invalid/face.jpg",
+        "mid": 753414,
+        "uname": "用户35"
+      },
+      "message": "（脱敏）这是一条评论正文 366",
+      "mid": 753414,
+      "oid": 54569,
+      "parent": 0,
+      "rcount": 1133,
+      "root": 0,
+      "rpid": 243123,
+      "state": 0
+    },
+    {
+      "action": 0,
+      "attr": 0,
+      "count": 222,
+      "ctime": 1519135750,
+      "dialog": 0,
+      "fansgrade": 0,
+      "invisible": false,
+      "kind": 1,
+      "like": 9124,
+      "member": {
+        "avatar": "https://example.invalid/face.jpg",
+        "mid": 725003,
+        "uname": "用户37"
+      },
+      "message": "（脱敏）这是一条评论正文 122",
+      "mid": 725003,
+      "oid": 54569,
+      "parent": 0,
+      "rcount": 196,
+      "root": 0,
+      "rpid": 679881,
+      "state": 0
+    }
+  ],
+  "top_replies": [],
+  "top_upper": null,
+  "upper_mid": 124399
+}

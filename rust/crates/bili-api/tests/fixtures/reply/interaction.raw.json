@@ -1,0 +1,19 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "up_reply_selection": {
+      "can_modify": true,
+      "status": 0
+    },
+    "up_reply": {
+      "can_modify": true,
+      "status": 1
+    },
+    "up_dm": {
+      "can_modify": false,
+      "status": 1
+    }
+  }
+}

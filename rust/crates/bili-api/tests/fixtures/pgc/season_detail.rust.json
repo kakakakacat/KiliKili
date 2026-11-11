@@ -1,0 +1,164 @@
+{
+  "actors": "示例声优甲\n示例声优乙",
+  "areas": [
+    "日本",
+    "中国大陆"
+  ],
+  "brief_images": [
+    {
+      "aspect_ratio": 1.78,
+      "url": "//i0.example-cdn.test/bfs/bangumi/00000000000000000000000000000301.jpg"
+    },
+    {
+      "aspect_ratio": 1.0,
+      "url": "//i0.example-cdn.test/bfs/bangumi/00000000000000000000000000000302.jpg"
+    }
+  ],
+  "cooperators": [
+    {
+      "avatar": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000202.jpg",
+      "mid": 200202,
+      "nick_name": "示例联合出品",
+      "role": "出品"
+    }
+  ],
+  "cover": "//i0.example-cdn.test/bfs/bangumi/0000000000000000000000000000000000000201.jpg",
+  "episodes": [
+    {
+      "aid": 500000201,
+      "badge": "会员",
+      "bvid": "BV1xx000000A",
+      "cid": 600000201,
+      "cover": "//i0.example-cdn.test/bfs/archive/00000000000000000000000000000401.jpg",
+      "duration": 1440000,
+      "ep_id": 900000201,
+      "from": "bangumi",
+      "height": 1080,
+      "id": 900000201,
+      "link": "https://www.bilibili.com/bangumi/play/ep900000201",
+      "long_title": "示例标题 第一话",
+      "play": 1234567,
+      "pub_time": 1767193800,
+      "share_copy": "示例分享文案",
+      "share_url": "https://b23.tv/ep900000201",
+      "show_title": "第1话 示例标题 第一话",
+      "title": "1",
+      "width": 1920
+    },
+    {
+      "aid": 500000202,
+      "badge": null,
+      "bvid": null,
+      "cid": 600000202,
+      "cover": null,
+      "duration": 1440000,
+      "ep_id": 900000202,
+      "from": null,
+      "height": 1920,
+      "id": 900000202,
+      "link": null,
+      "long_title": null,
+      "play": null,
+      "pub_time": 1767798600,
+      "share_copy": null,
+      "share_url": null,
+      "show_title": null,
+      "title": "2",
+      "width": 1080
+    },
+    {
+      "aid": null,
+      "badge": null,
+      "bvid": null,
+      "cid": null,
+      "cover": null,
+      "duration": null,
+      "ep_id": 900000203,
+      "from": null,
+      "height": null,
+      "id": 900000203,
+      "link": null,
+      "long_title": null,
+      "play": null,
+      "pub_time": null,
+      "share_copy": null,
+      "share_url": null,
+      "show_title": null,
+      "title": "3",
+      "width": null
+    }
+  ],
+  "evaluate": "示例简介：这里是番剧的剧情梗概。",
+  "kind": 1,
+  "media_id": 800000201,
+  "new_ep_desc": "全12话",
+  "new_ep_title": "12",
+  "pub_time_show": "2026-01-07 23:30",
+  "rating_score": 9.7,
+  "season_id": 700000201,
+  "season_title": "示例番剧 第一季",
+  "seasons": [
+    {
+      "media_id": 800000201,
+      "season_id": 700000201,
+      "season_title": "第一季"
+    },
+    {
+      "media_id": 800000202,
+      "season_id": 700000202,
+      "season_title": "第二季"
+    }
+  ],
+  "sections": [
+    {
+      "episodes": [
+        {
+          "aid": 500000251,
+          "badge": "预告",
+          "bvid": null,
+          "cid": 600000251,
+          "cover": null,
+          "duration": 90000,
+          "ep_id": 900000251,
+          "from": null,
+          "height": null,
+          "id": 900000251,
+          "link": null,
+          "long_title": "先导预告",
+          "play": null,
+          "pub_time": null,
+          "share_copy": null,
+          "share_url": null,
+          "show_title": null,
+          "title": "PV1",
+          "width": null
+        }
+      ],
+      "title": "PV&其他"
+    },
+    {
+      "episodes": [],
+      "title": "空的一组"
+    }
+  ],
+  "stat": {
+    "coin": 11,
+    "danmaku": 44,
+    "favorite": 22,
+    "like": 33,
+    "reply": 55,
+    "share": 66,
+    "view": 77
+  },
+  "subtitle": "示例副标题",
+  "title": "示例番剧",
+  "up": {
+    "avatar": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000201.jpg",
+    "mid": 200201,
+    "uname": "示例出品方"
+  },
+  "user_status": {
+    "favored": 1,
+    "last_ep_id": 900000203
+  }
+}

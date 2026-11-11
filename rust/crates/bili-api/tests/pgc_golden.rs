@@ -159,3 +159,92 @@ fn a_day_with_no_episodes_is_kept() {
     assert!(days[2].episodes.is_empty());
     assert_eq!(days[2].date.as_deref(), Some("11-12"));
 }
+
+// ------------------------------------------------- 番剧详情（S10 第二批）
+
+/// fixture 来源与本文件其余部分一致：按基线
+/// `lib/models_new/pgc/pgc_info_model/**` 的 `fromJson` 写成的脱敏样本，
+/// **不是真实抓取**。保留的是结构——两条接口各自的载荷键、`section`
+/// 的单数键名、`rotate==1` 的那一集、只有 `release_date` 没有 `pub_time`
+/// 的那一集、缺字段的条目、空的那一组。
+#[test]
+fn season_detail_matches_the_frozen_snapshot() {
+    let detail = bili_api::pgc::parse_season_detail(
+        &raw("season_detail.raw.json"),
+        bili_api::pgc::SeasonKind::Pgc,
+    )
+    .expect("样本应解析成功");
+    assert_snapshot(
+        "season_detail",
+        &serde_json::to_value(&detail).expect("实体可序列化"),
+    );
+}
+
+#[test]
+fn pugv_season_detail_matches_the_frozen_snapshot() {
+    let detail = bili_api::pgc::parse_season_detail(
+        &raw("pugv_season_detail.raw.json"),
+        bili_api::pgc::SeasonKind::Pugv,
+    )
+    .expect("样本应解析成功");
+    assert_snapshot(
+        "pugv_season_detail",
+        &serde_json::to_value(&detail).expect("实体可序列化"),
+    );
+}
+
+/// 两条接口的载荷键不同，拿错键会得到一个空壳而不是报错——除非解包器
+/// 本身就按键区分。这条从外部钉住这件事。
+#[test]
+fn reading_the_wrong_payload_key_fails_loudly() {
+    assert!(
+        bili_api::pgc::parse_season_detail(
+            &raw("season_detail.raw.json"),
+            bili_api::pgc::SeasonKind::Pugv,
+        )
+        .is_err(),
+        "番剧详情在 result 里，按 data 读必须失败"
+    );
+    assert!(
+        bili_api::pgc::parse_season_detail(
+            &raw("pugv_season_detail.raw.json"),
+            bili_api::pgc::SeasonKind::Pgc,
+        )
+        .is_err(),
+        "课堂详情在 data 里，按 result 读必须失败"
+    );
+}
+
+/// 正片与花絮是两组，花絮里可以有空的一组——界面按组排版，
+/// 丢掉空组会让组标题与内容错位。
+#[test]
+fn an_empty_section_is_kept() {
+    let detail = bili_api::pgc::parse_season_detail(
+        &raw("season_detail.raw.json"),
+        bili_api::pgc::SeasonKind::Pgc,
+    )
+    .expect("应解析成功");
+    assert_eq!(detail.episodes.len(), 3);
+    assert_eq!(detail.sections.len(), 2);
+    assert_eq!(detail.sections[1].title.as_deref(), Some("空的一组"));
+    assert!(detail.sections[1].episodes.is_empty());
+}
+
+/// `duration` 的单位随接口变：番剧是毫秒，课堂是秒。两边都原样透传，
+/// 这条把「没有在某一侧偷偷换算」钉住。
+#[test]
+fn duration_unit_is_passed_through_per_endpoint() {
+    let pgc = bili_api::pgc::parse_season_detail(
+        &raw("season_detail.raw.json"),
+        bili_api::pgc::SeasonKind::Pgc,
+    )
+    .expect("应解析成功");
+    let pugv = bili_api::pgc::parse_season_detail(
+        &raw("pugv_season_detail.raw.json"),
+        bili_api::pgc::SeasonKind::Pugv,
+    )
+    .expect("应解析成功");
+
+    assert_eq!(pgc.episodes[0].duration, Some(1_440_000), "番剧：毫秒");
+    assert_eq!(pugv.episodes[0].duration, Some(1800), "课堂：秒");
+}

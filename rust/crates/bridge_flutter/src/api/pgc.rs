@@ -615,3 +615,288 @@ fn flatten<T>(
         )),
     }
 }
+
+// ------------------------------------------------- 番剧详情（S10 第二批）
+
+/// 一集。
+///
+/// **不是** `lib/models_new/pgc/pgc_info_model/episode.dart` 的替代品：
+/// 那个类继承共享的 `BaseEpisodeItem`，剧集面板按基类做多态消费，而
+/// `BaseEpisodeItem` 还有四个未迁的生产者（UGC 分 P、合集、媒体列表、
+/// 互动视频）。按 ADR-011 决策六，共享模型要等**所有**生产者迁完才能删，
+/// 所以 Dart 侧留了一个单向适配 `lib/services/rust/pgc_detail_compat.dart`，
+/// 只在需要那条多态列表的地方把本结构转过去。
+#[derive(Debug, Clone)]
+pub struct PgcEpisode {
+    pub id: Option<i64>,
+    pub aid: Option<i64>,
+    pub cid: Option<i64>,
+    pub ep_id: Option<i64>,
+    pub bvid: Option<String>,
+    pub badge: Option<String>,
+    pub title: Option<String>,
+    pub cover: Option<String>,
+    /// 已按 `rotate` 校正：响应在 `rotate == 1` 时给的是交换过的宽高。
+    pub width: Option<i64>,
+    pub height: Option<i64>,
+    /// **单位随接口变**：番剧是毫秒，课堂是秒。按 `from == "pugv"` 分流，
+    /// 与基线一致。
+    pub duration: Option<i64>,
+    pub from: Option<String>,
+    pub link: Option<String>,
+    pub long_title: Option<String>,
+    pub pub_time: Option<i64>,
+    pub share_copy: Option<String>,
+    pub share_url: Option<String>,
+    pub show_title: Option<String>,
+    pub play: Option<i64>,
+}
+
+/// 正片之外的一组（PV、花絮、特别篇…）。空组也会保留。
+#[derive(Debug, Clone)]
+pub struct PgcSection {
+    pub title: Option<String>,
+    pub episodes: Vec<PgcEpisode>,
+}
+
+/// 季度统计。
+///
+/// 前三个字段缺失时为 0，后四个保持 `None`——基线就是这样不对称的，
+/// 界面对两组的处理不同（前三个总显示数字，后四个缺失时整块隐藏）。
+#[derive(Debug, Clone)]
+pub struct PgcSeasonStat {
+    pub coin: i64,
+    pub favorite: i64,
+    pub like: i64,
+    pub danmaku: Option<i64>,
+    pub reply: Option<i64>,
+    pub share: Option<i64>,
+    pub view: Option<i64>,
+}
+
+/// 出品方 / UP 主。
+#[derive(Debug, Clone)]
+pub struct PgcUpInfo {
+    pub mid: Option<i64>,
+    pub avatar: Option<String>,
+    pub uname: Option<String>,
+}
+
+/// 当前用户对这一季的状态。
+#[derive(Debug, Clone)]
+pub struct PgcUserStatus {
+    /// 0/1，是否已追。
+    pub favored: Option<i64>,
+    pub last_ep_id: Option<i64>,
+}
+
+/// 参与的创作者。
+#[derive(Debug, Clone)]
+pub struct PgcCooperator {
+    pub mid: Option<i64>,
+    pub avatar: Option<String>,
+    pub nick_name: Option<String>,
+    pub role: Option<String>,
+}
+
+/// 简介里的一张图。`aspect_ratio` 缺失时为 1，不是 0。
+#[derive(Debug, Clone)]
+pub struct PgcBriefImage {
+    pub aspect_ratio: f64,
+    pub url: Option<String>,
+}
+
+/// 同系列的另一季。
+#[derive(Debug, Clone)]
+pub struct PgcSeasonBrief {
+    pub media_id: Option<i64>,
+    pub season_id: Option<i64>,
+    pub season_title: Option<String>,
+}
+
+/// 番剧 / 课堂详情。
+///
+/// 基线 `PgcInfoModel` 的五个单字段壳（`Area`/`NewEp`/`Publish`/
+/// `Rating`/`Brief`）已摊平；`stat`/`up`/`user_status` 保留结构。
+#[derive(Debug, Clone)]
+pub struct PgcSeasonDetail {
+    pub actors: Option<String>,
+    pub areas: Vec<String>,
+    pub cover: Option<String>,
+    pub episodes: Vec<PgcEpisode>,
+    pub evaluate: Option<String>,
+    pub media_id: Option<i64>,
+    pub new_ep_desc: Option<String>,
+    pub new_ep_title: Option<String>,
+    pub pub_time_show: Option<String>,
+    pub rating_score: Option<f64>,
+    pub season_id: Option<i64>,
+    pub season_title: Option<String>,
+    pub sections: Vec<PgcSection>,
+    pub stat: Option<PgcSeasonStat>,
+    pub subtitle: Option<String>,
+    pub title: Option<String>,
+    /// 响应里叫 `type`。
+    pub kind: Option<i64>,
+    pub up: Option<PgcUpInfo>,
+    pub user_status: Option<PgcUserStatus>,
+    pub cooperators: Vec<PgcCooperator>,
+    pub brief_images: Vec<PgcBriefImage>,
+    pub seasons: Vec<PgcSeasonBrief>,
+}
+
+/// 番剧 / 课堂详情。字段语义同 [`PgcIndexResult`]。
+#[derive(Debug, Clone)]
+pub struct PgcSeasonDetailResult {
+    pub data: Option<PgcSeasonDetail>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+fn episode(value: bili_domain::pgc::PgcEpisode) -> PgcEpisode {
+    PgcEpisode {
+        id: value.id,
+        aid: value.aid,
+        cid: value.cid,
+        ep_id: value.ep_id,
+        bvid: value.bvid,
+        badge: value.badge,
+        title: value.title,
+        cover: value.cover,
+        width: value.width,
+        height: value.height,
+        duration: value.duration,
+        from: value.from,
+        link: value.link,
+        long_title: value.long_title,
+        pub_time: value.pub_time,
+        share_copy: value.share_copy,
+        share_url: value.share_url,
+        show_title: value.show_title,
+        play: value.play,
+    }
+}
+
+fn season_detail(value: bili_domain::pgc::PgcSeasonDetail) -> PgcSeasonDetail {
+    PgcSeasonDetail {
+        actors: value.actors,
+        areas: value.areas,
+        cover: value.cover,
+        episodes: value.episodes.into_iter().map(episode).collect(),
+        evaluate: value.evaluate,
+        media_id: value.media_id,
+        new_ep_desc: value.new_ep_desc,
+        new_ep_title: value.new_ep_title,
+        pub_time_show: value.pub_time_show,
+        rating_score: value.rating_score,
+        season_id: value.season_id,
+        season_title: value.season_title,
+        sections: value
+            .sections
+            .into_iter()
+            .map(|s| PgcSection {
+                title: s.title,
+                episodes: s.episodes.into_iter().map(episode).collect(),
+            })
+            .collect(),
+        stat: value.stat.map(|s| PgcSeasonStat {
+            coin: s.coin,
+            favorite: s.favorite,
+            like: s.like,
+            danmaku: s.danmaku,
+            reply: s.reply,
+            share: s.share,
+            view: s.view,
+        }),
+        subtitle: value.subtitle,
+        title: value.title,
+        kind: value.kind,
+        up: value.up.map(|u| PgcUpInfo {
+            mid: u.mid,
+            avatar: u.avatar,
+            uname: u.uname,
+        }),
+        user_status: value.user_status.map(|u| PgcUserStatus {
+            favored: u.favored,
+            last_ep_id: u.last_ep_id,
+        }),
+        cooperators: value
+            .cooperators
+            .into_iter()
+            .map(|c| PgcCooperator {
+                mid: c.mid,
+                avatar: c.avatar,
+                nick_name: c.nick_name,
+                role: c.role,
+            })
+            .collect(),
+        brief_images: value
+            .brief_images
+            .into_iter()
+            .map(|i| PgcBriefImage {
+                aspect_ratio: i.aspect_ratio,
+                url: i.url,
+            })
+            .collect(),
+        seasons: value
+            .seasons
+            .into_iter()
+            .map(|s| PgcSeasonBrief {
+                media_id: s.media_id,
+                season_id: s.season_id,
+                season_title: s.season_title,
+            })
+            .collect(),
+    }
+}
+
+/// 取番剧详情（`pgcInfo`，载荷在 `result`）。
+///
+/// `season_id` 与 `ep_id` 至少要给一个，两个都缺时不发请求，直接返回
+/// `protocol` 错误。
+pub async fn fetch_pgc_season_detail(
+    context: PgcContext,
+    season_id: Option<i64>,
+    ep_id: Option<i64>,
+) -> PgcSeasonDetailResult {
+    fetch_season_detail_of(context, pgc::SeasonKind::Pgc, season_id, ep_id).await
+}
+
+/// 取课堂详情（`pugvInfo`，载荷在 `data`）。
+pub async fn fetch_pugv_season_detail(
+    context: PgcContext,
+    season_id: Option<i64>,
+    ep_id: Option<i64>,
+) -> PgcSeasonDetailResult {
+    fetch_season_detail_of(context, pgc::SeasonKind::Pugv, season_id, ep_id).await
+}
+
+async fn fetch_season_detail_of(
+    context: PgcContext,
+    kind: pgc::SeasonKind,
+    season_id: Option<i64>,
+    ep_id: Option<i64>,
+) -> PgcSeasonDetailResult {
+    let params = pgc::SeasonDetailParams { season_id, ep_id };
+    let (ctx, transport, _, _) = context.split();
+
+    let joined = init::runtime()
+        .spawn(async move { pgc::fetch_season_detail(&transport, &ctx, kind, params).await })
+        .await;
+
+    match flatten(joined) {
+        Ok(detail) => PgcSeasonDetailResult {
+            data: Some(season_detail(detail)),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => PgcSeasonDetailResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}

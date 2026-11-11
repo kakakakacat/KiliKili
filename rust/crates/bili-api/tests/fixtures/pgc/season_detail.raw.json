@@ -1,0 +1,115 @@
+{
+  "code": 0,
+  "message": "success",
+  "result": {
+    "actors": "示例声优甲\n示例声优乙",
+    "areas": [{ "id": 2, "name": "日本" }, { "name": "中国大陆" }, {}],
+    "cover": "//i0.example-cdn.test/bfs/bangumi/0000000000000000000000000000000000000201.jpg",
+    "evaluate": "示例简介：这里是番剧的剧情梗概。",
+    "media_id": 800000201,
+    "season_id": 700000201,
+    "season_title": "示例番剧 第一季",
+    "subtitle": "示例副标题",
+    "title": "示例番剧",
+    "type": 1,
+    "new_ep": { "desc": "全12话", "id": 900000212, "title": "12" },
+    "publish": { "pub_time_show": "2026-01-07 23:30", "is_finish": 1 },
+    "rating": { "count": 12345, "score": 9.7 },
+    "stat": {
+      "coins": 11,
+      "favorite": 22,
+      "likes": 33,
+      "danmakus": 44,
+      "reply": 55,
+      "share": 66,
+      "views": 77
+    },
+    "up_info": {
+      "mid": 200201,
+      "avatar": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000201.jpg",
+      "uname": "示例出品方"
+    },
+    "user_status": {
+      "favored": 1,
+      "follow": 1,
+      "progress": { "last_ep_id": 900000203, "last_time": 123 }
+    },
+    "cooperators": [
+      {
+        "mid": 200202,
+        "avatar": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000202.jpg",
+        "nick_name": "示例联合出品",
+        "role": "出品"
+      }
+    ],
+    "brief": {
+      "img": [
+        { "aspect_ratio": 1.78, "url": "//i0.example-cdn.test/bfs/bangumi/00000000000000000000000000000301.jpg" },
+        { "url": "//i0.example-cdn.test/bfs/bangumi/00000000000000000000000000000302.jpg" }
+      ]
+    },
+    "seasons": [
+      { "media_id": 800000201, "season_id": 700000201, "season_title": "第一季" },
+      { "media_id": 800000202, "season_id": 700000202, "season_title": "第二季" }
+    ],
+    "episodes": [
+      {
+        "id": 900000201,
+        "aid": 500000201,
+        "bvid": "BV1xx000000A",
+        "cid": 600000201,
+        "ep_id": 900000201,
+        "badge": "会员",
+        "title": "1",
+        "long_title": "示例标题 第一话",
+        "show_title": "第1话 示例标题 第一话",
+        "cover": "//i0.example-cdn.test/bfs/archive/00000000000000000000000000000401.jpg",
+        "dimension": { "width": 1920, "height": 1080, "rotate": 0 },
+        "duration": 1440000,
+        "from": "bangumi",
+        "link": "https://www.bilibili.com/bangumi/play/ep900000201",
+        "pub_time": 1767193800,
+        "share_copy": "示例分享文案",
+        "share_url": "https://b23.tv/ep900000201",
+        "play": 1234567
+      },
+      {
+        "id": 900000202,
+        "aid": 500000202,
+        "cid": 600000202,
+        "ep_id": 900000202,
+        "title": "2",
+        "dimension": { "width": 1920, "height": 1080, "rotate": 1 },
+        "duration": 1440000,
+        "release_date": 1767798600
+      },
+      {
+        "id": 900000203,
+        "ep_id": 900000203,
+        "title": "3"
+      }
+    ],
+    "section": [
+      {
+        "id": 1,
+        "title": "PV&其他",
+        "episodes": [
+          {
+            "id": 900000251,
+            "aid": 500000251,
+            "cid": 600000251,
+            "ep_id": 900000251,
+            "title": "PV1",
+            "long_title": "先导预告",
+            "badge": "预告",
+            "duration": 90000
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "空的一组"
+      }
+    ]
+  }
+}

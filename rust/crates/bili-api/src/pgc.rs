@@ -28,9 +28,10 @@
 
 use bili_domain::error::DomainError;
 use bili_domain::pgc::{
-    PgcConditionFilter, PgcConditionOrder, PgcConditionValue, PgcIndexCondition, PgcIndexItem,
-    PgcIndexPage, PgcRankItem, PgcReviewAuthor, PgcReviewItem, PgcReviewPage, PgcReviewStat,
-    SeasonStatus, TimelineDay, TimelineEpisode,
+    PgcBriefImage, PgcConditionFilter, PgcConditionOrder, PgcConditionValue, PgcCooperator,
+    PgcEpisode, PgcIndexCondition, PgcIndexItem, PgcIndexPage, PgcRankItem, PgcReviewAuthor,
+    PgcReviewItem, PgcReviewPage, PgcReviewStat, PgcSeasonBrief, PgcSeasonDetail, PgcSeasonStat,
+    PgcSection, PgcUpInfo, PgcUserStatus, SeasonStatus, TimelineDay, TimelineEpisode,
 };
 use serde::Deserialize;
 
@@ -56,6 +57,10 @@ pub mod path {
     pub const RANK: &str = "/pgc/web/rank/list";
     /// 排行榜（season）。载荷在 `data`。
     pub const SEASON_RANK: &str = "/pgc/season/rank/web/list";
+    /// 番剧 / 国创 / 电影详情。载荷在 `result`。
+    pub const SEASON_DETAIL: &str = "/pgc/view/web/season";
+    /// 课堂详情。载荷在 `data`。
+    pub const PUGV_SEASON_DETAIL: &str = "/pugv/view/web/season";
 }
 
 // ------------------------------------------------------------ 请求构造
@@ -875,5 +880,610 @@ mod tests {
         assert!(req.query.iter().any(|(k, v)| k == "area" && v == "2"));
         assert!(req.query.iter().any(|(k, v)| k == "pagesize" && v == "21"));
         assert!(req.query.iter().any(|(k, v)| k == "page" && v == "3"));
+    }
+}
+
+// ------------------------------------------------------ 番剧详情（第二批）
+
+/// 番剧详情的请求参数。
+///
+/// `season_id` 与 `ep_id` 至少要有一个：基线把两个都声明成 `dynamic` 并
+/// 用「null 则不写入」跳过，两个都缺时请求照发，换回一个业务错误码，
+/// 从调用链上很难回溯到「两个 id 都没取到」。
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct SeasonDetailParams {
+    pub season_id: Option<i64>,
+    pub ep_id: Option<i64>,
+}
+
+impl SeasonDetailParams {
+    const fn identifies_a_season(self) -> bool {
+        self.season_id.is_some() || self.ep_id.is_some()
+    }
+}
+
+/// 番剧详情走 `pgcInfo`，课堂详情走 `pugvInfo`。
+///
+/// 两条接口的响应结构相同，但**载荷键不同**：前者在 `result`，后者在
+/// `data`。这正是第一批给 [`crate::envelope`] 加 `unwrap_result_envelope`
+/// 的那组差异之一。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SeasonKind {
+    /// 番剧 / 国创 / 电影，载荷在 `result`。
+    Pgc,
+    /// 课堂，载荷在 `data`。
+    Pugv,
+}
+
+impl SeasonKind {
+    #[must_use]
+    pub const fn path(self) -> &'static str {
+        match self {
+            Self::Pgc => path::SEASON_DETAIL,
+            Self::Pugv => path::PUGV_SEASON_DETAIL,
+        }
+    }
+}
+
+/// 构造番剧 / 课堂详情请求。
+///
+/// 返回 `None` 表示两个 id 都没给，见 [`SeasonDetailParams`]。
+#[must_use]
+pub fn build_season_detail_request(
+    kind: SeasonKind,
+    params: SeasonDetailParams,
+) -> Option<PreparedRequest> {
+    if !params.identifies_a_season() {
+        return None;
+    }
+    let mut query = Vec::with_capacity(2);
+    push_opt(&mut query, "season_id", params.season_id);
+    push_opt(&mut query, "ep_id", params.ep_id);
+    Some(PreparedRequest {
+        path: kind.path(),
+        query,
+    })
+}
+
+#[derive(Deserialize)]
+struct SeasonDetailDto {
+    #[serde(default)]
+    actors: Option<String>,
+    #[serde(default)]
+    areas: Vec<NamedDto>,
+    #[serde(default)]
+    cover: Option<String>,
+    #[serde(default)]
+    episodes: Vec<EpisodeDto>,
+    #[serde(default)]
+    evaluate: Option<String>,
+    #[serde(default)]
+    media_id: Option<i64>,
+    #[serde(default)]
+    new_ep: Option<NewEpDto>,
+    #[serde(default)]
+    publish: Option<PublishDto>,
+    #[serde(default)]
+    rating: Option<RatingDto>,
+    #[serde(default)]
+    season_id: Option<i64>,
+    #[serde(default)]
+    season_title: Option<String>,
+    /// 单数。写成 `sections` 会静默拿不到花絮那一组。
+    #[serde(default)]
+    section: Vec<SectionDto>,
+    #[serde(default)]
+    stat: Option<SeasonStatDto>,
+    #[serde(default)]
+    subtitle: Option<String>,
+    #[serde(default)]
+    title: Option<String>,
+    #[serde(default, rename = "type")]
+    kind: Option<i64>,
+    #[serde(default)]
+    up_info: Option<UpInfoDto>,
+    #[serde(default)]
+    user_status: Option<UserStatusDto>,
+    #[serde(default)]
+    cooperators: Vec<CooperatorDto>,
+    #[serde(default)]
+    brief: Option<BriefDto>,
+    #[serde(default)]
+    seasons: Vec<SeasonBriefDto>,
+}
+
+#[derive(Deserialize)]
+struct NamedDto {
+    #[serde(default)]
+    name: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct NewEpDto {
+    #[serde(default)]
+    desc: Option<String>,
+    #[serde(default)]
+    title: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct PublishDto {
+    #[serde(default)]
+    pub_time_show: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct RatingDto {
+    #[serde(default)]
+    score: Option<f64>,
+}
+
+#[derive(Deserialize)]
+struct DimensionDto {
+    #[serde(default)]
+    width: Option<i64>,
+    #[serde(default)]
+    height: Option<i64>,
+    #[serde(default)]
+    rotate: Option<i64>,
+}
+
+#[derive(Deserialize)]
+struct EpisodeDto {
+    #[serde(default)]
+    id: Option<i64>,
+    #[serde(default)]
+    aid: Option<i64>,
+    #[serde(default)]
+    cid: Option<i64>,
+    #[serde(default)]
+    ep_id: Option<i64>,
+    #[serde(default)]
+    bvid: Option<String>,
+    #[serde(default)]
+    badge: Option<String>,
+    #[serde(default)]
+    title: Option<String>,
+    #[serde(default)]
+    cover: Option<String>,
+    #[serde(default)]
+    dimension: Option<DimensionDto>,
+    #[serde(default)]
+    duration: Option<i64>,
+    #[serde(default)]
+    from: Option<String>,
+    #[serde(default)]
+    link: Option<String>,
+    #[serde(default)]
+    long_title: Option<String>,
+    #[serde(default)]
+    pub_time: Option<i64>,
+    /// 基线取的是 `pub_time ?? release_date`：两个键表示同一件事。
+    #[serde(default)]
+    release_date: Option<i64>,
+    #[serde(default)]
+    share_copy: Option<String>,
+    #[serde(default)]
+    share_url: Option<String>,
+    #[serde(default)]
+    show_title: Option<String>,
+    #[serde(default)]
+    play: Option<i64>,
+}
+
+#[derive(Deserialize)]
+struct SectionDto {
+    #[serde(default)]
+    title: Option<String>,
+    #[serde(default)]
+    episodes: Vec<EpisodeDto>,
+}
+
+#[derive(Deserialize)]
+struct SeasonStatDto {
+    #[serde(default)]
+    coins: Option<i64>,
+    #[serde(default)]
+    favorite: Option<i64>,
+    #[serde(default)]
+    likes: Option<i64>,
+    #[serde(default)]
+    danmakus: Option<i64>,
+    #[serde(default)]
+    reply: Option<i64>,
+    #[serde(default)]
+    share: Option<i64>,
+    #[serde(default)]
+    views: Option<i64>,
+}
+
+#[derive(Deserialize)]
+struct UpInfoDto {
+    #[serde(default)]
+    mid: Option<i64>,
+    #[serde(default)]
+    avatar: Option<String>,
+    #[serde(default)]
+    uname: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct UserProgressDto {
+    #[serde(default)]
+    last_ep_id: Option<i64>,
+}
+
+#[derive(Deserialize)]
+struct UserStatusDto {
+    #[serde(default)]
+    favored: Option<i64>,
+    #[serde(default)]
+    progress: Option<UserProgressDto>,
+}
+
+#[derive(Deserialize)]
+struct CooperatorDto {
+    #[serde(default)]
+    mid: Option<i64>,
+    #[serde(default)]
+    avatar: Option<String>,
+    #[serde(default)]
+    nick_name: Option<String>,
+    #[serde(default)]
+    role: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct BriefImageDto {
+    #[serde(default)]
+    aspect_ratio: Option<f64>,
+    #[serde(default)]
+    url: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct BriefDto {
+    #[serde(default)]
+    img: Vec<BriefImageDto>,
+}
+
+#[derive(Deserialize)]
+struct SeasonBriefDto {
+    #[serde(default)]
+    media_id: Option<i64>,
+    #[serde(default)]
+    season_id: Option<i64>,
+    #[serde(default)]
+    season_title: Option<String>,
+}
+
+impl EpisodeDto {
+    fn into_domain(self) -> PgcEpisode {
+        let (width, height) = self.dimension.map_or((None, None), |d| {
+            bili_domain::pgc::apply_rotate(d.width, d.height, d.rotate)
+        });
+        PgcEpisode {
+            id: self.id,
+            aid: self.aid,
+            cid: self.cid,
+            ep_id: self.ep_id,
+            bvid: self.bvid,
+            badge: self.badge,
+            title: self.title,
+            cover: self.cover,
+            width,
+            height,
+            duration: self.duration,
+            from: self.from,
+            link: self.link,
+            long_title: self.long_title,
+            pub_time: self.pub_time.or(self.release_date),
+            share_copy: self.share_copy,
+            share_url: self.share_url,
+            show_title: self.show_title,
+            play: self.play,
+        }
+    }
+}
+
+fn season_detail_from(dto: SeasonDetailDto) -> PgcSeasonDetail {
+    PgcSeasonDetail {
+        actors: dto.actors,
+        areas: dto.areas.into_iter().filter_map(|a| a.name).collect(),
+        cover: dto.cover,
+        episodes: dto
+            .episodes
+            .into_iter()
+            .map(EpisodeDto::into_domain)
+            .collect(),
+        evaluate: dto.evaluate,
+        media_id: dto.media_id,
+        new_ep_desc: dto.new_ep.as_ref().and_then(|e| e.desc.clone()),
+        new_ep_title: dto.new_ep.and_then(|e| e.title),
+        pub_time_show: dto.publish.and_then(|p| p.pub_time_show),
+        rating_score: dto.rating.and_then(|r| r.score),
+        season_id: dto.season_id,
+        season_title: dto.season_title,
+        sections: dto
+            .section
+            .into_iter()
+            .map(|s| PgcSection {
+                title: s.title,
+                episodes: s
+                    .episodes
+                    .into_iter()
+                    .map(EpisodeDto::into_domain)
+                    .collect(),
+            })
+            .collect(),
+        stat: dto.stat.map(|s| PgcSeasonStat {
+            coin: s.coins.unwrap_or_default(),
+            favorite: s.favorite.unwrap_or_default(),
+            like: s.likes.unwrap_or_default(),
+            danmaku: s.danmakus,
+            reply: s.reply,
+            share: s.share,
+            view: s.views,
+        }),
+        subtitle: dto.subtitle,
+        title: dto.title,
+        kind: dto.kind,
+        up: dto.up_info.map(|u| PgcUpInfo {
+            mid: u.mid,
+            avatar: u.avatar,
+            uname: u.uname,
+        }),
+        user_status: dto.user_status.map(|u| PgcUserStatus {
+            favored: u.favored,
+            last_ep_id: u.progress.and_then(|p| p.last_ep_id),
+        }),
+        cooperators: dto
+            .cooperators
+            .into_iter()
+            .map(|c| PgcCooperator {
+                mid: c.mid,
+                avatar: c.avatar,
+                nick_name: c.nick_name,
+                role: c.role,
+            })
+            .collect(),
+        brief_images: dto
+            .brief
+            .map(|b| {
+                b.img
+                    .into_iter()
+                    .map(|i| PgcBriefImage {
+                        aspect_ratio: i.aspect_ratio.unwrap_or(1.0),
+                        url: i.url,
+                    })
+                    .collect()
+            })
+            .unwrap_or_default(),
+        seasons: dto
+            .seasons
+            .into_iter()
+            .map(|s| PgcSeasonBrief {
+                media_id: s.media_id,
+                season_id: s.season_id,
+                season_title: s.season_title,
+            })
+            .collect(),
+    }
+}
+
+/// 解析番剧 / 课堂详情。载荷键按 `kind` 分流。
+///
+/// # Errors
+/// 信封解包失败或结构不符。
+pub fn parse_season_detail(body: &str, kind: SeasonKind) -> Result<PgcSeasonDetail, DomainError> {
+    let dto: SeasonDetailDto = match kind {
+        SeasonKind::Pgc => unwrap_result_envelope(body)?,
+        SeasonKind::Pugv => unwrap_envelope(body)?,
+    };
+    Ok(season_detail_from(dto))
+}
+
+/// 取番剧 / 课堂详情。
+///
+/// # Errors
+/// 参数不足、传输、状态码、信封或解析失败。
+pub async fn fetch_season_detail<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    kind: SeasonKind,
+    params: SeasonDetailParams,
+) -> Result<PgcSeasonDetail, DomainError> {
+    let Some(request) = build_season_detail_request(kind, params) else {
+        return Err(DomainError::new(
+            bili_domain::error::ErrorKind::Protocol,
+            "season_id 与 ep_id 至少要有一个",
+        ));
+    };
+    let body = send(transport, ctx, &request).await?;
+    parse_season_detail(&body, kind)
+}
+
+#[cfg(test)]
+// 测试里 expect 是正确做法：前提不成立时就该崩掉并指出原因。
+#[allow(clippy::expect_used)]
+mod season_detail_tests {
+    use super::*;
+
+    fn pgc(body: &str) -> PgcSeasonDetail {
+        parse_season_detail(body, SeasonKind::Pgc).expect("样本应解析成功")
+    }
+
+    #[test]
+    fn payload_key_differs_between_the_two_endpoints() {
+        let in_result = r#"{"code":0,"message":"0","result":{"title":"甲"}}"#;
+        let in_data = r#"{"code":0,"message":"0","data":{"title":"甲"}}"#;
+
+        assert_eq!(pgc(in_result).title.as_deref(), Some("甲"));
+        assert_eq!(
+            parse_season_detail(in_data, SeasonKind::Pugv)
+                .expect("课堂详情在 data 里")
+                .title
+                .as_deref(),
+            Some("甲")
+        );
+
+        // 反向：读错键必须报错而不是静默返回一个空壳。空壳在界面上是
+        // 「这一季什么都没有」，比报错难查得多。
+        assert!(parse_season_detail(in_data, SeasonKind::Pgc).is_err());
+        assert!(parse_season_detail(in_result, SeasonKind::Pugv).is_err());
+    }
+
+    #[test]
+    fn sections_come_from_the_singular_key() {
+        let body = r#"{"code":0,"message":"0","result":{
+            "section":[{"title":"PV","episodes":[{"ep_id":1}]}],
+            "sections":[{"title":"写成复数就拿不到","episodes":[{"ep_id":2}]}]
+        }}"#;
+        let detail = pgc(body);
+        assert_eq!(detail.sections.len(), 1);
+        assert_eq!(detail.sections[0].title.as_deref(), Some("PV"));
+        assert_eq!(detail.sections[0].episodes[0].ep_id, Some(1));
+    }
+
+    #[test]
+    fn rotate_one_swaps_width_and_height() {
+        let body = r#"{"code":0,"message":"0","result":{"episodes":[
+            {"ep_id":1,"dimension":{"width":1920,"height":1080,"rotate":0}},
+            {"ep_id":2,"dimension":{"width":1920,"height":1080,"rotate":1}},
+            {"ep_id":3,"dimension":{"width":1920,"height":1080}}
+        ]}}"#;
+        let eps = pgc(body).episodes;
+        assert_eq!((eps[0].width, eps[0].height), (Some(1920), Some(1080)));
+        assert_eq!(
+            (eps[1].width, eps[1].height),
+            (Some(1080), Some(1920)),
+            "rotate==1 时响应里的宽高是交换过的"
+        );
+        assert_eq!((eps[2].width, eps[2].height), (Some(1920), Some(1080)));
+    }
+
+    #[test]
+    fn pub_time_falls_back_to_release_date() {
+        let body = r#"{"code":0,"message":"0","result":{"episodes":[
+            {"ep_id":1,"pub_time":100},
+            {"ep_id":2,"release_date":200},
+            {"ep_id":3,"pub_time":300,"release_date":400},
+            {"ep_id":4}
+        ]}}"#;
+        let eps = pgc(body).episodes;
+        assert_eq!(eps[0].pub_time, Some(100));
+        assert_eq!(eps[1].pub_time, Some(200));
+        assert_eq!(eps[2].pub_time, Some(300), "两个都有时以 pub_time 为准");
+        assert_eq!(eps[3].pub_time, None);
+    }
+
+    /// 基线 `PgcStat.fromJson` 对七个字段的处理不对称，而且键名有单复数
+    /// 之分。统一成 0 会让界面「缺失时整块隐藏」的逻辑失效。
+    #[test]
+    fn stat_defaults_are_asymmetric_and_keys_are_plural() {
+        let full = r#"{"code":0,"message":"0","result":{"stat":{
+            "coins":1,"favorite":2,"likes":3,"danmakus":4,"reply":5,"share":6,"views":7
+        }}}"#;
+        let s = pgc(full).stat.expect("有 stat");
+        assert_eq!((s.coin, s.favorite, s.like), (1, 2, 3));
+        assert_eq!(
+            (s.danmaku, s.reply, s.share, s.view),
+            (Some(4), Some(5), Some(6), Some(7))
+        );
+
+        let empty = r#"{"code":0,"message":"0","result":{"stat":{}}}"#;
+        let s = pgc(empty).stat.expect("有 stat");
+        assert_eq!((s.coin, s.favorite, s.like), (0, 0, 0), "这三个缺失取 0");
+        assert_eq!(
+            (s.danmaku, s.reply, s.share, s.view),
+            (None, None, None, None),
+            "这四个缺失保持 null，界面据此整块隐藏"
+        );
+
+        // 单数键拼成复数（或反之）都拿不到值——这组键名没有规律，
+        // 只能逐个对着响应抄。
+        let wrong = r#"{"code":0,"message":"0","result":{"stat":{
+            "coin":1,"favorites":2,"like":3,"danmaku":4,"views":7
+        }}}"#;
+        let s = pgc(wrong).stat.expect("有 stat");
+        assert_eq!((s.coin, s.favorite, s.like), (0, 0, 0));
+        assert_eq!(s.danmaku, None);
+        assert_eq!(s.view, Some(7));
+    }
+
+    #[test]
+    fn single_field_wrappers_are_flattened() {
+        let body = r#"{"code":0,"message":"0","result":{
+            "areas":[{"name":"日本"},{"name":"中国"},{}],
+            "new_ep":{"desc":"全12话","title":"12"},
+            "publish":{"pub_time_show":"2026-01-01 24:00"},
+            "rating":{"score":9.7},
+            "brief":{"img":[{"aspect_ratio":1.5,"url":"u1"},{"url":"u2"}]},
+            "user_status":{"favored":1,"progress":{"last_ep_id":42}}
+        }}"#;
+        let d = pgc(body);
+        assert_eq!(
+            d.areas,
+            vec!["日本".to_owned(), "中国".to_owned()],
+            "没有 name 的条目丢弃"
+        );
+        assert_eq!(d.new_ep_desc.as_deref(), Some("全12话"));
+        assert_eq!(d.new_ep_title.as_deref(), Some("12"));
+        assert_eq!(d.pub_time_show.as_deref(), Some("2026-01-01 24:00"));
+        assert!((d.rating_score.expect("有评分") - 9.7).abs() < f64::EPSILON);
+        assert_eq!(d.brief_images.len(), 2);
+        assert!(
+            (d.brief_images[1].aspect_ratio - 1.0).abs() < f64::EPSILON,
+            "缺失取 1，不是 0"
+        );
+        let us = d.user_status.expect("有 user_status");
+        assert_eq!((us.favored, us.last_ep_id), (Some(1), Some(42)));
+    }
+
+    #[test]
+    fn missing_ids_are_rejected_before_sending() {
+        assert!(
+            build_season_detail_request(SeasonKind::Pgc, SeasonDetailParams::default()).is_none()
+        );
+
+        let by_season = build_season_detail_request(
+            SeasonKind::Pgc,
+            SeasonDetailParams {
+                season_id: Some(1),
+                ep_id: None,
+            },
+        )
+        .expect("有 season_id 就够");
+        assert_eq!(by_season.path, path::SEASON_DETAIL);
+        assert_eq!(by_season.query_string(), "season_id=1");
+
+        let by_ep = build_season_detail_request(
+            SeasonKind::Pugv,
+            SeasonDetailParams {
+                season_id: None,
+                ep_id: Some(2),
+            },
+        )
+        .expect("有 ep_id 也够");
+        assert_eq!(by_ep.path, path::PUGV_SEASON_DETAIL);
+        assert_eq!(by_ep.query_string(), "ep_id=2");
+    }
+
+    #[test]
+    fn an_empty_season_is_not_an_error() {
+        let d = pgc(r#"{"code":0,"message":"0","result":{}}"#);
+        assert!(d.episodes.is_empty());
+        assert!(d.sections.is_empty());
+        assert!(d.seasons.is_empty());
+        assert!(d.cooperators.is_empty());
+        assert!(d.brief_images.is_empty());
+        assert!(d.stat.is_none());
+    }
+
+    #[test]
+    fn remote_error_code_is_carried_through() {
+        let body = r#"{"code":-404,"message":"啥都木有","result":null}"#;
+        let err = parse_season_detail(body, SeasonKind::Pgc).expect_err("业务错误码必须变成错误");
+        assert_eq!(err.code(), Some(-404));
     }
 }

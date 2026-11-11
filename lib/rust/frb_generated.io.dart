@@ -170,6 +170,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PgcReviewStat dco_decode_box_autoadd_pgc_review_stat(dynamic raw);
 
   @protected
+  PgcSeasonDetail dco_decode_box_autoadd_pgc_season_detail(dynamic raw);
+
+  @protected
+  PgcSeasonStat dco_decode_box_autoadd_pgc_season_stat(dynamic raw);
+
+  @protected
+  PgcUpInfo dco_decode_box_autoadd_pgc_up_info(dynamic raw);
+
+  @protected
+  PgcUserStatus dco_decode_box_autoadd_pgc_user_status(dynamic raw);
+
+  @protected
   PlayInfo dco_decode_box_autoadd_play_info(dynamic raw);
 
   @protected
@@ -366,6 +378,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<NoteItem> dco_decode_list_note_item(dynamic raw);
 
   @protected
+  List<PgcBriefImage> dco_decode_list_pgc_brief_image(dynamic raw);
+
+  @protected
   List<PgcConditionFilter> dco_decode_list_pgc_condition_filter(dynamic raw);
 
   @protected
@@ -375,6 +390,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<PgcConditionValue> dco_decode_list_pgc_condition_value(dynamic raw);
 
   @protected
+  List<PgcCooperator> dco_decode_list_pgc_cooperator(dynamic raw);
+
+  @protected
+  List<PgcEpisode> dco_decode_list_pgc_episode(dynamic raw);
+
+  @protected
   List<PgcIndexItem> dco_decode_list_pgc_index_item(dynamic raw);
 
   @protected
@@ -382,6 +403,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<PgcReviewItem> dco_decode_list_pgc_review_item(dynamic raw);
+
+  @protected
+  List<PgcSeasonBrief> dco_decode_list_pgc_season_brief(dynamic raw);
+
+  @protected
+  List<PgcSection> dco_decode_list_pgc_section(dynamic raw);
 
   @protected
   List<PlaySubtitle> dco_decode_list_play_subtitle(dynamic raw);
@@ -583,6 +610,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PgcReviewStat? dco_decode_opt_box_autoadd_pgc_review_stat(dynamic raw);
 
   @protected
+  PgcSeasonDetail? dco_decode_opt_box_autoadd_pgc_season_detail(dynamic raw);
+
+  @protected
+  PgcSeasonStat? dco_decode_opt_box_autoadd_pgc_season_stat(dynamic raw);
+
+  @protected
+  PgcUpInfo? dco_decode_opt_box_autoadd_pgc_up_info(dynamic raw);
+
+  @protected
+  PgcUserStatus? dco_decode_opt_box_autoadd_pgc_user_status(dynamic raw);
+
+  @protected
   PlayInfo? dco_decode_opt_box_autoadd_play_info(dynamic raw);
 
   @protected
@@ -708,6 +747,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<ViewPoint>? dco_decode_opt_list_view_point(dynamic raw);
 
   @protected
+  PgcBriefImage dco_decode_pgc_brief_image(dynamic raw);
+
+  @protected
   PgcConditionFilter dco_decode_pgc_condition_filter(dynamic raw);
 
   @protected
@@ -718,6 +760,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PgcContext dco_decode_pgc_context(dynamic raw);
+
+  @protected
+  PgcCooperator dco_decode_pgc_cooperator(dynamic raw);
+
+  @protected
+  PgcEpisode dco_decode_pgc_episode(dynamic raw);
 
   @protected
   PgcIndexCondition dco_decode_pgc_index_condition(dynamic raw);
@@ -759,7 +807,28 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PgcReviewStat dco_decode_pgc_review_stat(dynamic raw);
 
   @protected
+  PgcSeasonBrief dco_decode_pgc_season_brief(dynamic raw);
+
+  @protected
+  PgcSeasonDetail dco_decode_pgc_season_detail(dynamic raw);
+
+  @protected
+  PgcSeasonDetailResult dco_decode_pgc_season_detail_result(dynamic raw);
+
+  @protected
+  PgcSeasonStat dco_decode_pgc_season_stat(dynamic raw);
+
+  @protected
+  PgcSection dco_decode_pgc_section(dynamic raw);
+
+  @protected
   PgcTimelineResult dco_decode_pgc_timeline_result(dynamic raw);
+
+  @protected
+  PgcUpInfo dco_decode_pgc_up_info(dynamic raw);
+
+  @protected
+  PgcUserStatus dco_decode_pgc_user_status(dynamic raw);
 
   @protected
   PlayInfo dco_decode_play_info(dynamic raw);
@@ -1151,6 +1220,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  PgcSeasonDetail sse_decode_box_autoadd_pgc_season_detail(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcSeasonStat sse_decode_box_autoadd_pgc_season_stat(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcUpInfo sse_decode_box_autoadd_pgc_up_info(SseDeserializer deserializer);
+
+  @protected
+  PgcUserStatus sse_decode_box_autoadd_pgc_user_status(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   PlayInfo sse_decode_box_autoadd_play_info(SseDeserializer deserializer);
 
   @protected
@@ -1405,6 +1492,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<NoteItem> sse_decode_list_note_item(SseDeserializer deserializer);
 
   @protected
+  List<PgcBriefImage> sse_decode_list_pgc_brief_image(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<PgcConditionFilter> sse_decode_list_pgc_condition_filter(
     SseDeserializer deserializer,
   );
@@ -1420,6 +1512,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<PgcCooperator> sse_decode_list_pgc_cooperator(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<PgcEpisode> sse_decode_list_pgc_episode(SseDeserializer deserializer);
+
+  @protected
   List<PgcIndexItem> sse_decode_list_pgc_index_item(
     SseDeserializer deserializer,
   );
@@ -1431,6 +1531,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<PgcReviewItem> sse_decode_list_pgc_review_item(
     SseDeserializer deserializer,
   );
+
+  @protected
+  List<PgcSeasonBrief> sse_decode_list_pgc_season_brief(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<PgcSection> sse_decode_list_pgc_section(SseDeserializer deserializer);
 
   @protected
   List<PlaySubtitle> sse_decode_list_play_subtitle(
@@ -1698,6 +1806,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  PgcSeasonDetail? sse_decode_opt_box_autoadd_pgc_season_detail(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcSeasonStat? sse_decode_opt_box_autoadd_pgc_season_stat(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcUpInfo? sse_decode_opt_box_autoadd_pgc_up_info(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcUserStatus? sse_decode_opt_box_autoadd_pgc_user_status(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   PlayInfo? sse_decode_opt_box_autoadd_play_info(SseDeserializer deserializer);
 
   @protected
@@ -1877,6 +2005,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<ViewPoint>? sse_decode_opt_list_view_point(SseDeserializer deserializer);
 
   @protected
+  PgcBriefImage sse_decode_pgc_brief_image(SseDeserializer deserializer);
+
+  @protected
   PgcConditionFilter sse_decode_pgc_condition_filter(
     SseDeserializer deserializer,
   );
@@ -1893,6 +2024,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PgcContext sse_decode_pgc_context(SseDeserializer deserializer);
+
+  @protected
+  PgcCooperator sse_decode_pgc_cooperator(SseDeserializer deserializer);
+
+  @protected
+  PgcEpisode sse_decode_pgc_episode(SseDeserializer deserializer);
 
   @protected
   PgcIndexCondition sse_decode_pgc_index_condition(
@@ -1938,9 +2075,32 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PgcReviewStat sse_decode_pgc_review_stat(SseDeserializer deserializer);
 
   @protected
+  PgcSeasonBrief sse_decode_pgc_season_brief(SseDeserializer deserializer);
+
+  @protected
+  PgcSeasonDetail sse_decode_pgc_season_detail(SseDeserializer deserializer);
+
+  @protected
+  PgcSeasonDetailResult sse_decode_pgc_season_detail_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PgcSeasonStat sse_decode_pgc_season_stat(SseDeserializer deserializer);
+
+  @protected
+  PgcSection sse_decode_pgc_section(SseDeserializer deserializer);
+
+  @protected
   PgcTimelineResult sse_decode_pgc_timeline_result(
     SseDeserializer deserializer,
   );
+
+  @protected
+  PgcUpInfo sse_decode_pgc_up_info(SseDeserializer deserializer);
+
+  @protected
+  PgcUserStatus sse_decode_pgc_user_status(SseDeserializer deserializer);
 
   @protected
   PlayInfo sse_decode_play_info(SseDeserializer deserializer);
@@ -2446,6 +2606,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_pgc_season_detail(
+    PgcSeasonDetail self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_pgc_season_stat(
+    PgcSeasonStat self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_pgc_up_info(
+    PgcUpInfo self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_pgc_user_status(
+    PgcUserStatus self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_play_info(
     PlayInfo self,
     SseSerializer serializer,
@@ -2770,6 +2954,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_list_note_item(List<NoteItem> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_pgc_brief_image(
+    List<PgcBriefImage> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_pgc_condition_filter(
     List<PgcConditionFilter> self,
     SseSerializer serializer,
@@ -2788,6 +2978,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_pgc_cooperator(
+    List<PgcCooperator> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_pgc_episode(
+    List<PgcEpisode> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_pgc_index_item(
     List<PgcIndexItem> self,
     SseSerializer serializer,
@@ -2802,6 +3004,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_pgc_review_item(
     List<PgcReviewItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_pgc_season_brief(
+    List<PgcSeasonBrief> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_pgc_section(
+    List<PgcSection> self,
     SseSerializer serializer,
   );
 
@@ -3148,6 +3362,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_pgc_season_detail(
+    PgcSeasonDetail? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_pgc_season_stat(
+    PgcSeasonStat? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_pgc_up_info(
+    PgcUpInfo? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_pgc_user_status(
+    PgcUserStatus? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_play_info(
     PlayInfo? self,
     SseSerializer serializer,
@@ -3373,6 +3611,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_pgc_brief_image(PgcBriefImage self, SseSerializer serializer);
+
+  @protected
   void sse_encode_pgc_condition_filter(
     PgcConditionFilter self,
     SseSerializer serializer,
@@ -3392,6 +3633,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_pgc_context(PgcContext self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_pgc_cooperator(PgcCooperator self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_pgc_episode(PgcEpisode self, SseSerializer serializer);
 
   @protected
   void sse_encode_pgc_index_condition(
@@ -3448,10 +3695,40 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_pgc_review_stat(PgcReviewStat self, SseSerializer serializer);
 
   @protected
+  void sse_encode_pgc_season_brief(
+    PgcSeasonBrief self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_pgc_season_detail(
+    PgcSeasonDetail self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_pgc_season_detail_result(
+    PgcSeasonDetailResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_pgc_season_stat(PgcSeasonStat self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_pgc_section(PgcSection self, SseSerializer serializer);
+
+  @protected
   void sse_encode_pgc_timeline_result(
     PgcTimelineResult self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_pgc_up_info(PgcUpInfo self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_pgc_user_status(PgcUserStatus self, SseSerializer serializer);
 
   @protected
   void sse_encode_play_info(PlayInfo self, SseSerializer serializer);

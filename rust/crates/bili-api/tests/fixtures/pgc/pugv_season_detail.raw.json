@@ -1,0 +1,43 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "cover": "//i0.example-cdn.test/bfs/pugv/0000000000000000000000000000000000000501.jpg",
+    "season_id": 710000501,
+    "season_title": "示例课堂",
+    "subtitle": "示例讲师 · 共 3 讲",
+    "title": "示例课堂",
+    "type": 2,
+    "stat": {
+      "views": 8888
+    },
+    "up_info": {
+      "mid": 200501,
+      "avatar": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000501.jpg",
+      "uname": "示例讲师"
+    },
+    "episodes": [
+      {
+        "id": 910000501,
+        "aid": 510000501,
+        "cid": 610000501,
+        "ep_id": 910000501,
+        "title": "第1讲",
+        "cover": "//i0.example-cdn.test/bfs/pugv/00000000000000000000000000000601.jpg",
+        "duration": 1800,
+        "from": "pugv",
+        "release_date": 1767193800,
+        "play": 4321
+      },
+      {
+        "id": 910000502,
+        "aid": 510000502,
+        "cid": 610000502,
+        "ep_id": 910000502,
+        "title": "第2讲",
+        "duration": 2100,
+        "from": "pugv"
+      }
+    ]
+  }
+}

@@ -508,6 +508,93 @@ mod tests {
         assert!(!is_mcdn_tf("https://example.com/v1/resource/x"));
     }
 
+    // ---------------------------------------------------------------
+    // 以下九条从 `test/utils/cdn_url_test.dart` 搬来（issue #79）。
+    //
+    // 那个 Dart 测试直接测 `VideoUtils.getCdnUrl`，而选路迁到本模块后
+    // 它要跨 FFI，跑在没有原生库的 `flutter test` job 里必然报
+    // 「flutter_rust_bridge has not been initialized」。算法的判据跟着
+    // 算法走，所以用例搬到这里；跨 FFI 那层由
+    // `test/bridge/playback_bridge_test.dart` 覆盖。
+    //
+    // 三个样本原样保留，**包括 akamai 那条的签名与 `%2b`**：它要钉的正是
+    // 「一个字节都不改」，换成干净 URL 就验不出来了。
+
+    const COSOV: &str = "https://upos-sz-mirrorcosov.bilivideo.com/upgcxcode/01/video.m4s?os=cosovbv&upsig=cosov-signature";
+    const AKAMAI: &str = "https://upos-hz-mirrorakam.akamaized.net/upgcxcode/01/video.m4s?os=akam&upsig=akamai-signature&hdnts=exp%3D123~hmac%3Dabc&x=one%2btwo";
+    const MCDN: &str = "https://example.mcdn.bilivideo.cn:4483/v1/resource/video.m4s";
+
+    const AKAMAI_SVC: CdnService = CdnService::Mirror(AKAMAI_HOST);
+
+    #[test]
+    fn akamai_selects_its_signed_backup_byte_for_byte() {
+        assert_eq!(pick_cdn_url(&v(&[COSOV, AKAMAI]), AKAMAI_SVC, false, false), AKAMAI);
+    }
+
+    #[test]
+    fn akamai_keeps_a_signed_primary_url() {
+        assert_eq!(pick_cdn_url(&v(&[AKAMAI, COSOV]), AKAMAI_SVC, false, false), AKAMAI);
+    }
+
+    #[test]
+    fn akamai_finds_its_backup_after_a_relay_url() {
+        assert_eq!(
+            pick_cdn_url(&v(&[MCDN, COSOV, AKAMAI]), AKAMAI_SVC, false, false),
+            AKAMAI
+        );
+    }
+
+    #[test]
+    fn missing_akamai_backup_preserves_the_original_primary() {
+        assert_eq!(pick_cdn_url(&v(&[COSOV]), AKAMAI_SVC, false, false), COSOV);
+        assert_eq!(pick_cdn_url(&v(&[MCDN, COSOV]), AKAMAI_SVC, false, false), MCDN);
+    }
+
+    #[test]
+    fn akamai_selects_the_signed_audio_backup_too() {
+        assert_eq!(pick_cdn_url(&v(&[COSOV, AKAMAI]), AKAMAI_SVC, true, false), AKAMAI);
+    }
+
+    #[test]
+    fn disabled_audio_cdn_keeps_the_original_audio_mirror() {
+        // 音频保持原样，视频不受这个开关影响
+        assert_eq!(pick_cdn_url(&v(&[COSOV, AKAMAI]), AKAMAI_SVC, true, true), COSOV);
+        assert_eq!(pick_cdn_url(&v(&[COSOV, AKAMAI]), AKAMAI_SVC, false, true), AKAMAI);
+    }
+
+    #[test]
+    fn base_and_backup_selection_retain_their_behavior() {
+        assert_eq!(
+            pick_cdn_url(&v(&[MCDN, COSOV, AKAMAI]), CdnService::BaseUrl, false, false),
+            MCDN
+        );
+        assert_eq!(
+            pick_cdn_url(&v(&[MCDN, COSOV, AKAMAI]), CdnService::BackupUrl, false, false),
+            COSOV
+        );
+    }
+
+    #[test]
+    fn other_configured_mirrors_retain_their_behavior() {
+        assert_eq!(
+            pick_cdn_url(&v(&[COSOV, AKAMAI]), ALI, false, false),
+            "https://upos-sz-mirrorali.bilivideo.com/upgcxcode/01/video.m4s?os=cosovbv&upsig=cosov-signature"
+        );
+    }
+
+    #[test]
+    fn akamai_hostname_must_match_exactly() {
+        const LOOKALIKE: &str = "https://upos-hz-mirrorakam.akamaized.net.example.com/video.m4s";
+        assert_eq!(
+            pick_cdn_url(&v(&[COSOV, LOOKALIKE, AKAMAI]), AKAMAI_SVC, false, false),
+            AKAMAI
+        );
+        assert_eq!(
+            pick_cdn_url(&v(&[COSOV, LOOKALIKE]), AKAMAI_SVC, false, false),
+            COSOV
+        );
+    }
+
     #[test]
     fn service_table_keys_resolve() {
         assert_eq!(CdnService::from_key("baseUrl"), CdnService::BaseUrl);

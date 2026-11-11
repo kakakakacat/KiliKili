@@ -8,6 +8,7 @@ import 'package:kilikili/rust/api/dm_view.dart';
 import 'package:kilikili/rust/api/init.dart';
 import 'package:kilikili/rust/api/live.dart';
 import 'package:kilikili/rust/api/media_select.dart';
+import 'package:kilikili/rust/api/misc.dart';
 import 'package:kilikili/rust/api/play_url.dart';
 import 'package:kilikili/rust/api/play_url_fetch.dart';
 import 'package:kilikili/rust/api/reply.dart';
@@ -53,7 +54,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AiOutlinePart dco_decode_ai_outline_part(dynamic raw);
 
   @protected
+  Artist dco_decode_artist(dynamic raw);
+
+  @protected
   AudioSelectionResult dco_decode_audio_selection_result(dynamic raw);
+
+  @protected
+  BgmRecommend dco_decode_bgm_recommend(dynamic raw);
+
+  @protected
+  BgmRecommendResult dco_decode_bgm_recommend_result(dynamic raw);
+
+  @protected
+  BlackList dco_decode_black_list(dynamic raw);
+
+  @protected
+  BlackListItem dco_decode_black_list_item(dynamic raw);
+
+  @protected
+  BlackListResult dco_decode_black_list_result(dynamic raw);
 
   @protected
   bool dco_decode_bool(dynamic raw);
@@ -62,12 +81,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AiConclusion dco_decode_box_autoadd_ai_conclusion(dynamic raw);
 
   @protected
+  BlackList dco_decode_box_autoadd_black_list(dynamic raw);
+
+  @protected
   bool dco_decode_box_autoadd_bool(dynamic raw);
 
   @protected
   DanmakuEngineOptions dco_decode_box_autoadd_danmaku_engine_options(
     dynamic raw,
   );
+
+  @protected
+  DanmakuFilter dco_decode_box_autoadd_danmaku_filter(dynamic raw);
 
   @protected
   EmoteMeta dco_decode_box_autoadd_emote_meta(dynamic raw);
@@ -80,6 +105,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   HistoryNode dco_decode_box_autoadd_history_node(dynamic raw);
+
+  @protected
+  HotSongHeat dco_decode_box_autoadd_hot_song_heat(dynamic raw);
 
   @protected
   PlatformInt64 dco_decode_box_autoadd_i_64(dynamic raw);
@@ -109,7 +137,28 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveSecondPage dco_decode_box_autoadd_live_second_page(dynamic raw);
 
   @protected
+  MatchContest dco_decode_box_autoadd_match_contest(dynamic raw);
+
+  @protected
+  MatchInfo dco_decode_box_autoadd_match_info(dynamic raw);
+
+  @protected
+  MatchSeason dco_decode_box_autoadd_match_season(dynamic raw);
+
+  @protected
+  MatchTeam dco_decode_box_autoadd_match_team(dynamic raw);
+
+  @protected
   MediaScore dco_decode_box_autoadd_media_score(dynamic raw);
+
+  @protected
+  MiscContext dco_decode_box_autoadd_misc_context(dynamic raw);
+
+  @protected
+  MusicComment dco_decode_box_autoadd_music_comment(dynamic raw);
+
+  @protected
+  MusicDetail dco_decode_box_autoadd_music_detail(dynamic raw);
 
   @protected
   NoteAuthor dco_decode_box_autoadd_note_author(dynamic raw);
@@ -201,6 +250,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   DanmakuEngineOptions dco_decode_danmaku_engine_options(dynamic raw);
 
   @protected
+  DanmakuFilter dco_decode_danmaku_filter(dynamic raw);
+
+  @protected
+  DanmakuFilterResult dco_decode_danmaku_filter_result(dynamic raw);
+
+  @protected
   DanmakuOpenResult dco_decode_danmaku_open_result(dynamic raw);
 
   @protected
@@ -240,10 +295,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   FeedVideoItem dco_decode_feed_video_item(dynamic raw);
 
   @protected
+  FilterRule dco_decode_filter_rule(dynamic raw);
+
+  @protected
   FormatCandidateInput dco_decode_format_candidate_input(dynamic raw);
 
   @protected
   HistoryNode dco_decode_history_node(dynamic raw);
+
+  @protected
+  HotSongHeat dco_decode_hot_song_heat(dynamic raw);
 
   @protected
   int dco_decode_i_32(dynamic raw);
@@ -267,6 +328,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<AiOutlinePart> dco_decode_list_ai_outline_part(dynamic raw);
 
   @protected
+  List<Artist> dco_decode_list_artist(dynamic raw);
+
+  @protected
+  List<BgmRecommend> dco_decode_list_bgm_recommend(dynamic raw);
+
+  @protected
+  List<BlackListItem> dco_decode_list_black_list_item(dynamic raw);
+
+  @protected
   List<DanmakuBucketItem> dco_decode_list_danmaku_bucket_item(dynamic raw);
 
   @protected
@@ -277,6 +347,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<FeedVideoItem> dco_decode_list_feed_video_item(dynamic raw);
+
+  @protected
+  List<FilterRule> dco_decode_list_filter_rule(dynamic raw);
 
   @protected
   List<FormatCandidateInput> dco_decode_list_format_candidate_input(
@@ -303,6 +376,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<LiveSecondTag> dco_decode_list_live_second_tag(dynamic raw);
+
+  @protected
+  List<MatchContest> dco_decode_list_match_contest(dynamic raw);
 
   @protected
   List<NoteItem> dco_decode_list_note_item(dynamic raw);
@@ -362,6 +438,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SkipSegment> dco_decode_list_skip_segment(dynamic raw);
+
+  @protected
+  List<SongHeat> dco_decode_list_song_heat(dynamic raw);
 
   @protected
   List<TitleSpan> dco_decode_list_title_span(dynamic raw);
@@ -433,7 +512,34 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveSecondTag dco_decode_live_second_tag(dynamic raw);
 
   @protected
+  MatchContest dco_decode_match_contest(dynamic raw);
+
+  @protected
+  MatchInfo dco_decode_match_info(dynamic raw);
+
+  @protected
+  MatchInfoResult dco_decode_match_info_result(dynamic raw);
+
+  @protected
+  MatchSeason dco_decode_match_season(dynamic raw);
+
+  @protected
+  MatchTeam dco_decode_match_team(dynamic raw);
+
+  @protected
   MediaScore dco_decode_media_score(dynamic raw);
+
+  @protected
+  MiscContext dco_decode_misc_context(dynamic raw);
+
+  @protected
+  MusicComment dco_decode_music_comment(dynamic raw);
+
+  @protected
+  MusicDetail dco_decode_music_detail(dynamic raw);
+
+  @protected
+  MusicDetailResult dco_decode_music_detail_result(dynamic raw);
 
   @protected
   NoteAuthor dco_decode_note_author(dynamic raw);
@@ -457,7 +563,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AiConclusion? dco_decode_opt_box_autoadd_ai_conclusion(dynamic raw);
 
   @protected
+  BlackList? dco_decode_opt_box_autoadd_black_list(dynamic raw);
+
+  @protected
   bool? dco_decode_opt_box_autoadd_bool(dynamic raw);
+
+  @protected
+  DanmakuFilter? dco_decode_opt_box_autoadd_danmaku_filter(dynamic raw);
 
   @protected
   EmoteMeta? dco_decode_opt_box_autoadd_emote_meta(dynamic raw);
@@ -467,6 +579,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   HistoryNode? dco_decode_opt_box_autoadd_history_node(dynamic raw);
+
+  @protected
+  HotSongHeat? dco_decode_opt_box_autoadd_hot_song_heat(dynamic raw);
 
   @protected
   PlatformInt64? dco_decode_opt_box_autoadd_i_64(dynamic raw);
@@ -494,7 +609,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveSecondPage? dco_decode_opt_box_autoadd_live_second_page(dynamic raw);
 
   @protected
+  MatchContest? dco_decode_opt_box_autoadd_match_contest(dynamic raw);
+
+  @protected
+  MatchInfo? dco_decode_opt_box_autoadd_match_info(dynamic raw);
+
+  @protected
+  MatchSeason? dco_decode_opt_box_autoadd_match_season(dynamic raw);
+
+  @protected
+  MatchTeam? dco_decode_opt_box_autoadd_match_team(dynamic raw);
+
+  @protected
   MediaScore? dco_decode_opt_box_autoadd_media_score(dynamic raw);
+
+  @protected
+  MusicComment? dco_decode_opt_box_autoadd_music_comment(dynamic raw);
+
+  @protected
+  MusicDetail? dco_decode_opt_box_autoadd_music_detail(dynamic raw);
 
   @protected
   NoteAuthor? dco_decode_opt_box_autoadd_note_author(dynamic raw);
@@ -568,6 +701,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<AiOutlinePart>? dco_decode_opt_list_ai_outline_part(dynamic raw);
+
+  @protected
+  List<BgmRecommend>? dco_decode_opt_list_bgm_recommend(dynamic raw);
 
   @protected
   List<DanmakuBucketItem>? dco_decode_opt_list_danmaku_bucket_item(dynamic raw);
@@ -769,6 +905,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SkipSegmentsResult dco_decode_skip_segments_result(dynamic raw);
 
   @protected
+  SongHeat dco_decode_song_heat(dynamic raw);
+
+  @protected
   SponsorBlockContext dco_decode_sponsor_block_context(dynamic raw);
 
   @protected
@@ -855,9 +994,29 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AiOutlinePart sse_decode_ai_outline_part(SseDeserializer deserializer);
 
   @protected
+  Artist sse_decode_artist(SseDeserializer deserializer);
+
+  @protected
   AudioSelectionResult sse_decode_audio_selection_result(
     SseDeserializer deserializer,
   );
+
+  @protected
+  BgmRecommend sse_decode_bgm_recommend(SseDeserializer deserializer);
+
+  @protected
+  BgmRecommendResult sse_decode_bgm_recommend_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  BlackList sse_decode_black_list(SseDeserializer deserializer);
+
+  @protected
+  BlackListItem sse_decode_black_list_item(SseDeserializer deserializer);
+
+  @protected
+  BlackListResult sse_decode_black_list_result(SseDeserializer deserializer);
 
   @protected
   bool sse_decode_bool(SseDeserializer deserializer);
@@ -868,10 +1027,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  BlackList sse_decode_box_autoadd_black_list(SseDeserializer deserializer);
+
+  @protected
   bool sse_decode_box_autoadd_bool(SseDeserializer deserializer);
 
   @protected
   DanmakuEngineOptions sse_decode_box_autoadd_danmaku_engine_options(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  DanmakuFilter sse_decode_box_autoadd_danmaku_filter(
     SseDeserializer deserializer,
   );
 
@@ -886,6 +1053,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   HistoryNode sse_decode_box_autoadd_history_node(SseDeserializer deserializer);
+
+  @protected
+  HotSongHeat sse_decode_box_autoadd_hot_song_heat(
+    SseDeserializer deserializer,
+  );
 
   @protected
   PlatformInt64 sse_decode_box_autoadd_i_64(SseDeserializer deserializer);
@@ -925,7 +1097,32 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  MatchContest sse_decode_box_autoadd_match_contest(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MatchInfo sse_decode_box_autoadd_match_info(SseDeserializer deserializer);
+
+  @protected
+  MatchSeason sse_decode_box_autoadd_match_season(SseDeserializer deserializer);
+
+  @protected
+  MatchTeam sse_decode_box_autoadd_match_team(SseDeserializer deserializer);
+
+  @protected
   MediaScore sse_decode_box_autoadd_media_score(SseDeserializer deserializer);
+
+  @protected
+  MiscContext sse_decode_box_autoadd_misc_context(SseDeserializer deserializer);
+
+  @protected
+  MusicComment sse_decode_box_autoadd_music_comment(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MusicDetail sse_decode_box_autoadd_music_detail(SseDeserializer deserializer);
 
   @protected
   NoteAuthor sse_decode_box_autoadd_note_author(SseDeserializer deserializer);
@@ -1049,6 +1246,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  DanmakuFilter sse_decode_danmaku_filter(SseDeserializer deserializer);
+
+  @protected
+  DanmakuFilterResult sse_decode_danmaku_filter_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   DanmakuOpenResult sse_decode_danmaku_open_result(
     SseDeserializer deserializer,
   );
@@ -1096,12 +1301,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   FeedVideoItem sse_decode_feed_video_item(SseDeserializer deserializer);
 
   @protected
+  FilterRule sse_decode_filter_rule(SseDeserializer deserializer);
+
+  @protected
   FormatCandidateInput sse_decode_format_candidate_input(
     SseDeserializer deserializer,
   );
 
   @protected
   HistoryNode sse_decode_history_node(SseDeserializer deserializer);
+
+  @protected
+  HotSongHeat sse_decode_hot_song_heat(SseDeserializer deserializer);
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
@@ -1127,6 +1338,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<Artist> sse_decode_list_artist(SseDeserializer deserializer);
+
+  @protected
+  List<BgmRecommend> sse_decode_list_bgm_recommend(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<BlackListItem> sse_decode_list_black_list_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<DanmakuBucketItem> sse_decode_list_danmaku_bucket_item(
     SseDeserializer deserializer,
   );
@@ -1143,6 +1367,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<FeedVideoItem> sse_decode_list_feed_video_item(
     SseDeserializer deserializer,
   );
+
+  @protected
+  List<FilterRule> sse_decode_list_filter_rule(SseDeserializer deserializer);
 
   @protected
   List<FormatCandidateInput> sse_decode_list_format_candidate_input(
@@ -1179,6 +1406,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<LiveSecondTag> sse_decode_list_live_second_tag(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<MatchContest> sse_decode_list_match_contest(
     SseDeserializer deserializer,
   );
 
@@ -1262,6 +1494,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<SkipSegment> sse_decode_list_skip_segment(SseDeserializer deserializer);
 
   @protected
+  List<SongHeat> sse_decode_list_song_heat(SseDeserializer deserializer);
+
+  @protected
   List<TitleSpan> sse_decode_list_title_span(SseDeserializer deserializer);
 
   @protected
@@ -1343,7 +1578,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveSecondTag sse_decode_live_second_tag(SseDeserializer deserializer);
 
   @protected
+  MatchContest sse_decode_match_contest(SseDeserializer deserializer);
+
+  @protected
+  MatchInfo sse_decode_match_info(SseDeserializer deserializer);
+
+  @protected
+  MatchInfoResult sse_decode_match_info_result(SseDeserializer deserializer);
+
+  @protected
+  MatchSeason sse_decode_match_season(SseDeserializer deserializer);
+
+  @protected
+  MatchTeam sse_decode_match_team(SseDeserializer deserializer);
+
+  @protected
   MediaScore sse_decode_media_score(SseDeserializer deserializer);
+
+  @protected
+  MiscContext sse_decode_misc_context(SseDeserializer deserializer);
+
+  @protected
+  MusicComment sse_decode_music_comment(SseDeserializer deserializer);
+
+  @protected
+  MusicDetail sse_decode_music_detail(SseDeserializer deserializer);
+
+  @protected
+  MusicDetailResult sse_decode_music_detail_result(
+    SseDeserializer deserializer,
+  );
 
   @protected
   NoteAuthor sse_decode_note_author(SseDeserializer deserializer);
@@ -1369,7 +1633,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  BlackList? sse_decode_opt_box_autoadd_black_list(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   bool? sse_decode_opt_box_autoadd_bool(SseDeserializer deserializer);
+
+  @protected
+  DanmakuFilter? sse_decode_opt_box_autoadd_danmaku_filter(
+    SseDeserializer deserializer,
+  );
 
   @protected
   EmoteMeta? sse_decode_opt_box_autoadd_emote_meta(
@@ -1381,6 +1655,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   HistoryNode? sse_decode_opt_box_autoadd_history_node(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  HotSongHeat? sse_decode_opt_box_autoadd_hot_song_heat(
     SseDeserializer deserializer,
   );
 
@@ -1418,7 +1697,37 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  MatchContest? sse_decode_opt_box_autoadd_match_contest(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MatchInfo? sse_decode_opt_box_autoadd_match_info(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MatchSeason? sse_decode_opt_box_autoadd_match_season(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MatchTeam? sse_decode_opt_box_autoadd_match_team(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   MediaScore? sse_decode_opt_box_autoadd_media_score(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MusicComment? sse_decode_opt_box_autoadd_music_comment(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MusicDetail? sse_decode_opt_box_autoadd_music_detail(
     SseDeserializer deserializer,
   );
 
@@ -1522,6 +1831,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<AiOutlinePart>? sse_decode_opt_list_ai_outline_part(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<BgmRecommend>? sse_decode_opt_list_bgm_recommend(
     SseDeserializer deserializer,
   );
 
@@ -1779,6 +2093,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SongHeat sse_decode_song_heat(SseDeserializer deserializer);
+
+  @protected
   SponsorBlockContext sse_decode_sponsor_block_context(
     SseDeserializer deserializer,
   );
@@ -1882,8 +2199,32 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_ai_outline_part(AiOutlinePart self, SseSerializer serializer);
 
   @protected
+  void sse_encode_artist(Artist self, SseSerializer serializer);
+
+  @protected
   void sse_encode_audio_selection_result(
     AudioSelectionResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_bgm_recommend(BgmRecommend self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_bgm_recommend_result(
+    BgmRecommendResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_black_list(BlackList self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_black_list_item(BlackListItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_black_list_result(
+    BlackListResult self,
     SseSerializer serializer,
   );
 
@@ -1897,11 +2238,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_black_list(
+    BlackList self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_bool(bool self, SseSerializer serializer);
 
   @protected
   void sse_encode_box_autoadd_danmaku_engine_options(
     DanmakuEngineOptions self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_danmaku_filter(
+    DanmakuFilter self,
     SseSerializer serializer,
   );
 
@@ -1923,6 +2276,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_history_node(
     HistoryNode self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_hot_song_heat(
+    HotSongHeat self,
     SseSerializer serializer,
   );
 
@@ -1981,8 +2340,50 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_match_contest(
+    MatchContest self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_match_info(
+    MatchInfo self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_match_season(
+    MatchSeason self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_match_team(
+    MatchTeam self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_media_score(
     MediaScore self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_misc_context(
+    MiscContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_music_comment(
+    MusicComment self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_music_detail(
+    MusicDetail self,
     SseSerializer serializer,
   );
 
@@ -2155,6 +2556,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_danmaku_filter(DanmakuFilter self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_danmaku_filter_result(
+    DanmakuFilterResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_danmaku_open_result(
     DanmakuOpenResult self,
     SseSerializer serializer,
@@ -2212,6 +2622,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_feed_video_item(FeedVideoItem self, SseSerializer serializer);
 
   @protected
+  void sse_encode_filter_rule(FilterRule self, SseSerializer serializer);
+
+  @protected
   void sse_encode_format_candidate_input(
     FormatCandidateInput self,
     SseSerializer serializer,
@@ -2219,6 +2632,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_history_node(HistoryNode self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_hot_song_heat(HotSongHeat self, SseSerializer serializer);
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
@@ -2251,6 +2667,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_artist(List<Artist> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_bgm_recommend(
+    List<BgmRecommend> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_black_list_item(
+    List<BlackListItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_danmaku_bucket_item(
     List<DanmakuBucketItem> self,
     SseSerializer serializer,
@@ -2268,6 +2699,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_feed_video_item(
     List<FeedVideoItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_filter_rule(
+    List<FilterRule> self,
     SseSerializer serializer,
   );
 
@@ -2313,6 +2750,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_live_second_tag(
     List<LiveSecondTag> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_match_contest(
+    List<MatchContest> self,
     SseSerializer serializer,
   );
 
@@ -2423,6 +2866,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     List<SkipSegment> self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_list_song_heat(List<SongHeat> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_title_span(
@@ -2539,7 +2985,40 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_live_second_tag(LiveSecondTag self, SseSerializer serializer);
 
   @protected
+  void sse_encode_match_contest(MatchContest self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_match_info(MatchInfo self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_match_info_result(
+    MatchInfoResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_match_season(MatchSeason self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_match_team(MatchTeam self, SseSerializer serializer);
+
+  @protected
   void sse_encode_media_score(MediaScore self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_misc_context(MiscContext self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_music_comment(MusicComment self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_music_detail(MusicDetail self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_music_detail_result(
+    MusicDetailResult self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_note_author(NoteAuthor self, SseSerializer serializer);
@@ -2572,7 +3051,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_black_list(
+    BlackList? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_bool(bool? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_danmaku_filter(
+    DanmakuFilter? self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_opt_box_autoadd_emote_meta(
@@ -2586,6 +3077,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_history_node(
     HistoryNode? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_hot_song_heat(
+    HotSongHeat? self,
     SseSerializer serializer,
   );
 
@@ -2632,8 +3129,44 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_match_contest(
+    MatchContest? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_match_info(
+    MatchInfo? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_match_season(
+    MatchSeason? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_match_team(
+    MatchTeam? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_media_score(
     MediaScore? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_music_comment(
+    MusicComment? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_music_detail(
+    MusicDetail? self,
     SseSerializer serializer,
   );
 
@@ -2763,6 +3296,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_ai_outline_part(
     List<AiOutlinePart>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_bgm_recommend(
+    List<BgmRecommend>? self,
     SseSerializer serializer,
   );
 
@@ -3101,6 +3640,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     SkipSegmentsResult self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_song_heat(SongHeat self, SseSerializer serializer);
 
   @protected
   void sse_encode_sponsor_block_context(

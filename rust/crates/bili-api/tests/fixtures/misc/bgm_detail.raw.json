@@ -1,0 +1,53 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "music_id": "MA000000000000000000",
+    "music_title": "示例曲目",
+    "origin_artist": "示例原唱",
+    "origin_artist_list": "示例原唱 / 示例合唱",
+    "mv_aid": 900000001,
+    "mv_cid": 900000002,
+    "mv_bvid": "BV1example",
+    "mv_cover": "https://example.invalid/bfs/music/cover.jpg",
+    "wish_listen": true,
+    "wish_count": 1234,
+    "music_source": "示例来源",
+    "album": "示例专辑",
+    "artists_list": [
+      {
+        "mid": 800000001,
+        "name": "示例艺人甲",
+        "face": "https://example.invalid/bfs/face/a.jpg",
+        "identity": "作词",
+        "follower": 12345
+      },
+      {
+        "mid": 0,
+        "name": "示例艺人乙",
+        "face": "",
+        "identity": "作曲"
+      }
+    ],
+    "listen_pv": 567890,
+    "achievement": ["示例成就一", "示例成就二"],
+    "music_rank": "音乐榜第 2",
+    "recreation_rank": "二创榜第 3",
+    "hot_song_heat": {
+      "last_heat": 4321,
+      "song_heat": [
+        { "date": 20240103, "heat": 300 },
+        { "date": 20240102, "heat": 200 },
+        { "date": 20240101, "heat": 100 }
+      ]
+    },
+    "music_comment": {
+      "nums": 42,
+      "oid": 900000003,
+      "page_type": 14
+    },
+    "music_relation": 1,
+    "music_publish": "2024-01-01"
+  }
+}

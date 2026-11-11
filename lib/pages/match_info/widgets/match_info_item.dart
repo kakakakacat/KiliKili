@@ -1,6 +1,5 @@
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/models_new/match/match_info/contest.dart';
-import 'package:kilikili/models_new/match/match_info/team.dart';
+import 'package:kilikili/services/rust/rust_misc.dart';
 import 'package:kilikili/pages/match_info/widgets/team_info_layout.dart';
 import 'package:kilikili/utils/app_scheme.dart';
 import 'package:kilikili/utils/date_utils.dart';

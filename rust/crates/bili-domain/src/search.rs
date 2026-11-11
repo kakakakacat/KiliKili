@@ -273,12 +273,13 @@ pub struct SearchAllResult {
     pub users: Vec<SearchUserCard>,
     pub medias: Vec<SearchPgcItem>,
     pub activities: Vec<SearchActivityItem>,
-    /// 赛事卡片的原始 JSON。
+    /// 赛事卡片。
     ///
-    /// 不在本层展开：它的实体是 `MatchContest`，而那个模型还有一个
-    /// 未迁的生产者（`lib/http/match.dart`，S15）。按 ADR-011 决策六，
-    /// 共享模型要等所有生产者迁完才能动，这里先原样带过去。
-    pub esports_json: Option<String>,
+    /// S9 迁搜索时这里是一个原始 JSON 串：`MatchContest` 当时还有一个
+    /// 未迁的生产者（`lib/http/match.dart`）。S15（#66）把那个生产者也
+    /// 迁了，于是按 ADR-011 决策六在这里展开成实体，Dart 侧那层绕路
+    /// （`lib/models/search/search_esports.dart`）随之删除。
+    pub esports: Vec<crate::match_info::MatchContest>,
 }
 
 // ------------------------------------------------------------ 热搜 / 默认词

@@ -1,7 +1,7 @@
 import 'package:kilikili/models/horizontal_video_model.dart';
 import 'package:kilikili/models/model_owner.dart';
 import 'package:kilikili/models/model_video.dart';
-import 'package:kilikili/models/search/search_esports.dart';
+import 'package:kilikili/services/rust/rust_misc.dart' show MatchContest;
 import 'package:kilikili/services/rust/rust_search.dart'
     show
         SearchActivityItem,
@@ -58,7 +58,10 @@ class SearchVideoData extends SearchNumData<SearchVideoItemModel> {
   List<SearchUserCard>? searchUser;
   List<SearchPgcItem>? searchMedia;
   List<SearchActivityItem>? searchActivity;
-  SearchEsports? searchEsports;
+
+  /// 赛事卡片。S15（#66）把赛事详情也迁了之后，这里直接是 typed 结构，
+  /// 不再经过 `SearchEsports` 那层 JSON 绕路。
+  List<MatchContest>? searchEsports;
 }
 
 class SearchUserData extends SearchNumData<SearchUserItem> {

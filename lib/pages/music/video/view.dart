@@ -3,7 +3,7 @@ import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/image_type.dart';
-import 'package:kilikili/models_new/music/bgm_recommend_list.dart';
+import 'package:kilikili/services/rust/rust_misc.dart';
 import 'package:kilikili/pages/music/video/controller.dart';
 import 'package:kilikili/pages/music/widget/music_video_card_h.dart';
 import 'package:kilikili/utils/extension/get_ext.dart';

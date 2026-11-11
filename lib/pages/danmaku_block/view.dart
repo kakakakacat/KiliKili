@@ -5,7 +5,7 @@ import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:kilikili/models/common/dm_block_type.dart';
-import 'package:kilikili/models/user/danmaku_block.dart';
+import 'package:kilikili/services/rust/rust_misc.dart';
 import 'package:kilikili/models/user/danmaku_rule.dart';
 import 'package:kilikili/pages/danmaku_block/controller.dart';
 import 'package:kilikili/plugin/pl_player/controller.dart';
@@ -99,7 +99,7 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
     );
   }
 
-  Widget tabViewBuilder(int tabIndex, List<SimpleRule> list) {
+  Widget tabViewBuilder(int tabIndex, List<FilterRule> list) {
     if (list.isEmpty) {
       return scrollableError;
     }
@@ -107,7 +107,7 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
       itemCount: list.length,
       padding: .only(bottom: padding.bottom + 100),
       itemBuilder: (context, itemIndex) {
-        final SimpleRule item = list[itemIndex];
+        final FilterRule item = list[itemIndex];
         final child = iconButton(
           iconSize: 20,
           tooltip: '删除',

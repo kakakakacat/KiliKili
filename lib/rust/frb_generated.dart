@@ -3,10 +3,14 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
+import 'package:kilikili/rust/api/danmaku.dart';
+import 'package:kilikili/rust/api/dm_view.dart';
 import 'package:kilikili/rust/api/init.dart';
+import 'package:kilikili/rust/api/media_select.dart';
 import 'package:kilikili/rust/api/play_url.dart';
 import 'package:kilikili/rust/api/play_url_fetch.dart';
 import 'package:kilikili/rust/api/search_suggest.dart';
+import 'package:kilikili/rust/api/subtitle.dart';
 import 'package:kilikili/rust/api/transport.dart';
 import 'package:kilikili/rust/api/video_detail.dart';
 import 'package:kilikili/rust/api/video_detail_fetch.dart';
@@ -77,7 +81,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 1977092375;
+  int get rustContentHash => 281631958;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -89,7 +93,31 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
+  Future<SubtitleConvert> crateApiSubtitleConvertSubtitle({
+    required String body,
+    required int format,
+  });
+
   Future<String> crateApiInitCoreVersion();
+
+  List<DanmakuBucketItem>? crateApiDanmakuDanmakuBucket({
+    required PlatformInt64 sessionId,
+    required int progressMs,
+  });
+
+  void crateApiDanmakuDanmakuClose({required PlatformInt64 sessionId});
+
+  DanmakuOpenResult crateApiDanmakuDanmakuOpen({
+    required DanmakuEngineOptions options,
+  });
+
+  int crateApiDanmakuDanmakuOpenSessionCount();
+
+  Future<DanmakuPushResult> crateApiDanmakuDanmakuPushSegment({
+    required PlatformInt64 sessionId,
+    required PlatformInt64 segmentIndex,
+    required List<int> bytes,
+  });
 
   Future<PlayUrlFetch> crateApiPlayUrlFetchFetchPlayUrl({
     required String baseUrl,
@@ -115,6 +143,10 @@ abstract class RustLibApi extends BaseApi {
 
   Future<String> crateApiInitInitApp({required String maxLevel});
 
+  Future<DmViewSubtitlesParse> crateApiDmViewParseDmViewSubtitles({
+    required List<int> bytes,
+  });
+
   Future<PlayUrlParse> crateApiPlayUrlParsePlayUrl({
     required String body,
     required String videoType,
@@ -127,6 +159,19 @@ abstract class RustLibApi extends BaseApi {
 
   Future<VideoDetailParse> crateApiVideoDetailParseVideoDetail({
     required String body,
+  });
+
+  AudioSelectionResult crateApiMediaSelectSelectTargetAudio({
+    required Int64List audioIds,
+    required PlatformInt64 preferQuality,
+  });
+
+  VideoSelectionResult crateApiMediaSelectSelectTargetVideo({
+    required List<VideoCandidateInput> videos,
+    required PlatformInt64 preferQuality,
+    Int64List? acceptQuality,
+    required List<FormatCandidateInput> supportFormats,
+    required List<int> preferCodecIndices,
   });
 
   Future<String?> crateApiWbiWbiMixinKey({
@@ -149,6 +194,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
+  Future<SubtitleConvert> crateApiSubtitleConvertSubtitle({
+    required String body,
+    required int format,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(body, serializer);
+          sse_encode_i_32(format, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 1,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_subtitle_convert,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiSubtitleConvertSubtitleConstMeta,
+        argValues: [body, format],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSubtitleConvertSubtitleConstMeta =>
+      const TaskConstMeta(
+        debugName: "convert_subtitle",
+        argNames: ["body", "format"],
+      );
+
+  @override
   Future<String> crateApiInitCoreVersion() {
     return handler.executeNormal(
       NormalTask(
@@ -157,7 +237,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 1,
+            funcId: 2,
             port: port_,
           );
         },
@@ -176,6 +256,151 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     debugName: "core_version",
     argNames: [],
   );
+
+  @override
+  List<DanmakuBucketItem>? crateApiDanmakuDanmakuBucket({
+    required PlatformInt64 sessionId,
+    required int progressMs,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_i_64(sessionId, serializer);
+          sse_encode_i_32(progressMs, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_opt_list_danmaku_bucket_item,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiDanmakuDanmakuBucketConstMeta,
+        argValues: [sessionId, progressMs],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiDanmakuDanmakuBucketConstMeta =>
+      const TaskConstMeta(
+        debugName: "danmaku_bucket",
+        argNames: ["sessionId", "progressMs"],
+      );
+
+  @override
+  void crateApiDanmakuDanmakuClose({required PlatformInt64 sessionId}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_i_64(sessionId, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 4)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiDanmakuDanmakuCloseConstMeta,
+        argValues: [sessionId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiDanmakuDanmakuCloseConstMeta =>
+      const TaskConstMeta(
+        debugName: "danmaku_close",
+        argNames: ["sessionId"],
+      );
+
+  @override
+  DanmakuOpenResult crateApiDanmakuDanmakuOpen({
+    required DanmakuEngineOptions options,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_danmaku_engine_options(options, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 5)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_danmaku_open_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiDanmakuDanmakuOpenConstMeta,
+        argValues: [options],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiDanmakuDanmakuOpenConstMeta => const TaskConstMeta(
+    debugName: "danmaku_open",
+    argNames: ["options"],
+  );
+
+  @override
+  int crateApiDanmakuDanmakuOpenSessionCount() {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 6)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_u_32,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiDanmakuDanmakuOpenSessionCountConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiDanmakuDanmakuOpenSessionCountConstMeta =>
+      const TaskConstMeta(
+        debugName: "danmaku_open_session_count",
+        argNames: [],
+      );
+
+  @override
+  Future<DanmakuPushResult> crateApiDanmakuDanmakuPushSegment({
+    required PlatformInt64 sessionId,
+    required PlatformInt64 segmentIndex,
+    required List<int> bytes,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_i_64(sessionId, serializer);
+          sse_encode_i_64(segmentIndex, serializer);
+          sse_encode_list_prim_u_8_loose(bytes, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 7,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_danmaku_push_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiDanmakuDanmakuPushSegmentConstMeta,
+        argValues: [sessionId, segmentIndex, bytes],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiDanmakuDanmakuPushSegmentConstMeta =>
+      const TaskConstMeta(
+        debugName: "danmaku_push_segment",
+        argNames: ["sessionId", "segmentIndex", "bytes"],
+      );
 
   @override
   Future<PlayUrlFetch> crateApiPlayUrlFetchFetchPlayUrl({
@@ -203,7 +428,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 2,
+            funcId: 8,
             port: port_,
           );
         },
@@ -268,7 +493,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 3,
+            funcId: 9,
             port: port_,
           );
         },
@@ -317,7 +542,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 4,
+            funcId: 10,
             port: port_,
           );
         },
@@ -338,6 +563,39 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
+  Future<DmViewSubtitlesParse> crateApiDmViewParseDmViewSubtitles({
+    required List<int> bytes,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_list_prim_u_8_loose(bytes, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 11,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_dm_view_subtitles_parse,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiDmViewParseDmViewSubtitlesConstMeta,
+        argValues: [bytes],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiDmViewParseDmViewSubtitlesConstMeta =>
+      const TaskConstMeta(
+        debugName: "parse_dm_view_subtitles",
+        argNames: ["bytes"],
+      );
+
+  @override
   Future<PlayUrlParse> crateApiPlayUrlParsePlayUrl({
     required String body,
     required String videoType,
@@ -353,7 +611,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 5,
+            funcId: 12,
             port: port_,
           );
         },
@@ -386,7 +644,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 6,
+            funcId: 13,
             port: port_,
           );
         },
@@ -419,7 +677,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 7,
+            funcId: 14,
             port: port_,
           );
         },
@@ -441,6 +699,84 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  AudioSelectionResult crateApiMediaSelectSelectTargetAudio({
+    required Int64List audioIds,
+    required PlatformInt64 preferQuality,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_list_prim_i_64_strict(audioIds, serializer);
+          sse_encode_i_64(preferQuality, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 15)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_audio_selection_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiMediaSelectSelectTargetAudioConstMeta,
+        argValues: [audioIds, preferQuality],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiMediaSelectSelectTargetAudioConstMeta =>
+      const TaskConstMeta(
+        debugName: "select_target_audio",
+        argNames: ["audioIds", "preferQuality"],
+      );
+
+  @override
+  VideoSelectionResult crateApiMediaSelectSelectTargetVideo({
+    required List<VideoCandidateInput> videos,
+    required PlatformInt64 preferQuality,
+    Int64List? acceptQuality,
+    required List<FormatCandidateInput> supportFormats,
+    required List<int> preferCodecIndices,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_list_video_candidate_input(videos, serializer);
+          sse_encode_i_64(preferQuality, serializer);
+          sse_encode_opt_list_prim_i_64_strict(acceptQuality, serializer);
+          sse_encode_list_format_candidate_input(supportFormats, serializer);
+          sse_encode_list_prim_i_32_loose(preferCodecIndices, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 16)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_video_selection_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiMediaSelectSelectTargetVideoConstMeta,
+        argValues: [
+          videos,
+          preferQuality,
+          acceptQuality,
+          supportFormats,
+          preferCodecIndices,
+        ],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiMediaSelectSelectTargetVideoConstMeta =>
+      const TaskConstMeta(
+        debugName: "select_target_video",
+        argNames: [
+          "videos",
+          "preferQuality",
+          "acceptQuality",
+          "supportFormats",
+          "preferCodecIndices",
+        ],
+      );
+
+  @override
   Future<String?> crateApiWbiWbiMixinKey({
     required String imgKey,
     required String subKey,
@@ -454,7 +790,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 8,
+            funcId: 17,
             port: port_,
           );
         },
@@ -488,7 +824,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 9,
+            funcId: 18,
             port: port_,
           );
         },
@@ -515,9 +851,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  AudioSelectionResult dco_decode_audio_selection_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return AudioSelectionResult(
+      index: dco_decode_opt_box_autoadd_u_32(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+    );
+  }
+
+  @protected
   bool dco_decode_bool(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as bool;
+  }
+
+  @protected
+  DanmakuEngineOptions dco_decode_box_autoadd_danmaku_engine_options(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_danmaku_engine_options(raw);
   }
 
   @protected
@@ -545,9 +902,168 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  int dco_decode_box_autoadd_u_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
+
+  @protected
+  VideoSelectionOutput dco_decode_box_autoadd_video_selection_output(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_video_selection_output(raw);
+  }
+
+  @protected
+  DanmakuBucketItem dco_decode_danmaku_bucket_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 12)
+      throw Exception('unexpected arr length: expect 12 but see ${arr.length}');
+    return DanmakuBucketItem(
+      id: dco_decode_i_64(arr[0]),
+      progress: dco_decode_i_32(arr[1]),
+      mode: dco_decode_i_32(arr[2]),
+      fontsize: dco_decode_i_32(arr[3]),
+      color: dco_decode_u_32(arr[4]),
+      midHash: dco_decode_String(arr[5]),
+      content: dco_decode_String(arr[6]),
+      weight: dco_decode_i_32(arr[7]),
+      likeCount: dco_decode_i_64(arr[8]),
+      colorful: dco_decode_i_32(arr[9]),
+      count: dco_decode_i_32(arr[10]),
+      isSelf: dco_decode_bool(arr[11]),
+    );
+  }
+
+  @protected
+  DanmakuEngineOptions dco_decode_danmaku_engine_options(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return DanmakuEngineOptions(
+      isLogin: dco_decode_bool(arr[0]),
+      selfMidHash: dco_decode_String(arr[1]),
+      merge: dco_decode_bool(arr[2]),
+      blockKeywords: dco_decode_list_String(arr[3]),
+      blockRegexes: dco_decode_list_String(arr[4]),
+      blockUids: dco_decode_list_String(arr[5]),
+    );
+  }
+
+  @protected
+  DanmakuOpenResult dco_decode_danmaku_open_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return DanmakuOpenResult(
+      sessionId: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+    );
+  }
+
+  @protected
+  DanmakuPushResult dco_decode_danmaku_push_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    return DanmakuPushResult(
+      ok: dco_decode_bool(arr[0]),
+      alreadyLoaded: dco_decode_bool(arr[1]),
+      decoded: dco_decode_u_32(arr[2]),
+      total: dco_decode_u_32(arr[3]),
+      state: dco_decode_i_32(arr[4]),
+      errorKind: dco_decode_opt_String(arr[5]),
+      errorDetail: dco_decode_opt_String(arr[6]),
+    );
+  }
+
+  @protected
+  DmViewSubtitlesParse dco_decode_dm_view_subtitles_parse(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return DmViewSubtitlesParse(
+      json: dco_decode_opt_String(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+    );
+  }
+
+  @protected
+  FormatCandidateInput dco_decode_format_candidate_input(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return FormatCandidateInput(
+      quality: dco_decode_i_64(arr[0]),
+      codecs: dco_decode_opt_list_String(arr[1]),
+    );
+  }
+
+  @protected
+  int dco_decode_i_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
+
+  @protected
   PlatformInt64 dco_decode_i_64(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dcoDecodeI64(raw);
+  }
+
+  @protected
+  List<String> dco_decode_list_String(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_String).toList();
+  }
+
+  @protected
+  List<DanmakuBucketItem> dco_decode_list_danmaku_bucket_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_danmaku_bucket_item).toList();
+  }
+
+  @protected
+  List<FormatCandidateInput> dco_decode_list_format_candidate_input(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>)
+        .map(dco_decode_format_candidate_input)
+        .toList();
+  }
+
+  @protected
+  List<int> dco_decode_list_prim_i_32_loose(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as List<int>;
+  }
+
+  @protected
+  Int32List dco_decode_list_prim_i_32_strict(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as Int32List;
+  }
+
+  @protected
+  Int64List dco_decode_list_prim_i_64_strict(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeInt64List(raw);
+  }
+
+  @protected
+  List<int> dco_decode_list_prim_u_8_loose(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as List<int>;
   }
 
   @protected
@@ -560,6 +1076,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<(String, String)> dco_decode_list_record_string_string(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_record_string_string).toList();
+  }
+
+  @protected
+  List<VideoCandidateInput> dco_decode_list_video_candidate_input(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>)
+        .map(dco_decode_video_candidate_input)
+        .toList();
   }
 
   @protected
@@ -578,6 +1102,42 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   int? dco_decode_opt_box_autoadd_u_16(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_u_16(raw);
+  }
+
+  @protected
+  int? dco_decode_opt_box_autoadd_u_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_u_32(raw);
+  }
+
+  @protected
+  VideoSelectionOutput? dco_decode_opt_box_autoadd_video_selection_output(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null
+        ? null
+        : dco_decode_box_autoadd_video_selection_output(raw);
+  }
+
+  @protected
+  List<String>? dco_decode_opt_list_String(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_list_String(raw);
+  }
+
+  @protected
+  List<DanmakuBucketItem>? dco_decode_opt_list_danmaku_bucket_item(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_list_danmaku_bucket_item(raw);
+  }
+
+  @protected
+  Int64List? dco_decode_opt_list_prim_i_64_strict(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_list_prim_i_64_strict(raw);
   }
 
   @protected
@@ -655,6 +1215,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SubtitleConvert dco_decode_subtitle_convert(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return SubtitleConvert(
+      text: dco_decode_opt_String(arr[0]),
+      missingBody: dco_decode_bool(arr[1]),
+      errorKind: dco_decode_opt_String(arr[2]),
+      errorDetail: dco_decode_opt_String(arr[3]),
+    );
+  }
+
+  @protected
   TransportSettings dco_decode_transport_settings(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -701,6 +1275,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  VideoCandidateInput dco_decode_video_candidate_input(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return VideoCandidateInput(
+      id: dco_decode_i_64(arr[0]),
+      codecs: dco_decode_opt_String(arr[1]),
+    );
+  }
+
+  @protected
   VideoDetailFetch dco_decode_video_detail_fetch(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -727,6 +1313,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  VideoSelectionOutput dco_decode_video_selection_output(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return VideoSelectionOutput(
+      quality: dco_decode_i_64(arr[0]),
+      formatIndex: dco_decode_u_32(arr[1]),
+      videoIndex: dco_decode_u_32(arr[2]),
+      codecIndex: dco_decode_i_32(arr[3]),
+    );
+  }
+
+  @protected
+  VideoSelectionResult dco_decode_video_selection_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return VideoSelectionResult(
+      selection: dco_decode_opt_box_autoadd_video_selection_output(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+    );
+  }
+
+  @protected
   String sse_decode_String(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_list_prim_u_8_strict(deserializer);
@@ -734,9 +1347,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  AudioSelectionResult sse_decode_audio_selection_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_index = sse_decode_opt_box_autoadd_u_32(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    return AudioSelectionResult(
+      index: var_index,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+    );
+  }
+
+  @protected
   bool sse_decode_bool(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getUint8() != 0;
+  }
+
+  @protected
+  DanmakuEngineOptions sse_decode_box_autoadd_danmaku_engine_options(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_danmaku_engine_options(deserializer));
   }
 
   @protected
@@ -768,9 +1404,214 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  int sse_decode_box_autoadd_u_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_u_32(deserializer));
+  }
+
+  @protected
+  VideoSelectionOutput sse_decode_box_autoadd_video_selection_output(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_video_selection_output(deserializer));
+  }
+
+  @protected
+  DanmakuBucketItem sse_decode_danmaku_bucket_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_i_64(deserializer);
+    var var_progress = sse_decode_i_32(deserializer);
+    var var_mode = sse_decode_i_32(deserializer);
+    var var_fontsize = sse_decode_i_32(deserializer);
+    var var_color = sse_decode_u_32(deserializer);
+    var var_midHash = sse_decode_String(deserializer);
+    var var_content = sse_decode_String(deserializer);
+    var var_weight = sse_decode_i_32(deserializer);
+    var var_likeCount = sse_decode_i_64(deserializer);
+    var var_colorful = sse_decode_i_32(deserializer);
+    var var_count = sse_decode_i_32(deserializer);
+    var var_isSelf = sse_decode_bool(deserializer);
+    return DanmakuBucketItem(
+      id: var_id,
+      progress: var_progress,
+      mode: var_mode,
+      fontsize: var_fontsize,
+      color: var_color,
+      midHash: var_midHash,
+      content: var_content,
+      weight: var_weight,
+      likeCount: var_likeCount,
+      colorful: var_colorful,
+      count: var_count,
+      isSelf: var_isSelf,
+    );
+  }
+
+  @protected
+  DanmakuEngineOptions sse_decode_danmaku_engine_options(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_isLogin = sse_decode_bool(deserializer);
+    var var_selfMidHash = sse_decode_String(deserializer);
+    var var_merge = sse_decode_bool(deserializer);
+    var var_blockKeywords = sse_decode_list_String(deserializer);
+    var var_blockRegexes = sse_decode_list_String(deserializer);
+    var var_blockUids = sse_decode_list_String(deserializer);
+    return DanmakuEngineOptions(
+      isLogin: var_isLogin,
+      selfMidHash: var_selfMidHash,
+      merge: var_merge,
+      blockKeywords: var_blockKeywords,
+      blockRegexes: var_blockRegexes,
+      blockUids: var_blockUids,
+    );
+  }
+
+  @protected
+  DanmakuOpenResult sse_decode_danmaku_open_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_sessionId = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    return DanmakuOpenResult(
+      sessionId: var_sessionId,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+    );
+  }
+
+  @protected
+  DanmakuPushResult sse_decode_danmaku_push_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_ok = sse_decode_bool(deserializer);
+    var var_alreadyLoaded = sse_decode_bool(deserializer);
+    var var_decoded = sse_decode_u_32(deserializer);
+    var var_total = sse_decode_u_32(deserializer);
+    var var_state = sse_decode_i_32(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    return DanmakuPushResult(
+      ok: var_ok,
+      alreadyLoaded: var_alreadyLoaded,
+      decoded: var_decoded,
+      total: var_total,
+      state: var_state,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+    );
+  }
+
+  @protected
+  DmViewSubtitlesParse sse_decode_dm_view_subtitles_parse(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_json = sse_decode_opt_String(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    return DmViewSubtitlesParse(
+      json: var_json,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+    );
+  }
+
+  @protected
+  FormatCandidateInput sse_decode_format_candidate_input(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_quality = sse_decode_i_64(deserializer);
+    var var_codecs = sse_decode_opt_list_String(deserializer);
+    return FormatCandidateInput(quality: var_quality, codecs: var_codecs);
+  }
+
+  @protected
+  int sse_decode_i_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getInt32();
+  }
+
+  @protected
   PlatformInt64 sse_decode_i_64(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getPlatformInt64();
+  }
+
+  @protected
+  List<String> sse_decode_list_String(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <String>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_String(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<DanmakuBucketItem> sse_decode_list_danmaku_bucket_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <DanmakuBucketItem>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_danmaku_bucket_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<FormatCandidateInput> sse_decode_list_format_candidate_input(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <FormatCandidateInput>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_format_candidate_input(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<int> sse_decode_list_prim_i_32_loose(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var len_ = sse_decode_i_32(deserializer);
+    return deserializer.buffer.getInt32List(len_);
+  }
+
+  @protected
+  Int32List sse_decode_list_prim_i_32_strict(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var len_ = sse_decode_i_32(deserializer);
+    return deserializer.buffer.getInt32List(len_);
+  }
+
+  @protected
+  Int64List sse_decode_list_prim_i_64_strict(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var len_ = sse_decode_i_32(deserializer);
+    return deserializer.buffer.getInt64List(len_);
+  }
+
+  @protected
+  List<int> sse_decode_list_prim_u_8_loose(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var len_ = sse_decode_i_32(deserializer);
+    return deserializer.buffer.getUint8List(len_);
   }
 
   @protected
@@ -790,6 +1631,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <(String, String)>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_record_string_string(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<VideoCandidateInput> sse_decode_list_video_candidate_input(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <VideoCandidateInput>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_video_candidate_input(deserializer));
     }
     return ans_;
   }
@@ -822,6 +1677,67 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_box_autoadd_u_16(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_u_32(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  VideoSelectionOutput? sse_decode_opt_box_autoadd_video_selection_output(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_video_selection_output(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  List<String>? sse_decode_opt_list_String(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_list_String(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  List<DanmakuBucketItem>? sse_decode_opt_list_danmaku_bucket_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_list_danmaku_bucket_item(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  Int64List? sse_decode_opt_list_prim_i_64_strict(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_list_prim_i_64_strict(deserializer));
     } else {
       return null;
     }
@@ -910,6 +1826,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SubtitleConvert sse_decode_subtitle_convert(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_text = sse_decode_opt_String(deserializer);
+    var var_missingBody = sse_decode_bool(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    return SubtitleConvert(
+      text: var_text,
+      missingBody: var_missingBody,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+    );
+  }
+
+  @protected
   TransportSettings sse_decode_transport_settings(
     SseDeserializer deserializer,
   ) {
@@ -960,6 +1891,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  VideoCandidateInput sse_decode_video_candidate_input(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_i_64(deserializer);
+    var var_codecs = sse_decode_opt_String(deserializer);
+    return VideoCandidateInput(id: var_id, codecs: var_codecs);
+  }
+
+  @protected
   VideoDetailFetch sse_decode_video_detail_fetch(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_json = sse_decode_opt_String(deserializer);
@@ -986,9 +1927,37 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  int sse_decode_i_32(SseDeserializer deserializer) {
+  VideoSelectionOutput sse_decode_video_selection_output(
+    SseDeserializer deserializer,
+  ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getInt32();
+    var var_quality = sse_decode_i_64(deserializer);
+    var var_formatIndex = sse_decode_u_32(deserializer);
+    var var_videoIndex = sse_decode_u_32(deserializer);
+    var var_codecIndex = sse_decode_i_32(deserializer);
+    return VideoSelectionOutput(
+      quality: var_quality,
+      formatIndex: var_formatIndex,
+      videoIndex: var_videoIndex,
+      codecIndex: var_codecIndex,
+    );
+  }
+
+  @protected
+  VideoSelectionResult sse_decode_video_selection_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_selection = sse_decode_opt_box_autoadd_video_selection_output(
+      deserializer,
+    );
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    return VideoSelectionResult(
+      selection: var_selection,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+    );
   }
 
   @protected
@@ -998,9 +1967,29 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_audio_selection_result(
+    AudioSelectionResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_u_32(self.index, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+  }
+
+  @protected
   void sse_encode_bool(bool self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putUint8(self ? 1 : 0);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_danmaku_engine_options(
+    DanmakuEngineOptions self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_danmaku_engine_options(self, serializer);
   }
 
   @protected
@@ -1037,9 +2026,188 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_32(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_video_selection_output(
+    VideoSelectionOutput self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_video_selection_output(self, serializer);
+  }
+
+  @protected
+  void sse_encode_danmaku_bucket_item(
+    DanmakuBucketItem self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_64(self.id, serializer);
+    sse_encode_i_32(self.progress, serializer);
+    sse_encode_i_32(self.mode, serializer);
+    sse_encode_i_32(self.fontsize, serializer);
+    sse_encode_u_32(self.color, serializer);
+    sse_encode_String(self.midHash, serializer);
+    sse_encode_String(self.content, serializer);
+    sse_encode_i_32(self.weight, serializer);
+    sse_encode_i_64(self.likeCount, serializer);
+    sse_encode_i_32(self.colorful, serializer);
+    sse_encode_i_32(self.count, serializer);
+    sse_encode_bool(self.isSelf, serializer);
+  }
+
+  @protected
+  void sse_encode_danmaku_engine_options(
+    DanmakuEngineOptions self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_bool(self.isLogin, serializer);
+    sse_encode_String(self.selfMidHash, serializer);
+    sse_encode_bool(self.merge, serializer);
+    sse_encode_list_String(self.blockKeywords, serializer);
+    sse_encode_list_String(self.blockRegexes, serializer);
+    sse_encode_list_String(self.blockUids, serializer);
+  }
+
+  @protected
+  void sse_encode_danmaku_open_result(
+    DanmakuOpenResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.sessionId, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+  }
+
+  @protected
+  void sse_encode_danmaku_push_result(
+    DanmakuPushResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_bool(self.ok, serializer);
+    sse_encode_bool(self.alreadyLoaded, serializer);
+    sse_encode_u_32(self.decoded, serializer);
+    sse_encode_u_32(self.total, serializer);
+    sse_encode_i_32(self.state, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+  }
+
+  @protected
+  void sse_encode_dm_view_subtitles_parse(
+    DmViewSubtitlesParse self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.json, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+  }
+
+  @protected
+  void sse_encode_format_candidate_input(
+    FormatCandidateInput self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_64(self.quality, serializer);
+    sse_encode_opt_list_String(self.codecs, serializer);
+  }
+
+  @protected
+  void sse_encode_i_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putInt32(self);
+  }
+
+  @protected
   void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putPlatformInt64(self);
+  }
+
+  @protected
+  void sse_encode_list_String(List<String> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_String(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_danmaku_bucket_item(
+    List<DanmakuBucketItem> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_danmaku_bucket_item(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_format_candidate_input(
+    List<FormatCandidateInput> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_format_candidate_input(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_prim_i_32_loose(
+    List<int> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    serializer.buffer.putInt32List(
+      self is Int32List ? self : Int32List.fromList(self),
+    );
+  }
+
+  @protected
+  void sse_encode_list_prim_i_32_strict(
+    Int32List self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    serializer.buffer.putInt32List(self);
+  }
+
+  @protected
+  void sse_encode_list_prim_i_64_strict(
+    Int64List self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    serializer.buffer.putInt64List(self);
+  }
+
+  @protected
+  void sse_encode_list_prim_u_8_loose(
+    List<int> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    serializer.buffer.putUint8List(
+      self is Uint8List ? self : Uint8List.fromList(self),
+    );
   }
 
   @protected
@@ -1061,6 +2229,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_record_string_string(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_video_candidate_input(
+    List<VideoCandidateInput> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_video_candidate_input(item, serializer);
     }
   }
 
@@ -1094,6 +2274,68 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_box_autoadd_u_16(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_u_32(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_video_selection_output(
+    VideoSelectionOutput? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_video_selection_output(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_list_String(
+    List<String>? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_list_String(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_list_danmaku_bucket_item(
+    List<DanmakuBucketItem>? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_list_danmaku_bucket_item(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_list_prim_i_64_strict(
+    Int64List? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_list_prim_i_64_strict(self, serializer);
     }
   }
 
@@ -1155,6 +2397,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_subtitle_convert(
+    SubtitleConvert self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.text, serializer);
+    sse_encode_bool(self.missingBody, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+  }
+
+  @protected
   void sse_encode_transport_settings(
     TransportSettings self,
     SseSerializer serializer,
@@ -1198,6 +2452,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_video_candidate_input(
+    VideoCandidateInput self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_64(self.id, serializer);
+    sse_encode_opt_String(self.codecs, serializer);
+  }
+
+  @protected
   void sse_encode_video_detail_fetch(
     VideoDetailFetch self,
     SseSerializer serializer,
@@ -1220,8 +2484,28 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_i_32(int self, SseSerializer serializer) {
+  void sse_encode_video_selection_output(
+    VideoSelectionOutput self,
+    SseSerializer serializer,
+  ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putInt32(self);
+    sse_encode_i_64(self.quality, serializer);
+    sse_encode_u_32(self.formatIndex, serializer);
+    sse_encode_u_32(self.videoIndex, serializer);
+    sse_encode_i_32(self.codecIndex, serializer);
+  }
+
+  @protected
+  void sse_encode_video_selection_result(
+    VideoSelectionResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_video_selection_output(
+      self.selection,
+      serializer,
+    );
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
   }
 }

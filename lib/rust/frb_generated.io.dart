@@ -3,10 +3,14 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
+import 'package:kilikili/rust/api/danmaku.dart';
+import 'package:kilikili/rust/api/dm_view.dart';
 import 'package:kilikili/rust/api/init.dart';
+import 'package:kilikili/rust/api/media_select.dart';
 import 'package:kilikili/rust/api/play_url.dart';
 import 'package:kilikili/rust/api/play_url_fetch.dart';
 import 'package:kilikili/rust/api/search_suggest.dart';
+import 'package:kilikili/rust/api/subtitle.dart';
 import 'package:kilikili/rust/api/transport.dart';
 import 'package:kilikili/rust/api/video_detail.dart';
 import 'package:kilikili/rust/api/video_detail_fetch.dart';
@@ -31,7 +35,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String dco_decode_String(dynamic raw);
 
   @protected
+  AudioSelectionResult dco_decode_audio_selection_result(dynamic raw);
+
+  @protected
   bool dco_decode_bool(dynamic raw);
+
+  @protected
+  DanmakuEngineOptions dco_decode_box_autoadd_danmaku_engine_options(
+    dynamic raw,
+  );
 
   @protected
   PlatformInt64 dco_decode_box_autoadd_i_64(dynamic raw);
@@ -46,13 +58,68 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int dco_decode_box_autoadd_u_16(dynamic raw);
 
   @protected
+  int dco_decode_box_autoadd_u_32(dynamic raw);
+
+  @protected
+  VideoSelectionOutput dco_decode_box_autoadd_video_selection_output(
+    dynamic raw,
+  );
+
+  @protected
+  DanmakuBucketItem dco_decode_danmaku_bucket_item(dynamic raw);
+
+  @protected
+  DanmakuEngineOptions dco_decode_danmaku_engine_options(dynamic raw);
+
+  @protected
+  DanmakuOpenResult dco_decode_danmaku_open_result(dynamic raw);
+
+  @protected
+  DanmakuPushResult dco_decode_danmaku_push_result(dynamic raw);
+
+  @protected
+  DmViewSubtitlesParse dco_decode_dm_view_subtitles_parse(dynamic raw);
+
+  @protected
+  FormatCandidateInput dco_decode_format_candidate_input(dynamic raw);
+
+  @protected
+  int dco_decode_i_32(dynamic raw);
+
+  @protected
   PlatformInt64 dco_decode_i_64(dynamic raw);
+
+  @protected
+  List<String> dco_decode_list_String(dynamic raw);
+
+  @protected
+  List<DanmakuBucketItem> dco_decode_list_danmaku_bucket_item(dynamic raw);
+
+  @protected
+  List<FormatCandidateInput> dco_decode_list_format_candidate_input(
+    dynamic raw,
+  );
+
+  @protected
+  List<int> dco_decode_list_prim_i_32_loose(dynamic raw);
+
+  @protected
+  Int32List dco_decode_list_prim_i_32_strict(dynamic raw);
+
+  @protected
+  Int64List dco_decode_list_prim_i_64_strict(dynamic raw);
+
+  @protected
+  List<int> dco_decode_list_prim_u_8_loose(dynamic raw);
 
   @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
   List<(String, String)> dco_decode_list_record_string_string(dynamic raw);
+
+  @protected
+  List<VideoCandidateInput> dco_decode_list_video_candidate_input(dynamic raw);
 
   @protected
   String? dco_decode_opt_String(dynamic raw);
@@ -62,6 +129,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int? dco_decode_opt_box_autoadd_u_16(dynamic raw);
+
+  @protected
+  int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
+
+  @protected
+  VideoSelectionOutput? dco_decode_opt_box_autoadd_video_selection_output(
+    dynamic raw,
+  );
+
+  @protected
+  List<String>? dco_decode_opt_list_String(dynamic raw);
+
+  @protected
+  List<DanmakuBucketItem>? dco_decode_opt_list_danmaku_bucket_item(dynamic raw);
+
+  @protected
+  Int64List? dco_decode_opt_list_prim_i_64_strict(dynamic raw);
 
   @protected
   PlayUrlFetch dco_decode_play_url_fetch(dynamic raw);
@@ -77,6 +161,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SearchSuggestParse dco_decode_search_suggest_parse(dynamic raw);
+
+  @protected
+  SubtitleConvert dco_decode_subtitle_convert(dynamic raw);
 
   @protected
   TransportSettings dco_decode_transport_settings(dynamic raw);
@@ -97,16 +184,35 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void dco_decode_unit(dynamic raw);
 
   @protected
+  VideoCandidateInput dco_decode_video_candidate_input(dynamic raw);
+
+  @protected
   VideoDetailFetch dco_decode_video_detail_fetch(dynamic raw);
 
   @protected
   VideoDetailParse dco_decode_video_detail_parse(dynamic raw);
 
   @protected
+  VideoSelectionOutput dco_decode_video_selection_output(dynamic raw);
+
+  @protected
+  VideoSelectionResult dco_decode_video_selection_result(dynamic raw);
+
+  @protected
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
+  AudioSelectionResult sse_decode_audio_selection_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   bool sse_decode_bool(SseDeserializer deserializer);
+
+  @protected
+  DanmakuEngineOptions sse_decode_box_autoadd_danmaku_engine_options(
+    SseDeserializer deserializer,
+  );
 
   @protected
   PlatformInt64 sse_decode_box_autoadd_i_64(SseDeserializer deserializer);
@@ -125,13 +231,84 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int sse_decode_box_autoadd_u_16(SseDeserializer deserializer);
 
   @protected
+  int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
+
+  @protected
+  VideoSelectionOutput sse_decode_box_autoadd_video_selection_output(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  DanmakuBucketItem sse_decode_danmaku_bucket_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  DanmakuEngineOptions sse_decode_danmaku_engine_options(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  DanmakuOpenResult sse_decode_danmaku_open_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  DanmakuPushResult sse_decode_danmaku_push_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  DmViewSubtitlesParse sse_decode_dm_view_subtitles_parse(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FormatCandidateInput sse_decode_format_candidate_input(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  int sse_decode_i_32(SseDeserializer deserializer);
+
+  @protected
   PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
+
+  @protected
+  List<String> sse_decode_list_String(SseDeserializer deserializer);
+
+  @protected
+  List<DanmakuBucketItem> sse_decode_list_danmaku_bucket_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<FormatCandidateInput> sse_decode_list_format_candidate_input(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<int> sse_decode_list_prim_i_32_loose(SseDeserializer deserializer);
+
+  @protected
+  Int32List sse_decode_list_prim_i_32_strict(SseDeserializer deserializer);
+
+  @protected
+  Int64List sse_decode_list_prim_i_64_strict(SseDeserializer deserializer);
+
+  @protected
+  List<int> sse_decode_list_prim_u_8_loose(SseDeserializer deserializer);
 
   @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
   @protected
   List<(String, String)> sse_decode_list_record_string_string(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<VideoCandidateInput> sse_decode_list_video_candidate_input(
     SseDeserializer deserializer,
   );
 
@@ -143,6 +320,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int? sse_decode_opt_box_autoadd_u_16(SseDeserializer deserializer);
+
+  @protected
+  int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
+
+  @protected
+  VideoSelectionOutput? sse_decode_opt_box_autoadd_video_selection_output(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<String>? sse_decode_opt_list_String(SseDeserializer deserializer);
+
+  @protected
+  List<DanmakuBucketItem>? sse_decode_opt_list_danmaku_bucket_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  Int64List? sse_decode_opt_list_prim_i_64_strict(SseDeserializer deserializer);
 
   @protected
   PlayUrlFetch sse_decode_play_url_fetch(SseDeserializer deserializer);
@@ -164,6 +360,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SubtitleConvert sse_decode_subtitle_convert(SseDeserializer deserializer);
+
+  @protected
   TransportSettings sse_decode_transport_settings(SseDeserializer deserializer);
 
   @protected
@@ -182,19 +381,43 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_decode_unit(SseDeserializer deserializer);
 
   @protected
+  VideoCandidateInput sse_decode_video_candidate_input(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   VideoDetailFetch sse_decode_video_detail_fetch(SseDeserializer deserializer);
 
   @protected
   VideoDetailParse sse_decode_video_detail_parse(SseDeserializer deserializer);
 
   @protected
-  int sse_decode_i_32(SseDeserializer deserializer);
+  VideoSelectionOutput sse_decode_video_selection_output(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  VideoSelectionResult sse_decode_video_selection_result(
+    SseDeserializer deserializer,
+  );
 
   @protected
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
+  void sse_encode_audio_selection_result(
+    AudioSelectionResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_bool(bool self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_danmaku_engine_options(
+    DanmakuEngineOptions self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_box_autoadd_i_64(
@@ -218,7 +441,91 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_box_autoadd_u_16(int self, SseSerializer serializer);
 
   @protected
+  void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_video_selection_output(
+    VideoSelectionOutput self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_danmaku_bucket_item(
+    DanmakuBucketItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_danmaku_engine_options(
+    DanmakuEngineOptions self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_danmaku_open_result(
+    DanmakuOpenResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_danmaku_push_result(
+    DanmakuPushResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_dm_view_subtitles_parse(
+    DmViewSubtitlesParse self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_format_candidate_input(
+    FormatCandidateInput self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_i_32(int self, SseSerializer serializer);
+
+  @protected
   void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_String(List<String> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_danmaku_bucket_item(
+    List<DanmakuBucketItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_format_candidate_input(
+    List<FormatCandidateInput> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_prim_i_32_loose(
+    List<int> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_prim_i_32_strict(
+    Int32List self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_prim_i_64_strict(
+    Int64List self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_prim_u_8_loose(List<int> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_prim_u_8_strict(
@@ -233,6 +540,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_video_candidate_input(
+    List<VideoCandidateInput> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_String(String? self, SseSerializer serializer);
 
   @protected
@@ -243,6 +556,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_opt_box_autoadd_u_16(int? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_video_selection_output(
+    VideoSelectionOutput? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_String(List<String>? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_list_danmaku_bucket_item(
+    List<DanmakuBucketItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_prim_i_64_strict(
+    Int64List? self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_play_url_fetch(PlayUrlFetch self, SseSerializer serializer);
@@ -269,6 +606,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_subtitle_convert(
+    SubtitleConvert self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_transport_settings(
     TransportSettings self,
     SseSerializer serializer,
@@ -290,6 +633,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_unit(void self, SseSerializer serializer);
 
   @protected
+  void sse_encode_video_candidate_input(
+    VideoCandidateInput self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_video_detail_fetch(
     VideoDetailFetch self,
     SseSerializer serializer,
@@ -302,7 +651,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_i_32(int self, SseSerializer serializer);
+  void sse_encode_video_selection_output(
+    VideoSelectionOutput self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_video_selection_result(
+    VideoSelectionResult self,
+    SseSerializer serializer,
+  );
 }
 
 // Section: wire_class

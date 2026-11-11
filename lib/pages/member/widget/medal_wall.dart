@@ -1,7 +1,8 @@
 import 'package:kilikili/common/assets.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/pendant_avatar.dart';
-import 'package:kilikili/models_new/live/live_medal_wall/data.dart';
+import 'package:kilikili/services/rust/live_rest_compat.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/pages/member/widget/medal_widget.dart';
 import 'package:kilikili/utils/app_scheme.dart';
 import 'package:kilikili/utils/extension/num_ext.dart';
@@ -12,7 +13,7 @@ import 'package:material_ui/material_ui.dart';
 class MedalWall extends StatelessWidget {
   const MedalWall({super.key, required this.response});
 
-  final MedalWallData response;
+  final LiveMedalWall response;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +39,7 @@ class MedalWall extends StatelessWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const .only(top: 5),
-              child: Center(child: Text(response.name!)),
+              child: Center(child: Text(response.name ?? '')),
             ),
           ),
           SliverToBoxAdapter(
@@ -65,10 +66,10 @@ class MedalWall extends StatelessWidget {
             ),
           ),
           SliverList.builder(
-            itemCount: response.list!.length,
+            itemCount: response.list.length,
             itemBuilder: (context, index) {
-              final item = response.list![index];
-              final uinfoMedal = item.uinfoMedal!;
+              final item = response.list[index];
+              final uinfoMedal = toUinfoMedal(item.medal!);
               final isLiving = item.liveStatus == 1;
               return ListTile(
                 onTap: () {
@@ -119,7 +120,7 @@ class MedalWall extends StatelessWidget {
                     ),
                   ],
                 ),
-                trailing: item.medalInfo!.wearingStatus == 1
+                trailing: item.wearingStatus == 1
                     ? Container(
                         padding: const .symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(

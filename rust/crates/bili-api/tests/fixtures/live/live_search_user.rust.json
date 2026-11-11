@@ -1,0 +1,23 @@
+{
+  "rooms": [],
+  "total_room": null,
+  "total_user": 2,
+  "users": [
+    {
+      "area_name": "虚拟主播",
+      "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000011.jpg",
+      "fans_num": 54321,
+      "live_status": 1,
+      "name": "示例主播甲",
+      "roomid": 100001
+    },
+    {
+      "area_name": null,
+      "face": "//i0.example-cdn.test/bfs/face/00000000000000000000000000000013.jpg",
+      "fans_num": null,
+      "live_status": 0,
+      "name": "未开播的主播",
+      "roomid": 100003
+    }
+  ]
+}

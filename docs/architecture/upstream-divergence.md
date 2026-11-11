@@ -17,9 +17,13 @@ S15 #66 已合并）—— 实质改动 23 → **90**，仅重命名波及 943 �
 新增文件 255 → **376**，**删除文件 0 → 57**。分叉面的性质从这一轮起变了：
 以前是「在上游文件里插开关」，现在是**删上游文件**（见 §4.1 与 §4.2）
 修订：2026-11-11（typed 直连第二轮：S10 两批 #73 #83、S11a 第一批 #76
-已合并，S11a 第二批为本次）—— 实质改动 90 → **130**，仅重命名波及
+已合并，S11a 第二批为 #86）—— 实质改动 90 → **130**，仅重命名波及
 845 → **779**，新增文件 376 → **428**，删除文件 57 → **105**。
 「修改」总数随之从 935 降到 909：又有一批上游模型从 M 转成了 D
+修订：2026-11-11（S11a 第三批，剩余六条只读，为本次）—— 实质改动
+130 → **142**，仅重命名波及 779 → **755**，新增文件 428 → **455**，
+删除文件 105 → **121**。`lib/models_new/live/` 累计删到 39 个，超过
+pgc 成为删得最多的一块
 关联：RFC-0001 §10.1（分支与 upstream 同步）、ADR-011（typed 直连）
 
 RFC §10.1 规定了要固定 `UPSTREAM_COMMIT` 并记录 rebase/merge 策略，但没有
@@ -43,15 +47,15 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 | 类别 | 数量 |
 | --- | ---: |
-| 修改的上游既有文件 | 909 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 779 |
-| &nbsp;&nbsp;其中：有实质改动 | **130** |
-| 新增文件 | 428 |
-| 删除文件 | **105** |
+| 修改的上游既有文件 | 897 |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 755 |
+| &nbsp;&nbsp;其中：有实质改动 | **142** |
+| 新增文件 | 455 |
+| 删除文件 | **121** |
 
-「修改」总数比上一版又少了 26，不是改动变少，而是其中一部分文件**被删除**
-了（迁移掉的模型），从 M 转到了 D。这一轮删除数几乎翻倍（57 → 105），
-来源是 S10 的 PGC 两批与 S11a 的直播两批。
+「修改」总数持续下降（935 → 909 → 897），不是改动变少，而是其中一部分
+文件**被删除**了（迁移掉的模型），从 M 转到了 D。删除数从 57 一路到
+121，来源是 S10 的 PGC 两批与 S11a 的直播三批。
 
 ## 3. 包名重命名：分叉面的主体
 
@@ -68,7 +72,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 4. 有实质改动的上游文件
 
-130 个。其中 **107 个来自业务层 typed 直连迁移**（§4.1），性质高度一致，
+142 个。其中 **119 个来自业务层 typed 直连迁移**（§4.1），性质高度一致，
 不必逐个记；剩下 23 个是逐个有来由的，列在 §4.3 的表里。
 
 ### 4.1 typed 直连迁移触及的上游文件
@@ -87,7 +91,8 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | S10 PGC 第一批 | #60 / #73 | `lib/http/pgc.dart`、`lib/pages/pgc_*`、`lib/pages/fav/pgc/**`、`lib/models/common/pgc_review_type.dart` |
 | S10 PGC 第二批（番剧/课堂详情） | #60 / #83 | `lib/http/pgc.dart`、`lib/pages/video/introduction/pgc/**`、`lib/pages/episode_panel/**`；留下单向适配 `lib/services/rust/pgc_detail_compat.dart` |
 | S11a 直播第一批（只读七条） | #61 / #76 | `lib/http/live.dart`、`lib/pages/{live,live_area,live_area_detail,live_follow,live_room}/**`、`lib/pages/dynamics/widgets/live_*`、`lib/services/audio_handler.dart` |
-| S11a 直播第二批（取流） | #61 / 本次 | `lib/http/live.dart`、`lib/pages/live_room/controller.dart`、`lib/utils/video_utils.dart`（`getLiveCdnUrl` 改吃 FRB 的 `LiveCodec`）；留下单向适配 `lib/services/rust/live_playurl_compat.dart` |
+| S11a 直播第二批（取流） | #61 / #86 | `lib/http/live.dart`、`lib/pages/live_room/controller.dart`、`lib/utils/video_utils.dart`（`getLiveCdnUrl` 改吃 FRB 的 `LiveCodec`）；留下单向适配 `lib/services/rust/live_playurl_compat.dart` |
+| S11a 直播第三批（剩余六条只读） | #61 / 本次 | `lib/http/live.dart`、`lib/pages/{live_emote,live_search,live_dm_block}/**`、`lib/pages/live_room/{controller.dart,contribution_rank/**}`、`lib/pages/member/{view.dart,widget/{medal_wall,user_info_card}.dart}`、`lib/pages/common/publish/common_rich_text_pub_page.dart`；留下单向适配 `lib/services/rust/live_rest_compat.dart` |
 
 **同步时怎么处理这一类冲突**：上游在这些文件里的改动，多数落在我们已经
 删掉的模型或函数上。判据是「这段逻辑现在归谁」——
@@ -102,16 +107,23 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 
 ### 4.2 删除的上游文件
 
-105 个，全部是被 typed 结构取代的模型与两个只剩空壳的 `lib/http` 文件：
+121 个，全部是被 typed 结构取代的模型与两个只剩空壳的 `lib/http` 文件：
 
 | 区域 | 数量 | 内容 |
 | --- | ---: | --- |
-| `lib/models_new/` | 101 | pgc（25）、live（23）、reply（18）、video 的 ai_conclusion/note_list/play_info/video_shot（12）、emote（4）、match（4）、popular（4）、reply2reply（3）、blacklist（2）、music（2）、reply_interaction（2）、search（1）、sponsor_block（1） |
+| `lib/models_new/` | 117 | live（39）、pgc（25）、reply（18）、video 的 ai_conclusion/note_list/play_info/video_shot（12）、emote（4）、match（4）、popular（4）、reply2reply（3）、blacklist（2）、music（2）、reply_interaction（2）、search（1）、sponsor_block（1） |
 | `lib/models/` | 2 | `search/search_esports.dart`、`user/danmaku_block.dart` |
 | `lib/http/` | 2 | `black.dart`、`match.dart`（整个文件只有只读接口，迁完即空） |
 
-`lib/models_new/live/` 那 23 个里有 7 个来自本次取流（`live_room_play_info/`
-整个目录），其余 16 个来自 S11a 第一批。
+`lib/models_new/live/` 那 39 个分三批：第一批 16 个（分区、feed、关注、
+H5 房间信息）、第二批 7 个（`live_room_play_info/` 整个目录）、第三批
+16 个（表情包、搜索、屏蔽、贡献榜、勋章墙）。
+
+**该目录下仍活着的五个文件各有理由**，不是遗漏：`live_danmaku/` 与
+`live_dm_info/` 归 S11b（#62）；`live_superchat/` 的 `SuperChatItem` 第二
+个生产者是弹幕长连接，整条留给 S11b；`live_medal_wall/uinfo_medal.dart`
+是四个生产者的共享勋章模型，两个在 S11b；
+`live_feed_index/watched_show.dart` 还有动态与用户信息两个生产者。
 
 上游若改动这些文件，同步时按 §4.1 的判据处理；**不要恢复文件本身**。
 

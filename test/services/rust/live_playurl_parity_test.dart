@@ -492,7 +492,8 @@ abstract final class _Baseline {
     'protocol': '0,1',
     'format': '0,1,2',
     'codec': '0,1,2',
-    if (qn != null) 'qn': qn,
+    // 基线写的就是 `'qn': ?qn`——null 时整个键不出现。
+    'qn': ?qn,
     'platform': 'web',
     'ptype': 8,
     'dolby': 5,

@@ -132,13 +132,28 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveIndexPage dco_decode_box_autoadd_live_index_page(dynamic raw);
 
   @protected
+  LiveMedal dco_decode_box_autoadd_live_medal(dynamic raw);
+
+  @protected
+  LiveMedalWall dco_decode_box_autoadd_live_medal_wall(dynamic raw);
+
+  @protected
+  LiveRankQuery dco_decode_box_autoadd_live_rank_query(dynamic raw);
+
+  @protected
   LiveRoomH5 dco_decode_box_autoadd_live_room_h_5(dynamic raw);
 
   @protected
   LiveRoomPlayInfo dco_decode_box_autoadd_live_room_play_info(dynamic raw);
 
   @protected
+  LiveSearchData dco_decode_box_autoadd_live_search_data(dynamic raw);
+
+  @protected
   LiveSecondPage dco_decode_box_autoadd_live_second_page(dynamic raw);
+
+  @protected
+  LiveShieldInfo dco_decode_box_autoadd_live_shield_info(dynamic raw);
 
   @protected
   MatchContest dco_decode_box_autoadd_match_contest(dynamic raw);
@@ -406,6 +421,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<LiveCodec> dco_decode_list_live_codec(dynamic raw);
 
   @protected
+  List<LiveContributionRankItem> dco_decode_list_live_contribution_rank_item(
+    dynamic raw,
+  );
+
+  @protected
+  List<LiveEmotePackage> dco_decode_list_live_emote_package(dynamic raw);
+
+  @protected
+  List<LiveEmoticon> dco_decode_list_live_emoticon(dynamic raw);
+
+  @protected
   List<LiveFeedback> dco_decode_list_live_feedback(dynamic raw);
 
   @protected
@@ -418,13 +444,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<LiveFormat> dco_decode_list_live_format(dynamic raw);
 
   @protected
+  List<LiveMedalWallItem> dco_decode_list_live_medal_wall_item(dynamic raw);
+
+  @protected
   List<LiveQn> dco_decode_list_live_qn(dynamic raw);
 
   @protected
   List<LiveRoomCard> dco_decode_list_live_room_card(dynamic raw);
 
   @protected
+  List<LiveSearchRoom> dco_decode_list_live_search_room(dynamic raw);
+
+  @protected
+  List<LiveSearchUser> dco_decode_list_live_search_user(dynamic raw);
+
+  @protected
   List<LiveSecondTag> dco_decode_list_live_second_tag(dynamic raw);
+
+  @protected
+  List<LiveShieldUser> dco_decode_list_live_shield_user(dynamic raw);
 
   @protected
   List<LiveStream> dco_decode_list_live_stream(dynamic raw);
@@ -567,6 +605,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveContext dco_decode_live_context(dynamic raw);
 
   @protected
+  LiveContributionRankItem dco_decode_live_contribution_rank_item(dynamic raw);
+
+  @protected
+  LiveContributionRankResult dco_decode_live_contribution_rank_result(
+    dynamic raw,
+  );
+
+  @protected
+  LiveEmotePackage dco_decode_live_emote_package(dynamic raw);
+
+  @protected
+  LiveEmotePackagesResult dco_decode_live_emote_packages_result(dynamic raw);
+
+  @protected
+  LiveEmoticon dco_decode_live_emoticon(dynamic raw);
+
+  @protected
   LiveFeedback dco_decode_live_feedback(dynamic raw);
 
   @protected
@@ -594,7 +649,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveIndexResult dco_decode_live_index_result(dynamic raw);
 
   @protected
+  LiveMedal dco_decode_live_medal(dynamic raw);
+
+  @protected
+  LiveMedalNameResult dco_decode_live_medal_name_result(dynamic raw);
+
+  @protected
+  LiveMedalWall dco_decode_live_medal_wall(dynamic raw);
+
+  @protected
+  LiveMedalWallItem dco_decode_live_medal_wall_item(dynamic raw);
+
+  @protected
+  LiveMedalWallResult dco_decode_live_medal_wall_result(dynamic raw);
+
+  @protected
   LiveQn dco_decode_live_qn(dynamic raw);
+
+  @protected
+  LiveRankQuery dco_decode_live_rank_query(dynamic raw);
 
   @protected
   LiveRoomCard dco_decode_live_room_card(dynamic raw);
@@ -612,6 +685,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveRoomPlayInfoResult dco_decode_live_room_play_info_result(dynamic raw);
 
   @protected
+  LiveSearchData dco_decode_live_search_data(dynamic raw);
+
+  @protected
+  LiveSearchResult dco_decode_live_search_result(dynamic raw);
+
+  @protected
+  LiveSearchRoom dco_decode_live_search_room(dynamic raw);
+
+  @protected
+  LiveSearchUser dco_decode_live_search_user(dynamic raw);
+
+  @protected
   LiveSecondPage dco_decode_live_second_page(dynamic raw);
 
   @protected
@@ -619,6 +704,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LiveSecondTag dco_decode_live_second_tag(dynamic raw);
+
+  @protected
+  LiveShieldInfo dco_decode_live_shield_info(dynamic raw);
+
+  @protected
+  LiveShieldInfoResult dco_decode_live_shield_info_result(dynamic raw);
+
+  @protected
+  LiveShieldUser dco_decode_live_shield_user(dynamic raw);
 
   @protected
   LiveStream dco_decode_live_stream(dynamic raw);
@@ -718,13 +812,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveIndexPage? dco_decode_opt_box_autoadd_live_index_page(dynamic raw);
 
   @protected
+  LiveMedal? dco_decode_opt_box_autoadd_live_medal(dynamic raw);
+
+  @protected
+  LiveMedalWall? dco_decode_opt_box_autoadd_live_medal_wall(dynamic raw);
+
+  @protected
   LiveRoomH5? dco_decode_opt_box_autoadd_live_room_h_5(dynamic raw);
 
   @protected
   LiveRoomPlayInfo? dco_decode_opt_box_autoadd_live_room_play_info(dynamic raw);
 
   @protected
+  LiveSearchData? dco_decode_opt_box_autoadd_live_search_data(dynamic raw);
+
+  @protected
   LiveSecondPage? dco_decode_opt_box_autoadd_live_second_page(dynamic raw);
+
+  @protected
+  LiveShieldInfo? dco_decode_opt_box_autoadd_live_shield_info(dynamic raw);
 
   @protected
   MatchContest? dco_decode_opt_box_autoadd_match_contest(dynamic raw);
@@ -869,6 +975,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<LiveAreaGroup>? dco_decode_opt_list_live_area_group(dynamic raw);
+
+  @protected
+  List<LiveContributionRankItem>?
+  dco_decode_opt_list_live_contribution_rank_item(dynamic raw);
+
+  @protected
+  List<LiveEmotePackage>? dco_decode_opt_list_live_emote_package(dynamic raw);
 
   @protected
   List<NoteItem>? dco_decode_opt_list_note_item(dynamic raw);
@@ -1341,6 +1454,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  LiveMedal sse_decode_box_autoadd_live_medal(SseDeserializer deserializer);
+
+  @protected
+  LiveMedalWall sse_decode_box_autoadd_live_medal_wall(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveRankQuery sse_decode_box_autoadd_live_rank_query(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   LiveRoomH5 sse_decode_box_autoadd_live_room_h_5(SseDeserializer deserializer);
 
   @protected
@@ -1349,7 +1475,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  LiveSearchData sse_decode_box_autoadd_live_search_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   LiveSecondPage sse_decode_box_autoadd_live_second_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveShieldInfo sse_decode_box_autoadd_live_shield_info(
     SseDeserializer deserializer,
   );
 
@@ -1701,6 +1837,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<LiveCodec> sse_decode_list_live_codec(SseDeserializer deserializer);
 
   @protected
+  List<LiveContributionRankItem> sse_decode_list_live_contribution_rank_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<LiveEmotePackage> sse_decode_list_live_emote_package(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<LiveEmoticon> sse_decode_list_live_emoticon(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<LiveFeedback> sse_decode_list_live_feedback(
     SseDeserializer deserializer,
   );
@@ -1719,6 +1870,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<LiveFormat> sse_decode_list_live_format(SseDeserializer deserializer);
 
   @protected
+  List<LiveMedalWallItem> sse_decode_list_live_medal_wall_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<LiveQn> sse_decode_list_live_qn(SseDeserializer deserializer);
 
   @protected
@@ -1727,7 +1883,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<LiveSearchRoom> sse_decode_list_live_search_room(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<LiveSearchUser> sse_decode_list_live_search_user(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<LiveSecondTag> sse_decode_list_live_second_tag(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<LiveShieldUser> sse_decode_list_live_shield_user(
     SseDeserializer deserializer,
   );
 
@@ -1916,6 +2087,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveContext sse_decode_live_context(SseDeserializer deserializer);
 
   @protected
+  LiveContributionRankItem sse_decode_live_contribution_rank_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveContributionRankResult sse_decode_live_contribution_rank_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveEmotePackage sse_decode_live_emote_package(SseDeserializer deserializer);
+
+  @protected
+  LiveEmotePackagesResult sse_decode_live_emote_packages_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveEmoticon sse_decode_live_emoticon(SseDeserializer deserializer);
+
+  @protected
   LiveFeedback sse_decode_live_feedback(SseDeserializer deserializer);
 
   @protected
@@ -1949,7 +2141,31 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveIndexResult sse_decode_live_index_result(SseDeserializer deserializer);
 
   @protected
+  LiveMedal sse_decode_live_medal(SseDeserializer deserializer);
+
+  @protected
+  LiveMedalNameResult sse_decode_live_medal_name_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveMedalWall sse_decode_live_medal_wall(SseDeserializer deserializer);
+
+  @protected
+  LiveMedalWallItem sse_decode_live_medal_wall_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveMedalWallResult sse_decode_live_medal_wall_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   LiveQn sse_decode_live_qn(SseDeserializer deserializer);
+
+  @protected
+  LiveRankQuery sse_decode_live_rank_query(SseDeserializer deserializer);
 
   @protected
   LiveRoomCard sse_decode_live_room_card(SseDeserializer deserializer);
@@ -1971,6 +2187,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  LiveSearchData sse_decode_live_search_data(SseDeserializer deserializer);
+
+  @protected
+  LiveSearchResult sse_decode_live_search_result(SseDeserializer deserializer);
+
+  @protected
+  LiveSearchRoom sse_decode_live_search_room(SseDeserializer deserializer);
+
+  @protected
+  LiveSearchUser sse_decode_live_search_user(SseDeserializer deserializer);
+
+  @protected
   LiveSecondPage sse_decode_live_second_page(SseDeserializer deserializer);
 
   @protected
@@ -1978,6 +2206,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LiveSecondTag sse_decode_live_second_tag(SseDeserializer deserializer);
+
+  @protected
+  LiveShieldInfo sse_decode_live_shield_info(SseDeserializer deserializer);
+
+  @protected
+  LiveShieldInfoResult sse_decode_live_shield_info_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveShieldUser sse_decode_live_shield_user(SseDeserializer deserializer);
 
   @protected
   LiveStream sse_decode_live_stream(SseDeserializer deserializer);
@@ -2095,6 +2334,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  LiveMedal? sse_decode_opt_box_autoadd_live_medal(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveMedalWall? sse_decode_opt_box_autoadd_live_medal_wall(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   LiveRoomH5? sse_decode_opt_box_autoadd_live_room_h_5(
     SseDeserializer deserializer,
   );
@@ -2105,7 +2354,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  LiveSearchData? sse_decode_opt_box_autoadd_live_search_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   LiveSecondPage? sse_decode_opt_box_autoadd_live_second_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveShieldInfo? sse_decode_opt_box_autoadd_live_shield_info(
     SseDeserializer deserializer,
   );
 
@@ -2322,6 +2581,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<LiveAreaGroup>? sse_decode_opt_list_live_area_group(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<LiveContributionRankItem>?
+  sse_decode_opt_list_live_contribution_rank_item(SseDeserializer deserializer);
+
+  @protected
+  List<LiveEmotePackage>? sse_decode_opt_list_live_emote_package(
     SseDeserializer deserializer,
   );
 
@@ -2913,6 +3181,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_live_medal(
+    LiveMedal self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_live_medal_wall(
+    LiveMedalWall self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_live_rank_query(
+    LiveRankQuery self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_live_room_h_5(
     LiveRoomH5 self,
     SseSerializer serializer,
@@ -2925,8 +3211,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_live_search_data(
+    LiveSearchData self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_live_second_page(
     LiveSecondPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_live_shield_info(
+    LiveShieldInfo self,
     SseSerializer serializer,
   );
 
@@ -3393,6 +3691,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_live_contribution_rank_item(
+    List<LiveContributionRankItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_live_emote_package(
+    List<LiveEmotePackage> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_live_emoticon(
+    List<LiveEmoticon> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_live_feedback(
     List<LiveFeedback> self,
     SseSerializer serializer,
@@ -3417,6 +3733,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_live_medal_wall_item(
+    List<LiveMedalWallItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_live_qn(List<LiveQn> self, SseSerializer serializer);
 
   @protected
@@ -3426,8 +3748,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_live_search_room(
+    List<LiveSearchRoom> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_live_search_user(
+    List<LiveSearchUser> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_live_second_tag(
     List<LiveSecondTag> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_live_shield_user(
+    List<LiveShieldUser> self,
     SseSerializer serializer,
   );
 
@@ -3687,6 +4027,33 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_live_context(LiveContext self, SseSerializer serializer);
 
   @protected
+  void sse_encode_live_contribution_rank_item(
+    LiveContributionRankItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_contribution_rank_result(
+    LiveContributionRankResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_emote_package(
+    LiveEmotePackage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_emote_packages_result(
+    LiveEmotePackagesResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_emoticon(LiveEmoticon self, SseSerializer serializer);
+
+  @protected
   void sse_encode_live_feedback(LiveFeedback self, SseSerializer serializer);
 
   @protected
@@ -3732,7 +4099,34 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_live_medal(LiveMedal self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_live_medal_name_result(
+    LiveMedalNameResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_medal_wall(LiveMedalWall self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_live_medal_wall_item(
+    LiveMedalWallItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_medal_wall_result(
+    LiveMedalWallResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_live_qn(LiveQn self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_live_rank_query(LiveRankQuery self, SseSerializer serializer);
 
   @protected
   void sse_encode_live_room_card(LiveRoomCard self, SseSerializer serializer);
@@ -3759,6 +4153,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_live_search_data(
+    LiveSearchData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_search_result(
+    LiveSearchResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_search_room(
+    LiveSearchRoom self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_search_user(
+    LiveSearchUser self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_live_second_page(
     LiveSecondPage self,
     SseSerializer serializer,
@@ -3772,6 +4190,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_live_second_tag(LiveSecondTag self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_live_shield_info(
+    LiveShieldInfo self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_shield_info_result(
+    LiveShieldInfoResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_shield_user(
+    LiveShieldUser self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_live_stream(LiveStream self, SseSerializer serializer);
@@ -3912,6 +4348,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_live_medal(
+    LiveMedal? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_medal_wall(
+    LiveMedalWall? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_live_room_h_5(
     LiveRoomH5? self,
     SseSerializer serializer,
@@ -3924,8 +4372,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_live_search_data(
+    LiveSearchData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_live_second_page(
     LiveSecondPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_shield_info(
+    LiveShieldInfo? self,
     SseSerializer serializer,
   );
 
@@ -4193,6 +4653,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_live_area_group(
     List<LiveAreaGroup>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_live_contribution_rank_item(
+    List<LiveContributionRankItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_live_emote_package(
+    List<LiveEmotePackage>? self,
     SseSerializer serializer,
   );
 

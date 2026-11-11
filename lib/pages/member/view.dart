@@ -10,10 +10,9 @@ import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/common/widgets/scroll_behavior.dart'
     show NoOverscrollIndicator;
 import 'package:kilikili/common/widgets/scroll_physics.dart' show tabBarView;
-import 'package:kilikili/http/live.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/user.dart';
-import 'package:kilikili/models_new/live/live_medal_wall/data.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/models_new/space/space/reservation_card_list.dart';
 import 'package:kilikili/pages/coin_log/controller.dart';
 import 'package:kilikili/pages/exp_log/controller.dart';
@@ -646,7 +645,7 @@ class _MemberPageState extends State<MemberPage> {
     }
   }
 
-  MedalWallData? _cacheMedalData;
+  LiveMedalWall? _cacheMedalData;
   Future<void> _showLiveMedalWall() async {
     void onShow() {
       if (!mounted) return;
@@ -661,7 +660,7 @@ class _MemberPageState extends State<MemberPage> {
       return;
     }
     SmartDialog.showLoading();
-    final res = await LiveHttp.liveMedalWall(mid: _mid);
+    final res = await RustLive.medalWall(mid: _mid);
     SmartDialog.dismiss();
     if (res case Success(:final response)) {
       _cacheMedalData = response;

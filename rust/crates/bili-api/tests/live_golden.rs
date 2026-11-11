@@ -194,6 +194,156 @@ fn room_play_info_request_matches_the_frozen_snapshot() {
     assert_eq!(got, expected, "取流请求面与冻结快照不一致");
 }
 
+#[test]
+fn emoticons_matches_the_frozen_snapshot() {
+    check("emoticons.raw.json", "emoticons.rust.json", |raw| {
+        value(&bili_api::live::parse_emoticons(raw).expect("样本应解析成功"))
+    });
+}
+
+#[test]
+fn live_search_room_matches_the_frozen_snapshot() {
+    check(
+        "live_search_room.raw.json",
+        "live_search_room.rust.json",
+        |raw| value(&bili_api::live::parse_search(raw).expect("样本应解析成功")),
+    );
+}
+
+#[test]
+fn live_search_user_matches_the_frozen_snapshot() {
+    check(
+        "live_search_user.raw.json",
+        "live_search_user.rust.json",
+        |raw| value(&bili_api::live::parse_search(raw).expect("样本应解析成功")),
+    );
+}
+
+#[test]
+fn shield_info_matches_the_frozen_snapshot() {
+    check("shield_info.raw.json", "shield_info.rust.json", |raw| {
+        value(&bili_api::live::parse_shield_info(raw).expect("样本应解析成功"))
+    });
+}
+
+/// 未登录或没有任何屏蔽设置时，响应里根本没有 `shield_info` 这一节。
+/// 产出两个空列表而不是错误——基线那边 `ShieldInfo?` 为 null，调用点
+/// 把两个列表都当空处理，行为一致。
+#[test]
+fn shield_info_absent_matches_the_frozen_snapshot() {
+    check(
+        "shield_info_absent.raw.json",
+        "shield_info_absent.rust.json",
+        |raw| value(&bili_api::live::parse_shield_info(raw).expect("样本应解析成功")),
+    );
+}
+
+#[test]
+fn contribution_rank_matches_the_frozen_snapshot() {
+    check(
+        "contribution_rank.raw.json",
+        "contribution_rank.rust.json",
+        |raw| value(&bili_api::live::parse_contribution_rank(raw).expect("样本应解析成功")),
+    );
+}
+
+#[test]
+fn medal_wall_matches_the_frozen_snapshot() {
+    check("medal_wall.raw.json", "medal_wall.rust.json", |raw| {
+        value(&bili_api::live::parse_medal_wall(raw).expect("样本应解析成功"))
+    });
+}
+
+#[test]
+fn medal_name_matches_the_frozen_snapshot() {
+    check("master_info.raw.json", "master_info.rust.json", |raw| {
+        value(&bili_api::live::parse_medal_name(raw).expect("样本应解析成功"))
+    });
+}
+
+/// 主播没开粉丝团时 `medal_name` 是空串。
+///
+/// 产出 `None` 而不是 `Some("")`：基线把空串原样返回，界面于是渲染出一
+/// 个没有名字的勋章位。这是本片**有意**与基线不同的一处。
+#[test]
+fn medal_name_empty_becomes_none() {
+    let raw = fs::read_to_string(fixture("master_info_no_medal.raw.json")).expect("raw 可读");
+    assert_eq!(
+        bili_api::live::parse_medal_name(&raw).expect("样本应解析成功"),
+        None,
+    );
+}
+
+/// 三条签名接口的**请求面**快照。
+///
+/// 理由同 [`room_play_info_request_matches_the_frozen_snapshot`]：冻结
+/// 响应管不住请求，而这三条各有一处只能靠快照钉住的东西——搜索是 APP
+/// 签名的完整参数集，屏蔽设置与贡献榜又各带一个 `web_location=444.8`
+/// 浮点字面量。贡献榜还要求 `type` 与 `switch` 成对出现。
+#[test]
+fn signed_requests_match_the_frozen_snapshot() {
+    const MIXIN_KEY: &str = "ea1db124af3c7062474693fa704f4ff8";
+    const WTS: i64 = 1_762_800_000;
+
+    let identity = bili_api::live::AppIdentity {
+        appkey: "1d8b6e7d45233436".to_owned(),
+        appsec: "560c52ccd288fed045859ed18bffd973".to_owned(),
+        build: 8_430_300,
+        version: "8.43.0".to_owned(),
+        statistics: r#"{"appId":1,"platform":3,"version":"8.43.0","abtest":""}"#.to_owned(),
+        user_agent: "Mozilla/5.0 BiliDroid/8.43.0".to_owned(),
+        buvid: "XY00000000000000000000000000000000000".to_owned(),
+        trace_id: "0000000000000000".to_owned(),
+        access_key: Some("0000000000000000000000000000000a".to_owned()),
+        logged_in: true,
+        ts: WTS,
+    };
+
+    let search = bili_api::live::build_search_request(&identity, 1, "示例关键词", "room");
+    let shield = bili_api::live::build_info_by_user_request(100_001, MIXIN_KEY, WTS);
+    let rank = bili_api::live::build_contribution_rank_request(
+        200_001,
+        100_001,
+        1,
+        "online_rank",
+        "contribution_rank",
+        MIXIN_KEY,
+        WTS,
+    );
+
+    let describe = |name: &str, req: &bili_api::request::PreparedRequest| {
+        serde_json::json!({
+            "case": name,
+            "path": req.path,
+            "query": req
+                .query
+                .iter()
+                .map(|(k, v)| serde_json::json!([k, v]))
+                .collect::<Vec<_>>(),
+        })
+    };
+
+    let got = serde_json::Value::Array(vec![
+        describe("直播搜索（APP 签名）", &search),
+        describe("屏蔽设置（WBI）", &shield),
+        describe("贡献榜（WBI）", &rank),
+    ]);
+
+    let snapshot_path = fixture("live_rest_requests.rust.json");
+    if std::env::var_os("UPDATE_GOLDEN").is_some() {
+        let pretty = serde_json::to_string_pretty(&got).expect("可序列化");
+        fs::write(&snapshot_path, format!("{pretty}\n")).expect("快照可写");
+        return;
+    }
+
+    let expected: serde_json::Value = serde_json::from_str(
+        &fs::read_to_string(&snapshot_path).expect("缺少快照，用 UPDATE_GOLDEN=1 重新生成"),
+    )
+    .expect("快照必须是合法 JSON");
+
+    assert_eq!(got, expected, "剩余只读三条的请求面与冻结快照不一致");
+}
+
 /// `base_url` 缺失必须让整次解析失败，而不是填空串继续。
 ///
 /// 基线 `CodecItem.fromJson` 写的是 `json['base_url'] as String`，缺了

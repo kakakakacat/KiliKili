@@ -1,0 +1,14 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "shield_info": {
+      "shield_user_list": [
+        { "uid": 200011, "uname": "被屏蔽的用户甲" },
+        { "uid": 200012, "uname": "被屏蔽的用户乙" }
+      ],
+      "keyword_list": ["屏蔽词甲", "屏蔽词乙"]
+    }
+  }
+}

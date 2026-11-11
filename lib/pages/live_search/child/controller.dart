@@ -1,7 +1,6 @@
-import 'package:kilikili/http/live.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/live/live_search_type.dart';
-import 'package:kilikili/models_new/live/live_search/data.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
 import 'package:kilikili/pages/live_search/controller.dart';
 
@@ -33,20 +32,20 @@ class LiveSearchChildController
   List? getDataList(response) {
     switch (searchType) {
       case LiveSearchType.room:
-        controller.counts[searchType.index] = response.room?.totalRoom ?? 0;
-        return response.room?.list;
+        controller.counts[searchType.index] = response.totalRoom ?? 0;
+        return response.rooms;
       case LiveSearchType.user:
-        controller.counts[searchType.index] = response.user?.totalUser ?? 0;
-        return response.user?.list;
+        controller.counts[searchType.index] = response.totalUser ?? 0;
+        return response.users;
     }
   }
 
   @override
   Future<LoadingState<LiveSearchData>> customGetData() {
-    return LiveHttp.liveSearch(
+    return RustLive.search(
       page: page,
       keyword: controller.editingController.text,
-      type: searchType,
+      kind: searchType.name,
     );
   }
 }

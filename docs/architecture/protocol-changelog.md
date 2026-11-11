@@ -25,8 +25,21 @@ fixture（它们带有同一个版本号，对不上时 golden 测试会失败�
 
 | 协议面 | 加入于 | 生成器 | 测试 |
 | --- | --- | --- | --- |
-| APP 签名（`appkey`/`ts`/`sign`） | 2026-11-11，S11a / issue #61 | `tool/fixture-gen/app_sign_fixture.dart` | `bili-protocol/tests/app_sign_golden.rs` |
+| APP 签名（`appkey`/`ts`/`sign`） | 2026-11-11，S11a 第一批 / issue #61 | `tool/fixture-gen/app_sign_fixture.dart` | `bili-protocol/tests/app_sign_golden.rs` |
+| 直播取流请求面（`protocol`/`format`/`codec`/`ptype`/`dolby`/`panorama`/`web_location`） | 2026-11-11，S11a 第二批 / issue #61 | 无独立生成器，核对方向相反，见下 | `bili-api/tests/live_golden.rs::room_play_info_request_matches_the_frozen_snapshot` |
 
 APP 签名与 WBI 是两套，差异（盐、时间字段、签名字段、值的编码口径）列在
 `bili-protocol/src/app_sign.rs` 的模块文档里。两者在当前参数集上碰巧同
 结果，正因为是碰巧，没有合并。
+
+直播取流那一行的**核对方向与其余相反**：不是先由 Dart 生成器产出期望值
+再喂给 Rust 测试，而是 Rust 侧先冻结参数集与 `w_rid`，由
+`test/services/rust/live_playurl_parity_test.dart` 用基线 `WbiSign.encWbi`
+的逐字拷贝独立算一遍核对。两种方向都满足 ADR-008 决策三要的那件事——
+期望值由两个独立实现分别产出。这里选后者，是因为被复刻的不只是签名算法
+（那条已有 `wbi_golden.rs`），还有**参数集本身**：`web_location` 在基线
+里是 double 字面量 `444.8`，`ptype`/`dolby`/`panorama` 是 int，而
+`encWbi` 取值用的是 `toString()`。参数表连同类型一起拷进 Dart 测试，才
+能钉住「Rust 的字符串 `"444.8"` 等于 Dart 的 `444.8.toString()`」——写成
+`444` 或 `444.80` 都会让 `w_rid` 变成另一个值，而服务端回的是业务错误码，
+从现象完全反推不出是参数类型错了。

@@ -1,4 +1,4 @@
-import 'package:kilikili/models/search/search_esports.dart';
+import 'package:kilikili/services/rust/rust_misc.dart' show MatchContest;
 import 'package:kilikili/pages/match_info/widgets/match_info_item.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
@@ -7,15 +7,14 @@ import 'package:material_ui/material_ui.dart';
 class SearchEsportsItem extends StatelessWidget {
   const SearchEsportsItem({
     super.key,
-    required this.item,
+    required this.contest,
   });
 
-  final SearchEsports item;
+  final MatchContest contest;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.of(context);
-    final contest = item.contest.first;
     return Padding(
       padding: const .symmetric(vertical: 5),
       child: Center(

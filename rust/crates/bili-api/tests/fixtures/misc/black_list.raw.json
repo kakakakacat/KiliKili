@@ -1,0 +1,29 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "list": [
+      {
+        "mid": 800000101,
+        "attribute": 0,
+        "mtime": 1700000001,
+        "special": 0,
+        "uname": "示例用户甲",
+        "face": "https://example.invalid/bfs/face/x.jpg",
+        "sign": "",
+        "face_nft": 0,
+        "official_verify": { "type": -1, "desc": "" }
+      },
+      {
+        "mid": 800000102,
+        "attribute": 0,
+        "mtime": 1700000002,
+        "uname": "示例用户乙",
+        "face": "https://example.invalid/bfs/face/y.jpg"
+      }
+    ],
+    "re_version": 0,
+    "total": 2
+  }
+}

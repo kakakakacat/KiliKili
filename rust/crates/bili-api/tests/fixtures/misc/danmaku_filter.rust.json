@@ -1,0 +1,31 @@
+{
+  "keywords": [
+    {
+      "filter": "剧透",
+      "id": 101,
+      "kind": 0
+    },
+    {
+      "filter": "前方高能",
+      "id": 102,
+      "kind": 0
+    }
+  ],
+  "patterns": [
+    {
+      "filter": "/^\\d{4}年$/",
+      "id": 103,
+      "kind": 1
+    }
+  ],
+  "toast": null,
+  "users": [
+    {
+      "filter": "800000201",
+      "id": 104,
+      "kind": 2
+    }
+  ],
+  "valid": 1,
+  "ver": 12
+}

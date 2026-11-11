@@ -7,7 +7,7 @@ import 'package:kilikili/common/widgets/stat/stat.dart';
 import 'package:kilikili/http/search.dart';
 import 'package:kilikili/models/common/badge_type.dart';
 import 'package:kilikili/models/common/stat_type.dart';
-import 'package:kilikili/models_new/music/bgm_recommend_list.dart';
+import 'package:kilikili/services/rust/rust_misc.dart';
 import 'package:kilikili/models_new/video/video_detail/dimension.dart';
 import 'package:kilikili/utils/duration_utils.dart';
 import 'package:kilikili/utils/page_utils.dart';
@@ -134,14 +134,13 @@ class MusicVideoCardH extends StatelessWidget {
             child: Row(
               spacing: 8,
               children: [
-                if (videoItem.labelList case final labelList?)
-                  for (final label in labelList)
-                    PBadge(
-                      text: label.name,
-                      isStack: false,
-                      size: PBadgeSize.small,
-                      type: PBadgeType.secondary,
-                    ),
+                for (final label in videoItem.labels)
+                  PBadge(
+                    text: label,
+                    isStack: false,
+                    size: PBadgeSize.small,
+                    type: PBadgeType.secondary,
+                  ),
                 Text(
                   videoItem.upNickName!,
                   maxLines: 1,

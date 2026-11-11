@@ -12,7 +12,7 @@ import 'package:kilikili/common/widgets/view_sliver_safe_area.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/enum_with_label.dart';
 import 'package:kilikili/models/common/image_type.dart';
-import 'package:kilikili/models_new/blacklist/list.dart';
+import 'package:kilikili/services/rust/rust_misc.dart' show BlackListItem;
 import 'package:kilikili/pages/blacklist/controller.dart';
 import 'package:kilikili/pages/search/widgets/search_text.dart';
 import 'package:kilikili/utils/date_utils.dart';

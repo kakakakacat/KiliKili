@@ -5,7 +5,10 @@
 //! 的情况下独立测试。
 
 pub mod danmaku;
+pub mod danmaku_filter;
 pub mod error;
+pub mod match_info;
+pub mod music;
 pub mod player;
 pub mod playurl;
 pub mod redact;
@@ -15,6 +18,7 @@ pub mod search;
 pub mod session;
 pub mod sponsor_block;
 pub mod subtitle;
+pub mod user_list;
 pub mod video;
 pub mod video_feed;
 pub mod video_page;

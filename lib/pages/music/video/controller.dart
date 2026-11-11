@@ -1,7 +1,5 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/music.dart';
-import 'package:kilikili/models_new/music/bgm_detail.dart';
-import 'package:kilikili/models_new/music/bgm_recommend_list.dart';
+import 'package:kilikili/services/rust/rust_misc.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
 import 'package:get/get.dart';
 
@@ -28,5 +26,5 @@ class MusicRecommendController
 
   @override
   Future<LoadingState<List<BgmRecommend>?>> customGetData() =>
-      MusicHttp.bgmRecommend(musicId);
+      RustMisc.bgmRecommend(musicId);
 }

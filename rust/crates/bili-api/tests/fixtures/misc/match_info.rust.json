@@ -1,0 +1,24 @@
+{
+  "away_score": 2,
+  "away_team": {
+    "logo": "/bfs/example/team-3.png",
+    "logo_full": null,
+    "title": "IG"
+  },
+  "contest_status": 3,
+  "game_stage": "夏季赛第一周",
+  "home_score": 1,
+  "home_team": {
+    "logo": "/bfs/example/team-13.png",
+    "logo_full": null,
+    "title": "JDG"
+  },
+  "id": null,
+  "live_room": 6,
+  "playback": "",
+  "season": {
+    "logo": "/bfs/example/season.png",
+    "title": "2018LPL夏季赛"
+  },
+  "stime": 1528707600
+}

@@ -1,6 +1,5 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/match.dart';
-import 'package:kilikili/models_new/match/match_info/contest.dart';
+import 'package:kilikili/services/rust/rust_misc.dart';
 import 'package:kilikili/pages/common/dyn/common_dyn_controller.dart';
 import 'package:get/get.dart';
 
@@ -23,7 +22,7 @@ class MatchInfoController extends CommonDynController {
   }
 
   Future<void> getMatchInfo() async {
-    final res = await MatchHttp.matchInfo(oid);
+    final res = await RustMisc.matchInfo(oid);
     if (res.isSuccess) {
       queryData();
     }

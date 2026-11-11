@@ -330,13 +330,12 @@ pub struct SearchAllData {
     pub users: Vec<SearchUserCard>,
     pub medias: Vec<SearchPgcItem>,
     pub activities: Vec<SearchActivityItem>,
-    /// 赛事卡片的原始 JSON。
+    /// 赛事卡片。
     ///
-    /// 不展开成 typed 结构：它的实体是 `MatchContest`，而那个模型还有一个
-    /// 未迁的生产者（`lib/http/match.dart`，S15）。按 ADR-011 决策六，共享
-    /// 模型要等所有生产者迁完才能动。Dart 侧用既有的 `fromSearch` 吃这段
-    /// JSON，随 S15 一起收尾。
-    pub esports_json: Option<String>,
+    /// 类型来自 [`crate::api::misc`]：赛事详情（S15 / #66）与这里是同一个
+    /// 实体的两套字段名。S9 当时只能原样带回 JSON 串，因为 `MatchContest`
+    /// 还有一个未迁的生产者；S15 迁完后按 ADR-011 决策六在这里展开。
+    pub esports: Vec<crate::api::misc::MatchContest>,
 }
 
 // 下面七个结果结构的字段完全相同，只有 `data` 的类型不同。**刻意逐个
@@ -603,7 +602,11 @@ pub async fn search_all(context: SearchContext, query: SearchQuery) -> SearchAll
                 users: all.users.into_iter().map(user_card).collect(),
                 medias: all.medias.into_iter().map(pgc_item).collect(),
                 activities: all.activities.into_iter().map(activity_item).collect(),
-                esports_json: all.esports_json,
+                esports: all
+                    .esports
+                    .into_iter()
+                    .map(crate::api::misc::match_contest)
+                    .collect(),
             }),
             error_kind: None,
             error_detail: None,

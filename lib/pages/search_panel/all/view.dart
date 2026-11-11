@@ -1,5 +1,5 @@
 import 'package:kilikili/models/search/result.dart';
-import 'package:kilikili/models/search/search_esports.dart';
+import 'package:kilikili/services/rust/rust_misc.dart' show MatchContest;
 import 'package:kilikili/pages/search_panel/all/controller.dart';
 import 'package:kilikili/pages/search_panel/all/widgets/activity.dart';
 import 'package:kilikili/pages/search_panel/all/widgets/esports.dart';
@@ -53,8 +53,8 @@ class _SearchAllPanelState
   Widget buildList(List<SearchVideoItemModel> list) {
     return SliverMainAxisGroup(
       slivers: [
-        if (controller.searchEsports != null) ...[
-          _buildEsports(controller.searchEsports!),
+        if (controller.searchEsports?.isNotEmpty ?? false) ...[
+          _buildEsports(controller.searchEsports!.first),
           SliverToBoxAdapter(
             child: Divider(
               height: 14,
@@ -86,8 +86,8 @@ class _SearchAllPanelState
     );
   }
 
-  static Widget _buildEsports(SearchEsports item) {
-    return SliverToBoxAdapter(child: SearchEsportsItem(item: item));
+  static Widget _buildEsports(MatchContest contest) {
+    return SliverToBoxAdapter(child: SearchEsportsItem(contest: contest));
   }
 
   static Widget _buildPgc(List<SearchPgcItem> list) {

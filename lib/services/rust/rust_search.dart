@@ -5,7 +5,6 @@ import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/account_type.dart';
 import 'package:kilikili/models/common/search/search_type.dart';
 import 'package:kilikili/models/search/result.dart';
-import 'package:kilikili/models/search/search_esports.dart';
 import 'package:kilikili/models_new/search/search_rcmd/data.dart';
 import 'package:kilikili/models_new/search/search_trending/data.dart';
 import 'package:kilikili/rust/api/search.dart' as rust_api;
@@ -136,8 +135,7 @@ abstract final class RustSearch {
         extraHeaders: [
           ..._searchHeaders(searchType, keyword),
           // 基线把风控票据同时放进查询参数与 Cookie。
-          if (gaiaVtoken != null)
-            ('cookie', 'x-bili-gaia-vtoken=$gaiaVtoken'),
+          if (gaiaVtoken != null) ('cookie', 'x-bili-gaia-vtoken=$gaiaVtoken'),
         ],
       );
 
@@ -161,8 +159,10 @@ abstract final class RustSearch {
         SearchType.video => _video(context, query) as Future<LoadingState<R>>,
         SearchType.media_bangumi ||
         SearchType.media_ft => _pgc(context, query) as Future<LoadingState<R>>,
-        SearchType.live_room => _live(context, query) as Future<LoadingState<R>>,
-        SearchType.bili_user => _user(context, query) as Future<LoadingState<R>>,
+        SearchType.live_room =>
+          _live(context, query) as Future<LoadingState<R>>,
+        SearchType.bili_user =>
+          _user(context, query) as Future<LoadingState<R>>,
         SearchType.article =>
           _article(context, query) as Future<LoadingState<R>>,
       };
@@ -193,7 +193,7 @@ abstract final class RustSearch {
         searchActivity: data.activities
             .where((e) => e.url?.startsWith(HttpString.liveUrl) ?? false)
             .toList(),
-        searchEsports: SearchEsports.fromRustJson(data.esportsJson),
+        searchEsports: data.esports,
       ),
     );
   }

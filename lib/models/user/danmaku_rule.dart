@@ -1,5 +1,5 @@
 import 'package:kilikili/grpc/bilibili/community/service/dm/v1.pb.dart';
-import 'package:kilikili/models/user/danmaku_block.dart';
+import 'package:kilikili/services/rust/rust_misc.dart';
 
 class RuleFilter {
   static final _regExp = RegExp(r'^/(.*)/$');
@@ -15,7 +15,7 @@ class RuleFilter {
         count ?? dmFilterString.length + dmRegExp.length + dmUid.length;
   }
 
-  RuleFilter.fromRuleTypeEntries(List<List<SimpleRule>> rules) {
+  RuleFilter.fromRuleTypeEntries(List<List<FilterRule>> rules) {
     dmFilterString = rules[0].map((e) => e.filter).toList();
 
     dmRegExp = rules[1]

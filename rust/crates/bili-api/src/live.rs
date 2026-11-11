@@ -30,8 +30,8 @@
 
 use bili_domain::error::{DomainError, ErrorKind};
 use bili_domain::live::{
-    LiveArea, LiveAreaGroup, LiveFeedback, LiveFeedbackReason, LiveFollowItem, LiveFollowPage,
-    LiveFollowSection, LiveIndexPage, LiveRoomCard, LiveRoomH5, LiveSecondPage, LiveSecondTag,
+    LiveArea, LiveAreaGroup, LiveFeedback, LiveFeedbackReason, LiveFollowItem, LiveFollowSection,
+    LiveFollowingPage, LiveIndexPage, LiveRoomCard, LiveRoomH5, LiveSecondPage, LiveSecondTag,
     default_area_entrance,
 };
 use serde::Deserialize;
@@ -718,13 +718,13 @@ pub fn parse_second_list(body: &str) -> Result<LiveSecondPage, DomainError> {
 }
 
 /// 关注的直播。只保留 `live_status == 1` 的，见
-/// [`bili_domain::live::LiveFollowPage::items`]。
+/// [`bili_domain::live::LiveFollowingPage::items`]。
 ///
 /// # Errors
 /// 同上。
-pub fn parse_follow(body: &str) -> Result<LiveFollowPage, DomainError> {
+pub fn parse_follow(body: &str) -> Result<LiveFollowingPage, DomainError> {
     let dto: FollowDto = unwrap_envelope(body)?;
-    Ok(LiveFollowPage {
+    Ok(LiveFollowingPage {
         title: dto.title,
         page_size: dto.page_size,
         total_page: dto.total_page,
@@ -887,7 +887,7 @@ pub async fn fetch_follow<T: HttpTransport>(
     transport: &T,
     ctx: &RequestContext,
     page: i64,
-) -> Result<LiveFollowPage, DomainError> {
+) -> Result<LiveFollowingPage, DomainError> {
     let body = send(transport, ctx, &build_follow_request(page), Vec::new()).await?;
     parse_follow(&body)
 }

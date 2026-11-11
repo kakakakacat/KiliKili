@@ -1,18 +1,17 @@
 import 'dart:math';
 
-import 'package:kilikili/http/live.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/live/live_area_list/area_item.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_ticket_provider_mixin.dart';
 import 'package:material_ui/material_ui.dart' show TabController;
 
 class LiveAreaDetailController
-    extends CommonListController<List<AreaItem>?, AreaItem>
+    extends CommonListController<List<LiveArea>?, LiveArea>
     with GetSingleTickerProviderStateMixin {
   LiveAreaDetailController(this.areaId, this.parentAreaId);
-  final dynamic areaId;
-  final dynamic parentAreaId;
+  final int areaId;
+  final int parentAreaId;
 
   TabController? tabController;
 
@@ -25,7 +24,7 @@ class LiveAreaDetailController
   }
 
   @override
-  List<AreaItem>? getDataList(List<AreaItem>? response) {
+  List<LiveArea>? getDataList(List<LiveArea>? response) {
     if (response != null && response.isNotEmpty) {
       assert(tabController == null);
       final initialIndex = max(0, response.indexWhere((e) => e.id == areaId));
@@ -39,8 +38,8 @@ class LiveAreaDetailController
   }
 
   @override
-  Future<LoadingState<List<AreaItem>?>> customGetData() =>
-      LiveHttp.liveRoomAreaList(parentid: parentAreaId);
+  Future<LoadingState<List<LiveArea>?>> customGetData() =>
+      RustLive.roomAreaList(parentId: parentAreaId);
 
   @override
   void onClose() {

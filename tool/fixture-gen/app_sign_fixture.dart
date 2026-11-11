@@ -143,9 +143,10 @@ void main() {
             // 整组已签名参数，按 Rust 侧的产出顺序（key 升序 + sign 垫底）
             // 给出，使「签名覆盖了什么」也一并被锁死。
             'signed': [
-              for (final k in (params.keys.toList()..sort())
-                ..remove('sign')
-                ..add('sign'))
+              for (final k
+                  in (params.keys.toList()..sort())
+                    ..remove('sign')
+                    ..add('sign'))
                 [k, params[k].toString()],
             ],
             'sign': params['sign'],

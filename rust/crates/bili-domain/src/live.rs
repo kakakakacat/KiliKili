@@ -124,7 +124,7 @@ pub struct LiveSecondTag {
 
 /// 「我的关注」整页（与首页的关注区块不是同一条接口）。
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct LiveFollowPage {
+pub struct LiveFollowingPage {
     pub title: Option<String>,
     pub page_size: Option<i64>,
     pub total_page: Option<i64>,

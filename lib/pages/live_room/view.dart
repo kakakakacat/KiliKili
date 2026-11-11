@@ -16,7 +16,6 @@ import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/scroll_physics.dart'
     show tabBarScrollPhysics;
 import 'package:kilikili/models/common/live/live_contribution_rank_type.dart';
-import 'package:kilikili/models_new/live/live_room_info_h5/data.dart';
 import 'package:kilikili/models_new/live/live_superchat/item.dart';
 import 'package:kilikili/pages/danmaku/danmaku_model.dart';
 import 'package:kilikili/pages/live_room/contribution_rank/controller.dart';
@@ -33,6 +32,7 @@ import 'package:kilikili/plugin/pl_player/models/play_status.dart';
 import 'package:kilikili/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:kilikili/plugin/pl_player/utils/fullscreen.dart';
 import 'package:kilikili/plugin/pl_player/view/view.dart';
+import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/services/service_locator.dart';
 import 'package:kilikili/utils/android/bindings.g.dart';
 import 'package:kilikili/utils/extension/num_ext.dart';
@@ -289,8 +289,8 @@ class _LiveRoomPageState extends State<LiveRoomPage>
             plPlayerController: plPlayerController,
             headerControl: LiveHeaderControl(
               key: _liveRoomController.headerKey,
-              title: roomInfoH5?.roomInfo?.title,
-              upName: roomInfoH5?.anchorInfo?.baseInfo?.uname,
+              title: roomInfoH5?.title,
+              upName: roomInfoH5?.anchorName,
               plPlayerController: plPlayerController,
               onSendDanmaku: _liveRoomController.onSendDanmaku,
               onPlayAudio: _liveRoomController.queryLiveUrl,
@@ -422,11 +422,8 @@ class _LiveRoomPageState extends State<LiveRoomPage>
           if (!isFullScreen)
             Obx(
               () {
-                final appBackground = _liveRoomController
-                    .roomInfoH5
-                    .value
-                    ?.roomInfo
-                    ?.appBackground;
+                final appBackground =
+                    _liveRoomController.roomInfoH5.value?.appBackground;
                 Widget child;
                 if (appBackground != null && appBackground.isNotEmpty) {
                   child = CachedNetworkImage(
@@ -590,15 +587,13 @@ class _LiveRoomPageState extends State<LiveRoomPage>
           ? null
           : Obx(
               () {
-                RoomInfoH5Data? roomInfoH5 =
-                    _liveRoomController.roomInfoH5.value;
+                LiveRoomH5? roomInfoH5 = _liveRoomController.roomInfoH5.value;
                 if (roomInfoH5 == null) {
                   return const SizedBox.shrink();
                 }
                 return GestureDetector(
                   behavior: HitTestBehavior.opaque,
-                  onTap: () =>
-                      Get.toNamed('/member?mid=${roomInfoH5.roomInfo?.uid}'),
+                  onTap: () => Get.toNamed('/member?mid=${roomInfoH5.uid}'),
                   child: Row(
                     spacing: 10,
                     mainAxisSize: .min,
@@ -607,7 +602,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                         width: 34,
                         height: 34,
                         type: .avatar,
-                        src: roomInfoH5.anchorInfo!.baseInfo!.face,
+                        src: roomInfoH5.anchorFace,
                       ),
                       Flexible(
                         child: Column(
@@ -621,7 +616,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                               children: [
                                 Flexible(
                                   child: Text(
-                                    roomInfoH5.anchorInfo!.baseInfo!.uname!,
+                                    roomInfoH5.anchorName!,
                                     style: const TextStyle(
                                       fontSize: 14,
                                       color: Colors.white,
@@ -697,19 +692,19 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                 PopupMenuItem(
                   onTap: () {
                     try {
-                      RoomInfoH5Data roomInfo =
+                      LiveRoomH5 roomInfo =
                           _liveRoomController.roomInfoH5.value!;
                       PageUtils.pmShare(
                         this.context,
                         content: {
-                          "cover": roomInfo.roomInfo!.cover!,
+                          "cover": roomInfo.cover!,
                           "sourceID": _liveRoomController.roomId.toString(),
-                          "title": roomInfo.roomInfo!.title!,
+                          "title": roomInfo.title!,
                           "url": liveUrl,
-                          "authorID": roomInfo.roomInfo!.uid.toString(),
+                          "authorID": roomInfo.uid.toString(),
                           "source": "直播",
-                          "desc": roomInfo.roomInfo!.title!,
-                          "author": roomInfo.anchorInfo!.baseInfo!.uname,
+                          "desc": roomInfo.title!,
+                          "author": roomInfo.anchorName,
                         },
                       );
                     } catch (e) {

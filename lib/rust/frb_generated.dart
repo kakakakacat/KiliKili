@@ -6,6 +6,7 @@
 import 'package:kilikili/rust/api/danmaku.dart';
 import 'package:kilikili/rust/api/dm_view.dart';
 import 'package:kilikili/rust/api/init.dart';
+import 'package:kilikili/rust/api/live.dart';
 import 'package:kilikili/rust/api/media_select.dart';
 import 'package:kilikili/rust/api/play_url.dart';
 import 'package:kilikili/rust/api/play_url_fetch.dart';
@@ -85,7 +86,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 1470928188;
+  int get rustContentHash => -1194264984;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -134,6 +135,48 @@ abstract class RustLibApi extends BaseApi {
     required FeedContext context,
     required PlatformInt64 pn,
     required PlatformInt64 ps,
+  });
+
+  Future<LiveAreaGroupsResult> crateApiLiveFetchLiveAreaList({
+    required LiveContext context,
+    required LiveAppIdentity identity,
+  });
+
+  Future<LiveAreasResult> crateApiLiveFetchLiveFavTags({
+    required LiveContext context,
+    required LiveAppIdentity identity,
+  });
+
+  Future<LiveFollowResult> crateApiLiveFetchLiveFollow({
+    required LiveContext context,
+    required PlatformInt64 page,
+  });
+
+  Future<LiveIndexResult> crateApiLiveFetchLiveIndex({
+    required LiveContext context,
+    required LiveAppIdentity identity,
+    required PlatformInt64 page,
+    required bool moduleSelect,
+  });
+
+  Future<LiveAreasResult> crateApiLiveFetchLiveRoomAreaList({
+    required LiveContext context,
+    required LiveAppIdentity identity,
+    required PlatformInt64 parentId,
+  });
+
+  Future<LiveRoomH5Result> crateApiLiveFetchLiveRoomH5({
+    required LiveContext context,
+    required PlatformInt64 roomId,
+  });
+
+  Future<LiveSecondResult> crateApiLiveFetchLiveSecondList({
+    required LiveContext context,
+    required LiveAppIdentity identity,
+    required PlatformInt64 page,
+    PlatformInt64? areaId,
+    PlatformInt64? parentAreaId,
+    String? sortType,
   });
 
   Future<NoteListResult> crateApiVideoPageFetchNoteList({
@@ -612,6 +655,271 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<LiveAreaGroupsResult> crateApiLiveFetchLiveAreaList({
+    required LiveContext context,
+    required LiveAppIdentity identity,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_live_context(context, serializer);
+          sse_encode_box_autoadd_live_app_identity(identity, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 10,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_live_area_groups_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiLiveFetchLiveAreaListConstMeta,
+        argValues: [context, identity],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLiveFetchLiveAreaListConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_live_area_list",
+        argNames: ["context", "identity"],
+      );
+
+  @override
+  Future<LiveAreasResult> crateApiLiveFetchLiveFavTags({
+    required LiveContext context,
+    required LiveAppIdentity identity,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_live_context(context, serializer);
+          sse_encode_box_autoadd_live_app_identity(identity, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 11,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_live_areas_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiLiveFetchLiveFavTagsConstMeta,
+        argValues: [context, identity],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLiveFetchLiveFavTagsConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_live_fav_tags",
+        argNames: ["context", "identity"],
+      );
+
+  @override
+  Future<LiveFollowResult> crateApiLiveFetchLiveFollow({
+    required LiveContext context,
+    required PlatformInt64 page,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_live_context(context, serializer);
+          sse_encode_i_64(page, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 12,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_live_follow_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiLiveFetchLiveFollowConstMeta,
+        argValues: [context, page],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLiveFetchLiveFollowConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_live_follow",
+        argNames: ["context", "page"],
+      );
+
+  @override
+  Future<LiveIndexResult> crateApiLiveFetchLiveIndex({
+    required LiveContext context,
+    required LiveAppIdentity identity,
+    required PlatformInt64 page,
+    required bool moduleSelect,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_live_context(context, serializer);
+          sse_encode_box_autoadd_live_app_identity(identity, serializer);
+          sse_encode_i_64(page, serializer);
+          sse_encode_bool(moduleSelect, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 13,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_live_index_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiLiveFetchLiveIndexConstMeta,
+        argValues: [context, identity, page, moduleSelect],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLiveFetchLiveIndexConstMeta => const TaskConstMeta(
+    debugName: "fetch_live_index",
+    argNames: ["context", "identity", "page", "moduleSelect"],
+  );
+
+  @override
+  Future<LiveAreasResult> crateApiLiveFetchLiveRoomAreaList({
+    required LiveContext context,
+    required LiveAppIdentity identity,
+    required PlatformInt64 parentId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_live_context(context, serializer);
+          sse_encode_box_autoadd_live_app_identity(identity, serializer);
+          sse_encode_i_64(parentId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 14,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_live_areas_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiLiveFetchLiveRoomAreaListConstMeta,
+        argValues: [context, identity, parentId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLiveFetchLiveRoomAreaListConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_live_room_area_list",
+        argNames: ["context", "identity", "parentId"],
+      );
+
+  @override
+  Future<LiveRoomH5Result> crateApiLiveFetchLiveRoomH5({
+    required LiveContext context,
+    required PlatformInt64 roomId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_live_context(context, serializer);
+          sse_encode_i_64(roomId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 15,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_live_room_h_5_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiLiveFetchLiveRoomH5ConstMeta,
+        argValues: [context, roomId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLiveFetchLiveRoomH5ConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_live_room_h5",
+        argNames: ["context", "roomId"],
+      );
+
+  @override
+  Future<LiveSecondResult> crateApiLiveFetchLiveSecondList({
+    required LiveContext context,
+    required LiveAppIdentity identity,
+    required PlatformInt64 page,
+    PlatformInt64? areaId,
+    PlatformInt64? parentAreaId,
+    String? sortType,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_live_context(context, serializer);
+          sse_encode_box_autoadd_live_app_identity(identity, serializer);
+          sse_encode_i_64(page, serializer);
+          sse_encode_opt_box_autoadd_i_64(areaId, serializer);
+          sse_encode_opt_box_autoadd_i_64(parentAreaId, serializer);
+          sse_encode_opt_String(sortType, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 16,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_live_second_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiLiveFetchLiveSecondListConstMeta,
+        argValues: [context, identity, page, areaId, parentAreaId, sortType],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLiveFetchLiveSecondListConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_live_second_list",
+        argNames: [
+          "context",
+          "identity",
+          "page",
+          "areaId",
+          "parentAreaId",
+          "sortType",
+        ],
+      );
+
+  @override
   Future<NoteListResult> crateApiVideoPageFetchNoteList({
     required VideoPageContext context,
     required String csrf,
@@ -631,7 +939,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 10,
+            funcId: 17,
             port: port_,
           );
         },
@@ -670,7 +978,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 11,
+            funcId: 18,
             port: port_,
           );
         },
@@ -713,7 +1021,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 12,
+            funcId: 19,
             port: port_,
           );
         },
@@ -760,7 +1068,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 13,
+            funcId: 20,
             port: port_,
           );
         },
@@ -813,7 +1121,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 14,
+            funcId: 21,
             port: port_,
           );
         },
@@ -846,7 +1154,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 15,
+            funcId: 22,
             port: port_,
           );
         },
@@ -881,7 +1189,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 16,
+            funcId: 23,
             port: port_,
           );
         },
@@ -918,7 +1226,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 17,
+            funcId: 24,
             port: port_,
           );
         },
@@ -953,7 +1261,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 18,
+            funcId: 25,
             port: port_,
           );
         },
@@ -988,7 +1296,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 19,
+            funcId: 26,
             port: port_,
           );
         },
@@ -1025,7 +1333,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 20,
+            funcId: 27,
             port: port_,
           );
         },
@@ -1058,7 +1366,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 21,
+            funcId: 28,
             port: port_,
           );
         },
@@ -1095,7 +1403,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 22,
+            funcId: 29,
             port: port_,
           );
         },
@@ -1142,7 +1450,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 23,
+            funcId: 30,
             port: port_,
           );
         },
@@ -1197,7 +1505,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 24,
+            funcId: 31,
             port: port_,
           );
         },
@@ -1228,7 +1536,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 25,
+            funcId: 32,
             port: port_,
           );
         },
@@ -1260,7 +1568,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 26,
+            funcId: 33,
             port: port_,
           );
         },
@@ -1297,7 +1605,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 27,
+            funcId: 34,
             port: port_,
           );
         },
@@ -1330,7 +1638,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 28,
+            funcId: 35,
             port: port_,
           );
         },
@@ -1363,7 +1671,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 29,
+            funcId: 36,
             port: port_,
           );
         },
@@ -1398,7 +1706,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 30,
+            funcId: 37,
             port: port_,
           );
         },
@@ -1432,7 +1740,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 31,
+            funcId: 38,
             port: port_,
           );
         },
@@ -1467,7 +1775,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 32,
+            funcId: 39,
             port: port_,
           );
         },
@@ -1501,7 +1809,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 33,
+            funcId: 40,
             port: port_,
           );
         },
@@ -1533,7 +1841,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 34,
+            funcId: 41,
             port: port_,
           );
         },
@@ -1570,7 +1878,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 35,
+            funcId: 42,
             port: port_,
           );
         },
@@ -1605,7 +1913,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 36,
+            funcId: 43,
             port: port_,
           );
         },
@@ -1639,7 +1947,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 37,
+            funcId: 44,
             port: port_,
           );
         },
@@ -1670,7 +1978,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_list_prim_i_64_strict(audioIds, serializer);
           sse_encode_i_64(preferQuality, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 38)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 45)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_audio_selection_result,
@@ -1706,7 +2014,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_opt_list_prim_i_64_strict(acceptQuality, serializer);
           sse_encode_list_format_candidate_input(supportFormats, serializer);
           sse_encode_list_prim_i_32_loose(preferCodecIndices, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 39)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 46)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_video_selection_result,
@@ -1751,7 +2059,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 40,
+            funcId: 47,
             port: port_,
           );
         },
@@ -1785,7 +2093,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 41,
+            funcId: 48,
             port: port_,
           );
         },
@@ -1928,6 +2236,48 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Interaction dco_decode_box_autoadd_interaction(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_interaction(raw);
+  }
+
+  @protected
+  LiveAppIdentity dco_decode_box_autoadd_live_app_identity(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_live_app_identity(raw);
+  }
+
+  @protected
+  LiveContext dco_decode_box_autoadd_live_context(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_live_context(raw);
+  }
+
+  @protected
+  LiveFollowSection dco_decode_box_autoadd_live_follow_section(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_live_follow_section(raw);
+  }
+
+  @protected
+  LiveFollowingPage dco_decode_box_autoadd_live_following_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_live_following_page(raw);
+  }
+
+  @protected
+  LiveIndexPage dco_decode_box_autoadd_live_index_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_live_index_page(raw);
+  }
+
+  @protected
+  LiveRoomH5 dco_decode_box_autoadd_live_room_h_5(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_live_room_h_5(raw);
+  }
+
+  @protected
+  LiveSecondPage dco_decode_box_autoadd_live_second_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_live_second_page(raw);
   }
 
   @protected
@@ -2340,6 +2690,48 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<LiveArea> dco_decode_list_live_area(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_live_area).toList();
+  }
+
+  @protected
+  List<LiveAreaGroup> dco_decode_list_live_area_group(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_live_area_group).toList();
+  }
+
+  @protected
+  List<LiveFeedback> dco_decode_list_live_feedback(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_live_feedback).toList();
+  }
+
+  @protected
+  List<LiveFeedbackReason> dco_decode_list_live_feedback_reason(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_live_feedback_reason).toList();
+  }
+
+  @protected
+  List<LiveFollowItem> dco_decode_list_live_follow_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_live_follow_item).toList();
+  }
+
+  @protected
+  List<LiveRoomCard> dco_decode_list_live_room_card(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_live_room_card).toList();
+  }
+
+  @protected
+  List<LiveSecondTag> dco_decode_list_live_second_tag(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_live_second_tag).toList();
+  }
+
+  @protected
   List<NoteItem> dco_decode_list_note_item(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_note_item).toList();
@@ -2472,6 +2864,303 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  LiveAppIdentity dco_decode_live_app_identity(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 11)
+      throw Exception('unexpected arr length: expect 11 but see ${arr.length}');
+    return LiveAppIdentity(
+      appkey: dco_decode_String(arr[0]),
+      appsec: dco_decode_String(arr[1]),
+      build: dco_decode_i_64(arr[2]),
+      version: dco_decode_String(arr[3]),
+      statistics: dco_decode_String(arr[4]),
+      userAgent: dco_decode_String(arr[5]),
+      buvid: dco_decode_String(arr[6]),
+      traceId: dco_decode_String(arr[7]),
+      accessKey: dco_decode_opt_String(arr[8]),
+      loggedIn: dco_decode_bool(arr[9]),
+      ts: dco_decode_i_64(arr[10]),
+    );
+  }
+
+  @protected
+  LiveArea dco_decode_live_area(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return LiveArea(
+      id: dco_decode_i_64(arr[0]),
+      name: dco_decode_opt_String(arr[1]),
+      pic: dco_decode_opt_String(arr[2]),
+      parentId: dco_decode_i_64(arr[3]),
+      parentName: dco_decode_opt_String(arr[4]),
+    );
+  }
+
+  @protected
+  LiveAreaGroup dco_decode_live_area_group(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return LiveAreaGroup(
+      name: dco_decode_String(arr[0]),
+      areas: dco_decode_list_live_area(arr[1]),
+    );
+  }
+
+  @protected
+  LiveAreaGroupsResult dco_decode_live_area_groups_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return LiveAreaGroupsResult(
+      data: dco_decode_opt_list_live_area_group(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  LiveAreasResult dco_decode_live_areas_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return LiveAreasResult(
+      data: dco_decode_opt_list_live_area(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  LiveContext dco_decode_live_context(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return LiveContext(
+      baseUrl: dco_decode_String(arr[0]),
+      cookie: dco_decode_opt_String(arr[1]),
+      headers: dco_decode_list_record_string_string(arr[2]),
+      timeoutMs: dco_decode_u_64(arr[3]),
+      transport: dco_decode_transport_settings(arr[4]),
+    );
+  }
+
+  @protected
+  LiveFeedback dco_decode_live_feedback(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return LiveFeedback(
+      title: dco_decode_opt_String(arr[0]),
+      subtitle: dco_decode_opt_String(arr[1]),
+      kind: dco_decode_opt_String(arr[2]),
+      reasons: dco_decode_list_live_feedback_reason(arr[3]),
+    );
+  }
+
+  @protected
+  LiveFeedbackReason dco_decode_live_feedback_reason(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return LiveFeedbackReason(
+      id: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      name: dco_decode_opt_String(arr[1]),
+      idType: dco_decode_opt_String(arr[2]),
+      reasonId: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  LiveFollowItem dco_decode_live_follow_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return LiveFollowItem(
+      roomid: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      uname: dco_decode_opt_String(arr[1]),
+      title: dco_decode_opt_String(arr[2]),
+      areaName: dco_decode_opt_String(arr[3]),
+      textSmall: dco_decode_opt_String(arr[4]),
+      roomCover: dco_decode_opt_String(arr[5]),
+    );
+  }
+
+  @protected
+  LiveFollowResult dco_decode_live_follow_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return LiveFollowResult(
+      data: dco_decode_opt_box_autoadd_live_following_page(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  LiveFollowSection dco_decode_live_follow_section(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return LiveFollowSection(
+      totalCount: dco_decode_i_64(arr[0]),
+      items: dco_decode_list_live_room_card(arr[1]),
+    );
+  }
+
+  @protected
+  LiveFollowingPage dco_decode_live_following_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return LiveFollowingPage(
+      title: dco_decode_opt_String(arr[0]),
+      pageSize: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      totalPage: dco_decode_opt_box_autoadd_i_64(arr[2]),
+      items: dco_decode_list_live_follow_item(arr[3]),
+      count: dco_decode_opt_box_autoadd_i_64(arr[4]),
+      liveCount: dco_decode_opt_box_autoadd_i_64(arr[5]),
+    );
+  }
+
+  @protected
+  LiveIndexPage dco_decode_live_index_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return LiveIndexPage(
+      cards: dco_decode_list_live_room_card(arr[0]),
+      hasMore: dco_decode_bool(arr[1]),
+      follow: dco_decode_opt_box_autoadd_live_follow_section(arr[2]),
+      areaEntrance: dco_decode_list_live_room_card(arr[3]),
+    );
+  }
+
+  @protected
+  LiveIndexResult dco_decode_live_index_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return LiveIndexResult(
+      data: dco_decode_opt_box_autoadd_live_index_page(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  LiveRoomCard dco_decode_live_room_card(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 12)
+      throw Exception('unexpected arr length: expect 12 but see ${arr.length}');
+    return LiveRoomCard(
+      roomid: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      uid: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      uname: dco_decode_opt_String(arr[2]),
+      face: dco_decode_opt_String(arr[3]),
+      cover: dco_decode_opt_String(arr[4]),
+      systemCover: dco_decode_opt_String(arr[5]),
+      title: dco_decode_opt_String(arr[6]),
+      areaName: dco_decode_opt_String(arr[7]),
+      areaV2Id: dco_decode_opt_box_autoadd_i_64(arr[8]),
+      areaV2ParentId: dco_decode_opt_box_autoadd_i_64(arr[9]),
+      watchedText: dco_decode_opt_String(arr[10]),
+      feedback: dco_decode_list_live_feedback(arr[11]),
+    );
+  }
+
+  @protected
+  LiveRoomH5 dco_decode_live_room_h_5(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    return LiveRoomH5(
+      uid: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      title: dco_decode_opt_String(arr[1]),
+      cover: dco_decode_opt_String(arr[2]),
+      appBackground: dco_decode_opt_String(arr[3]),
+      anchorName: dco_decode_opt_String(arr[4]),
+      anchorFace: dco_decode_opt_String(arr[5]),
+      watchedText: dco_decode_opt_String(arr[6]),
+    );
+  }
+
+  @protected
+  LiveRoomH5Result dco_decode_live_room_h_5_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return LiveRoomH5Result(
+      data: dco_decode_opt_box_autoadd_live_room_h_5(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  LiveSecondPage dco_decode_live_second_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return LiveSecondPage(
+      count: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      cards: dco_decode_list_live_room_card(arr[1]),
+      tags: dco_decode_list_live_second_tag(arr[2]),
+    );
+  }
+
+  @protected
+  LiveSecondResult dco_decode_live_second_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return LiveSecondResult(
+      data: dco_decode_opt_box_autoadd_live_second_page(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  LiveSecondTag dco_decode_live_second_tag(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return LiveSecondTag(
+      name: dco_decode_opt_String(arr[0]),
+      sortType: dco_decode_opt_String(arr[1]),
+    );
+  }
+
+  @protected
   MediaScore dco_decode_media_score(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -2599,6 +3288,40 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  LiveFollowSection? dco_decode_opt_box_autoadd_live_follow_section(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_live_follow_section(raw);
+  }
+
+  @protected
+  LiveFollowingPage? dco_decode_opt_box_autoadd_live_following_page(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_live_following_page(raw);
+  }
+
+  @protected
+  LiveIndexPage? dco_decode_opt_box_autoadd_live_index_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_live_index_page(raw);
+  }
+
+  @protected
+  LiveRoomH5? dco_decode_opt_box_autoadd_live_room_h_5(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_live_room_h_5(raw);
+  }
+
+  @protected
+  LiveSecondPage? dco_decode_opt_box_autoadd_live_second_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_live_second_page(raw);
+  }
+
+  @protected
   MediaScore? dco_decode_opt_box_autoadd_media_score(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_media_score(raw);
@@ -2720,6 +3443,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<FeedVideoItem>? dco_decode_opt_list_feed_video_item(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_list_feed_video_item(raw);
+  }
+
+  @protected
+  List<LiveArea>? dco_decode_opt_list_live_area(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_list_live_area(raw);
+  }
+
+  @protected
+  List<LiveAreaGroup>? dco_decode_opt_list_live_area_group(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_list_live_area_group(raw);
   }
 
   @protected
@@ -3841,6 +4576,62 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  LiveAppIdentity sse_decode_box_autoadd_live_app_identity(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_live_app_identity(deserializer));
+  }
+
+  @protected
+  LiveContext sse_decode_box_autoadd_live_context(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_live_context(deserializer));
+  }
+
+  @protected
+  LiveFollowSection sse_decode_box_autoadd_live_follow_section(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_live_follow_section(deserializer));
+  }
+
+  @protected
+  LiveFollowingPage sse_decode_box_autoadd_live_following_page(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_live_following_page(deserializer));
+  }
+
+  @protected
+  LiveIndexPage sse_decode_box_autoadd_live_index_page(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_live_index_page(deserializer));
+  }
+
+  @protected
+  LiveRoomH5 sse_decode_box_autoadd_live_room_h_5(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_live_room_h_5(deserializer));
+  }
+
+  @protected
+  LiveSecondPage sse_decode_box_autoadd_live_second_page(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_live_second_page(deserializer));
+  }
+
+  @protected
   MediaScore sse_decode_box_autoadd_media_score(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_media_score(deserializer));
@@ -4373,6 +5164,102 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<LiveArea> sse_decode_list_live_area(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <LiveArea>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_live_area(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<LiveAreaGroup> sse_decode_list_live_area_group(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <LiveAreaGroup>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_live_area_group(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<LiveFeedback> sse_decode_list_live_feedback(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <LiveFeedback>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_live_feedback(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<LiveFeedbackReason> sse_decode_list_live_feedback_reason(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <LiveFeedbackReason>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_live_feedback_reason(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<LiveFollowItem> sse_decode_list_live_follow_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <LiveFollowItem>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_live_follow_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<LiveRoomCard> sse_decode_list_live_room_card(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <LiveRoomCard>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_live_room_card(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<LiveSecondTag> sse_decode_list_live_second_tag(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <LiveSecondTag>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_live_second_tag(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<NoteItem> sse_decode_list_note_item(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -4624,6 +5511,339 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  LiveAppIdentity sse_decode_live_app_identity(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_appkey = sse_decode_String(deserializer);
+    var var_appsec = sse_decode_String(deserializer);
+    var var_build = sse_decode_i_64(deserializer);
+    var var_version = sse_decode_String(deserializer);
+    var var_statistics = sse_decode_String(deserializer);
+    var var_userAgent = sse_decode_String(deserializer);
+    var var_buvid = sse_decode_String(deserializer);
+    var var_traceId = sse_decode_String(deserializer);
+    var var_accessKey = sse_decode_opt_String(deserializer);
+    var var_loggedIn = sse_decode_bool(deserializer);
+    var var_ts = sse_decode_i_64(deserializer);
+    return LiveAppIdentity(
+      appkey: var_appkey,
+      appsec: var_appsec,
+      build: var_build,
+      version: var_version,
+      statistics: var_statistics,
+      userAgent: var_userAgent,
+      buvid: var_buvid,
+      traceId: var_traceId,
+      accessKey: var_accessKey,
+      loggedIn: var_loggedIn,
+      ts: var_ts,
+    );
+  }
+
+  @protected
+  LiveArea sse_decode_live_area(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_i_64(deserializer);
+    var var_name = sse_decode_opt_String(deserializer);
+    var var_pic = sse_decode_opt_String(deserializer);
+    var var_parentId = sse_decode_i_64(deserializer);
+    var var_parentName = sse_decode_opt_String(deserializer);
+    return LiveArea(
+      id: var_id,
+      name: var_name,
+      pic: var_pic,
+      parentId: var_parentId,
+      parentName: var_parentName,
+    );
+  }
+
+  @protected
+  LiveAreaGroup sse_decode_live_area_group(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_areas = sse_decode_list_live_area(deserializer);
+    return LiveAreaGroup(name: var_name, areas: var_areas);
+  }
+
+  @protected
+  LiveAreaGroupsResult sse_decode_live_area_groups_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_list_live_area_group(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return LiveAreaGroupsResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  LiveAreasResult sse_decode_live_areas_result(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_list_live_area(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return LiveAreasResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  LiveContext sse_decode_live_context(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_baseUrl = sse_decode_String(deserializer);
+    var var_cookie = sse_decode_opt_String(deserializer);
+    var var_headers = sse_decode_list_record_string_string(deserializer);
+    var var_timeoutMs = sse_decode_u_64(deserializer);
+    var var_transport = sse_decode_transport_settings(deserializer);
+    return LiveContext(
+      baseUrl: var_baseUrl,
+      cookie: var_cookie,
+      headers: var_headers,
+      timeoutMs: var_timeoutMs,
+      transport: var_transport,
+    );
+  }
+
+  @protected
+  LiveFeedback sse_decode_live_feedback(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_subtitle = sse_decode_opt_String(deserializer);
+    var var_kind = sse_decode_opt_String(deserializer);
+    var var_reasons = sse_decode_list_live_feedback_reason(deserializer);
+    return LiveFeedback(
+      title: var_title,
+      subtitle: var_subtitle,
+      kind: var_kind,
+      reasons: var_reasons,
+    );
+  }
+
+  @protected
+  LiveFeedbackReason sse_decode_live_feedback_reason(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_name = sse_decode_opt_String(deserializer);
+    var var_idType = sse_decode_opt_String(deserializer);
+    var var_reasonId = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return LiveFeedbackReason(
+      id: var_id,
+      name: var_name,
+      idType: var_idType,
+      reasonId: var_reasonId,
+    );
+  }
+
+  @protected
+  LiveFollowItem sse_decode_live_follow_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_roomid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_uname = sse_decode_opt_String(deserializer);
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_areaName = sse_decode_opt_String(deserializer);
+    var var_textSmall = sse_decode_opt_String(deserializer);
+    var var_roomCover = sse_decode_opt_String(deserializer);
+    return LiveFollowItem(
+      roomid: var_roomid,
+      uname: var_uname,
+      title: var_title,
+      areaName: var_areaName,
+      textSmall: var_textSmall,
+      roomCover: var_roomCover,
+    );
+  }
+
+  @protected
+  LiveFollowResult sse_decode_live_follow_result(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_live_following_page(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return LiveFollowResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  LiveFollowSection sse_decode_live_follow_section(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_totalCount = sse_decode_i_64(deserializer);
+    var var_items = sse_decode_list_live_room_card(deserializer);
+    return LiveFollowSection(totalCount: var_totalCount, items: var_items);
+  }
+
+  @protected
+  LiveFollowingPage sse_decode_live_following_page(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_pageSize = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_totalPage = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_items = sse_decode_list_live_follow_item(deserializer);
+    var var_count = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_liveCount = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return LiveFollowingPage(
+      title: var_title,
+      pageSize: var_pageSize,
+      totalPage: var_totalPage,
+      items: var_items,
+      count: var_count,
+      liveCount: var_liveCount,
+    );
+  }
+
+  @protected
+  LiveIndexPage sse_decode_live_index_page(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_cards = sse_decode_list_live_room_card(deserializer);
+    var var_hasMore = sse_decode_bool(deserializer);
+    var var_follow = sse_decode_opt_box_autoadd_live_follow_section(
+      deserializer,
+    );
+    var var_areaEntrance = sse_decode_list_live_room_card(deserializer);
+    return LiveIndexPage(
+      cards: var_cards,
+      hasMore: var_hasMore,
+      follow: var_follow,
+      areaEntrance: var_areaEntrance,
+    );
+  }
+
+  @protected
+  LiveIndexResult sse_decode_live_index_result(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_live_index_page(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return LiveIndexResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  LiveRoomCard sse_decode_live_room_card(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_roomid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_uid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_uname = sse_decode_opt_String(deserializer);
+    var var_face = sse_decode_opt_String(deserializer);
+    var var_cover = sse_decode_opt_String(deserializer);
+    var var_systemCover = sse_decode_opt_String(deserializer);
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_areaName = sse_decode_opt_String(deserializer);
+    var var_areaV2Id = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_areaV2ParentId = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_watchedText = sse_decode_opt_String(deserializer);
+    var var_feedback = sse_decode_list_live_feedback(deserializer);
+    return LiveRoomCard(
+      roomid: var_roomid,
+      uid: var_uid,
+      uname: var_uname,
+      face: var_face,
+      cover: var_cover,
+      systemCover: var_systemCover,
+      title: var_title,
+      areaName: var_areaName,
+      areaV2Id: var_areaV2Id,
+      areaV2ParentId: var_areaV2ParentId,
+      watchedText: var_watchedText,
+      feedback: var_feedback,
+    );
+  }
+
+  @protected
+  LiveRoomH5 sse_decode_live_room_h_5(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_uid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_cover = sse_decode_opt_String(deserializer);
+    var var_appBackground = sse_decode_opt_String(deserializer);
+    var var_anchorName = sse_decode_opt_String(deserializer);
+    var var_anchorFace = sse_decode_opt_String(deserializer);
+    var var_watchedText = sse_decode_opt_String(deserializer);
+    return LiveRoomH5(
+      uid: var_uid,
+      title: var_title,
+      cover: var_cover,
+      appBackground: var_appBackground,
+      anchorName: var_anchorName,
+      anchorFace: var_anchorFace,
+      watchedText: var_watchedText,
+    );
+  }
+
+  @protected
+  LiveRoomH5Result sse_decode_live_room_h_5_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_live_room_h_5(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return LiveRoomH5Result(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  LiveSecondPage sse_decode_live_second_page(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_count = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_cards = sse_decode_list_live_room_card(deserializer);
+    var var_tags = sse_decode_list_live_second_tag(deserializer);
+    return LiveSecondPage(count: var_count, cards: var_cards, tags: var_tags);
+  }
+
+  @protected
+  LiveSecondResult sse_decode_live_second_result(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_live_second_page(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return LiveSecondResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  LiveSecondTag sse_decode_live_second_tag(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_opt_String(deserializer);
+    var var_sortType = sse_decode_opt_String(deserializer);
+    return LiveSecondTag(name: var_name, sortType: var_sortType);
+  }
+
+  @protected
   MediaScore sse_decode_media_score(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_score = sse_decode_opt_box_autoadd_f_64(deserializer);
@@ -4784,6 +6004,71 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_box_autoadd_interaction(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  LiveFollowSection? sse_decode_opt_box_autoadd_live_follow_section(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_live_follow_section(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  LiveFollowingPage? sse_decode_opt_box_autoadd_live_following_page(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_live_following_page(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  LiveIndexPage? sse_decode_opt_box_autoadd_live_index_page(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_live_index_page(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  LiveRoomH5? sse_decode_opt_box_autoadd_live_room_h_5(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_live_room_h_5(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  LiveSecondPage? sse_decode_opt_box_autoadd_live_second_page(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_live_second_page(deserializer));
     } else {
       return null;
     }
@@ -5021,6 +6306,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_list_feed_video_item(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  List<LiveArea>? sse_decode_opt_list_live_area(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_list_live_area(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  List<LiveAreaGroup>? sse_decode_opt_list_live_area_group(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_list_live_area_group(deserializer));
     } else {
       return null;
     }
@@ -6426,6 +7735,69 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_live_app_identity(
+    LiveAppIdentity self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_live_app_identity(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_live_context(
+    LiveContext self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_live_context(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_live_follow_section(
+    LiveFollowSection self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_live_follow_section(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_live_following_page(
+    LiveFollowingPage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_live_following_page(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_live_index_page(
+    LiveIndexPage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_live_index_page(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_live_room_h_5(
+    LiveRoomH5 self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_live_room_h_5(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_live_second_page(
+    LiveSecondPage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_live_second_page(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_media_score(
     MediaScore self,
     SseSerializer serializer,
@@ -6874,6 +8246,90 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_live_area(
+    List<LiveArea> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_live_area(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_live_area_group(
+    List<LiveAreaGroup> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_live_area_group(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_live_feedback(
+    List<LiveFeedback> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_live_feedback(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_live_feedback_reason(
+    List<LiveFeedbackReason> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_live_feedback_reason(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_live_follow_item(
+    List<LiveFollowItem> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_live_follow_item(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_live_room_card(
+    List<LiveRoomCard> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_live_room_card(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_live_second_tag(
+    List<LiveSecondTag> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_live_second_tag(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_note_item(
     List<NoteItem> self,
     SseSerializer serializer,
@@ -7120,6 +8576,248 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_live_app_identity(
+    LiveAppIdentity self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.appkey, serializer);
+    sse_encode_String(self.appsec, serializer);
+    sse_encode_i_64(self.build, serializer);
+    sse_encode_String(self.version, serializer);
+    sse_encode_String(self.statistics, serializer);
+    sse_encode_String(self.userAgent, serializer);
+    sse_encode_String(self.buvid, serializer);
+    sse_encode_String(self.traceId, serializer);
+    sse_encode_opt_String(self.accessKey, serializer);
+    sse_encode_bool(self.loggedIn, serializer);
+    sse_encode_i_64(self.ts, serializer);
+  }
+
+  @protected
+  void sse_encode_live_area(LiveArea self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_64(self.id, serializer);
+    sse_encode_opt_String(self.name, serializer);
+    sse_encode_opt_String(self.pic, serializer);
+    sse_encode_i_64(self.parentId, serializer);
+    sse_encode_opt_String(self.parentName, serializer);
+  }
+
+  @protected
+  void sse_encode_live_area_group(
+    LiveAreaGroup self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_list_live_area(self.areas, serializer);
+  }
+
+  @protected
+  void sse_encode_live_area_groups_result(
+    LiveAreaGroupsResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_list_live_area_group(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_live_areas_result(
+    LiveAreasResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_list_live_area(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_live_context(LiveContext self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.baseUrl, serializer);
+    sse_encode_opt_String(self.cookie, serializer);
+    sse_encode_list_record_string_string(self.headers, serializer);
+    sse_encode_u_64(self.timeoutMs, serializer);
+    sse_encode_transport_settings(self.transport, serializer);
+  }
+
+  @protected
+  void sse_encode_live_feedback(LiveFeedback self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_String(self.subtitle, serializer);
+    sse_encode_opt_String(self.kind, serializer);
+    sse_encode_list_live_feedback_reason(self.reasons, serializer);
+  }
+
+  @protected
+  void sse_encode_live_feedback_reason(
+    LiveFeedbackReason self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.id, serializer);
+    sse_encode_opt_String(self.name, serializer);
+    sse_encode_opt_String(self.idType, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.reasonId, serializer);
+  }
+
+  @protected
+  void sse_encode_live_follow_item(
+    LiveFollowItem self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.roomid, serializer);
+    sse_encode_opt_String(self.uname, serializer);
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_String(self.areaName, serializer);
+    sse_encode_opt_String(self.textSmall, serializer);
+    sse_encode_opt_String(self.roomCover, serializer);
+  }
+
+  @protected
+  void sse_encode_live_follow_result(
+    LiveFollowResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_live_following_page(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_live_follow_section(
+    LiveFollowSection self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_64(self.totalCount, serializer);
+    sse_encode_list_live_room_card(self.items, serializer);
+  }
+
+  @protected
+  void sse_encode_live_following_page(
+    LiveFollowingPage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.pageSize, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.totalPage, serializer);
+    sse_encode_list_live_follow_item(self.items, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.count, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.liveCount, serializer);
+  }
+
+  @protected
+  void sse_encode_live_index_page(
+    LiveIndexPage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_live_room_card(self.cards, serializer);
+    sse_encode_bool(self.hasMore, serializer);
+    sse_encode_opt_box_autoadd_live_follow_section(self.follow, serializer);
+    sse_encode_list_live_room_card(self.areaEntrance, serializer);
+  }
+
+  @protected
+  void sse_encode_live_index_result(
+    LiveIndexResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_live_index_page(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_live_room_card(LiveRoomCard self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.roomid, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.uid, serializer);
+    sse_encode_opt_String(self.uname, serializer);
+    sse_encode_opt_String(self.face, serializer);
+    sse_encode_opt_String(self.cover, serializer);
+    sse_encode_opt_String(self.systemCover, serializer);
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_String(self.areaName, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.areaV2Id, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.areaV2ParentId, serializer);
+    sse_encode_opt_String(self.watchedText, serializer);
+    sse_encode_list_live_feedback(self.feedback, serializer);
+  }
+
+  @protected
+  void sse_encode_live_room_h_5(LiveRoomH5 self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.uid, serializer);
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_String(self.cover, serializer);
+    sse_encode_opt_String(self.appBackground, serializer);
+    sse_encode_opt_String(self.anchorName, serializer);
+    sse_encode_opt_String(self.anchorFace, serializer);
+    sse_encode_opt_String(self.watchedText, serializer);
+  }
+
+  @protected
+  void sse_encode_live_room_h_5_result(
+    LiveRoomH5Result self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_live_room_h_5(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_live_second_page(
+    LiveSecondPage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.count, serializer);
+    sse_encode_list_live_room_card(self.cards, serializer);
+    sse_encode_list_live_second_tag(self.tags, serializer);
+  }
+
+  @protected
+  void sse_encode_live_second_result(
+    LiveSecondResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_live_second_page(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_live_second_tag(
+    LiveSecondTag self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.name, serializer);
+    sse_encode_opt_String(self.sortType, serializer);
+  }
+
+  @protected
   void sse_encode_media_score(MediaScore self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_opt_box_autoadd_f_64(self.score, serializer);
@@ -7259,6 +8957,71 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_box_autoadd_interaction(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_follow_section(
+    LiveFollowSection? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_live_follow_section(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_following_page(
+    LiveFollowingPage? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_live_following_page(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_index_page(
+    LiveIndexPage? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_live_index_page(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_room_h_5(
+    LiveRoomH5? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_live_room_h_5(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_second_page(
+    LiveSecondPage? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_live_second_page(self, serializer);
     }
   }
 
@@ -7500,6 +9263,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_list_feed_video_item(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_list_live_area(
+    List<LiveArea>? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_list_live_area(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_list_live_area_group(
+    List<LiveAreaGroup>? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_list_live_area_group(self, serializer);
     }
   }
 

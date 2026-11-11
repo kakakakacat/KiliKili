@@ -27,6 +27,10 @@ abstract class BaseStat {
 }
 
 class Stat extends BaseStat {
+  /// 字段留空，由子类逐个填。S3 之后 `HotStat` 的数据来自 Rust 的 typed
+  /// 结构而不是 JSON，没有 `fromJson` 可继承。
+  Stat.empty();
+
   Stat.fromJson(Map<String, dynamic> json) {
     view = json["view"];
     like = json["like"];

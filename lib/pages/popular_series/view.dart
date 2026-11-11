@@ -11,7 +11,7 @@ import 'package:kilikili/common/widgets/view_sliver_safe_area.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/video/source_type.dart';
 import 'package:kilikili/models/model_hot_video_item.dart';
-import 'package:kilikili/models_new/popular/popular_series_one/config.dart';
+import 'package:kilikili/services/rust/rust_video_feed.dart';
 import 'package:kilikili/pages/popular_series/controller.dart';
 import 'package:kilikili/utils/grid.dart';
 import 'package:kilikili/utils/page_utils.dart';

@@ -1,0 +1,145 @@
+{
+  "config": {
+    "label": "示例label",
+    "media_id": 448235488,
+    "name": "UP主9"
+  },
+  "list": [
+    {
+      "aid": 100000001,
+      "badge_kind": null,
+      "bvid": "BV1Fixture01",
+      "cid": 1001,
+      "copyright": 1,
+      "cover": "https://example.invalid/pic/75.jpg",
+      "ctime": 1553152210,
+      "desc": "示例简介",
+      "dimension": {
+        "height": 1080,
+        "width": 1920
+      },
+      "duration": 504,
+      "first_frame": null,
+      "owner": {
+        "face": "https://example.invalid/face/33.jpg",
+        "mid": 20001,
+        "name": "UP主0"
+      },
+      "pgc_label": null,
+      "progress": null,
+      "pub_location": null,
+      "pubdate": 1553152210,
+      "redirect_url": null,
+      "stat": {
+        "coin": 554113.0,
+        "danmaku": 70276,
+        "dislike": 0,
+        "favorite": 237268,
+        "his_rank": 1,
+        "like": 510703,
+        "now_rank": 0,
+        "reply": 22608,
+        "share": 213272,
+        "view": 5429614,
+        "vt": 0,
+        "vv": 5429614
+      },
+      "state": 0,
+      "tid": 250,
+      "title": "示例标题6",
+      "tname": "出行",
+      "videos": 1
+    },
+    {
+      "aid": 100000002,
+      "badge_kind": null,
+      "bvid": "BV1Fixture02",
+      "cid": 1002,
+      "copyright": 1,
+      "cover": "https://example.invalid/pic/17.jpg",
+      "ctime": 1552823023,
+      "desc": "示例简介",
+      "dimension": {
+        "height": 1080,
+        "width": 1920
+      },
+      "duration": 643,
+      "first_frame": null,
+      "owner": {
+        "face": "https://example.invalid/face/78.jpg",
+        "mid": 20002,
+        "name": "UP主0"
+      },
+      "pgc_label": null,
+      "progress": null,
+      "pub_location": "示例地区",
+      "pubdate": 1552823023,
+      "redirect_url": null,
+      "stat": {
+        "coin": 216870.0,
+        "danmaku": 43952,
+        "dislike": 0,
+        "favorite": 147123,
+        "his_rank": 1,
+        "like": 252966,
+        "now_rank": 0,
+        "reply": 12868,
+        "share": 160620,
+        "view": 4940819,
+        "vt": 0,
+        "vv": 4940819
+      },
+      "state": 0,
+      "tid": 183,
+      "title": "示例标题17",
+      "tname": "影视剪辑",
+      "videos": 3
+    },
+    {
+      "aid": 100000003,
+      "badge_kind": null,
+      "bvid": "BV1Fixture03",
+      "cid": 1003,
+      "copyright": 1,
+      "cover": "https://example.invalid/pic/81.jpg",
+      "ctime": 1553365833,
+      "desc": "示例简介",
+      "dimension": {
+        "height": 1080,
+        "width": 1920
+      },
+      "duration": 415,
+      "first_frame": null,
+      "owner": {
+        "face": "https://example.invalid/face/44.jpg",
+        "mid": 20003,
+        "name": "UP主16"
+      },
+      "pgc_label": null,
+      "progress": null,
+      "pub_location": "示例地区",
+      "pubdate": 1553396443,
+      "redirect_url": null,
+      "stat": {
+        "coin": 135043.0,
+        "danmaku": 5204,
+        "dislike": 0,
+        "favorite": 52463,
+        "his_rank": 6,
+        "like": 162914,
+        "now_rank": 0,
+        "reply": 3482,
+        "share": 4333,
+        "view": 2677263,
+        "vt": 0,
+        "vv": 2677263
+      },
+      "state": 0,
+      "tid": 253,
+      "title": "示例标题45",
+      "tname": "动漫杂谈",
+      "videos": 1
+    }
+  ],
+  "reminder": "示例reminder"
+}

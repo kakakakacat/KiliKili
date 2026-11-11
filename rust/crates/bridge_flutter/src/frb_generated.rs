@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -84056152;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -608863032;
 
 // Section: executor
 
@@ -279,6 +279,47 @@ fn wire__crate__api__danmaku__danmaku_push_segment_impl(
         },
     )
 }
+fn wire__crate__api__video_feed__fetch_hot_videos_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_hot_videos",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::video_feed::FeedContext>::sse_decode(&mut deserializer);
+            let api_pn = <i64>::sse_decode(&mut deserializer);
+            let api_ps = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::video_feed::fetch_hot_videos(api_context, api_pn, api_ps)
+                                .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__play_url_fetch__fetch_play_url_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -336,6 +377,127 @@ fn wire__crate__api__play_url_fetch__fetch_play_url_impl(
         },
     )
 }
+fn wire__crate__api__video_feed__fetch_popular_precious_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_popular_precious",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::video_feed::FeedContext>::sse_decode(&mut deserializer);
+            let api_page = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::video_feed::fetch_popular_precious(api_context, api_page)
+                                .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__video_feed__fetch_popular_series_list_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_popular_series_list",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::video_feed::FeedContext>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::video_feed::fetch_popular_series_list(api_context).await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__video_feed__fetch_popular_series_one_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_popular_series_one",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::video_feed::FeedContext>::sse_decode(&mut deserializer);
+            let api_number = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::video_feed::fetch_popular_series_one(
+                                api_context,
+                                api_number,
+                            )
+                            .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__sponsor_block__fetch_port_video_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -373,6 +535,85 @@ fn wire__crate__api__sponsor_block__fetch_port_video_impl(
                                 api_cid,
                             )
                             .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__video_feed__fetch_rank_videos_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_rank_videos",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::video_feed::FeedContext>::sse_decode(&mut deserializer);
+            let api_rid = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::video_feed::fetch_rank_videos(api_context, api_rid).await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__video_feed__fetch_related_videos_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_related_videos",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::video_feed::FeedContext>::sse_decode(&mut deserializer);
+            let api_bvid = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::video_feed::fetch_related_videos(api_context, api_bvid)
+                                .await,
                         )?;
                         std::result::Result::Ok(output_ok)
                     })()
@@ -1032,6 +1273,162 @@ impl SseDecode for f64 {
     }
 }
 
+impl SseDecode for crate::api::video_feed::FeedContext {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_baseUrl = <String>::sse_decode(deserializer);
+        let mut var_cookie = <Option<String>>::sse_decode(deserializer);
+        let mut var_headers = <Vec<(String, String)>>::sse_decode(deserializer);
+        let mut var_timeoutMs = <u64>::sse_decode(deserializer);
+        let mut var_transport =
+            <crate::api::transport::TransportSettings>::sse_decode(deserializer);
+        let mut var_mixinKey = <String>::sse_decode(deserializer);
+        let mut var_wts = <i64>::sse_decode(deserializer);
+        let mut var_filter = <crate::api::video_feed::FeedFilterSettings>::sse_decode(deserializer);
+        return crate::api::video_feed::FeedContext {
+            base_url: var_baseUrl,
+            cookie: var_cookie,
+            headers: var_headers,
+            timeout_ms: var_timeoutMs,
+            transport: var_transport,
+            mixin_key: var_mixinKey,
+            wts: var_wts,
+            filter: var_filter,
+        };
+    }
+}
+
+impl SseDecode for crate::api::video_feed::FeedFilterSettings {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_blockedMids = <Vec<i64>>::sse_decode(deserializer);
+        let mut var_banWordRcmd = <String>::sse_decode(deserializer);
+        let mut var_banWordZone = <String>::sse_decode(deserializer);
+        let mut var_minDuration = <i64>::sse_decode(deserializer);
+        let mut var_minPlay = <i64>::sse_decode(deserializer);
+        let mut var_minLikeRatio = <i64>::sse_decode(deserializer);
+        let mut var_applyToRelated = <bool>::sse_decode(deserializer);
+        return crate::api::video_feed::FeedFilterSettings {
+            blocked_mids: var_blockedMids,
+            ban_word_rcmd: var_banWordRcmd,
+            ban_word_zone: var_banWordZone,
+            min_duration: var_minDuration,
+            min_play: var_minPlay,
+            min_like_ratio: var_minLikeRatio,
+            apply_to_related: var_applyToRelated,
+        };
+    }
+}
+
+impl SseDecode for crate::api::video_feed::FeedListResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data =
+            <Option<Vec<crate::api::video_feed::FeedVideoItem>>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::video_feed::FeedListResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::video_feed::FeedStat {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_view = <Option<i64>>::sse_decode(deserializer);
+        let mut var_like = <Option<i64>>::sse_decode(deserializer);
+        let mut var_danmaku = <Option<i64>>::sse_decode(deserializer);
+        let mut var_reply = <Option<i64>>::sse_decode(deserializer);
+        let mut var_favorite = <Option<i64>>::sse_decode(deserializer);
+        let mut var_coin = <Option<f64>>::sse_decode(deserializer);
+        let mut var_share = <Option<i64>>::sse_decode(deserializer);
+        let mut var_nowRank = <Option<i64>>::sse_decode(deserializer);
+        let mut var_hisRank = <Option<i64>>::sse_decode(deserializer);
+        let mut var_dislike = <Option<i64>>::sse_decode(deserializer);
+        let mut var_vt = <Option<i64>>::sse_decode(deserializer);
+        let mut var_vv = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::video_feed::FeedStat {
+            view: var_view,
+            like: var_like,
+            danmaku: var_danmaku,
+            reply: var_reply,
+            favorite: var_favorite,
+            coin: var_coin,
+            share: var_share,
+            now_rank: var_nowRank,
+            his_rank: var_hisRank,
+            dislike: var_dislike,
+            vt: var_vt,
+            vv: var_vv,
+        };
+    }
+}
+
+impl SseDecode for crate::api::video_feed::FeedVideoItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_aid = <Option<i64>>::sse_decode(deserializer);
+        let mut var_cid = <Option<i64>>::sse_decode(deserializer);
+        let mut var_bvid = <Option<String>>::sse_decode(deserializer);
+        let mut var_videos = <Option<i64>>::sse_decode(deserializer);
+        let mut var_tid = <Option<i64>>::sse_decode(deserializer);
+        let mut var_tname = <Option<String>>::sse_decode(deserializer);
+        let mut var_copyright = <Option<i64>>::sse_decode(deserializer);
+        let mut var_cover = <Option<String>>::sse_decode(deserializer);
+        let mut var_title = <Option<String>>::sse_decode(deserializer);
+        let mut var_pubdate = <Option<i64>>::sse_decode(deserializer);
+        let mut var_ctime = <Option<i64>>::sse_decode(deserializer);
+        let mut var_desc = <Option<String>>::sse_decode(deserializer);
+        let mut var_state = <Option<i64>>::sse_decode(deserializer);
+        let mut var_duration = <Option<i64>>::sse_decode(deserializer);
+        let mut var_ownerMid = <Option<i64>>::sse_decode(deserializer);
+        let mut var_ownerName = <Option<String>>::sse_decode(deserializer);
+        let mut var_ownerFace = <Option<String>>::sse_decode(deserializer);
+        let mut var_stat = <crate::api::video_feed::FeedStat>::sse_decode(deserializer);
+        let mut var_width = <Option<i64>>::sse_decode(deserializer);
+        let mut var_height = <Option<i64>>::sse_decode(deserializer);
+        let mut var_firstFrame = <Option<String>>::sse_decode(deserializer);
+        let mut var_pubLocation = <Option<String>>::sse_decode(deserializer);
+        let mut var_redirectUrl = <Option<String>>::sse_decode(deserializer);
+        let mut var_progress = <Option<f64>>::sse_decode(deserializer);
+        let mut var_badgeKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_pgcLabel = <Option<String>>::sse_decode(deserializer);
+        return crate::api::video_feed::FeedVideoItem {
+            aid: var_aid,
+            cid: var_cid,
+            bvid: var_bvid,
+            videos: var_videos,
+            tid: var_tid,
+            tname: var_tname,
+            copyright: var_copyright,
+            cover: var_cover,
+            title: var_title,
+            pubdate: var_pubdate,
+            ctime: var_ctime,
+            desc: var_desc,
+            state: var_state,
+            duration: var_duration,
+            owner_mid: var_ownerMid,
+            owner_name: var_ownerName,
+            owner_face: var_ownerFace,
+            stat: var_stat,
+            width: var_width,
+            height: var_height,
+            first_frame: var_firstFrame,
+            pub_location: var_pubLocation,
+            redirect_url: var_redirectUrl,
+            progress: var_progress,
+            badge_kind: var_badgeKind,
+            pgc_label: var_pgcLabel,
+        };
+    }
+}
+
 impl SseDecode for crate::api::media_select::FormatCandidateInput {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1084,6 +1481,20 @@ impl SseDecode for Vec<crate::api::danmaku::DanmakuBucketItem> {
     }
 }
 
+impl SseDecode for Vec<crate::api::video_feed::FeedVideoItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::video_feed::FeedVideoItem>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::api::media_select::FormatCandidateInput> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1091,6 +1502,20 @@ impl SseDecode for Vec<crate::api::media_select::FormatCandidateInput> {
         let mut ans_ = Vec::with_capacity(len_ as usize);
         for idx_ in 0..len_ {
             ans_.push(<crate::api::media_select::FormatCandidateInput>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::video_feed::PopularSeriesListItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::video_feed::PopularSeriesListItem>::sse_decode(
+                deserializer,
+            ));
         }
         return ans_;
     }
@@ -1205,6 +1630,45 @@ impl SseDecode for Option<i64> {
     }
 }
 
+impl SseDecode for Option<crate::api::video_feed::PopularPrecious> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::video_feed::PopularPrecious>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::video_feed::PopularSeriesConfig> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::video_feed::PopularSeriesConfig>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::video_feed::PopularSeriesOne> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::video_feed::PopularSeriesOne>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
 impl SseDecode for Option<crate::api::sponsor_block::SponsorUserInfo> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1271,6 +1735,32 @@ impl SseDecode for Option<Vec<crate::api::danmaku::DanmakuBucketItem>> {
             return Some(<Vec<crate::api::danmaku::DanmakuBucketItem>>::sse_decode(
                 deserializer,
             ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<Vec<crate::api::video_feed::FeedVideoItem>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<Vec<crate::api::video_feed::FeedVideoItem>>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<Vec<crate::api::video_feed::PopularSeriesListItem>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(
+                <Vec<crate::api::video_feed::PopularSeriesListItem>>::sse_decode(deserializer),
+            );
         } else {
             return None;
         }
@@ -1357,6 +1847,116 @@ impl SseDecode for crate::api::play_url_fetch::PlayUrlRequest {
             try_look: var_tryLook,
             voice_balance: var_voiceBalance,
             language: var_language,
+        };
+    }
+}
+
+impl SseDecode for crate::api::video_feed::PopularPrecious {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_mediaId = <Option<i64>>::sse_decode(deserializer);
+        let mut var_list =
+            <Option<Vec<crate::api::video_feed::FeedVideoItem>>>::sse_decode(deserializer);
+        return crate::api::video_feed::PopularPrecious {
+            media_id: var_mediaId,
+            list: var_list,
+        };
+    }
+}
+
+impl SseDecode for crate::api::video_feed::PopularPreciousResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data =
+            <Option<crate::api::video_feed::PopularPrecious>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::video_feed::PopularPreciousResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::video_feed::PopularSeriesConfig {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <Option<String>>::sse_decode(deserializer);
+        let mut var_label = <Option<String>>::sse_decode(deserializer);
+        let mut var_mediaId = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::video_feed::PopularSeriesConfig {
+            name: var_name,
+            label: var_label,
+            media_id: var_mediaId,
+        };
+    }
+}
+
+impl SseDecode for crate::api::video_feed::PopularSeriesListItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_number = <Option<i64>>::sse_decode(deserializer);
+        let mut var_subject = <Option<String>>::sse_decode(deserializer);
+        let mut var_status = <Option<i64>>::sse_decode(deserializer);
+        let mut var_name = <Option<String>>::sse_decode(deserializer);
+        return crate::api::video_feed::PopularSeriesListItem {
+            number: var_number,
+            subject: var_subject,
+            status: var_status,
+            name: var_name,
+        };
+    }
+}
+
+impl SseDecode for crate::api::video_feed::PopularSeriesListResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data =
+            <Option<Vec<crate::api::video_feed::PopularSeriesListItem>>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::video_feed::PopularSeriesListResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::video_feed::PopularSeriesOne {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_config =
+            <Option<crate::api::video_feed::PopularSeriesConfig>>::sse_decode(deserializer);
+        let mut var_reminder = <Option<String>>::sse_decode(deserializer);
+        let mut var_list =
+            <Option<Vec<crate::api::video_feed::FeedVideoItem>>>::sse_decode(deserializer);
+        return crate::api::video_feed::PopularSeriesOne {
+            config: var_config,
+            reminder: var_reminder,
+            list: var_list,
+        };
+    }
+}
+
+impl SseDecode for crate::api::video_feed::PopularSeriesOneResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data =
+            <Option<crate::api::video_feed::PopularSeriesOne>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::video_feed::PopularSeriesOneResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
         };
     }
 }
@@ -1659,61 +2259,89 @@ fn pde_ffi_dispatcher_primary_impl(
         7 => {
             wire__crate__api__danmaku__danmaku_push_segment_impl(port, ptr, rust_vec_len, data_len)
         }
-        8 => {
+        8 => wire__crate__api__video_feed__fetch_hot_videos_impl(port, ptr, rust_vec_len, data_len),
+        9 => {
             wire__crate__api__play_url_fetch__fetch_play_url_impl(port, ptr, rust_vec_len, data_len)
         }
-        9 => wire__crate__api__sponsor_block__fetch_port_video_impl(
+        10 => wire__crate__api__video_feed__fetch_popular_precious_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        10 => wire__crate__api__sponsor_block__fetch_skip_segments_impl(
+        11 => wire__crate__api__video_feed__fetch_popular_series_list_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        11 => wire__crate__api__sponsor_block__fetch_sponsor_uptime_impl(
+        12 => wire__crate__api__video_feed__fetch_popular_series_one_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        12 => wire__crate__api__sponsor_block__fetch_sponsor_user_info_impl(
+        13 => wire__crate__api__sponsor_block__fetch_port_video_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        13 => wire__crate__api__video_detail_fetch__fetch_video_detail_impl(
+        14 => {
+            wire__crate__api__video_feed__fetch_rank_videos_impl(port, ptr, rust_vec_len, data_len)
+        }
+        15 => wire__crate__api__video_feed__fetch_related_videos_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        14 => wire__crate__api__init__init_app_impl(port, ptr, rust_vec_len, data_len),
-        15 => wire__crate__api__dm_view__parse_dm_view_subtitles_impl(
+        16 => wire__crate__api__sponsor_block__fetch_skip_segments_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        16 => wire__crate__api__play_url__parse_play_url_impl(port, ptr, rust_vec_len, data_len),
-        17 => wire__crate__api__search_suggest__parse_search_suggest_impl(
+        17 => wire__crate__api__sponsor_block__fetch_sponsor_uptime_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        18 => wire__crate__api__video_detail__parse_video_detail_impl(
+        18 => wire__crate__api__sponsor_block__fetch_sponsor_user_info_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        21 => wire__crate__api__wbi__wbi_mixin_key_impl(port, ptr, rust_vec_len, data_len),
-        22 => wire__crate__api__wbi__wbi_sign_impl(port, ptr, rust_vec_len, data_len),
+        19 => wire__crate__api__video_detail_fetch__fetch_video_detail_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        20 => wire__crate__api__init__init_app_impl(port, ptr, rust_vec_len, data_len),
+        21 => wire__crate__api__dm_view__parse_dm_view_subtitles_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        22 => wire__crate__api__play_url__parse_play_url_impl(port, ptr, rust_vec_len, data_len),
+        23 => wire__crate__api__search_suggest__parse_search_suggest_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        24 => wire__crate__api__video_detail__parse_video_detail_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        27 => wire__crate__api__wbi__wbi_mixin_key_impl(port, ptr, rust_vec_len, data_len),
+        28 => wire__crate__api__wbi__wbi_sign_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -1732,8 +2360,8 @@ fn pde_ffi_dispatcher_sync_impl(
         6 => {
             wire__crate__api__danmaku__danmaku_open_session_count_impl(ptr, rust_vec_len, data_len)
         }
-        19 => wire__crate__api__media_select__select_target_audio_impl(ptr, rust_vec_len, data_len),
-        20 => wire__crate__api__media_select__select_target_video_impl(ptr, rust_vec_len, data_len),
+        25 => wire__crate__api__media_select__select_target_audio_impl(ptr, rust_vec_len, data_len),
+        26 => wire__crate__api__media_select__select_target_video_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -1889,6 +2517,158 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::dm_view::DmViewSubtitlesParse
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::video_feed::FeedContext {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.base_url.into_into_dart().into_dart(),
+            self.cookie.into_into_dart().into_dart(),
+            self.headers.into_into_dart().into_dart(),
+            self.timeout_ms.into_into_dart().into_dart(),
+            self.transport.into_into_dart().into_dart(),
+            self.mixin_key.into_into_dart().into_dart(),
+            self.wts.into_into_dart().into_dart(),
+            self.filter.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::video_feed::FeedContext
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::video_feed::FeedContext>
+    for crate::api::video_feed::FeedContext
+{
+    fn into_into_dart(self) -> crate::api::video_feed::FeedContext {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::video_feed::FeedFilterSettings {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.blocked_mids.into_into_dart().into_dart(),
+            self.ban_word_rcmd.into_into_dart().into_dart(),
+            self.ban_word_zone.into_into_dart().into_dart(),
+            self.min_duration.into_into_dart().into_dart(),
+            self.min_play.into_into_dart().into_dart(),
+            self.min_like_ratio.into_into_dart().into_dart(),
+            self.apply_to_related.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::video_feed::FeedFilterSettings
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::video_feed::FeedFilterSettings>
+    for crate::api::video_feed::FeedFilterSettings
+{
+    fn into_into_dart(self) -> crate::api::video_feed::FeedFilterSettings {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::video_feed::FeedListResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::video_feed::FeedListResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::video_feed::FeedListResult>
+    for crate::api::video_feed::FeedListResult
+{
+    fn into_into_dart(self) -> crate::api::video_feed::FeedListResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::video_feed::FeedStat {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.view.into_into_dart().into_dart(),
+            self.like.into_into_dart().into_dart(),
+            self.danmaku.into_into_dart().into_dart(),
+            self.reply.into_into_dart().into_dart(),
+            self.favorite.into_into_dart().into_dart(),
+            self.coin.into_into_dart().into_dart(),
+            self.share.into_into_dart().into_dart(),
+            self.now_rank.into_into_dart().into_dart(),
+            self.his_rank.into_into_dart().into_dart(),
+            self.dislike.into_into_dart().into_dart(),
+            self.vt.into_into_dart().into_dart(),
+            self.vv.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::video_feed::FeedStat
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::video_feed::FeedStat>
+    for crate::api::video_feed::FeedStat
+{
+    fn into_into_dart(self) -> crate::api::video_feed::FeedStat {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::video_feed::FeedVideoItem {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.aid.into_into_dart().into_dart(),
+            self.cid.into_into_dart().into_dart(),
+            self.bvid.into_into_dart().into_dart(),
+            self.videos.into_into_dart().into_dart(),
+            self.tid.into_into_dart().into_dart(),
+            self.tname.into_into_dart().into_dart(),
+            self.copyright.into_into_dart().into_dart(),
+            self.cover.into_into_dart().into_dart(),
+            self.title.into_into_dart().into_dart(),
+            self.pubdate.into_into_dart().into_dart(),
+            self.ctime.into_into_dart().into_dart(),
+            self.desc.into_into_dart().into_dart(),
+            self.state.into_into_dart().into_dart(),
+            self.duration.into_into_dart().into_dart(),
+            self.owner_mid.into_into_dart().into_dart(),
+            self.owner_name.into_into_dart().into_dart(),
+            self.owner_face.into_into_dart().into_dart(),
+            self.stat.into_into_dart().into_dart(),
+            self.width.into_into_dart().into_dart(),
+            self.height.into_into_dart().into_dart(),
+            self.first_frame.into_into_dart().into_dart(),
+            self.pub_location.into_into_dart().into_dart(),
+            self.redirect_url.into_into_dart().into_dart(),
+            self.progress.into_into_dart().into_dart(),
+            self.badge_kind.into_into_dart().into_dart(),
+            self.pgc_label.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::video_feed::FeedVideoItem
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::video_feed::FeedVideoItem>
+    for crate::api::video_feed::FeedVideoItem
+{
+    fn into_into_dart(self) -> crate::api::video_feed::FeedVideoItem {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::media_select::FormatCandidateInput {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -1981,6 +2761,163 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::play_url_fetch::PlayUrlReques
     for crate::api::play_url_fetch::PlayUrlRequest
 {
     fn into_into_dart(self) -> crate::api::play_url_fetch::PlayUrlRequest {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::video_feed::PopularPrecious {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.media_id.into_into_dart().into_dart(),
+            self.list.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::video_feed::PopularPrecious
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::video_feed::PopularPrecious>
+    for crate::api::video_feed::PopularPrecious
+{
+    fn into_into_dart(self) -> crate::api::video_feed::PopularPrecious {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::video_feed::PopularPreciousResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::video_feed::PopularPreciousResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::video_feed::PopularPreciousResult>
+    for crate::api::video_feed::PopularPreciousResult
+{
+    fn into_into_dart(self) -> crate::api::video_feed::PopularPreciousResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::video_feed::PopularSeriesConfig {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.label.into_into_dart().into_dart(),
+            self.media_id.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::video_feed::PopularSeriesConfig
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::video_feed::PopularSeriesConfig>
+    for crate::api::video_feed::PopularSeriesConfig
+{
+    fn into_into_dart(self) -> crate::api::video_feed::PopularSeriesConfig {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::video_feed::PopularSeriesListItem {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.number.into_into_dart().into_dart(),
+            self.subject.into_into_dart().into_dart(),
+            self.status.into_into_dart().into_dart(),
+            self.name.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::video_feed::PopularSeriesListItem
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::video_feed::PopularSeriesListItem>
+    for crate::api::video_feed::PopularSeriesListItem
+{
+    fn into_into_dart(self) -> crate::api::video_feed::PopularSeriesListItem {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::video_feed::PopularSeriesListResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::video_feed::PopularSeriesListResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::video_feed::PopularSeriesListResult>
+    for crate::api::video_feed::PopularSeriesListResult
+{
+    fn into_into_dart(self) -> crate::api::video_feed::PopularSeriesListResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::video_feed::PopularSeriesOne {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.config.into_into_dart().into_dart(),
+            self.reminder.into_into_dart().into_dart(),
+            self.list.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::video_feed::PopularSeriesOne
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::video_feed::PopularSeriesOne>
+    for crate::api::video_feed::PopularSeriesOne
+{
+    fn into_into_dart(self) -> crate::api::video_feed::PopularSeriesOne {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::video_feed::PopularSeriesOneResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::video_feed::PopularSeriesOneResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::video_feed::PopularSeriesOneResult>
+    for crate::api::video_feed::PopularSeriesOneResult
+{
+    fn into_into_dart(self) -> crate::api::video_feed::PopularSeriesOneResult {
         self
     }
 }
@@ -2420,6 +3357,93 @@ impl SseEncode for f64 {
     }
 }
 
+impl SseEncode for crate::api::video_feed::FeedContext {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.base_url, serializer);
+        <Option<String>>::sse_encode(self.cookie, serializer);
+        <Vec<(String, String)>>::sse_encode(self.headers, serializer);
+        <u64>::sse_encode(self.timeout_ms, serializer);
+        <crate::api::transport::TransportSettings>::sse_encode(self.transport, serializer);
+        <String>::sse_encode(self.mixin_key, serializer);
+        <i64>::sse_encode(self.wts, serializer);
+        <crate::api::video_feed::FeedFilterSettings>::sse_encode(self.filter, serializer);
+    }
+}
+
+impl SseEncode for crate::api::video_feed::FeedFilterSettings {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<i64>>::sse_encode(self.blocked_mids, serializer);
+        <String>::sse_encode(self.ban_word_rcmd, serializer);
+        <String>::sse_encode(self.ban_word_zone, serializer);
+        <i64>::sse_encode(self.min_duration, serializer);
+        <i64>::sse_encode(self.min_play, serializer);
+        <i64>::sse_encode(self.min_like_ratio, serializer);
+        <bool>::sse_encode(self.apply_to_related, serializer);
+    }
+}
+
+impl SseEncode for crate::api::video_feed::FeedListResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<Vec<crate::api::video_feed::FeedVideoItem>>>::sse_encode(self.data, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::video_feed::FeedStat {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.view, serializer);
+        <Option<i64>>::sse_encode(self.like, serializer);
+        <Option<i64>>::sse_encode(self.danmaku, serializer);
+        <Option<i64>>::sse_encode(self.reply, serializer);
+        <Option<i64>>::sse_encode(self.favorite, serializer);
+        <Option<f64>>::sse_encode(self.coin, serializer);
+        <Option<i64>>::sse_encode(self.share, serializer);
+        <Option<i64>>::sse_encode(self.now_rank, serializer);
+        <Option<i64>>::sse_encode(self.his_rank, serializer);
+        <Option<i64>>::sse_encode(self.dislike, serializer);
+        <Option<i64>>::sse_encode(self.vt, serializer);
+        <Option<i64>>::sse_encode(self.vv, serializer);
+    }
+}
+
+impl SseEncode for crate::api::video_feed::FeedVideoItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.aid, serializer);
+        <Option<i64>>::sse_encode(self.cid, serializer);
+        <Option<String>>::sse_encode(self.bvid, serializer);
+        <Option<i64>>::sse_encode(self.videos, serializer);
+        <Option<i64>>::sse_encode(self.tid, serializer);
+        <Option<String>>::sse_encode(self.tname, serializer);
+        <Option<i64>>::sse_encode(self.copyright, serializer);
+        <Option<String>>::sse_encode(self.cover, serializer);
+        <Option<String>>::sse_encode(self.title, serializer);
+        <Option<i64>>::sse_encode(self.pubdate, serializer);
+        <Option<i64>>::sse_encode(self.ctime, serializer);
+        <Option<String>>::sse_encode(self.desc, serializer);
+        <Option<i64>>::sse_encode(self.state, serializer);
+        <Option<i64>>::sse_encode(self.duration, serializer);
+        <Option<i64>>::sse_encode(self.owner_mid, serializer);
+        <Option<String>>::sse_encode(self.owner_name, serializer);
+        <Option<String>>::sse_encode(self.owner_face, serializer);
+        <crate::api::video_feed::FeedStat>::sse_encode(self.stat, serializer);
+        <Option<i64>>::sse_encode(self.width, serializer);
+        <Option<i64>>::sse_encode(self.height, serializer);
+        <Option<String>>::sse_encode(self.first_frame, serializer);
+        <Option<String>>::sse_encode(self.pub_location, serializer);
+        <Option<String>>::sse_encode(self.redirect_url, serializer);
+        <Option<f64>>::sse_encode(self.progress, serializer);
+        <Option<String>>::sse_encode(self.badge_kind, serializer);
+        <Option<String>>::sse_encode(self.pgc_label, serializer);
+    }
+}
+
 impl SseEncode for crate::api::media_select::FormatCandidateInput {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -2462,12 +3486,32 @@ impl SseEncode for Vec<crate::api::danmaku::DanmakuBucketItem> {
     }
 }
 
+impl SseEncode for Vec<crate::api::video_feed::FeedVideoItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::video_feed::FeedVideoItem>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::api::media_select::FormatCandidateInput> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <crate::api::media_select::FormatCandidateInput>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::video_feed::PopularSeriesListItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::video_feed::PopularSeriesListItem>::sse_encode(item, serializer);
         }
     }
 }
@@ -2562,6 +3606,36 @@ impl SseEncode for Option<i64> {
     }
 }
 
+impl SseEncode for Option<crate::api::video_feed::PopularPrecious> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::video_feed::PopularPrecious>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::video_feed::PopularSeriesConfig> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::video_feed::PopularSeriesConfig>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::video_feed::PopularSeriesOne> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::video_feed::PopularSeriesOne>::sse_encode(value, serializer);
+        }
+    }
+}
+
 impl SseEncode for Option<crate::api::sponsor_block::SponsorUserInfo> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -2622,6 +3696,26 @@ impl SseEncode for Option<Vec<crate::api::danmaku::DanmakuBucketItem>> {
     }
 }
 
+impl SseEncode for Option<Vec<crate::api::video_feed::FeedVideoItem>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <Vec<crate::api::video_feed::FeedVideoItem>>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<Vec<crate::api::video_feed::PopularSeriesListItem>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <Vec<crate::api::video_feed::PopularSeriesListItem>>::sse_encode(value, serializer);
+        }
+    }
+}
+
 impl SseEncode for Option<Vec<i64>> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -2675,6 +3769,74 @@ impl SseEncode for crate::api::play_url_fetch::PlayUrlRequest {
         <bool>::sse_encode(self.try_look, serializer);
         <bool>::sse_encode(self.voice_balance, serializer);
         <Option<String>>::sse_encode(self.language, serializer);
+    }
+}
+
+impl SseEncode for crate::api::video_feed::PopularPrecious {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.media_id, serializer);
+        <Option<Vec<crate::api::video_feed::FeedVideoItem>>>::sse_encode(self.list, serializer);
+    }
+}
+
+impl SseEncode for crate::api::video_feed::PopularPreciousResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<crate::api::video_feed::PopularPrecious>>::sse_encode(self.data, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::video_feed::PopularSeriesConfig {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<String>>::sse_encode(self.name, serializer);
+        <Option<String>>::sse_encode(self.label, serializer);
+        <Option<i64>>::sse_encode(self.media_id, serializer);
+    }
+}
+
+impl SseEncode for crate::api::video_feed::PopularSeriesListItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<i64>>::sse_encode(self.number, serializer);
+        <Option<String>>::sse_encode(self.subject, serializer);
+        <Option<i64>>::sse_encode(self.status, serializer);
+        <Option<String>>::sse_encode(self.name, serializer);
+    }
+}
+
+impl SseEncode for crate::api::video_feed::PopularSeriesListResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<Vec<crate::api::video_feed::PopularSeriesListItem>>>::sse_encode(
+            self.data, serializer,
+        );
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::video_feed::PopularSeriesOne {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<crate::api::video_feed::PopularSeriesConfig>>::sse_encode(self.config, serializer);
+        <Option<String>>::sse_encode(self.reminder, serializer);
+        <Option<Vec<crate::api::video_feed::FeedVideoItem>>>::sse_encode(self.list, serializer);
+    }
+}
+
+impl SseEncode for crate::api::video_feed::PopularSeriesOneResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<crate::api::video_feed::PopularSeriesOne>>::sse_encode(self.data, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
     }
 }
 

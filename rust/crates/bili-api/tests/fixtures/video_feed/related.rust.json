@@ -1,0 +1,137 @@
+[
+  {
+    "aid": 100000001,
+    "badge_kind": null,
+    "bvid": "BV1Fixture01",
+    "cid": 1001,
+    "copyright": 1,
+    "cover": "https://example.invalid/pic/6.jpg",
+    "ctime": 1731742138,
+    "desc": "示例简介",
+    "dimension": {
+      "height": 1080,
+      "width": 1920
+    },
+    "duration": 18,
+    "first_frame": "https://example.invalid/first_frame/67.jpg",
+    "owner": {
+      "face": "https://example.invalid/face/60.jpg",
+      "mid": 20001,
+      "name": "UP主10"
+    },
+    "pgc_label": null,
+    "progress": null,
+    "pub_location": "示例地区",
+    "pubdate": 1731742178,
+    "redirect_url": null,
+    "stat": {
+      "coin": 526.0,
+      "danmaku": 1428,
+      "dislike": 0,
+      "favorite": 7068,
+      "his_rank": 0,
+      "like": 11820,
+      "now_rank": 0,
+      "reply": 1164,
+      "share": 542,
+      "view": 589713,
+      "vt": 0,
+      "vv": 589713
+    },
+    "state": 0,
+    "tid": 21,
+    "title": "示例标题31",
+    "tname": "日常",
+    "videos": 1
+  },
+  {
+    "aid": 100000002,
+    "badge_kind": null,
+    "bvid": "BV1Fixture02",
+    "cid": 1002,
+    "copyright": 2,
+    "cover": "https://example.invalid/pic/46.jpg",
+    "ctime": 1630694501,
+    "desc": "示例简介",
+    "dimension": {
+      "height": 1080,
+      "width": 1920
+    },
+    "duration": 220,
+    "first_frame": "https://example.invalid/first_frame/92.jpg",
+    "owner": {
+      "face": "https://example.invalid/face/32.jpg",
+      "mid": 20002,
+      "name": "UP主1"
+    },
+    "pgc_label": null,
+    "progress": null,
+    "pub_location": "示例地区",
+    "pubdate": 1630694500,
+    "redirect_url": null,
+    "stat": {
+      "coin": 10985.0,
+      "danmaku": 4335,
+      "dislike": 0,
+      "favorite": 144638,
+      "his_rank": 0,
+      "like": 107837,
+      "now_rank": 0,
+      "reply": 4257,
+      "share": 17756,
+      "view": 8497418,
+      "vt": 0,
+      "vv": 8497418
+    },
+    "state": 0,
+    "tid": 193,
+    "title": "示例标题44",
+    "tname": "MV",
+    "videos": 1
+  },
+  {
+    "aid": 100000003,
+    "badge_kind": null,
+    "bvid": "BV1Fixture03",
+    "cid": 1003,
+    "copyright": 2,
+    "cover": "https://example.invalid/pic/75.jpg",
+    "ctime": 1585735296,
+    "desc": "示例简介",
+    "dimension": {
+      "height": 720,
+      "width": 1280
+    },
+    "duration": 200,
+    "first_frame": null,
+    "owner": {
+      "face": "https://example.invalid/face/72.jpg",
+      "mid": 20003,
+      "name": "UP主9"
+    },
+    "pgc_label": null,
+    "progress": null,
+    "pub_location": null,
+    "pubdate": 1585735296,
+    "redirect_url": null,
+    "stat": {
+      "coin": 467075.0,
+      "danmaku": 458499,
+      "dislike": 0,
+      "favorite": 1079106,
+      "his_rank": 2,
+      "like": 2063400,
+      "now_rank": 0,
+      "reply": 53710,
+      "share": 799931,
+      "view": 69448815,
+      "vt": 0,
+      "vv": 69448815
+    },
+    "state": 0,
+    "tid": 138,
+    "title": "示例标题40",
+    "tname": "搞笑",
+    "videos": 2
+  }
+]

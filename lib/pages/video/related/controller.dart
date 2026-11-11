@@ -1,7 +1,7 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/model_hot_video_item.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_video_feed.dart';
 import 'package:get/get.dart';
 
 class RelatedController
@@ -20,5 +20,5 @@ class RelatedController
 
   @override
   Future<LoadingState<List<HotVideoItemModel>?>> customGetData() =>
-      VideoHttp.relatedVideoList(bvid: bvid);
+      RustVideoFeed.related(bvid: bvid);
 }

@@ -1,16 +1,13 @@
 import 'package:kilikili/common/widgets/scroll_physics.dart' show ReloadMixin;
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/model_hot_video_item.dart';
-import 'package:kilikili/models_new/popular/popular_series_list/list.dart';
-import 'package:kilikili/models_new/popular/popular_series_one/config.dart';
-import 'package:kilikili/models_new/popular/popular_series_one/data.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_video_feed.dart';
 import 'package:kilikili/utils/extension/iterable_ext.dart';
 import 'package:get/get.dart';
 
 class PopularSeriesController
-    extends CommonListController<PopularSeriesOneData, HotVideoItemModel>
+    extends CommonListController<PopularSeriesOne, HotVideoItemModel>
     with ReloadMixin {
   late int number;
 
@@ -25,10 +22,10 @@ class PopularSeriesController
   }
 
   Future<void> _getSeriesList() async {
-    final res = await VideoHttp.popularSeriesList();
+    final res = await RustVideoFeed.seriesList();
     if (res case Success(:final response)) {
       if (response != null && response.isNotEmpty) {
-        number = response.first.number!;
+        number = response.first.number!.toInt();
         seriesList = response;
         queryData();
       } else {
@@ -40,15 +37,15 @@ class PopularSeriesController
   }
 
   @override
-  List<HotVideoItemModel>? getDataList(PopularSeriesOneData response) {
+  List<HotVideoItemModel>? getDataList(PopularSeriesOne response) {
     config.value = response.config;
     reminder = response.reminder;
-    return response.list;
+    return response.list?.map(HotVideoItemModel.fromRust).toList();
   }
 
   @override
-  Future<LoadingState<PopularSeriesOneData>> customGetData() =>
-      VideoHttp.popularSeriesOne(number: number);
+  Future<LoadingState<PopularSeriesOne>> customGetData() =>
+      RustVideoFeed.seriesOne(number: number);
 
   @override
   Future<void> onReload() {

@@ -1,0 +1,140 @@
+{
+  "list": [
+    {
+      "aid": 100000001,
+      "badge_kind": null,
+      "bvid": "BV1Fixture01",
+      "cid": 1001,
+      "copyright": 1,
+      "cover": "https://example.invalid/pic/77.jpg",
+      "ctime": 1658707221,
+      "desc": "",
+      "dimension": {
+        "height": 1080,
+        "width": 1920
+      },
+      "duration": 688,
+      "first_frame": "https://example.invalid/first_frame/21.jpg",
+      "owner": {
+        "face": "https://example.invalid/face/67.jpg",
+        "mid": 20001,
+        "name": "UP主8"
+      },
+      "pgc_label": null,
+      "progress": null,
+      "pub_location": "示例地区",
+      "pubdate": 1658707200,
+      "redirect_url": null,
+      "stat": {
+        "coin": 7527330.0,
+        "danmaku": 316367,
+        "dislike": 0,
+        "favorite": 2646157,
+        "his_rank": 1,
+        "like": 6412178,
+        "now_rank": 0,
+        "reply": 68893,
+        "share": 2536787,
+        "view": 58973680,
+        "vt": 0,
+        "vv": 58973680
+      },
+      "state": 0,
+      "tid": 21,
+      "title": "示例标题14",
+      "tname": "日常",
+      "videos": 1
+    },
+    {
+      "aid": 100000002,
+      "badge_kind": null,
+      "bvid": "BV1Fixture02",
+      "cid": 1002,
+      "copyright": 1,
+      "cover": "https://example.invalid/pic/11.jpg",
+      "ctime": 1625488229,
+      "desc": "示例简介",
+      "dimension": {
+        "height": 2160,
+        "width": 3840
+      },
+      "duration": 116,
+      "first_frame": null,
+      "owner": {
+        "face": "https://example.invalid/face/88.jpg",
+        "mid": 20002,
+        "name": "UP主5"
+      },
+      "pgc_label": null,
+      "progress": null,
+      "pub_location": "示例地区",
+      "pubdate": 1625488229,
+      "redirect_url": null,
+      "stat": {
+        "coin": 1778422.0,
+        "danmaku": 482870,
+        "dislike": 0,
+        "favorite": 1143182,
+        "his_rank": 1,
+        "like": 3353736,
+        "now_rank": 0,
+        "reply": 49907,
+        "share": 637223,
+        "view": 54914946,
+        "vt": 0,
+        "vv": 54914946
+      },
+      "state": 0,
+      "tid": 154,
+      "title": "示例标题42",
+      "tname": "舞蹈综合",
+      "videos": 1
+    },
+    {
+      "aid": 100000003,
+      "badge_kind": null,
+      "bvid": "BV1Fixture03",
+      "cid": 1003,
+      "copyright": 1,
+      "cover": "https://example.invalid/pic/9.jpg",
+      "ctime": 1586795307,
+      "desc": "示例简介",
+      "dimension": {
+        "height": 1080,
+        "width": 1920
+      },
+      "duration": 608,
+      "first_frame": null,
+      "owner": {
+        "face": "https://example.invalid/face/3.jpg",
+        "mid": 20003,
+        "name": "UP主6"
+      },
+      "pgc_label": null,
+      "progress": null,
+      "pub_location": "示例地区",
+      "pubdate": 1586836612,
+      "redirect_url": null,
+      "stat": {
+        "coin": 1024907.0,
+        "danmaku": 191476,
+        "dislike": 0,
+        "favorite": 823529,
+        "his_rank": 1,
+        "like": 1495854,
+        "now_rank": 0,
+        "reply": 33098,
+        "share": 356442,
+        "view": 23571734,
+        "vt": 0,
+        "vv": 23571734
+      },
+      "state": 0,
+      "tid": 124,
+      "title": "示例标题40",
+      "tname": "社科·法律·心理",
+      "videos": 1
+    }
+  ],
+  "media_id": 496307088
+}

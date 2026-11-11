@@ -1,4 +1,3 @@
-import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/common/rcmd_source.dart';
 import 'package:kilikili/pages/rcmd/controller.dart';
 import 'package:kilikili/pages/setting/models/model.dart';
@@ -72,8 +71,8 @@ List<SettingsModel> get recommendSettings => [
     title: '分区关键词过滤',
     key: SettingBoxKey.banWordForZone,
     onChanged: (value) {
-      VideoHttp.zoneRegExp = value;
-      VideoHttp.enableFilter = value.pattern.isNotEmpty;
+      RecommendFilter.zoneRegExp = value;
+      RecommendFilter.enableZoneFilter = value.pattern.isNotEmpty;
     },
     banScope: 'App推荐、热门、分区',
   ),

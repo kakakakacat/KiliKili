@@ -1,0 +1,137 @@
+[
+  {
+    "aid": 100000001,
+    "badge_kind": null,
+    "bvid": "BV1Fixture01",
+    "cid": 1001,
+    "copyright": 1,
+    "cover": "https://example.invalid/pic/86.jpg",
+    "ctime": 1794055343,
+    "desc": "示例简介",
+    "dimension": {
+      "height": 1632,
+      "width": 3840
+    },
+    "duration": 759,
+    "first_frame": "https://example.invalid/first_frame/67.jpg",
+    "owner": {
+      "face": "https://example.invalid/face/85.jpg",
+      "mid": 20001,
+      "name": "UP主18"
+    },
+    "pgc_label": null,
+    "progress": null,
+    "pub_location": "示例地区",
+    "pubdate": 1794110400,
+    "redirect_url": null,
+    "stat": {
+      "coin": 174940.0,
+      "danmaku": 33361,
+      "dislike": 0,
+      "favorite": 98703,
+      "his_rank": 1,
+      "like": 365212,
+      "now_rank": 0,
+      "reply": 27999,
+      "share": 45786,
+      "view": 4887877,
+      "vt": 0,
+      "vv": 4887877
+    },
+    "state": 0,
+    "tid": 172,
+    "title": "示例标题9",
+    "tname": "手机游戏",
+    "videos": 4
+  },
+  {
+    "aid": 100000003,
+    "badge_kind": null,
+    "bvid": "BV1Fixture03",
+    "cid": 1003,
+    "copyright": 1,
+    "cover": "https://example.invalid/pic/73.jpg",
+    "ctime": 1794178689,
+    "desc": "示例简介",
+    "dimension": {
+      "height": 720,
+      "width": 1280
+    },
+    "duration": 15510,
+    "first_frame": null,
+    "owner": {
+      "face": "https://example.invalid/face/80.jpg",
+      "mid": 20002,
+      "name": "UP主1"
+    },
+    "pgc_label": null,
+    "progress": null,
+    "pub_location": "示例地区",
+    "pubdate": 1794178689,
+    "redirect_url": null,
+    "stat": {
+      "coin": 118180.0,
+      "danmaku": 157896,
+      "dislike": 0,
+      "favorite": 44765,
+      "his_rank": 2,
+      "like": 170322,
+      "now_rank": 0,
+      "reply": 51798,
+      "share": 11109,
+      "view": 14187929,
+      "vt": 0,
+      "vv": 14187929
+    },
+    "state": 0,
+    "tid": 171,
+    "title": "示例标题14",
+    "tname": "电子竞技",
+    "videos": 8
+  },
+  {
+    "aid": 100000004,
+    "badge_kind": null,
+    "bvid": "BV1Fixture04",
+    "cid": 1004,
+    "copyright": 1,
+    "cover": "https://example.invalid/pic/21.jpg",
+    "ctime": 1794204667,
+    "desc": "示例简介",
+    "dimension": {
+      "height": 1080,
+      "width": 1920
+    },
+    "duration": 155,
+    "first_frame": "https://example.invalid/first_frame/31.jpg",
+    "owner": {
+      "face": "https://example.invalid/face/84.jpg",
+      "mid": 20003,
+      "name": "UP主0"
+    },
+    "pgc_label": null,
+    "progress": null,
+    "pub_location": "示例地区",
+    "pubdate": 1794205800,
+    "redirect_url": null,
+    "stat": {
+      "coin": 97607.0,
+      "danmaku": 1240,
+      "dislike": 0,
+      "favorite": 68740,
+      "his_rank": 3,
+      "like": 203723,
+      "now_rank": 0,
+      "reply": 2256,
+      "share": 23939,
+      "view": 2341074,
+      "vt": 0,
+      "vv": 2341074
+    },
+    "state": 0,
+    "tid": 172,
+    "title": "示例标题25",
+    "tname": "手机游戏",
+    "videos": 1
+  }
+]

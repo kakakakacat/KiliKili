@@ -15,6 +15,7 @@ import 'package:kilikili/rust/api/subtitle.dart';
 import 'package:kilikili/rust/api/transport.dart';
 import 'package:kilikili/rust/api/video_detail.dart';
 import 'package:kilikili/rust/api/video_detail_fetch.dart';
+import 'package:kilikili/rust/api/video_feed.dart';
 import 'package:kilikili/rust/api/wbi.dart';
 
 import 'dart:async';
@@ -50,10 +51,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   double dco_decode_box_autoadd_f_64(dynamic raw);
 
   @protected
+  FeedContext dco_decode_box_autoadd_feed_context(dynamic raw);
+
+  @protected
   PlatformInt64 dco_decode_box_autoadd_i_64(dynamic raw);
 
   @protected
   PlayUrlRequest dco_decode_box_autoadd_play_url_request(dynamic raw);
+
+  @protected
+  PopularPrecious dco_decode_box_autoadd_popular_precious(dynamic raw);
+
+  @protected
+  PopularSeriesConfig dco_decode_box_autoadd_popular_series_config(dynamic raw);
+
+  @protected
+  PopularSeriesOne dco_decode_box_autoadd_popular_series_one(dynamic raw);
 
   @protected
   SponsorBlockContext dco_decode_box_autoadd_sponsor_block_context(dynamic raw);
@@ -94,6 +107,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   double dco_decode_f_64(dynamic raw);
 
   @protected
+  FeedContext dco_decode_feed_context(dynamic raw);
+
+  @protected
+  FeedFilterSettings dco_decode_feed_filter_settings(dynamic raw);
+
+  @protected
+  FeedListResult dco_decode_feed_list_result(dynamic raw);
+
+  @protected
+  FeedStat dco_decode_feed_stat(dynamic raw);
+
+  @protected
+  FeedVideoItem dco_decode_feed_video_item(dynamic raw);
+
+  @protected
   FormatCandidateInput dco_decode_format_candidate_input(dynamic raw);
 
   @protected
@@ -109,7 +137,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<DanmakuBucketItem> dco_decode_list_danmaku_bucket_item(dynamic raw);
 
   @protected
+  List<FeedVideoItem> dco_decode_list_feed_video_item(dynamic raw);
+
+  @protected
   List<FormatCandidateInput> dco_decode_list_format_candidate_input(
+    dynamic raw,
+  );
+
+  @protected
+  List<PopularSeriesListItem> dco_decode_list_popular_series_list_item(
     dynamic raw,
   );
 
@@ -147,6 +183,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64? dco_decode_opt_box_autoadd_i_64(dynamic raw);
 
   @protected
+  PopularPrecious? dco_decode_opt_box_autoadd_popular_precious(dynamic raw);
+
+  @protected
+  PopularSeriesConfig? dco_decode_opt_box_autoadd_popular_series_config(
+    dynamic raw,
+  );
+
+  @protected
+  PopularSeriesOne? dco_decode_opt_box_autoadd_popular_series_one(dynamic raw);
+
+  @protected
   SponsorUserInfo? dco_decode_opt_box_autoadd_sponsor_user_info(dynamic raw);
 
   @protected
@@ -167,6 +214,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<DanmakuBucketItem>? dco_decode_opt_list_danmaku_bucket_item(dynamic raw);
 
   @protected
+  List<FeedVideoItem>? dco_decode_opt_list_feed_video_item(dynamic raw);
+
+  @protected
+  List<PopularSeriesListItem>? dco_decode_opt_list_popular_series_list_item(
+    dynamic raw,
+  );
+
+  @protected
   Int64List? dco_decode_opt_list_prim_i_64_strict(dynamic raw);
 
   @protected
@@ -180,6 +235,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PlayUrlRequest dco_decode_play_url_request(dynamic raw);
+
+  @protected
+  PopularPrecious dco_decode_popular_precious(dynamic raw);
+
+  @protected
+  PopularPreciousResult dco_decode_popular_precious_result(dynamic raw);
+
+  @protected
+  PopularSeriesConfig dco_decode_popular_series_config(dynamic raw);
+
+  @protected
+  PopularSeriesListItem dco_decode_popular_series_list_item(dynamic raw);
+
+  @protected
+  PopularSeriesListResult dco_decode_popular_series_list_result(dynamic raw);
+
+  @protected
+  PopularSeriesOne dco_decode_popular_series_one(dynamic raw);
+
+  @protected
+  PopularSeriesOneResult dco_decode_popular_series_one_result(dynamic raw);
 
   @protected
   (String, String) dco_decode_record_string_string(dynamic raw);
@@ -264,10 +340,28 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   double sse_decode_box_autoadd_f_64(SseDeserializer deserializer);
 
   @protected
+  FeedContext sse_decode_box_autoadd_feed_context(SseDeserializer deserializer);
+
+  @protected
   PlatformInt64 sse_decode_box_autoadd_i_64(SseDeserializer deserializer);
 
   @protected
   PlayUrlRequest sse_decode_box_autoadd_play_url_request(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PopularPrecious sse_decode_box_autoadd_popular_precious(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PopularSeriesConfig sse_decode_box_autoadd_popular_series_config(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PopularSeriesOne sse_decode_box_autoadd_popular_series_one(
     SseDeserializer deserializer,
   );
 
@@ -326,6 +420,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   double sse_decode_f_64(SseDeserializer deserializer);
 
   @protected
+  FeedContext sse_decode_feed_context(SseDeserializer deserializer);
+
+  @protected
+  FeedFilterSettings sse_decode_feed_filter_settings(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FeedListResult sse_decode_feed_list_result(SseDeserializer deserializer);
+
+  @protected
+  FeedStat sse_decode_feed_stat(SseDeserializer deserializer);
+
+  @protected
+  FeedVideoItem sse_decode_feed_video_item(SseDeserializer deserializer);
+
+  @protected
   FormatCandidateInput sse_decode_format_candidate_input(
     SseDeserializer deserializer,
   );
@@ -345,7 +456,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<FeedVideoItem> sse_decode_list_feed_video_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<FormatCandidateInput> sse_decode_list_format_candidate_input(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<PopularSeriesListItem> sse_decode_list_popular_series_list_item(
     SseDeserializer deserializer,
   );
 
@@ -387,6 +508,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64? sse_decode_opt_box_autoadd_i_64(SseDeserializer deserializer);
 
   @protected
+  PopularPrecious? sse_decode_opt_box_autoadd_popular_precious(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PopularSeriesConfig? sse_decode_opt_box_autoadd_popular_series_config(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PopularSeriesOne? sse_decode_opt_box_autoadd_popular_series_one(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SponsorUserInfo? sse_decode_opt_box_autoadd_sponsor_user_info(
     SseDeserializer deserializer,
   );
@@ -411,6 +547,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<FeedVideoItem>? sse_decode_opt_list_feed_video_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<PopularSeriesListItem>? sse_decode_opt_list_popular_series_list_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   Int64List? sse_decode_opt_list_prim_i_64_strict(SseDeserializer deserializer);
 
   @protected
@@ -426,6 +572,37 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PlayUrlRequest sse_decode_play_url_request(SseDeserializer deserializer);
+
+  @protected
+  PopularPrecious sse_decode_popular_precious(SseDeserializer deserializer);
+
+  @protected
+  PopularPreciousResult sse_decode_popular_precious_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PopularSeriesConfig sse_decode_popular_series_config(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PopularSeriesListItem sse_decode_popular_series_list_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PopularSeriesListResult sse_decode_popular_series_list_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PopularSeriesOne sse_decode_popular_series_one(SseDeserializer deserializer);
+
+  @protected
+  PopularSeriesOneResult sse_decode_popular_series_one_result(
+    SseDeserializer deserializer,
+  );
 
   @protected
   (String, String) sse_decode_record_string_string(
@@ -532,6 +709,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_box_autoadd_f_64(double self, SseSerializer serializer);
 
   @protected
+  void sse_encode_box_autoadd_feed_context(
+    FeedContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_i_64(
     PlatformInt64 self,
     SseSerializer serializer,
@@ -540,6 +723,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_play_url_request(
     PlayUrlRequest self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_popular_precious(
+    PopularPrecious self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_popular_series_config(
+    PopularSeriesConfig self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_popular_series_one(
+    PopularSeriesOne self,
     SseSerializer serializer,
   );
 
@@ -607,6 +808,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_f_64(double self, SseSerializer serializer);
 
   @protected
+  void sse_encode_feed_context(FeedContext self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_feed_filter_settings(
+    FeedFilterSettings self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_feed_list_result(
+    FeedListResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_feed_stat(FeedStat self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_feed_video_item(FeedVideoItem self, SseSerializer serializer);
+
+  @protected
   void sse_encode_format_candidate_input(
     FormatCandidateInput self,
     SseSerializer serializer,
@@ -628,8 +850,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_feed_video_item(
+    List<FeedVideoItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_format_candidate_input(
     List<FormatCandidateInput> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_popular_series_list_item(
+    List<PopularSeriesListItem> self,
     SseSerializer serializer,
   );
 
@@ -691,6 +925,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_popular_precious(
+    PopularPrecious? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_popular_series_config(
+    PopularSeriesConfig? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_popular_series_one(
+    PopularSeriesOne? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_sponsor_user_info(
     SponsorUserInfo? self,
     SseSerializer serializer,
@@ -718,6 +970,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_list_feed_video_item(
+    List<FeedVideoItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_popular_series_list_item(
+    List<PopularSeriesListItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_list_prim_i_64_strict(
     Int64List? self,
     SseSerializer serializer,
@@ -738,6 +1002,48 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_play_url_request(
     PlayUrlRequest self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_popular_precious(
+    PopularPrecious self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_popular_precious_result(
+    PopularPreciousResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_popular_series_config(
+    PopularSeriesConfig self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_popular_series_list_item(
+    PopularSeriesListItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_popular_series_list_result(
+    PopularSeriesListResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_popular_series_one(
+    PopularSeriesOne self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_popular_series_one_result(
+    PopularSeriesOneResult self,
     SseSerializer serializer,
   );
 

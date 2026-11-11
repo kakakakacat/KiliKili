@@ -114,7 +114,10 @@ pub async fn fetch_play_url<T: HttpTransport, E: Entropy + ?Sized>(
 }
 
 /// 发一条已构造好的请求，返回响应体。
-async fn send<T: HttpTransport>(
+///
+/// `pub(crate)`：其余接口模块（如 [`crate::video_feed`]）要的正是同一套
+/// 「拼 URL → 带上下文头 → 查状态码」，各写一遍必然在某处漏掉 `check_status`。
+pub(crate) async fn send<T: HttpTransport>(
     transport: &T,
     ctx: &RequestContext,
     prepared: &PreparedRequest,

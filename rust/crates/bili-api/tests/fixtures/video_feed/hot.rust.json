@@ -1,0 +1,137 @@
+[
+  {
+    "aid": 100000001,
+    "badge_kind": null,
+    "bvid": "BV1Fixture01",
+    "cid": 1001,
+    "copyright": 3,
+    "cover": "https://example.invalid/pic/37.jpg",
+    "ctime": 1794273428,
+    "desc": "",
+    "dimension": {
+      "height": 1080,
+      "width": 1920
+    },
+    "duration": 86,
+    "first_frame": "https://example.invalid/first_frame/39.jpg",
+    "owner": {
+      "face": "https://example.invalid/face/49.jpg",
+      "mid": 20001,
+      "name": "UP主6"
+    },
+    "pgc_label": null,
+    "progress": null,
+    "pub_location": "示例地区",
+    "pubdate": 1794273428,
+    "redirect_url": null,
+    "stat": {
+      "coin": 2422.0,
+      "danmaku": 981,
+      "dislike": 0,
+      "favorite": 4442,
+      "his_rank": 0,
+      "like": 28228,
+      "now_rank": 0,
+      "reply": 2043,
+      "share": 8983,
+      "view": 1035919,
+      "vt": 0,
+      "vv": 1035919
+    },
+    "state": 0,
+    "tid": 22,
+    "title": "示例标题47",
+    "tname": "鬼畜调教",
+    "videos": 1
+  },
+  {
+    "aid": 100000002,
+    "badge_kind": null,
+    "bvid": "BV1Fixture02",
+    "cid": 1002,
+    "copyright": 3,
+    "cover": "https://example.invalid/pic/70.jpg",
+    "ctime": 1794289592,
+    "desc": "示例简介",
+    "dimension": {
+      "height": 1080,
+      "width": 1920
+    },
+    "duration": 235,
+    "first_frame": "https://example.invalid/first_frame/76.jpg",
+    "owner": {
+      "face": "https://example.invalid/face/88.jpg",
+      "mid": 20002,
+      "name": "UP主12"
+    },
+    "pgc_label": null,
+    "progress": null,
+    "pub_location": "示例地区",
+    "pubdate": 1794289592,
+    "redirect_url": null,
+    "stat": {
+      "coin": 4343.0,
+      "danmaku": 1539,
+      "dislike": 0,
+      "favorite": 5704,
+      "his_rank": 0,
+      "like": 19135,
+      "now_rank": 0,
+      "reply": 2580,
+      "share": 10060,
+      "view": 817274,
+      "vt": 0,
+      "vv": 817274
+    },
+    "state": 0,
+    "tid": 130,
+    "title": "示例标题40",
+    "tname": "音乐综合",
+    "videos": 1
+  },
+  {
+    "aid": 100000003,
+    "badge_kind": "cooperation",
+    "bvid": "BV1Fixture03",
+    "cid": 1003,
+    "copyright": 3,
+    "cover": "https://example.invalid/pic/96.jpg",
+    "ctime": 1794294557,
+    "desc": "示例简介",
+    "dimension": {
+      "height": 2160,
+      "width": 3840
+    },
+    "duration": 127,
+    "first_frame": "https://example.invalid/first_frame/17.jpg",
+    "owner": {
+      "face": "https://example.invalid/face/79.jpg",
+      "mid": 20003,
+      "name": "UP主0"
+    },
+    "pgc_label": null,
+    "progress": null,
+    "pub_location": "示例地区",
+    "pubdate": 1794294557,
+    "redirect_url": null,
+    "stat": {
+      "coin": 3498.0,
+      "danmaku": 201,
+      "dislike": 0,
+      "favorite": 12843,
+      "his_rank": 0,
+      "like": 61430,
+      "now_rank": 0,
+      "reply": 1449,
+      "share": 2260,
+      "view": 681712,
+      "vt": 0,
+      "vv": 681712
+    },
+    "state": 0,
+    "tid": 31,
+    "title": "示例标题39",
+    "tname": "翻唱",
+    "videos": 1
+  }
+]

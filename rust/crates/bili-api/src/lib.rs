@@ -43,3 +43,4 @@ pub mod subtitle;
 #[cfg(feature = "reqwest-transport")]
 pub mod transport_reqwest;
 pub mod video_detail;
+pub mod video_feed;

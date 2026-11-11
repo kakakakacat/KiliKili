@@ -12,4 +12,5 @@ pub mod subtitle;
 pub mod transport;
 pub mod video_detail;
 pub mod video_detail_fetch;
+pub mod video_feed;
 pub mod wbi;

@@ -6,20 +6,15 @@ import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:kilikili/http/api.dart';
 import 'package:kilikili/http/browser_ua.dart';
-import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/account_type.dart';
 import 'package:kilikili/models/common/video/video_type.dart';
 import 'package:kilikili/models/home/rcmd/result.dart';
-import 'package:kilikili/models/model_hot_video_item.dart';
 import 'package:kilikili/models/model_rec_video_item.dart';
 import 'package:kilikili/models/pgc_lcf.dart';
 import 'package:kilikili/models/video/play/url.dart';
 import 'package:kilikili/models_new/pgc/pgc_rank/pgc_rank_item_model.dart';
-import 'package:kilikili/models_new/popular/popular_precious/data.dart';
-import 'package:kilikili/models_new/popular/popular_series_list/list.dart';
-import 'package:kilikili/models_new/popular/popular_series_one/data.dart';
 import 'package:kilikili/models_new/triple/pgc_triple.dart';
 import 'package:kilikili/models_new/triple/ugc_triple.dart';
 import 'package:kilikili/models_new/video/video_ai_conclusion/data.dart';
@@ -52,9 +47,6 @@ import 'package:protobuf/protobuf.dart';
 
 /// view层根据 status 判断渲染逻辑
 abstract final class VideoHttp {
-  static RegExp zoneRegExp = RegExp(Pref.banWordForZone, caseSensitive: false);
-  static bool enableFilter = zoneRegExp.pattern.isNotEmpty;
-
   // 首页推荐视频
   //
   // [desktop] 为 true 时沿用同一个公开网页接口，改用哔哩哔哩官方 Windows
@@ -132,9 +124,9 @@ abstract final class VideoHttp {
         GlobalData().blackMids.contains(i['args']['up_id'])) {
       return true;
     }
-    if (enableFilter &&
+    if (RecommendFilter.enableZoneFilter &&
         i['args']?['tname'] != null &&
-        zoneRegExp.hasMatch(i['args']['tname'])) {
+        RecommendFilter.zoneRegExp.hasMatch(i['args']['tname'])) {
       return true;
     }
     return false;
@@ -208,39 +200,6 @@ abstract final class VideoHttp {
     }
   }
 
-  static bool _filterHotAndRank(dynamic i) {
-    if (GlobalData().blackMids.contains(i['owner']['mid'])) return false;
-    if (RecommendFilter.filterTitle(i['title'])) return false;
-    if (RecommendFilter.filterLikeRatio(i['stat']['like'], i['stat']['view'])) {
-      return false;
-    }
-    if (enableFilter && i['tname'] != null && zoneRegExp.hasMatch(i['tname'])) {
-      return false;
-    }
-    return true;
-  }
-
-  // 最热视频
-  static Future<LoadingState<List<HotVideoItemModel>>> hotVideoList({
-    required int pn,
-    required int ps,
-  }) async {
-    final res = await Request().get(
-      Api.hotList,
-      queryParameters: {'pn': pn, 'ps': ps},
-    );
-    if (res.data['code'] == 0) {
-      return Success(
-        (res.data['data']['list'] as List)
-            .where(_filterHotAndRank)
-            .map((e) => HotVideoItemModel.fromJson(e))
-            .toList(),
-      );
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   // 视频流
   @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<PlayUrlModel>> videoUrl({
@@ -255,6 +214,7 @@ abstract final class VideoHttp {
     String? language,
     bool voiceBalance = false,
     bool fallback = false,
+
     /// 是否允许走 Rust 取数路径。
     ///
     /// 下面那三处递归都传 false：它们是 Dart 路径自己的重试分支（DRM
@@ -447,26 +407,6 @@ abstract final class VideoHttp {
   }
 
   // 相关视频
-  static Future<LoadingState<List<HotVideoItemModel>?>> relatedVideoList({
-    required String bvid,
-  }) async {
-    final res = await Request().get(
-      Api.relatedList,
-      queryParameters: {'bvid': bvid},
-    );
-    if (res.data['code'] == 0) {
-      final items = (res.data['data'] as List?)
-          ?.whereNotBlocked((e) => e['owner']?['mid'])
-          .map((i) => HotVideoItemModel.fromJson(i));
-      final list = RecommendFilter.applyFilterToRelatedVideos
-          ? items?.where((i) => !RecommendFilter.filterAll(i)).toList()
-          : items?.toList();
-      return Success(list);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   // 获取点赞/投币/收藏状态 pgc
   static Future<LoadingState<PgcLCF>> pgcLikeCoinFav({
     required Object epId,
@@ -1017,25 +957,6 @@ abstract final class VideoHttp {
   }
 
   // 视频排行
-  static Future<LoadingState<List<HotVideoItemModel>>> getRankVideoList(
-    int rid,
-  ) async {
-    final res = await Request().get(
-      Api.getRankApi,
-      queryParameters: await WbiSign.makSign({'rid': rid, 'type': 'all'}),
-    );
-    if (res.data['code'] == 0) {
-      return Success(
-        (res.data['data']['list'] as List)
-            .where(_filterHotAndRank)
-            .map((e) => HotVideoItemModel.fromJson(e))
-            .toList(),
-      );
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   // pgc 排行
   static Future<LoadingState<List<PgcRankItemModel>?>> pgcRankList({
     int day = 3,
@@ -1100,81 +1021,6 @@ abstract final class VideoHttp {
     );
     if (res.data['code'] == 0) {
       return Success(VideoNoteData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<List<PopularSeriesListItem>?>>
-  popularSeriesList() async {
-    final res = await Request().get(
-      Api.popularSeriesList,
-      queryParameters: await WbiSign.makSign({'web_location': 333.934}),
-      options: Options(
-        headers: const {
-          'user-agent': BrowserUa.pc,
-          'origin': HttpString.baseUrl,
-          'referer': 'https://www.bilibili.com/v/popular/weekly',
-        },
-      ),
-    );
-    if (res.data['code'] == 0) {
-      return Success(
-        (res.data['data']?['list'] as List<dynamic>?)
-            ?.map(
-              (e) => PopularSeriesListItem.fromJson(e as Map<String, dynamic>),
-            )
-            .toList(),
-      );
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<PopularSeriesOneData>> popularSeriesOne({
-    required int number,
-  }) async {
-    final res = await Request().get(
-      Api.popularSeriesOne,
-      queryParameters: await WbiSign.makSign({
-        'number': number,
-        'web_location': 333.934,
-      }),
-      options: Options(
-        headers: {
-          'user-agent': BrowserUa.pc,
-          'origin': HttpString.baseUrl,
-          'referer': 'https://www.bilibili.com/v/popular/weekly?num=$number',
-        },
-      ),
-    );
-    if (res.data['code'] == 0) {
-      return Success(PopularSeriesOneData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<PopularPreciousData>> popularPrecious({
-    required int page,
-  }) async {
-    final res = await Request().get(
-      Api.popularPrecious,
-      queryParameters: await WbiSign.makSign({
-        'page_size': 100,
-        'page': page,
-        'web_location': 333.934,
-      }),
-      options: Options(
-        headers: const {
-          'user-agent': BrowserUa.pc,
-          'origin': HttpString.baseUrl,
-          'referer': 'https://www.bilibili.com/v/popular/history',
-        },
-      ),
-    );
-    if (res.data['code'] == 0) {
-      return Success(PopularPreciousData.fromJson(res.data['data']));
     } else {
       return Error(res.data['message']);
     }

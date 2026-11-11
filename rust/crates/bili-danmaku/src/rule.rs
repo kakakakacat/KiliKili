@@ -13,13 +13,17 @@
 //! 由调用方整条路径降级回 Dart（issue #42、ADR-010）。拒绝是安全的，
 //! 它只是让这条弹幕链路回到基线；放行才是危险的。
 //!
-//! 被拒绝的构造见 [`divergent_construct`]。
+//! 判定本身已移到 [`bili_domain::regex_compat`]：推荐/分区屏蔽词（S3）
+//! 是同一类用户正则，「哪些构造算分歧」只能有一处定义。本模块对外仍
+//! 重新导出 [`divergent_construct`]，调用点与测试不必跟着改。
 
 use std::collections::HashSet;
 
 use bili_domain::danmaku::DanmakuElem;
-use bili_domain::error::{DomainError, ErrorKind};
-use regex::{Regex, RegexBuilder};
+use bili_domain::error::DomainError;
+use bili_domain::regex_compat::compile_user_pattern;
+pub use bili_domain::regex_compat::divergent_construct;
+use regex::Regex;
 
 /// 编译后的屏蔽规则。
 #[derive(Debug, Clone, Default)]
@@ -47,24 +51,11 @@ impl FilterRules {
     ) -> Result<Self, DomainError> {
         let mut regexes = Vec::with_capacity(patterns.len());
         for (index, pattern) in patterns.iter().enumerate() {
-            if let Some(construct) = divergent_construct(pattern) {
-                return Err(DomainError::new(
-                    ErrorKind::Unsupported,
-                    // 不带正则原文：它来自用户配置，可能含有个人信息。
-                    format!("第 {index} 条正则使用了两端语义不同的构造 {construct}"),
-                ));
-            }
-            let regex = RegexBuilder::new(pattern)
-                // 基线固定 caseSensitive: false（两处构造点都是）。
-                .case_insensitive(true)
-                .build()
-                .map_err(|e| {
-                    DomainError::new(
-                        ErrorKind::Unsupported,
-                        format!("第 {index} 条正则 Rust 引擎编不过: {}", first_line(&e)),
-                    )
-                })?;
-            regexes.push(regex);
+            // 不带正则原文：它来自用户配置，可能含有个人信息。
+            regexes.push(compile_user_pattern(
+                pattern,
+                &format!("第 {index} 条正则"),
+            )?);
         }
 
         Ok(Self {
@@ -92,55 +83,6 @@ impl FilterRules {
             || self.keywords.iter().any(|k| elem.content.contains(k))
             || self.regexes.iter().any(|r| r.is_match(&elem.content))
     }
-}
-
-/// 正则里是否含有「两端都能编过、但语义不同」的构造；有则返回它。
-///
-/// 编不过的构造（lookaround、反向引用等）不在此列——它们由 `regex`
-/// 自己报错，拒绝路径相同。这里要挡住的是**悄悄不同**的那些：
-///
-/// - `\d` `\w` `\s` 及其大写：Dart 只认 ASCII，Rust 认 Unicode 全集
-///   （全角数字 `１` 命中 Rust 的 `\d`，不命中 Dart 的）。
-/// - `\b` `\B`：同理，单词边界的「单词」定义不同。
-/// - `{n,m}`：计数单位不同。Dart 数 UTF-16 码元，Rust 数码点；一个
-///   非 BMP 字符（emoji）在前者是 2、在后者是 1。
-///
-/// 扫描时按转义配对前进，因此 `\\d`（字面反斜杠加 d）不会误判；字符类
-/// 内部同样检查，`[\d]` 一样被拒。宁可多拒（降级回基线，结果仍然正确），
-/// 不可漏判。
-#[must_use]
-pub fn divergent_construct(pattern: &str) -> Option<&'static str> {
-    let mut chars = pattern.chars();
-    while let Some(c) = chars.next() {
-        match c {
-            '\\' => match chars.next() {
-                Some('d') => return Some(r"\d"),
-                Some('D') => return Some(r"\D"),
-                Some('w') => return Some(r"\w"),
-                Some('W') => return Some(r"\W"),
-                Some('s') => return Some(r"\s"),
-                Some('S') => return Some(r"\S"),
-                Some('b') => return Some(r"\b"),
-                Some('B') => return Some(r"\B"),
-                // 其余转义（含 `\\`）整体跳过，下一轮从它后面继续。
-                _ => {}
-            },
-            '{' => return Some("{n,m}"),
-            _ => {}
-        }
-    }
-    None
-}
-
-/// 取错误的首行。`regex` 的错误是多行的（带指位记号），塞进一行日志里
-/// 很难读，而首行已经说清了原因。
-fn first_line(error: &regex::Error) -> String {
-    error
-        .to_string()
-        .lines()
-        .next()
-        .unwrap_or_default()
-        .to_owned()
 }
 
 #[cfg(test)]

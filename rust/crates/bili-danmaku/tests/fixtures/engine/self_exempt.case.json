@@ -1,0 +1,24 @@
+{
+  "comment": "登录态：自己发的弹幕既不参与合并也不参与过滤，且 is_self 为真、count 保持 0。别人发的同内容照常合并与过滤。",
+  "options": {
+    "is_login": true,
+    "self_mid_hash": "a1b2c3d4",
+    "merge": true,
+    "rules": {
+      "keywords": ["广告"],
+      "regexes": [],
+      "uids": ["a1b2c3d4"]
+    }
+  },
+  "segment": {
+    "state": 1,
+    "elems": [
+      { "id": 1, "progress": 1000, "mode": 1, "fontsize": 25, "color": 16777215, "mid_hash": "a1b2c3d4", "content": "这是广告内容", "ctime": 1700000000, "weight": 10 },
+      { "id": 2, "progress": 1010, "mode": 1, "fontsize": 25, "color": 16777215, "mid_hash": "a1b2c3d4", "content": "这是广告内容", "ctime": 1700000001, "weight": 10 },
+      { "id": 3, "progress": 1020, "mode": 1, "fontsize": 25, "color": 16777215, "mid_hash": "99999999", "content": "这是广告内容", "ctime": 1700000002, "weight": 10 },
+      { "id": 4, "progress": 2000, "mode": 1, "fontsize": 25, "color": 16777215, "mid_hash": "a1b2c3d4", "content": "自己发的普通弹幕", "ctime": 1700000003, "weight": 10 },
+      { "id": 5, "progress": 2010, "mode": 1, "fontsize": 25, "color": 16777215, "mid_hash": "99999999", "content": "自己发的普通弹幕", "ctime": 1700000004, "weight": 10 },
+      { "id": 6, "progress": 2020, "mode": 1, "fontsize": 25, "color": 16777215, "mid_hash": "99999999", "content": "自己发的普通弹幕", "ctime": 1700000005, "weight": 10 }
+    ]
+  }
+}

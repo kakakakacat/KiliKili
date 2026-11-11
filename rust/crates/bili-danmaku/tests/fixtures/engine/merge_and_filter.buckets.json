@@ -1,0 +1,80 @@
+{
+  "10": [
+    {
+      "id": 1,
+      "progress": 1000,
+      "mode": 1,
+      "fontsize": 25,
+      "color": 16777215,
+      "mid_hash": "11111111",
+      "content": "草",
+      "ctime": 1700000000,
+      "weight": 9,
+      "action": "",
+      "pool": 0,
+      "id_str": "",
+      "attr": 0,
+      "like_count": 0,
+      "animation": "",
+      "extra": "",
+      "colorful": 0,
+      "dm_type": 0,
+      "oid": 0,
+      "dm_from": 0,
+      "count": 3,
+      "is_self": false
+    }
+  ],
+  "42": [
+    {
+      "id": 7,
+      "progress": 4200,
+      "mode": 1,
+      "fontsize": 25,
+      "color": 16777215,
+      "mid_hash": "77777777",
+      "content": "不是 spam 开头的内容",
+      "ctime": 1700000006,
+      "weight": 6,
+      "action": "",
+      "pool": 0,
+      "id_str": "",
+      "attr": 0,
+      "like_count": 0,
+      "animation": "",
+      "extra": "",
+      "colorful": 0,
+      "dm_type": 0,
+      "oid": 0,
+      "dm_from": 0,
+      "count": 1,
+      "is_self": false
+    }
+  ],
+  "44": [
+    {
+      "id": 9,
+      "progress": 4400,
+      "mode": 1,
+      "fontsize": 25,
+      "color": 16777215,
+      "mid_hash": "88888888",
+      "content": "正常弹幕",
+      "ctime": 1700000008,
+      "weight": 6,
+      "action": "",
+      "pool": 0,
+      "id_str": "",
+      "attr": 0,
+      "like_count": 0,
+      "animation": "",
+      "extra": "",
+      "colorful": 0,
+      "dm_type": 0,
+      "oid": 0,
+      "dm_from": 0,
+      "count": 1,
+      "is_self": false
+    }
+  ]
+}

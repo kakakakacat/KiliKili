@@ -50,3 +50,28 @@ Map<String, dynamic> normalizeDanmakuElem(DanmakuElem e) => {
   'oid': e.oid.toInt(),
   'dm_from': e.dmFrom.value,
 };
+
+/// 规范化**引擎处理过**的一条弹幕：服务端字段 + 客户端字段。
+///
+/// `count` / `isSelf` 是 protobuf 字段 100 / 101，服务端不下发，由引擎
+/// （基线的 `bucketDanmaku`、Rust 的 `bili_danmaku::engine`）写入。它们
+/// 不出现在解码的 golden 里，只出现在引擎的 golden 里——两份 golden
+/// 覆盖的是两件事，混在一起会让解码的差异与引擎的差异分不开。
+Map<String, dynamic> normalizeProcessedElem(DanmakuElem e) => {
+  ...normalizeDanmakuElem(e),
+  'count': e.count,
+  'is_self': e.isSelf,
+};
+
+/// 规范化分桶结果。键是 `progress ~/ 100`。
+///
+/// 键转成字符串而非保留 int：JSON 的对象键只能是字符串，Rust 侧
+/// `BTreeMap<i32, _>` 序列化出来也是字符串键。排序只为文件稳定可读，
+/// 比对本身不依赖顺序。
+Map<String, dynamic> normalizeBuckets(Map<int, List<DanmakuElem>> buckets) {
+  final keys = buckets.keys.toList()..sort();
+  return {
+    for (final key in keys)
+      '$key': buckets[key]!.map(normalizeProcessedElem).toList(),
+  };
+}

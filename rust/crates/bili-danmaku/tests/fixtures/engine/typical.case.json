@@ -1,0 +1,20 @@
+{
+  "comment": "不登录、不合并、无屏蔽规则：只验证分桶与桶内顺序。重复内容必须原样保留。",
+  "options": {
+    "is_login": false,
+    "self_mid_hash": "a1b2c3d4",
+    "merge": false,
+    "rules": { "keywords": [], "regexes": [], "uids": [] }
+  },
+  "segment": {
+    "state": 0,
+    "elems": [
+      { "id": 1, "progress": 0, "mode": 1, "fontsize": 25, "color": 16777215, "mid_hash": "11111111", "content": "第一条", "ctime": 1700000000, "weight": 8 },
+      { "id": 2, "progress": 99, "mode": 1, "fontsize": 25, "color": 16777215, "mid_hash": "22222222", "content": "同一桶的第二条", "ctime": 1700000001, "weight": 5 },
+      { "id": 3, "progress": 100, "mode": 5, "fontsize": 25, "color": 16711680, "mid_hash": "33333333", "content": "下一个桶", "ctime": 1700000002, "weight": 10 },
+      { "id": 4, "progress": 61050, "mode": 1, "fontsize": 18, "color": 16777215, "mid_hash": "a1b2c3d4", "content": "重复内容", "ctime": 1700000003, "weight": 1 },
+      { "id": 5, "progress": 61099, "mode": 1, "fontsize": 18, "color": 16777215, "mid_hash": "44444444", "content": "重复内容", "ctime": 1700000004, "weight": 1 },
+      { "id": 6, "progress": 359999, "mode": 4, "fontsize": 25, "color": 65280, "mid_hash": "55555555", "content": "分段末尾", "ctime": 1700000005, "weight": 0, "pool": 1, "attr": 1, "like_count": 7, "id_str": "6", "colorful": 60001, "dm_from": 1, "oid": 987654 }
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "comment": "合并开启 + 三类屏蔽规则。覆盖：首条留下并累加 count；被过滤的首条让同内容的后续一并消失；关键词区分大小写而正则不区分；UID 按 mid_hash 命中。",
+  "options": {
+    "is_login": false,
+    "self_mid_hash": "a1b2c3d4",
+    "merge": true,
+    "rules": {
+      "keywords": ["广告"],
+      "regexes": ["^spam"],
+      "uids": ["bbbbbbbb"]
+    }
+  },
+  "segment": {
+    "state": 0,
+    "elems": [
+      { "id": 1, "progress": 1000, "mode": 1, "fontsize": 25, "color": 16777215, "mid_hash": "11111111", "content": "草", "ctime": 1700000000, "weight": 9 },
+      { "id": 2, "progress": 2000, "mode": 1, "fontsize": 25, "color": 16777215, "mid_hash": "22222222", "content": "草", "ctime": 1700000001, "weight": 9 },
+      { "id": 3, "progress": 3000, "mode": 1, "fontsize": 25, "color": 16777215, "mid_hash": "33333333", "content": "草", "ctime": 1700000002, "weight": 9 },
+      { "id": 4, "progress": 2000, "mode": 1, "fontsize": 25, "color": 16777215, "mid_hash": "44444444", "content": "这是广告内容", "ctime": 1700000003, "weight": 3 },
+      { "id": 5, "progress": 4000, "mode": 1, "fontsize": 25, "color": 16777215, "mid_hash": "55555555", "content": "这是广告内容", "ctime": 1700000004, "weight": 3 },
+      { "id": 6, "progress": 4100, "mode": 1, "fontsize": 25, "color": 16777215, "mid_hash": "66666666", "content": "SPAM 大写也该被正则拦下", "ctime": 1700000005, "weight": 2 },
+      { "id": 7, "progress": 4200, "mode": 1, "fontsize": 25, "color": 16777215, "mid_hash": "77777777", "content": "不是 spam 开头的内容", "ctime": 1700000006, "weight": 6 },
+      { "id": 8, "progress": 4300, "mode": 1, "fontsize": 25, "color": 16777215, "mid_hash": "bbbbbbbb", "content": "被拉黑的人说的话", "ctime": 1700000007, "weight": 6 },
+      { "id": 9, "progress": 4400, "mode": 1, "fontsize": 25, "color": 16777215, "mid_hash": "88888888", "content": "正常弹幕", "ctime": 1700000008, "weight": 6 }
+    ]
+  }
+}

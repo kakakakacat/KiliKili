@@ -1,0 +1,67 @@
+{
+  "filter": [
+    {
+      "field": "season_version",
+      "name": "类型",
+      "values": [
+        {
+          "keyword": "-1",
+          "name": "全部"
+        },
+        {
+          "keyword": "1",
+          "name": "正片"
+        },
+        {
+          "keyword": "2",
+          "name": "衍生"
+        }
+      ]
+    },
+    {
+      "field": "area",
+      "name": "地区",
+      "values": [
+        {
+          "keyword": "-1",
+          "name": "全部"
+        },
+        {
+          "keyword": "2",
+          "name": "日本"
+        },
+        {
+          "keyword": "3",
+          "name": "美国"
+        }
+      ]
+    },
+    {
+      "field": "style_id",
+      "name": "风格",
+      "values": [
+        {
+          "keyword": "-1",
+          "name": "全部"
+        }
+      ]
+    }
+  ],
+  "order": [
+    {
+      "field": "3",
+      "name": "追番人数",
+      "sort": "0"
+    },
+    {
+      "field": "0",
+      "name": "更新时间",
+      "sort": "0"
+    },
+    {
+      "field": "4",
+      "name": "最高评分",
+      "sort": "0"
+    }
+  ]
+}

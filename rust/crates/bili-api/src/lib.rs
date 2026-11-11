@@ -34,6 +34,7 @@ pub mod dm_view;
 pub mod envelope;
 pub mod http;
 pub mod nav;
+pub mod pgc;
 pub mod playurl;
 pub(crate) mod protobuf;
 pub mod request;

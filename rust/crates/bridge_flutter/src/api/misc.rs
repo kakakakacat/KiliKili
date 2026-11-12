@@ -1,5 +1,5 @@
-//! 杂项接口的 Dart 导出（S15 / issue #66）：音乐页、黑名单、电竞赛事、
-//! 云端弹幕屏蔽规则。
+//! 杂项接口的 Dart 导出（S15 / issue #66）：音乐页、黑名单、关注/粉丝、
+//! 电竞赛事、云端弹幕屏蔽规则。
 //!
 //! 本模块里有四条**写操作**：弹幕屏蔽规则的新增与删除、BGM 的「想听」、
 //! 关注分组排序。写与只读在这一层的区别只有一处：[`MiscContext::csrf`]。
@@ -15,7 +15,9 @@
 //! 不靠这里的文件数。
 //!
 //! [`MatchContest`] 被 [`crate::api::search`] 复用：综合搜索的赛事卡片与
-//! 赛事详情是同一个实体的两套字段名（见 `bili_api::match_info`）。
+//! 赛事详情是同一个实体的两套字段名（见 `bili_api::match_info`）。反向也
+//! 有一条：[`FollowUser`] 用的是 [`crate::api::search::OfficialVerify`]，
+//! 同一个 `official_verify` 子树只该有一个导出类型。
 
 use std::time::Duration;
 
@@ -124,6 +126,35 @@ pub struct BlackListItem {
     pub face: Option<String>,
 }
 
+// -------------------------------------------------------------- 关注/粉丝
+
+/// 一页关注或粉丝。
+///
+/// 关注列表与粉丝列表是同一个响应形状，服务端只换了路径，所以只有一个
+/// 结构（见 `bili_api::follow`）。
+#[derive(Debug, Clone)]
+pub struct FollowList {
+    pub list: Vec<FollowUser>,
+    /// 总数。服务端不给时为 `None`，界面据此判断还有没有下一页。
+    pub total: Option<i64>,
+}
+
+/// 列表里的一个人。
+#[derive(Debug, Clone)]
+pub struct FollowUser {
+    /// 缺失时为 0，与基线一致。
+    pub mid: i64,
+    /// 关注关系位掩码。基线只用它判 `!= -1`（是否已关注）。
+    pub attribute: Option<i64>,
+    pub uname: Option<String>,
+    pub face: Option<String>,
+    /// **不做空串归一**：界面判的是「有没有这一行」，空串要留一行空白。
+    pub sign: Option<String>,
+    /// 复用 [`crate::api::search::OfficialVerify`]——同一个 `official_verify`
+    /// 子树，再导出一个同名结构会让 Dart 侧多一个要互相转换的类。
+    pub official_verify: Option<crate::api::search::OfficialVerify>,
+}
+
 // ------------------------------------------------------------------ 赛事
 
 /// 一场比赛。搜索卡片与赛事详情共用。
@@ -210,6 +241,15 @@ pub struct BgmRecommendResult {
 #[derive(Debug, Clone)]
 pub struct BlackListResult {
     pub data: Option<BlackList>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+/// 关注/粉丝列表的结果。
+#[derive(Debug, Clone)]
+pub struct FollowListResult {
+    pub data: Option<FollowList>,
     pub error_kind: Option<String>,
     pub error_detail: Option<String>,
     pub error_code: Option<i64>,
@@ -374,6 +414,56 @@ pub async fn fetch_black_list(
             error_code: e.code(),
         },
     }
+}
+
+/// 取一页关注列表。
+///
+/// `order_type` 空串表示「最近关注」，`attention` 表示「最常访问」；空串
+/// 也会发出去，与基线一致。
+pub async fn fetch_followings(
+    context: MiscContext,
+    vmid: i64,
+    page: i64,
+    page_size: i64,
+    order_type: String,
+) -> FollowListResult {
+    let (ctx, transport, _, _) = context.split();
+    let joined = init::runtime()
+        .spawn(async move {
+            follow::fetch_followings(&transport, &ctx, vmid, page, page_size, &order_type).await
+        })
+        .await;
+
+    follow_list_result(flatten(joined))
+}
+
+/// 取一页粉丝列表。
+///
+/// `order_type` 传 `None` 时整条参数不发——基线 `FanHttp.fans` 的参数可空，
+/// 这个区别保留着，见 `bili_api::follow::fans_request`。
+pub async fn fetch_fans(
+    context: MiscContext,
+    vmid: i64,
+    page: i64,
+    page_size: i64,
+    order_type: Option<String>,
+) -> FollowListResult {
+    let (ctx, transport, _, _) = context.split();
+    let joined = init::runtime()
+        .spawn(async move {
+            follow::fetch_fans(
+                &transport,
+                &ctx,
+                vmid,
+                page,
+                page_size,
+                order_type.as_deref(),
+            )
+            .await
+        })
+        .await;
+
+    follow_list_result(flatten(joined))
 }
 
 /// 取一场比赛的详情。
@@ -550,6 +640,45 @@ fn music_detail(d: domain_music::MusicDetail) -> MusicDetail {
         }),
         music_relation: d.music_relation,
         music_publish: d.music_publish,
+    }
+}
+
+/// 领域实体 → 导出结构。关注与粉丝两条路径共用。
+fn follow_list_result(
+    result: Result<bili_domain::user_list::FollowList, DomainError>,
+) -> FollowListResult {
+    match result {
+        Ok(list) => FollowListResult {
+            data: Some(FollowList {
+                list: list
+                    .list
+                    .into_iter()
+                    .map(|u| FollowUser {
+                        mid: u.mid,
+                        attribute: u.attribute,
+                        uname: u.uname,
+                        face: u.face,
+                        sign: u.sign,
+                        official_verify: u.official_verify.map(|v| {
+                            crate::api::search::OfficialVerify {
+                                kind: v.kind,
+                                desc: v.desc,
+                            }
+                        }),
+                    })
+                    .collect(),
+                total: list.total,
+            }),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => FollowListResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
     }
 }
 

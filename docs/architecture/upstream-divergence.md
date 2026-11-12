@@ -45,6 +45,14 @@ pgc 成为删得最多的一块
 删掉 `lib/http/music.dart` 与 `lib/http/pgc.dart` 两个整文件；
 `lib/http/follow.dart`、`lib/pages/follow_tag_sort/view.dart`、
 `lib/pages/pgc_review/post/view.dart` 三个从「仅重命名」转入「有实质改动」。
+修订：2026-11-12（关注/粉丝列表，#66 收尾，为本次）—— 实质改动
+152 → **155**，仅重命名波及 739 → **734**，新增文件 465 → **469**，
+删除文件 128 → **130**，「修改」总数 891 → **889**。本次数字含**尚未提交**
+的工作树改动。`lib/http/{follow,fan}.dart` 两个整文件删掉（从 M 转进 D，
+其中 `follow.dart` 上一版刚进「有实质改动」，这一版就删干净了）；
+`lib/http/dynamics.dart`、`lib/models/dynamics/up.dart`、
+`lib/pages/fan/controller.dart`、`lib/pages/follow/child/child_controller.dart`
+四个从「仅重命名」转入「有实质改动」。
 
 这一版的差额**不全是本次改动**：上一版是在 #79 的工作树上算的，#90 合进
 main 前的最后一个提交（CDN 判据跟着算法搬家）没算进去——它删掉四个 Dart
@@ -84,15 +92,16 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 | 类别 | 数量 |
 | --- | ---: |
-| 修改的上游既有文件 | 891 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 739 |
-| &nbsp;&nbsp;其中：有实质改动 | **152** |
-| 新增文件 | 465 |
-| 删除文件 | **128** |
+| 修改的上游既有文件 | 889 |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 734 |
+| &nbsp;&nbsp;其中：有实质改动 | **155** |
+| 新增文件 | 469 |
+| 删除文件 | **130** |
 
-「修改」总数持续下降（935 → 909 → 897 → 894），不是改动变少，而是其中
-一部分文件**被删除**了（迁移掉的模型），从 M 转到了 D。删除数从 57 一路
-到 125，来源是 S10 的 PGC 两批、S11a 的直播三批与取流（#79）。
+「修改」总数持续下降（935 → 909 → 897 → 894 → 889），不是改动变少，而是
+其中一部分文件**被删除**了（迁移掉的模型），从 M 转到了 D。删除数从 57
+一路到 130，来源是 S10 的 PGC 两批、S11a 的直播三批、取流（#79）与
+S15（#66）陆续删掉的整个 `lib/http/*.dart`。
 
 ## 3. 包名重命名：分叉面的主体
 
@@ -131,7 +140,8 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | S11a 直播第二批（取流） | #61 / #86 | `lib/http/live.dart`、`lib/pages/live_room/controller.dart`、`lib/utils/video_utils.dart`（`getLiveCdnUrl` 改吃 FRB 的 `LiveCodec`）；留下单向适配 `lib/services/rust/live_playurl_compat.dart` |
 | 弹幕屏蔽规则的两个写操作 | #66 #50 / #100 | `lib/pages/danmaku_block/controller.dart`、`lib/pages/video/widgets/header_control.dart`；**删掉 `lib/http/danmaku_block.dart`**。仓库头两条走 Rust 的写操作，形状见 ADR-013 |
 | 短评五条写操作 | #60 #50 / 本次 | `lib/pages/pgc_review/**`；**删掉 `lib/http/pgc.dart`**（迁完整个文件只剩这五条） |
-| 想听 / 关注分组排序 | #66 #50 / 本次 | `lib/pages/music/view.dart`、`lib/pages/follow_tag_sort/view.dart`、`lib/http/follow.dart`（瘦身）；**删掉 `lib/http/music.dart`** |
+| 想听 / 关注分组排序 | #66 #50 / #104 | `lib/pages/music/view.dart`、`lib/pages/follow_tag_sort/view.dart`、`lib/http/follow.dart`（瘦身）；**删掉 `lib/http/music.dart`** |
+| S15 关注/粉丝列表（#66 收尾） | #66 / 本次 | `lib/pages/follow/child/child_controller.dart`、`lib/pages/fan/controller.dart`、`lib/http/dynamics.dart`（`followings` 改吃 Rust，同一条接口不留第二份实现）、`lib/models/dynamics/up.dart`；**删掉 `lib/http/{follow,fan}.dart`**；留下单向适配 `lib/services/rust/follow_compat.dart`（`FollowData` 还有四个生产者在 S6 #56 / S7 #57） |
 | S11a 直播第三批（剩余六条只读） | #61 / #87 | `lib/http/live.dart`、`lib/pages/{live_emote,live_search,live_dm_block}/**`、`lib/pages/live_room/{controller.dart,contribution_rank/**}`、`lib/pages/member/{view.dart,widget/{medal_wall,user_info_card}.dart}`、`lib/pages/common/publish/common_rich_text_pub_page.dart`；留下单向适配 `lib/services/rust/live_rest_compat.dart` |
 
 **同步时怎么处理这一类冲突**：上游在这些文件里的改动，多数落在我们已经

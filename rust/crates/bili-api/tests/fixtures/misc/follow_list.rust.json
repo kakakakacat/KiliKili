@@ -1,0 +1,35 @@
+{
+  "list": [
+    {
+      "attribute": 2,
+      "face": "https://example.invalid/bfs/face/a.jpg",
+      "mid": 800000201,
+      "official_verify": {
+        "desc": "示例机构认证",
+        "kind": 0
+      },
+      "sign": "这是一条签名",
+      "uname": "示例用户甲"
+    },
+    {
+      "attribute": -1,
+      "face": "https://example.invalid/bfs/face/b.jpg",
+      "mid": 800000202,
+      "official_verify": {
+        "desc": "",
+        "kind": -1
+      },
+      "sign": "",
+      "uname": "示例用户乙"
+    },
+    {
+      "attribute": 2,
+      "face": "https://example.invalid/bfs/face/c.jpg",
+      "mid": 0,
+      "official_verify": null,
+      "sign": null,
+      "uname": "示例用户丙"
+    }
+  ],
+  "total": 3
+}

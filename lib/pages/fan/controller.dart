@@ -1,8 +1,9 @@
-import 'package:kilikili/http/fan.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models_new/follow/data.dart';
 import 'package:kilikili/pages/follow_type/controller.dart';
+import 'package:kilikili/services/rust/follow_compat.dart';
+import 'package:kilikili/services/rust/rust_misc.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -30,11 +31,14 @@ class FansController extends FollowTypeController {
   }
 
   @override
-  Future<LoadingState<FollowData>> customGetData() => FanHttp.fans(
-    vmid: mid,
-    pn: page,
-    orderType: 'attention',
-  );
+  Future<LoadingState<FollowData>> customGetData() async {
+    final res = await RustMisc.fans(
+      vmid: mid,
+      pn: page,
+      orderType: 'attention',
+    );
+    return res.toFollowDataState();
+  }
 
   Future<void> onRemoveFan(int index, int mid) async {
     final res = await VideoHttp.relationMod(

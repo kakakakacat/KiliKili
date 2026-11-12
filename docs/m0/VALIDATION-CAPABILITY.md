@@ -192,10 +192,11 @@ windows, linux]`，再逐个核对 `needs.*.result`。真正的回归在被聚�
   windows / linux 带 `if: github.event_name == 'schedule' ||
   inputs.full_platforms`，平时是 skipped；门只在 `full_platforms` 为真时才
   核对这四项。
-- **`chore/readme-stats` 的推送要单独触发一次。** 那条分支的 PR 由
-  `GITHUB_TOKEN` 创建，GitHub 防递归，不发 `pull_request` 事件，于是 PR 上
-  不会有 `regression gate`，auto-merge 永远完不成。ci.yml 的
-  `push: branches` 里列上该分支，就是为了补这一次触发。
+- **图表 PR 靠创建事件跑回归门。** `readme-stats.yml` 用 `GITHUB_TOKEN`
+  推送 `chore/readme-stats` 时，防递归机制不会触发 `push` 工作流；PR 创建
+  事件会触发 `ci.yml`。仓库须允许 Actions 创建 PR，并将 fork PR 审批策略
+  设为 `first_time_contributors_new_to_github`，否则机器人 PR 的 CI 会停在
+  `action_required`，auto-merge 等不到 `regression gate`。#82 已验证这条链路。
 
 **等 CI 的时间尺度**：每个 PR 都会打一次 Android APK（`Android package and
 native library`，`timeout-minutes: 60`），是全流程最慢的一项，实测约 15

@@ -3,6 +3,7 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
+import 'package:kilikili/rust/api/cover_scrim.dart';
 import 'package:kilikili/rust/api/danmaku.dart';
 import 'package:kilikili/rust/api/dm_view.dart';
 import 'package:kilikili/rust/api/init.dart';
@@ -328,6 +329,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ClipInfo dco_decode_clip_info(dynamic raw);
+
+  @protected
+  CoverScrimStyle dco_decode_cover_scrim_style(dynamic raw);
 
   @protected
   DanmakuBucketItem dco_decode_danmaku_bucket_item(dynamic raw);
@@ -1835,6 +1839,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ClipInfo sse_decode_clip_info(SseDeserializer deserializer);
+
+  @protected
+  CoverScrimStyle sse_decode_cover_scrim_style(SseDeserializer deserializer);
 
   @protected
   DanmakuBucketItem sse_decode_danmaku_bucket_item(
@@ -3808,6 +3815,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_clip_info(ClipInfo self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_cover_scrim_style(
+    CoverScrimStyle self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_danmaku_bucket_item(

@@ -30,8 +30,7 @@ class _SearchLivePanelState
           SearchLiveItem
         > {
   @override
-  late final SearchPanelController<SearchLiveData, SearchLiveItem>
-  controller;
+  late final SearchPanelController<SearchLiveData, SearchLiveItem> controller;
 
   @override
   void initState() {
@@ -50,8 +49,7 @@ class _SearchLivePanelState
     maxCrossAxisExtent: Grid.smallCardWidth,
     crossAxisSpacing: Style.cardSpace,
     mainAxisSpacing: Style.cardSpace,
-    childAspectRatio: Style.aspectRatio,
-    mainAxisExtent: MediaQuery.textScalerOf(context).scale(80),
+    childAspectRatio: Style.coverCardRatio,
   );
 
   @override

@@ -1,6 +1,6 @@
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
+import 'package:kilikili/common/widgets/video_card/live_subtitle.dart';
 import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
@@ -21,87 +21,16 @@ class LiveCardVSearch extends StatelessWidget {
       title: item.title,
       cover: item.cover,
     );
-    return Card(
-      child: InkWell(
-        onTap: () => PageUtils.toLiveRoom(item.roomid),
-        onLongPress: onLongPress,
-        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        borderRadius: const .all(.circular(12)),
-        child: Column(
-          crossAxisAlignment: .start,
-          children: [
-            AspectRatio(
-              aspectRatio: Style.aspectRatio,
-              child: LayoutBuilder(
-                builder: (context, boxConstraints) {
-                  double maxWidth = boxConstraints.maxWidth;
-                  double maxHeight = boxConstraints.maxHeight;
-                  return Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      NetworkImgLayer(
-                        src: item.cover!,
-                        width: maxWidth,
-                        height: maxHeight,
-                        borderRadius: const .vertical(top: .circular(12)),
-                      ),
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        child: videoStat(),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(5, 8, 5, 4),
-              child: Text(
-                item.title.toString(),
-                textAlign: TextAlign.start,
-                style: const TextStyle(
-                  letterSpacing: 0.3,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget videoStat() {
-    return Container(
-      height: 50,
-      padding: const EdgeInsets.only(top: 26, left: 10, right: 10),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: <Color>[
-            Colors.transparent,
-            Colors.black54,
-          ],
-          tileMode: TileMode.mirror,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            item.name.toString(),
-            style: const TextStyle(fontSize: 11, color: Colors.white),
-          ),
-          if (item.watchedText case final textLarge?)
-            Text(
-              textLarge,
-              style: const TextStyle(fontSize: 11, color: Colors.white),
-            ),
-        ],
+    return CoverScrimCard(
+      cover: item.cover,
+      title: item.title.toString(),
+      onTap: () => PageUtils.toLiveRoom(item.roomid),
+      onLongPress: onLongPress,
+      onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+      subtitleBuilder: (context, colors) => liveSubtitle(
+        colors: colors,
+        areaName: item.name,
+        watched: item.watchedText,
       ),
     );
   }

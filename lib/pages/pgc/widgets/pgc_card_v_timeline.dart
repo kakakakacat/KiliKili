@@ -1,11 +1,10 @@
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/models/common/badge_type.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
-import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:material_ui/material_ui.dart';
 
 // 视频卡片 - 垂直布局
@@ -21,82 +20,29 @@ class PgcCardVTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      shape: const RoundedRectangleBorder(borderRadius: Style.mdRadius),
-      child: InkWell(
-        borderRadius: Style.mdRadius,
-        onLongPress: onLongPress,
-        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        onTap: () =>
-            PageUtils.viewPgc(seasonId: item.seasonId, epId: item.episodeId),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AspectRatio(
-              aspectRatio: Style.aspectRatio3x4,
-              child: LayoutBuilder(
-                builder: (context, boxConstraints) {
-                  final double maxWidth = boxConstraints.maxWidth;
-                  final double maxHeight = boxConstraints.maxHeight;
-                  return Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      NetworkImgLayer(
-                        src: item.cover,
-                        width: maxWidth,
-                        height: maxHeight,
-                      ),
-                      if (item.follow == 1)
-                        const PBadge(
-                          text: '已追番',
-                          right: 6,
-                          top: 6,
-                        ),
-                      PBadge(
-                        text: '${item.pubTime}',
-                        left: 6,
-                        bottom: 6,
-                        type: PBadgeType.gray,
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-            content(context),
-          ],
+    return CoverScrimCard(
+      cover: item.cover,
+      title: item.title ?? '',
+      titleMaxLines: 1,
+      onTap: () =>
+          PageUtils.viewPgc(seasonId: item.seasonId, epId: item.episodeId),
+      onLongPress: onLongPress,
+      onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+      coverOverlays: [
+        if (item.follow == 1) const PBadge(text: '已追番', right: 6, top: 6),
+        PBadge(
+          // 更新时间原本在左下角，那里现在是文案遮罩（issue #108）。
+          text: '${item.pubTime}',
+          left: 6,
+          top: 6,
+          type: PBadgeType.gray,
         ),
-      ),
-    );
-  }
-
-  Widget content(BuildContext context) {
-    final theme = Theme.of(context);
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(4, 5, 0, 3),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              item.title ?? '',
-              textAlign: TextAlign.start,
-              style: const TextStyle(
-                letterSpacing: 0.3,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            Text(
-              item.pubIndex ?? '',
-              maxLines: 1,
-              style: TextStyle(
-                fontSize: theme.textTheme.labelMedium!.fontSize,
-                color: theme.colorScheme.outline,
-              ),
-            ),
-          ],
-        ),
+      ],
+      subtitleBuilder: (context, colors) => Text(
+        item.pubIndex ?? '',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(fontSize: 11, color: colors.subtitle),
       ),
     );
   }

@@ -1,7 +1,6 @@
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/http/search.dart';
 import 'package:kilikili/models/common/badge_type.dart';
 import 'package:kilikili/models_new/space/space_archive/item.dart';
@@ -76,88 +75,36 @@ class VideoCardVMemberHome extends StatelessWidget {
       aid: videoItem.param,
       bvid: videoItem.bvid,
     );
-    return Card(
-      child: InkWell(
-        onTap: onPushDetail,
-        onLongPress: onLongPress,
-        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        borderRadius: const .all(.circular(12)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AspectRatio(
-              aspectRatio: Style.aspectRatio,
-              child: LayoutBuilder(
-                builder: (context, boxConstraints) {
-                  double maxWidth = boxConstraints.maxWidth;
-                  double maxHeight = boxConstraints.maxHeight;
-                  return Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      NetworkImgLayer(
-                        src: videoItem.cover,
-                        width: maxWidth,
-                        height: maxHeight,
-                        borderRadius: const .vertical(top: .circular(12)),
-                      ),
-                      if (videoItem.duration > 0)
-                        PBadge(
-                          bottom: 6,
-                          right: 7,
-                          size: PBadgeSize.small,
-                          type: PBadgeType.gray,
-                          text: DurationUtils.formatDuration(
-                            videoItem.duration,
-                          ),
-                        ),
-                      if (videoItem.badges?.isNotEmpty == true)
-                        PBadge(
-                          text: videoItem.badges!
-                              .map((e) => e.text ?? '')
-                              .join('|'),
-                          top: 6,
-                          right: 6,
-                          type: videoItem.badges!.first.text == '充电专属'
-                              ? PBadgeType.error
-                              : PBadgeType.primary,
-                        )
-                      else if (videoItem.isCooperation == true)
-                        const PBadge(
-                          text: '合作',
-                          top: 6,
-                          right: 6,
-                        )
-                      else if (videoItem.isSteins == true)
-                        const PBadge(
-                          text: '互动',
-                          top: 6,
-                          right: 6,
-                        ),
-                    ],
-                  );
-                },
-              ),
-            ),
-            content(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget content(BuildContext context) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(6, 5, 6, 5),
-        child: Text(
-          '${videoItem.title}\n',
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            height: 1.38,
+    return CoverScrimCard(
+      cover: videoItem.cover,
+      title: videoItem.title,
+      onTap: onPushDetail,
+      onLongPress: onLongPress,
+      onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+      coverOverlays: [
+        if (videoItem.duration > 0)
+          PBadge(
+            // 时长原本在右下角，那里现在是文案遮罩（issue #108）。
+            top: 6,
+            right: 6,
+            size: PBadgeSize.small,
+            type: PBadgeType.gray,
+            text: DurationUtils.formatDuration(videoItem.duration),
           ),
-        ),
-      ),
+        if (videoItem.badges?.isNotEmpty == true)
+          PBadge(
+            text: videoItem.badges!.map((e) => e.text ?? '').join('|'),
+            top: 6,
+            left: 6,
+            type: videoItem.badges!.first.text == '充电专属'
+                ? PBadgeType.error
+                : PBadgeType.primary,
+          )
+        else if (videoItem.isCooperation == true)
+          const PBadge(text: '合作', top: 6, left: 6)
+        else if (videoItem.isSteins == true)
+          const PBadge(text: '互动', top: 6, left: 6),
+      ],
     );
   }
 }

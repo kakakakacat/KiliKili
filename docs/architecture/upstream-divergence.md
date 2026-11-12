@@ -40,6 +40,13 @@ pgc 成为删得最多的一块
 一个**：`lib/http/danmaku_block.dart` 整个删掉，从「修改」转进了「删除」。
 这是写操作迁移的常态——它和只读切片一样，迁完就把上游那个文件删了。
 
+修订：2026-11-12（竖版视频封面改大卡片 + 底部叠加文案，issue #108，
+为本次）—— 实质改动 151 → **165**，仅重命名波及 742 → **729**，新增文件
+461 → **467**，「修改」总数 893 → **894**（`lib/common/style.dart` 从未改过
+变成有改动），删除文件不变（126）。这是**第一次因为
+界面改动而扩大分叉面**：以前每一轮都是迁业务逻辑，这一轮动的是上游的
+视图层，性质不同，见 §4.4。本次数字含**尚未提交**的工作树改动。
+
 这一版的差额**不全是本次改动**：上一版是在 #79 的工作树上算的，#90 合进
 main 前的最后一个提交（CDN 判据跟着算法搬家）没算进去——它删掉四个 Dart
 测试、新增 `bili-core/src/{cdn,playback}.rs` 与 `test/bridge/playback_bridge_test.dart`，
@@ -78,14 +85,15 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 | 类别 | 数量 |
 | --- | ---: |
-| 修改的上游既有文件 | 893 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 742 |
-| &nbsp;&nbsp;其中：有实质改动 | **151** |
-| 新增文件 | 461 |
+| 修改的上游既有文件 | 894 |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 729 |
+| &nbsp;&nbsp;其中：有实质改动 | **165** |
+| 新增文件 | 467 |
 | 删除文件 | **126** |
 
-「修改」总数持续下降（935 → 909 → 897 → 894），不是改动变少，而是其中
-一部分文件**被删除**了（迁移掉的模型），从 M 转到了 D。删除数从 57 一路
+「修改」总数一路下降（935 → 909 → 897 → 893），不是改动变少，而是其中
+一部分文件**被删除**了（迁移掉的模型），从 M 转到了 D。#108 把它从 893
+顶回 894，是这轮唯一一次反向——界面改动不删文件，只会往上加。删除数从 57 一路
 到 125，来源是 S10 的 PGC 两批、S11a 的直播三批与取流（#79）。
 
 ## 3. 包名重命名：分叉面的主体
@@ -103,8 +111,9 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 4. 有实质改动的上游文件
 
-151 个。其中 **126 个来自业务层 typed 直连迁移**（§4.1），性质高度一致，
-不必逐个记；剩下 25 个是逐个有来由的，列在 §4.3 的表里。
+165 个。其中 **126 个来自业务层 typed 直连迁移**（§4.1），性质高度一致，
+不必逐个记；**14 个来自竖版封面卡片改版**（§4.4），性质同样一致；剩下
+25 个是逐个有来由的，列在 §4.3 的表里。
 
 ### 4.1 typed 直连迁移触及的上游文件
 
@@ -198,6 +207,37 @@ H5 房间信息）、第二批 7 个（`live_room_play_info/` 整个目录）、
 `.github/workflows/build.yml` 与 `ios.yml` 也在分叉面里，但**只有包名重命名**，
 没有逻辑改动。
 
+### 4.4 竖版封面卡片改版触及的上游文件
+
+issue #108 把所有**竖版**视频封面从「顶部封面图 + 底部独立文案区」改成
+「整张封面 + 底部叠加文案」，遮罩配色由 `bili_core::cover_scrim` 按封面
+取色算出。横版卡（搜索结果、收藏、历史、稍后再看…）**刻意没动**：那批
+是列表密度优先的布局，改成大封面会让一屏能看的条目数明显下降，范围另议。
+
+| 文件 | 性质 |
+| --- | --- |
+| `lib/common/widgets/video_card/video_card_v.dart` | 首页推荐卡，改用新的 `CoverScrimCard` |
+| `lib/common/style.dart` | 新增 `coverCardRatio`（4:3）与 `coverCardRadius`（14）两个常量 |
+| `lib/common/widgets/video_popup_menu.dart` | 新增 `onCover`：压在遮罩上时图标改白色 + 阴影 |
+| `lib/common/skeleton/video_card_v.dart` | 骨架跟着变成整块封面，否则加载完会重排 |
+| `lib/pages/{rcmd,live,live_follow,live_search,live_area_detail,search_panel/live,pgc,pgc_index,member_pgc,member_coin_arc,member_like_arc,member_home}/**` | 卡片本体改用 `CoverScrimCard`；对应 grid delegate 去掉给文字留的 `mainAxisExtent`（格子现在就是封面本身），视频/直播格子的 `childAspectRatio` 从 16:10 收到 4:3 |
+
+卡片上的信息分三层，改哪一层决定了去哪里改：**底部遮罩**里的标题与辅助
+信息，颜色由 `cover_scrim` 保证对比度，不要另外指定颜色；**封面左上角**的
+UP 名与**右上角**的时长等角标落在封面上，不在那套保证里，所以一律自带
+`black45` 底 + 白字；`CoverScrimCard` 自带的阴影与 14px 圆角是**有意偏离
+全局 `cardTheme`** 的（那边 `shadowColor` 是透明），理由写在该类的
+`elevation` 字段注释上。
+
+**同步时怎么处理这一类冲突**：上游若改这些文件里的**信息**（多了一个角标、
+换了一个字段），照常同步到新的卡片结构里；若改的是**布局**（padding、
+Column 顺序、文字层级），丢弃——那一层我们已经整个换掉了。遮罩的取色与
+对比度在 Rust，上游不会有对应改动。
+
+这一类与 §4.1 的区别值得记一笔：§4.1 是把业务逻辑搬出宿主，分叉面是
+「上游文件变空」；这里是**纯视图层改动**，上游文件还在、还是 Widget 树，
+只是树形不同。所以它不适用 §4.1 的「协议改动同步到 bili-api」判据。
+
 ### 同步时的注意点
 
 - `lib/http/video.dart` 与 `lib/http/search.dart` 是**上游高频改动区**，
@@ -213,17 +253,18 @@ H5 房间信息）、第二批 7 个（`live_room_play_info/` 整个目录）、
 
 ## 5. 新增文件
 
-461 个，不与上游冲突，按区域分布：
+467 个，不与上游冲突，按区域分布：
 
 | 区域 | 文件数 | 内容 |
 | --- | ---: | --- |
-| `rust/` | 296 | Rust workspace：6 个 crate、golden fixture 与快照 |
+| `rust/` | 298 | Rust workspace：6 个 crate、golden fixture 与快照 |
 | `rust_builder/` | 46 | cargokit，把 Rust 接入 Flutter 各端构建 |
-| `lib/services/` | 32 | Rust 开关、shadow mode、各切片的取数封装 |
+| `lib/services/` | 33 | Rust 开关、shadow mode、各切片的取数封装 |
 | `test/` | 26 | parity 测试与桥接层集成测试 |
-| `lib/rust/` | 23 | FRB 生成的 Dart 绑定 |
+| `lib/rust/` | 24 | FRB 生成的 Dart 绑定 |
 | `tool/` | 13 | 构建准备、FRB 生成、README 统计、产物核对、fixture 生成 |
 | `docs/` | 14 | RFC、ADR、M0 记录、QA 清单 |
+| `lib/common/` | 2 | 竖版封面大卡片与直播卡共用的文案行（issue #108） |
 | `lib/pages/` | 1 | 从控制器里搬出来的基线弹幕引擎（`danmaku/engine.dart`） |
 | `lib/utils/` | 1 | 从 `SubtitleUtils` 里搬出来的基线字幕转换（`subtitle_format.dart`） |
 | 其他 | 9 | workflow、`AGENTS.md` / `CLAUDE.md`、README 统计图、`flutter_rust_bridge.yaml` |

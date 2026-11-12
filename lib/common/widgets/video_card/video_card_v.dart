@@ -1,8 +1,7 @@
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/stat/stat.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/widgets/video_popup_menu.dart';
 import 'package:kilikili/http/search.dart';
 import 'package:kilikili/models/home/rcmd/result.dart';
@@ -86,178 +85,110 @@ class VideoCardV extends StatelessWidget {
       cover: videoItem.cover,
       bvid: videoItem.bvid,
     );
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Card(
-          child: InkWell(
-            onTap: onPushDetail,
-            onLongPress: onLongPress,
-            onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-            borderRadius: const .all(.circular(12)),
-            child: Column(
-              crossAxisAlignment: .start,
-              children: [
-                AspectRatio(
-                  aspectRatio: Style.aspectRatio,
-                  child: LayoutBuilder(
-                    builder: (context, boxConstraints) {
-                      double maxWidth = boxConstraints.maxWidth;
-                      double maxHeight = boxConstraints.maxHeight;
-                      return Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          NetworkImgLayer(
-                            src: videoItem.cover,
-                            width: maxWidth,
-                            height: maxHeight,
-                            borderRadius: const .vertical(top: .circular(12)),
-                          ),
-                          if (videoItem.duration > 0)
-                            PBadge(
-                              bottom: 6,
-                              right: 7,
-                              size: .small,
-                              type: .gray,
-                              text: DurationUtils.formatDuration(
-                                videoItem.duration,
-                              ),
-                            ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-                content(context),
-              ],
-            ),
-          ),
-        ),
-        if (videoItem.goto == 'av')
-          Positioned(
-            right: -5,
-            bottom: -2,
-            width: 29,
-            height: 29,
-            child: VideoPopupMenu(
-              iconSize: 17,
-              videoItem: videoItem,
-              onRemove: onRemove,
-            ),
+    return CoverScrimCard(
+      cover: videoItem.cover,
+      title: videoItem.title,
+      upName: videoItem.owner.name?.toString(),
+      onTap: onPushDetail,
+      onLongPress: onLongPress,
+      onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+      coverOverlays: [
+        if (videoItem.duration > 0)
+          PBadge(
+            // 时长角标原本在右下角，那里现在是文案遮罩；挪到右上角，和其余
+            // 卡片保持一致（issue #108）。
+            top: 6,
+            right: 6,
+            size: .small,
+            type: .gray,
+            text: DurationUtils.formatDuration(videoItem.duration),
           ),
       ],
+      trailing: videoItem.goto == 'av'
+          ? SizedBox.square(
+              dimension: 29,
+              child: VideoPopupMenu(
+                iconSize: 17,
+                onCover: true,
+                videoItem: videoItem,
+                onRemove: onRemove,
+              ),
+            )
+          : null,
+      subtitleBuilder: _subtitle,
     );
   }
 
-  Widget content(BuildContext context) {
-    final theme = Theme.of(context);
-    return Expanded(
-      child: Padding(
-        padding: const .fromLTRB(6, 5, 6, 5),
-        child: Column(
-          crossAxisAlignment: .start,
-          children: [
-            Expanded(
-              child: Text(
-                videoItem.title,
-                maxLines: 2,
-                overflow: .ellipsis,
-                style: const TextStyle(height: 1.38),
+  /// 标题下面那一行：角标 + 播放/弹幕 + 发布时间。
+  ///
+  /// 基线把它们铺成三行（标题、数据、UP 名）。叠加到封面上之后三行会吃掉
+  /// 大半张封面，所以压成一行，UP 名另挪到封面左上角。
+  Widget _subtitle(BuildContext context, CoverScrimColors colors) {
+    final showDate = videoItem is RcmdVideoItemModel;
+    return Padding(
+      padding: const .only(top: 2),
+      child: Row(
+        spacing: 3,
+        children: [
+          if (videoItem.goto == 'bangumi')
+            PBadge(
+              text: videoItem.pgcBadge,
+              isStack: false,
+              size: .small,
+              type: .line_primary,
+              fontSize: 9,
+            ),
+          if (videoItem.rcmdReason != null)
+            PBadge(
+              text: videoItem.rcmdReason,
+              isStack: false,
+              size: .small,
+              type: .secondary,
+            ),
+          if (videoItem.goto == 'picture')
+            const PBadge(
+              text: '动态',
+              isStack: false,
+              size: .small,
+              type: .line_primary,
+              fontSize: 9,
+            ),
+          if (videoItem.isFollowed)
+            const PBadge(
+              text: '已关注',
+              isStack: false,
+              size: .small,
+              type: .secondary,
+            ),
+          const Spacer(),
+          StatWidget(
+            type: .play,
+            value: videoItem.stat.view,
+            color: colors.subtitle,
+            iconSize: 12,
+          ),
+          if (videoItem.goto != 'picture')
+            StatWidget(
+              type: .danmaku,
+              value: videoItem.stat.danmu,
+              color: colors.subtitle,
+              iconSize: 12,
+            ),
+          if (showDate)
+            Text(
+              DateFormatUtils.dateFormat(
+                videoItem.pubdate,
+                short: shortFormat,
+                long: longFormat,
               ),
+              maxLines: 1,
+              style: TextStyle(fontSize: 11, color: colors.subtitle),
             ),
-            videoStat(theme),
-            Row(
-              spacing: 2,
-              children: [
-                if (videoItem.goto == 'bangumi')
-                  PBadge(
-                    text: videoItem.pgcBadge,
-                    isStack: false,
-                    size: .small,
-                    type: .line_primary,
-                    fontSize: 9,
-                  ),
-                if (videoItem.rcmdReason != null)
-                  PBadge(
-                    text: videoItem.rcmdReason,
-                    isStack: false,
-                    size: .small,
-                    type: .secondary,
-                  ),
-                if (videoItem.goto == 'picture')
-                  const PBadge(
-                    text: '动态',
-                    isStack: false,
-                    size: .small,
-                    type: .line_primary,
-                    fontSize: 9,
-                  ),
-                if (videoItem.isFollowed)
-                  const PBadge(
-                    text: '已关注',
-                    isStack: false,
-                    size: .small,
-                    type: .secondary,
-                  ),
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    videoItem.owner.name.toString(),
-                    maxLines: 1,
-                    overflow: .ellipsis,
-                    semanticsLabel: 'UP：${videoItem.owner.name}',
-                    style: TextStyle(
-                      height: 1.5,
-                      fontSize: theme.textTheme.labelMedium!.fontSize,
-                      color: theme.colorScheme.outline,
-                    ),
-                  ),
-                ),
-                if (videoItem.goto == 'av') const SizedBox(width: 10),
-              ],
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
 
   static final shortFormat = DateFormat('M-d');
   static final longFormat = DateFormat('yy-M-d');
-
-  Widget videoStat(ThemeData theme) {
-    return Row(
-      children: [
-        StatWidget(
-          type: .play,
-          value: videoItem.stat.view,
-        ),
-        if (videoItem.goto != 'picture') ...[
-          const SizedBox(width: 4),
-          StatWidget(
-            type: .danmaku,
-            value: videoItem.stat.danmu,
-          ),
-        ],
-        if (videoItem is RcmdVideoItemModel) ...[
-          const Spacer(),
-          Text.rich(
-            maxLines: 1,
-            TextSpan(
-              style: TextStyle(
-                fontSize: theme.textTheme.labelSmall!.fontSize,
-                color: theme.colorScheme.outline.withValues(alpha: 0.8),
-              ),
-              text: DateFormatUtils.dateFormat(
-                videoItem.pubdate,
-                short: shortFormat,
-                long: longFormat,
-              ),
-            ),
-          ),
-          const SizedBox(width: 2),
-        ],
-      ],
-    );
-  }
 }

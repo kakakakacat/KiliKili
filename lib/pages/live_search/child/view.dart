@@ -79,8 +79,7 @@ class _LiveSearchChildPageState extends State<LiveSearchChildPage>
     mainAxisSpacing: Style.cardSpace,
     crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth,
-    childAspectRatio: Style.aspectRatio,
-    mainAxisExtent: MediaQuery.textScalerOf(context).scale(60),
+    childAspectRatio: Style.coverCardRatio,
   );
 
   late final userDelegate = SliverGridDelegateWithMaxCrossAxisExtent(

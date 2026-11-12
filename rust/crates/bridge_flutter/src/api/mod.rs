@@ -1,5 +1,6 @@
 //! 暴露给 Dart 的 API。flutter_rust_bridge 从本模块生成绑定。
 
+pub mod cover_scrim;
 pub mod danmaku;
 pub mod dm_view;
 pub mod init;

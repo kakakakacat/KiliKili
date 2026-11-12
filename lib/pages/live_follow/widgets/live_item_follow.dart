@@ -1,6 +1,6 @@
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
+import 'package:kilikili/common/widgets/video_card/live_subtitle.dart';
 import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
@@ -21,110 +21,19 @@ class LiveCardVFollow extends StatelessWidget {
       title: liveItem.title,
       cover: liveItem.roomCover,
     );
-    return Card(
-      child: InkWell(
-        onTap: () => PageUtils.toLiveRoom(liveItem.roomid),
-        onLongPress: onLongPress,
-        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        borderRadius: const .all(.circular(12)),
-        child: Column(
-          crossAxisAlignment: .start,
-          children: [
-            AspectRatio(
-              aspectRatio: Style.aspectRatio,
-              child: LayoutBuilder(
-                builder: (context, boxConstraints) {
-                  double maxWidth = boxConstraints.maxWidth;
-                  double maxHeight = boxConstraints.maxHeight;
-                  return Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      NetworkImgLayer(
-                        src: liveItem.roomCover!,
-                        width: maxWidth,
-                        height: maxHeight,
-                        borderRadius: const .vertical(top: .circular(12)),
-                      ),
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        child: videoStat(),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-            liveContent(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget liveContent(BuildContext context) {
-    final theme = Theme.of(context);
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(5, 8, 5, 4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              liveItem.title.toString(),
-              textAlign: TextAlign.start,
-              style: const TextStyle(
-                letterSpacing: 0.3,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            Text(
-              liveItem.uname.toString(),
-              textAlign: TextAlign.start,
-              style: TextStyle(
-                fontSize: theme.textTheme.labelMedium!.fontSize,
-                color: theme.colorScheme.outline,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget videoStat() {
-    return Container(
-      height: 50,
-      padding: const EdgeInsets.only(top: 26, left: 10, right: 10),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: <Color>[
-            Colors.transparent,
-            Colors.black54,
-          ],
-          tileMode: TileMode.mirror,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            liveItem.areaName.toString(),
-            style: const TextStyle(fontSize: 11, color: Colors.white),
-          ),
-          if (liveItem.textSmall case final textSmall?)
-            Text(
-              '$textSmall围观',
-              style: const TextStyle(fontSize: 11, color: Colors.white),
-            ),
-        ],
+    return CoverScrimCard(
+      cover: liveItem.roomCover,
+      title: liveItem.title.toString(),
+      upName: liveItem.uname,
+      onTap: () => PageUtils.toLiveRoom(liveItem.roomid),
+      onLongPress: onLongPress,
+      onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+      // 分区与围观数原本压在一条固定的 black54 渐变上（issue #108 要换掉的
+      // 正是这种写死的遮罩），现在并进随封面取色的遮罩里。
+      subtitleBuilder: (context, colors) => liveSubtitle(
+        colors: colors,
+        areaName: liveItem.areaName,
+        watched: liveItem.textSmall == null ? null : '${liveItem.textSmall}围观',
       ),
     );
   }

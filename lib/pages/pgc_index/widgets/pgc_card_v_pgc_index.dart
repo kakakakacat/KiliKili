@@ -1,11 +1,10 @@
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/models/common/badge_type.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
-import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:material_ui/material_ui.dart';
 
 // 视频卡片 - 垂直布局
@@ -21,87 +20,31 @@ class PgcCardVPgcIndex extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      shape: const RoundedRectangleBorder(borderRadius: Style.mdRadius),
-      child: InkWell(
-        borderRadius: Style.mdRadius,
-        onTap: () => PageUtils.viewPgc(seasonId: item.seasonId),
-        onLongPress: onLongPress,
-        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AspectRatio(
-              aspectRatio: Style.aspectRatio3x4,
-              child: LayoutBuilder(
-                builder: (context, boxConstraints) {
-                  final double maxWidth = boxConstraints.maxWidth;
-                  final double maxHeight = boxConstraints.maxHeight;
-                  return Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      NetworkImgLayer(
-                        src: item.cover,
-                        width: maxWidth,
-                        height: maxHeight,
-                      ),
-                      PBadge(
-                        text: item.badge,
-                        top: 6,
-                        right: 6,
-                        bottom: null,
-                        left: null,
-                      ),
-                      PBadge(
-                        text: item.order,
-                        top: null,
-                        right: null,
-                        bottom: 6,
-                        left: 6,
-                        type: PBadgeType.gray,
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-            content(context),
-          ],
+    return CoverScrimCard(
+      cover: item.cover,
+      title: item.title!,
+      titleMaxLines: 1,
+      onTap: () => PageUtils.viewPgc(seasonId: item.seasonId),
+      onLongPress: onLongPress,
+      onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+      coverOverlays: [
+        PBadge(text: item.badge, top: 6, right: 6),
+        PBadge(
+          // 排名原本在左下角，那里现在是文案遮罩（issue #108）。
+          text: item.order,
+          top: 6,
+          left: 6,
+          type: PBadgeType.gray,
         ),
-      ),
-    );
-  }
-
-  Widget content(BuildContext context) {
-    final theme = Theme.of(context);
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(4, 5, 0, 3),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              item.title!,
-              textAlign: TextAlign.start,
-              style: const TextStyle(
-                letterSpacing: 0.3,
-              ),
+      ],
+      subtitleBuilder: item.indexShow == null
+          ? null
+          : (context, colors) => Text(
+              item.indexShow!,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 11, color: colors.subtitle),
             ),
-            const SizedBox(height: 1),
-            if (item.indexShow != null)
-              Text(
-                item.indexShow!,
-                maxLines: 1,
-                style: TextStyle(
-                  fontSize: theme.textTheme.labelMedium!.fontSize,
-                  color: theme.colorScheme.outline,
-                ),
-              ),
-          ],
-        ),
-      ),
     );
   }
 }

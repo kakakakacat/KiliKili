@@ -12,10 +12,9 @@ import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/selection_text.dart';
 import 'package:kilikili/common/widgets/sliver/sliver_to_box_adapter.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/music.dart';
+import 'package:kilikili/services/rust/rust_misc.dart';
 import 'package:kilikili/models/common/image_preview_type.dart';
 import 'package:kilikili/models/common/image_type.dart';
-import 'package:kilikili/services/rust/rust_misc.dart';
 import 'package:kilikili/pages/common/dyn/common_dyn_page.dart';
 import 'package:kilikili/pages/music/controller.dart';
 import 'package:kilikili/pages/music/video/view.dart';
@@ -315,9 +314,12 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                           return;
                         }
                         final hasLike = controller.wishListen.value;
-                        final res = await MusicHttp.wishUpdate(
+                        // 传**目标状态**。基线这里传的是当前状态，再由
+                        // `state: hasLike ? 2 : 1` 绕一次——那个映射是反
+                        // 直觉的（1 才是加入想听），已经收进 Rust 侧。
+                        final res = await RustMisc.wishUpdate(
                           controller.musicId,
-                          hasLike,
+                          !hasLike,
                         );
                         if (res.isSuccess) {
                           // 状态存在 controller 上：详情是 Rust 的 typed

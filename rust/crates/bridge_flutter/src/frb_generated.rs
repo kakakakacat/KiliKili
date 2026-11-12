@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -903225566;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -845650612;
 
 // Section: executor
 
@@ -2984,6 +2984,239 @@ fn wire__crate__api__playback__pgc_clip_segments_impl(
         },
     )
 }
+fn wire__crate__api__pgc__pgc_review_del_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "pgc_review_del",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::pgc::PgcContext>::sse_decode(&mut deserializer);
+            let api_media_id = <i64>::sse_decode(&mut deserializer);
+            let api_review_id = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::pgc::pgc_review_del(
+                                api_context,
+                                api_media_id,
+                                api_review_id,
+                            )
+                            .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__pgc__pgc_review_dislike_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "pgc_review_dislike",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::pgc::PgcContext>::sse_decode(&mut deserializer);
+            let api_media_id = <i64>::sse_decode(&mut deserializer);
+            let api_review_id = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::pgc::pgc_review_dislike(
+                                api_context,
+                                api_media_id,
+                                api_review_id,
+                            )
+                            .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__pgc__pgc_review_like_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "pgc_review_like",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::pgc::PgcContext>::sse_decode(&mut deserializer);
+            let api_media_id = <i64>::sse_decode(&mut deserializer);
+            let api_review_id = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::pgc::pgc_review_like(
+                                api_context,
+                                api_media_id,
+                                api_review_id,
+                            )
+                            .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__pgc__pgc_review_modify_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "pgc_review_modify",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::pgc::PgcContext>::sse_decode(&mut deserializer);
+            let api_media_id = <i64>::sse_decode(&mut deserializer);
+            let api_review_id = <i64>::sse_decode(&mut deserializer);
+            let api_score = <i64>::sse_decode(&mut deserializer);
+            let api_content = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::pgc::pgc_review_modify(
+                                api_context,
+                                api_media_id,
+                                api_review_id,
+                                api_score,
+                                api_content,
+                            )
+                            .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__pgc__pgc_review_post_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "pgc_review_post",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::pgc::PgcContext>::sse_decode(&mut deserializer);
+            let api_media_id = <i64>::sse_decode(&mut deserializer);
+            let api_score = <i64>::sse_decode(&mut deserializer);
+            let api_content = <String>::sse_decode(&mut deserializer);
+            let api_share_feed = <bool>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::pgc::pgc_review_post(
+                                api_context,
+                                api_media_id,
+                                api_score,
+                                api_content,
+                                api_share_feed,
+                            )
+                            .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__playback__pick_cdn_url_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -3416,6 +3649,45 @@ fn wire__crate__api__media_select__select_target_video_impl(
         },
     )
 }
+fn wire__crate__api__misc__sort_follow_tag_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "sort_follow_tag",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::misc::MiscContext>::sse_decode(&mut deserializer);
+            let api_tagids = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::misc::sort_follow_tag(api_context, api_tagids).await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__playback__stream_play_urls_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -3443,6 +3715,47 @@ fn wire__crate__api__playback__stream_play_urls_impl(
                 let output_ok = Ok::<_, ()>(crate::api::playback::stream_play_urls(api_stream))?;
                 std::result::Result::Ok(output_ok)
             })())
+        },
+    )
+}
+fn wire__crate__api__misc__update_wish_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "update_wish",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::misc::MiscContext>::sse_decode(&mut deserializer);
+            let api_music_id = <String>::sse_decode(&mut deserializer);
+            let api_wish = <bool>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::misc::update_wish(api_context, api_music_id, api_wish)
+                                .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
         },
     )
 }
@@ -7480,6 +7793,7 @@ impl SseDecode for crate::api::pgc::PgcContext {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_baseUrl = <String>::sse_decode(deserializer);
         let mut var_cookie = <Option<String>>::sse_decode(deserializer);
+        let mut var_csrf = <Option<String>>::sse_decode(deserializer);
         let mut var_headers = <Vec<(String, String)>>::sse_decode(deserializer);
         let mut var_mixinKey = <String>::sse_decode(deserializer);
         let mut var_wts = <i64>::sse_decode(deserializer);
@@ -7489,6 +7803,7 @@ impl SseDecode for crate::api::pgc::PgcContext {
         return crate::api::pgc::PgcContext {
             base_url: var_baseUrl,
             cookie: var_cookie,
+            csrf: var_csrf,
             headers: var_headers,
             mixin_key: var_mixinKey,
             wts: var_wts,
@@ -9481,13 +9796,13 @@ impl SseDecode for crate::api::play_url::Volume {
     }
 }
 
-impl SseDecode for crate::api::misc::WriteResult {
+impl SseDecode for crate::api::write::WriteResult {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
         let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
         let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
-        return crate::api::misc::WriteResult {
+        return crate::api::write::WriteResult {
             error_kind: var_errorKind,
             error_detail: var_errorDetail,
             error_code: var_errorCode,
@@ -9678,16 +9993,23 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        73 => wire__crate__api__search__search_all_impl(port, ptr, rust_vec_len, data_len),
-        74 => wire__crate__api__search__search_article_impl(port, ptr, rust_vec_len, data_len),
-        75 => wire__crate__api__search__search_live_impl(port, ptr, rust_vec_len, data_len),
-        76 => wire__crate__api__search__search_pgc_impl(port, ptr, rust_vec_len, data_len),
-        77 => wire__crate__api__search__search_recommend_impl(port, ptr, rust_vec_len, data_len),
-        78 => wire__crate__api__search__search_trending_impl(port, ptr, rust_vec_len, data_len),
-        79 => wire__crate__api__search__search_user_impl(port, ptr, rust_vec_len, data_len),
-        80 => wire__crate__api__search__search_video_impl(port, ptr, rust_vec_len, data_len),
-        84 => wire__crate__api__wbi__wbi_mixin_key_impl(port, ptr, rust_vec_len, data_len),
-        85 => wire__crate__api__wbi__wbi_sign_impl(port, ptr, rust_vec_len, data_len),
+        72 => wire__crate__api__pgc__pgc_review_del_impl(port, ptr, rust_vec_len, data_len),
+        73 => wire__crate__api__pgc__pgc_review_dislike_impl(port, ptr, rust_vec_len, data_len),
+        74 => wire__crate__api__pgc__pgc_review_like_impl(port, ptr, rust_vec_len, data_len),
+        75 => wire__crate__api__pgc__pgc_review_modify_impl(port, ptr, rust_vec_len, data_len),
+        76 => wire__crate__api__pgc__pgc_review_post_impl(port, ptr, rust_vec_len, data_len),
+        78 => wire__crate__api__search__search_all_impl(port, ptr, rust_vec_len, data_len),
+        79 => wire__crate__api__search__search_article_impl(port, ptr, rust_vec_len, data_len),
+        80 => wire__crate__api__search__search_live_impl(port, ptr, rust_vec_len, data_len),
+        81 => wire__crate__api__search__search_pgc_impl(port, ptr, rust_vec_len, data_len),
+        82 => wire__crate__api__search__search_recommend_impl(port, ptr, rust_vec_len, data_len),
+        83 => wire__crate__api__search__search_trending_impl(port, ptr, rust_vec_len, data_len),
+        84 => wire__crate__api__search__search_user_impl(port, ptr, rust_vec_len, data_len),
+        85 => wire__crate__api__search__search_video_impl(port, ptr, rust_vec_len, data_len),
+        88 => wire__crate__api__misc__sort_follow_tag_impl(port, ptr, rust_vec_len, data_len),
+        90 => wire__crate__api__misc__update_wish_impl(port, ptr, rust_vec_len, data_len),
+        91 => wire__crate__api__wbi__wbi_mixin_key_impl(port, ptr, rust_vec_len, data_len),
+        92 => wire__crate__api__wbi__wbi_sign_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -9718,10 +10040,10 @@ fn pde_ffi_dispatcher_sync_impl(
             data_len,
         ),
         71 => wire__crate__api__playback__pgc_clip_segments_impl(ptr, rust_vec_len, data_len),
-        72 => wire__crate__api__playback__pick_cdn_url_impl(ptr, rust_vec_len, data_len),
-        81 => wire__crate__api__media_select__select_target_audio_impl(ptr, rust_vec_len, data_len),
-        82 => wire__crate__api__media_select__select_target_video_impl(ptr, rust_vec_len, data_len),
-        83 => wire__crate__api__playback__stream_play_urls_impl(ptr, rust_vec_len, data_len),
+        77 => wire__crate__api__playback__pick_cdn_url_impl(ptr, rust_vec_len, data_len),
+        86 => wire__crate__api__media_select__select_target_audio_impl(ptr, rust_vec_len, data_len),
+        87 => wire__crate__api__media_select__select_target_video_impl(ptr, rust_vec_len, data_len),
+        89 => wire__crate__api__playback__stream_play_urls_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -12189,6 +12511,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::pgc::PgcContext {
         [
             self.base_url.into_into_dart().into_dart(),
             self.cookie.into_into_dart().into_dart(),
+            self.csrf.into_into_dart().into_dart(),
             self.headers.into_into_dart().into_dart(),
             self.mixin_key.into_into_dart().into_dart(),
             self.wts.into_into_dart().into_dart(),
@@ -14554,7 +14877,7 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::play_url::Volume>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
-impl flutter_rust_bridge::IntoDart for crate::api::misc::WriteResult {
+impl flutter_rust_bridge::IntoDart for crate::api::write::WriteResult {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
             self.error_kind.into_into_dart().into_dart(),
@@ -14564,11 +14887,14 @@ impl flutter_rust_bridge::IntoDart for crate::api::misc::WriteResult {
         .into_dart()
     }
 }
-impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::misc::WriteResult {}
-impl flutter_rust_bridge::IntoIntoDart<crate::api::misc::WriteResult>
-    for crate::api::misc::WriteResult
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::write::WriteResult
 {
-    fn into_into_dart(self) -> crate::api::misc::WriteResult {
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::write::WriteResult>
+    for crate::api::write::WriteResult
+{
+    fn into_into_dart(self) -> crate::api::write::WriteResult {
         self
     }
 }
@@ -17423,6 +17749,7 @@ impl SseEncode for crate::api::pgc::PgcContext {
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <String>::sse_encode(self.base_url, serializer);
         <Option<String>>::sse_encode(self.cookie, serializer);
+        <Option<String>>::sse_encode(self.csrf, serializer);
         <Vec<(String, String)>>::sse_encode(self.headers, serializer);
         <String>::sse_encode(self.mixin_key, serializer);
         <i64>::sse_encode(self.wts, serializer);
@@ -18628,7 +18955,7 @@ impl SseEncode for crate::api::play_url::Volume {
     }
 }
 
-impl SseEncode for crate::api::misc::WriteResult {
+impl SseEncode for crate::api::write::WriteResult {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <Option<String>>::sse_encode(self.error_kind, serializer);

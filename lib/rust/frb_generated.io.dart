@@ -24,6 +24,7 @@ import 'package:kilikili/rust/api/video_detail_fetch.dart';
 import 'package:kilikili/rust/api/video_feed.dart';
 import 'package:kilikili/rust/api/video_page.dart';
 import 'package:kilikili/rust/api/wbi.dart';
+import 'package:kilikili/rust/api/write.dart';
 
 import 'dart:async';
 import 'dart:convert';

@@ -163,7 +163,12 @@ pub(crate) async fn send_write<T: HttpTransport>(
     ctx: &RequestContext,
     prepared: &PreparedWrite,
 ) -> Result<String, DomainError> {
-    let url = format!("{}{}", ctx.base_url.trim_end_matches('/'), prepared.path);
+    let base = ctx.base_url.trim_end_matches('/');
+    let url = if prepared.query.is_empty() {
+        format!("{base}{}", prepared.path)
+    } else {
+        format!("{base}{}?{}", prepared.path, encode_query(&prepared.query))
+    };
 
     let mut form = prepared.form.clone();
     if let Some(csrf) = &ctx.csrf {
@@ -290,11 +295,40 @@ mod tests {
     }
 
     fn a_write() -> PreparedWrite {
-        PreparedWrite {
-            path: "/x/dm/filter/user/del",
-            form: vec![("ids".to_owned(), "42".to_owned())],
+        PreparedWrite::form_only(
+            "/x/dm/filter/user/del",
+            vec![("ids".to_owned(), "42".to_owned())],
+            Idempotency::Idempotent,
+        )
+    }
+
+    #[test]
+    fn a_write_with_a_query_string_keeps_both_halves() {
+        // sortFollowTag 把 x-bili-device-req-json 放在 URL 上，参数同时
+        // 分布在查询串与表单里。两边都得送到。
+        let stub = StubTransport::ok(200, r#"{"code":0,"message":"0"}"#);
+        let prepared = PreparedWrite {
+            path: "/x/relation/tags/update_sort",
+            query: vec![("x-bili-device-req-json".to_owned(), "{\"a\":1}".to_owned())],
+            form: vec![("tagids".to_owned(), "1,2".to_owned())],
             idempotency: Idempotency::Idempotent,
-        }
+        };
+        block_on(send_write(&stub, &ctx_logged_in(), &prepared)).expect("桩传输必定成功");
+
+        let seen = stub.seen_post.lock().expect("锁未被毒化");
+        let seen = seen.as_ref().expect("写请求应当送到传输层");
+        assert_eq!(
+            seen.url,
+            "https://api.example.invalid/x/relation/tags/update_sort?x-bili-device-req-json=%7B%22a%22%3A1%7D",
+            "查询串要百分号编码后拼到 URL 上"
+        );
+        let PostBody::Form(fields) = &seen.body else {
+            panic!("写请求应当是表单体");
+        };
+        assert!(
+            fields.iter().any(|(k, v)| k == "tagids" && v == "1,2"),
+            "表单字段不能因为有查询串就丢了"
+        );
     }
 
     #[test]

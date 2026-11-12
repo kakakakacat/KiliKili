@@ -72,16 +72,16 @@ pub async fn fetch_danmaku_filter<T: HttpTransport>(
 /// 在传输层一律不重试，要不要重发由调用点在查过之后决定。
 #[must_use]
 pub fn danmaku_filter_add_request(filter: &str, kind: i64) -> PreparedWrite {
-    PreparedWrite {
-        path: path::DANMAKU_FILTER_ADD,
+    PreparedWrite::form_only(
+        path::DANMAKU_FILTER_ADD,
         // 字段顺序与基线一致（`type` 在前）。顺序对服务端无所谓，但它被
         // 请求快照钉住，换序会让 diff 变成噪音。
-        form: vec![
+        vec![
             ("type".to_owned(), kind.to_string()),
             ("filter".to_owned(), filter.to_owned()),
         ],
-        idempotency: Idempotency::Verifiable,
-    }
+        Idempotency::Verifiable,
+    )
 }
 
 /// 删除一条规则的请求。
@@ -90,11 +90,11 @@ pub fn danmaku_filter_add_request(filter: &str, kind: i64) -> PreparedWrite {
 /// 状态一致。
 #[must_use]
 pub fn danmaku_filter_del_request(ids: i64) -> PreparedWrite {
-    PreparedWrite {
-        path: path::DANMAKU_FILTER_DEL,
-        form: vec![("ids".to_owned(), ids.to_string())],
-        idempotency: Idempotency::Idempotent,
-    }
+    PreparedWrite::form_only(
+        path::DANMAKU_FILTER_DEL,
+        vec![("ids".to_owned(), ids.to_string())],
+        Idempotency::Idempotent,
+    )
 }
 
 /// 新增一条云端规则，返回服务端建好的那条（带 id）。

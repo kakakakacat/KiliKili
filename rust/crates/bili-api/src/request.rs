@@ -254,6 +254,12 @@ pub fn play_url(
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PreparedWrite {
     pub path: &'static str,
+    /// 查询串。**写请求也可能有**：`sortFollowTag` 就把
+    /// `x-bili-device-req-json` 放在 URL 上而不是表单里。
+    ///
+    /// 多数写操作是空的；留着是因为「参数在体里」只是惯例，不是协议保证，
+    /// 发现一条例外就得整条链路改一遍，不如一开始就带上。
+    pub query: Vec<(String, String)>,
     /// 表单字段。顺序即发送顺序，被请求快照钉住。
     pub form: Vec<(String, String)>,
     /// 这条写操作重发安全不安全。
@@ -261,6 +267,21 @@ pub struct PreparedWrite {
 }
 
 impl PreparedWrite {
+    /// 最常见的形态：只有表单，没有查询串。
+    #[must_use]
+    pub fn form_only(
+        path: &'static str,
+        form: Vec<(String, String)>,
+        idempotency: Idempotency,
+    ) -> Self {
+        Self {
+            path,
+            query: Vec::new(),
+            form,
+            idempotency,
+        }
+    }
+
     /// 拼成 `k=v&k=v` 形式。与 [`PreparedRequest::query_string`] 一样，
     /// 仅用于测试断言。
     #[must_use]

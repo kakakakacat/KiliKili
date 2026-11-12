@@ -6,6 +6,7 @@ import 'package:kilikili/models_new/pgc/pgc_index_condition/data.dart';
 import 'package:kilikili/models_new/pgc/pgc_index_result/data.dart';
 import 'package:kilikili/models_new/pgc/pgc_review/data.dart';
 import 'package:kilikili/rust/api/pgc.dart' as rust_api;
+import 'package:kilikili/rust/api/write.dart' show WriteResult;
 import 'package:kilikili/services/rust/rust_request.dart';
 import 'package:kilikili/services/rust/rust_transport.dart';
 import 'package:kilikili/services/rust_core.dart';
@@ -65,14 +66,18 @@ abstract final class RustPgc {
   static const String _notReady = 'Rust Core 未就绪，该功能不可用';
 
   /// 组装一次请求的上下文。`mixinKey` 为空串表示这条接口不签名。
+  /// [write] 为 true 时带上 csrf。只读路径一律不带——凭据少走一段就少一处
+  /// 泄漏面，而且「这条是不是写操作」在调用点一眼看得见（ADR-013 决策四）。
   static Future<rust_api.PgcContext> _context({
     required String path,
     String mixinKey = '',
+    bool write = false,
   }) async {
     final account = RustRequest.accountFor(path);
     return rust_api.PgcContext(
       baseUrl: HttpString.apiBaseUrl,
       cookie: await RustRequest.cookieFor(account, path),
+      csrf: write ? RustRequest.csrfFor(account) : null,
       headers: RustRequest.headersFor(account),
       mixinKey: mixinKey,
       wts: DateTime.now().millisecondsSinceEpoch ~/ 1000,
@@ -86,6 +91,117 @@ abstract final class RustPgc {
   /// `Error` 是 `LoadingState<Never>`，能赋给任何 `LoadingState<T>`。
   static Error _failure(String? detail, int? code) =>
       Error(detail ?? '请求失败', code: code);
+
+  // ------------------------------------------------- 短评的写操作（#60）
+
+  /// 给一条短评点赞。
+  ///
+  /// **失败不自动重发。** 基线的请求里没有状态位，从调用点看不出服务端是
+  /// 「置为」还是「切换」，Rust 侧因此按更保守的切换处理（ADR-013 定级为
+  /// 可判定）：失败了由用户看着列表里的赞踩状态决定要不要再点一次。
+  static Future<LoadingState<void>> reviewLike({
+    required int mediaId,
+    required int reviewId,
+  }) => _review(
+    '短评点赞',
+    Api.pgcReviewLike,
+    (context) => rust_api.pgcReviewLike(
+      context: context,
+      mediaId: mediaId,
+      reviewId: reviewId,
+    ),
+  );
+
+  /// 给一条短评点踩。与点赞只有路径不同，见 [reviewLike]。
+  static Future<LoadingState<void>> reviewDislike({
+    required int mediaId,
+    required int reviewId,
+  }) => _review(
+    '短评点踩',
+    Api.pgcReviewDislike,
+    (context) => rust_api.pgcReviewDislike(
+      context: context,
+      mediaId: mediaId,
+      reviewId: reviewId,
+    ),
+  );
+
+  /// 发表一条短评。
+  ///
+  /// **绝不自动重发**（ADR-013 定级为不可重发）：重发 = 用户看得见的两条
+  /// 相同短评。`shareFeed` 为 false 时整个字段都不发，与基线一致。
+  static Future<LoadingState<void>> reviewPost({
+    required int mediaId,
+    required int score,
+    required String content,
+    bool shareFeed = false,
+  }) => _review(
+    '发表短评',
+    Api.pgcReviewPost,
+    (context) => rust_api.pgcReviewPost(
+      context: context,
+      mediaId: mediaId,
+      score: score,
+      content: content,
+      shareFeed: shareFeed,
+    ),
+  );
+
+  /// 修改一条已有的短评。带 `reviewId`，是置为语义。
+  static Future<LoadingState<void>> reviewModify({
+    required int mediaId,
+    required int reviewId,
+    required int score,
+    required String content,
+  }) => _review(
+    '修改短评',
+    Api.pgcReviewMod,
+    (context) => rust_api.pgcReviewModify(
+      context: context,
+      mediaId: mediaId,
+      reviewId: reviewId,
+      score: score,
+      content: content,
+    ),
+  );
+
+  /// 删除一条短评。
+  static Future<LoadingState<void>> reviewDel({
+    required int mediaId,
+    required int reviewId,
+  }) => _review(
+    '删除短评',
+    Api.pgcReviewDel,
+    (context) => rust_api.pgcReviewDel(
+      context: context,
+      mediaId: mediaId,
+      reviewId: reviewId,
+    ),
+  );
+
+  /// 五条短评写操作共用的壳：建带 csrf 的上下文、把结果折成 `LoadingState`。
+  ///
+  /// 抽出来不是为了少打字，是因为五处各抄一遍 `errorKind == null` 判断的话，
+  /// 抄错一处的表现是「失败被当成了成功」——而那正是写操作最不该出的错。
+  static Future<LoadingState<void>> _review(
+    String what,
+    String path,
+    Future<WriteResult> Function(rust_api.PgcContext) call,
+  ) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await call(await _context(path: path, write: true));
+      // 显式标注类型：三元两支的最小公共类型推不出 `LoadingState<void>`，
+      // 分析器会怀疑返回值是个没 await 的 Future（unawaited_return_in_try_block）。
+      final LoadingState<void> state = result.errorKind == null
+          ? const Success(null)
+          : _failure(result.errorDetail, result.errorCode);
+      return state;
+    } catch (e, st) {
+      if (kDebugMode) debugPrint('[rust] $what 出错: $e\n$st');
+      return Error('$e');
+    }
+  }
 
   /// 取番剧或课堂详情。
   ///

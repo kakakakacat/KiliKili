@@ -65,6 +65,11 @@ impl RequestContext {
 
 /// 待发送的 HTTP 请求。只支持 GET——本 crate 当前只迁移了只读接口，
 /// 写操作要先有幂等与重试策略，不该顺手打开。
+///
+/// 那套策略现在有地方写了：`docs/architecture/adr/ADR-013-write-operations.md`
+/// （issue #50）。**它还是 Proposed**，没批准之前不要加 `post`——尤其注意
+/// ADR 决策一指出的那处：现在的 [`crate::transport_reqwest`] 对超时也重试，
+/// 那条规则对写操作不成立。
 #[derive(Debug, Clone)]
 pub struct HttpGet {
     pub url: String,

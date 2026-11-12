@@ -63,6 +63,45 @@ struct RawEnvelope<T> {
     data: Option<T>,
 }
 
+/// 只有 code 与 message 的信封。见 [`check_envelope`]。
+#[derive(Deserialize)]
+struct BareEnvelope {
+    code: i64,
+    #[serde(default)]
+    message: String,
+}
+
+/// 只验信封，不取载荷。**写操作用这个。**
+///
+/// 写操作的成功响应通常是 `{"code":0,"message":"0","ttl":1}`——**没有
+/// `data`**，或者 `data` 是 null。拿 [`unwrap_envelope`] 去解它会判
+/// [`ErrorKind::Protocol`]：那个函数把「code 为 0 但 data 缺失」当成协议
+/// 变更的信号，对只读接口是对的（成功却没有数据只可能是我们的理解过时），
+/// 对写操作则恰好相反——**没有载荷才是正常**，`code == 0` 就是全部结论。
+///
+/// 这个区别是 `test/bridge/danmaku_filter_bridge_test.dart` 抓出来的：
+/// 第一版的删除走了 `unwrap_envelope::<IgnoredAny>`，桩服务端回
+/// `{"code":0}` 就判了协议错误。单测没抓到，因为单测测的是解析函数本身，
+/// 而这条接口压根没有要解析的东西。
+///
+/// # Errors
+/// JSON 不合法或缺 `code` → [`ErrorKind::Protocol`]；`code != 0` → 按码分类。
+pub fn check_envelope(body: &str) -> Result<(), DomainError> {
+    let env: BareEnvelope = serde_json::from_str(body).map_err(|e| {
+        DomainError::new(ErrorKind::Protocol, format!("响应不是预期的信封结构: {e}"))
+    })?;
+
+    if env.code != 0 {
+        return Err(RemoteFailure {
+            code: env.code,
+            message: env.message,
+        }
+        .into_domain_error());
+    }
+
+    Ok(())
+}
+
 /// 载荷放在 `result` 而不是 `data` 的信封。
 ///
 /// PGC 那一组接口两种都有：索引与 season 排行用 `data`，放送时间表、
@@ -125,4 +164,45 @@ pub fn unwrap_result_envelope<T: serde::de::DeserializeOwned>(
 
     env.result
         .ok_or_else(|| DomainError::new(ErrorKind::Protocol, "code 为 0 但 result 缺失"))
+}
+
+#[cfg(test)]
+#[allow(clippy::expect_used)]
+mod bare_envelope_tests {
+    use super::check_envelope;
+    use bili_domain::error::ErrorKind;
+
+    /// 写操作成功的三种真实形态：没有 data、data 为 null、带 data。
+    /// 三种都必须判成功——写操作的结论只在 code 上。
+    #[test]
+    fn success_does_not_require_a_payload() {
+        for body in [
+            r#"{"code":0,"message":"0","ttl":1}"#,
+            r#"{"code":0,"message":"0","data":null}"#,
+            r#"{"code":0,"message":"0","data":{"ignored":1}}"#,
+        ] {
+            check_envelope(body).unwrap_or_else(|e| panic!("{body} 应当判成功，却得到 {e:?}"));
+        }
+    }
+
+    #[test]
+    fn a_business_error_is_classified_by_code() {
+        let err = check_envelope(r#"{"code":-101,"message":"账号未登录"}"#)
+            .expect_err("code 非 0 必须是错误");
+        assert_eq!(err.kind(), ErrorKind::Auth);
+        assert_eq!(err.code(), Some(-101));
+    }
+
+    #[test]
+    fn a_malformed_body_is_a_protocol_error() {
+        let err = check_envelope("not json at all").expect_err("非 JSON 必须是错误");
+        assert_eq!(err.kind(), ErrorKind::Protocol);
+    }
+
+    #[test]
+    fn a_body_without_a_code_is_a_protocol_error() {
+        // 没有 code 的响应说不出成败，不能默认当成功。
+        let err = check_envelope(r#"{"message":"0"}"#).expect_err("缺 code 必须是错误");
+        assert_eq!(err.kind(), ErrorKind::Protocol);
+    }
 }

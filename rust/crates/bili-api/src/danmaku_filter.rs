@@ -125,9 +125,9 @@ pub async fn del_danmaku_filter<T: HttpTransport>(
     ids: i64,
 ) -> Result<(), DomainError> {
     let body = crate::client::send_write(transport, ctx, &danmaku_filter_del_request(ids)).await?;
-    // 只验信封，载荷丢弃：这条接口的 data 是 null。
-    let _: serde::de::IgnoredAny = crate::envelope::unwrap_envelope(&body)?;
-    Ok(())
+    // 只验 code：这条接口成功时**没有 data**，用 unwrap_envelope 去解会把
+    // 「成功」判成协议错误。见 `envelope::check_envelope` 的说明。
+    crate::envelope::check_envelope(&body)
 }
 
 /// 解析新增的结果。

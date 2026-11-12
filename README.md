@@ -2,17 +2,23 @@
 
 # KiliKili
 
-**五端覆盖 · Rust 重构中的哔哩哔哩第三方客户端**
+**五端覆盖 · 用 Rust 重构核心的哔哩哔哩第三方客户端**
 
-[简体中文](README.md) · [English](README.en.md)
+[简体中文](README.md) · [English](README.en.md) · [下载](https://github.com/kakakakacat/KiliKili/releases) · [反馈](https://github.com/kakakakacat/KiliKili/issues)
 
 </div>
 
-KiliKili fork 自 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus)。我们保留熟悉的观看体验，逐步用 Rust 重构核心能力，让各平台版本更稳定、更易维护。
+KiliKili fork 自 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus)，继承了它完整的功能与使用体验。
+
+## 我们在做什么
+
+在 PiliPlus 的基础上，我们正在**用 Rust 重构数据层与逻辑层**，尽可能提升性能、修复既有问题；界面层暂时保持不变。
+
+后续会考虑用 Rust 的界面框架或各平台的原生代码重写 UI 层，让每个平台都获得最佳体验。
 
 ## 支持平台
 
-| 平台 | 当前客户端 |
+| 平台 | 状态 |
 | :--- | :---: |
 | Android | ✅ |
 | iPhone / iPad | ✅ |
@@ -21,14 +27,6 @@ KiliKili fork 自 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus)。我们
 | Linux | ✅ |
 
 平台支持继承自 PiliPlus；KiliKili 正式安装包尚未发布，请关注 [Releases](https://github.com/kakakakacat/KiliKili/releases)。
-
-## Rust 重构
-
-| 现在 | 正在推进 | 未来方向 |
-| :--- | :--- | :--- |
-| 保留现有 Flutter 界面与播放器 | 将网络、数据处理和业务逻辑逐步迁移到 Rust | 充分验证后再考虑 Slint 界面 |
-
-重构会分步进行，优先保证现有功能、用户数据和播放体验。Rust 路径出现问题时，仍可回退到原有实现。
 
 ## 项目动态
 
@@ -42,6 +40,8 @@ KiliKili fork 自 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus)。我们
 
 ## 长期维护
 
-**我们承诺长期更新 KiliKili。** 会持续跟进上游修复、接口变化与平台兼容问题。欢迎在 [Issues](https://github.com/kakakakacat/KiliKili/issues) 反馈体验。
+**我们承诺长期更新 KiliKili。** 会持续跟进上游修复、接口变化与平台兼容问题。用着不顺手或者发现 bug，欢迎在 [Issues](https://github.com/kakakakacat/KiliKili/issues) 告诉我们。
+
+> 想参与开发？工作约定见 [AGENTS.md](AGENTS.md)，设计文档在 [`docs/`](docs/)。
 
 感谢 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus)、[PiliPalaX](https://github.com/orz12/PiliPalaX)、[PiliPala](https://github.com/guozhigq/pilipala) 和所有贡献者。本项目遵循 [GPL-3.0](LICENSE)，是独立维护的非官方客户端。

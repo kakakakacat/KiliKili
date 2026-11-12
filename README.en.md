@@ -2,17 +2,23 @@
 
 # KiliKili
 
-**Five platforms · A third-party Bilibili client being rebuilt around Rust**
+**Five platforms · A third-party Bilibili client with its core rebuilt in Rust**
 
-[简体中文](README.md) · [English](README.en.md)
+[简体中文](README.md) · [English](README.en.md) · [Download](https://github.com/kakakakacat/KiliKili/releases) · [Feedback](https://github.com/kakakakacat/KiliKili/issues)
 
 </div>
 
-KiliKili is forked from [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus). We are keeping the familiar viewing experience while gradually rebuilding the shared core in Rust for a more reliable, maintainable app across platforms.
+KiliKili is forked from [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus) and inherits its full feature set and user experience.
+
+## What we're doing
+
+On top of PiliPlus, we are **rebuilding the data and logic layers in Rust** to improve performance and fix long-standing problems wherever we can. The UI layer stays as it is for now.
+
+Later on, we plan to rewrite the UI layer with a Rust UI framework or each platform's native code, so every platform gets the best possible experience.
 
 ## Platforms
 
-| Platform | Current app |
+| Platform | Status |
 | :--- | :---: |
 | Android | ✅ |
 | iPhone / iPad | ✅ |
@@ -20,15 +26,7 @@ KiliKili is forked from [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus). W
 | Windows | ✅ |
 | Linux | ✅ |
 
-Platform support comes from PiliPlus. Official KiliKili builds are not yet available; watch [Releases](https://github.com/kakakakacat/KiliKili/releases) for updates.
-
-## Rebuilding with Rust
-
-| Today | In progress | Future direction |
-| :--- | :--- | :--- |
-| Keep the current Flutter UI and player | Move networking, data processing, and business logic to Rust step by step | Consider a Slint UI after thorough validation |
-
-The transition is gradual, with existing features, user data, and playback taking priority. If a Rust path fails, the app can fall back to the existing implementation.
+Platform support comes from PiliPlus. Official KiliKili builds are not yet available; watch [Releases](https://github.com/kakakakacat/KiliKili/releases).
 
 ## Project activity
 
@@ -42,6 +40,8 @@ These charts are generated from the `main` branch and update after every push.
 
 ## Long-term maintenance
 
-**We commit to updating KiliKili for the long term.** We will continue to follow upstream fixes, API changes, and platform compatibility issues. Share feedback in [Issues](https://github.com/kakakakacat/KiliKili/issues).
+**We commit to updating KiliKili for the long term.** We will keep following upstream fixes, API changes and platform compatibility issues. If something feels off or you hit a bug, tell us in [Issues](https://github.com/kakakakacat/KiliKili/issues).
+
+> Want to contribute? Working conventions are in [AGENTS.md](AGENTS.md); design documents live in [`docs/`](docs/).
 
 Thanks to [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus), [PiliPalaX](https://github.com/orz12/PiliPalaX), [PiliPala](https://github.com/guozhigq/pilipala), and all contributors. KiliKili follows [GPL-3.0](LICENSE) and is an independently maintained, unofficial client.

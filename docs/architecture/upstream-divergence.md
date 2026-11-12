@@ -39,8 +39,11 @@ pgc 成为删得最多的一块
 「修改」总数 894 → **893**，仅重命名波及不变（742）。**实质改动反而少了
 一个**：`lib/http/danmaku_block.dart` 整个删掉，从「修改」转进了「删除」。
 这是写操作迁移的常态——它和只读切片一样，迁完就把上游那个文件删了。
+修订：2026-11-12（头像主题色边框 #109）——实质改动 151 → **153**，
+仅重命名波及 742 → **740**；修改总数仍为 893，新增和删除数不变。
+`NetworkImgLayer` 与“我的”页从仅重命名文件转为有实质改动。
 
-这一版的差额**不全是本次改动**：上一版是在 #79 的工作树上算的，#90 合进
+前述 #89 修订的差额**不全是那次改动**：上一版是在 #79 的工作树上算的，#90 合进
 main 前的最后一个提交（CDN 判据跟着算法搬家）没算进去——它删掉四个 Dart
 测试、新增 `bili-core/src/{cdn,playback}.rs` 与 `test/bridge/playback_bridge_test.dart`，
 `test/utils/cdn_url_test.dart` 从「修改」转成「删除」。**本次自己只动了三个
@@ -79,8 +82,8 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 类别 | 数量 |
 | --- | ---: |
 | 修改的上游既有文件 | 893 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 742 |
-| &nbsp;&nbsp;其中：有实质改动 | **151** |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 740 |
+| &nbsp;&nbsp;其中：有实质改动 | **153** |
 | 新增文件 | 461 |
 | 删除文件 | **126** |
 
@@ -92,7 +95,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 `ba430476b chore: rename app package identifiers to KiliKili` 把每个 Dart
 文件的 `package:PiliPlus/` 改成了 `package:kilikili/`，一次触及 992 个文件。
-**分叉面里 950 个文件只有这一处差异。**
+**当前分叉面里 740 个文件只有这一处差异。**
 
 对同步的影响很具体：上游每改动一个 Dart 文件，我们这边大概率冲突，但
 **冲突内容永远是那一行 import**。处理方式是取上游版本后重新套用重命名，
@@ -103,8 +106,8 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 4. 有实质改动的上游文件
 
-151 个。其中 **126 个来自业务层 typed 直连迁移**（§4.1），性质高度一致，
-不必逐个记；剩下 25 个是逐个有来由的，列在 §4.3 的表里。
+153 个。其中 **126 个来自业务层 typed 直连迁移**（§4.1），性质高度一致，
+不必逐个记；剩下 27 个是逐个有来由的，列在 §4.3 的表里。
 
 ### 4.1 typed 直连迁移触及的上游文件
 
@@ -171,6 +174,8 @@ H5 房间信息）、第二批 7 个（`live_room_play_info/` 整个目录）、
 | `README.md` / `README.en.md` | `e0b32bfda` `c7dc17c1a` `f92a9890c` | 改写为 KiliKili 的说明与路线图 |
 | `pubspec.yaml` / `pubspec.lock` | `ee41df52c` `57485ede8` | 引入 `flutter_rust_bridge` 与 `rust_builder` |
 | `lib/main.dart` | `ee41df52c` | 启动时初始化 Rust Core |
+| `lib/common/widgets/image/network_img_layer.dart` | #109 | 头像图片与占位图统一绘制主题色圆边框 |
+| `lib/pages/mine/view.dart` | #109 | 未登录头像改走共用头像组件，保持边框一致 |
 | `lib/http/video.dart` | `f321aea73` `43827d42f` `9385cf06d` 及 S3 | 视频详情与取流接入 Rust（**仍是 JSON 往返 + 开关**，见 #79）；S3 又从中删去了五条只读接口，见 §4.1 |
 | `lib/http/search.dart` | `130b9f533`、S9 | 搜索建议接入 Rust；S9 之后整条搜索是 typed 直连、**无开关无回退**，见 §4.1 |
 | `lib/pages/setting/models/play_settings.dart` | `9d1d5c3c9` | 自动播放默认值改为开启（issue #16） |

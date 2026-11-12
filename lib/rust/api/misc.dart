@@ -5,11 +5,12 @@
 
 import 'package:kilikili/rust/frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'package:kilikili/rust/api/search.dart';
 import 'package:kilikili/rust/api/transport.dart';
 import 'package:kilikili/rust/api/write.dart';
 
-// These functions are ignored because they are not marked as `pub`: `bgm_recommend`, `filter_rule`, `flatten`, `match_contest`, `music_detail`, `split`, `team`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These functions are ignored because they are not marked as `pub`: `bgm_recommend`, `filter_rule`, `flatten`, `follow_list_result`, `match_contest`, `music_detail`, `split`, `team`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// 取 BGM 详情。WBI 签名。
 Future<MusicDetailResult> fetchBgmDetail({
@@ -40,6 +41,42 @@ Future<BlackListResult> fetchBlackList({
   page: page,
   pageSize: pageSize,
   csrf: csrf,
+);
+
+/// 取一页关注列表。
+///
+/// `order_type` 空串表示「最近关注」，`attention` 表示「最常访问」；空串
+/// 也会发出去，与基线一致。
+Future<FollowListResult> fetchFollowings({
+  required MiscContext context,
+  required PlatformInt64 vmid,
+  required PlatformInt64 page,
+  required PlatformInt64 pageSize,
+  required String orderType,
+}) => RustLib.instance.api.crateApiMiscFetchFollowings(
+  context: context,
+  vmid: vmid,
+  page: page,
+  pageSize: pageSize,
+  orderType: orderType,
+);
+
+/// 取一页粉丝列表。
+///
+/// `order_type` 传 `None` 时整条参数不发——基线 `FanHttp.fans` 的参数可空，
+/// 这个区别保留着，见 `bili_api::follow::fans_request`。
+Future<FollowListResult> fetchFans({
+  required MiscContext context,
+  required PlatformInt64 vmid,
+  required PlatformInt64 page,
+  required PlatformInt64 pageSize,
+  String? orderType,
+}) => RustLib.instance.api.crateApiMiscFetchFans(
+  context: context,
+  vmid: vmid,
+  page: page,
+  pageSize: pageSize,
+  orderType: orderType,
 );
 
 /// 取一场比赛的详情。
@@ -445,6 +482,113 @@ class FilterRuleResult {
           errorKind == other.errorKind &&
           errorDetail == other.errorDetail &&
           errorCode == other.errorCode;
+}
+
+/// 一页关注或粉丝。
+///
+/// 关注列表与粉丝列表是同一个响应形状，服务端只换了路径，所以只有一个
+/// 结构（见 `bili_api::follow`）。
+class FollowList {
+  final List<FollowUser> list;
+
+  /// 总数。服务端不给时为 `None`，界面据此判断还有没有下一页。
+  final PlatformInt64? total;
+
+  const FollowList({
+    required this.list,
+    this.total,
+  });
+
+  @override
+  int get hashCode => list.hashCode ^ total.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FollowList &&
+          runtimeType == other.runtimeType &&
+          list == other.list &&
+          total == other.total;
+}
+
+/// 关注/粉丝列表的结果。
+class FollowListResult {
+  final FollowList? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const FollowListResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FollowListResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+/// 列表里的一个人。
+class FollowUser {
+  /// 缺失时为 0，与基线一致。
+  final PlatformInt64 mid;
+
+  /// 关注关系位掩码。基线只用它判 `!= -1`（是否已关注）。
+  final PlatformInt64? attribute;
+  final String? uname;
+  final String? face;
+
+  /// **不做空串归一**：界面判的是「有没有这一行」，空串要留一行空白。
+  final String? sign;
+
+  /// 复用 [`crate::api::search::OfficialVerify`]——同一个 `official_verify`
+  /// 子树，再导出一个同名结构会让 Dart 侧多一个要互相转换的类。
+  final OfficialVerify? officialVerify;
+
+  const FollowUser({
+    required this.mid,
+    this.attribute,
+    this.uname,
+    this.face,
+    this.sign,
+    this.officialVerify,
+  });
+
+  @override
+  int get hashCode =>
+      mid.hashCode ^
+      attribute.hashCode ^
+      uname.hashCode ^
+      face.hashCode ^
+      sign.hashCode ^
+      officialVerify.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FollowUser &&
+          runtimeType == other.runtimeType &&
+          mid == other.mid &&
+          attribute == other.attribute &&
+          uname == other.uname &&
+          face == other.face &&
+          sign == other.sign &&
+          officialVerify == other.officialVerify;
 }
 
 /// 热度曲线。`song_heat` 已按时间升序。

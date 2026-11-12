@@ -1,4 +1,3 @@
-import 'package:kilikili/models_new/follow/list.dart';
 import 'package:kilikili/utils/parse_int.dart';
 
 class FollowUpModel {
@@ -34,11 +33,9 @@ class FollowUpModel {
     }
   }
 
-  FollowUpModel.fromFollowList(Map<String, dynamic> json) {
-    upList = (json['list'] as List?)
-        ?.map((e) => FollowItemModel.fromJson(e))
-        .toList();
-  }
+  /// 「全部 up 主」那一栏：数据来自关注列表接口，已经在 Rust 里解析完
+  /// （`RustMisc.followings`，#66），这里只是换个容器。
+  FollowUpModel.fromUpItems(this.upList);
 }
 
 class LiveUsers {

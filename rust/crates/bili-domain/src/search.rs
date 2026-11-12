@@ -74,12 +74,9 @@ pub struct SearchStat {
     pub like: Option<i64>,
 }
 
-/// 认证信息。
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct OfficialVerify {
-    pub kind: Option<i64>,
-    pub desc: Option<String>,
-}
+/// 认证信息。真身在 [`crate::user_list::OfficialVerify`]——关注/粉丝列表
+/// 读的是同一个 `official_verify` 子树（#66），两边各留一份必然漂移。
+pub use crate::user_list::OfficialVerify;
 
 // ---------------------------------------------------------------- 视频结果
 

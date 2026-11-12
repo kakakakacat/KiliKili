@@ -1,0 +1,41 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "list": [
+      {
+        "mid": 800000201,
+        "attribute": 2,
+        "mtime": 1700000101,
+        "tag": [123],
+        "special": 0,
+        "uname": "示例用户甲",
+        "face": "https://example.invalid/bfs/face/a.jpg",
+        "sign": "这是一条签名",
+        "face_nft": 0,
+        "official_verify": { "type": 0, "desc": "示例机构认证" },
+        "vip": { "vipType": 2, "vipStatus": 1 },
+        "nft_icon": "",
+        "rec_reason": "",
+        "track_id": ""
+      },
+      {
+        "mid": 800000202,
+        "attribute": -1,
+        "mtime": 1700000102,
+        "uname": "示例用户乙",
+        "face": "https://example.invalid/bfs/face/b.jpg",
+        "sign": "",
+        "official_verify": { "type": -1, "desc": "" }
+      },
+      {
+        "attribute": 2,
+        "uname": "示例用户丙",
+        "face": "https://example.invalid/bfs/face/c.jpg"
+      }
+    ],
+    "re_version": 0,
+    "total": 3
+  }
+}

@@ -26,6 +26,8 @@ import 'package:kilikili/models_new/dynamic/dyn_topic_feed/topic_card_list.dart'
 import 'package:kilikili/models_new/dynamic/dyn_topic_top/top_details.dart';
 import 'package:kilikili/models_new/dynamic/dyn_topic_top/topic_item.dart';
 import 'package:kilikili/models_new/followee_votes/vote.dart';
+import 'package:kilikili/services/rust/follow_compat.dart';
+import 'package:kilikili/services/rust/rust_misc.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/utils.dart';
 import 'package:kilikili/utils/wbi_sign.dart';
@@ -101,27 +103,25 @@ abstract final class DynamicsHttp {
     }
   }
 
+  /// 动态页「全部 up 主」那一栏。
+  ///
+  /// 用的就是关注列表接口（`/x/relation/followings`），已随 #66 整条迁到
+  /// Rust；这里不再自己发请求，否则同一条路径会留下两份 Dart 实现
+  /// （ADR-011 决策四）。装进 `FollowUpModel` 只是换个容器，适配见
+  /// `lib/services/rust/follow_compat.dart`。
   static Future<LoadingState<FollowUpModel>> followings({
-    int? vmid,
-    int? pn,
+    required int vmid,
+    required int pn,
     int ps = 20,
     String orderType = '', // ''=>最近关注，'attention'=>最常访问
   }) async {
-    final res = await Request().get(
-      Api.followings,
-      queryParameters: {
-        'vmid': vmid,
-        'pn': pn,
-        'ps': ps,
-        'order': 'desc',
-        'order_type': orderType,
-      },
+    final res = await RustMisc.followings(
+      vmid: vmid,
+      pn: pn,
+      ps: ps,
+      orderType: orderType,
     );
-    if (res.data['code'] == 0) {
-      return Success(FollowUpModel.fromFollowList(res.data['data']));
-    } else {
-      return Error(errorMsg[res.data['code']] ?? res.data['message']);
-    }
+    return res.toFollowUpState();
   }
 
   // 动态点赞

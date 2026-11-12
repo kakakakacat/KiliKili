@@ -8,17 +8,16 @@ name: README charts
 # 因此改成「有差异就开 PR」：图表改动推到固定分支 `chore/readme-stats`，
 # 开一个 PR 并挂上 auto-merge，CI 绿了自己合进去。
 #
-# 两个仓库设置是前提，缺一个这条流水线就只会卡住而不是出错，所以写在这里
-# （两个都已开启，2026-11-11）：
+# 仓库设置和审批行为要分开看（2026-11-12 实测）：
 #
-# 1. 允许 Actions 创建 PR：Settings → Actions → General → Workflow
+# 1. 必须允许 Actions 创建 PR：Settings → Actions → General → Workflow
 #    permissions → "Allow GitHub Actions to create and approve pull
 #    requests"。关着的话 `gh pr create` 会以 403 失败。
-# 2. fork PR 的审批策略不能是 `first_time_contributors`——github-actions[bot]
-#    会被算成其中之一，它开的 PR 上的 CI 初始状态是 `action_required`，
-#    要人点「Approve and run」，auto-merge 则一直等。当前设为
-#    `first_time_contributors_new_to_github`（API 没有「从不审批」这个值）。
-#    查：`gh api repos/<o>/<r>/actions/permissions/fork-pr-contributor-approval`
+# 2. fork PR 审批策略当前是 `first_time_contributors_new_to_github`，但这并未
+#    保证机器人 PR 自动跑 CI：#96 的 PR 创建事件仍以 `action_required` 结束。
+#    因此 auto-merge 可能等待人工批准运行；#82 的成功 CI 是仓库账号触发的，
+#    不能作为机器人创建事件免审批的证据。查设置：
+#    `gh api repos/<o>/<r>/actions/permissions/fork-pr-contributor-approval`
 #
 # 另：GITHUB_TOKEN **推分支不会触发任何工作流**（同样是防递归），所以
 # 不要试图靠给 `ci.yml` 加一条 push 触发来让检查跑起来——那条加了也不会

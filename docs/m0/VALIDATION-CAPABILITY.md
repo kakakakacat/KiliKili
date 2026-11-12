@@ -194,9 +194,11 @@ windows, linux]`，再逐个核对 `needs.*.result`。真正的回归在被聚�
   核对这四项。
 - **图表 PR 靠创建事件跑回归门。** `readme-stats.yml` 用 `GITHUB_TOKEN`
   推送 `chore/readme-stats` 时，防递归机制不会触发 `push` 工作流；PR 创建
-  事件会触发 `ci.yml`。仓库须允许 Actions 创建 PR，并将 fork PR 审批策略
-  设为 `first_time_contributors_new_to_github`，否则机器人 PR 的 CI 会停在
-  `action_required`，auto-merge 等不到 `regression gate`。#82 已验证这条链路。
+  事件会触发 `ci.yml`。仓库须允许 Actions 创建 PR；但即使 fork PR 审批策略
+  已设为 `first_time_contributors_new_to_github`，#96 的机器人创建事件仍以
+  `action_required` 结束，auto-merge 等不到 `regression gate`。此时须人工批准
+  该运行，或由仓库账号推送新提交触发 PR 同步事件。#82 的成功运行由仓库账号
+  触发，不能证明机器人创建事件免审批。
 
 **等 CI 的时间尺度**：每个 PR 都会打一次 Android APK（`Android package and
 native library`，`timeout-minutes: 60`），是全流程最慢的一项，实测约 15

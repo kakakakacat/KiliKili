@@ -60,4 +60,22 @@ abstract final class RustRequest {
     final value = AccountManager.getCookies(cookies);
     return value.isEmpty ? null : value;
   }
+
+  /// 取某个账号的 CSRF token（cookie 里的 `bili_jct`），**只有写操作要传**。
+  ///
+  /// 未登录、或 cookie 里根本没有 `bili_jct` 时返回 null——此时不伪造一个
+  /// 空串：带着空 csrf 发出去，服务端返回的是 `-111`（校验失败），看起来
+  /// 像协议问题；不带则是 `-101`（未登录），那才是真实原因。
+  ///
+  /// `LoginAccount.csrf` 的实现是一串 `!`，cookie 缺了会抛；这里兜住它，
+  /// 让「没有 csrf」是一个值而不是一次崩溃。
+  static String? csrfFor(Account account) {
+    if (account is NoAccount) return null;
+    try {
+      final value = account.csrf;
+      return value.isEmpty ? null : value;
+    } catch (_) {
+      return null;
+    }
+  }
 }

@@ -56,6 +56,8 @@ impl LiveContext {
         let ctx = RequestContext {
             base_url: self.base_url,
             cookie: self.cookie.map(Redacted::new),
+            // 只读路径：csrf 只有写操作用得上（ADR-013 决策四）。
+            csrf: None,
             headers: self.headers,
             timeout: Duration::from_millis(self.timeout_ms),
         };

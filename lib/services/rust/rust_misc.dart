@@ -30,8 +30,10 @@ export 'package:kilikili/rust/api/misc.dart'
 /// （S15 / issue #66）。
 ///
 /// 基线对应的 `MusicHttp.bgmDetail` / `bgmRecommend`、`BlackHttp.blackList`、
-/// `MatchHttp.matchInfo`、`DanmakuFilterHttp.danmakuFilter` 已随本次迁移
-/// 删除，按 ADR-011 决策四不留降级开关。
+/// `MatchHttp.matchInfo` 与**整个** `DanmakuFilterHttp`（`lib/http/
+/// danmaku_block.dart`，含两个写操作）已随迁移删除，按 ADR-011 决策四
+/// 不留降级开关。写操作尤其不能留：只读降级只是多发一次请求，写操作
+/// 降级意味着**可能重复提交**（ADR-013 决策五）。
 ///
 /// 这几条接口在 `ApiType.apiTypeSet` 里都没有登记，因此与基线拦截器一样
 /// 走 `main` 账号。
@@ -44,14 +46,19 @@ abstract final class RustMisc {
   /// 基线黑名单的固定页长。
   static const int blackListPageSize = 50;
 
+  /// [write] 为 true 时带上 csrf。只读路径一律不带——凭据少走一段就少
+  /// 一处泄漏面，而且「这条是不是写操作」在调用点一眼看得见
+  /// （ADR-013 决策四）。
   static Future<rust_api.MiscContext> _context({
     required String path,
     String mixinKey = '',
+    bool write = false,
   }) async {
     final acc = Accounts.get(AccountType.main);
     return rust_api.MiscContext(
       baseUrl: HttpString.apiBaseUrl,
       cookie: await RustRequest.cookieFor(acc, path),
+      csrf: write ? RustRequest.csrfFor(acc) : null,
       headers: RustRequest.headersFor(acc),
       timeoutMs: BigInt.from(_timeoutMs),
       transport: RustTransport.current(),
@@ -156,6 +163,52 @@ abstract final class RustMisc {
       return _unwrap(result.data, result.errorDetail, result.errorCode);
     } catch (e, st) {
       return _crashed('弹幕屏蔽规则', e, st);
+    }
+  }
+
+  /// 新增一条云端弹幕屏蔽规则。`type`：0 关键词 / 1 正则 / 2 用户。
+  ///
+  /// 返回的是 **Rust 侧的 typed 结构**：规则只剩 `FilterRule` 这一个类型，
+  /// 读路径已经迁走，这里再留一个等价的 Dart 模型只会让两边各自漂移。
+  ///
+  /// 失败**不自动重发**。这条在 Rust 侧定级为「可判定」：重发会多一条，
+  /// 但 [danmakuFilter] 查得到上一次生没生效（ADR-013 决策一/三）。界面
+  /// 现在的做法是把失败提示给用户、由用户决定要不要再按一次，这就是那个
+  /// 「查过之后再决定」——由人来查。
+  static Future<LoadingState<rust_api.FilterRule>> danmakuFilterAdd({
+    required String filter,
+    required int type,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await rust_api.addDanmakuFilter(
+        context: await _context(path: Api.danmakuFilterAdd, write: true),
+        filter: filter,
+        kind: type,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('新增弹幕屏蔽规则', e, st);
+    }
+  }
+
+  /// 删除一条云端弹幕屏蔽规则。
+  ///
+  /// 成功时没有载荷——`errorKind == null` 就是全部结论，所以这里返回
+  /// `LoadingState<void>` 而不是去解一个不存在的 `data`。
+  static Future<LoadingState<void>> danmakuFilterDel({required int ids}) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await rust_api.delDanmakuFilter(
+        context: await _context(path: Api.danmakuFilterDel, write: true),
+        ids: ids,
+      );
+      if (result.errorKind != null) {
+        return Error(result.errorDetail ?? '请求失败', code: result.errorCode);
+      }
+      return const Success(null);
+    } catch (e, st) {
+      return _crashed('删除弹幕屏蔽规则', e, st);
     }
   }
 

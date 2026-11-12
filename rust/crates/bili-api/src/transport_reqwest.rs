@@ -30,8 +30,8 @@ use std::time::Duration;
 use bili_domain::error::{DomainError, ErrorKind};
 
 use crate::http::{
-    FailureShape, HttpGet, HttpResponse, HttpTransport, ProxyConfig, RetryPolicy, TransportConfig,
-    should_retry,
+    FailureShape, HttpGet, HttpPost, HttpResponse, HttpTransport, PostBody, ProxyConfig,
+    RetryPolicy, TransportConfig, should_retry,
 };
 
 /// 连接超时。基线 `BaseOptions.connectTimeout` 为 10s；请求整体超时由
@@ -146,6 +146,57 @@ impl HttpTransport for ReqwestTransport {
             }
         }
     }
+
+    async fn post(&self, request: HttpPost) -> Result<HttpResponse, DomainError> {
+        let client = client(&self.config)?;
+
+        // 与 GET 唯一的区别就在这个 policy 上：写请求按它自己的幂等级别
+        // 决定能不能重发，**不要**改成 RetryPolicy::Read（ADR-013 决策一）。
+        let policy = request.idempotency.retry_policy();
+
+        let mut attempt: u32 = 0;
+        loop {
+            match send_post_once(&client, &request).await {
+                Ok(resp) => return Ok(resp),
+                Err(e) => {
+                    if attempt >= self.config.retry_count
+                        || !should_retry(policy, failure_shape(&e))
+                    {
+                        return Err(map_reqwest_error(&e));
+                    }
+                    attempt += 1;
+                    let delay = backoff_delay(attempt, self.config.retry_delay_ms);
+                    tracing::debug!(attempt, delay_ms = delay.as_millis(), ?policy, "重试写请求");
+                    tokio::time::sleep(delay).await;
+                }
+            }
+        }
+    }
+}
+
+async fn send_post_once(
+    client: &reqwest::Client,
+    request: &HttpPost,
+) -> Result<HttpResponse, reqwest::Error> {
+    let mut builder = client.post(&request.url).timeout(request.timeout);
+    for (k, v) in &request.headers {
+        builder = builder.header(k, v);
+    }
+    builder = match &request.body {
+        // reqwest 的 .form() 自己带 application/x-www-form-urlencoded，
+        // .json() 带 application/json——与基线调用点显式写的那两个
+        // content-type 一致，不必再手工设头。
+        PostBody::Form(fields) => builder.form(fields),
+        PostBody::Json(text) => builder
+            .header("content-type", "application/json")
+            .body(text.clone()),
+    };
+
+    let resp = builder.send().await?;
+    let status = resp.status().as_u16();
+    let body = resp.text().await?;
+
+    Ok(HttpResponse { status, body })
 }
 
 async fn send_once(

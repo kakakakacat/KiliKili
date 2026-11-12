@@ -5,6 +5,8 @@
 //! 网络或 mock 一整个 HTTP 客户端。
 
 use bili_domain::video::VideoType;
+
+use crate::http::Idempotency;
 use bili_protocol::risk::{self, RiskTokens};
 use bili_protocol::wbi;
 
@@ -237,6 +239,38 @@ pub fn play_url(
         path: params.api_path(),
         query,
     })
+}
+
+/// 待发送的**写**请求。
+///
+/// 与 [`PreparedRequest`] 分开两个类型，而不是给它加一个 `Option<body>`：
+/// 写请求必须带 [`Idempotency`]，分开之后「忘了定级」在类型上就不成立
+/// （ADR-013 决策二）。
+///
+/// **csrf 不在这里。** 它由 [`crate::client::send_write`] 从
+/// [`crate::http::RequestContext`] 统一补进表单，是全仓库唯一的注入点
+/// （ADR-013 决策四）。因此本结构是**纯业务参数**，可以原样写进请求快照
+/// 而不含任何凭据——这正是 ADR-013 决策六要的那份对照物。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PreparedWrite {
+    pub path: &'static str,
+    /// 表单字段。顺序即发送顺序，被请求快照钉住。
+    pub form: Vec<(String, String)>,
+    /// 这条写操作重发安全不安全。
+    pub idempotency: Idempotency,
+}
+
+impl PreparedWrite {
+    /// 拼成 `k=v&k=v` 形式。与 [`PreparedRequest::query_string`] 一样，
+    /// 仅用于测试断言。
+    #[must_use]
+    pub fn form_string(&self) -> String {
+        self.form
+            .iter()
+            .map(|(k, v)| format!("{k}={v}"))
+            .collect::<Vec<_>>()
+            .join("&")
+    }
 }
 
 impl PreparedRequest {

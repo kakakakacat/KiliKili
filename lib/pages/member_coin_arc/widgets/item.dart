@@ -1,6 +1,6 @@
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/stat/stat.dart';
+import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/widgets/video_card/video_card_v.dart';
 import 'package:kilikili/http/search.dart';
@@ -72,35 +72,24 @@ class MemberCoinLikeItem extends StatelessWidget {
             text: DurationUtils.formatDuration(item.duration),
           ),
       ],
-      subtitleBuilder: (context, colors) => Padding(
-        padding: const EdgeInsets.only(top: 2),
-        child: Row(
-          spacing: 6,
-          children: [
-            StatWidget(
-              type: StatType.play,
-              value: item.play,
-              color: colors.subtitle,
-              iconSize: 12,
-            ),
-            StatWidget(
-              type: StatType.danmaku,
-              value: item.danmaku,
-              color: colors.subtitle,
-              iconSize: 12,
-            ),
-            const Spacer(),
-            Text(
-              DateFormatUtils.dateFormat(
-                item.ctime,
-                short: VideoCardV.shortFormat,
-                long: VideoCardV.longFormat,
-              ),
-              style: TextStyle(fontSize: 11, color: colors.subtitle),
-            ),
-          ],
-        ),
+      topStart: CoverStatsPill(
+        stats: [
+          (StatType.play, item.play),
+          (StatType.danmaku, item.danmaku),
+        ],
       ),
+      metaBuilder: (context, colors) => [
+        const Spacer(),
+        Text(
+          DateFormatUtils.dateFormat(
+            item.ctime,
+            short: VideoCardV.shortFormat,
+            long: VideoCardV.longFormat,
+          ),
+          maxLines: 1,
+          style: TextStyle(fontSize: 11, color: colors.subtitle),
+        ),
+      ],
     );
   }
 }

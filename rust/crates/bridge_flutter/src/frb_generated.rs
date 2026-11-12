@@ -141,10 +141,14 @@ fn wire__crate__api__cover_scrim__compute_cover_scrim_impl(
             let api_rgba = <Vec<u8>>::sse_decode(&mut deserializer);
             let api_width = <u32>::sse_decode(&mut deserializer);
             let api_height = <u32>::sse_decode(&mut deserializer);
+            let api_tint_rgb = <u32>::sse_decode(&mut deserializer);
             deserializer.end();
             transform_result_sse::<_, ()>((move || {
                 let output_ok = Ok::<_, ()>(crate::api::cover_scrim::compute_cover_scrim(
-                    api_rgba, api_width, api_height,
+                    api_rgba,
+                    api_width,
+                    api_height,
+                    api_tint_rgb,
                 ))?;
                 std::result::Result::Ok(output_ok)
             })())
@@ -515,9 +519,11 @@ fn wire__crate__api__cover_scrim__fallback_cover_scrim_impl(
             };
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_tint_rgb = <u32>::sse_decode(&mut deserializer);
             deserializer.end();
             transform_result_sse::<_, ()>((move || {
-                let output_ok = Ok::<_, ()>(crate::api::cover_scrim::fallback_cover_scrim())?;
+                let output_ok =
+                    Ok::<_, ()>(crate::api::cover_scrim::fallback_cover_scrim(api_tint_rgb))?;
                 std::result::Result::Ok(output_ok)
             })())
         },
@@ -4114,10 +4120,14 @@ impl SseDecode for crate::api::cover_scrim::CoverScrimStyle {
         let mut var_scrimArgb = <u32>::sse_decode(deserializer);
         let mut var_titleArgb = <u32>::sse_decode(deserializer);
         let mut var_subtitleArgb = <u32>::sse_decode(deserializer);
+        let mut var_tintArgb = <u32>::sse_decode(deserializer);
+        let mut var_tintLabelArgb = <u32>::sse_decode(deserializer);
         return crate::api::cover_scrim::CoverScrimStyle {
             scrim_argb: var_scrimArgb,
             title_argb: var_titleArgb,
             subtitle_argb: var_subtitleArgb,
+            tint_argb: var_tintArgb,
+            tint_label_argb: var_tintLabelArgb,
         };
     }
 }
@@ -10421,6 +10431,8 @@ impl flutter_rust_bridge::IntoDart for crate::api::cover_scrim::CoverScrimStyle 
             self.scrim_argb.into_into_dart().into_dart(),
             self.title_argb.into_into_dart().into_dart(),
             self.subtitle_argb.into_into_dart().into_dart(),
+            self.tint_argb.into_into_dart().into_dart(),
+            self.tint_label_argb.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -15147,6 +15159,8 @@ impl SseEncode for crate::api::cover_scrim::CoverScrimStyle {
         <u32>::sse_encode(self.scrim_argb, serializer);
         <u32>::sse_encode(self.title_argb, serializer);
         <u32>::sse_encode(self.subtitle_argb, serializer);
+        <u32>::sse_encode(self.tint_argb, serializer);
+        <u32>::sse_encode(self.tint_label_argb, serializer);
     }
 }
 

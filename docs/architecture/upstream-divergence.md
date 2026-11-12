@@ -233,9 +233,10 @@ issue #108 把所有**竖版**视频封面从「顶部封面图 + 底部独立�
 | `lib/common/skeleton/video_card_v.dart` | 骨架跟着变成整块封面，否则加载完会重排 |
 | `lib/pages/{rcmd,live,live_follow,live_search,live_area_detail,search_panel/live,pgc,pgc_index,member_pgc,member_coin_arc,member_like_arc,member_home}/**` | 卡片本体改用 `CoverScrimCard`；对应 grid delegate 去掉给文字留的 `mainAxisExtent`（格子现在就是封面本身），视频/直播格子的 `childAspectRatio` 从 16:10 收到 4:3 |
 
-卡片上的信息分三层，改哪一层决定了去哪里改：**底部遮罩**里的标题与辅助
-信息，颜色由 `cover_scrim` 保证对比度，不要另外指定颜色；**封面左上角**的
-UP 名与**右上角**的时长等角标落在封面上，不在那套保证里，所以一律自带
+卡片上的信息分三层，改哪一层决定了去哪里改：**底部遮罩**里的标题、UP 名
+及辅助信息，颜色由 `cover_scrim` 保证对比度；UP 名的主题色药丸也由 Rust
+根据当前主题色与封面合成结果选出底色、文字色；**封面左上角**的播放量等统计
+与**右上角**的时长角标落在封面上，不在那套保证里，所以一律自带
 `black45` 底 + 白字；`CoverScrimCard` 自带的阴影与 14px 圆角是**有意偏离
 全局 `cardTheme`** 的（那边 `shadowColor` 是透明），理由写在该类的
 `elevation` 字段注释上。

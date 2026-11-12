@@ -39,14 +39,18 @@ class PgcCardV extends StatelessWidget {
             type: PBadgeType.gray,
           ),
       ],
-      subtitleBuilder: subtitle == null
+      metaBuilder: subtitle == null
           ? null
-          : (context, colors) => Text(
-              subtitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 11, color: colors.subtitle),
-            ),
+          : (context, colors) => [
+              Flexible(
+                child: Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 11, color: colors.subtitle),
+                ),
+              ),
+            ],
     );
   }
 }

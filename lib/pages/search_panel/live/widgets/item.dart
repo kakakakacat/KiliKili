@@ -1,5 +1,6 @@
+import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
-import 'package:kilikili/common/widgets/video_card/live_subtitle.dart';
+import 'package:kilikili/common/widgets/video_card/live_meta.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/services/rust/rust_search.dart';
 import 'package:kilikili/utils/num_utils.dart';
@@ -50,11 +51,11 @@ class LiveItem extends StatelessWidget {
               .toList(),
         ),
       ),
-      subtitleBuilder: (context, colors) => liveSubtitle(
-        colors: colors,
-        areaName: liveItem.cateName,
+      topStart: CoverWatchedPill(
         watched: '${NumUtils.numFormat(liveItem.online)}围观',
       ),
+      metaBuilder: (context, colors) =>
+          liveMeta(colors: colors, areaName: liveItem.cateName),
     );
   }
 }

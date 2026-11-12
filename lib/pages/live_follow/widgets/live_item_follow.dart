@@ -1,6 +1,7 @@
 import 'package:kilikili/common/widgets/image/image_save.dart';
+import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
-import 'package:kilikili/common/widgets/video_card/live_subtitle.dart';
+import 'package:kilikili/common/widgets/video_card/live_meta.dart';
 import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
@@ -28,13 +29,11 @@ class LiveCardVFollow extends StatelessWidget {
       onTap: () => PageUtils.toLiveRoom(liveItem.roomid),
       onLongPress: onLongPress,
       onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-      // 分区与围观数原本压在一条固定的 black54 渐变上（issue #108 要换掉的
-      // 正是这种写死的遮罩），现在并进随封面取色的遮罩里。
-      subtitleBuilder: (context, colors) => liveSubtitle(
-        colors: colors,
-        areaName: liveItem.areaName,
+      topStart: CoverWatchedPill(
         watched: liveItem.textSmall == null ? null : '${liveItem.textSmall}围观',
       ),
+      metaBuilder: (context, colors) =>
+          liveMeta(colors: colors, areaName: liveItem.areaName),
     );
   }
 }

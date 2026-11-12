@@ -21,17 +21,25 @@
 
 /// 一张封面算出来的底部遮罩配色。颜色一律是 `0xAARRGGBB`。
 ///
-/// [`CoverScrim::scrim_argb`] 是**一整块半透明实色**，不是渐变的一端：宿主
-/// 直接拿它铺满文案那一条。曾经在它上方加过一段渐变过渡，去掉了——渐变中
-/// 段的实际背景比这里算的要亮，字压上去就不满足算出来的对比度了。
+/// [`CoverScrim::scrim_argb`] 用在文案所在的半透明实色区，也用作其上方
+/// 渐变段的终点。文字只能压在实色区；渐变中段的实际背景与这里计算对比度
+/// 时用的背景不同。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct CoverScrim {
     /// 文案那一条的遮罩色，含 alpha。
     pub scrim_argb: u32,
     /// 标题色，不透明。
     pub title_argb: u32,
-    /// 辅助信息（UP 名、播放量…）色，不透明。
+    /// 辅助信息（分区、日期…）色，不透明。
     pub subtitle_argb: u32,
+    /// UP 名那块小药丸的底色，含 alpha，画在**遮罩之上**。
+    ///
+    /// 调用方给的品牌色按可读性需要调过不透明度：压得太实会让药丸上的字
+    /// 掉出对比度，所以这里返回的 alpha 可能比想要的低，甚至为 0（等于不
+    /// 画底色，退回纯遮罩——那一档的对比度是有保证的）。
+    pub tint_argb: u32,
+    /// 药丸上的文字色，不透明。
+    pub tint_label_argb: u32,
 }
 
 /// 统计区间的上边界，占封面高度的比例。
@@ -42,6 +50,15 @@ const MIN_TITLE_CONTRAST: f32 = 4.5;
 
 /// 辅助信息要达到的对比度。它比标题小一号但也不是装饰，取 AA 的大字线 3.0。
 const MIN_SUBTITLE_CONTRAST: f32 = 3.0;
+
+/// UP 名药丸底色的不透明度上限。
+///
+/// 它是**色调**不是底色：压到不透明就成了一块实心色块，遮罩随封面变色的
+/// 效果全被它盖掉，而且品牌色是固定的，在浅色遮罩上会非常跳。
+const TINT_ALPHA_MAX: f32 = 0.42;
+
+/// 药丸不透明度的回退步长。一路降到 0 必然达标——那时它就是纯遮罩。
+const TINT_ALPHA_STEP: f32 = 0.06;
 
 /// 遮罩不透明度的搜索区间。下限再低就盖不住杂色封面，上限再高遮罩本身会
 /// 变成一条硬边，不如直接把遮罩调暗。
@@ -82,12 +99,49 @@ const LIGHTNESS_STEP: f32 = 0.05;
 ///
 /// 刻意不跟随主题：回退样式必须在拿不到任何封面信息时也成立，而深浅主题
 /// 的判断在宿主侧。统一用深遮罩 + 白字，和占位图的底色一致。
+///
+/// `tint_rgb` 是 UP 名药丸的品牌色，`0xRRGGBB`（忽略 alpha，由这里算）。
 #[must_use]
-pub const fn fallback_scrim() -> CoverScrim {
+pub fn fallback_scrim(tint_rgb: u32) -> CoverScrim {
+    const SCRIM: u32 = 0xD9_10_10_10;
+    let composite = blend(
+        unpack_rgb(SCRIM),
+        ((SCRIM >> 24) & 0xFF) as f32 / 255.0,
+        [0.0; 3],
+    );
+    let (tint_argb, tint_label_argb) = tinted_pill(tint_rgb, [1.0; 3], composite);
     CoverScrim {
-        scrim_argb: 0xD9_10_10_10,
+        scrim_argb: SCRIM,
         title_argb: 0xFF_FF_FF_FF,
         subtitle_argb: 0xFF_D4_D4_D4,
+        tint_argb,
+        tint_label_argb,
+    }
+}
+
+/// 解出 `0xRRGGBB` / `0xAARRGGBB` 的 RGB 三分量。
+fn unpack_rgb(argb: u32) -> [f32; 3] {
+    [
+        ((argb >> 16) & 0xFF) as f32 / 255.0,
+        ((argb >> 8) & 0xFF) as f32 / 255.0,
+        (argb & 0xFF) as f32 / 255.0,
+    ]
+}
+
+/// 算 UP 名药丸的底色与文字色。
+///
+/// 文字沿用标题色（纯白 / 近黑），只调底色的不透明度：让药丸上的字跟同一
+/// 行的其它文字一个色，看起来才是一行；而且不透明度一路降到 0 就回到纯
+/// 遮罩，那一档的对比度在上面已经保证过，所以这个搜索必然收敛。
+fn tinted_pill(tint_rgb: u32, text: [f32; 3], scrim_composite: [f32; 3]) -> (u32, u32) {
+    let tint = unpack_rgb(tint_rgb);
+    let mut alpha = TINT_ALPHA_MAX;
+    loop {
+        let composite = blend(tint, alpha, scrim_composite);
+        if contrast(text, composite) >= MIN_SUBTITLE_CONTRAST || alpha <= 0.0 {
+            return (pack(tint, alpha), pack(text, 1.0));
+        }
+        alpha = (alpha - TINT_ALPHA_STEP).max(0.0);
     }
 }
 
@@ -96,12 +150,16 @@ pub const fn fallback_scrim() -> CoverScrim {
 /// `rgba` 是逐像素的 RGBA8，长度必须是 `width * height * 4`；alpha 被忽略
 /// （封面没有透明通道，占位图也是不透明的）。尺寸对不上或为空时返回
 /// [`fallback_scrim`]——这是正常路径的一部分（图还没解码完），不是错误。
+///
+/// `tint_rgb` 是 UP 名药丸的品牌色，`0xRRGGBB`。它由宿主传进来而不是写死
+/// 在这里：一个色值字面量属于宿主（AGENTS.md 第 2 节），**怎么让它在任意
+/// 封面上都还读得清**才是这里的事。
 #[must_use]
-pub fn cover_scrim(rgba: &[u8], width: u32, height: u32) -> CoverScrim {
+pub fn cover_scrim(rgba: &[u8], width: u32, height: u32, tint_rgb: u32) -> CoverScrim {
     let Some(samples) = sample_bottom(rgba, width, height) else {
-        return fallback_scrim();
+        return fallback_scrim(tint_rgb);
     };
-    scrim_for(&samples)
+    scrim_for(&samples, tint_rgb)
 }
 
 /// 底部区域的采样结果。
@@ -196,7 +254,7 @@ fn percentile(sorted: &[f32], q: f32) -> f32 {
     sorted[idx]
 }
 
-fn scrim_for(s: &BottomSamples) -> CoverScrim {
+fn scrim_for(s: &BottomSamples, tint_rgb: u32) -> CoverScrim {
     let light = s.p10 > LIGHT_COVER_P10;
     // 文字色先定下来，遮罩再往「能托住这个文字色」的方向收敛。反过来（先
     // 定遮罩再挑文字）在中等明度的封面上会反复横跳。
@@ -243,10 +301,13 @@ fn scrim_for(s: &BottomSamples) -> CoverScrim {
         (scrim, ALPHA_MAX, blend(scrim, ALPHA_MAX, backdrop))
     });
 
+    let (tint_argb, tint_label_argb) = tinted_pill(tint_rgb, text, composite);
     CoverScrim {
         scrim_argb: pack(scrim, alpha),
         title_argb: pack(text, 1.0),
         subtitle_argb: pack(subtitle_color(text, composite), 1.0),
+        tint_argb,
+        tint_label_argb,
     }
 }
 
@@ -342,6 +403,14 @@ fn pack(rgb: [f32; 3], alpha: f32) -> u32 {
 mod tests {
     use super::*;
 
+    /// B 站粉，宿主实际传的就是它（`Style.biliPink`）。
+    const BILI_PINK: u32 = 0x00_FB_72_99;
+
+    /// 测试里一律用品牌色跑，省得每个用例都写一遍最后一个参数。
+    fn cover_scrim_t(rgba: &[u8], w: u32, h: u32) -> CoverScrim {
+        cover_scrim(rgba, w, h, BILI_PINK)
+    }
+
     /// 造一张纯色缩略图。
     fn solid(w: u32, h: u32, rgb: [u8; 3]) -> Vec<u8> {
         (0..w * h)
@@ -370,19 +439,19 @@ mod tests {
 
     #[test]
     fn 尺寸对不上时回退() {
-        assert_eq!(cover_scrim(&[0, 0, 0], 4, 4), fallback_scrim());
-        assert_eq!(cover_scrim(&[], 0, 0), fallback_scrim());
+        assert_eq!(cover_scrim_t(&[0, 0, 0], 4, 4), fallback_scrim(BILI_PINK));
+        assert_eq!(cover_scrim_t(&[], 0, 0), fallback_scrim(BILI_PINK));
     }
 
     #[test]
     fn 深色封面给白字() {
-        let s = cover_scrim(&solid(16, 16, [20, 24, 40]), 16, 16);
+        let s = cover_scrim_t(&solid(16, 16, [20, 24, 40]), 16, 16);
         assert_eq!(s.title_argb, 0xFF_FF_FF_FF);
     }
 
     #[test]
     fn 浅色封面翻成浅遮罩加深字() {
-        let s = cover_scrim(&solid(16, 16, [245, 243, 238]), 16, 16);
+        let s = cover_scrim_t(&solid(16, 16, [245, 243, 238]), 16, 16);
         let (title, _) = unpack(s.title_argb);
         let (scrim, _) = unpack(s.scrim_argb);
         assert!(relative_luminance(title) < 0.1, "浅封面应给深色文字");
@@ -392,7 +461,7 @@ mod tests {
     #[test]
     fn 遮罩保留封面的色相() {
         // 饱和的红色封面，遮罩应该偏红而不是中性灰。
-        let s = cover_scrim(&solid(16, 16, [160, 20, 20]), 16, 16);
+        let s = cover_scrim_t(&solid(16, 16, [160, 20, 20]), 16, 16);
         let (scrim, _) = unpack(s.scrim_argb);
         assert!(scrim[0] > scrim[1] && scrim[0] > scrim[2]);
     }
@@ -403,7 +472,7 @@ mod tests {
             for g in [0_u8, 64, 128, 200, 255] {
                 for b in [0_u8, 64, 128, 200, 255] {
                     let px = solid(8, 8, [r, g, b]);
-                    let s = cover_scrim(&px, 8, 8);
+                    let s = cover_scrim_t(&px, 8, 8);
                     let lum = relative_luminance([
                         f32::from(r) / 255.0,
                         f32::from(g) / 255.0,
@@ -427,14 +496,14 @@ mod tests {
                 px.extend_from_slice(&[v, v, v, 255]);
             }
         }
-        let s = cover_scrim(&px, w, h);
+        let s = cover_scrim_t(&px, w, h);
         assert!(title_contrast(s, 1.0) >= MIN_TITLE_CONTRAST - 0.01);
     }
 
     #[test]
     fn 辅助信息不弱于底线() {
         for v in [0_u8, 90, 180, 255] {
-            let s = cover_scrim(&solid(8, 8, [v, v, v]), 8, 8);
+            let s = cover_scrim_t(&solid(8, 8, [v, v, v]), 8, 8);
             let (scrim_rgb, alpha) = unpack(s.scrim_argb);
             let lum = relative_luminance([f32::from(v) / 255.0; 3]);
             let composite = blend(scrim_rgb, alpha, [lum; 3]);
@@ -459,7 +528,7 @@ mod tests {
     fn 深色封面的遮罩不被压成纯黑() {
         // 这是改版的要点：遮罩要看得出是「封面的那个颜色」，不是一块黑。
         // 深蓝封面本来就够暗，白字压上去已经达标，不该再往下压。
-        let s = cover_scrim(&solid(16, 16, [38, 54, 102]), 16, 16);
+        let s = cover_scrim_t(&solid(16, 16, [38, 54, 102]), 16, 16);
         let (scrim, alpha) = unpack(s.scrim_argb);
         let (_, _, l) = rgb_to_hsl(scrim);
         assert!(l > 0.15, "明度被压没了：{l}");
@@ -472,7 +541,7 @@ mod tests {
         // 左半纯白、右半纯蓝：平均色是淡蓝灰，主色应该是那片蓝。
         // 取平均的旧写法在这里会算出一个几乎看不出颜色的遮罩。
         let px = halves(16, 16, [255, 255, 255], [30, 70, 200]);
-        let s = cover_scrim(&px, 16, 16);
+        let s = cover_scrim_t(&px, 16, 16);
         let (scrim, _) = unpack(s.scrim_argb);
         let (h, sat, _) = rgb_to_hsl(scrim);
         assert!(sat > 0.3, "主色的饱和度被平均掉了：{sat}");
@@ -495,10 +564,60 @@ mod tests {
                 px.extend_from_slice(&[c[0], c[1], c[2], 255]);
             }
         }
-        let s = cover_scrim(&px, w, h);
+        let s = cover_scrim_t(&px, w, h);
         let (scrim, _) = unpack(s.scrim_argb);
         let (_, sat, _) = rgb_to_hsl(scrim);
         assert!(sat < 0.2, "被角落那一小块红带跑了：{sat}");
+    }
+
+    /// UP 名压在「品牌色药丸合成到遮罩上」之后的实际对比度。
+    fn pill_contrast(s: CoverScrim, worst_backdrop: f32) -> f32 {
+        let (scrim_rgb, alpha) = unpack(s.scrim_argb);
+        let composite = blend(scrim_rgb, alpha, [worst_backdrop; 3]);
+        let (tint, tint_alpha) = unpack(s.tint_argb);
+        let (label, _) = unpack(s.tint_label_argb);
+        contrast(label, blend(tint, tint_alpha, composite))
+    }
+
+    #[test]
+    fn 各种纯色封面上的up名药丸都读得清() {
+        for r in [0_u8, 64, 128, 200, 255] {
+            for g in [0_u8, 64, 128, 200, 255] {
+                for b in [0_u8, 64, 128, 200, 255] {
+                    let s = cover_scrim_t(&solid(8, 8, [r, g, b]), 8, 8);
+                    let lum = relative_luminance([
+                        f32::from(r) / 255.0,
+                        f32::from(g) / 255.0,
+                        f32::from(b) / 255.0,
+                    ]);
+                    let c = pill_contrast(s, lum);
+                    assert!(
+                        c >= MIN_SUBTITLE_CONTRAST - 0.01,
+                        "({r},{g},{b}) 药丸对比度 {c}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn 药丸是色调不是实色() {
+        // 压到不透明就成了一块固定粉色块，遮罩随封面变色的效果全被盖掉。
+        let s = cover_scrim_t(&solid(16, 16, [30, 40, 60]), 16, 16);
+        let (tint, alpha) = unpack(s.tint_argb);
+        assert!(alpha > 0.0 && alpha <= TINT_ALPHA_MAX, "alpha={alpha}");
+        // 传什么色就是什么色，不许在 Rust 这边改色相。
+        assert_eq!(s.tint_argb & 0x00_FF_FF_FF, BILI_PINK);
+        assert!(tint[0] > tint[1]);
+    }
+
+    #[test]
+    fn 药丸文字跟标题同色() {
+        // 同一行里 UP 名和其它文字不该一个白一个黑。
+        for v in [0_u8, 120, 255] {
+            let s = cover_scrim_t(&solid(8, 8, [v, v, v]), 8, 8);
+            assert_eq!(s.tint_label_argb, s.title_argb, "v={v}");
+        }
     }
 
     #[test]
@@ -512,7 +631,7 @@ mod tests {
                 px.extend_from_slice(&[v, v, v, 255]);
             }
         }
-        let s = cover_scrim(&px, w, h);
+        let s = cover_scrim_t(&px, w, h);
         assert_eq!(s.title_argb, 0xFF_FF_FF_FF);
     }
 }

@@ -1,6 +1,7 @@
 import 'package:kilikili/common/widgets/image/image_save.dart';
+import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
-import 'package:kilikili/common/widgets/video_card/live_subtitle.dart';
+import 'package:kilikili/common/widgets/video_card/live_meta.dart';
 import 'package:kilikili/http/live.dart';
 import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/pages/search/widgets/search_text.dart';
@@ -33,11 +34,9 @@ class LiveCardVApp extends StatelessWidget {
       onTap: () => PageUtils.toLiveRoom(item.roomid),
       onLongPress: onLongPress,
       onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-      subtitleBuilder: (context, colors) => liveSubtitle(
-        colors: colors,
-        areaName: item.areaName,
-        watched: item.watchedText,
-      ),
+      topStart: CoverWatchedPill(watched: item.watchedText),
+      metaBuilder: (context, colors) =>
+          liveMeta(colors: colors, areaName: item.areaName),
       trailing: item.feedback.isEmpty
           ? null
           : SizedBox.square(

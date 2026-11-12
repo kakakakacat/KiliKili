@@ -16,18 +16,24 @@ class CoverScrimColors {
     required this.scrim,
     required this.title,
     required this.subtitle,
+    required this.tint,
+    required this.tintLabel,
   });
 
   CoverScrimColors.fromRust(rust_api.CoverScrimStyle style)
     : scrim = Color(style.scrimArgb),
       title = Color(style.titleArgb),
-      subtitle = Color(style.subtitleArgb);
+      subtitle = Color(style.subtitleArgb),
+      tint = Color(style.tintArgb),
+      tintLabel = Color(style.tintLabelArgb);
 
   /// 文案那一条的遮罩色，含 alpha。是封面底部区域的**主色**按对比度需要
   /// 调过明暗的结果，直接铺成一整块纯色半透明，不做渐变。
   final Color scrim;
   final Color title;
   final Color subtitle;
+  final Color tint;
+  final Color tintLabel;
 
   static CoverScrimColors lerp(
     CoverScrimColors a,
@@ -37,6 +43,8 @@ class CoverScrimColors {
     scrim: Color.lerp(a.scrim, b.scrim, t)!,
     title: Color.lerp(a.title, b.title, t)!,
     subtitle: Color.lerp(a.subtitle, b.subtitle, t)!,
+    tint: Color.lerp(a.tint, b.tint, t)!,
+    tintLabel: Color.lerp(a.tintLabel, b.tintLabel, t)!,
   );
 
   @override
@@ -45,13 +53,15 @@ class CoverScrimColors {
       other is CoverScrimColors &&
           scrim == other.scrim &&
           title == other.title &&
-          subtitle == other.subtitle;
+          subtitle == other.subtitle &&
+          tint == other.tint &&
+          tintLabel == other.tintLabel;
 
   @override
-  int get hashCode => Object.hash(scrim, title, subtitle);
+  int get hashCode => Object.hash(scrim, title, subtitle, tint, tintLabel);
 }
 
-/// 封面取色：解码一张极小的缩略图交给 Rust，结果按 URL 缓存。
+/// 封面取色：解码一张极小的缩略图交给 Rust，结果按 URL 与主题色缓存。
 ///
 /// ## 为什么是缩略图而不是原图
 ///
@@ -63,7 +73,7 @@ class CoverScrimColors {
 ///
 /// ## 缓存
 ///
-/// 结果按**原始封面 URL** 缓存，容量 [_maxEntries] 的 LRU。滚动回来的卡片
+/// 结果按**原始封面 URL 和主题色**缓存，容量 [_maxEntries] 的 LRU。滚动回来的卡片
 /// 能同步命中，不会先闪一帧回退色。换了封面的卡片（同一个 widget 复用）
 /// 由调用方按 URL 重新取，见 `CoverScrimCard`。
 abstract final class CoverScrimCache {
@@ -77,28 +87,36 @@ abstract final class CoverScrimCache {
   static final _cache = <String, CoverScrimColors>{};
   static final _pending = <String, Future<CoverScrimColors>>{};
 
-  static CoverScrimColors? _fallback;
+  static final _fallback = <int, CoverScrimColors>{};
 
   /// 封面缺失 / 加载中 / 解码失败时的固定回退。
-  static CoverScrimColors get fallback =>
-      _fallback ??= CoverScrimColors.fromRust(rust_api.fallbackCoverScrim());
+  static CoverScrimColors fallback(int tintRgb) => _fallback.putIfAbsent(
+    tintRgb,
+    () => CoverScrimColors.fromRust(
+      rust_api.fallbackCoverScrim(tintRgb: tintRgb),
+    ),
+  );
+
+  static String _key(String url, int tintRgb) => '$tintRgb|$url';
 
   /// 已经算好就同步返回，否则 null。
-  static CoverScrimColors? peek(String? url) {
+  static CoverScrimColors? peek(String? url, int tintRgb) {
     if (url == null || url.isEmpty) return null;
-    final hit = _cache.remove(url);
-    if (hit != null) _cache[url] = hit; // 触达即提到队尾
+    final key = _key(url, tintRgb);
+    final hit = _cache.remove(key);
+    if (hit != null) _cache[key] = hit; // 触达即提到队尾
     return hit;
   }
 
   /// 取某张封面的配色。失败返回 [fallback]，不抛。
-  static Future<CoverScrimColors> of(String? url) {
-    if (url == null || url.isEmpty) return Future.value(fallback);
-    final hit = peek(url);
+  static Future<CoverScrimColors> of(String? url, int tintRgb) {
+    if (url == null || url.isEmpty) return Future.value(fallback(tintRgb));
+    final hit = peek(url, tintRgb);
     if (hit != null) return Future.value(hit);
-    return _pending[url] ??= _resolve(url).then((colors) {
-      _pending.remove(url);
-      _cache[url] = colors;
+    final key = _key(url, tintRgb);
+    return _pending[key] ??= _resolve(url, tintRgb).then((colors) {
+      _pending.remove(key);
+      _cache[key] = colors;
       if (_cache.length > _maxEntries) {
         _cache.remove(_cache.keys.first);
       }
@@ -106,22 +124,23 @@ abstract final class CoverScrimCache {
     });
   }
 
-  static Future<CoverScrimColors> _resolve(String url) async {
+  static Future<CoverScrimColors> _resolve(String url, int tintRgb) async {
     ui.Image? image;
     try {
       image = await _decodeThumbnail(url);
       final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-      if (data == null) return fallback;
+      if (data == null) return fallback(tintRgb);
       return CoverScrimColors.fromRust(
         rust_api.computeCoverScrim(
           rgba: data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
           width: image.width,
           height: image.height,
+          tintRgb: tintRgb,
         ),
       );
     } catch (_) {
       // 取不到配色不该影响卡片本身：回退样式照样可读。
-      return fallback;
+      return fallback(tintRgb);
     } finally {
       image?.dispose();
     }

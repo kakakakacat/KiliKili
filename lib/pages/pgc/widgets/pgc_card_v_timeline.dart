@@ -38,12 +38,16 @@ class PgcCardVTimeline extends StatelessWidget {
           type: PBadgeType.gray,
         ),
       ],
-      subtitleBuilder: (context, colors) => Text(
-        item.pubIndex ?? '',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(fontSize: 11, color: colors.subtitle),
-      ),
+      metaBuilder: (context, colors) => [
+        Flexible(
+          child: Text(
+            item.pubIndex ?? '',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 11, color: colors.subtitle),
+          ),
+        ),
+      ],
     );
   }
 }

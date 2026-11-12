@@ -37,14 +37,18 @@ class PgcCardVPgcIndex extends StatelessWidget {
           type: PBadgeType.gray,
         ),
       ],
-      subtitleBuilder: item.indexShow == null
+      metaBuilder: item.indexShow == null
           ? null
-          : (context, colors) => Text(
-              item.indexShow!,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 11, color: colors.subtitle),
-            ),
+          : (context, colors) => [
+              Flexible(
+                child: Text(
+                  item.indexShow!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 11, color: colors.subtitle),
+                ),
+              ),
+            ],
     );
   }
 }

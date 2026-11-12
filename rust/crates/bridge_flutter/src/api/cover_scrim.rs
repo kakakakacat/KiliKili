@@ -13,8 +13,8 @@ use flutter_rust_bridge::frb;
 /// 一张封面算出来的底部遮罩配色。颜色是 `0xAARRGGBB`，Dart 侧直接
 /// `Color(value)`。
 ///
-/// [`CoverScrimStyle::scrim_argb`] 是**一整块纯色半透明**，不是渐变的一端：
-/// 宿主拿它铺满文案那一条即可。
+/// [`CoverScrimStyle::scrim_argb`] 铺满文案所在的纯色半透明区，同时作为
+/// 其上方渐变段的终点；文字只放在纯色区。
 #[derive(Debug, Clone, Copy)]
 pub struct CoverScrimStyle {
     /// 文案那一条的遮罩色，含 alpha。取自封面底部区域的主色，按对比度需要
@@ -22,6 +22,8 @@ pub struct CoverScrimStyle {
     pub scrim_argb: u32,
     pub title_argb: u32,
     pub subtitle_argb: u32,
+    pub tint_argb: u32,
+    pub tint_label_argb: u32,
 }
 
 impl From<cover_scrim::CoverScrim> for CoverScrimStyle {
@@ -30,6 +32,8 @@ impl From<cover_scrim::CoverScrim> for CoverScrimStyle {
             scrim_argb: v.scrim_argb,
             title_argb: v.title_argb,
             subtitle_argb: v.subtitle_argb,
+            tint_argb: v.tint_argb,
+            tint_label_argb: v.tint_label_argb,
         }
     }
 }
@@ -41,13 +45,18 @@ impl From<cover_scrim::CoverScrim> for CoverScrimStyle {
 /// 错误，没有必要让调用方分支。
 #[frb(sync)]
 #[must_use]
-pub fn compute_cover_scrim(rgba: Vec<u8>, width: u32, height: u32) -> CoverScrimStyle {
-    cover_scrim::cover_scrim(&rgba, width, height).into()
+pub fn compute_cover_scrim(
+    rgba: Vec<u8>,
+    width: u32,
+    height: u32,
+    tint_rgb: u32,
+) -> CoverScrimStyle {
+    cover_scrim::cover_scrim(&rgba, width, height, tint_rgb).into()
 }
 
 /// 封面缺失 / 加载中 / 解码失败时的固定回退配色。
 #[frb(sync)]
 #[must_use]
-pub fn fallback_cover_scrim() -> CoverScrimStyle {
-    cover_scrim::fallback_scrim().into()
+pub fn fallback_cover_scrim(tint_rgb: u32) -> CoverScrimStyle {
+    cover_scrim::fallback_scrim(tint_rgb).into()
 }

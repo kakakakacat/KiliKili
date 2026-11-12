@@ -4,38 +4,38 @@
 <rect width="920" height="458" rx="16" fill="#0d1117"/>
 <rect x="1" y="1" width="918" height="456" rx="15" fill="none" stroke="#30363d"/>
 <text x="28" y="42" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="22" font-weight="700">最近提交 · Recent commits</text>
-<text x="28" y="72" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">自 fork 起 43 次主线提交 · 更新于 main 每次推送后</text>
+<text x="28" y="72" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">自 fork 起 53 次主线提交 · 更新于 main 每次推送后</text>
 <line x1="43" y1="102" x2="43" y2="405" stroke="#30363d" stroke-width="2"/>
 <circle cx="43" cy="103" r="5" fill="#58a6ff"/>
-<text x="62" y="108" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-11</text>
-<text x="178" y="108" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">8c82fd2f</text>
-<text x="266" y="108" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">ci: README 图表改成开 PR，不再直推 main (#81)</text>
+<text x="62" y="108" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-12</text>
+<text x="178" y="108" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">ffcbf83b</text>
+<text x="266" y="108" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">ci: 去掉 chore/readme-stats 的 push 触发，并纠正注释里的因果 (#94)</text>
 <circle cx="43" cy="146" r="5" fill="#58a6ff"/>
-<text x="62" y="151" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-11</text>
-<text x="178" y="151" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">1d3a1559</text>
-<text x="266" y="151" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">feat(rust): PGC 迁到 typed 直连（S10 第一批） (#73)</text>
+<text x="62" y="151" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-12</text>
+<text x="178" y="151" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">5533cf37</text>
+<text x="266" y="151" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">docs: ADR-013 写操作的幂等、CSRF 与重试策略（#50） (#93)</text>
 <circle cx="43" cy="189" r="5" fill="#58a6ff"/>
-<text x="62" y="194" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-11</text>
-<text x="178" y="194" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">2d0da665</text>
-<text x="266" y="194" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">docs: 把 typed 直连五个切片的结果同步进 RFC、ADR-011、分叉面与 QA 清单 (#80)</text>
+<text x="62" y="194" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-12</text>
+<text x="178" y="194" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">b6733039</text>
+<text x="266" y="194" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">fix(danmaku): 进度回跳不再放出开头那批弹幕（#89） (#92)</text>
 <circle cx="43" cy="232" r="5" fill="#58a6ff"/>
 <text x="62" y="237" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-11</text>
-<text x="178" y="237" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">46d84fe0</text>
-<text x="266" y="237" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">feat(rust): 杂项只读接口迁到 typed 直连（S15 第一批） (#77)</text>
+<text x="178" y="237" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">45dfff20</text>
+<text x="266" y="237" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">feat(rust): 取流迁到 typed 直连，算法一并下沉（#79） (#90)</text>
 <circle cx="43" cy="275" r="5" fill="#58a6ff"/>
-<text x="62" y="280" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-11</text>
-<text x="178" y="280" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">43b3cd29</text>
-<text x="266" y="280" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">ci: establish automated regression gate and release validation</text>
+<text x="62" y="280" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-12</text>
+<text x="178" y="280" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">36c47427</text>
+<text x="266" y="280" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">docs: 新增 AGENTS.md，并把「宿主可替换」的逻辑归属判据写进 RFC (#88)</text>
 <circle cx="43" cy="318" r="5" fill="#58a6ff"/>
 <text x="62" y="323" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-11</text>
-<text x="178" y="323" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">88495944</text>
-<text x="266" y="323" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">feat(rust): 评论 REST 只读迁到 typed 直连（S1） (#75)</text>
+<text x="178" y="323" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">967c5e6b</text>
+<text x="266" y="323" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">feat(rust): 直播剩余六条只读迁到 typed 直连（S11a 第三批） (#87)</text>
 <circle cx="43" cy="361" r="5" fill="#58a6ff"/>
 <text x="62" y="366" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-11</text>
-<text x="178" y="366" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">45844b5c</text>
-<text x="266" y="366" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">feat(rust): 播放页五条附属只读接口 typed 直连（S3 第二批） (#71)</text>
+<text x="178" y="366" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">ff9997d1</text>
+<text x="266" y="366" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">feat(rust): 直播取流迁到 typed 直连（S11a 第二批） (#86)</text>
 <circle cx="43" cy="404" r="5" fill="#58a6ff"/>
 <text x="62" y="409" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-11</text>
-<text x="178" y="409" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">ee9b877e</text>
-<text x="266" y="409" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">feat(rust): 搜索迁到 typed 直连（S9） (#72)</text>
+<text x="178" y="409" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">49a7ce2c</text>
+<text x="266" y="409" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">feat(rust): 番剧/课堂详情迁到 typed 直连（S10 第二批） (#83)</text>
 </svg>

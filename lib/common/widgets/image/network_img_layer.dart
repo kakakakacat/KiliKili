@@ -44,12 +44,29 @@ class NetworkImgLayer extends StatelessWidget {
   Widget build(BuildContext context) {
     final isEmote = type == ImageType.emote;
     final isAvatar = type == ImageType.avatar;
+    if (isAvatar) {
+      final child = src?.isNotEmpty == true
+          ? _buildImage(context, isEmote: false, isAvatar: true)
+          : getPlaceHolder?.call() ??
+                _placeholder(context, isEmote: false, isAvatar: true);
+      return DecoratedBox(
+        position: .foreground,
+        decoration: BoxDecoration(
+          shape: .circle,
+          border: Border.all(
+            color: ColorScheme.of(context).primary,
+            width: 1.5,
+          ),
+        ),
+        child: ClipOval(
+          child: SizedBox(width: width, height: height, child: child),
+        ),
+      );
+    }
     if (src?.isNotEmpty == true) {
       Widget child = _buildImage(context, isEmote: isEmote, isAvatar: isAvatar);
       if (isEmote) {
         return child;
-      } else if (isAvatar) {
-        return ClipOval(child: child);
       } else {
         return ClipRRect(borderRadius: borderRadius, child: child);
       }

@@ -3,11 +3,7 @@ name: Regression CI
 on:
   pull_request:
   push:
-    # chore/readme-stats 是 readme-stats.yml 的固定分支。它开的 PR 由
-    # GITHUB_TOKEN 创建，不会触发 pull_request 事件（GitHub 防递归），
-    # 所以必须在这里对该分支的推送触发一次，PR 上才有 regression gate
-    # 这个必过检查，auto-merge 才能完成。
-    branches: [main, chore/readme-stats]
+    branches: [main]
   schedule:
     - cron: '17 2 * * *'
   workflow_dispatch:

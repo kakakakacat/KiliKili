@@ -11,6 +11,9 @@ Apple 与 Android 改为手动 dispatch（理由见 §2.1）；「成本约束�
 修订：2026-11-11 — `flutter-test.yml` 新增 bridge job：编出原生库、打开开关，
 在 CI 里真正跨 FFI 跑一遍（§3.1 的 Dart 单测那一行改写）。在此之前桥接层从未被
 执行过一次；`bili-danmaku` 已建立，§3.1 末尾那段随之更正
+修订：2026-11-12 — **PR 上的回归检查暂停**（issue #114）：`ci.yml` 的
+`pull_request:` 触发注释掉、ruleset「main regression gate」改为 `disabled`；
+§2.2 按此重写，下文凡写「每个 PR」的地方当前只在 push/定时/手动运行时成立
 修订：2026-11-11 — `ci.yml` 成为统一 PR/main 入口：每次运行 Rust、Dart 基线、
 真实 FFI 和 Android 产物检查；定时/按需调用五端打包工作流。下文 §2.1 保留
 原先手动流程的历史说明；当前触发与发布门槛以 [QA-001](../qa/RELEASE-VALIDATION.md)
@@ -169,6 +172,22 @@ Android 的 Rust 交叉编译改为手动 dispatch（§2.1）；五个 app workf
 
 ### 2.2 回归门（`ci.yml` 的 `regression gate`）
 
+> **当前状态（2026-11-12 起，issue #114）：PR 上不跑。** 重构期一条接口一个
+> PR，每个 PR 等一次完整回归（最慢的 Android 打包 11–15 分钟）的成本超过了
+> 收益，所有者决定暂停。两处同时改：`ci.yml` 的 `pull_request:` 触发注释掉、
+> ruleset「main regression gate」（id 27013798）`enforcement` 改成 `disabled`。
+>
+> **为什么必须两处一起改**：ruleset 要的 `regression gate` 只由 `ci.yml` 产出。
+> 只注释触发而留着 ruleset，检查永不上报，PR 全部永久 `BLOCKED`；而个人账号
+> 仓库给 ruleset 加 bypass 会 422，没有退路。反之只停 ruleset 则白等。
+>
+> 门本身、`gate` job 和下面这些判断**都没有删**：`push: main`、每日 02:17 定时、
+> `workflow_dispatch` 仍然跑完整回归。恢复 = 取消那行注释 + `enforcement` 改回
+> `active`，issue #114 在恢复前保持 open。期间要在合并前验某个分支：
+> `gh workflow run "Regression CI" --ref <分支>`。
+>
+> 代价：坏改动的发现点从合并前后移到合并后的 push 运行或次日定时运行。
+
 2026-11-11 加。仓库 ruleset「main regression gate」把一个名为
 `regression gate` 的状态检查设成合并到 main 的必需项。产出这个检查的是
 `.github/workflows/ci.yml`（工作流名 **Regression CI**）里的 `gate` job——
@@ -192,7 +211,8 @@ windows, linux]`，再逐个核对 `needs.*.result`。真正的回归在被聚�
   windows / linux 带 `if: github.event_name == 'schedule' ||
   inputs.full_platforms`，平时是 skipped；门只在 `full_platforms` 为真时才
   核对这四项。
-- **图表 PR 靠创建事件跑回归门。** `readme-stats.yml` 用 `GITHUB_TOKEN`
+- **图表 PR 靠创建事件跑回归门**（暂停期间不适用：没有必需检查要等，
+  auto-merge 直接合）。`readme-stats.yml` 用 `GITHUB_TOKEN`
   推送 `chore/readme-stats` 时，防递归机制不会触发 `push` 工作流；PR 创建
   事件会触发 `ci.yml`。仓库须允许 Actions 创建 PR；但即使 fork PR 审批策略
   已设为 `first_time_contributors_new_to_github`，#96 的机器人创建事件仍以
@@ -200,7 +220,7 @@ windows, linux]`，再逐个核对 `needs.*.result`。真正的回归在被聚�
   该运行，或由仓库账号推送新提交触发 PR 同步事件。#82 的成功运行由仓库账号
   触发，不能证明机器人创建事件免审批。
 
-**等 CI 的时间尺度**：每个 PR 都会打一次 Android APK（`Android package and
+**等 CI 的时间尺度**（恢复 PR 触发后适用）：每个 PR 都会打一次 Android APK（`Android package and
 native library`，`timeout-minutes: 60`），是全流程最慢的一项，实测约 15
 分钟。`gh pr checks <n> --watch` 会超过 600 秒，要放后台跑。判断一个 PR 能
 不能合看 `mergeable=MERGEABLE` 且 `mergeStateStatus=CLEAN`；只要

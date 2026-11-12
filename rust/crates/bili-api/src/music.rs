@@ -1,7 +1,8 @@
-//! 音乐页只读接口的请求构造与解析（S15 / issue #66）。
+//! 音乐页接口的请求构造与解析（S15 / issue #66）。
 //!
-//! 对应基线 `MusicHttp` 的 `bgmDetail`、`bgmRecommend`（`lib/http/music.dart`）。
-//! 点「想听」(`wishUpdate`) 是写操作，等 ADR-013（issue #50）。
+//! 对应基线整个 `MusicHttp`（`lib/http/music.dart`，本片迁完已删）：
+//! `bgmDetail`、`bgmRecommend` 两条只读，加上点「想听」这条写操作
+//! （写语义见 ADR-013）。
 //!
 //! 两处把基线行为原样搬过来的地方，都在解析里：
 //! 1. **成就标签要拼三处**：`achievement` 数组加上 `music_rank`、
@@ -14,13 +15,82 @@ use bili_domain::music::{Artist, BgmRecommend, HotSongHeat, MusicComment, MusicD
 use bili_protocol::wbi;
 use serde::Deserialize;
 
-use crate::http::{HttpTransport, RequestContext};
-use crate::request::PreparedRequest;
+use crate::http::{HttpTransport, Idempotency, RequestContext};
+use crate::request::{PreparedRequest, PreparedWrite};
 
 /// 接口路径。与基线 `lib/http/api.dart` 保持一致。
 pub mod path {
     pub const BGM_DETAIL: &str = "/x/copyright-music-publicity/bgm/detail";
     pub const BGM_RECOMMEND: &str = "/x/copyright-music-publicity/bgm/recommend_list";
+    pub const WISH_UPDATE: &str = "/x/copyright-music-publicity/bgm/wish/update";
+}
+
+/// 「想听」的写请求。`wish` 是**目标状态**：true = 想听，false = 取消。
+///
+/// ## `state` 的取值和直觉是反的
+///
+/// 基线写的是 `'state': hasLike ? 2 : 1`，而传进去的 `hasLike` 是**当前**
+/// 状态（`controller.wishListen.value`），成功后界面才翻成 `!hasLike`。
+/// 也就是说：
+///
+/// - 当前已想听（true）→ 发 2 → 结果是取消；
+/// - 当前未想听（false）→ 发 1 → 结果是想听。
+///
+/// 所以 **1 才是「加入想听」，2 是「取消」**。这里按目标状态取参数并做转换，
+/// 调用点不必再绕一次「当前状态」的弯——那正是基线容易读反的地方。
+///
+/// 定级 [`Idempotency::Idempotent`]：是置为语义而非切换，重发落到同一个状态。
+#[must_use]
+pub fn wish_update_request(music_id: &str, wish: bool) -> PreparedWrite {
+    PreparedWrite::form_only(
+        path::WISH_UPDATE,
+        vec![
+            ("music_id".to_owned(), music_id.to_owned()),
+            // 数字含义写在这里而不是调用点——它是协议知识，而且是反直觉的
+            // 那一种，散出去迟早有人写反。
+            ("state".to_owned(), if wish { "1" } else { "2" }.to_owned()),
+        ],
+        Idempotency::Idempotent,
+    )
+}
+
+#[cfg(test)]
+mod wish_tests {
+    use super::{path, wish_update_request};
+    use crate::http::Idempotency;
+
+    /// 钉死那个反直觉的映射：1 = 加入想听，2 = 取消。
+    ///
+    /// 依据是基线的调用点——`wishUpdate(musicId, hasLike)` 传的是**当前**
+    /// 状态，成功后界面翻成 `!hasLike`。写反了的表现是按钮点一下没反应
+    /// （服务端收下了，但做的是反向操作），测试里把依据写下来免得被"修正"。
+    #[test]
+    fn state_mapping_is_pinned() {
+        let on = wish_update_request("123", true);
+        assert_eq!(on.path, path::WISH_UPDATE);
+        assert_eq!(on.form_string(), "music_id=123&state=1", "想听发 1");
+        assert_eq!(
+            wish_update_request("123", false).form_string(),
+            "music_id=123&state=2",
+            "取消发 2"
+        );
+        assert_eq!(on.idempotency, Idempotency::Idempotent);
+    }
+}
+
+/// 把一首 BGM 标记为「想听」或取消。
+///
+/// # Errors
+/// 传输、状态码、信封三类失败。
+pub async fn update_wish<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    music_id: &str,
+    wish: bool,
+) -> Result<(), DomainError> {
+    let body =
+        crate::client::send_write(transport, ctx, &wish_update_request(music_id, wish)).await?;
+    crate::envelope::check_envelope(&body)
 }
 
 /// BGM 详情的请求。WBI 签名。

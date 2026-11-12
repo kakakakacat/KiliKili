@@ -1,6 +1,6 @@
 import 'package:kilikili/common/widgets/custom_icon.dart';
 import 'package:kilikili/common/widgets/view_insets_safe_area.dart';
-import 'package:kilikili/http/pgc.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -219,7 +219,7 @@ class _PgcReviewPostPanelState extends State<PgcReviewPostPanel> {
 
   Future<void> _onPost() async {
     if (_isMod) {
-      final res = await PgcHttp.pgcReviewMod(
+      final res = await RustPgc.reviewModify(
         mediaId: widget.mediaId,
         score: _score.value * 2,
         content: _controller.text,
@@ -237,7 +237,7 @@ class _PgcReviewPostPanelState extends State<PgcReviewPostPanel> {
       SmartDialog.showToast('账号未登录');
       return;
     }
-    final res = await PgcHttp.pgcReviewPost(
+    final res = await RustPgc.reviewPost(
       mediaId: widget.mediaId,
       score: _score.value * 2,
       content: _controller.text,

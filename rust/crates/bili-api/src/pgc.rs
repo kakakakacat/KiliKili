@@ -36,11 +36,22 @@ use bili_domain::pgc::{
 use serde::Deserialize;
 
 use crate::envelope::{unwrap_envelope, unwrap_result_envelope};
-use crate::http::{HttpGet, HttpTransport, RequestContext, check_status};
-use crate::request::PreparedRequest;
+use crate::http::{HttpGet, HttpTransport, Idempotency, RequestContext, check_status};
+use crate::request::{PreparedRequest, PreparedWrite};
 
 /// 接口路径。与基线 `lib/http/api.dart` 保持一致。
 pub mod path {
+    /// 短评点赞。
+    pub const REVIEW_LIKE: &str = "/pgc/review/action/like";
+    /// 短评点踩。
+    pub const REVIEW_DISLIKE: &str = "/pgc/review/action/dislike";
+    /// 发表短评。
+    pub const REVIEW_POST: &str = "/pgc/review/short/post";
+    /// 修改短评。
+    pub const REVIEW_MODIFY: &str = "/pgc/review/short/modify";
+    /// 删除短评。
+    pub const REVIEW_DEL: &str = "/pgc/review/short/del";
+
     /// 索引结果。`pgcIndex`（固定筛选条件的那个入口）用的也是它。
     pub const INDEX_RESULT: &str = "/pgc/season/index/result";
     /// 索引的筛选条件与排序方式。
@@ -675,6 +686,198 @@ pub fn parse_rank(body: &str, season: bool) -> Result<Vec<PgcRankItem>, DomainEr
             url: r.url,
         })
         .collect())
+}
+
+// ------------------------------------------------------- 短评的写操作（#60）
+
+/// 短评的互动类型。基线五处都写死 `review_type: 2`（短评；1 是长评）。
+const REVIEW_TYPE_SHORT: &str = "2";
+
+/// 点赞/点踩共用的请求形状。
+fn review_action_request(path: &'static str, media_id: i64, review_id: i64) -> PreparedWrite {
+    PreparedWrite::form_only(
+        path,
+        vec![
+            ("media_id".to_owned(), media_id.to_string()),
+            ("review_type".to_owned(), REVIEW_TYPE_SHORT.to_owned()),
+            ("review_id".to_owned(), review_id.to_string()),
+        ],
+        // 基线**没有传状态位**——请求里只有「对哪条短评做这个动作」，没有
+        // 「要变成赞还是取消赞」。从调用点看不出服务端是置为还是切换，
+        // 所以按更保守的切换处理：定 Verifiable，传输层不重试，要不要
+        // 重发由人看着列表决定（短评列表里带当前的赞踩状态）。
+        //
+        // 若将来确认它是置为语义，改成 Idempotent 并在这里写下依据。
+        Idempotency::Verifiable,
+    )
+}
+
+/// 给一条短评点赞。
+#[must_use]
+pub fn review_like_request(media_id: i64, review_id: i64) -> PreparedWrite {
+    review_action_request(path::REVIEW_LIKE, media_id, review_id)
+}
+
+/// 给一条短评点踩。
+#[must_use]
+pub fn review_dislike_request(media_id: i64, review_id: i64) -> PreparedWrite {
+    review_action_request(path::REVIEW_DISLIKE, media_id, review_id)
+}
+
+/// 发表一条短评。
+///
+/// 定级 [`Idempotency::Unsafe`]：重发 = 用户看得见的两条相同短评。
+/// `share_feed` 为 false 时**整个字段都不发**，与基线的 `if (shareFeed)`
+/// 一致——发 `share_feed=0` 与不发是两件事，别自作主张补齐。
+#[must_use]
+pub fn review_post_request(
+    media_id: i64,
+    score: i64,
+    content: &str,
+    share_feed: bool,
+) -> PreparedWrite {
+    let mut form = vec![
+        ("media_id".to_owned(), media_id.to_string()),
+        ("score".to_owned(), score.to_string()),
+        ("content".to_owned(), content.to_owned()),
+    ];
+    if share_feed {
+        form.push(("share_feed".to_owned(), "1".to_owned()));
+    }
+    PreparedWrite::form_only(path::REVIEW_POST, form, Idempotency::Unsafe)
+}
+
+/// 修改一条已有的短评。
+///
+/// 定级 [`Idempotency::Idempotent`]：带着 `review_id` 把内容与评分**置为**
+/// 给定值，重发落到同一个状态。与发表那条的区别就在这个 id 上。
+#[must_use]
+pub fn review_modify_request(
+    media_id: i64,
+    review_id: i64,
+    score: i64,
+    content: &str,
+) -> PreparedWrite {
+    PreparedWrite::form_only(
+        path::REVIEW_MODIFY,
+        vec![
+            ("media_id".to_owned(), media_id.to_string()),
+            ("score".to_owned(), score.to_string()),
+            ("content".to_owned(), content.to_owned()),
+            ("review_id".to_owned(), review_id.to_string()),
+        ],
+        Idempotency::Idempotent,
+    )
+}
+
+/// 删除一条短评。
+///
+/// 定级 [`Idempotency::Idempotent`]：删第二次返回「不存在」，最终状态一致。
+#[must_use]
+pub fn review_del_request(media_id: i64, review_id: i64) -> PreparedWrite {
+    PreparedWrite::form_only(
+        path::REVIEW_DEL,
+        vec![
+            ("media_id".to_owned(), media_id.to_string()),
+            ("review_id".to_owned(), review_id.to_string()),
+        ],
+        Idempotency::Idempotent,
+    )
+}
+
+/// 发送一条短评写请求。
+///
+/// 五条接口的响应形状一致：成功时**没有载荷**，`code == 0` 就是全部结论，
+/// 所以共用一个发送函数（见 [`crate::envelope::check_envelope`]）。
+///
+/// # Errors
+/// 传输、状态码、信封三类失败。
+pub async fn send_review_write<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    prepared: &PreparedWrite,
+) -> Result<(), DomainError> {
+    let body = crate::client::send_write(transport, ctx, prepared).await?;
+    crate::envelope::check_envelope(&body)
+}
+
+#[cfg(test)]
+#[allow(clippy::expect_used)]
+mod review_write_tests {
+    use super::{
+        path, review_del_request, review_dislike_request, review_like_request,
+        review_modify_request, review_post_request,
+    };
+    use crate::http::Idempotency;
+
+    #[test]
+    fn action_requests_are_pinned() {
+        let like = review_like_request(100, 200);
+        assert_eq!(like.path, path::REVIEW_LIKE);
+        assert_eq!(
+            like.form_string(),
+            "media_id=100&review_type=2&review_id=200"
+        );
+        assert_eq!(
+            review_dislike_request(100, 200).path,
+            path::REVIEW_DISLIKE,
+            "点赞和点踩只有路径不同，别把它们合成一个带 bool 的接口——\
+             那会让调用点读起来像在设置状态，而它不是"
+        );
+    }
+
+    #[test]
+    fn post_omits_share_feed_when_off() {
+        // 基线是 `if (shareFeed) 'share_feed': 1`：不分享时整个字段不发。
+        // 补成 share_feed=0 是另一个请求，服务端未必同解。
+        assert_eq!(
+            review_post_request(1, 5, "好看", false).form_string(),
+            "media_id=1&score=5&content=好看"
+        );
+        assert_eq!(
+            review_post_request(1, 5, "好看", true).form_string(),
+            "media_id=1&score=5&content=好看&share_feed=1"
+        );
+    }
+
+    #[test]
+    fn idempotency_levels_match_the_adr() {
+        assert_eq!(
+            review_post_request(1, 5, "x", false).idempotency,
+            Idempotency::Unsafe,
+            "发短评重发会多一条，用户直接看得见"
+        );
+        assert_eq!(
+            review_modify_request(1, 2, 5, "x").idempotency,
+            Idempotency::Idempotent,
+            "带 review_id 的修改是置为语义"
+        );
+        assert_eq!(
+            review_del_request(1, 2).idempotency,
+            Idempotency::Idempotent,
+            "删第二次状态一致"
+        );
+        assert_eq!(
+            review_like_request(1, 2).idempotency,
+            Idempotency::Verifiable,
+            "请求里没有状态位，按切换处理更保守"
+        );
+    }
+
+    #[test]
+    fn modify_differs_from_post_only_by_the_review_id() {
+        let post = review_post_request(7, 4, "还行", false);
+        let modify = review_modify_request(7, 99, 4, "还行");
+        assert_ne!(post.path, modify.path);
+        assert!(
+            modify.form.iter().any(|(k, _)| k == "review_id"),
+            "修改必须带 review_id，否则它就变成了再发一条"
+        );
+        assert!(
+            post.form.iter().all(|(k, _)| k != "review_id"),
+            "发表不该带 review_id"
+        );
+    }
 }
 
 #[cfg(test)]

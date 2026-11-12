@@ -3,6 +3,7 @@ import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/account_type.dart';
 import 'package:kilikili/rust/api/misc.dart' as rust_api;
+import 'package:kilikili/rust/api/write.dart' show WriteResult;
 import 'package:kilikili/services/rust/rust_request.dart';
 import 'package:kilikili/services/rust/rust_transport.dart';
 import 'package:kilikili/services/rust_core.dart';
@@ -29,11 +30,14 @@ export 'package:kilikili/rust/api/misc.dart'
 /// 杂项只读接口的取数路径：音乐页、黑名单、电竞赛事、云端弹幕屏蔽规则
 /// （S15 / issue #66）。
 ///
-/// 基线对应的 `MusicHttp.bgmDetail` / `bgmRecommend`、`BlackHttp.blackList`、
-/// `MatchHttp.matchInfo` 与**整个** `DanmakuFilterHttp`（`lib/http/
-/// danmaku_block.dart`，含两个写操作）已随迁移删除，按 ADR-011 决策四
-/// 不留降级开关。写操作尤其不能留：只读降级只是多发一次请求，写操作
-/// 降级意味着**可能重复提交**（ADR-013 决策五）。
+/// 基线对应的**整个** `MusicHttp`（`lib/http/music.dart`）、整个
+/// `DanmakuFilterHttp`（`lib/http/danmaku_block.dart`）、`BlackHttp.blackList`、
+/// `MatchHttp.matchInfo` 与 `FollowHttp.sortFollowTag` 都已随迁移删除，
+/// 按 ADR-011 决策四不留降级开关。写操作尤其不能留：只读降级只是多发一次
+/// 请求，写操作降级意味着**可能重复提交**（ADR-013 决策五）。
+///
+/// `FollowHttp.followings` 与 `FanHttp.fans` 还在 Dart：它们共用 `FollowData`
+/// 模型，按 ADR-011 决策六要两个生产者一起迁，归 #66 的下一批。
 ///
 /// 这几条接口在 `ApiType.apiTypeSet` 里都没有登记，因此与基线拦截器一样
 /// 走 `main` 账号。
@@ -199,18 +203,64 @@ abstract final class RustMisc {
   static Future<LoadingState<void>> danmakuFilterDel({required int ids}) async {
     if (!RustCore.isReady) return const Error(_notReady);
     try {
-      final result = await rust_api.delDanmakuFilter(
-        context: await _context(path: Api.danmakuFilterDel, write: true),
-        ids: ids,
+      return _unwrapWrite(
+        await rust_api.delDanmakuFilter(
+          context: await _context(path: Api.danmakuFilterDel, write: true),
+          ids: ids,
+        ),
       );
-      if (result.errorKind != null) {
-        return Error(result.errorDetail ?? '请求失败', code: result.errorCode);
-      }
-      return const Success(null);
     } catch (e, st) {
       return _crashed('删除弹幕屏蔽规则', e, st);
     }
   }
+
+  /// 把一首 BGM 标记为「想听」或取消（#66）。
+  ///
+  /// `wish` 是**目标状态**不是「切换一下」——基线发的是 `state: 2/1`。
+  /// 因此 Rust 侧定级为幂等，传输层在「请求没发出去」时会重发。
+  static Future<LoadingState<void>> wishUpdate(
+    String musicId,
+    bool wish,
+  ) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      return _unwrapWrite(
+        await rust_api.updateWish(
+          context: await _context(path: Api.wishUpdate, write: true),
+          musicId: musicId,
+          wish: wish,
+        ),
+      );
+    } catch (e, st) {
+      return _crashed('「想听」', e, st);
+    }
+  }
+
+  /// 提交关注分组的新顺序（#66）。
+  ///
+  /// [tagids] 是逗号分隔的分组 id，顺序即目标顺序。整串是置为语义，所以
+  /// 定级为幂等。
+  static Future<LoadingState<void>> sortFollowTag({
+    required String tagids,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      return _unwrapWrite(
+        await rust_api.sortFollowTag(
+          context: await _context(path: Api.sortFollowTag, write: true),
+          tagids: tagids,
+        ),
+      );
+    } catch (e, st) {
+      return _crashed('关注分组排序', e, st);
+    }
+  }
+
+  /// 写操作的结果没有载荷：`errorKind` 为空就是成功。
+  static LoadingState<void> _unwrapWrite(WriteResult result) =>
+      result.errorKind == null
+      ? const Success(null)
+      : Error(result.errorDetail ?? '请求失败', code: result.errorCode);
 
   /// Rust 侧的失败一律是值：`data` 为空就说明这次没拿到。
   static LoadingState<T> _unwrap<T>(T? data, String? detail, int? code) =>

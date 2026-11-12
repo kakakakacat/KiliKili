@@ -6,8 +6,9 @@
 import 'package:kilikili/rust/frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:kilikili/rust/api/transport.dart';
+import 'package:kilikili/rust/api/write.dart';
 
-// These functions are ignored because they are not marked as `pub`: `episode`, `fetch_season_detail_of`, `flatten`, `index_page`, `season_detail`, `split`
+// These functions are ignored because they are not marked as `pub`: `episode`, `fetch_season_detail_of`, `flatten`, `index_page`, `season_detail`, `send_review`, `split`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// 取一页索引结果。
@@ -124,6 +125,76 @@ Future<PgcSeasonDetailResult> fetchPugvSeasonDetail({
   epId: epId,
 );
 
+/// 给一条短评点赞。
+///
+/// **不自动重试。** 基线的请求里没有状态位，从调用点看不出服务端是「置为」
+/// 还是「切换」，所以按更保守的切换处理（ADR-013 决策三定级为可判定）：
+/// 失败了由用户看着列表里的赞踩状态决定要不要再点一次。
+Future<WriteResult> pgcReviewLike({
+  required PgcContext context,
+  required PlatformInt64 mediaId,
+  required PlatformInt64 reviewId,
+}) => RustLib.instance.api.crateApiPgcPgcReviewLike(
+  context: context,
+  mediaId: mediaId,
+  reviewId: reviewId,
+);
+
+/// 给一条短评点踩。与点赞只有路径不同，见 [`pgc_review_like`]。
+Future<WriteResult> pgcReviewDislike({
+  required PgcContext context,
+  required PlatformInt64 mediaId,
+  required PlatformInt64 reviewId,
+}) => RustLib.instance.api.crateApiPgcPgcReviewDislike(
+  context: context,
+  mediaId: mediaId,
+  reviewId: reviewId,
+);
+
+/// 发表一条短评。
+///
+/// **绝不自动重发**（ADR-013 定级为不可重发）：重发 = 用户看得见的两条
+/// 相同短评。`share_feed` 为 false 时整个字段都不发，与基线一致。
+Future<WriteResult> pgcReviewPost({
+  required PgcContext context,
+  required PlatformInt64 mediaId,
+  required PlatformInt64 score,
+  required String content,
+  required bool shareFeed,
+}) => RustLib.instance.api.crateApiPgcPgcReviewPost(
+  context: context,
+  mediaId: mediaId,
+  score: score,
+  content: content,
+  shareFeed: shareFeed,
+);
+
+/// 修改一条已有的短评。带 `review_id`，是置为语义。
+Future<WriteResult> pgcReviewModify({
+  required PgcContext context,
+  required PlatformInt64 mediaId,
+  required PlatformInt64 reviewId,
+  required PlatformInt64 score,
+  required String content,
+}) => RustLib.instance.api.crateApiPgcPgcReviewModify(
+  context: context,
+  mediaId: mediaId,
+  reviewId: reviewId,
+  score: score,
+  content: content,
+);
+
+/// 删除一条短评。
+Future<WriteResult> pgcReviewDel({
+  required PgcContext context,
+  required PlatformInt64 mediaId,
+  required PlatformInt64 reviewId,
+}) => RustLib.instance.api.crateApiPgcPgcReviewDel(
+  context: context,
+  mediaId: mediaId,
+  reviewId: reviewId,
+);
+
 /// 简介里的一张图。`aspect_ratio` 缺失时为 1，不是 0。
 class PgcBriefImage {
   final double aspectRatio;
@@ -224,6 +295,10 @@ class PgcContext {
 
   /// 完整的 Cookie 头值。未登录时为 `None`。**Rust 不保存**，用完即弃。
   final String? cookie;
+
+  /// CSRF token（cookie 里的 `bili_jct`）。**只有短评的五条写操作要传**，
+  /// 详情与列表那些只读接口传 `None`（ADR-013 决策四）。
+  final String? csrf;
   final List<(String, String)> headers;
 
   /// WBI 的 `mixin_key`。只有两种排行要签名，其余接口传空串。
@@ -237,6 +312,7 @@ class PgcContext {
   const PgcContext({
     required this.baseUrl,
     this.cookie,
+    this.csrf,
     required this.headers,
     required this.mixinKey,
     required this.wts,
@@ -248,6 +324,7 @@ class PgcContext {
   int get hashCode =>
       baseUrl.hashCode ^
       cookie.hashCode ^
+      csrf.hashCode ^
       headers.hashCode ^
       mixinKey.hashCode ^
       wts.hashCode ^
@@ -261,6 +338,7 @@ class PgcContext {
           runtimeType == other.runtimeType &&
           baseUrl == other.baseUrl &&
           cookie == other.cookie &&
+          csrf == other.csrf &&
           headers == other.headers &&
           mixinKey == other.mixinKey &&
           wts == other.wts &&

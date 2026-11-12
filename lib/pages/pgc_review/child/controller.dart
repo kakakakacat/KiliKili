@@ -1,9 +1,8 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/pgc.dart';
+import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:kilikili/models/common/pgc_review_type.dart';
 import 'package:kilikili/models_new/pgc/pgc_review/data.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
-import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
@@ -89,7 +88,7 @@ class PgcReviewController
   }
 
   Future<void> onLike(PgcReviewItem item, bool isLike, reviewId) async {
-    final res = await PgcHttp.pgcReviewLike(
+    final res = await RustPgc.reviewLike(
       mediaId: mediaId,
       reviewId: reviewId,
     );
@@ -114,7 +113,7 @@ class PgcReviewController
     bool isDislike,
     reviewId,
   ) async {
-    final res = await PgcHttp.pgcReviewDislike(
+    final res = await RustPgc.reviewDislike(
       mediaId: mediaId,
       reviewId: reviewId,
     );
@@ -136,7 +135,7 @@ class PgcReviewController
   }
 
   Future<void> onDel(int index, int reviewId) async {
-    final res = await PgcHttp.pgcReviewDel(
+    final res = await RustPgc.reviewDel(
       mediaId: mediaId,
       reviewId: reviewId,
     );

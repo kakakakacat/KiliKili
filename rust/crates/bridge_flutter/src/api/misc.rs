@@ -1,9 +1,10 @@
 //! 杂项接口的 Dart 导出（S15 / issue #66）：音乐页、黑名单、电竞赛事、
 //! 云端弹幕屏蔽规则。
 //!
-//! 弹幕屏蔽规则的**新增与删除是写操作**，是本仓库头两条走 Rust 的写路径
-//! （ADR-013 的第一次落地）。写与只读在这一层的区别只有一处：
-//! [`MiscContext::csrf`]。其余（账号头、超时、传输配置）完全共用。
+//! 本模块里有四条**写操作**：弹幕屏蔽规则的新增与删除、BGM 的「想听」、
+//! 关注分组排序。写与只读在这一层的区别只有一处：[`MiscContext::csrf`]。
+//! 其余（账号头、超时、传输配置）完全共用，所以不另起一个 `MiscWriteContext`
+//! ——那只会多一个要同步维护的结构。
 //!
 //! ## 为什么四个领域挤在一个桥接模块里
 //!
@@ -20,7 +21,7 @@ use std::time::Duration;
 
 use bili_api::http::RequestContext;
 use bili_api::transport_reqwest::ReqwestTransport;
-use bili_api::{danmaku_filter, match_info, music, user_list};
+use bili_api::{danmaku_filter, follow, match_info, music, user_list};
 use bili_domain::danmaku_filter as domain_filter;
 use bili_domain::error::DomainError;
 use bili_domain::match_info as domain_match;
@@ -29,6 +30,7 @@ use bili_domain::redact::Redacted;
 
 use crate::api::init;
 use crate::api::transport::TransportSettings;
+use crate::api::write::WriteResult;
 
 // ------------------------------------------------------------------ 音乐
 
@@ -249,18 +251,8 @@ pub struct FilterRuleResult {
     pub error_code: Option<i64>,
 }
 
-/// 删除一条规则的结果。
-///
-/// **没有 `data` 字段**：成功时这条接口不返回任何载荷，成败全看
-/// `error_kind == null`。不写成 `data: Option<()>` 或塞个 bool——FRB 不支持
-/// `Option<Option<T>>`，而「成功但没有值」在这套导出面里的既定形状就是
-/// 「没有 data 字段的结果类型」（ADR-011，例见 `LiveMedalNameResult`）。
-#[derive(Debug, Clone)]
-pub struct WriteResult {
-    pub error_kind: Option<String>,
-    pub error_detail: Option<String>,
-    pub error_code: Option<i64>,
-}
+// 写操作的结果类型是 [`crate::api::write::WriteResult`]——它不属于任何
+// 一个业务领域，搬去基础设施模块了，见那里的说明。
 
 /// 一次请求所需的公共参数。
 #[derive(Debug, Clone)]
@@ -486,18 +478,33 @@ pub async fn del_danmaku_filter(context: MiscContext, ids: i64) -> WriteResult {
         .spawn(async move { danmaku_filter::del_danmaku_filter(&transport, &ctx, ids).await })
         .await;
 
-    match flatten(joined) {
-        Ok(()) => WriteResult {
-            error_kind: None,
-            error_detail: None,
-            error_code: None,
-        },
-        Err(e) => WriteResult {
-            error_kind: Some(e.kind().to_string()),
-            error_detail: Some(e.detail().to_owned()),
-            error_code: e.code(),
-        },
-    }
+    WriteResult::from_result(flatten(joined))
+}
+
+/// 把一首 BGM 标记为「想听」或取消（写操作，#66）。
+///
+/// `wish` 是**目标状态**不是「切换一下」，所以这条定级为幂等：传输层在
+/// 「请求没发出去」时会重发（ADR-013 决策一）。
+pub async fn update_wish(context: MiscContext, music_id: String, wish: bool) -> WriteResult {
+    let (ctx, transport, _, _) = context.split();
+    let joined = init::runtime()
+        .spawn(async move { music::update_wish(&transport, &ctx, &music_id, wish).await })
+        .await;
+
+    WriteResult::from_result(flatten(joined))
+}
+
+/// 提交关注分组的新顺序（写操作，#66）。
+///
+/// `tagids` 是逗号分隔的分组 id，顺序即目标顺序；整串是置为语义，因此
+/// 定级为幂等。
+pub async fn sort_follow_tag(context: MiscContext, tagids: String) -> WriteResult {
+    let (ctx, transport, _, _) = context.split();
+    let joined = init::runtime()
+        .spawn(async move { follow::sort_follow_tag(&transport, &ctx, &tagids).await })
+        .await;
+
+    WriteResult::from_result(flatten(joined))
 }
 
 fn music_detail(d: domain_music::MusicDetail) -> MusicDetail {

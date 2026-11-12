@@ -1,6 +1,6 @@
 import 'package:kilikili/common/widgets/reorder_mixin.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:kilikili/http/follow.dart';
+import 'package:kilikili/services/rust/rust_misc.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/member/tags.dart';
 import 'package:kilikili/pages/follow/controller.dart';
@@ -44,7 +44,7 @@ class _FollowTagSortPageState extends State<FollowTagSortPage>
             ? [
                 TextButton(
                   onPressed: () async {
-                    final res = await FollowHttp.sortFollowTag(
+                    final res = await RustMisc.sortFollowTag(
                       tagids: _customTags.map((e) => e.tagid).join(','),
                     );
                     if (res.isSuccess) {

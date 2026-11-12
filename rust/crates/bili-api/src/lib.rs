@@ -33,6 +33,7 @@ pub mod danmaku;
 pub mod danmaku_filter;
 pub mod dm_view;
 pub mod envelope;
+pub mod follow;
 pub mod http;
 pub mod live;
 pub mod match_info;

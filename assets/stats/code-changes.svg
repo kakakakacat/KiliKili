@@ -4,48 +4,47 @@
 <rect width="920" height="472" rx="16" fill="#0d1117"/>
 <rect x="1" y="1" width="918" height="470" rx="15" fill="none" stroke="#30363d"/>
 <text x="28" y="42" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="22" font-weight="700">代码修改 · Code changes</text>
-<text x="28" y="72" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">自 fork 起 +46,332 / −12,089 行 · 不含生成文件与上游同步</text>
+<text x="28" y="72" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">自 fork 起 +62,326 / −16,760 行 · 不含生成文件与上游同步</text>
 <rect x="28" y="88" width="11" height="11" rx="2" fill="#3fb950"/>
 <text x="45" y="98" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">新增</text>
 <rect x="91" y="88" width="11" height="11" rx="2" fill="#f85149"/>
 <text x="108" y="98" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">删除</text>
-<text x="28" y="134" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">1d3a1559</text>
-<text x="112" y="134" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">feat(rust): PGC 迁到 typed 直连（S10 第一…</text>
-<rect x="440" y="121" width="187" height="16" rx="3" fill="#3fb950"/>
-<rect x="627" y="121" width="31" height="16" rx="3" fill="#f85149"/>
-<text x="755" y="134" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+3,570 / −593</text>
-<text x="28" y="177" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">46d84fe0</text>
-<text x="112" y="177" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">feat(rust): 杂项只读接口迁到 typed 直连（S15 …</text>
-<rect x="440" y="164" width="173" height="16" rx="3" fill="#3fb950"/>
-<rect x="613" y="164" width="33" height="16" rx="3" fill="#f85149"/>
-<text x="755" y="177" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+3,296 / −632</text>
-<text x="28" y="220" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">43b3cd29</text>
-<text x="112" y="220" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">ci: establish automated regression…</text>
-<rect x="440" y="207" width="5" height="16" rx="3" fill="#3fb950"/>
-<text x="755" y="220" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+103 / −0</text>
-<text x="28" y="263" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">88495944</text>
-<text x="112" y="263" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">feat(rust): 评论 REST 只读迁到 typed 直连（…</text>
-<rect x="440" y="250" width="142" height="16" rx="3" fill="#3fb950"/>
-<rect x="582" y="250" width="66" height="16" rx="3" fill="#f85149"/>
-<text x="755" y="263" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+2,712 / −1,261</text>
-<text x="28" y="306" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">45844b5c</text>
-<text x="112" y="306" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">feat(rust): 播放页五条附属只读接口 typed 直连（S…</text>
-<rect x="440" y="293" width="154" height="16" rx="3" fill="#3fb950"/>
-<rect x="594" y="293" width="23" height="16" rx="3" fill="#f85149"/>
-<text x="755" y="306" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+2,943 / −446</text>
-<text x="28" y="349" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">ee9b877e</text>
-<text x="112" y="349" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">feat(rust): 搜索迁到 typed 直连（S9） (#72)</text>
-<rect x="440" y="336" width="258" height="16" rx="3" fill="#3fb950"/>
-<rect x="698" y="336" width="42" height="16" rx="3" fill="#f85149"/>
-<text x="755" y="349" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+4,913 / −808</text>
-<text x="28" y="392" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">096357a0</text>
-<text x="112" y="392" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">feat(rust): 视频流五条只读接口 typed 直连（S3 …</text>
-<rect x="440" y="379" width="161" height="16" rx="3" fill="#3fb950"/>
-<rect x="601" y="379" width="20" height="16" rx="3" fill="#f85149"/>
-<text x="755" y="392" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+3,075 / −384</text>
-<text x="28" y="435" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">9df6de51</text>
-<text x="112" y="435" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">feat(rust): SponsorBlock 只读接口 type…</text>
-<rect x="440" y="422" width="73" height="16" rx="3" fill="#3fb950"/>
-<rect x="513" y="422" width="8" height="16" rx="3" fill="#f85149"/>
-<text x="755" y="435" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+1,393 / −146</text>
+<text x="28" y="134" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">5533cf37</text>
+<text x="112" y="134" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">docs: ADR-013 写操作的幂等、CSRF 与重试策略（#5…</text>
+<rect x="440" y="121" width="0" height="16" rx="3" fill="#3fb950"/>
+<text x="755" y="134" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+5 / −0</text>
+<text x="28" y="177" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">b6733039</text>
+<text x="112" y="177" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">fix(danmaku): 进度回跳不再放出开头那批弹幕（#89） …</text>
+<rect x="440" y="164" width="22" height="16" rx="3" fill="#3fb950"/>
+<text x="755" y="177" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+464 / −10</text>
+<text x="28" y="220" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">45dfff20</text>
+<text x="112" y="220" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">feat(rust): 取流迁到 typed 直连，算法一并下沉（#…</text>
+<rect x="440" y="207" width="183" height="16" rx="3" fill="#3fb950"/>
+<rect x="623" y="207" width="117" height="16" rx="3" fill="#f85149"/>
+<text x="755" y="220" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+3,878 / −2,494</text>
+<text x="28" y="263" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">967c5e6b</text>
+<text x="112" y="263" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">feat(rust): 直播剩余六条只读迁到 typed 直连（S1…</text>
+<rect x="440" y="250" width="149" height="16" rx="3" fill="#3fb950"/>
+<rect x="589" y="250" width="27" height="16" rx="3" fill="#f85149"/>
+<text x="755" y="263" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+3,175 / −575</text>
+<text x="28" y="306" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">ff9997d1</text>
+<text x="112" y="306" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">feat(rust): 直播取流迁到 typed 直连（S11a 第…</text>
+<rect x="440" y="293" width="73" height="16" rx="3" fill="#3fb950"/>
+<rect x="513" y="293" width="11" height="16" rx="3" fill="#f85149"/>
+<text x="755" y="306" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+1,543 / −229</text>
+<text x="28" y="349" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">49a7ce2c</text>
+<text x="112" y="349" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">feat(rust): 番剧/课堂详情迁到 typed 直连（S10…</text>
+<rect x="440" y="336" width="113" height="16" rx="3" fill="#3fb950"/>
+<rect x="553" y="336" width="21" height="16" rx="3" fill="#f85149"/>
+<text x="755" y="349" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+2,398 / −447</text>
+<text x="28" y="392" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">ada50295</text>
+<text x="112" y="392" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">feat(rust): 直播只读接口迁到 typed 直连（S11a…</text>
+<rect x="440" y="379" width="213" height="16" rx="3" fill="#3fb950"/>
+<rect x="653" y="379" width="43" height="16" rx="3" fill="#f85149"/>
+<text x="755" y="392" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+4,531 / −916</text>
+<text x="28" y="435" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">1d3a1559</text>
+<text x="112" y="435" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">feat(rust): PGC 迁到 typed 直连（S10 第一…</text>
+<rect x="440" y="422" width="168" height="16" rx="3" fill="#3fb950"/>
+<rect x="608" y="422" width="28" height="16" rx="3" fill="#f85149"/>
+<text x="755" y="435" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+3,570 / −593</text>
 </svg>

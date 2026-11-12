@@ -29,7 +29,10 @@ use std::time::Duration;
 
 use bili_domain::error::{DomainError, ErrorKind};
 
-use crate::http::{HttpGet, HttpResponse, HttpTransport, ProxyConfig, TransportConfig};
+use crate::http::{
+    FailureShape, HttpGet, HttpResponse, HttpTransport, ProxyConfig, RetryPolicy, TransportConfig,
+    should_retry,
+};
 
 /// 连接超时。基线 `BaseOptions.connectTimeout` 为 10s；请求整体超时由
 /// 调用方按请求给出（[`HttpGet::timeout`]），两者不是一回事。
@@ -122,13 +125,17 @@ impl HttpTransport for ReqwestTransport {
     async fn get(&self, request: HttpGet) -> Result<HttpResponse, DomainError> {
         let client = client(&self.config)?;
 
-        // 重试只在「没拿到任何响应」时发生，见 [`should_retry`]。
+        // GET 是只读的，走 [`RetryPolicy::Read`]：连接失败与超时都重试，
+        // 与基线 `RetryInterceptor` 一致。写操作**不是**这条规则，见
+        // [`crate::http::should_retry`] 的表。
         let mut attempt: u32 = 0;
         loop {
             match send_once(&client, &request).await {
                 Ok(resp) => return Ok(resp),
                 Err(e) => {
-                    if attempt >= self.config.retry_count || !should_retry(&e) {
+                    if attempt >= self.config.retry_count
+                        || !should_retry(RetryPolicy::Read, failure_shape(&e))
+                    {
                         return Err(map_reqwest_error(&e));
                     }
                     attempt += 1;
@@ -168,19 +175,24 @@ fn backoff_delay(attempt: u32, base_ms: u64) -> Duration {
     Duration::from_millis(base_ms.saturating_mul(u64::from(attempt)))
 }
 
-/// 这个失败值不值得重试。
+/// reqwest 的错误属于哪种失败形态。
 ///
-/// 只重试**连接失败与超时**：此时请求要么没发出去，要么服务端没在时限内
-/// 应答，重发一次是安全的。基线的 `RetryInterceptor` 还会重试
-/// `DioExceptionType.unknown`，这里刻意不跟——reqwest 把「已经发出请求、
-/// 读响应体时断开」也归在这一类，而本接口虽是只读的，对一个可能已被
-/// 服务端处理的请求重发，仍会平白加一次风控计数。
+/// 判定规则本身在 [`crate::http::should_retry`]，这里只负责把 reqwest 的
+/// 分类翻译过去。
 ///
-/// 拿到了响应（哪怕是 412、503）一律不重试：那是业务与状态码的事，由
-/// [`crate::http::check_status`] 与调用方决定，在传输层重试会把一次风控
-/// 拦截变成三次。
-fn should_retry(e: &reqwest::Error) -> bool {
-    e.is_connect() || e.is_timeout()
+/// **`is_connect()` 要先判**：连接阶段超时在 reqwest 里 `is_connect()` 与
+/// `is_timeout()` 同时为真，顺序反了就会把「没发出去」误判成「可能已送达」，
+/// 白白放弃一次安全的重试。连接阶段之所以分得出来，是因为客户端显式设了
+/// [`CONNECT_TIMEOUT`]（见 [`build_client`]）；去掉它，整体 `.timeout()`
+/// 会把两者糊成一类，ADR-013 决策一那条分界就实现不了了。
+fn failure_shape(e: &reqwest::Error) -> FailureShape {
+    if e.is_connect() {
+        FailureShape::NotSent
+    } else if e.is_timeout() {
+        FailureShape::NoResponse
+    } else {
+        FailureShape::Other
+    }
 }
 
 /// reqwest 错误到领域错误的映射。

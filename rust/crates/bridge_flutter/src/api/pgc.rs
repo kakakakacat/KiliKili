@@ -26,6 +26,8 @@ use bili_domain::redact::Redacted;
 
 use crate::api::init;
 use crate::api::transport::TransportSettings;
+use crate::api::write::WriteResult;
+use bili_api::request::PreparedWrite;
 
 // ------------------------------------------------------------------ 入参
 
@@ -35,6 +37,9 @@ pub struct PgcContext {
     pub base_url: String,
     /// 完整的 Cookie 头值。未登录时为 `None`。**Rust 不保存**，用完即弃。
     pub cookie: Option<String>,
+    /// CSRF token（cookie 里的 `bili_jct`）。**只有短评的五条写操作要传**，
+    /// 详情与列表那些只读接口传 `None`（ADR-013 决策四）。
+    pub csrf: Option<String>,
     pub headers: Vec<(String, String)>,
     /// WBI 的 `mixin_key`。只有两种排行要签名，其余接口传空串。
     pub mixin_key: String,
@@ -50,8 +55,7 @@ impl PgcContext {
         let ctx = RequestContext {
             base_url: self.base_url,
             cookie: self.cookie.map(Redacted::new),
-            // 只读路径：csrf 只有写操作用得上（ADR-013 决策四）。
-            csrf: None,
+            csrf: self.csrf.map(Redacted::new),
             headers: self.headers,
             timeout: Duration::from_millis(self.timeout_ms),
         };
@@ -901,4 +905,71 @@ async fn fetch_season_detail_of(
             error_code: e.code(),
         },
     }
+}
+
+// --------------------------------------------------- 短评的写操作（#60）
+
+/// 给一条短评点赞。
+///
+/// **不自动重试。** 基线的请求里没有状态位，从调用点看不出服务端是「置为」
+/// 还是「切换」，所以按更保守的切换处理（ADR-013 决策三定级为可判定）：
+/// 失败了由用户看着列表里的赞踩状态决定要不要再点一次。
+pub async fn pgc_review_like(context: PgcContext, media_id: i64, review_id: i64) -> WriteResult {
+    send_review(context, pgc::review_like_request(media_id, review_id)).await
+}
+
+/// 给一条短评点踩。与点赞只有路径不同，见 [`pgc_review_like`]。
+pub async fn pgc_review_dislike(context: PgcContext, media_id: i64, review_id: i64) -> WriteResult {
+    send_review(context, pgc::review_dislike_request(media_id, review_id)).await
+}
+
+/// 发表一条短评。
+///
+/// **绝不自动重发**（ADR-013 定级为不可重发）：重发 = 用户看得见的两条
+/// 相同短评。`share_feed` 为 false 时整个字段都不发，与基线一致。
+pub async fn pgc_review_post(
+    context: PgcContext,
+    media_id: i64,
+    score: i64,
+    content: String,
+    share_feed: bool,
+) -> WriteResult {
+    send_review(
+        context,
+        pgc::review_post_request(media_id, score, &content, share_feed),
+    )
+    .await
+}
+
+/// 修改一条已有的短评。带 `review_id`，是置为语义。
+pub async fn pgc_review_modify(
+    context: PgcContext,
+    media_id: i64,
+    review_id: i64,
+    score: i64,
+    content: String,
+) -> WriteResult {
+    send_review(
+        context,
+        pgc::review_modify_request(media_id, review_id, score, &content),
+    )
+    .await
+}
+
+/// 删除一条短评。
+pub async fn pgc_review_del(context: PgcContext, media_id: i64, review_id: i64) -> WriteResult {
+    send_review(context, pgc::review_del_request(media_id, review_id)).await
+}
+
+/// 五条短评写操作共用的发送路径。
+///
+/// 不导出给 Dart（没有 `pub`），只是免得上面五个函数各自抄一遍
+/// spawn + flatten + 折结果——抄错一处的表现是「失败被当成了成功」。
+async fn send_review(context: PgcContext, prepared: PreparedWrite) -> WriteResult {
+    let (ctx, transport, _, _) = context.split();
+    let joined = init::runtime()
+        .spawn(async move { pgc::send_review_write(&transport, &ctx, &prepared).await })
+        .await;
+
+    WriteResult::from_result(flatten(joined))
 }

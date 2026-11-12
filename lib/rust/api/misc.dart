@@ -6,9 +6,10 @@
 import 'package:kilikili/rust/frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:kilikili/rust/api/transport.dart';
+import 'package:kilikili/rust/api/write.dart';
 
 // These functions are ignored because they are not marked as `pub`: `bgm_recommend`, `filter_rule`, `flatten`, `match_contest`, `music_detail`, `split`, `team`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// 取 BGM 详情。WBI 签名。
 Future<MusicDetailResult> fetchBgmDetail({
@@ -83,6 +84,32 @@ Future<WriteResult> delDanmakuFilter({
 }) => RustLib.instance.api.crateApiMiscDelDanmakuFilter(
   context: context,
   ids: ids,
+);
+
+/// 把一首 BGM 标记为「想听」或取消（写操作，#66）。
+///
+/// `wish` 是**目标状态**不是「切换一下」，所以这条定级为幂等：传输层在
+/// 「请求没发出去」时会重发（ADR-013 决策一）。
+Future<WriteResult> updateWish({
+  required MiscContext context,
+  required String musicId,
+  required bool wish,
+}) => RustLib.instance.api.crateApiMiscUpdateWish(
+  context: context,
+  musicId: musicId,
+  wish: wish,
+);
+
+/// 提交关注分组的新顺序（写操作，#66）。
+///
+/// `tagids` 是逗号分隔的分组 id，顺序即目标顺序；整串是置为语义，因此
+/// 定级为幂等。
+Future<WriteResult> sortFollowTag({
+  required MiscContext context,
+  required String tagids,
+}) => RustLib.instance.api.crateApiMiscSortFollowTag(
+  context: context,
+  tagids: tagids,
 );
 
 /// 参与这首歌的一位艺人。
@@ -838,35 +865,4 @@ class SongHeat {
           runtimeType == other.runtimeType &&
           date == other.date &&
           heat == other.heat;
-}
-
-/// 删除一条规则的结果。
-///
-/// **没有 `data` 字段**：成功时这条接口不返回任何载荷，成败全看
-/// `error_kind == null`。不写成 `data: Option<()>` 或塞个 bool——FRB 不支持
-/// `Option<Option<T>>`，而「成功但没有值」在这套导出面里的既定形状就是
-/// 「没有 data 字段的结果类型」（ADR-011，例见 `LiveMedalNameResult`）。
-class WriteResult {
-  final String? errorKind;
-  final String? errorDetail;
-  final PlatformInt64? errorCode;
-
-  const WriteResult({
-    this.errorKind,
-    this.errorDetail,
-    this.errorCode,
-  });
-
-  @override
-  int get hashCode =>
-      errorKind.hashCode ^ errorDetail.hashCode ^ errorCode.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is WriteResult &&
-          runtimeType == other.runtimeType &&
-          errorKind == other.errorKind &&
-          errorDetail == other.errorDetail &&
-          errorCode == other.errorCode;
 }

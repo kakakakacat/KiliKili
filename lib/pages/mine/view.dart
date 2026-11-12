@@ -20,7 +20,6 @@ import 'package:kilikili/pages/mine/widgets/later_item.dart';
 import 'package:kilikili/pages/mine/widgets/sub_item.dart';
 import 'package:kilikili/utils/bili_utils.dart';
 import 'package:kilikili/utils/extension/get_ext.dart';
-import 'package:kilikili/utils/extension/num_ext.dart';
 import 'package:kilikili/utils/extension/theme_ext.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:kilikili/utils/storage.dart';
@@ -290,13 +289,13 @@ class _MediaPageState extends CommonPageState<MinePage>
                             ),
                         ],
                       )
-                    : ClipOval(
-                        child: Image.asset(
+                    : Semantics(
+                        label: '默认头像',
+                        child: const NetworkImgLayer(
+                          src: null,
+                          type: .avatar,
                           width: 55,
                           height: 55,
-                          cacheHeight: 55.cacheSize(context),
-                          Assets.avatarPlaceHolder,
-                          semanticLabel: "默认头像",
                         ),
                       ),
                 const SizedBox(width: 16),

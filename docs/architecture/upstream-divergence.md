@@ -39,15 +39,23 @@ pgc 成为删得最多的一块
 「修改」总数 894 → **893**，仅重命名波及不变（742）。**实质改动反而少了
 一个**：`lib/http/danmaku_block.dart` 整个删掉，从「修改」转进了「删除」。
 这是写操作迁移的常态——它和只读切片一样，迁完就把上游那个文件删了。
+修订：2026-11-12（短评五条 #60 + 想听/分组排序 #66，为本次）—— 实质改动
+151 → **152**，仅重命名波及 742 → **739**，新增文件 461 → **465**，
+删除文件 126 → **128**，「修改」总数 893 → **891**。
+删掉 `lib/http/music.dart` 与 `lib/http/pgc.dart` 两个整文件；
+`lib/http/follow.dart`、`lib/pages/follow_tag_sort/view.dart`、
+`lib/pages/pgc_review/post/view.dart` 三个从「仅重命名」转入「有实质改动」。
+修订：2026-11-12（头像主题色边框 #109）——实质改动 152 → **154**，
+仅重命名波及 739 → **737**；修改总数仍为 891，新增和删除数不变。
+`NetworkImgLayer` 与“我的”页从仅重命名文件转为有实质改动。
 
 修订：2026-11-12（竖版视频封面改大卡片 + 底部叠加文案，issue #108，
-为本次）—— 实质改动 151 → **165**，仅重命名波及 742 → **729**，新增文件
-461 → **467**，「修改」总数 893 → **894**（`lib/common/style.dart` 从未改过
-变成有改动），删除文件不变（126）。这是**第一次因为
-界面改动而扩大分叉面**：以前每一轮都是迁业务逻辑，这一轮动的是上游的
-视图层，性质不同，见 §4.4。本次数字含**尚未提交**的工作树改动。
+为本次）—— 实质改动 154 → **SUB**，仅重命名波及 737 → **REN**，新增文件
+465 → **ADD**，「修改」总数 891 → **MOD**，删除文件不变（128）。这是
+**第一次因为界面改动而扩大分叉面**：以前每一轮都是迁业务逻辑，这一轮动的
+是上游的视图层，性质不同，见 §4.4。本次数字含**尚未提交**的工作树改动。
 
-这一版的差额**不全是本次改动**：上一版是在 #79 的工作树上算的，#90 合进
+前述 #89 修订的差额**不全是那次改动**：上一版是在 #79 的工作树上算的，#90 合进
 main 前的最后一个提交（CDN 判据跟着算法搬家）没算进去——它删掉四个 Dart
 测试、新增 `bili-core/src/{cdn,playback}.rs` 与 `test/bridge/playback_bridge_test.dart`，
 `test/utils/cdn_url_test.dart` 从「修改」转成「删除」。**本次自己只动了三个
@@ -85,22 +93,22 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 | 类别 | 数量 |
 | --- | ---: |
-| 修改的上游既有文件 | 894 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 729 |
-| &nbsp;&nbsp;其中：有实质改动 | **165** |
-| 新增文件 | 467 |
-| 删除文件 | **126** |
+| 修改的上游既有文件 | MOD |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | REN |
+| &nbsp;&nbsp;其中：有实质改动 | **SUB** |
+| 新增文件 | ADD |
+| 删除文件 | **128** |
 
-「修改」总数一路下降（935 → 909 → 897 → 893），不是改动变少，而是其中
-一部分文件**被删除**了（迁移掉的模型），从 M 转到了 D。#108 把它从 893
-顶回 894，是这轮唯一一次反向——界面改动不删文件，只会往上加。删除数从 57 一路
-到 125，来源是 S10 的 PGC 两批、S11a 的直播三批与取流（#79）。
+「修改」总数一路下降（935 → 909 → 897 → 891），不是改动变少，而是其中
+一部分文件**被删除**了（迁移掉的模型），从 M 转到了 D。#108 把它顶回
+MOD，是这一路唯一一次反向——界面改动不删文件，只会往上加。删除数从 57
+一路到 128，来源是 S10 的 PGC 两批、S11a 的直播三批与取流（#79）。
 
 ## 3. 包名重命名：分叉面的主体
 
 `ba430476b chore: rename app package identifiers to KiliKili` 把每个 Dart
 文件的 `package:PiliPlus/` 改成了 `package:kilikili/`，一次触及 992 个文件。
-**分叉面里 950 个文件只有这一处差异。**
+**当前分叉面里 737 个文件只有这一处差异。**
 
 对同步的影响很具体：上游每改动一个 Dart 文件，我们这边大概率冲突，但
 **冲突内容永远是那一行 import**。处理方式是取上游版本后重新套用重命名，
@@ -111,9 +119,8 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 4. 有实质改动的上游文件
 
-165 个。其中 **126 个来自业务层 typed 直连迁移**（§4.1），性质高度一致，
-不必逐个记；**14 个来自竖版封面卡片改版**（§4.4），性质同样一致；剩下
-25 个是逐个有来由的，列在 §4.3 的表里。
+SUB 个。业务层 typed 直连迁移集中列在 §4.1，**NEWSUB 个来自竖版封面卡片
+改版**（§4.4，性质同样一致），其余改动逐个列在 §4.3。
 
 ### 4.1 typed 直连迁移触及的上游文件
 
@@ -132,7 +139,9 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | S10 PGC 第二批（番剧/课堂详情） | #60 / #83 | `lib/http/pgc.dart`、`lib/pages/video/introduction/pgc/**`、`lib/pages/episode_panel/**`；留下单向适配 `lib/services/rust/pgc_detail_compat.dart` |
 | S11a 直播第一批（只读七条） | #61 / #76 | `lib/http/live.dart`、`lib/pages/{live,live_area,live_area_detail,live_follow,live_room}/**`、`lib/pages/dynamics/widgets/live_*`、`lib/services/audio_handler.dart` |
 | S11a 直播第二批（取流） | #61 / #86 | `lib/http/live.dart`、`lib/pages/live_room/controller.dart`、`lib/utils/video_utils.dart`（`getLiveCdnUrl` 改吃 FRB 的 `LiveCodec`）；留下单向适配 `lib/services/rust/live_playurl_compat.dart` |
-| 弹幕屏蔽规则的两个写操作 | #66 #50 / 本次 | `lib/pages/danmaku_block/controller.dart`、`lib/pages/video/widgets/header_control.dart`；**删掉 `lib/http/danmaku_block.dart`**。仓库头两条走 Rust 的写操作，形状见 ADR-013 |
+| 弹幕屏蔽规则的两个写操作 | #66 #50 / #100 | `lib/pages/danmaku_block/controller.dart`、`lib/pages/video/widgets/header_control.dart`；**删掉 `lib/http/danmaku_block.dart`**。仓库头两条走 Rust 的写操作，形状见 ADR-013 |
+| 短评五条写操作 | #60 #50 / 本次 | `lib/pages/pgc_review/**`；**删掉 `lib/http/pgc.dart`**（迁完整个文件只剩这五条） |
+| 想听 / 关注分组排序 | #66 #50 / 本次 | `lib/pages/music/view.dart`、`lib/pages/follow_tag_sort/view.dart`、`lib/http/follow.dart`（瘦身）；**删掉 `lib/http/music.dart`** |
 | S11a 直播第三批（剩余六条只读） | #61 / #87 | `lib/http/live.dart`、`lib/pages/{live_emote,live_search,live_dm_block}/**`、`lib/pages/live_room/{controller.dart,contribution_rank/**}`、`lib/pages/member/{view.dart,widget/{medal_wall,user_info_card}.dart}`、`lib/pages/common/publish/common_rich_text_pub_page.dart`；留下单向适配 `lib/services/rust/live_rest_compat.dart` |
 
 **同步时怎么处理这一类冲突**：上游在这些文件里的改动，多数落在我们已经
@@ -148,14 +157,14 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 
 ### 4.2 删除的上游文件
 
-126 个：被 typed 结构取代的模型、迁空的 `lib/http` 文件，以及判据搬家后
+128 个：被 typed 结构取代的模型、迁空的 `lib/http` 文件，以及判据搬家后
 随之作废的 Dart 测试。
 
 | 区域 | 数量 | 内容 |
 | --- | ---: | --- |
 | `lib/models_new/` | 117 | live（39）、pgc（25）、reply（18）、video 的 ai_conclusion/note_list/play_info/video_shot（12）、emote（4）、match（4）、popular（4）、reply2reply（3）、blacklist（2）、music（2）、reply_interaction（2）、search（1）、sponsor_block（1） |
 | `lib/models/` | 3 | `search/search_esports.dart`、`user/danmaku_block.dart`、`video/play/url.dart` |
-| `lib/http/` | 3 | `black.dart`、`match.dart`（整个文件只有只读接口，迁完即空）、`danmaku_block.dart`（两个写操作迁完即空） |
+| `lib/http/` | 5 | `black.dart`、`match.dart`（整个文件只有只读接口，迁完即空）、`danmaku_block.dart`、`music.dart`、`pgc.dart`（写操作迁完即空） |
 | `test/` | 3 | `utils/{audio_quality_select,cdn_url,video_quality_select}_test.dart`——判据随 #79 搬进 `bili-core`，Dart 这边的用例跟着搬走 |
 
 `lib/models_new/live/` 那 39 个分三批：第一批 16 个（分区、feed、关注、
@@ -180,6 +189,8 @@ H5 房间信息）、第二批 7 个（`live_room_play_info/` 整个目录）、
 | `README.md` / `README.en.md` | `e0b32bfda` `c7dc17c1a` `f92a9890c` | 改写为 KiliKili 的说明与路线图 |
 | `pubspec.yaml` / `pubspec.lock` | `ee41df52c` `57485ede8` | 引入 `flutter_rust_bridge` 与 `rust_builder` |
 | `lib/main.dart` | `ee41df52c` | 启动时初始化 Rust Core |
+| `lib/common/widgets/image/network_img_layer.dart` | #109 | 头像图片与占位图统一绘制主题色圆边框 |
+| `lib/pages/mine/view.dart` | #109 | 未登录头像改走共用头像组件，保持边框一致 |
 | `lib/http/video.dart` | `f321aea73` `43827d42f` `9385cf06d` 及 S3 | 视频详情与取流接入 Rust（**仍是 JSON 往返 + 开关**，见 #79）；S3 又从中删去了五条只读接口，见 §4.1 |
 | `lib/http/search.dart` | `130b9f533`、S9 | 搜索建议接入 Rust；S9 之后整条搜索是 typed 直连、**无开关无回退**，见 §4.1 |
 | `lib/pages/setting/models/play_settings.dart` | `9d1d5c3c9` | 自动播放默认值改为开启（issue #16） |
@@ -253,14 +264,14 @@ Column 顺序、文字层级），丢弃——那一层我们已经整个换掉�
 
 ## 5. 新增文件
 
-467 个，不与上游冲突，按区域分布：
+ADD 个，不与上游冲突，按区域分布：
 
 | 区域 | 文件数 | 内容 |
 | --- | ---: | --- |
 | `rust/` | 298 | Rust workspace：6 个 crate、golden fixture 与快照 |
 | `rust_builder/` | 46 | cargokit，把 Rust 接入 Flutter 各端构建 |
 | `lib/services/` | 33 | Rust 开关、shadow mode、各切片的取数封装 |
-| `test/` | 26 | parity 测试与桥接层集成测试 |
+| `test/` | 27 | parity 测试与桥接层集成测试 |
 | `lib/rust/` | 24 | FRB 生成的 Dart 绑定 |
 | `tool/` | 13 | 构建准备、FRB 生成、README 统计、产物核对、fixture 生成 |
 | `docs/` | 14 | RFC、ADR、M0 记录、QA 清单 |

@@ -25,6 +25,7 @@ import 'package:kilikili/rust/api/video_detail_fetch.dart';
 import 'package:kilikili/rust/api/video_feed.dart';
 import 'package:kilikili/rust/api/video_page.dart';
 import 'package:kilikili/rust/api/wbi.dart';
+import 'package:kilikili/rust/api/write.dart';
 
 import 'dart:async';
 import 'dart:convert';
@@ -91,7 +92,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 922611787;
+  int get rustContentHash => 245317835;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -516,6 +517,40 @@ abstract class RustLibApi extends BaseApi {
     PlatformInt64? timeLengthMs,
   });
 
+  Future<WriteResult> crateApiPgcPgcReviewDel({
+    required PgcContext context,
+    required PlatformInt64 mediaId,
+    required PlatformInt64 reviewId,
+  });
+
+  Future<WriteResult> crateApiPgcPgcReviewDislike({
+    required PgcContext context,
+    required PlatformInt64 mediaId,
+    required PlatformInt64 reviewId,
+  });
+
+  Future<WriteResult> crateApiPgcPgcReviewLike({
+    required PgcContext context,
+    required PlatformInt64 mediaId,
+    required PlatformInt64 reviewId,
+  });
+
+  Future<WriteResult> crateApiPgcPgcReviewModify({
+    required PgcContext context,
+    required PlatformInt64 mediaId,
+    required PlatformInt64 reviewId,
+    required PlatformInt64 score,
+    required String content,
+  });
+
+  Future<WriteResult> crateApiPgcPgcReviewPost({
+    required PgcContext context,
+    required PlatformInt64 mediaId,
+    required PlatformInt64 score,
+    required String content,
+    required bool shareFeed,
+  });
+
   String crateApiPlaybackPickCdnUrl({
     required List<String> urls,
     required String service,
@@ -576,7 +611,18 @@ abstract class RustLibApi extends BaseApi {
     required List<int> preferCodecIndices,
   });
 
+  Future<WriteResult> crateApiMiscSortFollowTag({
+    required MiscContext context,
+    required String tagids,
+  });
+
   List<String> crateApiPlaybackStreamPlayUrls({required MediaStream stream});
+
+  Future<WriteResult> crateApiMiscUpdateWish({
+    required MiscContext context,
+    required String musicId,
+    required bool wish,
+  });
 
   Future<String?> crateApiWbiWbiMixinKey({
     required String imgKey,
@@ -3222,6 +3268,195 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<WriteResult> crateApiPgcPgcReviewDel({
+    required PgcContext context,
+    required PlatformInt64 mediaId,
+    required PlatformInt64 reviewId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_pgc_context(context, serializer);
+          sse_encode_i_64(mediaId, serializer);
+          sse_encode_i_64(reviewId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 74,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiPgcPgcReviewDelConstMeta,
+        argValues: [context, mediaId, reviewId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiPgcPgcReviewDelConstMeta => const TaskConstMeta(
+    debugName: "pgc_review_del",
+    argNames: ["context", "mediaId", "reviewId"],
+  );
+
+  @override
+  Future<WriteResult> crateApiPgcPgcReviewDislike({
+    required PgcContext context,
+    required PlatformInt64 mediaId,
+    required PlatformInt64 reviewId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_pgc_context(context, serializer);
+          sse_encode_i_64(mediaId, serializer);
+          sse_encode_i_64(reviewId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 75,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiPgcPgcReviewDislikeConstMeta,
+        argValues: [context, mediaId, reviewId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiPgcPgcReviewDislikeConstMeta =>
+      const TaskConstMeta(
+        debugName: "pgc_review_dislike",
+        argNames: ["context", "mediaId", "reviewId"],
+      );
+
+  @override
+  Future<WriteResult> crateApiPgcPgcReviewLike({
+    required PgcContext context,
+    required PlatformInt64 mediaId,
+    required PlatformInt64 reviewId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_pgc_context(context, serializer);
+          sse_encode_i_64(mediaId, serializer);
+          sse_encode_i_64(reviewId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 76,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiPgcPgcReviewLikeConstMeta,
+        argValues: [context, mediaId, reviewId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiPgcPgcReviewLikeConstMeta => const TaskConstMeta(
+    debugName: "pgc_review_like",
+    argNames: ["context", "mediaId", "reviewId"],
+  );
+
+  @override
+  Future<WriteResult> crateApiPgcPgcReviewModify({
+    required PgcContext context,
+    required PlatformInt64 mediaId,
+    required PlatformInt64 reviewId,
+    required PlatformInt64 score,
+    required String content,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_pgc_context(context, serializer);
+          sse_encode_i_64(mediaId, serializer);
+          sse_encode_i_64(reviewId, serializer);
+          sse_encode_i_64(score, serializer);
+          sse_encode_String(content, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 77,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiPgcPgcReviewModifyConstMeta,
+        argValues: [context, mediaId, reviewId, score, content],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiPgcPgcReviewModifyConstMeta => const TaskConstMeta(
+    debugName: "pgc_review_modify",
+    argNames: ["context", "mediaId", "reviewId", "score", "content"],
+  );
+
+  @override
+  Future<WriteResult> crateApiPgcPgcReviewPost({
+    required PgcContext context,
+    required PlatformInt64 mediaId,
+    required PlatformInt64 score,
+    required String content,
+    required bool shareFeed,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_pgc_context(context, serializer);
+          sse_encode_i_64(mediaId, serializer);
+          sse_encode_i_64(score, serializer);
+          sse_encode_String(content, serializer);
+          sse_encode_bool(shareFeed, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 78,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiPgcPgcReviewPostConstMeta,
+        argValues: [context, mediaId, score, content, shareFeed],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiPgcPgcReviewPostConstMeta => const TaskConstMeta(
+    debugName: "pgc_review_post",
+    argNames: ["context", "mediaId", "score", "content", "shareFeed"],
+  );
+
+  @override
   String crateApiPlaybackPickCdnUrl({
     required List<String> urls,
     required String service,
@@ -3236,7 +3471,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_String(service, serializer);
           sse_encode_bool(isAudio, serializer);
           sse_encode_bool(disableAudioCdn, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 74)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 79)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -3268,7 +3503,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 75,
+            funcId: 80,
             port: port_,
           );
         },
@@ -3302,7 +3537,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 76,
+            funcId: 81,
             port: port_,
           );
         },
@@ -3337,7 +3572,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 77,
+            funcId: 82,
             port: port_,
           );
         },
@@ -3371,7 +3606,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 78,
+            funcId: 83,
             port: port_,
           );
         },
@@ -3403,7 +3638,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 79,
+            funcId: 84,
             port: port_,
           );
         },
@@ -3440,7 +3675,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 80,
+            funcId: 85,
             port: port_,
           );
         },
@@ -3475,7 +3710,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 81,
+            funcId: 86,
             port: port_,
           );
         },
@@ -3509,7 +3744,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 82,
+            funcId: 87,
             port: port_,
           );
         },
@@ -3540,7 +3775,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_list_prim_i_64_strict(audioIds, serializer);
           sse_encode_i_64(preferQuality, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 83)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 88)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_audio_selection_result,
@@ -3576,7 +3811,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_opt_list_prim_i_64_strict(acceptQuality, serializer);
           sse_encode_list_format_candidate_input(supportFormats, serializer);
           sse_encode_list_prim_i_32_loose(preferCodecIndices, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 84)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 89)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_video_selection_result,
@@ -3608,13 +3843,47 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<WriteResult> crateApiMiscSortFollowTag({
+    required MiscContext context,
+    required String tagids,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_misc_context(context, serializer);
+          sse_encode_String(tagids, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 90,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiMiscSortFollowTagConstMeta,
+        argValues: [context, tagids],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiMiscSortFollowTagConstMeta => const TaskConstMeta(
+    debugName: "sort_follow_tag",
+    argNames: ["context", "tagids"],
+  );
+
+  @override
   List<String> crateApiPlaybackStreamPlayUrls({required MediaStream stream}) {
     return handler.executeSync(
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_box_autoadd_media_stream(stream, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 85)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 91)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_list_String,
@@ -3634,6 +3903,42 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<WriteResult> crateApiMiscUpdateWish({
+    required MiscContext context,
+    required String musicId,
+    required bool wish,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_misc_context(context, serializer);
+          sse_encode_String(musicId, serializer);
+          sse_encode_bool(wish, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 92,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiMiscUpdateWishConstMeta,
+        argValues: [context, musicId, wish],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiMiscUpdateWishConstMeta => const TaskConstMeta(
+    debugName: "update_wish",
+    argNames: ["context", "musicId", "wish"],
+  );
+
+  @override
   Future<String?> crateApiWbiWbiMixinKey({
     required String imgKey,
     required String subKey,
@@ -3647,7 +3952,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 86,
+            funcId: 93,
             port: port_,
           );
         },
@@ -3681,7 +3986,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 87,
+            funcId: 94,
             port: port_,
           );
         },
@@ -6860,16 +7165,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PgcContext dco_decode_pgc_context(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 7)
-      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    if (arr.length != 8)
+      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
     return PgcContext(
       baseUrl: dco_decode_String(arr[0]),
       cookie: dco_decode_opt_String(arr[1]),
-      headers: dco_decode_list_record_string_string(arr[2]),
-      mixinKey: dco_decode_String(arr[3]),
-      wts: dco_decode_i_64(arr[4]),
-      timeoutMs: dco_decode_u_64(arr[5]),
-      transport: dco_decode_transport_settings(arr[6]),
+      csrf: dco_decode_opt_String(arr[2]),
+      headers: dco_decode_list_record_string_string(arr[3]),
+      mixinKey: dco_decode_String(arr[4]),
+      wts: dco_decode_i_64(arr[5]),
+      timeoutMs: dco_decode_u_64(arr[6]),
+      transport: dco_decode_transport_settings(arr[7]),
     );
   }
 
@@ -12955,6 +13261,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_baseUrl = sse_decode_String(deserializer);
     var var_cookie = sse_decode_opt_String(deserializer);
+    var var_csrf = sse_decode_opt_String(deserializer);
     var var_headers = sse_decode_list_record_string_string(deserializer);
     var var_mixinKey = sse_decode_String(deserializer);
     var var_wts = sse_decode_i_64(deserializer);
@@ -12963,6 +13270,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     return PgcContext(
       baseUrl: var_baseUrl,
       cookie: var_cookie,
+      csrf: var_csrf,
       headers: var_headers,
       mixinKey: var_mixinKey,
       wts: var_wts,
@@ -18905,6 +19213,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.baseUrl, serializer);
     sse_encode_opt_String(self.cookie, serializer);
+    sse_encode_opt_String(self.csrf, serializer);
     sse_encode_list_record_string_string(self.headers, serializer);
     sse_encode_String(self.mixinKey, serializer);
     sse_encode_i_64(self.wts, serializer);

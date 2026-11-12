@@ -155,3 +155,38 @@ DanmakuElem _toElem(rust_api.DanmakuBucketItem item) => DanmakuElem()
   ..colorful = DmColorfulType.valueOf(item.colorful) ?? DmColorfulType.NoneType
   ..count = item.count
   ..isSelf = item.isSelf;
+
+/// 播放进度游标：决定一帧进度该不该取桶、要不要先清屏（issue #89）。
+///
+/// 判据全在 Rust（`bili_danmaku::cursor`），这里**只存两个数字**。之所以
+/// 不跟 [RustDanmakuSession] 绑在一起，是因为它必须对两条路径都生效：
+/// Rust 引擎开着时取 Rust 的桶，引擎降级回 Dart 时取 `_dmSegMap` 的桶，
+/// 而降级恰恰发生在 Rust 会话建不起来的时候。挂在会话上，降级路径就
+/// 没人看门了。
+class DanmakuProgressCursor {
+  int _lastBucketMs = -1;
+  int _seenEpoch = 0;
+
+  /// 判定这一帧。返回 null 表示**跳过**：不取桶，也不要触发分段请求。
+  ///
+  /// 跨 FFI 失败时同样返回 null。这里刻意**不**在 Dart 里补一份判据
+  /// 作为兜底：取流本身（#79）已经走 Rust，桥接真的坏了的话根本没有
+  /// 视频在播，弹幕怎么判都无所谓；为这种情形留一份平行实现，换来的
+  /// 只是两份判据迟早不一致。
+  rust_api.DanmakuProgressStep? step(int positionMs, int epoch) {
+    try {
+      final result = rust_api.danmakuProgressStep(
+        lastBucketMs: _lastBucketMs,
+        seenEpoch: _seenEpoch,
+        positionMs: positionMs,
+        epoch: epoch,
+      );
+      _lastBucketMs = result.lastBucketMs;
+      _seenEpoch = result.seenEpoch;
+      return result.emit ? result : null;
+    } catch (e) {
+      if (kDebugMode) debugPrint('[rust] 进度游标失败，跳过这一帧: $e');
+      return null;
+    }
+  }
+}

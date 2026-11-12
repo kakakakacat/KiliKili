@@ -33,6 +33,7 @@
 //! 语义不是一个集合。处理办法是只接受两端相同的子集，其余拒绝并让整条
 //! 路径降级回 Dart，见 [`rule`]。
 
+pub mod cursor;
 pub mod engine;
 pub mod rule;
 pub mod session;

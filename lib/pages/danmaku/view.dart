@@ -6,6 +6,7 @@ import 'package:kilikili/pages/danmaku/danmaku_model.dart';
 import 'package:kilikili/plugin/pl_player/controller.dart';
 import 'package:kilikili/plugin/pl_player/models/play_status.dart';
 import 'package:kilikili/plugin/pl_player/utils/danmaku_options.dart';
+import 'package:kilikili/services/rust/rust_danmaku.dart';
 import 'package:kilikili/utils/danmaku_utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:get/get.dart';
@@ -41,7 +42,8 @@ class _PlDanmakuState extends State<PlDanmaku> {
 
   late final PlDanmakuController _plDanmakuController;
   DanmakuController<DanmakuExtra>? _controller;
-  int latestAddedPosition = -1;
+  /// 进度游标。判据在 Rust，这里只是持有它的状态（issue #89）。
+  final DanmakuProgressCursor _cursor = DanmakuProgressCursor();
 
   @override
   void initState() {
@@ -104,15 +106,22 @@ class _PlDanmakuState extends State<PlDanmaku> {
       return;
     }
 
-    int currentPosition = position.inMilliseconds;
-    currentPosition -= currentPosition % 100; //取整百的毫秒数
-    if (currentPosition == latestAddedPosition) {
+    // 该不该取桶、要不要先清屏，由 Rust 的进度游标判定：position 流在
+    // 退到后台再回前台时会先吐一个很早的旧值，照着它取桶就会把视频开头
+    // 那批弹幕放出来（issue #89）。
+    final step = _cursor.step(
+      position.inMilliseconds,
+      playerController.seekEpoch,
+    );
+    if (step == null) {
       return;
     }
-    latestAddedPosition = currentPosition;
+    if (step.clear) {
+      _controller!.clear();
+    }
 
     List<DanmakuElem>? currentDanmakuList = _plDanmakuController
-        .getCurrentDanmaku(currentPosition);
+        .getCurrentDanmaku(step.bucketMs);
     if (currentDanmakuList != null) {
       final blockColorful = DanmakuOptions.blockColorful;
       final danmakuWeight = DanmakuOptions.danmakuWeight;

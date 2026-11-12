@@ -991,6 +991,18 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   List<StreamSubscription>? _subscriptions;
   final Set<ValueChanged<Duration>> _positionListeners = {};
+
+  /// seek 代际：每跳转一次自增。
+  ///
+  /// position 流里，**真正的向后 seek** 与「退到后台再回前台时播放器先吐
+  /// 一个旧值」长得一模一样（issue #89），流本身区分不了，只能由发起跳转
+  /// 的一方宣告。弹幕的进度游标据此判断该清屏重开还是该忽略这一帧。
+  ///
+  /// 因此**所有跳转都必须走 [seekTo]**，不要直接调
+  /// `videoPlayerController.seek`：绕过去的那次跳转不会自增代际，弹幕会
+  /// 当成回跳而整段不再显示。
+  int _seekEpoch = 0;
+  int get seekEpoch => _seekEpoch;
   final Set<ValueChanged<PlayerStatus>> _statusListeners = {};
 
   Timer? _wakeLockTimer;
@@ -1186,6 +1198,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     if (_playerCount == 0) return;
 
     _heartDuration = position.inSeconds;
+    _seekEpoch++;
 
     danmakuController?.clear();
     try {
@@ -1374,7 +1387,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   // 双击播放、暂停
   Future<void> onDoubleTapCenter() async {
     if (!isLive && isCompleted) {
-      await videoPlayerController!.seek(Duration.zero);
+      // 走 seekTo 而不是直接 seek：它才会清弹幕、重置心跳、自增 seek 代际。
+      await seekTo(Duration.zero);
       await videoPlayerController!.play();
     } else if (videoPlayerController!.state.playing) {
       await pause();

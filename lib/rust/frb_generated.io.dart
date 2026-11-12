@@ -342,6 +342,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   DanmakuOpenResult dco_decode_danmaku_open_result(dynamic raw);
 
   @protected
+  DanmakuProgressStep dco_decode_danmaku_progress_step(dynamic raw);
+
+  @protected
   DanmakuPushResult dco_decode_danmaku_push_result(dynamic raw);
 
   @protected
@@ -1838,6 +1841,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   DanmakuOpenResult sse_decode_danmaku_open_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  DanmakuProgressStep sse_decode_danmaku_progress_step(
     SseDeserializer deserializer,
   );
 
@@ -3793,6 +3801,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_danmaku_open_result(
     DanmakuOpenResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_danmaku_progress_step(
+    DanmakuProgressStep self,
     SseSerializer serializer,
   );
 

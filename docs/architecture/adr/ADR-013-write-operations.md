@@ -1,6 +1,7 @@
 # ADR-013: 写操作的幂等、CSRF 与重试策略
 
-Status: **Proposed（等仓库所有者确认。本文的实测清单取自 `b67330393`）**
+Status: **Accepted（2026-11-12 仓库所有者确认，八条决策全部批准。本文的实测
+清单取自 `b67330393`）**
 Date: 2026-11-12
 Related: RFC-0001 §2.2 / §2.3 / §5.3 / §16.6、ADR-008、ADR-011（决策四、决策五、补充九、
 补充十一）、issue #50、EPIC #67
@@ -251,6 +252,17 @@ if (res.data['code'] == 0) {
 本地存储是平台 API，按 RFC §2.3 留在宿主。但顺序必须是**先确认远端成功、
 再改本地**，而且这个判断要用 Rust 返回的 `error_kind == null`，不要在 Dart
 里重新解释 code——否则两边对「成功」的定义会漂。
+
+## 落地进度
+
+- **决策一已实现**（2026-11-12）：重试判定从一个布尔拆成
+  `should_retry(RetryPolicy, FailureShape)`，`Idempotency` 三档进了
+  `bili-api::http`，ADR 里那张表由 `retry_table_matches_adr_013` 逐格钉死。
+  **只读行为一个字没改**——拆分前是 `is_connect() || is_timeout()`，拆分后
+  `RetryPolicy::Read` 在同样两格为真，另有一条测试专门盯着这件事。
+  `HttpTransport` 仍然只有 `get`：规则先就位，`post` 跟着第一个写操作
+  切片开。
+- 其余决策随各写操作切片落地。
 
 ## 影响
 

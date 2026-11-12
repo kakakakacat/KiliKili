@@ -7,7 +7,7 @@ import 'package:kilikili/rust/frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // These functions are ignored because they are not marked as `pub`: `sessions`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `from`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `from`
 
 /// 新建一个弹幕会话。规则编不过时返回错误，调用方整条降级回 Dart。
 DanmakuOpenResult danmakuOpen({required DanmakuEngineOptions options}) =>
@@ -57,6 +57,30 @@ void danmakuClose({required PlatformInt64 sessionId}) =>
 /// 而那在界面上没有任何症状。
 int danmakuOpenSessionCount() =>
     RustLib.instance.api.crateApiDanmakuDanmakuOpenSessionCount();
+
+/// 判定一帧播放进度该不该取桶、要不要先清屏（issue #89）。
+///
+/// 判据全在 [`bili_danmaku::cursor`]，这里只做 `Option<i32>` 与 `-1` 的
+/// 互转——FRB 的导出面不带 Option 哨兵更省事，而「还没发过桶」在 Dart
+/// 侧本来就要有个初值。
+///
+/// **纯函数，不碰会话表。** 原因是它必须对两条路径都生效：Rust 弹幕引擎
+/// 开着时取 Rust 的桶，引擎降级回 Dart 时取 `_dmSegMap` 的桶，而降级恰恰
+/// 发生在会话建不起来的时候。挂在会话上，降级路径就没人看门了。
+///
+/// 同步（`#[frb(sync)]`）的理由与 [`danmaku_bucket`] 一样：渲染侧每 100ms
+/// 调一次，返回 Future 会让弹幕晚一帧。
+DanmakuProgressStep danmakuProgressStep({
+  required int lastBucketMs,
+  required PlatformInt64 seenEpoch,
+  required int positionMs,
+  required PlatformInt64 epoch,
+}) => RustLib.instance.api.crateApiDanmakuDanmakuProgressStep(
+  lastBucketMs: lastBucketMs,
+  seenEpoch: seenEpoch,
+  positionMs: positionMs,
+  epoch: epoch,
+);
 
 /// 一条可渲染的弹幕。
 ///
@@ -211,6 +235,55 @@ class DanmakuOpenResult {
           sessionId == other.sessionId &&
           errorKind == other.errorKind &&
           errorDetail == other.errorDetail;
+}
+
+/// [`danmaku_progress_step`] 的结果：这一帧怎么处理 + 调用方要存回去的游标。
+///
+/// 刻意是扁平结构而不是带值的枚举：本桥接层至今没有导出过枚举，
+/// 保持导出面「纯数据结构 + 明确的函数」（AGENTS.md §2）。
+class DanmakuProgressStep {
+  /// 这一帧要不要按 [`Self::bucket_ms`] 取桶。false 时调用方什么都不做,
+  /// 连分段请求也不要触发——那会在回跳期间白拉视频开头那一段。
+  final bool emit;
+
+  /// 取桶前要不要先清屏。只有 seek 造成的不连续会置 true。
+  final bool clear;
+
+  /// 要取的桶（整百毫秒）。`emit` 为 false 时无意义。
+  final int bucketMs;
+
+  /// 游标状态，调用方原样存下来，下一帧传回来。`-1` 表示还没发过桶。
+  final int lastBucketMs;
+
+  /// 游标已看到的 seek 代际，同样原样存回。
+  final PlatformInt64 seenEpoch;
+
+  const DanmakuProgressStep({
+    required this.emit,
+    required this.clear,
+    required this.bucketMs,
+    required this.lastBucketMs,
+    required this.seenEpoch,
+  });
+
+  @override
+  int get hashCode =>
+      emit.hashCode ^
+      clear.hashCode ^
+      bucketMs.hashCode ^
+      lastBucketMs.hashCode ^
+      seenEpoch.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DanmakuProgressStep &&
+          runtimeType == other.runtimeType &&
+          emit == other.emit &&
+          clear == other.clear &&
+          bucketMs == other.bucketMs &&
+          lastBucketMs == other.lastBucketMs &&
+          seenEpoch == other.seenEpoch;
 }
 
 /// 并入一个分段的结果。

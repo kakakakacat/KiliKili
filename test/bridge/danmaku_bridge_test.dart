@@ -233,6 +233,39 @@ void main() {
       reason: '开关关闭却开出了会话——降级开关失效',
     );
   }, skip: bridgeSkip);
+
+  // 进度游标（issue #89）。判据本身由 `bili_danmaku::cursor` 的单测钉住，
+  // 这里验的是跨 FFI 之后还是它：`DanmakuProgressCursor` 把状态原样带回
+  // 下一帧，而不是每次都从零开始。游标不依赖会话，所以不必开会话。
+  test('进度游标：正常推进逐桶放行，同一桶只放一次', () async {
+    final cursor = DanmakuProgressCursor();
+    expect(cursor.step(0, 0)?.bucketMs, 0);
+    expect(cursor.step(40, 0), isNull, reason: '同一个 100ms 桶不得放两次');
+    expect(cursor.step(120, 0)?.bucketMs, 100);
+  }, skip: bridgeSkip);
+
+  test('进度游标：没有 seek 的回跳一桶都不放，追上后恢复', () async {
+    final cursor = DanmakuProgressCursor();
+    expect(cursor.step(600000, 0)?.bucketMs, 600000);
+    // 退到后台再回前台，position 流先吐一个 0 再追上来。
+    for (final rewound in [0, 100, 300000, 600000]) {
+      expect(
+        cursor.step(rewound, 0),
+        isNull,
+        reason: '回跳到 $rewound 时放了桶，视频开头的弹幕会飘出来',
+      );
+    }
+    expect(cursor.step(600100, 0)?.bucketMs, 600100);
+  }, skip: bridgeSkip);
+
+  test('进度游标：真正的 seek 清屏并从新位置重开', () async {
+    final cursor = DanmakuProgressCursor();
+    expect(cursor.step(600000, 0)?.bucketMs, 600000);
+    final seeked = cursor.step(10000, 1);
+    expect(seeked?.bucketMs, 10000, reason: '向后 seek 必须从新位置继续');
+    expect(seeked?.clear, isTrue, reason: 'seek 后屏上的旧弹幕要清掉');
+    expect(cursor.step(10100, 1)?.bucketMs, 10100);
+  }, skip: bridgeSkip);
 }
 
 /// 与 `test/services/rust/danmaku_engine_test.dart` 同一份转换：fixture 的

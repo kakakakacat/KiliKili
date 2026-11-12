@@ -24,10 +24,22 @@ S15 #66 已合并）—— 实质改动 23 → **90**，仅重命名波及 943 �
 130 → **142**，仅重命名波及 779 → **755**，新增文件 428 → **455**，
 删除文件 105 → **121**。`lib/models_new/live/` 累计删到 39 个，超过
 pgc 成为删得最多的一块
-修订：2026-11-11（typed 直连第三轮：取流 #79 为本次，已并入 #87）——
+修订：2026-11-11（typed 直连第三轮：取流 #79，已并入 #87）——
 实质改动 142 → **150**，仅重命名波及 755 → **745**，新增文件
 455 → **455**（新增与删除各有进出，净持平），删除文件 121 → **124**。
-「修改」总数 907 → 895。本次数字含**尚未提交**的工作树改动。
+「修改」总数 907 → 895。
+修订：2026-11-12（弹幕进度游标 issue #89 为本次）—— 实质改动
+150 → **152**，仅重命名波及 745 → **742**，新增文件 455 → **459**，
+删除文件 124 → **125**，「修改」总数 895 → **894**。本次数字含**尚未提交**
+的工作树改动。
+
+这一版的差额**不全是本次改动**：上一版是在 #79 的工作树上算的，#90 合进
+main 前的最后一个提交（CDN 判据跟着算法搬家）没算进去——它删掉四个 Dart
+测试、新增 `bili-core/src/{cdn,playback}.rs` 与 `test/bridge/playback_bridge_test.dart`，
+`test/utils/cdn_url_test.dart` 从「修改」转成「删除」。**本次自己只动了三个
+数**：新增 +1（`bili-danmaku/src/cursor.rs`），以及
+`lib/pages/danmaku/view.dart`、`lib/pages/video/introduction/local/controller.dart`
+两个文件从「仅重命名波及」转入「有实质改动」。
 
 取流这一片的分叉面与前几片不同：除了删上游模型，还**把上游文件里的算法
 搬空了**。`lib/utils/video_utils.dart` 的 `getCdnUrl`（两条正则 + mcdn /
@@ -59,15 +71,15 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 | 类别 | 数量 |
 | --- | ---: |
-| 修改的上游既有文件 | 897 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 755 |
-| &nbsp;&nbsp;其中：有实质改动 | **142** |
-| 新增文件 | 455 |
-| 删除文件 | **121** |
+| 修改的上游既有文件 | 894 |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 742 |
+| &nbsp;&nbsp;其中：有实质改动 | **152** |
+| 新增文件 | 459 |
+| 删除文件 | **125** |
 
-「修改」总数持续下降（935 → 909 → 897），不是改动变少，而是其中一部分
-文件**被删除**了（迁移掉的模型），从 M 转到了 D。删除数从 57 一路到
-121，来源是 S10 的 PGC 两批与 S11a 的直播三批。
+「修改」总数持续下降（935 → 909 → 897 → 894），不是改动变少，而是其中
+一部分文件**被删除**了（迁移掉的模型），从 M 转到了 D。删除数从 57 一路
+到 125，来源是 S10 的 PGC 两批、S11a 的直播三批与取流（#79）。
 
 ## 3. 包名重命名：分叉面的主体
 
@@ -84,8 +96,8 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 4. 有实质改动的上游文件
 
-142 个。其中 **119 个来自业务层 typed 直连迁移**（§4.1），性质高度一致，
-不必逐个记；剩下 23 个是逐个有来由的，列在 §4.3 的表里。
+152 个。其中 **127 个来自业务层 typed 直连迁移**（§4.1），性质高度一致，
+不必逐个记；剩下 25 个是逐个有来由的，列在 §4.3 的表里。
 
 ### 4.1 typed 直连迁移触及的上游文件
 
@@ -158,12 +170,20 @@ H5 房间信息）、第二批 7 个（`live_room_play_info/` 整个目录）、
 | `lib/services/download/download_service.dart` | 本次（DmView 字幕） | 同上 |
 | `lib/utils/video_utils.dart` | 本次（清晰度/音质选择） | `findTargetVideo` / `findTargetAudio` 先走 Rust，失败回退原实现 |
 | `lib/utils/subtitle_utils.dart` | 本次（字幕转换） | `json2Vtt` / `json2Srt` 的实现移到纯 dart 的 `lib/utils/subtitle_format.dart`，此处只保留委托 |
-| `lib/grpc/grpc_req.dart` | 本次（issue #42） | 抽出 `_post`，新增 `requestRaw`；`request` 行为不变 |
+| `lib/grpc/grpc_req.dart` | issue #42 | 抽出 `_post`，新增 `requestRaw`；`request` 行为不变 |
+| `lib/pages/danmaku/view.dart` | 本次（issue #89） | `videoPositionListen` 的 `latestAddedPosition` 换成 Rust 的进度游标（`bili_danmaku::cursor`）；该不该取桶、要不要先清屏都由 Rust 判定 |
+| `lib/pages/video/introduction/local/controller.dart` | 本次（issue #89） | 单集列表循环播放改走 `PlPlayerController.seekTo`，不再直接调 `videoPlayerController.seek` |
 | `test/utils/accounts/deleted_account_test.dart` | `83244c723` | 适配 CI 上打补丁后的 Flutter |
 | `assets/linux/DEBIAN/control` | `5ecebd8f8` 及本次 | 依赖声明改由构建期生成（见 §5） |
 | `.github/workflows/linux_x64.yml` | `d9b23ba4e` `45cfe832c` `6d35ee6e9` 及本次 | RPM 选包修复、产物体积闸门、依赖自动生成 |
 | `.github/workflows/mac.yml` | `6d35ee6e9` | 产物体积闸门 |
 | `.github/workflows/win_x64.yml` | `6d35ee6e9` | 产物体积闸门 |
+
+`lib/plugin/pl_player/controller.dart` 不在这张表里，它已经由 §4.1 的 S3 一行
+覆盖；issue #89 又给它加了 seek 代际 `_seekEpoch`，这里不重复计数。那条代际
+带来一个**跨文件的约束**：所有跳转都必须走 `seekTo`，绕过去的跳转不会自增
+代际，弹幕会把它当成回跳而整段不再显示。同步上游时若引入新的
+`videoPlayerController.seek(...)` 调用点，要一并改掉。
 
 `.github/workflows/build.yml` 与 `ios.yml` 也在分叉面里，但**只有包名重命名**，
 没有逻辑改动。
@@ -183,20 +203,20 @@ H5 房间信息）、第二批 7 个（`live_room_play_info/` 整个目录）、
 
 ## 5. 新增文件
 
-376 个，不与上游冲突，按区域分布：
+459 个，不与上游冲突，按区域分布：
 
 | 区域 | 文件数 | 内容 |
 | --- | ---: | --- |
-| `rust/` | 226 | Rust workspace：6 个 crate、golden fixture 与快照 |
+| `rust/` | 296 | Rust workspace：6 个 crate、golden fixture 与快照 |
 | `rust_builder/` | 46 | cargokit，把 Rust 接入 Flutter 各端构建 |
-| `lib/services/` | 29 | Rust 开关、shadow mode、各切片的取数封装 |
-| `test/` | 20 | parity 测试与桥接层集成测试 |
-| `lib/rust/` | 20 | FRB 生成的 Dart 绑定 |
+| `lib/services/` | 32 | Rust 开关、shadow mode、各切片的取数封装 |
+| `test/` | 25 | parity 测试与桥接层集成测试 |
+| `lib/rust/` | 23 | FRB 生成的 Dart 绑定 |
 | `tool/` | 13 | 构建准备、FRB 生成、README 统计、产物核对、fixture 生成 |
 | `docs/` | 13 | RFC、ADR、M0 记录、QA 清单 |
 | `lib/pages/` | 1 | 从控制器里搬出来的基线弹幕引擎（`danmaku/engine.dart`） |
 | `lib/utils/` | 1 | 从 `SubtitleUtils` 里搬出来的基线字幕转换（`subtitle_format.dart`） |
-| 其他 | 7 | workflow、资源 |
+| 其他 | 9 | workflow、`AGENTS.md` / `CLAUDE.md`、README 统计图、`flutter_rust_bridge.yaml` |
 
 `rust/` 的增量主要是 fixture 与快照：每个切片都要带「脱敏后的真实响应 +
 冻结的解析结果」两份，这是 typed 直连唯一的长期对照物（ADR-011 决策五）。

@@ -124,8 +124,10 @@ class LocalIntroController extends CommonIntroController {
       final playCtr = videoDetailCtr.plPlayerController;
       if (playCtr.playRepeat == PlayRepeat.listCycle) {
         if (list.length == 1) {
-          if (playCtr.videoPlayerController case final ctr?) {
-            ctr.seek(Duration.zero).whenComplete(ctr.play);
+          // 走 seekTo 而不是直接 seek：它才会清弹幕、重置心跳、自增 seek
+          // 代际（见 `PlPlayerController.seekEpoch`）。
+          if (playCtr.videoPlayerController != null) {
+            playCtr.seekTo(Duration.zero).whenComplete(playCtr.play);
           }
         } else {
           playIndex(0);

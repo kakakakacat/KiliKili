@@ -33,6 +33,7 @@ use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, MutexGuard, OnceLock, PoisonError};
 
+use bili_danmaku::cursor::{CursorState, ProgressStep, step as cursor_step};
 use bili_danmaku::engine::{EngineOptions, ProcessedElem};
 use bili_danmaku::rule::FilterRules;
 use bili_danmaku::session::DanmakuSession;
@@ -282,4 +283,66 @@ pub fn danmaku_close(session_id: i64) {
 #[must_use]
 pub fn danmaku_open_session_count() -> u32 {
     u32::try_from(sessions().len()).unwrap_or(u32::MAX)
+}
+
+/// [`danmaku_progress_step`] 的结果：这一帧怎么处理 + 调用方要存回去的游标。
+///
+/// 刻意是扁平结构而不是带值的枚举：本桥接层至今没有导出过枚举，
+/// 保持导出面「纯数据结构 + 明确的函数」（AGENTS.md §2）。
+#[derive(Debug, Clone, Copy)]
+pub struct DanmakuProgressStep {
+    /// 这一帧要不要按 [`Self::bucket_ms`] 取桶。false 时调用方什么都不做,
+    /// 连分段请求也不要触发——那会在回跳期间白拉视频开头那一段。
+    pub emit: bool,
+    /// 取桶前要不要先清屏。只有 seek 造成的不连续会置 true。
+    pub clear: bool,
+    /// 要取的桶（整百毫秒）。`emit` 为 false 时无意义。
+    pub bucket_ms: i32,
+    /// 游标状态，调用方原样存下来，下一帧传回来。`-1` 表示还没发过桶。
+    pub last_bucket_ms: i32,
+    /// 游标已看到的 seek 代际，同样原样存回。
+    pub seen_epoch: i64,
+}
+
+/// 判定一帧播放进度该不该取桶、要不要先清屏（issue #89）。
+///
+/// 判据全在 [`bili_danmaku::cursor`]，这里只做 `Option<i32>` 与 `-1` 的
+/// 互转——FRB 的导出面不带 Option 哨兵更省事，而「还没发过桶」在 Dart
+/// 侧本来就要有个初值。
+///
+/// **纯函数，不碰会话表。** 原因是它必须对两条路径都生效：Rust 弹幕引擎
+/// 开着时取 Rust 的桶，引擎降级回 Dart 时取 `_dmSegMap` 的桶，而降级恰恰
+/// 发生在会话建不起来的时候。挂在会话上，降级路径就没人看门了。
+///
+/// 同步（`#[frb(sync)]`）的理由与 [`danmaku_bucket`] 一样：渲染侧每 100ms
+/// 调一次，返回 Future 会让弹幕晚一帧。
+#[frb(sync)]
+#[must_use]
+pub fn danmaku_progress_step(
+    last_bucket_ms: i32,
+    seen_epoch: i64,
+    position_ms: i32,
+    epoch: i64,
+) -> DanmakuProgressStep {
+    let state = CursorState {
+        last_bucket_ms: if last_bucket_ms < 0 {
+            None
+        } else {
+            Some(last_bucket_ms)
+        },
+        seen_epoch,
+    };
+    let outcome = cursor_step(state, position_ms, epoch);
+    let (emit, clear, bucket_ms) = match outcome.step {
+        ProgressStep::Skip => (false, false, 0),
+        ProgressStep::Emit { bucket_ms } => (true, false, bucket_ms),
+        ProgressStep::Restart { bucket_ms } => (true, true, bucket_ms),
+    };
+    DanmakuProgressStep {
+        emit,
+        clear,
+        bucket_ms,
+        last_bucket_ms: outcome.state.last_bucket_ms.unwrap_or(-1),
+        seen_epoch: outcome.state.seen_epoch,
+    }
 }

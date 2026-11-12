@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:kilikili/http/danmaku_block.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/dm_block_type.dart';
 import 'package:kilikili/services/rust/rust_misc.dart';
@@ -51,7 +50,7 @@ class DanmakuBlockController extends GetxController
 
   Future<void> danmakuFilterDel(int tabIndex, int itemIndex, int id) async {
     SmartDialog.showLoading(msg: '正在删除弹幕屏蔽规则……');
-    final res = await DanmakuFilterHttp.danmakuFilterDel(ids: id);
+    final res = await RustMisc.danmakuFilterDel(ids: id);
     SmartDialog.dismiss();
     if (res.isSuccess) {
       rules[tabIndex].removeAt(itemIndex);
@@ -69,10 +68,7 @@ class DanmakuBlockController extends GetxController
       filter = getCrc32(ascii.encode(filter), 0).toRadixString(16);
     }
     SmartDialog.showLoading(msg: '正在添加弹幕屏蔽规则……');
-    final res = await DanmakuFilterHttp.danmakuFilterAdd(
-      filter: filter,
-      type: type,
-    );
+    final res = await RustMisc.danmakuFilterAdd(filter: filter, type: type);
     SmartDialog.dismiss();
     if (res case Success(:final response)) {
       rules[type].add(response);

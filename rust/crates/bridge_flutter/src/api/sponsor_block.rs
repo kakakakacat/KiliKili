@@ -133,8 +133,10 @@ impl SponsorBlockContext {
             // 基地址在这个 API 里是整段可配的，不是路径前缀，因此单独传，
             // RequestContext 里留空。
             base_url: String::new(),
-            // SponsorBlock 不认 bilibili 的账号体系，没有 Cookie 可带。
+            // SponsorBlock 不认 bilibili 的账号体系，没有 Cookie 可带，
+            // 自然也没有 csrf。
             cookie: None,
+            csrf: None,
             headers: self.headers,
             timeout: Duration::from_millis(self.timeout_ms),
         };

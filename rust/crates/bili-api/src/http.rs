@@ -29,6 +29,19 @@ pub struct RequestContext {
     pub base_url: String,
     /// `Cookie` 头的完整值。未登录时为 `None`。
     pub cookie: Option<Redacted<String>>,
+    /// CSRF token（cookie 里的 `bili_jct`）。**只有写操作用得上**，
+    /// 只读请求传 `None`。
+    ///
+    /// 放在上下文里而不是让每个写操作的签名多一个 `String`，有两条理由
+    /// （ADR-013 决策四）：
+    ///
+    /// 1. **它是凭据。** 拿到它就能代用户发起写操作。散成普通参数，它会
+    ///    跟着参数列表进日志、进 `error_detail`；包成 [`Redacted`] 则在
+    ///    类型上就打不出来。
+    /// 2. **一个注入点。** 基线是 126 处各自写 `'csrf': Accounts.main.csrf`，
+    ///    等于 126 次漏掉的机会，而漏掉的表现是服务端返回 `-111`，看起来
+    ///    像协议问题。这里由 `client::send_write` 统一补上。
+    pub csrf: Option<Redacted<String>>,
     /// 其余请求头（User-Agent、Referer、x-bili-* 等），由 Dart 侧的账号
     /// 体系产出，这里原样透传。
     pub headers: Vec<(String, String)>,
@@ -76,6 +89,33 @@ pub struct HttpGet {
     pub timeout: Duration,
 }
 
+/// POST 的请求体。
+///
+/// 两种形态都要支持，**不能统一**：基线绝大多数写操作显式写
+/// `Headers.formUrlEncodedContentType`，而 dio 不指定 contentType 时的默认
+/// 值是 json，另有一批调用点正靠这个默认值（ADR-013 决策一）。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PostBody {
+    /// `application/x-www-form-urlencoded`。
+    Form(Vec<(String, String)>),
+    /// `application/json`，内容是已序列化好的 JSON 文本。
+    Json(String),
+}
+
+/// 待发送的写请求。
+///
+/// 与 [`HttpGet`] 的区别只有两处：多一个 [`PostBody`]，以及必须声明
+/// [`Idempotency`]——后者决定失败后能不能重发，见 [`should_retry`]。
+#[derive(Debug, Clone)]
+pub struct HttpPost {
+    pub url: String,
+    pub headers: Vec<(String, String)>,
+    pub body: PostBody,
+    pub timeout: Duration,
+    /// 这条写操作重发安全不安全。没有默认值是故意的：漏填编译不过。
+    pub idempotency: Idempotency,
+}
+
 /// 传输层返回的原始响应。
 #[derive(Debug, Clone)]
 pub struct HttpResponse {
@@ -93,6 +133,16 @@ pub trait HttpTransport {
     fn get(
         &self,
         request: HttpGet,
+    ) -> impl Future<Output = Result<HttpResponse, DomainError>> + Send;
+
+    /// 发送 POST 请求。
+    ///
+    /// 约定与 [`Self::get`] 相同——只把字节取回来，不解释业务 code。
+    /// **但重试不同**：实现方必须按 [`HttpPost::idempotency`] 走
+    /// [`should_retry`]，不能复用 GET 那条只读规则（ADR-013 决策一）。
+    fn post(
+        &self,
+        request: HttpPost,
     ) -> impl Future<Output = Result<HttpResponse, DomainError>> + Send;
 }
 

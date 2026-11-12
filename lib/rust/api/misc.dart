@@ -8,7 +8,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:kilikili/rust/api/transport.dart';
 
 // These functions are ignored because they are not marked as `pub`: `bgm_recommend`, `filter_rule`, `flatten`, `match_contest`, `music_detail`, `split`, `team`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// 取 BGM 详情。WBI 签名。
 Future<MusicDetailResult> fetchBgmDetail({
@@ -54,6 +54,36 @@ Future<MatchInfoResult> fetchMatchInfo({
 Future<DanmakuFilterResult> fetchDanmakuFilter({
   required MiscContext context,
 }) => RustLib.instance.api.crateApiMiscFetchDanmakuFilter(context: context);
+
+/// 新增一条云端弹幕屏蔽规则（写操作）。
+///
+/// `kind`：0 关键词 / 1 正则 / 2 用户，与
+/// [`bili_api::danmaku_filter::kind`] 一致。
+///
+/// 失败不重试：这条定级为「可判定」——重发会多一条，但只读的
+/// [`fetch_danmaku_filter`] 查得到上一次生没生效，要不要重发由调用方在
+/// 查过之后决定（ADR-013 决策一）。
+Future<FilterRuleResult> addDanmakuFilter({
+  required MiscContext context,
+  required String filter,
+  required PlatformInt64 kind,
+}) => RustLib.instance.api.crateApiMiscAddDanmakuFilter(
+  context: context,
+  filter: filter,
+  kind: kind,
+);
+
+/// 删除一条云端弹幕屏蔽规则（写操作）。
+///
+/// 这条定级为「幂等」：删第二次服务端返回「不存在」，最终状态一致，
+/// 所以传输层在「请求没发出去」时会重发（ADR-013 决策一）。
+Future<WriteResult> delDanmakuFilter({
+  required MiscContext context,
+  required PlatformInt64 ids,
+}) => RustLib.instance.api.crateApiMiscDelDanmakuFilter(
+  context: context,
+  ids: ids,
+);
 
 /// 参与这首歌的一位艺人。
 class Artist {
@@ -358,6 +388,38 @@ class FilterRule {
           filter == other.filter;
 }
 
+/// 新增一条规则的结果。`data` 是服务端建好的那条，带它分配的 id。
+class FilterRuleResult {
+  final FilterRule? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const FilterRuleResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FilterRuleResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
 /// 热度曲线。`song_heat` 已按时间升序。
 class HotSongHeat {
   final PlatformInt64? lastHeat;
@@ -557,6 +619,10 @@ class MiscContext {
   /// 完整的 Cookie 头值。未登录时为 `None`。
   final String? cookie;
   final List<(String, String)> headers;
+
+  /// CSRF token（cookie 里的 `bili_jct`）。**只有写操作要传**，只读的
+  /// 那几条传 `None`。Rust 侧不保存它，用完即弃（ADR-013 决策四）。
+  final String? csrf;
   final BigInt timeoutMs;
   final TransportSettings transport;
 
@@ -570,6 +636,7 @@ class MiscContext {
     required this.baseUrl,
     this.cookie,
     required this.headers,
+    this.csrf,
     required this.timeoutMs,
     required this.transport,
     required this.mixinKey,
@@ -581,6 +648,7 @@ class MiscContext {
       baseUrl.hashCode ^
       cookie.hashCode ^
       headers.hashCode ^
+      csrf.hashCode ^
       timeoutMs.hashCode ^
       transport.hashCode ^
       mixinKey.hashCode ^
@@ -594,6 +662,7 @@ class MiscContext {
           baseUrl == other.baseUrl &&
           cookie == other.cookie &&
           headers == other.headers &&
+          csrf == other.csrf &&
           timeoutMs == other.timeoutMs &&
           transport == other.transport &&
           mixinKey == other.mixinKey &&
@@ -769,4 +838,35 @@ class SongHeat {
           runtimeType == other.runtimeType &&
           date == other.date &&
           heat == other.heat;
+}
+
+/// 删除一条规则的结果。
+///
+/// **没有 `data` 字段**：成功时这条接口不返回任何载荷，成败全看
+/// `error_kind == null`。不写成 `data: Option<()>` 或塞个 bool——FRB 不支持
+/// `Option<Option<T>>`，而「成功但没有值」在这套导出面里的既定形状就是
+/// 「没有 data 字段的结果类型」（ADR-011，例见 `LiveMedalNameResult`）。
+class WriteResult {
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const WriteResult({
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      errorKind.hashCode ^ errorDetail.hashCode ^ errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WriteResult &&
+          runtimeType == other.runtimeType &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
 }

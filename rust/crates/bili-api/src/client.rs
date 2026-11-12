@@ -9,9 +9,9 @@ use bili_domain::playurl::PlayUrl;
 use bili_domain::video::{VideoDetail, VideoType};
 use bili_protocol::risk::{Entropy, RiskTokens};
 
-use crate::http::{HttpGet, HttpTransport, RequestContext, check_status};
+use crate::http::{HttpGet, HttpPost, HttpTransport, PostBody, RequestContext, check_status};
 use crate::playurl::{self, Outcome};
-use crate::request::{self, PlayUrlParams, PreparedRequest};
+use crate::request::{self, PlayUrlParams, PreparedRequest, PreparedWrite};
 
 /// 取视频详情。
 ///
@@ -145,6 +145,52 @@ pub(crate) async fn send<T: HttpTransport>(
     Ok(resp.body)
 }
 
+/// 发送一个写请求，返回响应体。
+///
+/// 三件事只在这里做，各自都有理由不散到调用点去：
+///
+/// 1. **补 csrf**。基线是 126 处各自写 `'csrf': Accounts.main.csrf`；这里
+///    是唯一注入点（ADR-013 决策四）。未登录时 `ctx.csrf` 为 `None`，
+///    不补——服务端会以 `-101` 拒绝，那是正确的失败，比本地伪造一个空
+///    csrf 要诚实。
+/// 2. **挑 content-type**。[`PostBody`] 自己带，调用点不经手。
+/// 3. **把幂等级别交给传输层**。重试规则见 [`crate::http::should_retry`]。
+///
+/// # Errors
+/// 传输与状态码两类失败。业务信封由调用方解。
+pub(crate) async fn send_write<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    prepared: &PreparedWrite,
+) -> Result<String, DomainError> {
+    let url = format!("{}{}", ctx.base_url.trim_end_matches('/'), prepared.path);
+
+    let mut form = prepared.form.clone();
+    if let Some(csrf) = &ctx.csrf {
+        form.push(("csrf".to_owned(), csrf.expose().clone()));
+    }
+
+    // 只记 path 与幂等级别：表单里有业务标识符，csrf 更是凭据。
+    tracing::debug!(
+        path = prepared.path,
+        idempotency = ?prepared.idempotency,
+        "发送写请求"
+    );
+
+    let resp = transport
+        .post(HttpPost {
+            url,
+            headers: ctx.all_headers(),
+            body: PostBody::Form(form),
+            timeout: ctx.timeout,
+            idempotency: prepared.idempotency,
+        })
+        .await?;
+
+    check_status(resp.status)?;
+    Ok(resp.body)
+}
+
 /// 百分号编码查询串。
 ///
 /// 与 WBI 签名用的是同一套编码集（RFC 3986 unreserved），否则签名覆盖的
@@ -180,7 +226,7 @@ mod tests {
     use bili_domain::redact::Redacted;
 
     use super::*;
-    use crate::http::{HttpResponse, RequestContext};
+    use crate::http::{HttpResponse, Idempotency, RequestContext};
 
     /// 桩传输：记录收到的请求，返回预置响应。
     ///
@@ -189,6 +235,7 @@ mod tests {
     struct StubTransport {
         response: Result<HttpResponse, DomainError>,
         seen: Mutex<Option<HttpGet>>,
+        seen_post: Mutex<Option<HttpPost>>,
     }
 
     impl StubTransport {
@@ -199,6 +246,7 @@ mod tests {
                     body: body.to_owned(),
                 }),
                 seen: Mutex::new(None),
+                seen_post: Mutex::new(None),
             }
         }
 
@@ -206,6 +254,7 @@ mod tests {
             Self {
                 response: Err(DomainError::new(kind, detail)),
                 seen: Mutex::new(None),
+                seen_post: Mutex::new(None),
             }
         }
     }
@@ -215,15 +264,104 @@ mod tests {
             *self.seen.lock().expect("锁未被毒化") = Some(request);
             self.response.clone()
         }
+
+        async fn post(&self, request: HttpPost) -> Result<HttpResponse, DomainError> {
+            *self.seen_post.lock().expect("锁未被毒化") = Some(request);
+            self.response.clone()
+        }
     }
 
     fn ctx() -> RequestContext {
         RequestContext {
             base_url: "https://api.example.invalid".to_owned(),
             cookie: Some(Redacted::new("SESSDATA=secret".to_owned())),
+            csrf: None,
             headers: vec![("user-agent".to_owned(), "test-agent".to_owned())],
             timeout: Duration::from_secs(10),
         }
+    }
+
+    /// 带 csrf 的上下文。值是占位串，不是真凭据。
+    fn ctx_logged_in() -> RequestContext {
+        RequestContext {
+            csrf: Some(Redacted::new("csrf-placeholder".to_owned())),
+            ..ctx()
+        }
+    }
+
+    fn a_write() -> PreparedWrite {
+        PreparedWrite {
+            path: "/x/dm/filter/user/del",
+            form: vec![("ids".to_owned(), "42".to_owned())],
+            idempotency: Idempotency::Idempotent,
+        }
+    }
+
+    #[test]
+    fn write_injects_csrf_into_the_form() {
+        let stub = StubTransport::ok(200, r#"{"code":0,"message":"0"}"#);
+        block_on(send_write(&stub, &ctx_logged_in(), &a_write())).expect("桩传输必定成功");
+
+        let seen = stub.seen_post.lock().expect("锁未被毒化");
+        let seen = seen.as_ref().expect("写请求应当送到传输层");
+        let PostBody::Form(fields) = &seen.body else {
+            panic!("写请求应当是表单体");
+        };
+        assert_eq!(
+            fields,
+            &vec![
+                ("ids".to_owned(), "42".to_owned()),
+                ("csrf".to_owned(), "csrf-placeholder".to_owned()),
+            ],
+            "csrf 必须由这一层补，且补在业务字段之后"
+        );
+    }
+
+    #[test]
+    fn write_without_a_login_sends_no_csrf() {
+        // 未登录时不伪造一个空 csrf：让服务端以 -101 拒绝，那是正确的失败。
+        let stub = StubTransport::ok(200, r#"{"code":0,"message":"0"}"#);
+        block_on(send_write(&stub, &ctx(), &a_write())).expect("桩传输必定成功");
+
+        let seen = stub.seen_post.lock().expect("锁未被毒化");
+        let seen = seen.as_ref().expect("写请求应当送到传输层");
+        let PostBody::Form(fields) = &seen.body else {
+            panic!("写请求应当是表单体");
+        };
+        assert!(
+            fields.iter().all(|(k, _)| k != "csrf"),
+            "未登录却带上了 csrf 字段"
+        );
+    }
+
+    #[test]
+    fn write_forwards_idempotency_and_builds_a_plain_url() {
+        let stub = StubTransport::ok(200, r#"{"code":0,"message":"0"}"#);
+        block_on(send_write(&stub, &ctx_logged_in(), &a_write())).expect("桩传输必定成功");
+
+        let seen = stub.seen_post.lock().expect("锁未被毒化");
+        let seen = seen.as_ref().expect("写请求应当送到传输层");
+        assert_eq!(
+            seen.idempotency,
+            Idempotency::Idempotent,
+            "幂等级别必须原样传到传输层，否则重试规则就落空了"
+        );
+        assert_eq!(
+            seen.url, "https://api.example.invalid/x/dm/filter/user/del",
+            "写请求的参数在体里，URL 不该带查询串"
+        );
+        assert!(
+            seen.headers.iter().any(|(k, _)| k == "cookie"),
+            "账号头要照常透传"
+        );
+    }
+
+    #[test]
+    fn write_maps_status_code_failures() {
+        let stub = StubTransport::ok(412, "blocked");
+        let err =
+            block_on(send_write(&stub, &ctx_logged_in(), &a_write())).expect_err("412 必须是错误");
+        assert_eq!(err.kind(), ErrorKind::Auth, "412 是风控，不该当成可重试");
     }
 
     const MIXIN_KEY: &str = "ea1db124af3c7062474693fa704f4ff8";
@@ -341,6 +479,10 @@ mod tests {
     }
 
     impl HttpTransport for ScriptedTransport {
+        async fn post(&self, _request: HttpPost) -> Result<HttpResponse, DomainError> {
+            unimplemented!("本桩只用于只读重试分支，没有写请求经过它")
+        }
+
         async fn get(&self, request: HttpGet) -> Result<HttpResponse, DomainError> {
             self.urls.lock().expect("锁未被毒化").push(request.url);
             let body = self

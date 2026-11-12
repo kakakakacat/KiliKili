@@ -10,7 +10,7 @@ import 'package:kilikili/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:kilikili/common/widgets/marquee.dart';
 import 'package:kilikili/common/widgets/player_bar.dart';
 import 'package:kilikili/http/danmaku.dart';
-import 'package:kilikili/http/danmaku_block.dart';
+import 'package:kilikili/services/rust/rust_misc.dart';
 import 'package:kilikili/http/live.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/video.dart';
@@ -260,7 +260,7 @@ class HeaderControl extends StatefulWidget {
               filter.count++;
               GStorage.localCache.put(LocalCacheKey.danmakuFilterRules, filter);
             }
-            DanmakuFilterHttp.danmakuFilterAdd(filter: extra.mid, type: 2);
+            RustMisc.danmakuFilterAdd(filter: extra.mid, type: 2);
           }
           return DanmakuHttp.danmakuReport(
             reason: reasonType,
@@ -297,10 +297,7 @@ class HeaderControl extends StatefulWidget {
           //       filter,
           //     );
           //   }
-          //   DanmakuFilterHttp.danmakuFilterAdd(
-          //     filter: extra.mid,
-          //     type: 2,
-          //   );
+          //   RustMisc.danmakuFilterAdd(filter: extra.mid, type: 2);
           // }
           return LiveHttp.liveDmReport(
             roomId: roomId,

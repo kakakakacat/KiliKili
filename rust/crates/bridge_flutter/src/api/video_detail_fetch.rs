@@ -69,6 +69,8 @@ pub async fn fetch_video_detail(
     let ctx = RequestContext {
         base_url,
         cookie: cookie.map(Redacted::new),
+        // 只读路径：csrf 只有写操作用得上（ADR-013 决策四）。
+        csrf: None,
         headers,
         timeout: Duration::from_millis(timeout_ms),
     };

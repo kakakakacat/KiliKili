@@ -109,6 +109,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   FeedContext dco_decode_box_autoadd_feed_context(dynamic raw);
 
   @protected
+  FilterRule dco_decode_box_autoadd_filter_rule(dynamic raw);
+
+  @protected
   HistoryNode dco_decode_box_autoadd_history_node(dynamic raw);
 
   @protected
@@ -388,6 +391,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FilterRule dco_decode_filter_rule(dynamic raw);
+
+  @protected
+  FilterRuleResult dco_decode_filter_rule_result(dynamic raw);
 
   @protected
   FormatCandidateInput dco_decode_format_candidate_input(dynamic raw);
@@ -855,6 +861,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   double? dco_decode_opt_box_autoadd_f_64(dynamic raw);
+
+  @protected
+  FilterRule? dco_decode_opt_box_autoadd_filter_rule(dynamic raw);
 
   @protected
   HistoryNode? dco_decode_opt_box_autoadd_history_node(dynamic raw);
@@ -1448,6 +1457,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Volume dco_decode_volume(dynamic raw);
 
   @protected
+  WriteResult dco_decode_write_result(dynamic raw);
+
+  @protected
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
@@ -1524,6 +1536,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FeedContext sse_decode_box_autoadd_feed_context(SseDeserializer deserializer);
+
+  @protected
+  FilterRule sse_decode_box_autoadd_filter_rule(SseDeserializer deserializer);
 
   @protected
   HistoryNode sse_decode_box_autoadd_history_node(SseDeserializer deserializer);
@@ -1899,6 +1914,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FilterRule sse_decode_filter_rule(SseDeserializer deserializer);
+
+  @protected
+  FilterRuleResult sse_decode_filter_rule_result(SseDeserializer deserializer);
 
   @protected
   FormatCandidateInput sse_decode_format_candidate_input(
@@ -2484,6 +2502,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   double? sse_decode_opt_box_autoadd_f_64(SseDeserializer deserializer);
+
+  @protected
+  FilterRule? sse_decode_opt_box_autoadd_filter_rule(
+    SseDeserializer deserializer,
+  );
 
   @protected
   HistoryNode? sse_decode_opt_box_autoadd_history_node(
@@ -3265,6 +3288,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Volume sse_decode_volume(SseDeserializer deserializer);
 
   @protected
+  WriteResult sse_decode_write_result(SseDeserializer deserializer);
+
+  @protected
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
@@ -3357,6 +3383,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_feed_context(
     FeedContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_filter_rule(
+    FilterRule self,
     SseSerializer serializer,
   );
 
@@ -3869,6 +3901,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_filter_rule(FilterRule self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_filter_rule_result(
+    FilterRuleResult self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_format_candidate_input(
@@ -4640,6 +4678,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_opt_box_autoadd_f_64(double? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_filter_rule(
+    FilterRule? self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_opt_box_autoadd_history_node(
@@ -5636,6 +5680,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_volume(Volume self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_write_result(WriteResult self, SseSerializer serializer);
 }
 
 // Section: wire_class

@@ -1,5 +1,9 @@
-//! 杂项只读接口的 Dart 导出（S15 / issue #66）：音乐页、黑名单、电竞赛事、
+//! 杂项接口的 Dart 导出（S15 / issue #66）：音乐页、黑名单、电竞赛事、
 //! 云端弹幕屏蔽规则。
+//!
+//! 弹幕屏蔽规则的**新增与删除是写操作**，是本仓库头两条走 Rust 的写路径
+//! （ADR-013 的第一次落地）。写与只读在这一层的区别只有一处：
+//! [`MiscContext::csrf`]。其余（账号头、超时、传输配置）完全共用。
 //!
 //! ## 为什么四个领域挤在一个桥接模块里
 //!
@@ -236,6 +240,28 @@ pub struct DanmakuFilterResult {
     pub error_code: Option<i64>,
 }
 
+/// 新增一条规则的结果。`data` 是服务端建好的那条，带它分配的 id。
+#[derive(Debug, Clone)]
+pub struct FilterRuleResult {
+    pub data: Option<FilterRule>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+/// 删除一条规则的结果。
+///
+/// **没有 `data` 字段**：成功时这条接口不返回任何载荷，成败全看
+/// `error_kind == null`。不写成 `data: Option<()>` 或塞个 bool——FRB 不支持
+/// `Option<Option<T>>`，而「成功但没有值」在这套导出面里的既定形状就是
+/// 「没有 data 字段的结果类型」（ADR-011，例见 `LiveMedalNameResult`）。
+#[derive(Debug, Clone)]
+pub struct WriteResult {
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
 /// 一次请求所需的公共参数。
 #[derive(Debug, Clone)]
 pub struct MiscContext {
@@ -243,6 +269,9 @@ pub struct MiscContext {
     /// 完整的 Cookie 头值。未登录时为 `None`。
     pub cookie: Option<String>,
     pub headers: Vec<(String, String)>,
+    /// CSRF token（cookie 里的 `bili_jct`）。**只有写操作要传**，只读的
+    /// 那几条传 `None`。Rust 侧不保存它，用完即弃（ADR-013 决策四）。
+    pub csrf: Option<String>,
     pub timeout_ms: u64,
     pub transport: TransportSettings,
     /// WBI mixin key。只有 BGM 详情签名，其余传空串即可。
@@ -257,6 +286,7 @@ impl MiscContext {
         let ctx = RequestContext {
             base_url: self.base_url,
             cookie: self.cookie.map(Redacted::new),
+            csrf: self.csrf.map(Redacted::new),
             headers: self.headers,
             timeout: Duration::from_millis(self.timeout_ms),
         };
@@ -402,6 +432,67 @@ pub async fn fetch_danmaku_filter(context: MiscContext) -> DanmakuFilterResult {
         },
         Err(e) => DanmakuFilterResult {
             data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+
+/// 新增一条云端弹幕屏蔽规则（写操作）。
+///
+/// `kind`：0 关键词 / 1 正则 / 2 用户，与
+/// [`bili_api::danmaku_filter::kind`] 一致。
+///
+/// 失败不重试：这条定级为「可判定」——重发会多一条，但只读的
+/// [`fetch_danmaku_filter`] 查得到上一次生没生效，要不要重发由调用方在
+/// 查过之后决定（ADR-013 决策一）。
+pub async fn add_danmaku_filter(
+    context: MiscContext,
+    filter: String,
+    kind: i64,
+) -> FilterRuleResult {
+    let (ctx, transport, _, _) = context.split();
+    let joined =
+        init::runtime()
+            .spawn(async move {
+                danmaku_filter::add_danmaku_filter(&transport, &ctx, &filter, kind).await
+            })
+            .await;
+
+    match flatten(joined) {
+        Ok(rule) => FilterRuleResult {
+            data: Some(filter_rule(rule)),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => FilterRuleResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+
+/// 删除一条云端弹幕屏蔽规则（写操作）。
+///
+/// 这条定级为「幂等」：删第二次服务端返回「不存在」，最终状态一致，
+/// 所以传输层在「请求没发出去」时会重发（ADR-013 决策一）。
+pub async fn del_danmaku_filter(context: MiscContext, ids: i64) -> WriteResult {
+    let (ctx, transport, _, _) = context.split();
+    let joined = init::runtime()
+        .spawn(async move { danmaku_filter::del_danmaku_filter(&transport, &ctx, ids).await })
+        .await;
+
+    match flatten(joined) {
+        Ok(()) => WriteResult {
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => WriteResult {
             error_kind: Some(e.kind().to_string()),
             error_detail: Some(e.detail().to_owned()),
             error_code: e.code(),

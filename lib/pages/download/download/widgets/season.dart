@@ -1,8 +1,7 @@
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/common/widgets/dialog/simple_dialog_option.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/widgets/select_mask.dart';
 import 'package:kilikili/models_new/download/bili_download_entry_info.dart';
 import 'package:kilikili/models_new/download/download_info.dart';
@@ -114,96 +113,34 @@ class SeasonInfoItem extends StatelessWidget {
             ),
           );
 
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: CoverScrimCard(
+        cover: seasonInfo.cover,
+        title: seasonInfo.title,
+        upName: seasonInfo.uname,
+        coverOverlays: [
+          const PBadge(text: '合集', top: 6, right: 6),
+          PBadge(
+            text: '${season.pages.fold(0, (a, b) => a + b.entries.length)}个视频',
+            left: 6,
+            top: 6,
+            isBold: false,
+            type: .gray,
+          ),
+        ],
+        foregroundOverlays: [
+          Positioned.fill(child: selectMask(colorScheme, season.checked)),
+        ],
         onTap: () {
           if (controller.enableMultiSelect.value) {
             controller.onSelect(season);
             return;
           }
-          Get.to(
-            DownloadPagePage(
-              seasonInfo: seasonInfo,
-              progress: progress,
-            ),
-          );
+          Get.to(DownloadPagePage(seasonInfo: seasonInfo, progress: progress));
         },
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Style.safeSpace,
-            vertical: 5,
-          ),
-          child: Row(
-            spacing: 10,
-            children: [
-              Stack(
-                clipBehavior: .none,
-                children: [
-                  AspectRatio(
-                    aspectRatio: Style.aspectRatio,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) => NetworkImgLayer(
-                        src: seasonInfo.cover,
-                        width: constraints.maxWidth,
-                        height: constraints.maxHeight,
-                      ),
-                    ),
-                  ),
-                  const PBadge(text: '合集', top: 6.0, right: 6.0),
-                  PBadge(
-                    text:
-                        '${season.pages.fold(0, (a, b) => a + b.entries.length)}个视频',
-                    right: 6.0,
-                    bottom: 6.0,
-                    isBold: false,
-                    type: .gray,
-                  ),
-                  Positioned.fill(
-                    child: selectMask(colorScheme, season.checked),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        seasonInfo.title,
-                        textAlign: TextAlign.start,
-                        style: const TextStyle(
-                          height: 1.42,
-                          letterSpacing: 0.3,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Row(
-                      crossAxisAlignment: .end,
-                      mainAxisAlignment: .spaceBetween,
-                      children: [
-                        Text(
-                          seasonInfo.uname,
-                          style: TextStyle(
-                            fontSize: 12,
-                            height: 1.6,
-                            color: colorScheme.outline,
-                          ),
-                        ),
-                        // pageInfo.entries.first.moreBtn(colorScheme),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

@@ -1,4 +1,4 @@
-import 'package:kilikili/common/skeleton/video_card_h.dart';
+import 'package:kilikili/common/skeleton/video_card_v.dart';
 import 'package:kilikili/common/sliver_single_child_delegate.dart';
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
@@ -72,10 +72,10 @@ class _MemberFavoriteState extends State<MemberFavorite>
       Loading() => SliverPadding(
         padding: const EdgeInsets.only(top: 7),
         sliver: SliverGrid(
-          gridDelegate: gridDelegate,
+          gridDelegate: coverGridDelegate,
           delegate: const SliverSingleChildDelegate(
             count: 10,
-            child: VideoCardHSkeleton(),
+            child: VideoCardVSkeleton(),
           ),
         ),
       ),
@@ -168,22 +168,19 @@ class _MemberFavoriteState extends State<MemberFavorite>
           }
           if (list != null && list.isNotEmpty) {
             return SliverGrid.builder(
-              gridDelegate: gridDelegate,
+              gridDelegate: coverGridDelegate,
               itemCount: list.length,
               itemBuilder: (context, index) {
                 final item = list[index];
-                return SizedBox(
-                  height: 110,
-                  child: MemberFavItem(
-                    item: item,
-                    onDelete: (isDeleted) {
-                      if (isDeleted ?? false) {
-                        _controller.favState
-                          ..value.mediaListResponse?.list?.remove(item)
-                          ..refresh();
-                      }
-                    },
-                  ),
+                return MemberFavItem(
+                  item: item,
+                  onDelete: (isDeleted) {
+                    if (isDeleted ?? false) {
+                      _controller.favState
+                        ..value.mediaListResponse?.list?.remove(item)
+                        ..refresh();
+                    }
+                  },
                 );
               },
             );

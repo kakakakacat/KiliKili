@@ -57,12 +57,12 @@ class _PopularSeriesPageState extends State<PopularSeriesPage> with GridMixin {
   Widget _buildBody(LoadingState<List<HotVideoItemModel>?> value) {
     switch (value) {
       case Loading():
-        return gridSkeleton;
+        return coverGridSkeleton;
       case Success<List<HotVideoItemModel>?>(:final response):
         Widget sliver;
         if (response != null && response.isNotEmpty) {
           sliver = SliverGrid.builder(
-            gridDelegate: gridDelegate,
+            gridDelegate: coverGridDelegate,
             itemCount: response.length,
             itemBuilder: (context, index) {
               final item = response[index];

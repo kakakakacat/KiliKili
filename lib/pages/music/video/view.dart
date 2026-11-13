@@ -56,11 +56,11 @@ class _MusicRecommendPageState extends State<MusicRecommendPage>
 
   Widget _buildBody(LoadingState<List<BgmRecommend>?> loadingState) {
     return switch (loadingState) {
-      Loading() => gridSkeleton,
+      Loading() => coverGridSkeleton,
       Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverGrid.builder(
-                gridDelegate: gridDelegate,
+                gridDelegate: coverGridDelegate,
                 itemBuilder: (context, index) =>
                     MusicVideoCardH(videoItem: response[index]),
                 itemCount: response.length,

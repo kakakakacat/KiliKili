@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/services/rust/rust_cover_scrim.dart';
+import 'package:kilikili/utils/extension/num_ext.dart';
 import 'package:material_ui/material_ui.dart';
 
 // 用卡片的人一定要用到这组颜色，让他们再 import 一次取色服务没有意义。
@@ -63,6 +66,7 @@ class CoverScrimCard extends StatelessWidget {
   const CoverScrimCard({
     super.key,
     required this.cover,
+    this.localCover,
     required this.title,
     this.upName,
     this.upFollowed = false,
@@ -72,6 +76,7 @@ class CoverScrimCard extends StatelessWidget {
     this.metaBuilder,
     this.topStart,
     this.coverOverlays = const [],
+    this.foregroundOverlays = const [],
     this.trailing,
     this.onTap,
     this.onLongPress,
@@ -82,6 +87,9 @@ class CoverScrimCard extends StatelessWidget {
   });
 
   final String? cover;
+
+  /// 离线缓存的本地封面；存在时显示和取色都优先使用它。
+  final String? localCover;
   final String title;
 
   /// UP 名 / 主播名，排在遮罩里信息行的最前面。
@@ -112,6 +120,9 @@ class CoverScrimCard extends StatelessWidget {
 
   /// 盖在封面上的角标，自带 `Positioned`。
   final List<Widget> coverOverlays;
+
+  /// 盖在文案层之上的进度条、选中遮罩等，自带 `Positioned`。
+  final List<Widget> foregroundOverlays;
 
   /// 右下角可点的浮层（如 `VideoPopupMenu`）。给它让出的宽度见
   /// [_trailingWidth]。
@@ -152,12 +163,26 @@ class CoverScrimCard extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           LayoutBuilder(
-            builder: (context, constraints) => NetworkImgLayer(
-              src: cover,
-              width: constraints.maxWidth,
-              height: constraints.maxHeight,
-              borderRadius: BorderRadius.zero,
-            ),
+            builder: (context, constraints) => localCover != null
+                ? Image.file(
+                    File(localCover!),
+                    width: constraints.maxWidth,
+                    height: constraints.maxHeight,
+                    fit: BoxFit.cover,
+                    cacheWidth: constraints.maxWidth.cacheSize(context),
+                    colorBlendMode: NetworkImgLayer.reduce
+                        ? BlendMode.modulate
+                        : null,
+                    color: NetworkImgLayer.reduce
+                        ? NetworkImgLayer.reduceLuxColor
+                        : null,
+                  )
+                : NetworkImgLayer(
+                    src: cover,
+                    width: constraints.maxWidth,
+                    height: constraints.maxHeight,
+                    borderRadius: BorderRadius.zero,
+                  ),
           ),
           ...coverOverlays,
           if (topStart case final topStart?)
@@ -168,7 +193,7 @@ class CoverScrimCard extends StatelessWidget {
             bottom: 0,
             child: IgnorePointer(
               child: _ScrimLayer(
-                cover: cover,
+                cover: localCover == null ? cover : 'file:$localCover',
                 tintRgb:
                     ColorScheme.of(context).primary.toARGB32() & 0x00ffffff,
                 titleMaxLines: titleMaxLines,
@@ -183,6 +208,7 @@ class CoverScrimCard extends StatelessWidget {
               ),
             ),
           ),
+          ...foregroundOverlays,
           // 水波纹要画在封面**之上**，所以这里单独起一层透明 Material；
           // 直接用 Card 自带的那层会被封面盖掉。
           Positioned.fill(

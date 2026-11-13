@@ -86,7 +86,7 @@ abstract class BaseVideoWebState<
     LoadingState<List<T>?> loadingState,
   ) {
     return switch (loadingState) {
-      Loading() => gridSkeleton,
+      Loading() => coverGridSkeleton,
       Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverMainAxisGroup(
@@ -94,7 +94,7 @@ abstract class BaseVideoWebState<
                   buildHeader(colorScheme),
                   ?buildTags(colorScheme),
                   SliverGrid.builder(
-                    gridDelegate: gridDelegate,
+                    gridDelegate: coverGridDelegate,
                     itemCount: response.length,
                     itemBuilder: (context, index) {
                       if (index == response.length - 1) {

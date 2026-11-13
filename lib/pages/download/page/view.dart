@@ -178,7 +178,7 @@ class _DownloadPagePageState extends State<DownloadPagePage>
                 sliver: Obx(() {
                   if (_pages.isNotEmpty) {
                     return SliverGrid.builder(
-                      gridDelegate: gridDelegate,
+                      gridDelegate: coverGridDelegate,
                       itemBuilder: (context, index) {
                         final page = list[index];
                         if (page.entries.length == 1) {

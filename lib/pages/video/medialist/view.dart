@@ -5,14 +5,13 @@ import 'package:kilikili/common/widgets/button/icon_button.dart';
 import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/common/widgets/stat/stat.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/models/common/badge_type.dart';
-import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/models_new/media_list/media_list.dart';
 import 'package:kilikili/models_new/video/video_detail/episode.dart';
 import 'package:kilikili/pages/common/slide/common_slide_page.dart';
 import 'package:kilikili/utils/duration_utils.dart';
+import 'package:kilikili/utils/num_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:kilikili/utils/scroll_offset_helper.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -152,7 +151,7 @@ class _MediaListPanelState extends State<MediaListPanel>
           ),
           sliver: Obx(
             () => SliverFixedExtentList.builder(
-              itemExtent: 112,
+              itemExtent: 200,
               itemCount: widget.mediaList.length,
               itemBuilder: (context, index) {
                 if (index == widget.mediaList.length - 1 &&
@@ -183,13 +182,85 @@ class _MediaListPanelState extends State<MediaListPanel>
       aid: item.aid,
       bvid: item.bvid,
     );
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 2),
+    return Center(
       child: SizedBox(
-        height: 110,
-        child: Material(
-          type: MaterialType.transparency,
-          child: InkWell(
+        width: 256,
+        height: 200,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          child: CoverScrimCard(
+            cover: item.cover,
+            title: item.title ?? '',
+            upName: item.upper?.name,
+            titleStyle: TextStyle(fontWeight: isCurr ? FontWeight.bold : null),
+            titleBuilder: item.type == 24 && item.intro?.isNotEmpty == true
+                ? (context, colors) => Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.title ?? '',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: colors.title,
+                          fontWeight: isCurr ? FontWeight.bold : null,
+                        ),
+                      ),
+                      Text(
+                        item.intro!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 11, color: colors.subtitle),
+                      ),
+                    ],
+                  )
+                : null,
+            coverOverlays: [
+              if (item.badge?.isNotEmpty == true)
+                PBadge(
+                  text: item.badge,
+                  right: 6,
+                  top: 6,
+                  type: item.badge == '充电专属'
+                      ? PBadgeType.error
+                      : PBadgeType.primary,
+                ),
+              if (item.duration != 0)
+                PBadge(
+                  text: DurationUtils.formatDuration(item.duration),
+                  right: 6,
+                  bottom: 6,
+                  type: PBadgeType.gray,
+                ),
+              if (isCurr) const PBadge(text: '正在播放', left: 6, top: 6),
+            ],
+            metaBuilder: (context, colors) => [
+              if (item.type == 2 && item.cntInfo != null)
+                Flexible(
+                  child: Text(
+                    '${NumUtils.numFormat(item.cntInfo!.play)}播放 · ${NumUtils.numFormat(item.cntInfo!.danmaku)}弹幕',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 11, color: colors.subtitle),
+                  ),
+                ),
+            ],
+            trailing: showDelBtn && !isCurr
+                ? IconButton(
+                    onPressed: () => showConfirmDialog(
+                      context: context,
+                      title: const Text('确定移除该视频？'),
+                      onConfirm: () => widget.onDelete!(item, index),
+                    ),
+                    icon: const Icon(
+                      Icons.clear,
+                      size: 18,
+                      color: Colors.white,
+                    ),
+                    tooltip: '移除视频',
+                  )
+                : null,
             onTap: () {
               if (item.type != 2) {
                 SmartDialog.showToast('不支持播放该类型视频');
@@ -200,130 +271,6 @@ class _MediaListPanelState extends State<MediaListPanel>
             },
             onLongPress: onLongPress,
             onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 5,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          NetworkImgLayer(
-                            src: item.cover,
-                            width: 160,
-                            height: 100,
-                          ),
-                          if (item.badge?.isNotEmpty == true)
-                            PBadge(
-                              text: item.badge,
-                              right: 6.0,
-                              top: 6.0,
-                              type: switch (item.badge) {
-                                '充电专属' => PBadgeType.error,
-                                _ => PBadgeType.primary,
-                              },
-                            ),
-                          PBadge(
-                            text: DurationUtils.formatDuration(
-                              item.duration,
-                            ),
-                            right: 6.0,
-                            bottom: 6.0,
-                            type: PBadgeType.gray,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.title!,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontWeight: isCurr ? FontWeight.bold : null,
-                                color: isCurr
-                                    ? theme.colorScheme.primary
-                                    : null,
-                              ),
-                            ),
-                            if (item.type == 24 &&
-                                item.intro?.isNotEmpty == true) ...[
-                              const SizedBox(height: 3),
-                              Text(
-                                item.intro!,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: theme.colorScheme.outline,
-                                ),
-                              ),
-                            ],
-                            const Spacer(),
-                            Text(
-                              item.upper!.name!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: theme.colorScheme.outline,
-                              ),
-                            ),
-                            if (item.type == 2) ...[
-                              const SizedBox(height: 3),
-                              Row(
-                                spacing: 8,
-                                children: [
-                                  StatWidget(
-                                    type: StatType.play,
-                                    value: item.cntInfo!.play,
-                                  ),
-                                  StatWidget(
-                                    type: StatType.danmaku,
-                                    value: item.cntInfo!.danmaku,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (showDelBtn && !isCurr)
-                  Positioned(
-                    right: 12,
-                    bottom: -6,
-                    child: InkWell(
-                      customBorder: const CircleBorder(),
-                      onTap: () => showConfirmDialog(
-                        context: context,
-                        title: const Text('确定移除该视频？'),
-                        onConfirm: () => widget.onDelete!(item, index),
-                      ),
-                      onLongPress: () => widget.onDelete!(item, index),
-                      child: Padding(
-                        padding: const EdgeInsets.all(9),
-                        child: Icon(
-                          Icons.clear,
-                          size: 18,
-                          color: theme.colorScheme.outline,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
           ),
         ),
       ),

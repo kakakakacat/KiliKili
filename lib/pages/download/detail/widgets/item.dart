@@ -5,7 +5,7 @@ import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/common/widgets/dialog/simple_dialog_option.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:kilikili/common/widgets/select_mask.dart';
 import 'package:kilikili/models/common/badge_type.dart';
@@ -86,7 +86,6 @@ class DetailItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final outline = theme.colorScheme.outline;
     final cid = entry.source?.cid ?? entry.pageData?.cid;
     final canDel = onDelete != null;
     final enableMultiSelect = controller.enableMultiSelect.value;
@@ -167,9 +166,81 @@ class DetailItem extends StatelessWidget {
           )
         : null;
 
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
+    final coverPath = path.join(entry.entryDirPath, PathUtils.coverName);
+    final hasLocalCover = File(coverPath).existsSync();
+    final totalDuration = entry.totalTimeMilli ~/ 1000;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: CoverScrimCard(
+        cover: entry.cover,
+        localCover: hasLocalCover ? coverPath : null,
+        title: showTitle ? entry.title : entry.showTitle,
+        upName: entry.ownerName,
+        coverOverlays: [
+          entry.qaBadge,
+          if (totalDuration != 0)
+            PBadge(
+              text: DurationUtils.formatDuration(totalDuration),
+              right: 6,
+              top: 6,
+              type: PBadgeType.gray,
+            ),
+        ],
+        foregroundOverlays: [
+          Positioned.fill(
+            child: selectMask(theme.colorScheme, checked ?? entry.checked),
+          ),
+          if (progress != null && cid != null)
+            ListenableBuilder(
+              listenable: progress!,
+              builder: (context, _) {
+                final watched = GStorage.watchProgress.get(cid.toString());
+                return watched == null || totalDuration == 0
+                    ? const SizedBox.shrink()
+                    : Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: VideoProgressIndicator(
+                          color: theme.colorScheme.primary,
+                          backgroundColor: theme.colorScheme.secondaryContainer,
+                          progress: watched / entry.totalTimeMilli,
+                        ),
+                      );
+              },
+            ),
+        ],
+        metaBuilder: (context, colors) => [
+          if (entry.isCompleted)
+            Flexible(
+              child: Text(
+                entry.totalBytes.formatSize,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 11, color: colors.subtitle),
+              ),
+            )
+          else
+            Flexible(
+              child: isCurr
+                  ? Obx(() {
+                      final current = downloadService.curDownload.value;
+                      return Text(
+                        current?.status.message ?? entry.status.message,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 11, color: colors.subtitle),
+                      );
+                    })
+                  : Text(
+                      entry.status.message,
+                      style: TextStyle(fontSize: 11, color: colors.subtitle),
+                    ),
+            ),
+        ],
+        trailing: entry.isCompleted
+            ? entry.moreBtn(theme.colorScheme.copyWith(outline: Colors.white))
+            : null,
         onTap: () async {
           if (!canDel) {
             Get.to(const DownloadingPage());
@@ -216,239 +287,6 @@ class DetailItem extends StatelessWidget {
         },
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Style.safeSpace,
-            vertical: 5,
-          ),
-          child: Row(
-            spacing: 10,
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  AspectRatio(
-                    aspectRatio: Style.aspectRatio,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final cover = File(
-                          path.join(entry.entryDirPath, PathUtils.coverName),
-                        );
-                        final maxWidth = constraints.maxWidth;
-                        final maxHeight = constraints.maxHeight;
-                        int? cacheWidth, cacheHeight;
-                        if (entry.pageData?.cacheWidth ?? false) {
-                          cacheWidth = maxWidth.cacheSize(context);
-                        } else {
-                          cacheHeight = maxHeight.cacheSize(context);
-                        }
-                        return cover.existsSync()
-                            ? ClipRRect(
-                                borderRadius: Style.mdRadius,
-                                child: Image.file(
-                                  cover,
-                                  width: maxWidth,
-                                  height: maxHeight,
-                                  fit: BoxFit.cover,
-                                  cacheWidth: cacheWidth,
-                                  cacheHeight: cacheHeight,
-                                  colorBlendMode: NetworkImgLayer.reduce
-                                      ? BlendMode.modulate
-                                      : null,
-                                  color: NetworkImgLayer.reduce
-                                      ? NetworkImgLayer.reduceLuxColor
-                                      : null,
-                                ),
-                              )
-                            : NetworkImgLayer(
-                                src: entry.cover,
-                                width: maxWidth,
-                                height: maxHeight,
-                                cacheWidth: entry.pageData?.cacheWidth,
-                              );
-                      },
-                    ),
-                  ),
-                  entry.qaBadge,
-                  if (progress != null)
-                    ListenableBuilder(
-                      listenable: progress!,
-                      builder: (_, _) {
-                        final progress = GStorage.watchProgress.get(
-                          cid.toString(),
-                        );
-                        if (progress != null) {
-                          return Positioned(
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            child: Column(
-                              crossAxisAlignment: .end,
-                              children: [
-                                Padding(
-                                  padding: const .only(right: 6, bottom: 3),
-                                  child: PBadge(
-                                    isStack: false,
-                                    text: progress >= entry.totalTimeMilli - 400
-                                        ? '已看完'
-                                        : '${DurationUtils.formatDuration(
-                                                progress ~/ 1000,
-                                              )}/'
-                                              '${DurationUtils.formatDuration(
-                                                entry.totalTimeMilli ~/ 1000,
-                                              )}',
-                                    type: .gray,
-                                  ),
-                                ),
-                                VideoProgressIndicator(
-                                  color: theme.colorScheme.primary,
-                                  backgroundColor:
-                                      theme.colorScheme.secondaryContainer,
-                                  progress: progress / entry.totalTimeMilli,
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                        return PBadge(
-                          text: DurationUtils.formatDuration(
-                            entry.totalTimeMilli ~/ 1000,
-                          ),
-                          right: 6.0,
-                          bottom: 7.0,
-                          type: PBadgeType.gray,
-                        );
-                      },
-                    )
-                  else if (entry.totalTimeMilli != 0)
-                    PBadge(
-                      text: DurationUtils.formatDuration(
-                        entry.totalTimeMilli ~/ 1000,
-                      ),
-                      right: 6,
-                      bottom: 7,
-                      type: PBadgeType.gray,
-                    ),
-                  Positioned.fill(
-                    child: selectMask(
-                      theme.colorScheme,
-                      checked ?? entry.checked,
-                    ),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Column(
-                      spacing: 5,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          showTitle ? entry.title : entry.showTitle,
-                          textAlign: TextAlign.start,
-                          style: TextStyle(
-                            fontSize: theme.textTheme.bodyMedium!.fontSize,
-                            height: 1.42,
-                            letterSpacing: 0.3,
-                          ),
-                          maxLines: showTitle
-                              ? entry.ep != null
-                                    ? 1
-                                    : 2
-                              : 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (showTitle) ...[
-                          if (entry.pageData?.part case final part?)
-                            if (part != entry.title)
-                              Text(
-                                part,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                          if (entry.ep?.showTitle case final showTitle?)
-                            Text(
-                              showTitle,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                        ],
-                      ],
-                    ),
-                    if (entry.isCompleted) ...[
-                      Positioned(
-                        left: 0,
-                        bottom: 0,
-                        child: Text(
-                          '${entry.totalBytes.formatSize}${entry.ownerName != null ? '  ${entry.ownerName}' : ''}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            height: 1.6,
-                            color: outline,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: entry.moreBtn(theme.colorScheme),
-                      ),
-                    ] else
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        child: isCurr
-                            ? RepaintBoundary(
-                                child: Obx(
-                                  () {
-                                    final curDownload =
-                                        downloadService.curDownload.value;
-                                    if (curDownload != null) {
-                                      final status = curDownload.status;
-                                      final color =
-                                          status != DownloadStatus.pause
-                                          ? theme.colorScheme.primary
-                                          : theme.colorScheme.outline;
-                                      return progressWidget(
-                                        statusMsg: status.message,
-                                        progressStr:
-                                            status ==
-                                                    DownloadStatus
-                                                        .downloading ||
-                                                status == DownloadStatus.pause
-                                            ? '${curDownload.downloadedBytes.formatSize}/${curDownload.totalBytes.formatSize}'
-                                            : '',
-                                        progress: curDownload.totalBytes == 0
-                                            ? 0
-                                            : curDownload.downloadedBytes /
-                                                  curDownload.totalBytes,
-                                        color: color,
-                                        highlightColor: theme.highlightColor,
-                                      );
-                                    }
-                                    return entryProgress(theme);
-                                  },
-                                ),
-                              )
-                            : entryProgress(theme),
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

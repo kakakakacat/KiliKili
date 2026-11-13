@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:kilikili/rust/api/cover_scrim.dart' as rust_api;
@@ -147,11 +148,18 @@ abstract final class CoverScrimCache {
   }
 
   static Future<ui.Image> _decodeThumbnail(String url) {
-    final provider = CachedNetworkImageProvider(
-      ImageUtils.thumbnailUrl(url),
-      maxWidth: _sampleSize,
-      maxHeight: _sampleSize,
-    );
+    // 离线缓存列表使用设备上的封面文件，必须从同一张图取色。
+    final ImageProvider provider = url.startsWith('file:')
+        ? ResizeImage(
+            FileImage(File(url.substring(5))),
+            width: _sampleSize,
+            height: _sampleSize,
+          )
+        : CachedNetworkImageProvider(
+            ImageUtils.thumbnailUrl(url),
+            maxWidth: _sampleSize,
+            maxHeight: _sampleSize,
+          );
     final completer = Completer<ui.Image>();
     final stream = provider.resolve(ImageConfiguration.empty);
     late final ImageStreamListener listener;

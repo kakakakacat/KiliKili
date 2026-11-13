@@ -55,6 +55,12 @@ pgc 成为删得最多的一块
 **第一次因为界面改动而扩大分叉面**：以前每一轮都是迁业务逻辑，这一轮动的
 是上游的视图层，性质不同，见 §4.4。
 
+修订：2026-11-13（issue #108 横版视频及合集封面统一为大卡片）——
+实质改动 168 → **217**，仅重命名波及 724 → **675**；修改的上游文件
+仍为 892。新增文件按当前分支重算为 **472**，其中 `lib/common/` 为 3 个。
+本轮新增的 49 个实质改动文件集中在搜索、收藏、历史、稍后再看、离线缓存、
+动态、播放列表及其共用卡片，见 §4.4。
+
 前述 #89 修订的差额**不全是那次改动**：上一版是在 #79 的工作树上算的，#90 合进
 main 前的最后一个提交（CDN 判据跟着算法搬家）没算进去——它删掉四个 Dart
 测试、新增 `bili-core/src/{cdn,playback}.rs` 与 `test/bridge/playback_bridge_test.dart`，
@@ -94,9 +100,9 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 类别 | 数量 |
 | --- | ---: |
 | 修改的上游既有文件 | 892 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 724 |
-| &nbsp;&nbsp;其中：有实质改动 | **168** |
-| 新增文件 | 471 |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 675 |
+| &nbsp;&nbsp;其中：有实质改动 | **217** |
+| 新增文件 | 472 |
 | 删除文件 | **128** |
 
 「修改」总数一路下降（935 → 909 → 897 → 891），不是改动变少，而是其中
@@ -108,7 +114,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 `ba430476b chore: rename app package identifiers to KiliKili` 把每个 Dart
 文件的 `package:PiliPlus/` 改成了 `package:kilikili/`，一次触及 992 个文件。
-**当前分叉面里 737 个文件只有这一处差异。**
+**当前分叉面里 675 个文件只有这一处差异。**
 
 对同步的影响很具体：上游每改动一个 Dart 文件，我们这边大概率冲突，但
 **冲突内容永远是那一行 import**。处理方式是取上游版本后重新套用重命名，
@@ -119,8 +125,8 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 4. 有实质改动的上游文件
 
-168 个。业务层 typed 直连迁移集中列在 §4.1，**NEW168 个来自竖版封面卡片
-改版**（§4.4，性质同样一致），其余改动逐个列在 §4.3。
+217 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
+见 §4.4，其余改动逐个列在 §4.3。
 
 ### 4.1 typed 直连迁移触及的上游文件
 
@@ -218,12 +224,13 @@ H5 房间信息）、第二批 7 个（`live_room_play_info/` 整个目录）、
 `.github/workflows/build.yml` 与 `ios.yml` 也在分叉面里，但**只有包名重命名**，
 没有逻辑改动。
 
-### 4.4 竖版封面卡片改版触及的上游文件
+### 4.4 封面卡片改版触及的上游文件
 
-issue #108 把所有**竖版**视频封面从「顶部封面图 + 底部独立文案区」改成
+issue #108 把视频封面从「顶部封面图 + 底部独立文案区」改成
 「整张封面 + 底部叠加文案」，遮罩配色由 `bili_core::cover_scrim` 按封面
-取色算出。横版卡（搜索结果、收藏、历史、稍后再看…）**刻意没动**：那批
-是列表密度优先的布局，改成大封面会让一屏能看的条目数明显下降，范围另议。
+取色算出。搜索结果、收藏、历史、稍后再看等原先的横向图文行也使用
+同一组件；格子改为按封面比例排布。离线缓存优先从本地封面文件取色，
+断网时文案仍与实际显示的封面匹配。
 
 | 文件 | 性质 |
 | --- | --- |
@@ -232,6 +239,9 @@ issue #108 把所有**竖版**视频封面从「顶部封面图 + 底部独立�
 | `lib/common/widgets/video_popup_menu.dart` | 新增 `onCover`：压在遮罩上时图标改白色 + 阴影 |
 | `lib/common/skeleton/video_card_v.dart` | 骨架跟着变成整块封面，否则加载完会重排 |
 | `lib/pages/{rcmd,live,live_follow,live_search,live_area_detail,search_panel/live,pgc,pgc_index,member_pgc,member_coin_arc,member_like_arc,member_home}/**` | 卡片本体改用 `CoverScrimCard`；对应 grid delegate 去掉给文字留的 `mainAxisExtent`（格子现在就是封面本身），视频/直播格子的 `childAspectRatio` 从 16:10 收到 4:3 |
+| `lib/common/widgets/video_card/video_card_h.dart`、`lib/utils/grid.dart` | 横版视频卡改用共用遮罩，并让搜索、热门、相关视频等格子按 4:3 排布 |
+| `lib/pages/{search_panel,member_search,video/reply_search_item,history,history_search,later,later_search,fav_detail,fav_search,fav_sort,fav,member_video,member_video_web,member_favorite,member_season_series,member_cheese,music,subscription,subscription_detail,download}/**` | 视频、番剧、课程、收藏夹与离线缓存原有横向图文行改为整张封面卡；保留选择、进度、菜单与跳转入口 |
+| `lib/pages/{dynamics,video/medialist}/**`、`lib/services/rust/rust_cover_scrim.dart` | 动态与播放列表共用遮罩；离线文件经同一 Rust 算法取色 |
 
 卡片上的信息分三层，改哪一层决定了去哪里改：**底部遮罩**里的标题、UP 名
 及辅助信息，颜色由 `cover_scrim` 保证对比度；UP 名的主题色药丸也由 Rust
@@ -265,7 +275,7 @@ Column 顺序、文字层级），丢弃——那一层我们已经整个换掉�
 
 ## 5. 新增文件
 
-471 个，不与上游冲突，按区域分布：
+472 个，不与上游冲突，按区域分布：
 
 | 区域 | 文件数 | 内容 |
 | --- | ---: | --- |
@@ -276,7 +286,7 @@ Column 顺序、文字层级），丢弃——那一层我们已经整个换掉�
 | `lib/rust/` | 25 | FRB 生成的 Dart 绑定 |
 | `tool/` | 13 | 构建准备、FRB 生成、README 统计、产物核对、fixture 生成 |
 | `docs/` | 14 | RFC、ADR、M0 记录、QA 清单 |
-| `lib/common/` | 2 | 竖版封面大卡片与直播卡共用的文案行（issue #108） |
+| `lib/common/` | 3 | 封面大卡片、统计药丸与直播卡共用的文案行（issue #108） |
 | `lib/pages/` | 1 | 从控制器里搬出来的基线弹幕引擎（`danmaku/engine.dart`） |
 | `lib/utils/` | 1 | 从 `SubtitleUtils` 里搬出来的基线字幕转换（`subtitle_format.dart`） |
 | 其他 | 9 | workflow、`AGENTS.md` / `CLAUDE.md`、README 统计图、`flutter_rust_bridge.yaml` |

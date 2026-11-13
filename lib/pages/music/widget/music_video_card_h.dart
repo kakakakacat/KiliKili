@@ -1,9 +1,7 @@
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/common/widgets/marquee.dart';
-import 'package:kilikili/common/widgets/stat/stat.dart';
+import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/http/search.dart';
 import 'package:kilikili/models/common/badge_type.dart';
 import 'package:kilikili/models/common/stat_type.dart';
@@ -15,12 +13,30 @@ import 'package:kilikili/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
 class MusicVideoCardH extends StatelessWidget {
+  const MusicVideoCardH({super.key, required this.videoItem});
+
   final BgmRecommend videoItem;
 
-  const MusicVideoCardH({
-    super.key,
-    required this.videoItem,
-  });
+  Future<void> _open() async {
+    int? cid = videoItem.cid;
+    Dimension? dimension;
+    if (cid == null) {
+      if (await SearchHttp.ab2cWithDimension(bvid: videoItem.bvid)
+          case final res?) {
+        cid = res.cid;
+        dimension = res.dimension;
+      }
+    }
+    if (cid != null) {
+      PageUtils.toVideoPage(
+        bvid: videoItem.bvid,
+        cid: cid,
+        cover: videoItem.cover,
+        title: videoItem.title,
+        dimension: dimension,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,131 +45,42 @@ class MusicVideoCardH extends StatelessWidget {
       cover: videoItem.cover,
       bvid: videoItem.bvid,
     );
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
-        onTap: () async {
-          int? cid = videoItem.cid;
-          Dimension? dimension;
-          if (cid == null) {
-            if (await SearchHttp.ab2cWithDimension(bvid: videoItem.bvid)
-                case final res?) {
-              cid = res.cid;
-              dimension = res.dimension;
-            }
-          }
-          if (cid != null) {
-            PageUtils.toVideoPage(
-              bvid: videoItem.bvid,
-              cid: cid,
-              cover: videoItem.cover,
-              title: videoItem.title,
-              dimension: dimension,
-            );
-          }
-        },
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: CoverScrimCard(
+        cover: videoItem.cover,
+        title: videoItem.title ?? '',
+        upName: videoItem.upNickName,
+        onTap: _open,
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Style.safeSpace,
-            vertical: 5,
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AspectRatio(
-                aspectRatio: Style.aspectRatio,
-                child: LayoutBuilder(
-                  builder: (context, boxConstraints) {
-                    double maxWidth = boxConstraints.maxWidth;
-                    double maxHeight = boxConstraints.maxHeight;
-                    return Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        NetworkImgLayer(
-                          src: videoItem.cover,
-                          width: maxWidth,
-                          height: maxHeight,
-                        ),
-                        PBadge(
-                          text: DurationUtils.formatDuration(
-                            videoItem.duration,
-                          ),
-                          right: 6.0,
-                          bottom: 6.0,
-                          type: PBadgeType.gray,
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(width: 10),
-              content(context),
-            ],
-          ),
+        topStart: CoverStatsPill(
+          stats: [
+            (StatType.play, videoItem.play),
+            (StatType.danmaku, videoItem.danmu),
+          ],
         ),
-      ),
-    );
-  }
-
-  Widget content(BuildContext context) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Text(
-              videoItem.title!,
-              textAlign: TextAlign.start,
-              style: const TextStyle(
-                letterSpacing: 0.3,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+        coverOverlays: [
+          if ((videoItem.duration ?? 0) > 0)
+            PBadge(
+              text: DurationUtils.formatDuration(videoItem.duration),
+              top: 6,
+              right: 6,
+              type: PBadgeType.gray,
             ),
-          ),
-          Row(
-            spacing: 8,
-            children: [
-              StatWidget(
-                type: StatType.play,
-                value: videoItem.play,
-              ),
-              StatWidget(
-                type: StatType.danmaku,
-                value: videoItem.danmu,
-              ),
-            ],
-          ),
-          const SizedBox(height: 3),
-          NormalMarquee(
-            velocity: 25,
-            spacing: 30,
-            child: Row(
-              spacing: 8,
-              children: [
-                for (final label in videoItem.labels)
-                  PBadge(
-                    text: label,
-                    isStack: false,
-                    size: PBadgeSize.small,
-                    type: PBadgeType.secondary,
-                  ),
-                Text(
-                  videoItem.upNickName!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).colorScheme.outline,
+        ],
+        metaBuilder: videoItem.labels.isEmpty
+            ? null
+            : (context, colors) => [
+                Flexible(
+                  child: Text(
+                    videoItem.labels.join(' · '),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 11, color: colors.subtitle),
                   ),
                 ),
               ],
-            ),
-          ),
-        ],
       ),
     );
   }

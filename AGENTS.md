@@ -197,6 +197,13 @@ PR**，不要只留在代码和 Issues 里：
   只用在下载 SDK 上。
 - 本机没有 fvm 时，issue 模板里写的 `.fvm/flutter_sdk/bin/dart` 按全局
   Flutter SDK 的 `dart` 来用。
+- Android 本地构建使用 `android/key.properties` 指向
+  `android/app/kilikili-release.jks`。这两个文件只在本机保存，已被 Git
+  忽略；迁移机器时须通过安全渠道同时备份密钥、别名和密码。同一包名的后续
+  Android 版本必须沿用原签名，否则不能原地升级。GitHub 手动发布工作流
+  仍读取现有 Secrets，切换签名身份前先核对旧版证书指纹与升级路径。
+- Android 的 JKS 只用于 Android；Apple 平台和 Windows 安装包分别按各自
+  的签名身份与证书流程处理，不共用此 JKS。
 
 ---
 

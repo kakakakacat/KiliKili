@@ -1,18 +1,19 @@
-import 'package:kilikili/common/style.dart';
-import 'package:kilikili/common/widgets/button/icon_button.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/badge.dart';
+import 'package:kilikili/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:kilikili/common/widgets/select_mask.dart';
-import 'package:kilikili/common/widgets/stat/stat.dart';
+import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/http/search.dart';
+import 'package:kilikili/models/common/badge_type.dart';
 import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/models_new/later/list.dart';
 import 'package:kilikili/pages/later/controller.dart';
+import 'package:kilikili/utils/duration_utils.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:material_ui/material_ui.dart';
 
-// 视频卡片 - 水平布局
 class VideoCardHLater extends StatelessWidget {
   const VideoCardHLater({
     super.key,
@@ -21,6 +22,7 @@ class VideoCardHLater extends StatelessWidget {
     required this.videoItem,
     required this.onViewLater,
   });
+
   final int index;
   final BaseLaterController ctr;
   final LaterItemModel videoItem;
@@ -28,153 +30,88 @@ class VideoCardHLater extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colorScheme = ColorScheme.of(context);
     final enableMultiSelect = ctr.enableMultiSelect.value;
-
+    final progress = videoItem.progress;
+    final duration = videoItem.duration;
+    final hasProgress =
+        progress != null && progress != 0 && duration != null && duration != 0;
+    final isPgc = videoItem.isPgc == true && videoItem.bangumi != null;
+    final label = videoItem.label;
     final onLongPress = enableMultiSelect
         ? null
         : () => ctr
             ..enableMultiSelect.value = true
             ..onSelect(videoItem);
-
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
-        onLongPress: onLongPress,
-        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: CoverScrimCard(
+        cover: videoItem.pic,
+        title: isPgc
+            ? videoItem.bangumi!.season?.title ?? videoItem.title ?? ''
+            : videoItem.title ?? '',
+        upName: isPgc ? null : videoItem.owner?.name,
         onTap: enableMultiSelect
             ? () => ctr.onSelect(videoItem)
             : () => onPushLater(videoItem, onViewLater: onViewLater),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Style.safeSpace,
-            vertical: 5,
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              AspectRatio(
-                aspectRatio: Style.aspectRatio,
-                child: LayoutBuilder(
-                  builder: (context, boxConstraints) {
-                    final double maxWidth = boxConstraints.maxWidth;
-                    final double maxHeight = boxConstraints.maxHeight;
-                    return Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        NetworkImgLayer(
-                          src: videoItem.pic,
-                          width: maxWidth,
-                          height: maxHeight,
-                          cacheWidth: videoItem.dimension?.cacheWidth,
-                        ),
-                        ?videoItem.label,
-                        ...videoItem.progressIndicator(theme.colorScheme),
-                        Positioned.fill(
-                          child: selectMask(
-                            theme.colorScheme,
-                            videoItem.checked,
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
+        onLongPress: onLongPress,
+        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+        topStart: isPgc
+            ? null
+            : CoverStatsPill(
+                stats: [
+                  (StatType.play, videoItem.stat?.view),
+                  (StatType.danmaku, videoItem.stat?.danmaku),
+                ],
               ),
-              const SizedBox(width: 10),
-              content(context, theme),
-            ],
+        coverOverlays: [
+          ?label,
+          if (hasProgress || (duration != null && duration > 0))
+            PBadge(
+              text: hasProgress
+                  ? progress == -1
+                        ? '已看完'
+                        : '${DurationUtils.formatDuration(progress)}/${DurationUtils.formatDuration(duration)}'
+                  : DurationUtils.formatDuration(duration),
+              top: label == null ? 6 : 32,
+              right: 6,
+              type: PBadgeType.gray,
+            ),
+        ],
+        foregroundOverlays: [
+          if (hasProgress)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: VideoProgressIndicator(
+                color: colorScheme.primary,
+                backgroundColor: colorScheme.secondaryContainer,
+                progress: progress == -1 ? 1 : progress / duration,
+              ),
+            ),
+          Positioned.fill(child: selectMask(colorScheme, videoItem.checked)),
+        ],
+        metaBuilder: isPgc && videoItem.subtitle?.isNotEmpty == true
+            ? (context, colors) => [
+                Flexible(
+                  child: Text(
+                    videoItem.subtitle!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 11, color: colors.subtitle),
+                  ),
+                ),
+              ]
+            : null,
+        trailing: SizedBox.square(
+          dimension: 29,
+          child: IconButton(
+            tooltip: '移除',
+            onPressed: () => ctr.toViewDel(context, index, videoItem.aid!),
+            icon: const Icon(Icons.clear, color: Colors.white, size: 18),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget content(BuildContext context, ThemeData theme) {
-    final isPgc = videoItem.isPgc == true && videoItem.bangumi != null;
-    Widget stat = StatWidget(
-      type: StatType.play,
-      value: videoItem.stat?.view,
-    );
-    return Expanded(
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: isPgc
-                ? [
-                    Text(
-                      videoItem.bangumi!.season!.title!,
-                      style: TextStyle(
-                        fontSize: theme.textTheme.bodyMedium!.fontSize,
-                        height: 1.42,
-                        letterSpacing: 0.3,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      videoItem.subtitle!,
-                      textAlign: TextAlign.start,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: theme.colorScheme.outline,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const Spacer(),
-                    stat,
-                  ]
-                : [
-                    Expanded(
-                      child: Text(
-                        videoItem.title!,
-                        style: TextStyle(
-                          fontSize: theme.textTheme.bodyMedium!.fontSize,
-                          height: 1.42,
-                          letterSpacing: 0.3,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Text(
-                      videoItem.owner!.name!,
-                      maxLines: 1,
-                      style: TextStyle(
-                        fontSize: 12,
-                        height: 1,
-                        color: theme.colorScheme.outline,
-                        overflow: TextOverflow.clip,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Row(
-                      spacing: 8,
-                      children: [
-                        stat,
-                        StatWidget(
-                          type: StatType.danmaku,
-                          value: videoItem.stat?.danmaku,
-                        ),
-                      ],
-                    ),
-                  ],
-          ),
-          Positioned(
-            right: 0,
-            bottom: -8,
-            child: iconButton(
-              tooltip: '移除',
-              onPressed: () => ctr.toViewDel(context, index, videoItem.aid!),
-              icon: const Icon(Icons.clear),
-              iconColor: theme.colorScheme.outline,
-            ),
-          ),
-        ],
       ),
     );
   }

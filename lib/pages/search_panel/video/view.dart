@@ -112,7 +112,7 @@ mixin SearchVideoPanelMixin<S extends SearchVideoPanel>
   @override
   Widget buildList(List<SearchVideoItemModel> list) {
     return SliverGrid.builder(
-      gridDelegate: gridDelegate,
+      gridDelegate: coverGridDelegate,
       itemBuilder: (context, index) {
         if (index == list.length - 1) {
           controller.onLoadMore();
@@ -129,5 +129,5 @@ mixin SearchVideoPanelMixin<S extends SearchVideoPanel>
   }
 
   @override
-  Widget get buildLoading => gridSkeleton;
+  Widget get buildLoading => coverGridSkeleton;
 }

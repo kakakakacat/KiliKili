@@ -1,10 +1,9 @@
-import 'package:kilikili/common/widgets/badge.dart';
+import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:kilikili/common/widgets/select_mask.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/http/search.dart';
 import 'package:kilikili/http/user.dart';
-import 'package:kilikili/models/common/badge_type.dart';
 import 'package:kilikili/models_new/history/list.dart';
 import 'package:kilikili/models_new/video/video_detail/dimension.dart';
 import 'package:kilikili/pages/article/view.dart';
@@ -65,13 +64,12 @@ class HistoryItem extends StatelessWidget {
         coverOverlays: [
           ?label,
           if (item.hasDuration)
-            PBadge(
+            CoverDurationPill(
               text: progress == -1
                   ? '已看完'
                   : '${DurationUtils.formatDuration(progress)}/${DurationUtils.formatDuration(item.duration)}',
               right: 6,
               top: label == null ? 6 : 32,
-              type: PBadgeType.gray,
             ),
         ],
         foregroundOverlays: [

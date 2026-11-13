@@ -107,11 +107,9 @@ class VideoCardV extends StatelessWidget {
       ),
       coverOverlays: [
         if (videoItem.duration > 0)
-          PBadge(
+          CoverDurationPill(
             top: 6,
             right: 6,
-            size: .small,
-            type: .gray,
             text: DurationUtils.formatDuration(videoItem.duration),
           ),
       ],

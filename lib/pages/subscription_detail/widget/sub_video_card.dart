@@ -1,9 +1,7 @@
-import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/http/search.dart';
-import 'package:kilikili/models/common/badge_type.dart';
 import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/models_new/sub/sub_detail/media.dart';
 import 'package:kilikili/utils/date_utils.dart';
@@ -56,11 +54,10 @@ class SubVideoCardH extends StatelessWidget {
         ),
         coverOverlays: [
           if ((videoItem.duration ?? 0) > 0)
-            PBadge(
+            CoverDurationPill(
               text: DurationUtils.formatDuration(videoItem.duration),
               top: 6,
               right: 6,
-              type: PBadgeType.gray,
             ),
         ],
         metaBuilder: date.isEmpty

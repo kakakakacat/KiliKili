@@ -7,8 +7,8 @@ import 'package:material_ui/material_ui.dart';
 ///
 /// 它落在封面上而不是底部遮罩里，**不在 `cover_scrim` 的对比度保证范围
 /// 内**——那套保证只对遮罩合成出来的那块背景成立。所以这里固定用
-/// `black45` + 白字，和右上角的时长角标（`PBadgeType.gray`）同一套：两者
-/// 在同一张封面的左右上角并排出现，颜色不一致会很显眼。
+/// `black45` + 白字。统计与时长共用这个容器，避免两侧文字行高和内边距
+/// 不同导致角标高低不齐。
 class CoverPill extends StatelessWidget {
   const CoverPill({super.key, required this.children});
 
@@ -54,6 +54,34 @@ class CoverStatsPill extends StatelessWidget {
             iconSize: 12,
           ),
     ],
+  );
+}
+
+/// 封面右上角的时长或观看进度，与左侧统计药丸共用尺寸和底色。
+class CoverDurationPill extends StatelessWidget {
+  const CoverDurationPill({
+    super.key,
+    required this.text,
+    this.top = 6,
+    this.right = 6,
+  });
+
+  final String text;
+  final double top;
+  final double right;
+
+  @override
+  Widget build(BuildContext context) => Positioned(
+    top: top,
+    right: right,
+    child: CoverPill(
+      children: [
+        Text(
+          text,
+          style: const TextStyle(fontSize: 12, color: Colors.white),
+        ),
+      ],
+    ),
   );
 }
 

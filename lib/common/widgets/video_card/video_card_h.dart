@@ -89,20 +89,18 @@ class VideoCardH extends StatelessWidget {
               type: badge == '充电专属' ? PBadgeType.error : PBadgeType.primary,
             ),
           if (progress != null && progress != 0)
-            PBadge(
+            CoverDurationPill(
               text: progress == -1
                   ? '已看完'
                   : '${DurationUtils.formatDuration(progress)}/${DurationUtils.formatDuration(videoItem.duration)}',
               right: 6,
               top: videoItem.badge == null ? 6 : 32,
-              type: PBadgeType.gray,
             )
           else if (videoItem.duration > 0)
-            PBadge(
+            CoverDurationPill(
               text: DurationUtils.formatDuration(videoItem.duration),
               right: 6,
               top: videoItem.badge == null ? 6 : 32,
-              type: PBadgeType.gray,
             ),
           if (progress != null && progress != 0)
             Positioned(

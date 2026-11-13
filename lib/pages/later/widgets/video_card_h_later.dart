@@ -1,10 +1,8 @@
-import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:kilikili/common/widgets/select_mask.dart';
 import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/http/search.dart';
-import 'package:kilikili/models/common/badge_type.dart';
 import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/models_new/later/list.dart';
 import 'package:kilikili/pages/later/controller.dart';
@@ -67,7 +65,7 @@ class VideoCardHLater extends StatelessWidget {
         coverOverlays: [
           ?label,
           if (hasProgress || (duration != null && duration > 0))
-            PBadge(
+            CoverDurationPill(
               text: hasProgress
                   ? progress == -1
                         ? '已看完'
@@ -75,7 +73,6 @@ class VideoCardHLater extends StatelessWidget {
                   : DurationUtils.formatDuration(duration),
               top: label == null ? 6 : 32,
               right: 6,
-              type: PBadgeType.gray,
             ),
         ],
         foregroundOverlays: [

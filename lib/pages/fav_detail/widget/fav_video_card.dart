@@ -104,11 +104,10 @@ class FavVideoCardH extends StatelessWidget {
           if (badge != null && badge.isNotEmpty)
             PBadge(text: badge, top: 6, right: 6, type: PBadgeType.gray),
           if (item.duration != null && item.duration! > 0)
-            PBadge(
+            CoverDurationPill(
               text: DurationUtils.formatDuration(item.duration),
               top: badge == null || badge.isEmpty ? 6 : 32,
               right: 6,
-              type: PBadgeType.gray,
             ),
         ],
         foregroundOverlays: [

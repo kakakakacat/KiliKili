@@ -4,7 +4,6 @@ import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/widgets/video_card/video_card_v.dart';
 import 'package:kilikili/http/search.dart';
-import 'package:kilikili/models/common/badge_type.dart';
 import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/models_new/member/coin_like_arc/item.dart';
 import 'package:kilikili/utils/date_utils.dart';
@@ -63,12 +62,10 @@ class MemberCoinLikeItem extends StatelessWidget {
         else if (item.isSteins == true)
           const PBadge(text: '互动', top: 6, left: 6),
         if (item.duration != null && item.duration! > 0)
-          PBadge(
+          CoverDurationPill(
             // 时长原本在右下角，那里现在是文案遮罩（issue #108）。
             top: 6,
             right: 6,
-            size: PBadgeSize.small,
-            type: PBadgeType.gray,
             text: DurationUtils.formatDuration(item.duration),
           ),
       ],

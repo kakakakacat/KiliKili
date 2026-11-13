@@ -101,7 +101,7 @@ class VideoCardHMemberVideo extends StatelessWidget {
           if (isCurr)
             const PBadge(text: '上次观看', top: 34, left: 6, type: PBadgeType.gray),
           if (hasProgress || videoItem.duration > 0)
-            PBadge(
+            CoverDurationPill(
               text: hasProgress
                   ? progress == duration
                         ? '已看完'
@@ -109,7 +109,6 @@ class VideoCardHMemberVideo extends StatelessWidget {
                   : DurationUtils.formatDuration(videoItem.duration),
               top: badge == null ? 6 : 32,
               right: 6,
-              type: PBadgeType.gray,
             ),
         ],
         foregroundOverlays: [

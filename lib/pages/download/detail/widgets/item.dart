@@ -2,13 +2,12 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:kilikili/common/style.dart';
-import 'package:kilikili/common/widgets/badge.dart';
+import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:kilikili/common/widgets/select_mask.dart';
-import 'package:kilikili/models/common/badge_type.dart';
 import 'package:kilikili/models/common/sponsor_block/segment_type.dart';
 import 'package:kilikili/models/common/video/source_type.dart';
 import 'package:kilikili/models_new/download/bili_download_entry_info.dart';
@@ -179,11 +178,10 @@ class DetailItem extends StatelessWidget {
         coverOverlays: [
           entry.qaBadge,
           if (totalDuration != 0)
-            PBadge(
+            CoverDurationPill(
               text: DurationUtils.formatDuration(totalDuration),
               right: 6,
               top: 6,
-              type: PBadgeType.gray,
             ),
         ],
         foregroundOverlays: [

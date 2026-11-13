@@ -5,7 +5,6 @@ import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/grpc/bilibili/app/interfaces/v1.pb.dart' show Arc;
 import 'package:kilikili/http/user.dart';
-import 'package:kilikili/models/common/badge_type.dart';
 import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/utils/date_utils.dart';
 import 'package:kilikili/utils/duration_utils.dart';
@@ -86,11 +85,10 @@ class SearchArchiveGrpc extends StatelessWidget {
         coverOverlays: [
           if (item.isPugv) const PBadge(text: '课堂', top: 6, right: 6),
           if (arc.duration > Int64.ZERO)
-            PBadge(
+            CoverDurationPill(
               text: DurationUtils.formatDuration(arc.duration.toInt()),
               top: item.isPugv ? 32 : 6,
               right: 6,
-              type: PBadgeType.gray,
             ),
         ],
         metaBuilder: date.isEmpty

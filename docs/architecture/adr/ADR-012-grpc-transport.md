@@ -1,6 +1,6 @@
 # ADR-012: Rust 侧 gRPC 传输：不要 tonic，要一个会解帧的 POST
 
-Status: **Proposed（待仓库所有者批准；本文的实测数字取自 `35da9eedb`）**
+Status: **Accepted（2026-11-13 仓库所有者批准；本文的实测数字取自 `35da9eedb`）**
 Date: 2026-11-12
 Related: RFC-0001 §2.2 / §5.3 / §16.6、ADR-008、ADR-010、ADR-011（决策四、
 决策六、补充四）、ADR-013（决策一、决策三、决策七）、issue #49、EPIC #67

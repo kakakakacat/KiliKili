@@ -48,6 +48,9 @@ pgc 成为删得最多的一块
 修订：2026-11-12（头像主题色边框 #109）——实质改动 152 → **154**，
 仅重命名波及 739 → **737**；修改总数仍为 891，新增和删除数不变。
 `NetworkImgLayer` 与“我的”页从仅重命名文件转为有实质改动。
+修订：2026-11-12（自动播放默认值 #16）——实质改动 154 → **155**，
+仅重命名波及 737 → **736**；修改总数仍为 891，新增和删除数不变。
+`storage_pref.dart` 从仅重命名转为有实质改动。
 修订：2026-11-12（关注/粉丝列表，#66 收尾，为本次）—— 实质改动
 154 → **157**，仅重命名波及 737 → **732**，新增文件 465 → **469**，
 删除文件 128 → **130**，「修改」总数 891 → **889**。本次数字含**尚未提交**
@@ -90,6 +93,11 @@ pgc 成为删得最多的一块
 从仅重命名变成实质改动；修改的上游文件仍为 **890**，其中实质改动
 **224 → 225**、仅重命名 **666 → 665**；新增和删除文件数不变。
 
+修订：2026-11-13（合入自动播放默认值 #16）——按 §6 的分类，
+`storage_pref.dart` 从仅重命名转为有实质改动：实质改动 **225 → 226**，
+仅重命名 **665 → 664**；修改和删除文件总数不变。合入 ADR-012 #49 后，
+新增文件 **479 → 480**（`docs/architecture/adr/ADR-012-grpc-transport.md`）。
+
 前述 #89 修订的差额**不全是那次改动**：上一版是在 #79 的工作树上算的，#90 合进
 main 前的最后一个提交（CDN 判据跟着算法搬家）没算进去——它删掉四个 Dart
 测试、新增 `bili-core/src/{cdn,playback}.rs` 与 `test/bridge/playback_bridge_test.dart`，
@@ -129,9 +137,9 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 类别 | 数量 |
 | --- | ---: |
 | 修改的上游既有文件 | 890 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 665 |
-| &nbsp;&nbsp;其中：有实质改动 | **225** |
-| 新增文件 | 479 |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 664 |
+| &nbsp;&nbsp;其中：有实质改动 | **226** |
+| 新增文件 | 480 |
 | 删除文件 | **130** |
 
 「修改」总数一路下降（935 → 909 → 897 → 891），部分文件是因迁移被删除，
@@ -142,7 +150,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 `ba430476b chore: rename app package identifiers to KiliKili` 把每个 Dart
 文件的 `package:PiliPlus/` 改成了 `package:kilikili/`，一次触及 992 个文件。
-**当前分叉面里 665 个文件只有这一处差异。**
+**当前分叉面里 664 个文件只有这一处差异。**
 
 对同步的影响很具体：上游每改动一个 Dart 文件，我们这边大概率冲突，但
 **冲突内容永远是那一行 import**。处理方式是取上游版本后重新套用重命名，
@@ -153,7 +161,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 4. 有实质改动的上游文件
 
-225 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
+226 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
 见 §4.4，其余改动逐个列在 §4.3。
 
 ### 4.1 typed 直连迁移触及的上游文件
@@ -231,6 +239,7 @@ H5 房间信息）、第二批 7 个（`live_room_play_info/` 整个目录）、
 | `lib/http/video.dart` | `f321aea73` `43827d42f` `9385cf06d` 及 S3 | 视频详情与取流接入 Rust（**仍是 JSON 往返 + 开关**，见 #79）；S3 又从中删去了五条只读接口，见 §4.1 |
 | `lib/http/search.dart` | `130b9f533`、S9 | 搜索建议接入 Rust；S9 之后整条搜索是 typed 直连、**无开关无回退**，见 §4.1 |
 | `lib/pages/setting/models/play_settings.dart` | `9d1d5c3c9` | 自动播放默认值改为开启（issue #16） |
+| `lib/utils/storage_pref.dart` | issue #16 | 未设置时默认开启自动播放，与设置页开关的默认值一致；已保存的选择不变 |
 | `lib/pages/danmaku/controller.dart` | 本次（issue #42） | 分段改走 Rust 弹幕引擎（带开关与运行中降级）；原 `handleDanmaku` 的循环原样移入新文件 `lib/pages/danmaku/engine.dart` |
 | `lib/grpc/dm.dart` | 本次（issue #42、DmView 字幕） | 新增 `dmSegMobileRaw`（只取回字节交给 Rust）与 `dmViewSubtitles`（字幕解析走 Rust，带开关与回退） |
 | `lib/pages/video/controller.dart` | 本次（DmView 字幕） | 取字幕改调 `DmGrpc.dmViewSubtitles` |
@@ -307,17 +316,18 @@ Column 顺序、文字层级），丢弃——那一层我们已经整个换掉�
 
 ## 5. 新增文件
 
-476 个，不与上游冲突，按区域分布：
+480 个，不与上游冲突，按区域分布：
 
 | 区域 | 文件数 | 内容 |
 | --- | ---: | --- |
 | `rust/` | 302 | Rust workspace：6 个 crate、golden fixture 与快照 |
 | `rust_builder/` | 46 | cargokit，把 Rust 接入 Flutter 各端构建 |
 | `lib/services/` | 34 | Rust 开关、shadow mode、各切片的取数封装 |
-| `test/` | 28 | parity 测试与桥接层集成测试 |
+| `test/` | 30 | parity 测试与桥接层集成测试 |
 | `lib/rust/` | 25 | FRB 生成的 Dart 绑定 |
 | `tool/` | 13 | 构建准备、FRB 生成、README 统计、产物核对、fixture 生成 |
-| `docs/` | 14 | RFC、ADR、M0 记录、QA 清单 |
+| `docs/` | 15 | RFC、ADR、M0 记录、QA 清单 |
+| `shaders/` | 1 | Liquid Glass 背板折射着色器 |
 | `lib/common/` | 3 | 封面大卡片、统计药丸与直播卡共用的文案行（issue #108） |
 | `lib/pages/` | 1 | 从控制器里搬出来的基线弹幕引擎（`danmaku/engine.dart`） |
 | `lib/utils/` | 1 | 从 `SubtitleUtils` 里搬出来的基线字幕转换（`subtitle_format.dart`） |

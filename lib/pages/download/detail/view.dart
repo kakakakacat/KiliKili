@@ -134,7 +134,7 @@ class _DownloadDetailPageState extends State<DownloadDetailPage>
                 sliver: Obx(() {
                   if (_downloadItems.isNotEmpty) {
                     return SliverGrid.builder(
-                      gridDelegate: gridDelegate,
+                      gridDelegate: coverGridDelegate,
                       itemBuilder: (context, index) {
                         final entry = _downloadItems[index];
                         return DetailItem(

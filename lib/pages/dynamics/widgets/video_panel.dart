@@ -1,8 +1,7 @@
-// 视频or合集
+// 视频或合集封面与文案共用取色遮罩。
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/badge.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/common/widgets/svg/play_icon.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/models/common/badge_type.dart';
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/utils/num_utils.dart';
@@ -16,11 +15,7 @@ Widget videoSeasonWidget(
   required bool isSave,
   required bool isDetail,
 }) {
-  // type archive  ugcSeason
-  // archive 视频/显示发布人
-  // ugcSeason 合集/不显示发布人
-
-  DynamicArchiveModel? video = switch (item.type) {
+  final DynamicArchiveModel? video = switch (item.type) {
     'DYNAMIC_TYPE_AV' => item.modules.moduleDynamic?.major?.archive,
     'DYNAMIC_TYPE_UGC_SEASON' => item.modules.moduleDynamic?.major?.ugcSeason,
     'DYNAMIC_TYPE_PGC' ||
@@ -28,106 +23,41 @@ Widget videoSeasonWidget(
     'DYNAMIC_TYPE_COURSES_SEASON' => item.modules.moduleDynamic?.major?.courses,
     _ => null,
   };
+  if (video == null) return const SizedBox.shrink();
 
-  if (video == null) {
-    return const SizedBox.shrink();
-  }
-
-  EdgeInsets padding;
-  if (floor == 1) {
-    padding = const EdgeInsets.symmetric(horizontal: 12);
-  } else {
-    padding = EdgeInsets.zero;
-  }
   return Padding(
-    padding: padding,
-    child: Column(
-      spacing: 6,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (video.cover case final cover?)
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              LayoutBuilder(
-                builder: (context, constraints) => NetworkImgLayer(
-                  width: constraints.maxWidth,
-                  height: constraints.maxWidth / Style.aspectRatio,
-                  src: cover,
-                  quality: 40,
-                ),
+    padding: floor == 1
+        ? const EdgeInsets.symmetric(horizontal: 12)
+        : EdgeInsets.zero,
+    child: AspectRatio(
+      aspectRatio: Style.coverCardRatio,
+      child: CoverScrimCard(
+        cover: video.cover,
+        title: video.title ?? '',
+        titleMaxLines: isDetail ? 3 : 2,
+        coverOverlays: [
+          if (video.badge?.text case final badge?)
+            PBadge(
+              text: badge,
+              top: 8,
+              right: 10,
+              type: badge == '充电专属' ? PBadgeType.error : PBadgeType.primary,
+            ),
+          if (video.durationText case final duration?)
+            PBadge(text: duration, top: 8, left: 10, type: PBadgeType.gray),
+        ],
+        metaBuilder: (context, colors) => [
+          if (video.stat case final stat?)
+            Flexible(
+              child: Text(
+                '${NumUtils.numFormat(stat.play)}播放 · ${NumUtils.numFormat(stat.danmu)}弹幕',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 11, color: colors.subtitle),
               ),
-              if (video.badge?.text case final badge?)
-                PBadge(
-                  text: badge,
-                  top: 8.0,
-                  right: 10.0,
-                  bottom: null,
-                  left: null,
-                  type: switch (badge) {
-                    '充电专属' => PBadgeType.error,
-                    _ => PBadgeType.primary,
-                  },
-                ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  height: 70,
-                  alignment: Alignment.bottomLeft,
-                  padding: const EdgeInsets.fromLTRB(10, 0, 8, 8),
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black54,
-                      ],
-                    ),
-                    borderRadius: .vertical(bottom: Style.imgRadius),
-                  ),
-                  child: DefaultTextStyle.merge(
-                    style: TextStyle(
-                      fontSize: theme.textTheme.labelMedium!.fontSize,
-                      color: Colors.white,
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        if (video.durationText case final durationText?) ...[
-                          DecoratedBox(
-                            decoration: const BoxDecoration(
-                              color: Colors.black45,
-                              borderRadius: .all(.circular(4)),
-                            ),
-                            child: Text(' $durationText '),
-                          ),
-                          const SizedBox(width: 6),
-                        ],
-                        if (video.stat case final stat?) ...[
-                          Text('${NumUtils.numFormat(stat.play)}播放'),
-                          const SizedBox(width: 6),
-                          Text('${NumUtils.numFormat(stat.danmu)}弹幕'),
-                        ],
-                        const Spacer(),
-                        const PlayIcon(size: 50),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        if (video.title case final title?)
-          Text(
-            title,
-            maxLines: isDetail ? null : 1,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-            overflow: isDetail ? null : TextOverflow.ellipsis,
-          ),
-      ],
+            ),
+        ],
+      ),
     ),
   );
 }

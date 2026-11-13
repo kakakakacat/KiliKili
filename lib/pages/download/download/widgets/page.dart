@@ -1,8 +1,7 @@
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/common/widgets/dialog/simple_dialog_option.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/widgets/select_mask.dart';
 import 'package:kilikili/models_new/download/download_info.dart';
 import 'package:kilikili/pages/common/multi_select/base.dart';
@@ -113,9 +112,39 @@ class PageInfoItem<T extends MultiSelectData> extends StatelessWidget {
             ),
           );
 
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: CoverScrimCard(
+        cover: pageInfo.cover,
+        title: pageInfo.title,
+        upName: pageInfo.entries.first.ownerName,
+        coverOverlays: [
+          PBadge(
+            text: '${pageInfo.entries.length}个视频',
+            left: 6,
+            top: 6,
+            isBold: false,
+            type: .gray,
+          ),
+          if (pageInfo.seasonType case final pgcType?)
+            PBadge(
+              text: BiliUtils.pgcType2Label(pgcType),
+              right: 6,
+              top: 6,
+            ),
+        ],
+        foregroundOverlays: [
+          Positioned.fill(child: selectMask(colorScheme, seasonInfo.checked)),
+        ],
+        metaBuilder: (context, colors) => [
+          Text(
+            pageInfo.entries.fold(0, (p, n) => p + n.totalBytes).formatSize,
+            style: TextStyle(fontSize: 11, color: colors.subtitle),
+          ),
+        ],
+        trailing: pageInfo.entries.first.moreBtn(
+          colorScheme.copyWith(outline: Colors.white),
+        ),
         onTap: () {
           if (controller.enableMultiSelect.value) {
             controller.onSelect(seasonInfo);
@@ -131,83 +160,6 @@ class PageInfoItem<T extends MultiSelectData> extends StatelessWidget {
         },
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Style.safeSpace,
-            vertical: 5,
-          ),
-          child: Row(
-            spacing: 10,
-            children: [
-              Stack(
-                clipBehavior: .none,
-                children: [
-                  AspectRatio(
-                    aspectRatio: Style.aspectRatio,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) => NetworkImgLayer(
-                        src: pageInfo.cover,
-                        width: constraints.maxWidth,
-                        height: constraints.maxHeight,
-                      ),
-                    ),
-                  ),
-                  PBadge(
-                    text: '${pageInfo.entries.length}个视频',
-                    right: 6.0,
-                    bottom: 6.0,
-                    isBold: false,
-                    type: .gray,
-                  ),
-                  if (pageInfo.seasonType case final pgcType?)
-                    PBadge(
-                      text: BiliUtils.pgcType2Label(pgcType),
-                      right: 6.0,
-                      top: 6.0,
-                    ),
-                  Positioned.fill(
-                    child: selectMask(colorScheme, seasonInfo.checked),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        pageInfo.title,
-                        textAlign: TextAlign.start,
-                        style: const TextStyle(
-                          height: 1.42,
-                          letterSpacing: 0.3,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Row(
-                      crossAxisAlignment: .end,
-                      mainAxisAlignment: .spaceBetween,
-                      children: [
-                        Text(
-                          '${pageInfo.entries.fold(0, (p, n) => p + n.totalBytes).formatSize}  ${pageInfo.entries.first.ownerName ?? ""}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            height: 1.6,
-                            color: colorScheme.outline,
-                          ),
-                        ),
-                        pageInfo.entries.first.moreBtn(colorScheme),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

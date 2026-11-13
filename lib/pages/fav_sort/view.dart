@@ -108,8 +108,10 @@ class _FavSortPageState extends State<FavSortPage> with ReorderMixin {
         final item = sortList[index];
         return SizedBox(
           key: ValueKey(item.id),
-          height: 110,
-          child: FavVideoCardH(item: item),
+          height: 200,
+          child: Center(
+            child: SizedBox(width: 256, child: FavVideoCardH(item: item)),
+          ),
         );
       },
     );

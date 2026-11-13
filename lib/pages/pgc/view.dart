@@ -65,9 +65,11 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
           if (controller.showPgcTimeline)
             SliverToBoxAdapter(
               child: SizedBox(
+                // 封面高度 + 上面那条 TabBar。文案已经叠进封面里（issue
+                // #108），不再额外给标题行留高度。
                 height:
                     Grid.smallCardWidth / 2 / 0.75 +
-                    MediaQuery.textScalerOf(context).scale(96),
+                    MediaQuery.textScalerOf(context).scale(48),
                 child: Obx(
                   () => _buildTimeline(theme, controller.timelineState.value),
                 ),
@@ -305,7 +307,6 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
     crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth * 0.6,
     childAspectRatio: 0.75,
-    mainAxisExtent: MediaQuery.textScalerOf(context).scale(50),
   );
 
   Widget _buildRcmdBody(LoadingState<List<PgcIndexItem>?> loadingState) {

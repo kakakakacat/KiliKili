@@ -1,11 +1,12 @@
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/progress_bar/video_progress_indicator.dart';
-import 'package:kilikili/common/widgets/stat/stat.dart';
+import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/widgets/video_popup_menu.dart';
 import 'package:kilikili/http/search.dart';
+import 'package:kilikili/models/common/badge_type.dart';
+import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/models/horizontal_video_model.dart';
 import 'package:kilikili/models_new/video/video_detail/dimension.dart';
 import 'package:kilikili/utils/date_utils.dart';
@@ -14,7 +15,7 @@ import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
-// 视频卡片 - 水平布局
+/// 搜索、相关推荐与榜单共用的视频封面卡。
 class VideoCardH extends StatelessWidget {
   const VideoCardH({
     super.key,
@@ -23,6 +24,7 @@ class VideoCardH extends StatelessWidget {
     this.onViewLater,
     this.onRemove,
   });
+
   final HorizontalVideoModel videoItem;
   final VoidCallback? onTap;
   final ValueChanged<int>? onViewLater;
@@ -36,181 +38,101 @@ class VideoCardH extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Material(
-      type: .transparency,
-      child: Stack(
-        clipBehavior: .none,
-        children: [
-          InkWell(
-            onLongPress: onLongPress,
-            onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-            onTap: onTap ?? () => pushVideoH(videoItem),
-            child: Padding(
-              padding: const .symmetric(
-                horizontal: Style.safeSpace,
-                vertical: 5,
-              ),
-              child: Row(
-                crossAxisAlignment: .start,
-                children: [
-                  AspectRatio(
-                    aspectRatio: Style.aspectRatio,
-                    child: LayoutBuilder(
-                      builder: (context, boxConstraints) {
-                        final double maxWidth = boxConstraints.maxWidth;
-                        final double maxHeight = boxConstraints.maxHeight;
-
-                        final progress = videoItem.progress;
-
-                        return Stack(
-                          clipBehavior: .none,
-                          children: [
-                            NetworkImgLayer(
-                              src: videoItem.cover,
-                              width: maxWidth,
-                              height: maxHeight,
-                            ),
-                            if (videoItem.badge case final badge?)
-                              PBadge(
-                                text: badge,
-                                top: 6.0,
-                                right: 6.0,
-                                type: switch (badge) {
-                                  '充电专属' => .error,
-                                  _ => .primary,
-                                },
-                              ),
-                            if (progress != null && progress != 0) ...[
-                              PBadge(
-                                text: progress == -1
-                                    ? '已看完'
-                                    : '${DurationUtils.formatDuration(progress)}/${DurationUtils.formatDuration(videoItem.duration)}',
-                                right: 6,
-                                bottom: 8,
-                                type: .gray,
-                              ),
-                              Positioned(
-                                left: 0,
-                                bottom: 0,
-                                right: 0,
-                                child: VideoProgressIndicator(
-                                  color: theme.colorScheme.primary,
-                                  backgroundColor:
-                                      theme.colorScheme.secondaryContainer,
-                                  progress: progress == -1
-                                      ? 1
-                                      : progress / videoItem.duration,
-                                ),
-                              ),
-                            ] else if (videoItem.duration > 0)
-                              PBadge(
-                                text: DurationUtils.formatDuration(
-                                  videoItem.duration,
-                                ),
-                                right: 6.0,
-                                bottom: 6.0,
-                                type: .gray,
-                              ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  content(theme),
+    final progress = videoItem.progress;
+    final date = videoItem.pubdate == null
+        ? ''
+        : DateFormatUtils.dateFormat(videoItem.pubdate!);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: CoverScrimCard(
+        cover: videoItem.cover,
+        title: videoItem.title,
+        upName: videoItem.owner.name,
+        onTap: onTap ?? () => pushVideoH(videoItem),
+        onLongPress: onLongPress,
+        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+        titleBuilder: videoItem.titleList?.isNotEmpty == true
+            ? (context, colors) => Text.rich(
+                TextSpan(
+                  style: TextStyle(color: colors.title, height: 1.32),
+                  children: [
+                    for (final span in videoItem.titleList!)
+                      TextSpan(
+                        text: span.text,
+                        style: span.isEm
+                            ? const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                decoration: TextDecoration.underline,
+                              )
+                            : null,
+                      ),
+                  ],
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              )
+            : null,
+        topStart: videoItem.isLive == true
+            ? null
+            : CoverStatsPill(
+                stats: [
+                  (StatType.play, videoItem.stat.view),
+                  (StatType.danmaku, videoItem.stat.danmu),
                 ],
               ),
+        coverOverlays: [
+          if (videoItem.badge case final badge?)
+            PBadge(
+              text: badge,
+              top: 6,
+              right: 6,
+              type: badge == '充电专属' ? PBadgeType.error : PBadgeType.primary,
             ),
-          ),
-          Positioned(
-            bottom: 0,
-            right: 12,
-            width: 29,
-            height: 29,
-            child: VideoPopupMenu(
-              iconSize: 17,
-              videoItem: videoItem,
-              onRemove: onRemove,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget content(ThemeData theme) {
-    String pubdate = DateFormatUtils.dateFormat(videoItem.pubdate!);
-    if (pubdate != '') pubdate += '  ';
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: .start,
-        children: [
-          if (videoItem.titleList?.isNotEmpty == true)
-            Expanded(
-              child: Text.rich(
-                overflow: .ellipsis,
-                maxLines: 2,
-                TextSpan(
-                  children: videoItem.titleList!
-                      .map(
-                        (e) => TextSpan(
-                          text: e.text,
-                          style: TextStyle(
-                            fontSize: theme.textTheme.bodyMedium!.fontSize,
-                            height: 1.42,
-                            letterSpacing: 0.3,
-                            color: e.isEm
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.onSurface,
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
-              ),
+          if (progress != null && progress != 0)
+            CoverDurationPill(
+              text: progress == -1
+                  ? '已看完'
+                  : '${DurationUtils.formatDuration(progress)}/${DurationUtils.formatDuration(videoItem.duration)}',
+              right: 6,
+              top: videoItem.badge == null ? 6 : 32,
             )
-          else
-            Expanded(
-              child: Text(
-                videoItem.title,
-                textAlign: .start,
-                style: TextStyle(
-                  fontSize: theme.textTheme.bodyMedium!.fontSize,
-                  height: 1.42,
-                  letterSpacing: 0.3,
-                ),
-                maxLines: 2,
-                overflow: .ellipsis,
+          else if (videoItem.duration > 0)
+            CoverDurationPill(
+              text: DurationUtils.formatDuration(videoItem.duration),
+              right: 6,
+              top: videoItem.badge == null ? 6 : 32,
+            ),
+          if (progress != null && progress != 0)
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              child: VideoProgressIndicator(
+                color: ColorScheme.of(context).primary,
+                backgroundColor: ColorScheme.of(context).secondaryContainer,
+                progress: progress == -1 ? 1 : progress / videoItem.duration,
               ),
             ),
-          Text(
-            "$pubdate${videoItem.owner.name}",
-            maxLines: 1,
-            style: TextStyle(
-              fontSize: 12,
-              height: 1,
-              color: theme.colorScheme.outline,
-              overflow: .ellipsis,
-            ),
-          ),
-          if (videoItem.isLive != true) ...[
-            const SizedBox(height: 3),
-            Row(
-              spacing: 8,
-              children: [
-                StatWidget(
-                  type: .play,
-                  value: videoItem.stat.view,
-                ),
-                StatWidget(
-                  type: .danmaku,
-                  value: videoItem.stat.danmu,
+        ],
+        metaBuilder: date.isEmpty
+            ? null
+            : (context, colors) => [
+                const Spacer(),
+                Text(
+                  date,
+                  maxLines: 1,
+                  style: TextStyle(fontSize: 11, color: colors.subtitle),
                 ),
               ],
-            ),
-          ],
-        ],
+        trailing: SizedBox.square(
+          dimension: 29,
+          child: VideoPopupMenu(
+            iconSize: 17,
+            onCover: true,
+            videoItem: videoItem,
+            onRemove: onRemove,
+          ),
+        ),
       ),
     );
   }

@@ -54,7 +54,7 @@ class _MemberVideoState extends State<MemberVideo>
   late final MemberVideoCtr _controller;
 
   void _jumpToIndex(int index) {
-    final scrollOffset = gridDelegate.layoutCache!
+    final scrollOffset = coverGridDelegate.layoutCache!
         .getGeometryForChildIndex(index)
         .scrollOffset;
     try {
@@ -205,7 +205,7 @@ class _MemberVideoState extends State<MemberVideo>
   @override
   Widget get gridSkeleton => SliverPadding(
     padding: widget.isSingle ? const EdgeInsets.only(top: 7) : EdgeInsets.zero,
-    sliver: super.gridSkeleton,
+    sliver: coverGridSkeleton,
   );
 
   Widget _buildBody(
@@ -220,7 +220,7 @@ class _MemberVideoState extends State<MemberVideo>
                 slivers: [
                   _buildHeader(theme),
                   SliverGrid.builder(
-                    gridDelegate: gridDelegate,
+                    gridDelegate: coverGridDelegate,
                     itemBuilder: (context, index) {
                       if (widget.type != .season &&
                           index == response.length - 1) {

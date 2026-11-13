@@ -186,8 +186,7 @@ class _LivePageState extends State<LivePage>
     mainAxisSpacing: Style.cardSpace,
     crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth,
-    childAspectRatio: Style.aspectRatio,
-    mainAxisExtent: textScaler.scale(90),
+    childAspectRatio: Style.coverCardRatio,
   );
 
   Widget _buildBody(LoadingState<List?> loadingState) {

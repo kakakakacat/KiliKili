@@ -4,7 +4,6 @@ import 'package:kilikili/common/constants.dart';
 import 'package:kilikili/common/widgets/pair.dart';
 import 'package:kilikili/http/api.dart';
 import 'package:kilikili/http/constants.dart';
-import 'package:kilikili/http/error_msg.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/reply.dart';

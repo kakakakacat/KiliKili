@@ -1,4 +1,4 @@
-import 'package:kilikili/common/skeleton/video_card_h.dart';
+import 'package:kilikili/common/skeleton/video_card_v.dart';
 import 'package:kilikili/common/sliver_single_child_delegate.dart';
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart'
@@ -24,6 +24,7 @@ import 'package:kilikili/pages/video/controller.dart';
 import 'package:kilikili/pages/video/introduction/ugc/controller.dart';
 import 'package:kilikili/pages/video/member/controller.dart';
 import 'package:kilikili/utils/accounts.dart';
+import 'package:kilikili/utils/grid.dart';
 import 'package:kilikili/utils/bili_utils.dart';
 import 'package:kilikili/utils/extension/theme_ext.dart';
 import 'package:kilikili/utils/num_utils.dart';
@@ -219,19 +220,20 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
     LoadingState<List<SpaceArchiveItem>?> loadingState,
   ) {
     return switch (loadingState) {
-      Loading() => const SliverFixedExtentList(
-        delegate: SliverSingleChildDelegate(
+      Loading() => SliverGrid(
+        gridDelegate: Grid.coverCardDelegate(),
+        delegate: const SliverSingleChildDelegate(
           count: 10,
-          child: VideoCardHSkeleton(),
+          child: VideoCardVSkeleton(),
         ),
-        itemExtent: 112,
       ),
       Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverMainAxisGroup(
                 slivers: [
                   _buildHeader(),
-                  SliverFixedExtentList.builder(
+                  SliverGrid.builder(
+                    gridDelegate: Grid.coverCardDelegate(),
                     itemBuilder: (context, index) {
                       if (index == response.length - 1 && _controller.hasNext) {
                         _controller.onLoadMore();
@@ -256,7 +258,6 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
                       );
                     },
                     itemCount: response.length,
-                    itemExtent: 112,
                   ),
                 ],
               )

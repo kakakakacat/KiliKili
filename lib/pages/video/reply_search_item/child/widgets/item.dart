@@ -1,7 +1,6 @@
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
     show SearchItem, SearchItemVideoSubType;
 import 'package:kilikili/models/common/badge_type.dart';
@@ -12,11 +11,7 @@ import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class ReplySearchItem extends StatelessWidget {
-  const ReplySearchItem({
-    super.key,
-    required this.item,
-    required this.type,
-  });
+  const ReplySearchItem({super.key, required this.item, required this.type});
 
   final SearchItem item;
   final ReplySearchType type;
@@ -48,80 +43,26 @@ class ReplySearchItem extends StatelessWidget {
         cover = article.covers.firstOrNull ?? '';
         upNickname = article.upNickname;
     }
-    void onLongPress() => imageSaveDialog(
-      title: title,
-      cover: cover,
-    );
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
+    void onLongPress() => imageSaveDialog(title: title, cover: cover);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: CoverScrimCard(
+        cover: cover,
+        title: title,
+        upName: upNickname,
         onTap: () => Get.back(result: (title: title, url: item.url)),
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Style.safeSpace,
-            vertical: 5,
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AspectRatio(
-                aspectRatio: Style.aspectRatio,
-                child: LayoutBuilder(
-                  builder: (context, boxConstraints) {
-                    return Stack(
-                      children: [
-                        NetworkImgLayer(
-                          src: cover,
-                          width: boxConstraints.maxWidth,
-                          height: boxConstraints.maxHeight,
-                        ),
-                        if (category != null)
-                          PBadge(
-                            right: 6,
-                            top: 6,
-                            text: category,
-                          ),
-                        if (duration != null)
-                          PBadge(
-                            right: 6,
-                            bottom: 6,
-                            text: DurationUtils.formatDuration(duration),
-                            type: PBadgeType.gray,
-                          ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (upNickname != null)
-                      Text(
-                        'UP: $upNickname',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+        coverOverlays: [
+          if (category != null) PBadge(text: category, top: 6, right: 6),
+          if (duration != null && duration > 0)
+            PBadge(
+              text: DurationUtils.formatDuration(duration),
+              top: category == null ? 6 : 32,
+              right: 6,
+              type: PBadgeType.gray,
+            ),
+        ],
       ),
     );
   }

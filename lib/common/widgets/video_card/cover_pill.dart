@@ -20,7 +20,7 @@ class CoverPill extends StatelessWidget {
     return DecoratedBox(
       decoration: const BoxDecoration(
         color: Colors.black45,
-        borderRadius: Style.borderRadius6,
+        borderRadius: Style.coverCardRadius,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

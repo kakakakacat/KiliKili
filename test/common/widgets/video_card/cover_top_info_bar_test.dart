@@ -5,7 +5,7 @@ import 'package:kilikili/common/widgets/stat/stat.dart';
 import 'package:kilikili/models/common/stat_type.dart';
 
 void main() {
-  testWidgets('顶部信息行贴边铺满并在窄卡片中保持单行', (tester) async {
+  testWidgets('顶部渐变贴边、信息留 5 像素并在窄卡片中保持单行', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
@@ -29,8 +29,8 @@ void main() {
     expect(tester.getTopLeft(bar), Offset.zero);
     expect(tester.getSize(bar).width, 180);
     expect(find.text('123:45'), findsOneWidget);
-    expect(tester.getTopLeft(find.byType(StatWidget).first).dy, 0);
-    expect(tester.getTopLeft(find.text('123:45')).dy, 0);
+    expect(tester.getTopLeft(find.byType(StatWidget).first).dy, 5);
+    expect(tester.getTopLeft(find.text('123:45')).dy, 5);
     expect(tester.takeException(), isNull);
   });
 

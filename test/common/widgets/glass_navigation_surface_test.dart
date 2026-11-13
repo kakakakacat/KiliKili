@@ -5,6 +5,74 @@ import 'package:kilikili/common/widgets/floating_navigation_bar.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
+  testWidgets('玻璃导航不叠加系统图标按压水波纹', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Column(
+            children: [
+              SizedBox(
+                width: 300,
+                height: 80,
+                child: GlassNavigationSurface(
+                  child: NavigationBar(
+                    backgroundColor: Colors.transparent,
+                    destinations: const [
+                      NavigationDestination(
+                        icon: Icon(Icons.home),
+                        label: '首页',
+                      ),
+                      NavigationDestination(
+                        icon: Icon(Icons.person),
+                        label: '我的',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 300,
+                height: 80,
+                child: GlassNavigationSurface(
+                  child: BottomNavigationBar(
+                    type: BottomNavigationBarType.fixed,
+                    backgroundColor: Colors.transparent,
+                    items: const [
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.home),
+                        label: '首页',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.person),
+                        label: '我的',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    final md3Ink = tester.widget<InkResponse>(
+      find
+          .ancestor(
+            of: find.byIcon(Icons.home).first,
+            matching: find.bySubtype<InkResponse>(),
+          )
+          .first,
+    );
+    expect(
+      md3Ink.overlayColor?.resolve({WidgetState.pressed}),
+      Colors.transparent,
+    );
+    final classicContext = tester.element(find.byType(BottomNavigationBar));
+    expect(Theme.of(classicContext).splashFactory, NoSplash.splashFactory);
+    expect(Theme.of(classicContext).highlightColor, Colors.transparent);
+  });
+
   testWidgets('导航胶囊裁切玻璃背景并保留子项点击', (tester) async {
     var tapped = false;
     await tester.pumpWidget(

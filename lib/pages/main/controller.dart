@@ -295,7 +295,17 @@ class MainController extends GetxController
     if (value != selectedIndex.value) {
       selectedIndex.value = value;
       if (mainTabBarView) {
-        controller.animateTo(value);
+        controller.animateTo(
+          value,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+        );
+      } else if (useBottomNav) {
+        controller.animateToPage(
+          value,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+        );
       } else {
         controller.jumpToPage(value);
       }

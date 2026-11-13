@@ -86,6 +86,10 @@ pgc 成为删得最多的一块
 并增加一个折射着色器；`pubspec.yaml` 已属实质改动文件，修改文件的分类与数量
 不变，新增文件 **478 → 479**，删除文件不变。
 
+修订：2026-11-13（#128 底部导航左右转场）——`lib/pages/main/controller.dart`
+从仅重命名变成实质改动；修改的上游文件仍为 **890**，其中实质改动
+**224 → 225**、仅重命名 **666 → 665**；新增和删除文件数不变。
+
 前述 #89 修订的差额**不全是那次改动**：上一版是在 #79 的工作树上算的，#90 合进
 main 前的最后一个提交（CDN 判据跟着算法搬家）没算进去——它删掉四个 Dart
 测试、新增 `bili-core/src/{cdn,playback}.rs` 与 `test/bridge/playback_bridge_test.dart`，
@@ -125,8 +129,8 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 类别 | 数量 |
 | --- | ---: |
 | 修改的上游既有文件 | 890 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 666 |
-| &nbsp;&nbsp;其中：有实质改动 | **224** |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 665 |
+| &nbsp;&nbsp;其中：有实质改动 | **225** |
 | 新增文件 | 479 |
 | 删除文件 | **130** |
 
@@ -138,7 +142,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 `ba430476b chore: rename app package identifiers to KiliKili` 把每个 Dart
 文件的 `package:PiliPlus/` 改成了 `package:kilikili/`，一次触及 992 个文件。
-**当前分叉面里 666 个文件只有这一处差异。**
+**当前分叉面里 665 个文件只有这一处差异。**
 
 对同步的影响很具体：上游每改动一个 Dart 文件，我们这边大概率冲突，但
 **冲突内容永远是那一行 import**。处理方式是取上游版本后重新套用重命名，
@@ -149,7 +153,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 4. 有实质改动的上游文件
 
-224 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
+225 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
 见 §4.4，其余改动逐个列在 §4.3。
 
 ### 4.1 typed 直连迁移触及的上游文件
@@ -223,6 +227,7 @@ H5 房间信息）、第二批 7 个（`live_room_play_info/` 整个目录）、
 | `lib/common/widgets/image/network_img_layer.dart` | #109 | 头像图片与占位图统一绘制主题色圆边框 |
 | `lib/pages/mine/view.dart` | #109 | 未登录头像改走共用头像组件，保持边框一致 |
 | `lib/common/widgets/floating_navigation_bar.dart`、`lib/pages/main/view.dart` | #122 | 三种首页底栏共用玻璃背景、胶囊裁切、4px 内容内边距与边缘留白；安全区仅在胶囊外处理，分栏中心对齐选中背景，图标与文字组合居中，降低底色与高光的不透明度；保留导航与隐藏行为 |
+| `lib/pages/main/controller.dart` | #128 | 底部导航在页面间按方向滑动 240 毫秒；侧栏仍直接切换 |
 | `lib/http/video.dart` | `f321aea73` `43827d42f` `9385cf06d` 及 S3 | 视频详情与取流接入 Rust（**仍是 JSON 往返 + 开关**，见 #79）；S3 又从中删去了五条只读接口，见 §4.1 |
 | `lib/http/search.dart` | `130b9f533`、S9 | 搜索建议接入 Rust；S9 之后整条搜索是 typed 直连、**无开关无回退**，见 §4.1 |
 | `lib/pages/setting/models/play_settings.dart` | `9d1d5c3c9` | 自动播放默认值改为开启（issue #16） |

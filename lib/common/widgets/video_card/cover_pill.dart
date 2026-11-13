@@ -60,7 +60,7 @@ class CoverTopInfoBar extends StatelessWidget {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 0, 8, 14),
+          padding: const EdgeInsets.fromLTRB(8, 5, 8, 14),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

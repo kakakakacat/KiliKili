@@ -142,7 +142,21 @@ class GlassNavigationSurface extends StatelessWidget {
                           removeBottom: true,
                           removeLeft: true,
                           removeRight: true,
-                          child: Center(child: child),
+                          child: Theme(
+                            data: Theme.of(context).copyWith(
+                              splashFactory: NoSplash.splashFactory,
+                              splashColor: Colors.transparent,
+                              highlightColor: Colors.transparent,
+                            ),
+                            child: NavigationBarTheme(
+                              data: NavigationBarTheme.of(context).copyWith(
+                                overlayColor: const WidgetStatePropertyAll(
+                                  Colors.transparent,
+                                ),
+                              ),
+                              child: Center(child: child),
+                            ),
+                          ),
                         ),
                       ),
                     ],

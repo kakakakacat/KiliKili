@@ -133,6 +133,15 @@ RFC §10.1 规定了要固定 `UPSTREAM_COMMIT` 并记录 rebase/merge 策略，
 迁到 Rust，旧字幕 JSON 桥接/降级及无消费者 metadata 生成文件删除；Device
 仍被 dynamic/v2 间接消费，随 S5/S6 的最后消费者迁完再删。
 
+修订：2026-11-13（#141 播放页控制层与标题展开动画）——按 §6 对当前工作树
+重算：上游修改文件仍为 **890**，其中实质改动 **230 → 231**、仅重命名
+**660 → 659**；新增 **510 → 511**，删除仍为 **144**。
+`lib/common/widgets/expandable.dart` 从仅重命名转为有实质改动；
+同一次改动还碰了 `lib/plugin/pl_player/view/view.dart`（控制层出现/隐藏
+100 → 60ms）与 `lib/pages/video/introduction/ugc/view.dart`（标题旁加三角
+指示），这两个已由 §4.1 的 S3 行覆盖，不重复计数。
+顺带修正 §5：那张按区域分布的表自 #133 起就没更新，总数还停在 480。
+
 ## 1. 基准
 
 ```
@@ -151,9 +160,9 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 类别 | 数量 |
 | --- | ---: |
 | 修改的上游既有文件 | 890 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 660 |
-| &nbsp;&nbsp;其中：有实质改动 | **230** |
-| 新增文件 | 510 |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 659 |
+| &nbsp;&nbsp;其中：有实质改动 | **231** |
+| 新增文件 | 511 |
 | 删除文件 | **144** |
 
 「修改」总数一路下降（935 → 909 → 897 → 891），部分文件是因迁移被删除，
@@ -175,7 +184,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 4. 有实质改动的上游文件
 
-229 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
+231 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
 见 §4.4，其余改动逐个列在 §4.3。
 
 ### 4.1 typed 直连迁移触及的上游文件
@@ -250,6 +259,7 @@ H5 房间信息）、第二批 7 个（`live_room_play_info/` 整个目录）、
 | `lib/pages/mine/view.dart` | #109 | 未登录头像改走共用头像组件，保持边框一致 |
 | `lib/common/widgets/floating_navigation_bar.dart`、`lib/pages/main/view.dart` | #122 | 三种首页底栏共用玻璃背景、胶囊裁切、4px 内容内边距与边缘留白；安全区仅在胶囊外处理，分栏中心对齐选中背景，图标与文字组合居中，降低底色与高光的不透明度；保留导航与隐藏行为 |
 | `lib/pages/main/controller.dart` | #128 | 底部导航在页面间按方向滑动 240 毫秒；侧栏仍直接切换 |
+| `lib/common/widgets/expandable.dart` | #141 | 展开/折叠时长 300 → 180ms，抽成共用常量 `kIntroExpandDuration`，并新增标题旁的三角指示 `ExpandIndicator` |
 | `lib/http/video.dart` | `f321aea73` `43827d42f` `9385cf06d` 及 S3 | 视频详情与取流接入 Rust（**仍是 JSON 往返 + 开关**，见 #79）；S3 又从中删去了五条只读接口，见 §4.1 |
 | `lib/http/search.dart` | `130b9f533`、S9 | 搜索建议接入 Rust；S9 之后整条搜索是 typed 直连、**无开关无回退**，见 §4.1 |
 | `lib/pages/setting/models/play_settings.dart` | `9d1d5c3c9` | 自动播放默认值改为开启（issue #16） |
@@ -330,22 +340,22 @@ Column 顺序、文字层级），丢弃——那一层我们已经整个换掉�
 
 ## 5. 新增文件
 
-480 个，不与上游冲突，按区域分布：
+511 个，不与上游冲突，按区域分布：
 
 | 区域 | 文件数 | 内容 |
 | --- | ---: | --- |
-| `rust/` | 302 | Rust workspace：6 个 crate、golden fixture 与快照 |
+| `rust/` | 322 | Rust workspace：6 个 crate、golden fixture 与快照 |
 | `rust_builder/` | 46 | cargokit，把 Rust 接入 Flutter 各端构建 |
 | `lib/services/` | 34 | Rust 开关、shadow mode、各切片的取数封装 |
-| `test/` | 30 | parity 测试与桥接层集成测试 |
+| `test/` | 31 | parity 测试与桥接层集成测试 |
 | `lib/rust/` | 25 | FRB 生成的 Dart 绑定 |
-| `tool/` | 13 | 构建准备、FRB 生成、README 统计、产物核对、fixture 生成 |
-| `docs/` | 15 | RFC、ADR、M0 记录、QA 清单 |
+| `tool/` | 20 | 构建准备、FRB 生成、proto 生成、README 统计、产物核对、fixture 生成 |
+| `docs/` | 17 | RFC、ADR、M0 记录、QA 清单 |
 | `shaders/` | 1 | Liquid Glass 背板折射着色器 |
 | `lib/common/` | 3 | 封面大卡片、统计药丸与直播卡共用的文案行（issue #108） |
 | `lib/pages/` | 1 | 从控制器里搬出来的基线弹幕引擎（`danmaku/engine.dart`） |
 | `lib/utils/` | 1 | 从 `SubtitleUtils` 里搬出来的基线字幕转换（`subtitle_format.dart`） |
-| 其他 | 9 | workflow、`AGENTS.md` / `CLAUDE.md`、README 统计图、`flutter_rust_bridge.yaml` |
+| 其他 | 10 | workflow、`AGENTS.md` / `CLAUDE.md`、README 统计图、`flutter_rust_bridge.yaml` |
 
 `rust/` 的增量主要是 fixture 与快照：每个切片都要带「脱敏后的真实响应 +
 冻结的解析结果」两份，这是 typed 直连唯一的长期对照物（ADR-011 决策五）。

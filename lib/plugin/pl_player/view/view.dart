@@ -121,6 +121,13 @@ class PLVideoPlayer extends StatefulWidget {
   State<PLVideoPlayer> createState() => _PLVideoPlayerState();
 }
 
+/// 手机端的双击判定窗口，短于 Flutter 默认的 [kDoubleTapTimeout]（300ms）。
+///
+/// 它不只是「双击算不算数」的门槛，还是单击显隐控制层的**空等时长**（#143）。
+/// 180ms 是取舍后的值：再短会漏掉手慢一点的双击（双击暂停、双击快进），
+/// 再长则空等仍然可感。改它前先看一眼 #143 里列的四个备选方案。
+const Duration _kMobileDoubleTapTimeout = Duration(milliseconds: 180);
+
 class _PLVideoPlayerState extends State<PLVideoPlayer>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   late AnimationController _animationController;
@@ -322,8 +329,18 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       _tapGestureRecognizer = ImmediateTapGestureRecognizer(onTapUp: _onTapUp);
     }
 
-    _doubleTapGestureRecognizer = DoubleTapGestureRecognizer()
-      ..onDoubleTapDown = _onDoubleTapDown;
+    _doubleTapGestureRecognizer = DoubleTapGestureRecognizer(
+      // 单击显隐控制层的响应被这个超时卡着：DoubleTapGestureRecognizer
+      // 第一次抬手就 hold 住 gesture arena，而 ImmediateTapGestureRecognizer
+      // 只在赢下 arena 之后才发 onTapUp，于是默认 300ms 的空等比 60ms 的
+      // 动画本身还长五倍（#143）。
+      //
+      // 桌面端刻意沿用默认值：鼠标双击的系统间隔本来就长（Windows 默认
+      // 500ms），缩窗口会让「双击切全屏」退化成两次播放/暂停。
+      doubleTapTimeout: PlatformUtils.isMobile
+          ? _kMobileDoubleTapTimeout
+          : kDoubleTapTimeout,
+    )..onDoubleTapDown = _onDoubleTapDown;
 
     _scaleGestureRecognizer = PlayerScaleGestureRecognizer(
       debugOwner: this,

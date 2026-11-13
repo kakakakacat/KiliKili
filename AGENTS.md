@@ -240,11 +240,21 @@ PR**，不要只留在代码和 Issues 里：
   只用在下载 SDK 上。
 - 本机没有 fvm 时，issue 模板里写的 `.fvm/flutter_sdk/bin/dart` 按全局
   Flutter SDK 的 `dart` 来用。
-- Android 本地构建使用 `android/key.properties` 指向
-  `android/app/kilikili-release.jks`。这两个文件只在本机保存，已被 Git
-  忽略；迁移机器时须通过安全渠道同时备份密钥、别名和密码。同一包名的后续
-  Android 版本必须沿用原签名，否则不能原地升级。GitHub 手动发布工作流
-  仍读取现有 Secrets，切换签名身份前先核对旧版证书指纹与升级路径。
+- Android 签名：本地构建读 `android/key.properties`（指向
+  `android/app/kilikili-release.jks`）。两个文件已被 Git 忽略、只在当事人本机，
+  **不是每台开发机都有**（例：2026-11-13 用的这台就没有）。迁移机器时
+  须通过安全渠道同时备份密钥、别名和密码。同一包名的后续 Android 版本必须
+  沿用原签名，否则不能原地升级。
+
+- **CI 构出来的 APK 是一次性 debug 签名，包与包之间不能覆盖安装。**
+  仓库目前**一个 Actions secret 都没有**（`gh api
+  repos/<owner>/<repo>/actions/secrets` 返回 `total_count: 0`），所以
+  `build.yml` 那步 `if [ ! -z "${{ secrets.SIGN_KEYSTORE_BASE64 }}" ]` 永远不执行，
+  `key.properties` 不会生成，`build.gradle.kts` 回落到
+  `signingConfigs["debug"]`——而 CI runner 的 debug keystore 是每台现生成的。
+  因此换一个 CI 包就要先 `adb uninstall`，会清掉登录态、设置与离线缓存；
+  这些包也**不能对外分发**。带 `tag` 发一次版同样是 debug 签名，以后补上
+  正式签名时老用户无法原地升级。修法见 issue #146。
 - Android 的 JKS 只用于 Android；Apple 平台和 Windows 安装包分别按各自
   的签名身份与证书流程处理，不共用此 JKS。
 

@@ -1,6 +1,5 @@
 import 'package:kilikili/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:kilikili/common/widgets/select_mask.dart';
-import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/http/search.dart';
 import 'package:kilikili/models/common/stat_type.dart';
@@ -54,26 +53,21 @@ class VideoCardHLater extends StatelessWidget {
             : () => onPushLater(videoItem, onViewLater: onViewLater),
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        topStart: isPgc
-            ? null
-            : CoverStatsPill(
-                stats: [
-                  (StatType.play, videoItem.stat?.view),
-                  (StatType.danmaku, videoItem.stat?.danmaku),
-                ],
-              ),
-        coverOverlays: [
-          ?label,
-          if (hasProgress || (duration != null && duration > 0))
-            CoverDurationPill(
-              text: hasProgress
+        topStats: isPgc
+            ? const []
+            : [
+                (StatType.play, videoItem.stat?.view),
+                (StatType.danmaku, videoItem.stat?.danmaku),
+              ],
+        topDuration: hasProgress || (duration != null && duration > 0)
+            ? hasProgress
                   ? progress == -1
                         ? '已看完'
                         : '${DurationUtils.formatDuration(progress)}/${DurationUtils.formatDuration(duration)}'
-                  : DurationUtils.formatDuration(duration),
-              top: label == null ? 6 : 32,
-              right: 6,
-            ),
+                  : DurationUtils.formatDuration(duration)
+            : null,
+        coverOverlays: [
+          ?label,
         ],
         foregroundOverlays: [
           if (hasProgress)

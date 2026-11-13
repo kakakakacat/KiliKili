@@ -1,5 +1,4 @@
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/http/search.dart';
 import 'package:kilikili/models/common/stat_type.dart';
@@ -52,20 +51,13 @@ class MusicVideoCardH extends StatelessWidget {
         onTap: _open,
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        topStart: CoverStatsPill(
-          stats: [
-            (StatType.play, videoItem.play),
-            (StatType.danmaku, videoItem.danmu),
-          ],
-        ),
-        coverOverlays: [
-          if ((videoItem.duration ?? 0) > 0)
-            CoverDurationPill(
-              text: DurationUtils.formatDuration(videoItem.duration),
-              top: 6,
-              right: 6,
-            ),
+        topStats: [
+          (StatType.play, videoItem.play),
+          (StatType.danmaku, videoItem.danmu),
         ],
+        topDuration: (videoItem.duration ?? 0) > 0
+            ? DurationUtils.formatDuration(videoItem.duration)
+            : null,
         metaBuilder: videoItem.labels.isEmpty
             ? null
             : (context, colors) => [

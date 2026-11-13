@@ -1,4 +1,3 @@
-import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:kilikili/common/widgets/select_mask.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
@@ -61,17 +60,12 @@ class HistoryItem extends StatelessWidget {
             : () => onPushHistory(item),
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        coverOverlays: [
-          ?label,
-          if (item.hasDuration)
-            CoverDurationPill(
-              text: progress == -1
+        topDuration: item.hasDuration
+            ? progress == -1
                   ? '已看完'
-                  : '${DurationUtils.formatDuration(progress)}/${DurationUtils.formatDuration(item.duration)}',
-              right: 6,
-              top: label == null ? 6 : 32,
-            ),
-        ],
+                  : '${DurationUtils.formatDuration(progress)}/${DurationUtils.formatDuration(item.duration)}'
+            : null,
+        coverOverlays: [?label],
         foregroundOverlays: [
           if (hasProgress && item.duration != null && item.duration != 0)
             Positioned(

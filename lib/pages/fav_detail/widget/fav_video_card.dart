@@ -1,7 +1,6 @@
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/select_mask.dart';
-import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/grpc/bilibili/app/listener/v1.pbenum.dart'
     show PlaylistSource;
@@ -92,22 +91,22 @@ class FavVideoCardH extends StatelessWidget {
             : _onTap,
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        topStart: item.type == 24
-            ? null
-            : CoverStatsPill(
-                stats: [
-                  (StatType.play, item.cntInfo?.play),
-                  (StatType.danmaku, item.cntInfo?.danmaku),
-                ],
-              ),
+        topStats: item.type == 24
+            ? const []
+            : [
+                (StatType.play, item.cntInfo?.play),
+                (StatType.danmaku, item.cntInfo?.danmaku),
+              ],
+        topDuration: item.duration != null && item.duration! > 0
+            ? DurationUtils.formatDuration(item.duration)
+            : null,
         coverOverlays: [
           if (badge != null && badge.isNotEmpty)
-            PBadge(text: badge, top: 6, right: 6, type: PBadgeType.gray),
-          if (item.duration != null && item.duration! > 0)
-            CoverDurationPill(
-              text: DurationUtils.formatDuration(item.duration),
-              top: badge == null || badge.isEmpty ? 6 : 32,
+            PBadge(
+              text: badge,
+              top: item.type != 24 || (item.duration ?? 0) > 0 ? 54 : 6,
               right: 6,
+              type: PBadgeType.gray,
             ),
         ],
         foregroundOverlays: [

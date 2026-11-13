@@ -1,7 +1,6 @@
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/custom_icon.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/grpc/bilibili/app/interfaces/v1.pb.dart' show Arc;
 import 'package:kilikili/http/user.dart';
@@ -76,20 +75,15 @@ class SearchArchiveGrpc extends StatelessWidget {
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
-        topStart: CoverStatsPill(
-          stats: [
-            (StatType.play, arc.stat.view),
-            (StatType.danmaku, arc.stat.danmaku),
-          ],
-        ),
+        topStats: [
+          (StatType.play, arc.stat.view),
+          (StatType.danmaku, arc.stat.danmaku),
+        ],
+        topDuration: arc.duration > Int64.ZERO
+            ? DurationUtils.formatDuration(arc.duration.toInt())
+            : null,
         coverOverlays: [
-          if (item.isPugv) const PBadge(text: '课堂', top: 6, right: 6),
-          if (arc.duration > Int64.ZERO)
-            CoverDurationPill(
-              text: DurationUtils.formatDuration(arc.duration.toInt()),
-              top: item.isPugv ? 32 : 6,
-              right: 6,
-            ),
+          if (item.isPugv) const PBadge(text: '课堂', top: 54, right: 6),
         ],
         metaBuilder: date.isEmpty
             ? null

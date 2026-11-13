@@ -6,8 +6,8 @@ import 'package:material_ui/material_ui.dart';
 /// 四个直播卡（首页、关注、直播搜索、综合搜索）的数据源各不相同，但这一行
 /// 的排布一直是同一套，拆出来免得改一次要对着抄四遍。
 ///
-/// 围观数**不在**这里：它和视频卡的播放量一样属于「有多热」，挪到了封面
-/// 左上角的 [CoverStatsPill]（issue #108）。主播名也不在，它由
+/// 围观数**不在**这里：它作为封面左上角的独立角标展示；视频播放量则在
+/// 顶部渐变信息行（issue #124）。主播名也不在，它由
 /// `CoverScrimCard.upName` 统一排在这一行最前面。
 List<Widget> liveMeta({
   required CoverScrimColors colors,

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:ui';
+
 import 'package:kilikili/utils/extension/theme_ext.dart';
 import 'package:material_ui/material_ui.dart';
 
 const double _kMaxLabelTextScaleFactor = 1.3;
 
-const _kNavigationHeight = 64.0;
+const _kNavigationHeight = 80.0;
 const _kIndicatorHeight = _kNavigationHeight - 2 * _kIndicatorPaddingInt;
 const _kIndicatorWidth = 86.0;
 const _kIndicatorPaddingInt = 4.0;
@@ -16,6 +18,158 @@ const _kBorderRadius = BorderRadius.all(.circular(_kNavigationHeight / 2));
 const _kNavigationShape = RoundedSuperellipseBorder(
   borderRadius: _kBorderRadius,
 );
+
+/// 统一的胶囊玻璃底层，供三种底部导航样式共用。
+class GlassNavigationSurface extends StatelessWidget {
+  const GlassNavigationSurface({
+    super.key,
+    required this.child,
+    this.selectedIndex,
+    this.destinationCount,
+  });
+
+  final Widget child;
+  final int? selectedIndex;
+  final int? destinationCount;
+
+  static Future<FragmentProgram>? _glassProgram;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ColorScheme.of(context);
+    final supportsShader = ImageFilter.isShaderFilterSupported;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: _kBorderRadius,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.22),
+            blurRadius: 22,
+            offset: const Offset(0, 7),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: _kBorderRadius,
+        child: FutureBuilder<FragmentProgram>(
+          future: supportsShader
+              ? (_glassProgram ??= FragmentProgram.fromAsset(
+                  'shaders/liquid_glass.frag',
+                ))
+              : null,
+          builder: (context, snapshot) {
+            // 非 Impeller 后端无法对背板运行自定义折射，保留可读的透明材质。
+            final filter = supportsShader && snapshot.hasData
+                ? ImageFilter.shader(snapshot.data!.fragmentShader())
+                : ImageFilter.blur(sigmaX: 10, sigmaY: 10);
+            return BackdropFilter(
+              filter: filter,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final count = destinationCount;
+                  final index = selectedIndex;
+                  return Stack(
+                    fit: StackFit.passthrough,
+                    children: [
+                      Positioned.fill(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                scheme.surface.withValues(alpha: 0.24),
+                                scheme.surface.withValues(alpha: 0.10),
+                                scheme.surface.withValues(alpha: 0.18),
+                              ],
+                            ),
+                            borderRadius: _kBorderRadius,
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.36),
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (count != null && count > 0 && index != null)
+                        AnimatedPositioned(
+                          key: const Key('glass-selected-indicator'),
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeOutCubic,
+                          left:
+                              4 +
+                              (constraints.maxWidth - 8) *
+                                  index.clamp(0, count - 1) /
+                                  count,
+                          top: 4,
+                          bottom: 4,
+                          width: (constraints.maxWidth - 8) / count,
+                          child: IgnorePointer(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                borderRadius: _kBorderRadius,
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Colors.white.withValues(alpha: 0.26),
+                                    scheme.primary.withValues(alpha: 0.08),
+                                    Colors.white.withValues(alpha: 0.10),
+                                  ],
+                                ),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.40),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: scheme.onSurface.withValues(
+                                      alpha: 0.12,
+                                    ),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      // 三种导航与选中背景共用分栏边界，避免首尾项目向外偏移。
+                      Padding(
+                        padding: _kIndicatorPadding,
+                        // 安全区已由胶囊外层负责，内部导航不能再次插入状态栏留白。
+                        child: MediaQuery.removePadding(
+                          context: context,
+                          removeTop: true,
+                          removeBottom: true,
+                          removeLeft: true,
+                          removeRight: true,
+                          child: Theme(
+                            data: Theme.of(context).copyWith(
+                              splashFactory: NoSplash.splashFactory,
+                              splashColor: Colors.transparent,
+                              highlightColor: Colors.transparent,
+                            ),
+                            child: NavigationBarTheme(
+                              data: NavigationBarTheme.of(context).copyWith(
+                                overlayColor: const WidgetStatePropertyAll(
+                                  Colors.transparent,
+                                ),
+                              ),
+                              child: Center(child: child),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
 
 /// ref [NavigationBar]
 class FloatingNavigationBar extends StatelessWidget {
@@ -76,60 +230,44 @@ class FloatingNavigationBar extends StatelessWidget {
 
     return Padding(
       padding: .fromLTRB(
-        padding.left,
+        padding.left + 12,
         0,
-        padding.right,
+        padding.right + 12,
         bottomPadding + padding.bottom,
       ),
       child: SizedBox(
         height: _kNavigationHeight,
         width: destinations.length * _kIndicatorWidth,
-        child: DecoratedBox(
-          decoration: ShapeDecoration(
-            color: ElevationOverlay.applySurfaceTint(
-              backgroundColor ??
-                  navigationBarTheme.backgroundColor ??
-                  defaults.backgroundColor!,
-              surfaceTintColor ??
-                  navigationBarTheme.surfaceTintColor ??
-                  defaults.surfaceTintColor,
-              elevation ?? navigationBarTheme.elevation ?? defaults.elevation!,
-            ),
-            shape: RoundedSuperellipseBorder(
-              side: defaults.borderSide,
-              borderRadius: _kBorderRadius,
-            ),
-          ),
-          child: Padding(
-            padding: _kIndicatorPadding,
-            child: Row(
-              crossAxisAlignment: .stretch,
-              children: <Widget>[
-                for (int i = 0; i < destinations.length; i++)
-                  Expanded(
-                    child: _SelectableAnimatedBuilder(
-                      duration: animationDuration,
-                      isSelected: i == selectedIndex,
-                      builder: (context, animation) {
-                        return _NavigationDestinationInfo(
-                          index: i,
-                          selectedIndex: selectedIndex,
-                          totalNumberOfDestinations: destinations.length,
-                          selectedAnimation: animation,
-                          labelBehavior: effectiveLabelBehavior,
-                          indicatorColor: indicatorColor,
-                          indicatorShape: indicatorShape,
-                          overlayColor: overlayColor,
-                          onTap: _handleTap(i),
-                          labelTextStyle: labelTextStyle,
-                          labelPadding: labelPadding,
-                          child: destinations[i],
-                        );
-                      },
-                    ),
+        child: GlassNavigationSurface(
+          selectedIndex: selectedIndex,
+          destinationCount: destinations.length,
+          child: Row(
+            crossAxisAlignment: .stretch,
+            children: <Widget>[
+              for (int i = 0; i < destinations.length; i++)
+                Expanded(
+                  child: _SelectableAnimatedBuilder(
+                    duration: animationDuration,
+                    isSelected: i == selectedIndex,
+                    builder: (context, animation) {
+                      return _NavigationDestinationInfo(
+                        index: i,
+                        selectedIndex: selectedIndex,
+                        totalNumberOfDestinations: destinations.length,
+                        selectedAnimation: animation,
+                        labelBehavior: effectiveLabelBehavior,
+                        indicatorColor: indicatorColor,
+                        indicatorShape: indicatorShape,
+                        overlayColor: overlayColor,
+                        onTap: _handleTap(i),
+                        labelTextStyle: labelTextStyle,
+                        labelPadding: labelPadding,
+                        child: destinations[i],
+                      );
+                    },
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         ),
       ),
@@ -172,13 +310,6 @@ class FloatingNavigationDestination extends StatelessWidget {
       alignment: .center,
       clipBehavior: .none,
       children: [
-        NavigationIndicator(
-          animation: animation,
-          color:
-              info.indicatorColor ??
-              navigationBarTheme.indicatorColor ??
-              defaults.indicatorColor!,
-        ),
         _NavigationDestinationBuilder(
           label: label,
           tooltip: tooltip,

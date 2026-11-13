@@ -28,16 +28,16 @@ class HistoryItemModel with MultiSelectData {
   int? liveStatus;
 
   Widget? get label => isFav == 1
-      ? const PBadge(
+      ? PBadge(
           text: '已收藏',
-          top: 6.0,
+          top: hasDuration ? 54.0 : 6.0,
           right: 6.0,
           type: .gray,
         )
       : badge?.isNotEmpty == true
       ? PBadge(
           text: badge,
-          top: 6.0,
+          top: hasDuration ? 54.0 : 6.0,
           right: 6.0,
           type: history.business == 'live' && liveStatus != 1
               ? .gray

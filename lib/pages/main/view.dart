@@ -172,7 +172,14 @@ class _MainAppState extends PopScopeState<MainApp>
       } else if (_mainController.enableMYBar) {
         bottomNav = Obx(
           () => NavigationBar(
-            maintainBottomViewPadding: true,
+            maintainBottomViewPadding: false,
+            height: 80,
+            backgroundColor: Colors.transparent,
+            indicatorColor: Colors.transparent,
+            // 图标槽上下各有 4px 留白，文字底部也保留 4px，组合才能居中。
+            labelPadding: const EdgeInsets.symmetric(vertical: 4),
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
             onDestinationSelected: _mainController.setIndex,
             selectedIndex: _mainController.selectedIndex.value,
             destinations: _mainController.navigationBars
@@ -189,6 +196,8 @@ class _MainAppState extends PopScopeState<MainApp>
       } else {
         bottomNav = Obx(
           () => BottomNavigationBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
             currentIndex: _mainController.selectedIndex.value,
             onTap: _mainController.setIndex,
             iconSize: 16,
@@ -204,6 +213,30 @@ class _MainAppState extends PopScopeState<MainApp>
                   ),
                 )
                 .toList(),
+          ),
+        );
+      }
+
+      if (!_mainController.floatingNavBar) {
+        final safeArea = MediaQuery.viewPaddingOf(context);
+        final navigationChild = bottomNav;
+        bottomNav = Padding(
+          padding: EdgeInsets.fromLTRB(
+            safeArea.left + 12,
+            0,
+            safeArea.right + 12,
+            safeArea.bottom + 8,
+          ),
+          child: SizedBox(
+            width: _mainController.navigationBars.length * 86.0,
+            height: 80,
+            child: Obx(
+              () => GlassNavigationSurface(
+                selectedIndex: _mainController.selectedIndex.value,
+                destinationCount: _mainController.navigationBars.length,
+                child: navigationChild,
+              ),
+            ),
           ),
         );
       }

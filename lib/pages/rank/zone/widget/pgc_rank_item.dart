@@ -1,5 +1,4 @@
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/utils/app_scheme.dart';
@@ -26,12 +25,10 @@ class PgcRankCard extends StatelessWidget {
             : () => PiliScheme.routePushFromUrl(item.url!),
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        topStart: CoverStatsPill(
-          stats: [
-            (StatType.play, item.view),
-            (StatType.follow, item.follow),
-          ],
-        ),
+        topStats: [
+          (StatType.play, item.view),
+          (StatType.follow, item.follow),
+        ],
         metaBuilder: item.newEpIndexShow?.isNotEmpty == true
             ? (context, colors) => [
                 Flexible(

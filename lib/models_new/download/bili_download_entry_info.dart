@@ -84,7 +84,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
               qualityPithyDescription
         : qualityPithyDescription,
     right: 6.0,
-    top: 6.0,
+    top: totalTimeMilli != 0 ? 54.0 : 6.0,
     type: .gray,
   );
 

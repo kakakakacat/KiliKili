@@ -1,21 +1,4 @@
-/// `DmView` 字幕轨的**规范化**：把 `DmViewReply` 转成与 Rust 侧
-/// `bili_domain::subtitle::Subtitle` 逐字段对应的 Map 列表。
-///
-/// ## 它与 `DmGrpc.dmViewToSubtitle` 的关系
-///
-/// 本文件是那段映射（取字段 → 构造 `Subtitle` → `..sort()`）的**转写**，
-/// 而不是对 `Subtitle` 实例的序列化。原因与 `video_detail_normalize.dart`
-/// 相同：`Subtitle` 经 `path_utils` 依赖 flutter，而 fixture 生成器是纯
-/// dart 脚本，跑不起那些依赖。
-///
-/// 转写意味着可能与基线脱节。兜底在
-/// `test/services/rust/dm_view_normalize_test.dart`：它用**真正的**
-/// `DmGrpc.dmViewToSubtitle` 解同一份 fixture，逐字段核对本文件的输出。
-///
-/// 键名跟 Rust 的字段名走（`subtitle_type` 而不是 `type`）：Rust 侧
-/// `type` 是关键字。同弹幕那边的 `dm_type`。
-///
-/// 本文件**不得** import flutter——fixture 生成器是纯 dart 脚本。
+// 2705b39d6 的字幕基线 oracle，仅供离线 fixture 工具使用。
 library;
 
 import 'package:kilikili/grpc/bilibili/community/service/dm/v1.pb.dart';

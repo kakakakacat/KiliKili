@@ -151,7 +151,6 @@ dependencies = [
  "bili-api",
  "bili-domain",
  "serde_json",
- "tracing",
  "url",
 ]
 
@@ -164,7 +163,6 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
- "tracing",
 ]
 
 [[package]]
@@ -174,7 +172,6 @@ dependencies = [
  "regex",
  "serde",
  "thiserror",
- "tracing",
 ]
 
 [[package]]
@@ -188,7 +185,6 @@ dependencies = [
 name = "bili-protocol"
 version = "0.1.0"
 dependencies = [
- "bili-domain",
  "md-5",
  "percent-encoding",
  "rand 0.9.5",

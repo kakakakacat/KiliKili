@@ -8,7 +8,6 @@ repository.workspace = true
 description = "易变协议：WBI 签名、风控参数、协议版本化。与 Domain 隔离（RFC-0001 §16.7）。"
 
 [dependencies]
-bili-domain = { path = "../bili-domain" }
 md-5 = "0.10"
 percent-encoding = "2.3"
 rand = { version = "0.9", optional = true }

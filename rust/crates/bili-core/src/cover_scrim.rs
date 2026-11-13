@@ -199,7 +199,7 @@ fn sample_bottom(rgba: &[u8], width: u32, height: u32) -> Option<BottomSamples> 
     // 每个桶记 [r 和, g 和, b 和, 像素数]，最后取桶内均值当这个桶的颜色。
     const BUCKETS: usize = DOMINANT_LEVELS * DOMINANT_LEVELS * DOMINANT_LEVELS;
     let mut hist = [[0.0_f32; 4]; BUCKETS];
-    for px in region.chunks_exact(4) {
+    for px in region.as_chunks::<4>().0 {
         let rgb = [
             f32::from(px[0]) / 255.0,
             f32::from(px[1]) / 255.0,

@@ -15,7 +15,6 @@ serde.workspace = true
 # 用户配置的正则要在领域层判定「哪些构造两端语义不同」（regex_compat），
 # 弹幕规则与推荐屏蔽词共用同一份判定。
 regex.workspace = true
-tracing.workspace = true
 
 [lints]
 workspace = true

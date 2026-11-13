@@ -8,6 +8,7 @@ import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/pages/dynamics/controller.dart';
 import 'package:kilikili/pages/dynamics/widgets/dynamic_panel.dart';
 import 'package:kilikili/pages/dynamics_tab/controller.dart';
+import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/extension/get_ext.dart';
 import 'package:kilikili/utils/global_data.dart';
 import 'package:kilikili/utils/waterfall.dart';
@@ -67,6 +68,24 @@ class _DynamicsTabPageState extends State<DynamicsTabPage>
     );
   }
 
+  Widget _emptyState({String? errMsg}) {
+    final isLogin = Accounts.main.isLogin;
+    return HttpError(
+      errMsg: isLogin ? errMsg : '登录后查看关注动态',
+      btnText: isLogin ? '点击重试' : '去登录',
+      btnIcon: isLogin ? Icons.refresh : Icons.login,
+      onReload: () {
+        // 导航留在宿主；账号切换后由 AccountMixin 自动刷新两个列表。
+        if (!Accounts.main.isLogin) {
+          Get.toNamed('/loginPage');
+        } else {
+          dynamicsController.singleRefresh();
+          controller.onReload();
+        }
+      },
+    );
+  }
+
   Widget _buildBody(LoadingState<List<DynamicItemModel>?> loadingState) {
     return switch (loadingState) {
       Loading() => dynSkeleton,
@@ -86,11 +105,8 @@ class _DynamicsTabPageState extends State<DynamicsTabPage>
                           _itemBuilder(response, index),
                       itemCount: response.length,
                     )
-            : HttpError(onReload: controller.onReload),
-      Error(:final errMsg) => HttpError(
-        errMsg: errMsg,
-        onReload: controller.onReload,
-      ),
+            : _emptyState(),
+      Error(:final errMsg) => _emptyState(errMsg: errMsg),
     };
   }
 

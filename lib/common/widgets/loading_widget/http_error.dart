@@ -10,6 +10,7 @@ class HttpError extends StatelessWidget {
     this.errMsg,
     this.onReload,
     this.btnText,
+    this.btnIcon,
     this.safeArea = true,
   });
 
@@ -17,6 +18,7 @@ class HttpError extends StatelessWidget {
   final String? errMsg;
   final VoidCallback? onReload;
   final String? btnText;
+  final IconData? btnIcon;
   final bool safeArea;
 
   @override
@@ -45,9 +47,18 @@ class HttpError extends StatelessWidget {
               tapTargetSize: .padded,
               backgroundColor: theme.colorScheme.primary.withAlpha(20),
             ),
-            child: Text(
-              btnText ?? '点击重试',
-              style: TextStyle(color: theme.colorScheme.primary),
+            child: Row(
+              mainAxisSize: .min,
+              children: [
+                if (btnIcon case final icon?) ...[
+                  Icon(icon, size: 18, color: theme.colorScheme.primary),
+                  const SizedBox(width: 8),
+                ],
+                Text(
+                  btnText ?? '点击重试',
+                  style: TextStyle(color: theme.colorScheme.primary),
+                ),
+              ],
             ),
           ),
         if (safeArea)

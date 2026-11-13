@@ -54,26 +54,30 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
   Widget upPanelPart(ColorScheme colorScheme) {
     final isTop = upPanelPosition == .top;
     final needBg = upPanelPosition.index > 2;
-    return Material(
-      type: needBg ? .canvas : .transparency,
-      color: needBg ? colorScheme.surface : null,
-      child: SizedBox(
-        width: isTop ? null : 64,
-        height: isTop ? 76 : null,
-        child: NotificationListener<ScrollEndNotification>(
-          onNotification: (notification) {
-            final metrics = notification.metrics;
-            if (metrics.pixels >= metrics.maxScrollExtent - 300) {
-              _dynamicsController.onLoadMore();
-            }
-            return false;
-          },
-          child: Obx(
-            () => _buildUpPanel(_dynamicsController.loadingState.value),
+    return Obx(() {
+      // UP 列表失败时由动态空态提供统一操作，避免侧栏留下孤立按钮与占位。
+      if (_dynamicsController.loadingState.value is Error) {
+        return const SizedBox.shrink();
+      }
+      return Material(
+        type: needBg ? .canvas : .transparency,
+        color: needBg ? colorScheme.surface : null,
+        child: SizedBox(
+          width: isTop ? null : 64,
+          height: isTop ? 76 : null,
+          child: NotificationListener<ScrollEndNotification>(
+            onNotification: (notification) {
+              final metrics = notification.metrics;
+              if (metrics.pixels >= metrics.maxScrollExtent - 300) {
+                _dynamicsController.onLoadMore();
+              }
+              return false;
+            },
+            child: _buildUpPanel(_dynamicsController.loadingState.value),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget _buildUpPanel(LoadingState<FollowUpModel> upState) {
@@ -83,12 +87,7 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
         upData: response,
         dynamicsController: _dynamicsController,
       ),
-      Error() => Center(
-        child: IconButton(
-          icon: const Icon(Icons.refresh),
-          onPressed: _dynamicsController.onReload,
-        ),
-      ),
+      Error() => const SizedBox.shrink(),
     };
   }
 

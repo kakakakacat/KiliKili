@@ -82,13 +82,20 @@ x86_64 的 Linux + Windows 已经能回答这个问题，且一分钟内结束�
 能发现的，要靠五个 app workflow——而它们一直是手动 dispatch。
 
 `rust/rust-toolchain.toml` 仍钉着七个 target，手动跑与本地跑的覆盖面不变。
+直接运行 Rust 检查时，工具链固定为 Rust 1.100.0；两台开发机与
+Rust workflow 均从该文件选择版本。
+`rust/Cargo.toml` 的 `rust-version = "1.97"` 仍表示最低支持版本，
+不会仅因升级验证工具链就提高。七个 target 与检查项目保持不变。
 **建议 dispatch 的时机**：改动触及 FFI/桥接层、升级 FRB 或工具链、发版前。
 
 **含义：一个只改 Dart 的 PR，在合并前没有任何环节验证过它还能编译出 app。**
 需要这个保证时，必须在合并前手动 dispatch 对应 workflow 并把结论记进 PR。
 自 `ee41df52c`（cargokit 接入 app 构建）之后尤其要注意：五个 app workflow 里
-没有任何 rust/cargo 设置步骤，Rust 工具链完全依赖 runner 自带环境满足
-`rust/rust-toolchain.toml` 钉的 1.97.0 与七个 target，Android 侧还要
+没有任何 rust/cargo 设置步骤，cargokit 会显式执行
+`rustup run stable cargo`，因此 app 使用 runner 的
+`stable` 工具链，不会自动遵循 `rust/rust-toolchain.toml` 固定的 1.100.0。
+Rust workflow 与直接在 `rust/` 下执行的 Cargo 命令才使用固定版本；
+验证 app 构建时须核对实际的 stable 版本，Android 侧还要
 `android.ndkVersion` 对得上。这条路径只能靠手动 dispatch 验证。
 
 #### 已验证：五端产物均含 Rust 库（2026-11-10）
@@ -289,6 +296,6 @@ Docker 27.3.1，已承载 6 个生产容器
 开发在两台机器间通过 git 同步，需提前规避：
 
 1. ~~**`.gitattributes` 需补全**~~ ✅ 已完成（`f113d9136`，现 49 行）。原问题：跨 macOS/Windows 换行符不统一会产生大量假 diff，并使 `cargo fmt --check` 与 `dart format` 在两端判定不一致导致 CI 红。
-2. ~~**工具链版本两端钉死**~~ ✅ 已完成。Flutter 由 `.fvmrc` 锁 3.47.9；`rust/rust-toolchain.toml` 钉 1.97.0 + rustfmt/clippy + 七个 target；`rust/Cargo.lock` 已提交。
+2. ~~**工具链版本两端钉死**~~ ✅ 已完成。Flutter 由 `.fvmrc` 锁 3.47.9；`rust/rust-toolchain.toml` 钉 1.100.0 + rustfmt/clippy + 七个 target；`rust/Cargo.lock` 已提交。app 构建仍显式使用 stable，见 §2.1。
 3. **Windows 侧已知障碍**（本机开发用，CI 不受影响）：需开启开发者模式（Flutter symlink 支持）；Rust `target/` 嵌套深，易触发 260 字符路径限制，仓库应置于短路径并开启长路径支持。~~libmpv DLL 的安装包分发方式~~ ✅ 已确认随包分发，见 §2.1。
 4. ~~**`.gitignore` 补 Rust `target/`**~~ ✅ 已完成（`.gitignore:157` `/rust/target/`）。仍需遵守：**仅用 git 同步**，不要将仓库置于 iCloud/OneDrive/Dropbox；`build/`、`target/`、`.dart_tool/`、`Pods/` 等产物不得跨机同步。

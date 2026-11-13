@@ -170,14 +170,12 @@ dependencies = [
  "regex",
  "serde",
  "thiserror",
- "tracing",
 ]
 
 [[package]]
 name = "bili-protocol"
 version = "0.1.0"
 dependencies = [
- "bili-domain",
  "md-5",
  "percent-encoding",
  "rand 0.9.5",

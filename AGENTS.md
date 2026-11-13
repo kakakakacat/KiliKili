@@ -182,7 +182,31 @@ PR**，不要只留在代码和 Issues 里：
   改到 `main` 再合，或恢复那个 ref 后重开。
 - 五端 app 构建（`build.yml` / `win_x64.yml` / `linux_x64.yml` …）保持
   `workflow_dispatch` 手动触发，**不要提议打开 `pull_request` 触发**；需要
-  验证构建时手动 dispatch。
+  验证构建时手动 dispatch。dispatch 时把不需要的平台显式置 false，
+  `tag` 留空——填了 `tag` 会直接建一个 GitHub Release：
+
+  ```sh
+  gh workflow run build.yml --ref <分支> \
+      -f build_android=true -f build_ios=false -f build_mac=false \
+      -f build_win_x64=false -f build_linux_x64=false -f tag=""
+  ```
+
+- **取 APK 产物不要用 `gh run download`。** `build.yml` 的上传步骤用了
+  `archive: false`，于是：产物名就是**文件名本身**（形如
+  `KiliKili_android_<版本>-<短 sha>+<versionCode>_arm64-v8a.apk`），
+  `-n Android_arm64-v8a` 这种按平台猜的名字找不到；而且 APK 本身就是 zip，
+  `gh run download` 会把它**当压缩包解开**，把七百来个条目摊进目标目录，
+  还会因 `res/` 下有大小写同名的条目（`2f.xml` 与 `2F.xml`）在 Windows 上
+  中途失败：`error extracting "res/2f.xml": openat 2f.xml: file exists`。
+  正确做法是按 artifact id 取原始字节：
+
+  ```sh
+  gh api repos/<owner>/<repo>/actions/artifacts -q ...   # 或 .../runs/<id>/artifacts
+  gh api repos/<owner>/<repo>/actions/artifacts/<id>/zip > x.apk
+  ```
+
+  核对下载大小与 `size_in_bytes` 一致即可确认拿到的是 APK 原文件，
+  不是再套一层的压缩包。
 
 ---
 

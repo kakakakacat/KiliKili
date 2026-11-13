@@ -1,4 +1,4 @@
-import 'package:kilikili/common/skeleton/fav_pgc_item.dart';
+import 'package:kilikili/common/skeleton/video_card_v.dart';
 import 'package:kilikili/common/sliver_single_child_delegate.dart';
 import 'package:kilikili/common/widgets/button/icon_button.dart';
 import 'package:kilikili/common/widgets/dialog/dialog.dart';
@@ -163,16 +163,16 @@ class _FavPgcChildPageState extends State<FavPgcChildPage>
   Widget _buildBody(LoadingState<List<FavPgcItemModel>?> loadingState) {
     return switch (loadingState) {
       Loading() => SliverGrid(
-        gridDelegate: gridDelegate,
+        gridDelegate: Grid.coverCardDelegate(aspectRatio: 3 / 4),
         delegate: const SliverSingleChildDelegate(
           count: 10,
-          child: FavPgcItemSkeleton(),
+          child: VideoCardVSkeleton(),
         ),
       ),
       Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverGrid.builder(
-                gridDelegate: gridDelegate,
+                gridDelegate: Grid.coverCardDelegate(aspectRatio: 3 / 4),
                 itemBuilder: (context, index) {
                   if (index == response.length - 1) {
                     _favPgcController.onLoadMore();

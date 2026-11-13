@@ -122,11 +122,11 @@ class _HotPageState extends State<HotPage>
 
   Widget _buildBody(LoadingState<List<HotVideoItemModel>?> loadingState) {
     return switch (loadingState) {
-      Loading() => gridSkeleton,
+      Loading() => coverGridSkeleton,
       Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverGrid.builder(
-                gridDelegate: gridDelegate,
+                gridDelegate: coverGridDelegate,
                 itemBuilder: (context, index) {
                   if (index == response.length - 1) {
                     controller.onLoadMore();

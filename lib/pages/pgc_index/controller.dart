@@ -43,14 +43,13 @@ class PgcIndexController
   }
 
   @override
-  Future<LoadingState<PgcIndexResult>> customGetData() =>
-      RustPgc.indexResult(
-        page: page,
-        params: indexParams,
-        seasonType: indexType == null ? 1 : null,
-        type: 0,
-        indexType: indexType,
-      );
+  Future<LoadingState<PgcIndexResult>> customGetData() => RustPgc.indexResult(
+    page: page,
+    params: indexParams,
+    seasonType: indexType == null ? 1 : null,
+    type: 0,
+    indexType: indexType,
+  );
 
   @override
   List<PgcIndexItem>? getDataList(PgcIndexResult response) {

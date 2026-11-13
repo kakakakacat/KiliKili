@@ -74,8 +74,7 @@ class _MemberHomeState extends State<MemberHome>
     mainAxisSpacing: Style.cardSpace,
     crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth,
-    childAspectRatio: Style.aspectRatio,
-    mainAxisExtent: MediaQuery.textScalerOf(context).scale(55),
+    childAspectRatio: Style.coverCardRatio,
   );
 
   late final gridDelegateH = OpusGridDelegateFixedMainAxisExtent(
@@ -89,7 +88,6 @@ class _MemberHomeState extends State<MemberHome>
     crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth * 0.6,
     childAspectRatio: 0.75,
-    mainAxisExtent: MediaQuery.textScalerOf(context).scale(52),
   );
 
   Widget _buildBody(LoadingState<SpaceData?> loadingState) {

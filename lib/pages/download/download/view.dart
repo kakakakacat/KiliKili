@@ -224,14 +224,19 @@ class _DownloadPageState extends State<DownloadPage>
                         ),
                         SliverToBoxAdapter(
                           child: SizedBox(
-                            height: 110,
-                            child: DetailItem(
-                              entry: entry,
-                              progress: _progress,
-                              downloadService: downloadService,
-                              showTitle: true,
-                              isCurr: true,
-                              controller: _controller,
+                            height: 200,
+                            child: Center(
+                              child: SizedBox(
+                                width: 256,
+                                child: DetailItem(
+                                  entry: entry,
+                                  progress: _progress,
+                                  downloadService: downloadService,
+                                  showTitle: true,
+                                  isCurr: true,
+                                  controller: _controller,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -257,7 +262,7 @@ class _DownloadPageState extends State<DownloadPage>
                           ),
                         ),
                         SliverGrid.builder(
-                          gridDelegate: gridDelegate,
+                          gridDelegate: coverGridDelegate,
                           itemBuilder: (context, index) {
                             final season = _controller.seasons[index];
                             final seasonInfo = season.seasonInfo;

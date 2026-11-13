@@ -3,6 +3,7 @@
 //! 本 crate 不得依赖 Flutter Widget 或 Slint 具体类型。
 
 pub mod cdn;
+pub mod cover_scrim;
 pub mod media_select;
 pub mod playback;
 pub mod player_session;

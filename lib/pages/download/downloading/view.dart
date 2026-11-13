@@ -69,7 +69,7 @@ class _DownloadingPageState extends State<DownloadingPage>
                 sliver: Obx(() {
                   if (_waitDownloadQueue.isNotEmpty) {
                     return SliverGrid.builder(
-                      gridDelegate: gridDelegate,
+                      gridDelegate: coverGridDelegate,
                       itemCount: _waitDownloadQueue.length,
                       itemBuilder: (context, index) {
                         final entry = _waitDownloadQueue[index];

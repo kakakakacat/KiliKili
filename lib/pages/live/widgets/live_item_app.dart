@@ -1,10 +1,10 @@
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
+import 'package:kilikili/common/widgets/video_card/live_meta.dart';
 import 'package:kilikili/http/live.dart';
 import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/pages/search/widgets/search_text.dart';
-import 'package:kilikili/utils/extension/iterable_ext.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -25,190 +25,106 @@ class LiveCardVApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    void onLongPress() => imageSaveDialog(
-      title: item.title,
-      cover: showFirstFrame ? item.systemCover : item.cover,
+    final cover = showFirstFrame ? item.systemCover : item.cover;
+    void onLongPress() => imageSaveDialog(title: item.title, cover: cover);
+    return CoverScrimCard(
+      cover: cover,
+      title: item.title.toString(),
+      upName: item.uname,
+      onTap: () => PageUtils.toLiveRoom(item.roomid),
+      onLongPress: onLongPress,
+      onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+      topStart: CoverWatchedPill(watched: item.watchedText),
+      metaBuilder: (context, colors) =>
+          liveMeta(colors: colors, areaName: item.areaName),
+      trailing: item.feedback.isEmpty
+          ? null
+          : SizedBox.square(
+              dimension: 29,
+              child: _feedbackButton(context, theme),
+            ),
     );
-    return Stack(
-      children: [
-        Card(
-          child: InkWell(
-            onTap: () => PageUtils.toLiveRoom(item.roomid),
-            onLongPress: onLongPress,
-            onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-            borderRadius: const .all(.circular(12)),
-            child: Column(
-              crossAxisAlignment: .start,
+  }
+
+  /// 「不感兴趣」反馈入口。原本浮在卡片右下角的卡片外侧，现在落在遮罩上。
+  ///
+  /// 图标色刻意**不**跟遮罩取色走：它是个独立的操作按钮而不是文案，跟着
+  /// 封面变色反而会让人以为它和标题是一体的。压在遮罩上统一用白色 + 阴影。
+  Widget _feedbackButton(BuildContext context, ThemeData theme) {
+    return IconButton(
+      padding: EdgeInsets.zero,
+      onPressed: () {
+        Widget actionButton(LiveFeedbackReason r) => SearchText(
+          text: r.name!,
+          onTap: (_) async {
+            Get.back();
+            SmartDialog.showLoading(msg: '正在提交');
+            final res = await LiveHttp.liveFeedback(
+              item.roomid!,
+              r.id!,
+              r.idType!,
+            );
+            SmartDialog.dismiss();
+            if (res.isSuccess) {
+              SmartDialog.showToast('提交成功');
+            } else {
+              res.toast();
+            }
+          },
+        );
+
+        final feedback = item.feedback;
+        showDialog(
+          context: context,
+          builder: (context) {
+            return SimpleDialog(
+              contentPadding: const .fromLTRB(24, 16, 24, 19),
               children: [
-                AspectRatio(
-                  aspectRatio: Style.aspectRatio,
-                  child: LayoutBuilder(
-                    builder: (context, boxConstraints) => Stack(
-                      clipBehavior: Clip.none,
+                for (var i in feedback) ...[
+                  const SizedBox(height: 5),
+                  Text.rich(
+                    TextSpan(
                       children: [
-                        NetworkImgLayer(
-                          src: showFirstFrame ? item.systemCover : item.cover,
-                          width: boxConstraints.maxWidth,
-                          height: boxConstraints.maxHeight,
-                          borderRadius: const .vertical(top: .circular(12)),
+                        TextSpan(
+                          text: i.title,
+                          style: theme.textTheme.titleMedium,
                         ),
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          child: videoStat(),
+                        TextSpan(
+                          text: '\n${i.subtitle}',
+                          style: TextStyle(
+                            color: theme.colorScheme.outline,
+                          ),
                         ),
                       ],
                     ),
                   ),
+                  const SizedBox(height: 5),
+                  Wrap(
+                    spacing: 8.0,
+                    runSpacing: 8.0,
+                    children: i.reasons.map(actionButton).toList(),
+                  ),
+                ],
+                const Divider(),
+                Center(
+                  child: FilledButton.tonal(
+                    onPressed: Get.back,
+                    style: FilledButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    child: const Text('取消'),
+                  ),
                 ),
-                liveContent(theme),
               ],
-            ),
-          ),
-        ),
-        if (item.feedback.isNotEmpty)
-          Positioned(
-            right: -5,
-            bottom: -2,
-            width: 29,
-            height: 29,
-            child: IconButton(
-              padding: .zero,
-              onPressed: () {
-                Widget actionButton(LiveFeedbackReason r) => SearchText(
-                  text: r.name!,
-                  onTap: (_) async {
-                    Get.back();
-                    SmartDialog.showLoading(msg: '正在提交');
-                    final res = await LiveHttp.liveFeedback(
-                      item.roomid!,
-                      r.id!,
-                      r.idType!,
-                    );
-                    SmartDialog.dismiss();
-                    if (res.isSuccess) {
-                      SmartDialog.showToast('提交成功');
-                    } else {
-                      res.toast();
-                    }
-                  },
-                );
-
-                final feedback = item.feedback;
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return SimpleDialog(
-                      contentPadding: const .fromLTRB(24, 16, 24, 19),
-                      children: [
-                        for (var i in feedback) ...[
-                          const SizedBox(height: 5),
-                          Text.rich(
-                            TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: i.title,
-                                  style: theme.textTheme.titleMedium,
-                                ),
-                                TextSpan(
-                                  text: '\n${i.subtitle}',
-                                  style: TextStyle(
-                                    color: theme.colorScheme.outline,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          Wrap(
-                            spacing: 8.0,
-                            runSpacing: 8.0,
-                            children: i.reasons.map(actionButton).toList(),
-                          ),
-                        ],
-                        const Divider(),
-                        Center(
-                          child: FilledButton.tonal(
-                            onPressed: Get.back,
-                            style: FilledButton.styleFrom(
-                              visualDensity: VisualDensity.compact,
-                            ),
-                            child: const Text('取消'),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-              icon: Icon(
-                Icons.more_vert_outlined,
-                size: 17,
-                color: theme.colorScheme.outline,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget liveContent(ThemeData theme) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(5, 8, 5, 4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              item.title.toString(),
-              textAlign: TextAlign.start,
-              style: const TextStyle(letterSpacing: 0.3),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            Text(
-              item.uname.toString(),
-              textAlign: TextAlign.start,
-              style: TextStyle(
-                fontSize: theme.textTheme.labelMedium!.fontSize,
-                color: theme.colorScheme.outline,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget videoStat() {
-    return Container(
-      height: 50,
-      padding: const EdgeInsets.only(top: 26, left: 10, right: 10),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: <Color>[Colors.transparent, Colors.black54],
-          tileMode: TileMode.mirror,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            item.areaName.toString(),
-            style: const TextStyle(fontSize: 11, color: Colors.white),
-          ),
-          if (item.watchedText case final textLarge?)
-            Text(
-              textLarge,
-              style: const TextStyle(fontSize: 11, color: Colors.white),
-            ),
-        ],
+            );
+          },
+        );
+      },
+      icon: const Icon(
+        Icons.more_vert_outlined,
+        size: 17,
+        color: Colors.white,
+        shadows: [Shadow(blurRadius: 3, color: Colors.black54)],
       ),
     );
   }

@@ -28,7 +28,7 @@ class _HistorySearchPageState
   @override
   Widget buildList(List<HistoryItemModel> list) {
     return SliverGrid.builder(
-      gridDelegate: gridDelegate,
+      gridDelegate: coverGridDelegate,
       itemBuilder: (context, index) {
         if (index == list.length - 1) {
           controller.onLoadMore();

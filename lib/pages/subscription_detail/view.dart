@@ -84,11 +84,11 @@ class _SubDetailPageState extends State<SubDetailPage>
 
   Widget _buildBody(LoadingState<List<SubDetailItemModel>?> loadingState) {
     return switch (loadingState) {
-      Loading() => gridSkeleton,
+      Loading() => coverGridSkeleton,
       Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverGrid.builder(
-                gridDelegate: gridDelegate,
+                gridDelegate: coverGridDelegate,
                 itemBuilder: (context, index) {
                   if (index == response.length - 1) {
                     controller.onLoadMore();

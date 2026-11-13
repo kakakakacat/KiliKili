@@ -1,16 +1,10 @@
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/models_new/fav/fav_folder/list.dart';
 import 'package:kilikili/utils/bili_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
 class FavVideoItem extends StatelessWidget {
-  final String heroTag;
-  final FavFolderInfo item;
-  final VoidCallback? onTap;
-  final VoidCallback? onLongPress;
-
   const FavVideoItem({
     super.key,
     this.onTap,
@@ -19,90 +13,60 @@ class FavVideoItem extends StatelessWidget {
     required this.item,
   });
 
+  final String heroTag;
+  final FavFolderInfo item;
+  final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
+
   @override
   Widget build(BuildContext context) {
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
-        onTap: onTap,
-        onLongPress:
-            onLongPress ??
-            (onTap == null
-                ? null
-                : () => imageSaveDialog(
-                    title: item.title,
-                    cover: item.cover,
-                  )),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AspectRatio(
-                aspectRatio: Style.aspectRatio,
-                child: LayoutBuilder(
-                  builder: (context, boxConstraints) {
-                    return Hero(
-                      tag: heroTag,
-                      child: NetworkImgLayer(
-                        src: item.cover,
-                        width: boxConstraints.maxWidth,
-                        height: boxConstraints.maxHeight,
-                      ),
-                    );
-                  },
-                ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: Hero(
+        tag: heroTag,
+        child: CoverScrimCard(
+          cover: item.cover,
+          title: item.title,
+          titleBuilder: item.intro?.isNotEmpty == true
+              ? (context, colors) => Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: colors.title),
+                    ),
+                    Text(
+                      item.intro!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 11, color: colors.subtitle),
+                    ),
+                  ],
+                )
+              : null,
+          metaBuilder: (context, colors) => [
+            Flexible(
+              child: Text(
+                '${item.mediaCount}个内容 · ${BiliUtils.isPublicFavText(item.attr)}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 11, color: colors.subtitle),
               ),
-              const SizedBox(width: 10),
-              content(context),
-            ],
-          ),
+            ),
+          ],
+          onTap: onTap,
+          onLongPress:
+              onLongPress ??
+              (onTap == null
+                  ? null
+                  : () => imageSaveDialog(
+                      title: item.title,
+                      cover: item.cover,
+                    )),
         ),
-      ),
-    );
-  }
-
-  Widget content(BuildContext context) {
-    final theme = Theme.of(context);
-    final fontSize = theme.textTheme.labelMedium!.fontSize;
-    final color = theme.colorScheme.outline;
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            item.title,
-            textAlign: TextAlign.start,
-            style: const TextStyle(
-              letterSpacing: 0.3,
-            ),
-          ),
-          if (item.intro?.isNotEmpty == true)
-            Text(
-              item.intro!,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: fontSize,
-                color: color,
-              ),
-            ),
-          Text(
-            '${item.mediaCount}个内容',
-            style: TextStyle(
-              fontSize: fontSize,
-              color: color,
-            ),
-          ),
-          const Spacer(),
-          Text(
-            BiliUtils.isPublicFavText(item.attr),
-            style: TextStyle(
-              fontSize: fontSize,
-              color: color,
-            ),
-          ),
-        ],
       ),
     );
   }

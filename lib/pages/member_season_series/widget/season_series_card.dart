@@ -1,105 +1,45 @@
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/models_new/space/space_season_series/season.dart';
 import 'package:kilikili/utils/date_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
 class SeasonSeriesCard extends StatelessWidget {
-  const SeasonSeriesCard({
-    super.key,
-    required this.item,
-    required this.onTap,
-  });
+  const SeasonSeriesCard({super.key, required this.item, required this.onTap});
+
   final SpaceSsModel item;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final meta = item.meta!;
     void onLongPress() => imageSaveDialog(
-      title: item.meta!.name,
-      cover: item.meta!.cover,
+      title: meta.name,
+      cover: meta.cover,
     );
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: CoverScrimCard(
+        cover: meta.cover,
+        title: meta.name ?? '',
+        coverOverlays: [
+          PBadge(
+            text: '${meta.seasonId != null ? '合集' : '列表'}: ${meta.total}',
+            top: 6,
+            right: 6,
+          ),
+        ],
+        metaBuilder: (context, colors) => [
+          Text(
+            DateFormatUtils.dateFormat(meta.ptime),
+            style: TextStyle(fontSize: 11, color: colors.subtitle),
+          ),
+        ],
+        onTap: onTap,
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Style.safeSpace,
-            vertical: 5,
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AspectRatio(
-                aspectRatio: Style.aspectRatio,
-                child: LayoutBuilder(
-                  builder: (BuildContext context, BoxConstraints boxConstraints) {
-                    final double maxWidth = boxConstraints.maxWidth;
-                    final double maxHeight = boxConstraints.maxHeight;
-                    return Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        NetworkImgLayer(
-                          src: item.meta!.cover,
-                          width: maxWidth,
-                          height: maxHeight,
-                        ),
-                        PBadge(
-                          text:
-                              '${item.meta!.seasonId != null ? '合集' : '列表'}: ${item.meta!.total}',
-                          bottom: 6.0,
-                          right: 6.0,
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(width: 10),
-              content(context),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget content(BuildContext context) {
-    final theme = Theme.of(context);
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            item.meta!.name!,
-            textAlign: TextAlign.start,
-            style: TextStyle(
-              fontSize: theme.textTheme.bodyMedium!.fontSize,
-              height: 1.42,
-              letterSpacing: 0.3,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const Spacer(),
-          Text(
-            DateFormatUtils.dateFormat(item.meta!.ptime),
-            maxLines: 1,
-            style: TextStyle(
-              fontSize: 12,
-              height: 1,
-              color: theme.colorScheme.outline,
-              overflow: TextOverflow.clip,
-            ),
-          ),
-          const Spacer(),
-        ],
       ),
     );
   }

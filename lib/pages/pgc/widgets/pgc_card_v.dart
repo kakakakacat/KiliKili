@@ -1,7 +1,6 @@
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/models/common/badge_type.dart';
 import 'package:kilikili/models_new/fav/fav_pgc/list.dart';
 import 'package:kilikili/utils/page_utils.dart';
@@ -21,94 +20,37 @@ class PgcCardV extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      shape: const RoundedRectangleBorder(borderRadius: Style.mdRadius),
-      child: InkWell(
-        borderRadius: Style.mdRadius,
-        onLongPress: onLongPress,
-        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        onTap: () => PageUtils.viewPgc(seasonId: item.seasonId),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AspectRatio(
-              aspectRatio: Style.aspectRatio3x4,
-              child: LayoutBuilder(
-                builder: (context, boxConstraints) {
-                  final double maxWidth = boxConstraints.maxWidth;
-                  final double maxHeight = boxConstraints.maxHeight;
-                  return Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      NetworkImgLayer(
-                        src: item.cover,
-                        width: maxWidth,
-                        height: maxHeight,
-                      ),
-                      PBadge(
-                        text: item.badge,
-                        top: 6,
-                        right: 6,
-                        bottom: null,
-                        left: null,
-                      ),
-                      if (item.isFinish == 0 &&
-                          item.renewalTime?.isNotEmpty == true)
-                        PBadge(
-                          text: item.renewalTime,
-                          bottom: 6,
-                          left: 6,
-                          type: PBadgeType.gray,
-                        ),
-                    ],
-                  );
-                },
+    final subtitle = item.progress ?? item.newEp?.indexShow;
+    return CoverScrimCard(
+      cover: item.cover,
+      title: item.title!,
+      titleMaxLines: 1,
+      onTap: () => PageUtils.viewPgc(seasonId: item.seasonId),
+      onLongPress: onLongPress,
+      onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+      coverOverlays: [
+        PBadge(text: item.badge, top: 6, right: 6),
+        if (item.isFinish == 0 && item.renewalTime?.isNotEmpty == true)
+          PBadge(
+            // 更新时间原本在左下角，那里现在是文案遮罩（issue #108）。
+            text: item.renewalTime,
+            top: 6,
+            left: 6,
+            type: PBadgeType.gray,
+          ),
+      ],
+      metaBuilder: subtitle == null
+          ? null
+          : (context, colors) => [
+              Flexible(
+                child: Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 11, color: colors.subtitle),
+                ),
               ),
-            ),
-            content(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget content(BuildContext context) {
-    final theme = Theme.of(context);
-    final style = TextStyle(
-      fontSize: theme.textTheme.labelMedium!.fontSize,
-      color: theme.colorScheme.outline,
-    );
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(4, 5, 0, 3),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              item.title!,
-              textAlign: TextAlign.start,
-              style: const TextStyle(
-                letterSpacing: 0.3,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 1),
-            if (item.progress != null)
-              Text(
-                item.progress!,
-                maxLines: 1,
-                style: style,
-              )
-            else if (item.newEp?.indexShow != null)
-              Text(
-                item.newEp!.indexShow!,
-                maxLines: 1,
-                style: style,
-              ),
-          ],
-        ),
-      ),
+            ],
     );
   }
 }

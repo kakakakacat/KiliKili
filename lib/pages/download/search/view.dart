@@ -69,7 +69,7 @@ class _DownloadSearchPageState
   Widget buildList(List<BiliDownloadEntryInfo> list) {
     if (list.isNotEmpty) {
       return SliverGrid.builder(
-        gridDelegate: gridDelegate,
+        gridDelegate: coverGridDelegate,
         itemBuilder: (context, index) {
           final entry = list[index];
           return DetailItem(

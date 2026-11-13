@@ -4,38 +4,38 @@
 <rect width="920" height="458" rx="16" fill="#0d1117"/>
 <rect x="1" y="1" width="918" height="456" rx="15" fill="none" stroke="#30363d"/>
 <text x="28" y="42" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="22" font-weight="700">最近提交 · Recent commits</text>
-<text x="28" y="72" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">自 fork 起 55 次主线提交 · 更新于 main 每次推送后</text>
+<text x="28" y="72" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">自 fork 起 63 次主线提交 · 更新于 main 每次推送后</text>
 <line x1="43" y1="102" x2="43" y2="405" stroke="#30363d" stroke-width="2"/>
 <circle cx="43" cy="103" r="5" fill="#58a6ff"/>
 <text x="62" y="108" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-12</text>
-<text x="178" y="108" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">3539fae9</text>
-<text x="266" y="108" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">docs(ci): 记录图表机器人 PR 仍需运行审批的实测结果 (#97)</text>
+<text x="178" y="108" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">70504860</text>
+<text x="266" y="108" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">docs(ci): readme-stats 的注释按 PR 检查暂停后的事实改写（#114） (#118)</text>
 <circle cx="43" cy="146" r="5" fill="#58a6ff"/>
 <text x="62" y="151" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-12</text>
-<text x="178" y="151" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">b1c03b8d</text>
-<text x="266" y="151" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">fix(transport): 重试规则按幂等级别拆开，ADR-013 转 Accepted (#95)</text>
+<text x="178" y="151" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">35da9eed</text>
+<text x="266" y="151" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">chore(ci): 重构期暂停 PR 上的回归检查（#114） (#115)</text>
 <circle cx="43" cy="189" r="5" fill="#58a6ff"/>
 <text x="62" y="194" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-12</text>
-<text x="178" y="194" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">ffcbf83b</text>
-<text x="266" y="194" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">ci: 去掉 chore/readme-stats 的 push 触发，并纠正注释里的因果 (#94)</text>
+<text x="178" y="194" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">e350c26b</text>
+<text x="266" y="194" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">feat(rust): 关注列表与粉丝列表迁到 Rust（#66 收尾） (#111)</text>
 <circle cx="43" cy="232" r="5" fill="#58a6ff"/>
 <text x="62" y="237" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-12</text>
-<text x="178" y="237" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">5533cf37</text>
-<text x="266" y="237" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">docs: ADR-013 写操作的幂等、CSRF 与重试策略（#50） (#93)</text>
+<text x="178" y="237" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">de02cd34</text>
+<text x="266" y="237" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">feat(ui): 给头像增加主题色圆形边框 (#109) (#110)</text>
 <circle cx="43" cy="275" r="5" fill="#58a6ff"/>
 <text x="62" y="280" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-12</text>
-<text x="178" y="280" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">b6733039</text>
-<text x="266" y="280" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">fix(danmaku): 进度回跳不再放出开头那批弹幕（#89） (#92)</text>
+<text x="178" y="280" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">0bbeb142</text>
+<text x="266" y="280" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">feat(rust): 短评五条与想听/分组排序迁到 Rust（#60 #66 的写操作尾巴） (#104)</text>
 <circle cx="43" cy="318" r="5" fill="#58a6ff"/>
-<text x="62" y="323" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-11</text>
-<text x="178" y="323" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">45dfff20</text>
-<text x="266" y="323" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">feat(rust): 取流迁到 typed 直连，算法一并下沉（#79） (#90)</text>
+<text x="62" y="323" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-12</text>
+<text x="178" y="323" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">d0fbcf32</text>
+<text x="266" y="323" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">docs(agents): 约定「改动先有 issue 并挂 milestone」 (#103)</text>
 <circle cx="43" cy="361" r="5" fill="#58a6ff"/>
 <text x="62" y="366" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-12</text>
-<text x="178" y="366" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">36c47427</text>
-<text x="266" y="366" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">docs: 新增 AGENTS.md，并把「宿主可替换」的逻辑归属判据写进 RFC (#88)</text>
+<text x="178" y="366" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">bd43327e</text>
+<text x="266" y="366" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">feat(rust): 弹幕屏蔽规则的增删迁到 Rust（#66 的尾巴，ADR-013 第一次落地） (#100)</text>
 <circle cx="43" cy="404" r="5" fill="#58a6ff"/>
-<text x="62" y="409" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-11</text>
-<text x="178" y="409" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">967c5e6b</text>
-<text x="266" y="409" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">feat(rust): 直播剩余六条只读迁到 typed 直连（S11a 第三批） (#87)</text>
+<text x="62" y="409" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="400">2026-11-12</text>
+<text x="178" y="409" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="600">ebbd5212</text>
+<text x="266" y="409" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">docs: README 改成讲清楚 KiliKili 在做什么 (#98)</text>
 </svg>

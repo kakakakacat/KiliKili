@@ -1,27 +1,38 @@
 name: README charts
 
-# 图表不再直接推 main：`main regression gate` 这条 ruleset 把
-# `regression gate` 设成必过检查，而直推绕不过它，推送会被 GH013 拒绝
-# （实测：每次合并后都留一条红）。个人账号仓库又无法给 ruleset 加
-# GitHub Actions 的 bypass（422：actor 必须属于 source 或所属组织）。
+# 图表不直接推 main，改成「有差异就开 PR」：图表改动推到固定分支
+# `chore/readme-stats`，开一个 PR 并挂上 auto-merge 自己合进去。
 #
-# 因此改成「有差异就开 PR」：图表改动推到固定分支 `chore/readme-stats`，
-# 开一个 PR 并挂上 auto-merge，CI 绿了自己合进去。
+# 当初这么改是因为 ruleset「main regression gate」把 `regression gate` 设成
+# 必过检查，直推绕不过它，推送被 GH013 拒绝（实测：每次合并后都留一条红），
+# 而个人账号仓库又无法给 ruleset 加 GitHub Actions 的 bypass（422：actor
+# 必须属于 source 或所属组织）。
 #
-# 仓库设置和审批行为要分开看（2026-11-12 实测）：
+# **2026-11-12 起那条 ruleset 停用、PR 上也不再跑检查**（issue #114，重构期
+# 暂停）。于是：
+#
+# - auto-merge 没有检查可等，挂上即刻合并，图表 PR 不再经历 CI；
+# - 下面第 2 条说的「等人工批准运行」当前不会发生——没有运行要批准。
+#
+# 本工作流**保持原样不动**：PR 这条路在两种状态下都能走通，而恢复 PR 检查
+# 时（取消 `ci.yml` 里 `pull_request:` 的注释 + ruleset enforcement 改回
+# active）下面几条会原样生效，届时不必再改这里。
+#
+# 仓库设置和审批行为要分开看（2026-11-12 实测，描述的是 PR 检查开着时）：
 #
 # 1. 必须允许 Actions 创建 PR：Settings → Actions → General → Workflow
 #    permissions → "Allow GitHub Actions to create and approve pull
-#    requests"。关着的话 `gh pr create` 会以 403 失败。
+#    requests"。关着的话 `gh pr create` 会以 403 失败。**这条与 PR 检查无关，
+#    任何时候都成立。**
 # 2. fork PR 审批策略当前是 `first_time_contributors_new_to_github`，但这并未
 #    保证机器人 PR 自动跑 CI：#96 的 PR 创建事件仍以 `action_required` 结束。
 #    因此 auto-merge 可能等待人工批准运行；#82 的成功 CI 是仓库账号触发的，
 #    不能作为机器人创建事件免审批的证据。查设置：
 #    `gh api repos/<o>/<r>/actions/permissions/fork-pr-contributor-approval`
 #
-# 另：GITHUB_TOKEN **推分支不会触发任何工作流**（同样是防递归），所以
-# 不要试图靠给 `ci.yml` 加一条 push 触发来让检查跑起来——那条加了也不会
-# 执行。真正跑 CI 的是 PR 创建事件。
+# 另：GITHUB_TOKEN **推分支不会触发任何工作流**（防递归），所以不要试图靠给
+# `ci.yml` 加一条 push 触发来让检查跑起来——那条加了也不会执行。PR 检查开着
+# 时，真正跑 CI 的是 PR 创建事件。
 
 on:
   push:
@@ -100,8 +111,9 @@ jobs:
             echo "Reusing pull request #$existing"
           fi
 
-          # 绿了自己合。仓库已开启 auto-merge；未开启时该命令会报错，
-          # 此时 PR 仍在，等人工合并即可。
+          # 挂 auto-merge 自己合。PR 检查暂停期间（issue #114）没有检查可等，
+          # 等于即刻合并；恢复后会退回「绿了才合」。仓库已开启 auto-merge；
+          # 未开启时该命令会报错，此时 PR 仍在，等人工合并即可。
           gh pr merge "$CHARTS_BRANCH" --squash --auto || {
             echo "::warning::auto-merge 挂载失败，PR 已开出，需要人工合并"
           }

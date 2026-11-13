@@ -476,11 +476,11 @@ class _FavDetailPageState extends State<FavDetailPage>
     LoadingState<List<FavDetailItemModel>?> loadingState,
   ) {
     return switch (loadingState) {
-      Loading() => gridSkeleton,
+      Loading() => coverGridSkeleton,
       Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverGrid.builder(
-                gridDelegate: gridDelegate,
+                gridDelegate: coverGridDelegate,
                 itemBuilder: (context, index) {
                   if (index == response.length) {
                     controller.onLoadMore();

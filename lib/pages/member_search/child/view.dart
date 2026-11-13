@@ -60,7 +60,7 @@ class _MemberSearchChildPageState extends State<MemberSearchChildPage>
 
   Widget get _buildLoading {
     return switch (widget.searchType) {
-      MemberSearchType.archive => gridSkeleton,
+      MemberSearchType.archive => coverGridSkeleton,
       MemberSearchType.dynamic => dynSkeleton,
     };
   }
@@ -72,7 +72,7 @@ class _MemberSearchChildPageState extends State<MemberSearchChildPage>
         response != null && response.isNotEmpty
             ? switch (widget.searchType) {
                 MemberSearchType.archive => SliverGrid.builder(
-                  gridDelegate: gridDelegate,
+                  gridDelegate: coverGridDelegate,
                   itemBuilder: (context, index) {
                     if (index == response.length - 1) {
                       _controller.onLoadMore();

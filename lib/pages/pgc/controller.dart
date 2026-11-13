@@ -85,7 +85,6 @@ class PgcController
     timelineState.value = Success(list1 ?? list2);
   }
 
-
   /// 把番剧与国创两条时间轴按天并成一条。
   ///
   /// 这是**页面**决策——这一页要在同一条时间轴上同时显示两类，而不是

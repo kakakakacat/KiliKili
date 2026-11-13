@@ -82,6 +82,10 @@ pgc 成为删得最多的一块
 新增实质改动的四个上游文件是 `floating_navigation_bar.dart`、
 `pages/main/view.dart`、`models_new/{history,later}/list.dart`。
 
+修订：2026-11-13（#122 Liquid Glass、#105 完整选中态）——继续修改上述导航文件，
+并增加一个折射着色器；`pubspec.yaml` 已属实质改动文件，修改文件的分类与数量
+不变，新增文件 **478 → 479**，删除文件不变。
+
 前述 #89 修订的差额**不全是那次改动**：上一版是在 #79 的工作树上算的，#90 合进
 main 前的最后一个提交（CDN 判据跟着算法搬家）没算进去——它删掉四个 Dart
 测试、新增 `bili-core/src/{cdn,playback}.rs` 与 `test/bridge/playback_bridge_test.dart`，
@@ -123,7 +127,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 修改的上游既有文件 | 890 |
 | &nbsp;&nbsp;其中：仅因包名重命名而改动 | 666 |
 | &nbsp;&nbsp;其中：有实质改动 | **224** |
-| 新增文件 | 478 |
+| 新增文件 | 479 |
 | 删除文件 | **130** |
 
 「修改」总数一路下降（935 → 909 → 897 → 891），部分文件是因迁移被删除，

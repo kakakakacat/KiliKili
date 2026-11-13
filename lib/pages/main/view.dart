@@ -173,8 +173,9 @@ class _MainAppState extends PopScopeState<MainApp>
         bottomNav = Obx(
           () => NavigationBar(
             maintainBottomViewPadding: false,
-            height: 64,
+            height: 80,
             backgroundColor: Colors.transparent,
+            indicatorColor: Colors.transparent,
             surfaceTintColor: Colors.transparent,
             elevation: 0,
             onDestinationSelected: _mainController.setIndex,
@@ -216,6 +217,7 @@ class _MainAppState extends PopScopeState<MainApp>
 
       if (!_mainController.floatingNavBar) {
         final safeArea = MediaQuery.viewPaddingOf(context);
+        final navigationChild = bottomNav;
         bottomNav = Padding(
           padding: EdgeInsets.fromLTRB(
             safeArea.left + 12,
@@ -225,12 +227,16 @@ class _MainAppState extends PopScopeState<MainApp>
           ),
           child: SizedBox(
             width: _mainController.navigationBars.length * 86.0,
-            height: 64,
-            child: GlassNavigationSurface(
-              child: MediaQuery.removePadding(
-                context: context,
-                removeBottom: true,
-                child: bottomNav,
+            height: 80,
+            child: Obx(
+              () => GlassNavigationSurface(
+                selectedIndex: _mainController.selectedIndex.value,
+                destinationCount: _mainController.navigationBars.length,
+                child: MediaQuery.removePadding(
+                  context: context,
+                  removeBottom: true,
+                  child: navigationChild,
+                ),
               ),
             ),
           ),

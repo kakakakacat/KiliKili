@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
+import 'package:kilikili/common/widgets/stat/stat.dart';
 import 'package:kilikili/models/common/stat_type.dart';
 
 void main() {
@@ -28,6 +29,8 @@ void main() {
     expect(tester.getTopLeft(bar), Offset.zero);
     expect(tester.getSize(bar).width, 180);
     expect(find.text('123:45'), findsOneWidget);
+    expect(tester.getTopLeft(find.byType(StatWidget).first).dy, 0);
+    expect(tester.getTopLeft(find.text('123:45')).dy, 0);
     expect(tester.takeException(), isNull);
   });
 

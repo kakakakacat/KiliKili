@@ -60,15 +60,16 @@ class CoverTopInfoBar extends StatelessWidget {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 6, 8, 14),
+          padding: const EdgeInsets.fromLTRB(8, 0, 8, 14),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (visibleStats.isEmpty) const Spacer(),
               if (visibleStats.isNotEmpty)
                 Expanded(
                   flex: 3,
                   child: FittedBox(
-                    alignment: Alignment.centerLeft,
+                    alignment: Alignment.topLeft,
                     fit: BoxFit.scaleDown,
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -90,7 +91,7 @@ class CoverTopInfoBar extends StatelessWidget {
                 Flexible(
                   flex: 2,
                   child: Align(
-                    alignment: Alignment.centerRight,
+                    alignment: Alignment.topRight,
                     child: Text(
                       text,
                       maxLines: 1,

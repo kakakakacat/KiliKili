@@ -60,4 +60,75 @@ void main() {
     await tester.tap(find.text('项目4'));
     expect(selected, 4);
   });
+
+  testWidgets('选中背景同时包住图标与文字，并随选中项移动', (tester) async {
+    Widget buildBar(int selected) => MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: SizedBox(
+            width: 300,
+            height: 80,
+            child: GlassNavigationSurface(
+              selectedIndex: selected,
+              destinationCount: 3,
+              child: NavigationBar(
+                height: 80,
+                backgroundColor: Colors.transparent,
+                indicatorColor: Colors.transparent,
+                selectedIndex: selected,
+                destinations: const [
+                  NavigationDestination(icon: Icon(Icons.home), label: '首页'),
+                  NavigationDestination(icon: Icon(Icons.update), label: '动态'),
+                  NavigationDestination(icon: Icon(Icons.person), label: '我的'),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpWidget(buildBar(0));
+    final selectedBackground = find.byKey(
+      const Key('glass-selected-indicator'),
+    );
+    final firstRect = tester.getRect(selectedBackground);
+    final iconRect = tester.getRect(find.byIcon(Icons.home));
+    final labelRect = tester.getRect(find.text('首页'));
+    expect(firstRect.contains(iconRect.topLeft), isTrue);
+    expect(firstRect.contains(labelRect.bottomRight), isTrue);
+
+    await tester.pumpWidget(buildBar(1));
+    await tester.pumpAndSettle();
+    final secondRect = tester.getRect(selectedBackground);
+    expect(secondRect.left, greaterThan(firstRect.left));
+    expect(
+      secondRect.contains(tester.getRect(find.text('动态')).bottomRight),
+      isTrue,
+    );
+  });
+
+  testWidgets('悬浮导航的选中背景完整包住图标和文字', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Align(
+            alignment: Alignment.bottomCenter,
+            child: FloatingNavigationBar(
+              destinations: const [
+                FloatingNavigationDestination(icon: Icon(Icons.home), label: '首页'),
+                FloatingNavigationDestination(icon: Icon(Icons.person), label: '我的'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final background = tester.getRect(
+      find.byKey(const Key('glass-selected-indicator')),
+    );
+    expect(background.contains(tester.getRect(find.byIcon(Icons.home)).topLeft), isTrue);
+    expect(background.contains(tester.getRect(find.text('首页')).bottomRight), isTrue);
+  });
 }

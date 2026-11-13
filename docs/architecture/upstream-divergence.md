@@ -48,6 +48,14 @@ pgc 成为删得最多的一块
 修订：2026-11-12（头像主题色边框 #109）——实质改动 152 → **154**，
 仅重命名波及 739 → **737**；修改总数仍为 891，新增和删除数不变。
 `NetworkImgLayer` 与“我的”页从仅重命名文件转为有实质改动。
+修订：2026-11-12（关注/粉丝列表，#66 收尾，为本次）—— 实质改动
+154 → **157**，仅重命名波及 737 → **732**，新增文件 465 → **469**，
+删除文件 128 → **130**，「修改」总数 891 → **889**。本次数字含**尚未提交**
+的工作树改动。`lib/http/{follow,fan}.dart` 两个整文件删掉（从 M 转进 D，
+其中 `follow.dart` 上一版刚进「有实质改动」，这一版就删干净了）；
+`lib/http/dynamics.dart`、`lib/models/dynamics/up.dart`、
+`lib/pages/fan/controller.dart`、`lib/pages/follow/child/child_controller.dart`
+四个从「仅重命名」转入「有实质改动」。
 
 修订：2026-11-12（竖版视频封面改大卡片 + 底部叠加文案，issue #108，
 为本次）—— 实质改动 154 → **168**，仅重命名波及 737 → **724**，新增文件
@@ -60,6 +68,10 @@ pgc 成为删得最多的一块
 仍为 892。新增文件按当前分支重算为 **472**，其中 `lib/common/` 为 3 个。
 本轮新增的 49 个实质改动文件集中在搜索、收藏、历史、稍后再看、离线缓存、
 动态、播放列表及其共用卡片，见 §4.4。
+
+修订：2026-11-13（合入最新 main，包含关注/粉丝列表 #111）——按 §6 重算：
+修改的上游文件 **890**，其中实质改动 **220**、仅重命名 **670**；新增
+**476**，删除 **130**。这组数包含两条分支各自的改动，不把同一文件重复计数。
 
 前述 #89 修订的差额**不全是那次改动**：上一版是在 #79 的工作树上算的，#90 合进
 main 前的最后一个提交（CDN 判据跟着算法搬家）没算进去——它删掉四个 Dart
@@ -99,22 +111,21 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 | 类别 | 数量 |
 | --- | ---: |
-| 修改的上游既有文件 | 892 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 675 |
-| &nbsp;&nbsp;其中：有实质改动 | **217** |
-| 新增文件 | 472 |
-| 删除文件 | **128** |
+| 修改的上游既有文件 | 890 |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 670 |
+| &nbsp;&nbsp;其中：有实质改动 | **220** |
+| 新增文件 | 476 |
+| 删除文件 | **130** |
 
-「修改」总数一路下降（935 → 909 → 897 → 891），不是改动变少，而是其中
-一部分文件**被删除**了（迁移掉的模型），从 M 转到了 D。#108 把它顶回
-892，是这一路唯一一次反向——界面改动不删文件，只会往上加。删除数从 57
-一路到 128，来源是 S10 的 PGC 两批、S11a 的直播三批与取流（#79）。
+「修改」总数一路下降（935 → 909 → 897 → 891），部分文件是因迁移被删除，
+从 M 转到了 D。#108 的界面改动一度把它顶回 892；合入 #111 的关注/粉丝
+切片后是 890。删除数到 130，来源包括 PGC、直播、取流及关注/粉丝接口迁移。
 
 ## 3. 包名重命名：分叉面的主体
 
 `ba430476b chore: rename app package identifiers to KiliKili` 把每个 Dart
 文件的 `package:PiliPlus/` 改成了 `package:kilikili/`，一次触及 992 个文件。
-**当前分叉面里 675 个文件只有这一处差异。**
+**当前分叉面里 670 个文件只有这一处差异。**
 
 对同步的影响很具体：上游每改动一个 Dart 文件，我们这边大概率冲突，但
 **冲突内容永远是那一行 import**。处理方式是取上游版本后重新套用重命名，
@@ -125,7 +136,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 4. 有实质改动的上游文件
 
-217 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
+220 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
 见 §4.4，其余改动逐个列在 §4.3。
 
 ### 4.1 typed 直连迁移触及的上游文件
@@ -147,7 +158,8 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | S11a 直播第二批（取流） | #61 / #86 | `lib/http/live.dart`、`lib/pages/live_room/controller.dart`、`lib/utils/video_utils.dart`（`getLiveCdnUrl` 改吃 FRB 的 `LiveCodec`）；留下单向适配 `lib/services/rust/live_playurl_compat.dart` |
 | 弹幕屏蔽规则的两个写操作 | #66 #50 / #100 | `lib/pages/danmaku_block/controller.dart`、`lib/pages/video/widgets/header_control.dart`；**删掉 `lib/http/danmaku_block.dart`**。仓库头两条走 Rust 的写操作，形状见 ADR-013 |
 | 短评五条写操作 | #60 #50 / 本次 | `lib/pages/pgc_review/**`；**删掉 `lib/http/pgc.dart`**（迁完整个文件只剩这五条） |
-| 想听 / 关注分组排序 | #66 #50 / 本次 | `lib/pages/music/view.dart`、`lib/pages/follow_tag_sort/view.dart`、`lib/http/follow.dart`（瘦身）；**删掉 `lib/http/music.dart`** |
+| 想听 / 关注分组排序 | #66 #50 / #104 | `lib/pages/music/view.dart`、`lib/pages/follow_tag_sort/view.dart`、`lib/http/follow.dart`（瘦身）；**删掉 `lib/http/music.dart`** |
+| S15 关注/粉丝列表（#66 收尾） | #66 / 本次 | `lib/pages/follow/child/child_controller.dart`、`lib/pages/fan/controller.dart`、`lib/http/dynamics.dart`（`followings` 改吃 Rust，同一条接口不留第二份实现）、`lib/models/dynamics/up.dart`；**删掉 `lib/http/{follow,fan}.dart`**；留下单向适配 `lib/services/rust/follow_compat.dart`（`FollowData` 还有四个生产者在 S6 #56 / S7 #57） |
 | S11a 直播第三批（剩余六条只读） | #61 / #87 | `lib/http/live.dart`、`lib/pages/{live_emote,live_search,live_dm_block}/**`、`lib/pages/live_room/{controller.dart,contribution_rank/**}`、`lib/pages/member/{view.dart,widget/{medal_wall,user_info_card}.dart}`、`lib/pages/common/publish/common_rich_text_pub_page.dart`；留下单向适配 `lib/services/rust/live_rest_compat.dart` |
 
 **同步时怎么处理这一类冲突**：上游在这些文件里的改动，多数落在我们已经
@@ -275,14 +287,14 @@ Column 顺序、文字层级），丢弃——那一层我们已经整个换掉�
 
 ## 5. 新增文件
 
-472 个，不与上游冲突，按区域分布：
+476 个，不与上游冲突，按区域分布：
 
 | 区域 | 文件数 | 内容 |
 | --- | ---: | --- |
-| `rust/` | 300 | Rust workspace：6 个 crate、golden fixture 与快照 |
+| `rust/` | 302 | Rust workspace：6 个 crate、golden fixture 与快照 |
 | `rust_builder/` | 46 | cargokit，把 Rust 接入 Flutter 各端构建 |
-| `lib/services/` | 33 | Rust 开关、shadow mode、各切片的取数封装 |
-| `test/` | 27 | parity 测试与桥接层集成测试 |
+| `lib/services/` | 34 | Rust 开关、shadow mode、各切片的取数封装 |
+| `test/` | 28 | parity 测试与桥接层集成测试 |
 | `lib/rust/` | 25 | FRB 生成的 Dart 绑定 |
 | `tool/` | 13 | 构建准备、FRB 生成、README 统计、产物核对、fixture 生成 |
 | `docs/` | 14 | RFC、ADR、M0 记录、QA 清单 |

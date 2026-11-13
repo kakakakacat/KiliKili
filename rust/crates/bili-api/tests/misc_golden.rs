@@ -13,9 +13,12 @@
 //! 队伍与赛季的 `id`），用来证明多余字段会被忽略。
 //!
 //! **手工构造**：`bgm_detail`、`bgm_recommend`、`black_list`、
-//! `danmaku_filter`。原因各不相同，都不是「懒得抓」：
+//! `danmaku_filter`、`follow_list`。原因各不相同，都不是「懒得抓」：
 //! - 黑名单与弹幕屏蔽规则是**账号自己的数据**，匿名取不到，而把真实账号的
 //!   拉黑名单与屏蔽词写进仓库，脱敏之后也没剩下什么可证明的；
+//! - 关注/粉丝列表同理：`/x/relation/followings` 要登录态，而脱敏之后剩下
+//!   的就是一串示例用户——与其抓一份再逐条改名，不如直接写出要验的三种
+//!   情形（有签名 / 空签名 / 缺 mid），每一条都对着基线的某个分支；
 //! - 音乐两条接口匿名可达，但要一个真实的 `music_id`，而站内没有公开入口
 //!   能枚举（试过 recommend 的空 id：返回 `code 0` + 空列表，证明不了解析）。
 //!
@@ -79,6 +82,15 @@ fn bgm_recommend_matches_the_frozen_snapshot() {
 fn black_list_matches_the_frozen_snapshot() {
     check("black_list.raw.json", "black_list.rust.json", |raw| {
         value(&bili_api::user_list::parse_black_list(raw).expect("样本应解析成功"))
+    });
+}
+
+/// 关注与粉丝共用这一份：两条路径的响应形状相同，`parse_follow_list` 也是
+/// 同一个。再放一份 `fans.raw.json` 只会得到字节相同的第二个文件。
+#[test]
+fn follow_list_matches_the_frozen_snapshot() {
+    check("follow_list.raw.json", "follow_list.rust.json", |raw| {
+        value(&bili_api::follow::parse_follow_list(raw).expect("样本应解析成功"))
     });
 }
 

@@ -63,6 +63,7 @@ ADR-011 决策五把对照机制定为「Rust 冻结快照 + Dart parity 测试�
 | M13 | P1 | **短评的赞/踩/发/改/删**（#60 / ADR-013） | 五条全是写操作。`review_type` 固定 2（1 是长评），`share_feed` 不分享时**整个字段不发**；赞/踩两条基线没有状态位，这里按切换处理，**服务端到底是置为还是切换只有真机能确认** | 登录后在一部番剧的短评区：给别人的短评点赞→再点一次取消，赞数与高亮都要跟着变（若第二次点赞没有取消，说明服务端是置为语义，定级要改成 `Idempotent` 并回填 ADR-013）；点踩同理，且点踩后原先的赞要被顶掉；发一条短评（**不勾**「同时分享到动态」），动态页不应出现；再发一条勾上，动态页应出现；编辑自己那条的评分与正文，刷新后是新值；删除，刷新后确实消失 |
 | M14 | P1 | **「想听」与关注分组排序**（#66 / ADR-013） | 想听的 `state` 映射是反直觉的（**1 才是加入**，2 是取消），写反了的表现是按钮点一下没反应——服务端收下了但做的是反向操作，CI 不会报错。分组排序是目前唯一一条参数同时分布在查询串与表单里的写操作 | 在带 BGM 的视频进入音乐页：点「想听」→ 计数 +1 且按钮变成已想听；**刷新页面后仍是已想听**（只看按钮状态会被本地乐观更新骗过去）；再点一次取消，刷新后确实取消。关注页打开分组排序，拖动顺序后保存，**退出重进**顺序应保持 |
 | M15 | P1 | **头像主题色圆边框**（#109） | 头像分布在个人页、动态、评论、消息等页面，且有图片、占位图、挂件和认证标记等组合；静态检查无法确认边框是否遮挡内容 | 默认绿色主题和另一种自选主题下，分别检查“我的”页未登录占位头像、个人页、动态、评论及消息头像；边框跟随主题色，保持正圆且不改变尺寸、点击区域或角标位置；手机与平板、浅色与深色主题各检查一次 |
+| M16 | P1 | 关注列表与粉丝列表（S15 #66 收尾） | 两条都要登录态，匿名取不到；fixture 手工构造。真机要确认的不是解析，而是**排序与分页**：`order_type` 在关注那条是空串也发、在粉丝那条可以整条不发，两者默认排序不同，解析对了也可能顺序错 | 登录后打开「我的关注」：切换「最近关注 / 最常访问」两种排序，两次的顺序应当不同且各自与网页端一致；下拉分页到底，不重复不丢人；打开某个分组（分组那条还在 Dart）与「全部」切换，两边条目一致。打开「我的粉丝」分页到底，并**移除一个粉丝**后列表同步。再到动态页展开「全部 up 主」，列表与关注页一致（它用的是同一条接口） |
 
 执行记录按 §6 的模板填写；`FAIL` 时同时修正对应 fixture 并重新生成冻结快照，不要只改代码。
 
@@ -99,7 +100,7 @@ ADR-011 决策五把对照机制定为「Rust 冻结快照 + Dart parity 测试�
 | Windows | F01–F13 中适用项；重点记录安装、窗口与硬解 | 有独立设备；不能以 Actions 构建替代 GUI 操作 |
 | Linux | 构建、解包、原生库与依赖检查；功能项记 `NOT TESTED` | 目前无可用 Linux GUI/硬解验收环境，按 best-effort 发布范围单独披露 |
 
-自动检查由 `ci.yml` 统一触发：每个 PR 和 main 提交都会跑 `rust.yml`（Rust 检查与冻结快照）、`flutter-test.yml`（Dart 基线对照与真实 FFI）、Android Release 开发包构建及 `libbridge_flutter.so` 产物检查；`regression gate` 要求这些 job 全部成功。每日定时运行还会调用 iOS、macOS、Windows、Linux 的既有打包 workflow；手动运行 CI 时可用 `full_platforms` 请求相同的全平台构建。若启用分支保护，应把 `regression gate` 设为必过检查。CI 的固定 fixture 对照不访问上游实时接口，基线版本见 [M0 基线](../m0/BASELINE.md)；更新快照须在 PR 中审查差异并重跑 Dart parity，不得在 CI 中设置 `UPDATE_GOLDEN`。
+自动检查由 `ci.yml` 触发。**2026-11-12 起 PR 上不触发**（重构期暂停，issue #114：`pull_request:` 已注释，ruleset「main regression gate」改为 `disabled`），当前只在 main 的 push、每日定时和手动运行时跑；发布候选因此必须显式以 `workflow_dispatch` 跑一次 CI，不能假设候选 commit 的 PR 上有过绿检查。恢复 PR 触发后，下文「每个 PR」重新成立。每次运行都会跑 `rust.yml`（Rust 检查与冻结快照）、`flutter-test.yml`（Dart 基线对照与真实 FFI）、Android Release 开发包构建及 `libbridge_flutter.so` 产物检查；`regression gate` 要求这些 job 全部成功。每日定时运行还会调用 iOS、macOS、Windows、Linux 的既有打包 workflow；手动运行 CI 时可用 `full_platforms` 请求相同的全平台构建。分支保护（ruleset「main regression gate」）已存在但当前停用，恢复 PR 检查时把它的 `enforcement` 改回 `active`。CI 的固定 fixture 对照不访问上游实时接口，基线版本见 [M0 基线](../m0/BASELINE.md)；更新快照须在 PR 中审查差异并重跑 Dart parity，不得在 CI 中设置 `UPDATE_GOLDEN`。
 
 自动构建仍只证明产物可打包；它不能验收视频首帧、硬解、PiP、后台音频或升级后的真实用户数据。每个发布候选仍须填入 workflow run 链接、真机执行记录，并对目标平台的最终产物运行 `python3 tool/inspect-artifact.py <artifact> --require <原生库文件名>`。实际库名按平台产物确定，不能只看构建日志或包体积。产物检查方法见[发布产物复盘](../m0/2026-11-10-RELEASE-REVIEW.md)。
 
@@ -125,7 +126,7 @@ ADR-011 决策五把对照机制定为「Rust 冻结快照 + Dart parity 测试�
 逐项勾选并附证据；未满足项写缺陷、影响平台和处置决定。清单是发布门槛的记录，不表示当前版本已具备发布条件。
 
 - [ ] 候选 commit、版本号、Release 产物哈希固定；后续任何代码或打包改动重新生成候选记录。
-- [ ] `regression gate` 通过；记录本次 CI 的 run 链接。若候选 commit 未经历全平台定时构建，手动以 `full_platforms` 运行 CI；记录构建结果、安装包签名/版本信息，并用 `inspect-artifact.py` 核对最终产物的原生库与依赖。
+- [ ] `regression gate` 通过；记录本次 CI 的 run 链接。PR 检查暂停期间（issue #114）须对候选 commit 手动 `gh workflow run "Regression CI" --ref <候选 ref>`，并确认该 run 对应的正是候选 commit。若候选 commit 未经历全平台定时构建，手动以 `full_platforms` 运行 CI；记录构建结果、安装包签名/版本信息，并用 `inspect-artifact.py` 核对最终产物的原生库与依赖。
 - [ ] `flutter-test.yml`、`rust.yml` 的全部检查通过；确认 bridge job 实际加载原生库，未将跳过的测试写作通过。
 - [ ] 每个目标平台完成 F01–F11；适用的 F12–F13 已执行。登录态、断网恢复和旧版原地升级都有实际设备证据。
 - [ ] Android、iOS、macOS、Windows 的播放、Seek、全屏、弹幕、前后台或窗口生命周期经过实际设备验收；iOS 真机签名问题已解决或该平台不纳入本次发布。

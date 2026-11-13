@@ -32,8 +32,8 @@ CoverScrimStyle fallbackCoverScrim({required int tintRgb}) =>
 /// 一张封面算出来的底部遮罩配色。颜色是 `0xAARRGGBB`，Dart 侧直接
 /// `Color(value)`。
 ///
-/// [`CoverScrimStyle::scrim_argb`] 是**一整块纯色半透明**，不是渐变的一端：
-/// 宿主拿它铺满文案那一条即可。
+/// [`CoverScrimStyle::scrim_argb`] 铺满文案所在的纯色半透明区，同时作为
+/// 其上方渐变段的终点；文字只放在纯色区。
 class CoverScrimStyle {
   /// 文案那一条的遮罩色，含 alpha。取自封面底部区域的主色，按对比度需要
   /// 调过明暗。

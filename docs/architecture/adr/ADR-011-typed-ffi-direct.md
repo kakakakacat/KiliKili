@@ -454,3 +454,55 @@ parity 测试。决策四意味着：
 **这是补充二那条寿命规则的第三种情形**：不是 parity 测试到期，而是**判据
 所在的那一侧**被迁移删掉了，golden 必须换一个角色，否则它会退化成「Rust
 与一份 Rust 也在用的文件自洽」。
+
+## S15 收尾（关注/粉丝列表 / issue #66）落地后的补充
+
+### 补充十五：parity 能不能借用活着的基线，取决于它的 import 闭包
+
+补充二给的判据是「基线还活在 `lib/` 里就借用它，被删干净了就逐行转写」。
+这次是第一种情形（`FollowData` / `FollowItemModel` 还有四个生产者，归
+S6 #56 与 S7 #57），**但借不成**：
+
+`FollowItemModel` → `models/model_avatar.dart` → `models/model_owner.dart`
+→ `models/model_video.dart` / `models_new/dynamic/dyn_mention/item.dart`，
+一路拖进 widget 层。那些符号由 `lib/scripts/*.patch` 打进 Flutter SDK，
+没跑过 `tool/prepare-build.sh` 的机器上编译不过——测试只能在 CI 跑，
+而 parity 恰恰是写迁移代码时要反复跑的那一个。
+
+所以判据要再加一层：**先看基线模型的 import 闭包碰不碰 widget 层 /
+`Pref` / `storage`，碰了就转写，哪怕基线还活着。**
+`test/services/rust/follow_parity_test.dart` 是转写的那种，寿命仍按补充二
+（随 S6/S7 删掉 `lib/models_new/follow/` 的那个 PR 一起删）。
+
+`sponsor_block_parity_test.dart` 之所以能直接 import，是因为
+`SegmentItemModel` 的闭包是纯数据——这是运气，不是通例。
+
+### 补充十六：跨 FFI 的同名实体，Dart 侧只能有一个
+
+`official_verify` 这棵子树在搜索结果与关注/粉丝列表里是同一个东西。FRB
+把各模块的导出结构**摊平**成 Dart 的顶层类，两个模块各写一个
+`OfficialVerify` 不会在 Rust 侧冲突，但生成出来的 Dart 要么重名、要么
+逼着调用方在两个等价类之间来回转换。
+
+做法与 `MatchContest` 那次一致（S15 第一批：misc 定义、search 复用），
+这次方向相反——`misc::FollowUser` 直接用
+`crate::api::search::OfficialVerify`。领域层也只留一份：定义搬到
+`bili_domain::user_list`，`bili_domain::search` 改成再导出。
+
+**判据**：跨 FFI 的导出面上，同一棵协议子树只准有一个结构；放在哪个模块
+由「谁先迁」决定，后来的那个复用并在文档里写明指向。领域层同理——两份
+字段相同的实体，迟早会在其中一边加字段时分叉。
+
+### 补充十七：同一条接口有两个 Dart 调用者时，决策四管的是「路径」不是「文件」
+
+`/x/relation/followings` 在基线里有两份实现：`FollowHttp.followings`
+（关注页）与 `DynamicsHttp.followings`（动态页「全部 up 主」，装进
+`FollowUpModel`）。issue 的范围只写了前者。
+
+只迁前者会留下一份仍在发同一条请求的 Dart 实现，等于决策四说的「留旧
+实现」——差别只是它在另一个文件里。所以本片把 `DynamicsHttp.followings`
+一并改成消费 Rust 结果（S5 #55 的其余部分不动）。
+
+**判据**：认领切片后，除了数共享模型的生产者（补充四、补充十二），还要
+**按接口路径 grep 一遍调用者**。同一条路径的所有 Dart 实现要在同一个 PR
+里消失，否则「已迁」只是文件级别的，协议理解仍然有两份。

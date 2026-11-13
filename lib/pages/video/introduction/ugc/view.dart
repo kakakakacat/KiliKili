@@ -147,6 +147,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                       () => AnimatedHeightWidgetExt(
                         expand: introController.expand.value,
                         duration: kIntroExpandDuration,
+                        curve: kIntroExpandCurve,
                         child: TranslucentColumn(
                           mainAxisSize: .min,
                           crossAxisAlignment: .start,

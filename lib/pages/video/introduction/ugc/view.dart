@@ -146,7 +146,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                     Obx(
                       () => AnimatedHeightWidgetExt(
                         expand: introController.expand.value,
-                        duration: const Duration(milliseconds: 300),
+                        duration: kIntroExpandDuration,
                         child: TranslucentColumn(
                           mainAxisSize: .min,
                           crossAxisAlignment: .start,
@@ -246,13 +246,22 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     } else if (isHorizontal && PlatformUtils.isDesktop) {
       return _buildVideoTitle(videoDetail, isSelectable: true);
     }
-    return Obx(
-      () => ExpandablePanel(
-        collapsed: _gestureVideoTitle(videoDetail),
-        expanded: _gestureVideoTitle(videoDetail, isExpand: true),
-        expand: introController.expand.value,
-      ),
-    );
+    return Obx(() {
+      final expand = introController.expand.value;
+      return Row(
+        crossAxisAlignment: .end,
+        children: [
+          Expanded(
+            child: ExpandablePanel(
+              collapsed: _gestureVideoTitle(videoDetail),
+              expanded: _gestureVideoTitle(videoDetail, isExpand: true),
+              expand: expand,
+            ),
+          ),
+          ExpandIndicator(expand: expand, color: colorScheme.outline),
+        ],
+      );
+    });
   }
 
   Widget _gestureVideoTitle(

@@ -264,7 +264,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 100),
+      // 控制层（顶栏 + 底栏）出现/隐藏的时长，原为 100ms，按 #141 调快。
+      // 刻意不加曲线：顶底两条栏共用这一个 controller，时长到这个量级后
+      // 曲线的「先慢后快」会被读成迟滞，线性反而更利落。
+      duration: const Duration(milliseconds: 60),
     );
     videoController = plPlayerController.videoController!;
 

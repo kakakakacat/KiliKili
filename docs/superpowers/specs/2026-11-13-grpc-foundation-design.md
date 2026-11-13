@@ -4,7 +4,7 @@
 
 ## 范围与架构
 
-执行已批准 ADR-012：在 bili-api 的 HttpTransport 增加二进制 POST 和保留响应头的返回类型，文本 REST 返回不变。统一复用 reqwest 客户端缓存、代理、证书、HTTP/1.1 和重试配置。只读 gRPC 使用读重试策略，写请求显式标记幂等级别，不注入 csrf。
+执行已批准 ADR-012：在 bili-api 的 HttpTransport 增加二进制 POST 和保留响应头的返回类型，文本 REST 返回不变。统一复用 reqwest 客户端缓存、代理、证书、HTTP/1.1 和重试配置。HttpPost 显式持有 RetryPolicy，现有 REST 传 Write(level)，只读 gRPC 使用 Read 重试策略，写请求显式标记幂等级别，不注入 csrf。
 
 gRPC 模块负责五字节帧、超过 64 字节才 gzip、响应长度校验、头部状态和双层 google.rpc.Status 业务码。头缺失、帧截断和多余帧必须返回 Protocol。protobuf 解析保留现有弹幕/字幕手写实现。
 
@@ -14,6 +14,6 @@ gRPC 模块负责五字节帧、超过 64 字节才 gzip、响应长度校验、
 
 ## 验证与交付
 
-先写边界测试并确认失败，再实现。测试覆盖 64/65 阈值、identity/gzip、长度错误、状态缺失、双层业务码、metadata 对照、真实 reqwest 桩请求和 typed FFI。fixture 优先抓真实匿名响应后脱敏；不可获取时明确区分手工构造，不能声称验证了线上协议。
+先写边界测试并确认失败，再实现。测试覆盖 64/65 阈值、identity/gzip、长度错误、状态缺失、双层业务码、metadata 对照、同份原始帧经 Dart/Rust 离线逐字节 parity（测试不 import lib/）、真实 reqwest 桩请求和 typed FFI。fixture 优先抓真实匿名响应后脱敏；不可获取时明确区分手工构造，不能声称验证了线上协议。
 
 生成一致性 CI 在 Ubuntu 独立运行，不改变五端构建的手动触发方式。所有 Rust 三项检查、Dart 改动文件分析、可运行 Flutter/FFI 测试与生成幂等检查必须完成。同步 RFC、ADR-012、协议记录、验证能力、分叉面和 QA。真机验证留 Phase 2，不自行合并。

@@ -5,7 +5,7 @@
 
 import 'package:kilikili/rust/api/cover_scrim.dart';
 import 'package:kilikili/rust/api/danmaku.dart';
-import 'package:kilikili/rust/api/dm_view.dart';
+import 'package:kilikili/rust/api/grpc.dart';
 import 'package:kilikili/rust/api/init.dart';
 import 'package:kilikili/rust/api/live.dart';
 import 'package:kilikili/rust/api/media_select.dart';
@@ -115,6 +115,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FollowList dco_decode_box_autoadd_follow_list(dynamic raw);
+
+  @protected
+  GrpcContext dco_decode_box_autoadd_grpc_context(dynamic raw);
+
+  @protected
+  GrpcIdentity dco_decode_box_autoadd_grpc_identity(dynamic raw);
 
   @protected
   HistoryNode dco_decode_box_autoadd_history_node(dynamic raw);
@@ -362,9 +368,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Dash dco_decode_dash(dynamic raw);
 
   @protected
-  DmViewSubtitlesParse dco_decode_dm_view_subtitles_parse(dynamic raw);
-
-  @protected
   Durl dco_decode_durl(dynamic raw);
 
   @protected
@@ -414,6 +417,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FormatCandidateInput dco_decode_format_candidate_input(dynamic raw);
+
+  @protected
+  GrpcBytesResult dco_decode_grpc_bytes_result(dynamic raw);
+
+  @protected
+  GrpcContext dco_decode_grpc_context(dynamic raw);
+
+  @protected
+  GrpcIdentity dco_decode_grpc_identity(dynamic raw);
+
+  @protected
+  GrpcSubtitle dco_decode_grpc_subtitle(dynamic raw);
+
+  @protected
+  GrpcSubtitlesResult dco_decode_grpc_subtitles_result(dynamic raw);
 
   @protected
   HistoryNode dco_decode_history_node(dynamic raw);
@@ -488,6 +506,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<FormatCandidateInput> dco_decode_list_format_candidate_input(
     dynamic raw,
   );
+
+  @protected
+  List<GrpcSubtitle> dco_decode_list_grpc_subtitle(dynamic raw);
 
   @protected
   List<LanguageItem> dco_decode_list_language_item(dynamic raw);
@@ -1091,6 +1112,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<FeedVideoItem>? dco_decode_opt_list_feed_video_item(dynamic raw);
 
   @protected
+  List<GrpcSubtitle>? dco_decode_opt_list_grpc_subtitle(dynamic raw);
+
+  @protected
   List<LanguageItem>? dco_decode_opt_list_language_item(dynamic raw);
 
   @protected
@@ -1128,6 +1152,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Int64List? dco_decode_opt_list_prim_i_64_strict(dynamic raw);
+
+  @protected
+  Uint8List? dco_decode_opt_list_prim_u_8_strict(dynamic raw);
 
   @protected
   List<SearchArticleItem>? dco_decode_opt_list_search_article_item(dynamic raw);
@@ -1567,6 +1594,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   FollowList sse_decode_box_autoadd_follow_list(SseDeserializer deserializer);
 
   @protected
+  GrpcContext sse_decode_box_autoadd_grpc_context(SseDeserializer deserializer);
+
+  @protected
+  GrpcIdentity sse_decode_box_autoadd_grpc_identity(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   HistoryNode sse_decode_box_autoadd_history_node(SseDeserializer deserializer);
 
   @protected
@@ -1902,11 +1937,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Dash sse_decode_dash(SseDeserializer deserializer);
 
   @protected
-  DmViewSubtitlesParse sse_decode_dm_view_subtitles_parse(
-    SseDeserializer deserializer,
-  );
-
-  @protected
   Durl sse_decode_durl(SseDeserializer deserializer);
 
   @protected
@@ -1958,6 +1988,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FormatCandidateInput sse_decode_format_candidate_input(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  GrpcBytesResult sse_decode_grpc_bytes_result(SseDeserializer deserializer);
+
+  @protected
+  GrpcContext sse_decode_grpc_context(SseDeserializer deserializer);
+
+  @protected
+  GrpcIdentity sse_decode_grpc_identity(SseDeserializer deserializer);
+
+  @protected
+  GrpcSubtitle sse_decode_grpc_subtitle(SseDeserializer deserializer);
+
+  @protected
+  GrpcSubtitlesResult sse_decode_grpc_subtitles_result(
     SseDeserializer deserializer,
   );
 
@@ -2046,6 +2093,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<FormatCandidateInput> sse_decode_list_format_candidate_input(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<GrpcSubtitle> sse_decode_list_grpc_subtitle(
     SseDeserializer deserializer,
   );
 
@@ -2853,6 +2905,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<GrpcSubtitle>? sse_decode_opt_list_grpc_subtitle(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<LanguageItem>? sse_decode_opt_list_language_item(
     SseDeserializer deserializer,
   );
@@ -2904,6 +2961,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Int64List? sse_decode_opt_list_prim_i_64_strict(SseDeserializer deserializer);
+
+  @protected
+  Uint8List? sse_decode_opt_list_prim_u_8_strict(SseDeserializer deserializer);
 
   @protected
   List<SearchArticleItem>? sse_decode_opt_list_search_article_item(
@@ -3445,6 +3505,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_grpc_context(
+    GrpcContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_grpc_identity(
+    GrpcIdentity self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_history_node(
     HistoryNode self,
     SseSerializer serializer,
@@ -3910,12 +3982,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_dash(Dash self, SseSerializer serializer);
 
   @protected
-  void sse_encode_dm_view_subtitles_parse(
-    DmViewSubtitlesParse self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_durl(Durl self, SseSerializer serializer);
 
   @protected
@@ -3981,6 +4047,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_format_candidate_input(
     FormatCandidateInput self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_grpc_bytes_result(
+    GrpcBytesResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_grpc_context(GrpcContext self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_grpc_identity(GrpcIdentity self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_grpc_subtitle(GrpcSubtitle self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_grpc_subtitles_result(
+    GrpcSubtitlesResult self,
     SseSerializer serializer,
   );
 
@@ -4092,6 +4179,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_format_candidate_input(
     List<FormatCandidateInput> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_grpc_subtitle(
+    List<GrpcSubtitle> self,
     SseSerializer serializer,
   );
 
@@ -5140,6 +5233,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_list_grpc_subtitle(
+    List<GrpcSubtitle>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_list_language_item(
     List<LanguageItem>? self,
     SseSerializer serializer,
@@ -5208,6 +5307,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_prim_i_64_strict(
     Int64List? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_prim_u_8_strict(
+    Uint8List? self,
     SseSerializer serializer,
   );
 

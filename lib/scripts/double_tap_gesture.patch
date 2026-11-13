@@ -2,7 +2,26 @@ diff --git a/packages/flutter/lib/src/gestures/multitap.dart b/packages/flutter/
 index b81d16aff4e..dfd7e756034 100644
 --- a/packages/flutter/lib/src/gestures/multitap.dart
 +++ b/packages/flutter/lib/src/gestures/multitap.dart
-@@ -260,7 +260,7 @@ class DoubleTapGestureRecognizer extends GestureRecognizer {
+@@ -123,12 +123,18 @@ class DoubleTapGestureRecognizer extends GestureRecognizer {
+   /// Create a gesture recognizer for double taps.
+   ///
+   /// {@macro flutter.gestures.GestureRecognizer.supportedDevices}
+   DoubleTapGestureRecognizer({
+     super.debugOwner,
+     super.supportedDevices,
+     super.allowedButtonsFilter = _defaultButtonAcceptBehavior,
++    this.doubleTapTimeout = kDoubleTapTimeout,
+   });
+ 
++  /// 两次点击之间允许的最大间隔，默认 [kDoubleTapTimeout]。
++  /// 它同时决定第一次抬手后 gesture arena 被 hold 多久——在它到期前，
++  /// 同一个 pointer 上的单击识别器赢不了 arena，单击回调也发不出来（KiliKili #143）。
++  final Duration doubleTapTimeout;
++
+   // The default value for [allowedButtonsFilter].
+   // Accept the input if, and only if, [kPrimaryButton] is pressed.
+   static bool _defaultButtonAcceptBehavior(int buttons) => buttons == kPrimaryButton;
+@@ -260,7 +266,7 @@ class DoubleTapGestureRecognizer extends GestureRecognizer {
        if (_firstTap == null) {
          _registerFirstTap(tracker);
        } else {
@@ -11,7 +30,7 @@ index b81d16aff4e..dfd7e756034 100644
        }
      } else if (event is PointerMoveEvent) {
        if (!tracker.isWithinGlobalTolerance(event, kDoubleTapTouchSlop)) {
-@@ -336,12 +336,12 @@ class DoubleTapGestureRecognizer extends GestureRecognizer {
+@@ -336,12 +342,12 @@ class DoubleTapGestureRecognizer extends GestureRecognizer {
      _firstTap = tracker;
    }
  
@@ -26,7 +45,16 @@ index b81d16aff4e..dfd7e756034 100644
      _reset();
    }
  
-@@ -365,7 +365,7 @@ class DoubleTapGestureRecognizer extends GestureRecognizer {
+@@ -355,7 +361,7 @@ class DoubleTapGestureRecognizer extends GestureRecognizer {
+   }
+ 
+   void _startDoubleTapTimer() {
+-    _doubleTapTimer ??= Timer(kDoubleTapTimeout, _reset);
++    _doubleTapTimer ??= Timer(doubleTapTimeout, _reset);
+   }
+ 
+   void _stopDoubleTapTimer() {
+@@ -365,7 +371,7 @@ class DoubleTapGestureRecognizer extends GestureRecognizer {
      }
    }
  

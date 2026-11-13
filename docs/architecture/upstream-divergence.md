@@ -142,6 +142,13 @@ RFC §10.1 规定了要固定 `UPSTREAM_COMMIT` 并记录 rebase/merge 策略，
 指示），这两个已由 §4.1 的 S3 行覆盖，不重复计数。
 顺带修正 §5：那张按区域分布的表自 #133 起就没更新，总数还停在 480。
 
+修订：2026-11-13（#143 单击显隐控制层的空等）——按 §6 对当前工作树重算：
+上游修改文件 **890 → 891**，其中实质改动 **231 → 232**、仅重命名仍为
+**659**；新增 **511**、删除 **144** 不变。`lib/scripts/double_tap_gesture.patch`
+此前与上游逐字相同（连包名重命名都没碰到它），本次首次改动，直接进入
+「有实质改动」。`lib/plugin/pl_player/view/view.dart` 已由 §4.1 的 S3 行覆盖，
+不重复计数。
+
 ## 1. 基准
 
 ```
@@ -159,9 +166,9 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 | 类别 | 数量 |
 | --- | ---: |
-| 修改的上游既有文件 | 890 |
+| 修改的上游既有文件 | 891 |
 | &nbsp;&nbsp;其中：仅因包名重命名而改动 | 659 |
-| &nbsp;&nbsp;其中：有实质改动 | **231** |
+| &nbsp;&nbsp;其中：有实质改动 | **232** |
 | 新增文件 | 511 |
 | 删除文件 | **144** |
 
@@ -184,7 +191,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 4. 有实质改动的上游文件
 
-231 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
+232 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
 见 §4.4，其余改动逐个列在 §4.3。
 
 ### 4.1 typed 直连迁移触及的上游文件
@@ -259,6 +266,7 @@ H5 房间信息）、第二批 7 个（`live_room_play_info/` 整个目录）、
 | `lib/pages/mine/view.dart` | #109 | 未登录头像改走共用头像组件，保持边框一致 |
 | `lib/common/widgets/floating_navigation_bar.dart`、`lib/pages/main/view.dart` | #122 | 三种首页底栏共用玻璃背景、胶囊裁切、4px 内容内边距与边缘留白；安全区仅在胶囊外处理，分栏中心对齐选中背景，图标与文字组合居中，降低底色与高光的不透明度；保留导航与隐藏行为 |
 | `lib/pages/main/controller.dart` | #128 | 底部导航在页面间按方向滑动 240 毫秒；侧栏仍直接切换 |
+| `lib/scripts/double_tap_gesture.patch` | #143 | 给 Flutter SDK 的 `DoubleTapGestureRecognizer` 加一个 `doubleTapTimeout` 参数（默认仍为 `kDoubleTapTimeout`，只有播放器选择性调短）；**改了它就多一个只在打过补丁的 SDK 上才存在的符号**，见 AGENTS §5 |
 | `lib/common/widgets/expandable.dart` | #141 | 展开/折叠时长 300 → 180ms，抽成共用常量 `kIntroExpandDuration`，并新增标题旁的三角指示 `ExpandIndicator` |
 | `lib/http/video.dart` | `f321aea73` `43827d42f` `9385cf06d` 及 S3 | 视频详情与取流接入 Rust（**仍是 JSON 往返 + 开关**，见 #79）；S3 又从中删去了五条只读接口，见 §4.1 |
 | `lib/http/search.dart` | `130b9f533`、S9 | 搜索建议接入 Rust；S9 之后整条搜索是 typed 直连、**无开关无回退**，见 §4.1 |

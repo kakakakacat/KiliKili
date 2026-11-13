@@ -123,6 +123,14 @@ dart analyze lib
 >
 > 同理，本机 `flutter test` 只能跑不碰 widget 层与 `Pref`/`storage` 的测试；
 > 其余只能靠 CI（CI 会先跑 `prepare-build.sh`）。
+>
+> **交集判据有一个例外：自己给 `lib/scripts/*.patch` 新加符号的时候。**
+> 那个符号只存在于打过补丁的 SDK，未跑 `prepare-build.sh` 的机器上会在
+> **自己刚改过的文件里**报 `undefined_*`，交集必然非空，但并不说明改错了。
+> 当前已知的这类符号：`DoubleTapGestureRecognizer.doubleTapTimeout`
+> （`double_tap_gesture.patch`，见 #143）、`DoubleTapGestureRecognizer.checkUp`。
+> 遇到时先用 `git apply --check` 确认补丁能干净打上（只读，不动 SDK），
+> 真正的编译验证交给 CI。
 
 ---
 

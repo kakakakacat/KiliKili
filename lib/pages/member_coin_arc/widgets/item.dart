@@ -1,6 +1,5 @@
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/widgets/video_card/video_card_v.dart';
 import 'package:kilikili/http/search.dart';
@@ -58,23 +57,17 @@ class MemberCoinLikeItem extends StatelessWidget {
       onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
       coverOverlays: [
         if (item.isCooperation == true)
-          const PBadge(text: '合作', top: 6, left: 6)
+          const PBadge(text: '合作', top: 54, left: 6)
         else if (item.isSteins == true)
-          const PBadge(text: '互动', top: 6, left: 6),
-        if (item.duration != null && item.duration! > 0)
-          CoverDurationPill(
-            // 时长原本在右下角，那里现在是文案遮罩（issue #108）。
-            top: 6,
-            right: 6,
-            text: DurationUtils.formatDuration(item.duration),
-          ),
+          const PBadge(text: '互动', top: 54, left: 6),
       ],
-      topStart: CoverStatsPill(
-        stats: [
-          (StatType.play, item.play),
-          (StatType.danmaku, item.danmaku),
-        ],
-      ),
+      topStats: [
+        (StatType.play, item.play),
+        (StatType.danmaku, item.danmaku),
+      ],
+      topDuration: item.duration != null && item.duration! > 0
+          ? DurationUtils.formatDuration(item.duration)
+          : null,
       metaBuilder: (context, colors) => [
         const Spacer(),
         Text(

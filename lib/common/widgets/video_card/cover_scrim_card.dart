@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
+import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/services/rust/rust_cover_scrim.dart';
 import 'package:kilikili/utils/extension/num_ext.dart';
 import 'package:material_ui/material_ui.dart';
@@ -57,8 +59,8 @@ typedef CoverScrimMetaBuilder = List<Widget> Function(
 ///
 /// - **遮罩里**（[upName]、标题、[metaBuilder]）用 `colors` 里的颜色，对比
 ///   度由 Rust 保证，不要另外指定颜色；
-/// - **封面上**（[topStart] 的统计药丸、[coverOverlays] 的时长角标）不在那
-///   套保证里，一律自带半透明深色底 + 白字，不随封面变。
+/// - **封面上**（[topStats]、[topDuration]、[topStart] 和 [coverOverlays]）
+///   不在那套保证里，顶部信息行用深色渐变 + 白字，其他角标自带底色。
 ///
 /// [coverOverlays] 原样放进封面的 Stack 里（`PBadge` 自带 `Positioned`），
 /// 不参与点击。要吃点击的浮层走 [trailing]。
@@ -75,6 +77,8 @@ class CoverScrimCard extends StatelessWidget {
     this.titleBuilder,
     this.metaBuilder,
     this.topStart,
+    this.topStats = const [],
+    this.topDuration,
     this.coverOverlays = const [],
     this.foregroundOverlays = const [],
     this.trailing,
@@ -115,8 +119,12 @@ class CoverScrimCard extends StatelessWidget {
   /// 信息行里 [upName] 之后的那几项（角标、分区、日期…）。
   final CoverScrimMetaBuilder? metaBuilder;
 
-  /// 封面**左上角**的浮层，放统计药丸（[CoverStatsPill]）。
+  /// 直播围观数等仍需单独摆放的左上角浮层。
   final Widget? topStart;
+
+  /// 视频顶部共用渐变行；没有对应数据的卡片只展示可用项。
+  final List<(StatType, dynamic)> topStats;
+  final String? topDuration;
 
   /// 盖在封面上的角标，自带 `Positioned`。
   final List<Widget> coverOverlays;
@@ -185,6 +193,7 @@ class CoverScrimCard extends StatelessWidget {
                   ),
           ),
           ...coverOverlays,
+          CoverTopInfoBar(stats: topStats, duration: topDuration),
           if (topStart case final topStart?)
             Positioned(top: 6, left: 6, child: topStart),
           Positioned(

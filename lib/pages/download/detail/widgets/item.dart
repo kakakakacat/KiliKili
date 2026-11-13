@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:kilikili/common/style.dart';
-import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
@@ -175,15 +174,10 @@ class DetailItem extends StatelessWidget {
         localCover: hasLocalCover ? coverPath : null,
         title: showTitle ? entry.title : entry.showTitle,
         upName: entry.ownerName,
-        coverOverlays: [
-          entry.qaBadge,
-          if (totalDuration != 0)
-            CoverDurationPill(
-              text: DurationUtils.formatDuration(totalDuration),
-              right: 6,
-              top: 6,
-            ),
-        ],
+        topDuration: totalDuration != 0
+            ? DurationUtils.formatDuration(totalDuration)
+            : null,
+        coverOverlays: [entry.qaBadge],
         foregroundOverlays: [
           Positioned.fill(
             child: selectMask(theme.colorScheme, checked ?? entry.checked),

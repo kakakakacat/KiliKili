@@ -172,7 +172,11 @@ class _MainAppState extends PopScopeState<MainApp>
       } else if (_mainController.enableMYBar) {
         bottomNav = Obx(
           () => NavigationBar(
-            maintainBottomViewPadding: true,
+            maintainBottomViewPadding: false,
+            height: 64,
+            backgroundColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
             onDestinationSelected: _mainController.setIndex,
             selectedIndex: _mainController.selectedIndex.value,
             destinations: _mainController.navigationBars
@@ -189,6 +193,8 @@ class _MainAppState extends PopScopeState<MainApp>
       } else {
         bottomNav = Obx(
           () => BottomNavigationBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
             currentIndex: _mainController.selectedIndex.value,
             onTap: _mainController.setIndex,
             iconSize: 16,
@@ -204,6 +210,29 @@ class _MainAppState extends PopScopeState<MainApp>
                   ),
                 )
                 .toList(),
+          ),
+        );
+      }
+
+      if (!_mainController.floatingNavBar) {
+        final safeArea = MediaQuery.viewPaddingOf(context);
+        bottomNav = Padding(
+          padding: EdgeInsets.fromLTRB(
+            safeArea.left + 12,
+            0,
+            safeArea.right + 12,
+            safeArea.bottom + 8,
+          ),
+          child: SizedBox(
+            width: _mainController.navigationBars.length * 86.0,
+            height: 64,
+            child: GlassNavigationSurface(
+              child: MediaQuery.removePadding(
+                context: context,
+                removeBottom: true,
+                child: bottomNav,
+              ),
+            ),
           ),
         );
       }

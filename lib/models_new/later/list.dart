@@ -31,29 +31,36 @@ class LaterItemModel with MultiSelectData {
   bool? isCharging;
   Dimension? dimension;
 
+  // #124 的顶部信息行不存在时，保留角标原来的贴顶位置。
+  double get _badgeTop =>
+      (duration != null && duration! > 0) ||
+          (isPgc != true && (stat?.view != null || stat?.danmaku != null))
+      ? 54.0
+      : 6.0;
+
   Widget? get label => isCharging == true
-      ? const PBadge(
+      ? PBadge(
           text: '充电专属',
-          top: 6.0,
+          top: _badgeTop,
           right: 6.0,
           type: .error,
         )
       : rights?.isCooperation == 1
-      ? const PBadge(
+      ? PBadge(
           text: '合作',
-          top: 6.0,
+          top: _badgeTop,
           right: 6.0,
         )
       : pgcLabel != null
       ? PBadge(
           text: pgcLabel,
-          top: 6.0,
+          top: _badgeTop,
           right: 6.0,
         )
       : isPugv == true
-      ? const PBadge(
+      ? PBadge(
           text: '课堂',
-          top: 6.0,
+          top: _badgeTop,
           right: 6.0,
         )
       : null;

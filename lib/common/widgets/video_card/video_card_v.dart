@@ -1,6 +1,5 @@
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/widgets/video_popup_menu.dart';
 import 'package:kilikili/http/search.dart';
@@ -96,23 +95,14 @@ class VideoCardV extends StatelessWidget {
       onTap: onPushDetail,
       onLongPress: onLongPress,
       onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-      topStart: CoverStatsPill(
-        stats: [
-          (StatType.play, videoItem.stat.view),
-          // 推荐流的 stat 里只有 view / like / danmaku，没有评论数，所以
-          // 这一项是**弹幕数**。要换成评论数得先有接口给。
-          if (videoItem.goto != 'picture')
-            (StatType.danmaku, videoItem.stat.danmu),
-        ],
-      ),
-      coverOverlays: [
-        if (videoItem.duration > 0)
-          CoverDurationPill(
-            top: 6,
-            right: 6,
-            text: DurationUtils.formatDuration(videoItem.duration),
-          ),
+      topStats: [
+        (StatType.play, videoItem.stat.view),
+        if (videoItem.goto != 'picture')
+          (StatType.danmaku, videoItem.stat.danmu),
       ],
+      topDuration: videoItem.duration > 0
+          ? DurationUtils.formatDuration(videoItem.duration)
+          : null,
       trailing: videoItem.goto == 'av'
           ? SizedBox.square(
               dimension: 29,
@@ -130,7 +120,7 @@ class VideoCardV extends StatelessWidget {
 
   /// UP 名之后那几项：角标 + 发布时间。
   ///
-  /// 播放量与弹幕数已经挪到封面左上角的药丸里（issue #108），这一行只剩
+  /// 播放量与弹幕数已放到封面顶部信息行（issue #124），这一行只剩
   /// 「这条稿件是什么」而不是「它有多热」。
   List<Widget> _meta(BuildContext context, CoverScrimColors colors) => [
     if (videoItem.goto == 'bangumi')

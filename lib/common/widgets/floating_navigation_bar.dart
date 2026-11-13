@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:ui';
+
 import 'package:kilikili/utils/extension/theme_ext.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -16,6 +18,46 @@ const _kBorderRadius = BorderRadius.all(.circular(_kNavigationHeight / 2));
 const _kNavigationShape = RoundedSuperellipseBorder(
   borderRadius: _kBorderRadius,
 );
+
+/// 统一的胶囊玻璃底层，供三种底部导航样式共用。
+class GlassNavigationSurface extends StatelessWidget {
+  const GlassNavigationSurface({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ColorScheme.of(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: _kBorderRadius,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.18),
+            blurRadius: 18,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: _kBorderRadius,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: scheme.surface.withValues(alpha: 0.72),
+              borderRadius: _kBorderRadius,
+              border: Border.all(
+                color: scheme.onSurface.withValues(alpha: 0.12),
+              ),
+            ),
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 /// ref [NavigationBar]
 class FloatingNavigationBar extends StatelessWidget {
@@ -76,30 +118,15 @@ class FloatingNavigationBar extends StatelessWidget {
 
     return Padding(
       padding: .fromLTRB(
-        padding.left,
+        padding.left + 12,
         0,
-        padding.right,
+        padding.right + 12,
         bottomPadding + padding.bottom,
       ),
       child: SizedBox(
         height: _kNavigationHeight,
         width: destinations.length * _kIndicatorWidth,
-        child: DecoratedBox(
-          decoration: ShapeDecoration(
-            color: ElevationOverlay.applySurfaceTint(
-              backgroundColor ??
-                  navigationBarTheme.backgroundColor ??
-                  defaults.backgroundColor!,
-              surfaceTintColor ??
-                  navigationBarTheme.surfaceTintColor ??
-                  defaults.surfaceTintColor,
-              elevation ?? navigationBarTheme.elevation ?? defaults.elevation!,
-            ),
-            shape: RoundedSuperellipseBorder(
-              side: defaults.borderSide,
-              borderRadius: _kBorderRadius,
-            ),
-          ),
+        child: GlassNavigationSurface(
           child: Padding(
             padding: _kIndicatorPadding,
             child: Row(

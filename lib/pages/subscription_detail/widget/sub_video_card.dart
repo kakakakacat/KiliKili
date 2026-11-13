@@ -1,5 +1,4 @@
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/http/search.dart';
 import 'package:kilikili/models/common/stat_type.dart';
@@ -46,20 +45,13 @@ class SubVideoCardH extends StatelessWidget {
         onTap: _open,
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        topStart: CoverStatsPill(
-          stats: [
-            (StatType.play, videoItem.cntInfo?.play),
-            (StatType.danmaku, videoItem.cntInfo?.danmaku),
-          ],
-        ),
-        coverOverlays: [
-          if ((videoItem.duration ?? 0) > 0)
-            CoverDurationPill(
-              text: DurationUtils.formatDuration(videoItem.duration),
-              top: 6,
-              right: 6,
-            ),
+        topStats: [
+          (StatType.play, videoItem.cntInfo?.play),
+          (StatType.danmaku, videoItem.cntInfo?.danmaku),
         ],
+        topDuration: (videoItem.duration ?? 0) > 0
+            ? DurationUtils.formatDuration(videoItem.duration)
+            : null,
         metaBuilder: date.isEmpty
             ? null
             : (context, colors) => [

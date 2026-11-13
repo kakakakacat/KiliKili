@@ -76,6 +76,12 @@ pgc 成为删得最多的一块
 修订：2026-11-13（#108 封面角标等高）——新增一个布局回归测试，新增文件
 **476 → 477**；修改的上游文件集合与其分类不变。
 
+修订：2026-11-13（#122 导航玻璃胶囊、#124 封面顶部信息行）——按 §6 对当前
+工作树重算：修改的上游文件仍为 **890**，其中实质改动 **220 → 224**、
+仅重命名 **670 → 666**；新增文件 **477 → 478**，删除仍为 **130**。
+新增实质改动的四个上游文件是 `floating_navigation_bar.dart`、
+`pages/main/view.dart`、`models_new/{history,later}/list.dart`。
+
 前述 #89 修订的差额**不全是那次改动**：上一版是在 #79 的工作树上算的，#90 合进
 main 前的最后一个提交（CDN 判据跟着算法搬家）没算进去——它删掉四个 Dart
 测试、新增 `bili-core/src/{cdn,playback}.rs` 与 `test/bridge/playback_bridge_test.dart`，
@@ -115,9 +121,9 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 类别 | 数量 |
 | --- | ---: |
 | 修改的上游既有文件 | 890 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 670 |
-| &nbsp;&nbsp;其中：有实质改动 | **220** |
-| 新增文件 | 477 |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 666 |
+| &nbsp;&nbsp;其中：有实质改动 | **224** |
+| 新增文件 | 478 |
 | 删除文件 | **130** |
 
 「修改」总数一路下降（935 → 909 → 897 → 891），部分文件是因迁移被删除，
@@ -128,7 +134,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 `ba430476b chore: rename app package identifiers to KiliKili` 把每个 Dart
 文件的 `package:PiliPlus/` 改成了 `package:kilikili/`，一次触及 992 个文件。
-**当前分叉面里 670 个文件只有这一处差异。**
+**当前分叉面里 666 个文件只有这一处差异。**
 
 对同步的影响很具体：上游每改动一个 Dart 文件，我们这边大概率冲突，但
 **冲突内容永远是那一行 import**。处理方式是取上游版本后重新套用重命名，
@@ -139,7 +145,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 4. 有实质改动的上游文件
 
-220 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
+224 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
 见 §4.4，其余改动逐个列在 §4.3。
 
 ### 4.1 typed 直连迁移触及的上游文件
@@ -212,6 +218,7 @@ H5 房间信息）、第二批 7 个（`live_room_play_info/` 整个目录）、
 | `lib/main.dart` | `ee41df52c` | 启动时初始化 Rust Core |
 | `lib/common/widgets/image/network_img_layer.dart` | #109 | 头像图片与占位图统一绘制主题色圆边框 |
 | `lib/pages/mine/view.dart` | #109 | 未登录头像改走共用头像组件，保持边框一致 |
+| `lib/common/widgets/floating_navigation_bar.dart`、`lib/pages/main/view.dart` | #122 | 三种首页底栏共用玻璃背景、胶囊裁切与边缘留白，保留导航与隐藏行为 |
 | `lib/http/video.dart` | `f321aea73` `43827d42f` `9385cf06d` 及 S3 | 视频详情与取流接入 Rust（**仍是 JSON 往返 + 开关**，见 #79）；S3 又从中删去了五条只读接口，见 §4.1 |
 | `lib/http/search.dart` | `130b9f533`、S9 | 搜索建议接入 Rust；S9 之后整条搜索是 typed 直连、**无开关无回退**，见 §4.1 |
 | `lib/pages/setting/models/play_settings.dart` | `9d1d5c3c9` | 自动播放默认值改为开启（issue #16） |
@@ -260,9 +267,10 @@ issue #108 把视频封面从「顶部封面图 + 底部独立文案区」改成
 
 卡片上的信息分三层，改哪一层决定了去哪里改：**底部遮罩**里的标题、UP 名
 及辅助信息，颜色由 `cover_scrim` 保证对比度；UP 名的主题色药丸也由 Rust
-根据当前主题色与封面合成结果选出底色、文字色；**封面左上角**的播放量等统计
-与**右上角**的时长角标落在封面上，不在那套保证里，所以一律自带
-`black45` 底 + 白字；`CoverScrimCard` 自带的阴影与 14px 圆角是**有意偏离
+根据当前主题色与封面合成结果选出底色、文字色；**封面顶部**的视频播放量、
+弹幕数和时长共用紧贴边缘的单行深色渐变层（#124），与底部遮罩的 Rust
+对比度保证分开。历史与稍后再看的徽标随之下移，避免压住信息行；直播围观数
+仍用独立的 `black45` 药丸。`CoverScrimCard` 自带的阴影与 14px 圆角是**有意偏离
 全局 `cardTheme`** 的（那边 `shadowColor` 是透明），理由写在该类的
 `elevation` 字段注释上。
 

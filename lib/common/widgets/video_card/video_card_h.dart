@@ -1,7 +1,6 @@
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/progress_bar/video_progress_indicator.dart';
-import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/widgets/video_popup_menu.dart';
 import 'package:kilikili/http/search.dart';
@@ -72,41 +71,32 @@ class VideoCardH extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               )
             : null,
-        topStart: videoItem.isLive == true
-            ? null
-            : CoverStatsPill(
-                stats: [
-                  (StatType.play, videoItem.stat.view),
-                  (StatType.danmaku, videoItem.stat.danmu),
-                ],
-              ),
+        topStats: videoItem.isLive == true
+            ? const []
+            : [
+                (StatType.play, videoItem.stat.view),
+                (StatType.danmaku, videoItem.stat.danmu),
+              ],
+        topDuration: progress != null && progress != 0
+            ? progress == -1
+                  ? '已看完'
+                  : '${DurationUtils.formatDuration(progress)}/${DurationUtils.formatDuration(videoItem.duration)}'
+            : videoItem.duration > 0
+            ? DurationUtils.formatDuration(videoItem.duration)
+            : null,
         coverOverlays: [
           if (videoItem.badge case final badge?)
             PBadge(
               text: badge,
-              top: 6,
+              top: videoItem.isLive == true && videoItem.duration <= 0 ? 6 : 54,
               right: 6,
               type: badge == '充电专属' ? PBadgeType.error : PBadgeType.primary,
-            ),
-          if (progress != null && progress != 0)
-            CoverDurationPill(
-              text: progress == -1
-                  ? '已看完'
-                  : '${DurationUtils.formatDuration(progress)}/${DurationUtils.formatDuration(videoItem.duration)}',
-              right: 6,
-              top: videoItem.badge == null ? 6 : 32,
-            )
-          else if (videoItem.duration > 0)
-            CoverDurationPill(
-              text: DurationUtils.formatDuration(videoItem.duration),
-              right: 6,
-              top: videoItem.badge == null ? 6 : 32,
             ),
           if (progress != null && progress != 0)
             Positioned(
               left: 0,
               right: 0,
-              top: 0,
+              top: 48,
               child: VideoProgressIndicator(
                 color: ColorScheme.of(context).primary,
                 backgroundColor: ColorScheme.of(context).secondaryContainer,

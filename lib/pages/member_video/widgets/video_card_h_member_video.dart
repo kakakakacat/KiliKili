@@ -1,7 +1,6 @@
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/progress_bar/video_progress_indicator.dart';
-import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/widgets/video_popup_menu.dart';
 import 'package:kilikili/models/common/badge_type.dart';
@@ -82,34 +81,29 @@ class VideoCardHMemberVideo extends StatelessWidget {
         onTap: _open,
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        topStart: CoverStatsPill(
-          stats: [
-            (StatType.play, videoItem.stat.view),
-            (StatType.danmaku, videoItem.stat.danmu),
-          ],
-        ),
+        topStats: [
+          (StatType.play, videoItem.stat.view),
+          (StatType.danmaku, videoItem.stat.danmu),
+        ],
+        topDuration: hasProgress || videoItem.duration > 0
+            ? hasProgress
+                  ? progress == duration
+                        ? '已看完'
+                        : '${DurationUtils.formatDuration(progress)}/${DurationUtils.formatDuration(duration)}'
+                  : DurationUtils.formatDuration(videoItem.duration)
+            : null,
         coverOverlays: [
           if (badge != null)
             PBadge(
               text: badge,
-              top: 6,
+              top: 54,
               right: 6,
               type: videoItem.badges!.first.text == '充电专属'
                   ? PBadgeType.error
                   : PBadgeType.primary,
             ),
           if (isCurr)
-            const PBadge(text: '上次观看', top: 34, left: 6, type: PBadgeType.gray),
-          if (hasProgress || videoItem.duration > 0)
-            CoverDurationPill(
-              text: hasProgress
-                  ? progress == duration
-                        ? '已看完'
-                        : '${DurationUtils.formatDuration(progress)}/${DurationUtils.formatDuration(duration)}'
-                  : DurationUtils.formatDuration(videoItem.duration),
-              top: badge == null ? 6 : 32,
-              right: 6,
-            ),
+            const PBadge(text: '上次观看', top: 82, left: 6, type: PBadgeType.gray),
         ],
         foregroundOverlays: [
           if (hasProgress)

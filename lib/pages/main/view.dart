@@ -176,6 +176,8 @@ class _MainAppState extends PopScopeState<MainApp>
             height: 80,
             backgroundColor: Colors.transparent,
             indicatorColor: Colors.transparent,
+            // 图标槽上下各有 4px 留白，文字底部也保留 4px，组合才能居中。
+            labelPadding: const EdgeInsets.symmetric(vertical: 4),
             surfaceTintColor: Colors.transparent,
             elevation: 0,
             onDestinationSelected: _mainController.setIndex,
@@ -232,11 +234,7 @@ class _MainAppState extends PopScopeState<MainApp>
               () => GlassNavigationSurface(
                 selectedIndex: _mainController.selectedIndex.value,
                 destinationCount: _mainController.navigationBars.length,
-                child: MediaQuery.removePadding(
-                  context: context,
-                  removeBottom: true,
-                  child: navigationChild,
-                ),
+                child: navigationChild,
               ),
             ),
           ),

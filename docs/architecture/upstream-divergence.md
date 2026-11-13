@@ -222,7 +222,7 @@ H5 房间信息）、第二批 7 个（`live_room_play_info/` 整个目录）、
 | `lib/main.dart` | `ee41df52c` | 启动时初始化 Rust Core |
 | `lib/common/widgets/image/network_img_layer.dart` | #109 | 头像图片与占位图统一绘制主题色圆边框 |
 | `lib/pages/mine/view.dart` | #109 | 未登录头像改走共用头像组件，保持边框一致 |
-| `lib/common/widgets/floating_navigation_bar.dart`、`lib/pages/main/view.dart` | #122 | 三种首页底栏共用玻璃背景、胶囊裁切与边缘留白，保留导航与隐藏行为 |
+| `lib/common/widgets/floating_navigation_bar.dart`、`lib/pages/main/view.dart` | #122 | 三种首页底栏共用玻璃背景、胶囊裁切、4px 内容内边距与边缘留白；安全区仅在胶囊外处理，分栏中心对齐选中背景，图标与文字组合居中，降低底色与高光的不透明度；保留导航与隐藏行为 |
 | `lib/http/video.dart` | `f321aea73` `43827d42f` `9385cf06d` 及 S3 | 视频详情与取流接入 Rust（**仍是 JSON 往返 + 开关**，见 #79）；S3 又从中删去了五条只读接口，见 §4.1 |
 | `lib/http/search.dart` | `130b9f533`、S9 | 搜索建议接入 Rust；S9 之后整条搜索是 typed 直连、**无开关无回退**，见 §4.1 |
 | `lib/pages/setting/models/play_settings.dart` | `9d1d5c3c9` | 自动播放默认值改为开启（issue #16） |

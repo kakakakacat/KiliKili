@@ -78,14 +78,14 @@ class GlassNavigationSurface extends StatelessWidget {
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                               colors: [
-                                scheme.surface.withValues(alpha: 0.42),
                                 scheme.surface.withValues(alpha: 0.24),
-                                scheme.surface.withValues(alpha: 0.34),
+                                scheme.surface.withValues(alpha: 0.10),
+                                scheme.surface.withValues(alpha: 0.18),
                               ],
                             ),
                             borderRadius: _kBorderRadius,
                             border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.52),
+                              color: Colors.white.withValues(alpha: 0.36),
                             ),
                           ),
                         ),
@@ -111,13 +111,13 @@ class GlassNavigationSurface extends StatelessWidget {
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    Colors.white.withValues(alpha: 0.42),
-                                    scheme.primary.withValues(alpha: 0.12),
-                                    Colors.white.withValues(alpha: 0.14),
+                                    Colors.white.withValues(alpha: 0.26),
+                                    scheme.primary.withValues(alpha: 0.08),
+                                    Colors.white.withValues(alpha: 0.10),
                                   ],
                                 ),
                                 border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.55),
+                                  color: Colors.white.withValues(alpha: 0.40),
                                 ),
                                 boxShadow: [
                                   BoxShadow(
@@ -132,7 +132,19 @@ class GlassNavigationSurface extends StatelessWidget {
                             ),
                           ),
                         ),
-                      child,
+                      // 三种导航与选中背景共用分栏边界，避免首尾项目向外偏移。
+                      Padding(
+                        padding: _kIndicatorPadding,
+                        // 安全区已由胶囊外层负责，内部导航不能再次插入状态栏留白。
+                        child: MediaQuery.removePadding(
+                          context: context,
+                          removeTop: true,
+                          removeBottom: true,
+                          removeLeft: true,
+                          removeRight: true,
+                          child: Center(child: child),
+                        ),
+                      ),
                     ],
                   );
                 },
@@ -215,36 +227,33 @@ class FloatingNavigationBar extends StatelessWidget {
         child: GlassNavigationSurface(
           selectedIndex: selectedIndex,
           destinationCount: destinations.length,
-          child: Padding(
-            padding: _kIndicatorPadding,
-            child: Row(
-              crossAxisAlignment: .stretch,
-              children: <Widget>[
-                for (int i = 0; i < destinations.length; i++)
-                  Expanded(
-                    child: _SelectableAnimatedBuilder(
-                      duration: animationDuration,
-                      isSelected: i == selectedIndex,
-                      builder: (context, animation) {
-                        return _NavigationDestinationInfo(
-                          index: i,
-                          selectedIndex: selectedIndex,
-                          totalNumberOfDestinations: destinations.length,
-                          selectedAnimation: animation,
-                          labelBehavior: effectiveLabelBehavior,
-                          indicatorColor: indicatorColor,
-                          indicatorShape: indicatorShape,
-                          overlayColor: overlayColor,
-                          onTap: _handleTap(i),
-                          labelTextStyle: labelTextStyle,
-                          labelPadding: labelPadding,
-                          child: destinations[i],
-                        );
-                      },
-                    ),
+          child: Row(
+            crossAxisAlignment: .stretch,
+            children: <Widget>[
+              for (int i = 0; i < destinations.length; i++)
+                Expanded(
+                  child: _SelectableAnimatedBuilder(
+                    duration: animationDuration,
+                    isSelected: i == selectedIndex,
+                    builder: (context, animation) {
+                      return _NavigationDestinationInfo(
+                        index: i,
+                        selectedIndex: selectedIndex,
+                        totalNumberOfDestinations: destinations.length,
+                        selectedAnimation: animation,
+                        labelBehavior: effectiveLabelBehavior,
+                        indicatorColor: indicatorColor,
+                        indicatorShape: indicatorShape,
+                        overlayColor: overlayColor,
+                        onTap: _handleTap(i),
+                        labelTextStyle: labelTextStyle,
+                        labelPadding: labelPadding,
+                        child: destinations[i],
+                      );
+                    },
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         ),
       ),

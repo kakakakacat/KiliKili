@@ -320,3 +320,12 @@ Rust 测试覆盖帧阈值/压缩、截断、缺失状态头、嵌套业务码�
 同份代码用 `CARGO_PROFILE_RELEASE_STRIP=none cargo build -p bridge_flutter --release`
 可加载，故本轮真实 FFI 验证使用该临时产物。仓库 release profile 未改动；
 此记录只限定本机 dylib 验证，不推断五端 app 打包结果。工具链升级另见 #134。
+
+### 短信验证码页面回归（#140）
+
+`flutter test --no-pub test/pages/login/geetest` 包含注册整组刷新测试和 WebView
+页面脚本测试。后者需要 PATH 中有 Node.js，使用其内置 `node:vm` 执行实际
+生成的脚本，覆盖 SDK 错误、配置失效、脚本异常、ready 通知和桥接延迟；
+不访问外网、不启动 Widget、不依赖 Flutter SDK 补丁。
+这不覆盖 Android/iOS 原生 WebView、原生 iOS 极验 SDK 或短信实际发送；
+它们仍须按 QA 矩阵 F09a 在最终安装包上验证。

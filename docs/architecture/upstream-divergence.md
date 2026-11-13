@@ -133,6 +133,14 @@ RFC §10.1 规定了要固定 `UPSTREAM_COMMIT` 并记录 rebase/merge 策略，
 迁到 Rust，旧字幕 JSON 桥接/降级及无消费者 metadata 生成文件删除；Device
 仍被 dynamic/v2 间接消费，随 S5/S6 的最后消费者迁完再删。
 
+
+修订：2026-11-13（#140 短信验证码空白页）——修改上游的
+`lib/http/login.dart`、`lib/models/login/captcha_config.dart`、
+`lib/pages/login/controller.dart`、`lib/pages/login/geetest/geetest_webview_dialog.dart`；
+按 §6 检查，四者此前均只有重命名提交 `ba430476b`，本次各转入实质改动。
+新增 `geetest_html.dart` 与其脚本回归测试；原生 iOS 构建补丁保持适用。
+本次相对父提交：实质改动 +4、仅重命名 -4、新增 +2，修改及删除总数不变。
+
 ## 1. 基准
 
 ```

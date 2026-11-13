@@ -40,7 +40,8 @@ Future<LoginCaptcha?> resolveLoginCaptcha(
 }) async {
   if (!await isUnavailable(current.gt)) return current;
 
-  // A gt belongs to its challenge/token. Refresh the entire registration once.
+  // 注册刷新暂留 Dart 以复用未迁移的登录接口，随 #65 下沉 Rust。
+  // gt 与 challenge/token 成组绑定，只整组刷新一次，不能拼用两次注册。
   final updated = await refresh();
   if (updated == null || await isUnavailable(updated.gt)) return null;
   return updated;

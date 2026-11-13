@@ -50,6 +50,7 @@ class LoginPageController extends GetxController
 
   bool _isReq = false;
   bool _isVerifyingCaptcha = false;
+  bool _isSendingSmsCode = false;
 
   @override
   void onInit() {
@@ -139,11 +140,14 @@ class LoginPageController extends GetxController
         challenge: geeChallenge,
         token: captchaData.token,
       );
-      if (Platform.isIOS && canRefreshRegistration) {
-        // Only SMS verification supports a new registration from preCapture.
+      if (canRefreshRegistration) {
+        // 登录切片 #65 尚未迁移；沿用现有注册刷新，避免本次修复拆散 gt/challenge/token。
         final resolved = await resolveLoginCaptcha(
           session,
-          isUnavailable: LoginHttp.isGeetestConfigUnavailable,
+          isUnavailable: (gt) => LoginHttp.isGeetestConfigUnavailable(
+            gt,
+            nativeIOS: Platform.isIOS,
+          ),
           refresh: () async {
             if (isClosed) return null;
             final res = await LoginHttp.preCapture();
@@ -544,6 +548,23 @@ class LoginPageController extends GetxController
 
   // app端验证码
   Future<void> sendSmsCode() async {
+    if (isClosed ||
+        _isSendingSmsCode ||
+        _isVerifyingCaptcha ||
+        smsSendCooldown.value > 0) {
+      return;
+    }
+    _isSendingSmsCode = true;
+    try {
+      await _sendSmsCode();
+    } catch (_) {
+      if (!isClosed) SmartDialog.showToast('发送验证码失败，请稍后重试');
+    } finally {
+      _isSendingSmsCode = false;
+    }
+  }
+
+  Future<void> _sendSmsCode() async {
     if (telTextController.text.isEmpty) {
       SmartDialog.showToast('手机号不能为空');
       return;
@@ -599,6 +620,7 @@ class LoginPageController extends GetxController
       geeChallenge: captchaData.geetest?.challenge,
       recaptchaToken: captchaData.token,
     );
+    if (isClosed) return;
     if (res['status']) {
       SmartDialog.showToast('发送成功');
       smsSendTimestamp = DateTime.now().millisecondsSinceEpoch;
@@ -635,6 +657,7 @@ class LoginPageController extends GetxController
               );
             }
             final preCaptureRes = await LoginHttp.preCapture();
+            if (isClosed) return;
             if (!preCaptureRes['status'] || preCaptureRes['data'] == null) {
               SmartDialog.showToast(
                 "获取验证码失败，请尝试其它登录方式\n"

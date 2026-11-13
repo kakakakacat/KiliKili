@@ -1,8 +1,10 @@
+import 'dart:async' show Timer;
 import 'dart:convert' show jsonDecode;
 import 'dart:io' show Platform;
 
 import 'package:kilikili/http/browser_ua.dart';
 import 'package:kilikili/main.dart';
+import 'package:kilikili/pages/login/geetest/geetest_html.dart';
 import 'package:kilikili/plugin/linux_webview.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
@@ -26,63 +28,128 @@ class GeetestWebviewDialog extends StatefulWidget {
 }
 
 class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
-  static const _geetestJsUri =
-      'https://static.geetest.com/static/js/fullpage.0.0.0.js';
-  static const _geetestConfigUri = 'https://api.geetest.com/gettype.php';
+  late final String _html;
+  Timer? _loadTimer;
+  bool _loading = true;
+  bool _finished = false;
+  String? _error;
 
-  static String _buildHtml(String gt, String challenge) {
-    final ts = DateTime.now().millisecondsSinceEpoch;
-    final js =
-        'var C,S,T,t;'
-        'T=()=>{if(C&&S&&!t){t=Geetest(C).onSuccess(()=>R("success",t.getValidate())).onError(o=>R("error",o)).onClose(o=>R("close",o));t.onReady(()=>t.verify())}};'
-        'geetest_$ts=(d)=>{'
-        'if(!d||d.status!="success"){R("error",JSON.stringify(d));return};'
-        'C=Object.assign({gt:"$gt",challenge:"$challenge",offline:false,new_captcha:true,product:"bind",width:"100%",https:true,protocol:"https://"},d.data);T()'
-        '};'
-        'G=()=>{S=1;T()};'
-        'E=()=>{document.getElementById("E").textContent="验证码加载失败";R("error","geetest script load failed")}';
-
-    return '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width"></head>'
-        '<style>#E{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:red}</style>'
-        '<body><div id="E"></div>'
-        '<script>'
-        '${Platform.isLinux ? "R=(n,o)=>window.KiliKili.postMessage(n+':'+JSON.stringify(o))" : "R=(n,o)=>window.flutter_inappwebview?.callHandler(n,o)"};$js'
-        '</script>'
-        '<script src="$_geetestJsUri" onload="G()" onerror="E()"></script>'
-        '<script src="$_geetestConfigUri?gt=$gt&callback=geetest_$ts" onerror="E()"></script>'
-        '</body></html>';
+  @override
+  void initState() {
+    super.initState();
+    // 重建状态提示不能生成新页面，否则同一 challenge 会被再次初始化。
+    _html = buildGeetestHtml(
+      widget.gt,
+      widget.challenge,
+      linux: Platform.isLinux,
+    );
+    _loadTimer = Timer(const Duration(seconds: 30), () {
+      _fail('验证码加载超时，请关闭后重试或使用扫码登录');
+    });
   }
 
   @override
-  Widget build(BuildContext context) {
-    final html = _buildHtml(widget.gt, widget.challenge);
+  void dispose() {
+    _loadTimer?.cancel();
+    _finished = true;
+    super.dispose();
+  }
 
+  void _ready() {
+    if (!mounted || _finished || _error != null) return;
+    _loadTimer?.cancel();
+    setState(() => _loading = false);
+  }
+
+  void _fail([String message = '验证码加载失败，请关闭后重试或使用扫码登录']) {
+    if (!mounted || _finished || _error != null) return;
+    _loadTimer?.cancel();
+    setState(() {
+      _loading = false;
+      _error = message;
+    });
+  }
+
+  void _finish([Map<String, dynamic>? data]) {
+    if (!mounted || _finished || ModalRoute.of(context)?.isCurrent != true) {
+      return;
+    }
+    // 错误后迟到的成功回调不能继续发送短信；关闭操作仍允许。
+    if (data != null && _error != null) return;
+    _finished = true;
+    _loadTimer?.cancel();
+    Navigator.of(context).pop(data);
+  }
+
+  void _success(Object? data) {
+    if (data is Map<String, dynamic> &&
+        ['geetest_validate', 'geetest_seccode', 'geetest_challenge'].every(
+          (key) => data[key] is String && (data[key] as String).isNotEmpty,
+        )) {
+      _finish(data);
+    } else {
+      _fail('验证结果不完整，请关闭后重试');
+    }
+  }
+
+  Widget _status() => Positioned.fill(
+    child: Material(
+      color: Theme.of(context).colorScheme.surface,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: _error != null
+              ? Text(_error!, textAlign: TextAlign.center)
+              : const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('正在加载验证码…'),
+                  ],
+                ),
+        ),
+      ),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) {
     if (Platform.isLinux) {
       return AlertDialog(
         title: const Text('验证码'),
+        actions: [TextButton(onPressed: _finish, child: const Text('关闭'))],
         content: SizedBox(
           width: 300,
           height: 400,
-          child: LinuxWebview(
-            initialHtml: html,
-            userAgent: BrowserUa.mob,
-            incognito: true,
-            onWebMessageReceived: (msg) {
-              final msgStr = msg.toString();
-              if (msgStr.startsWith("success:")) {
-                final dataStr = msgStr.substring("success:".length);
-                try {
-                  final data = jsonDecode(dataStr);
-                  Get.back(result: data);
-                } catch (e) {
-                  debugPrint('geetest decode error: $e');
-                }
-              } else if (msgStr.startsWith("error:")) {
-                debugPrint('geetest error: $msgStr');
-              } else if (msgStr.startsWith('close:')) {
-                Get.back();
-              }
-            },
+          child: Stack(
+            children: [
+              LinuxWebview(
+                initialHtml: _html,
+                userAgent: BrowserUa.mob,
+                incognito: true,
+                onWebMessageReceived: (msg) {
+                  final value = msg.toString();
+                  final separator = value.indexOf(':');
+                  if (separator < 0) return;
+                  switch (value.substring(0, separator)) {
+                    case 'success':
+                      try {
+                        _success(jsonDecode(value.substring(separator + 1)));
+                      } catch (_) {
+                        _fail('验证结果不完整，请关闭后重试');
+                      }
+                    case 'ready':
+                      _ready();
+                    case 'error':
+                      _fail();
+                    case 'close':
+                      _finish();
+                  }
+                },
+              ),
+              if (_loading || _error != null) _status(),
+            ],
           ),
         ),
       );
@@ -124,39 +191,40 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
 
             pageZoom: Platform.isIOS ? 3 : 1,
           ),
-          initialData: InAppWebViewInitialData(data: html),
+          initialData: InAppWebViewInitialData(data: _html),
           onWebViewCreated: (ctr) {
             ctr
               ..addJavaScriptHandler(
                 handlerName: 'success',
-                callback: (args) {
-                  if (args.isNotEmpty) {
-                    if (args[0] case Map<String, dynamic> data) {
-                      Get.back(result: data);
-                      return;
-                    }
-                  }
-                  debugPrint('geetest invalid result: $args');
-                },
+                callback: (args) => _success(args.isEmpty ? null : args[0]),
+              )
+              ..addJavaScriptHandler(
+                handlerName: 'ready',
+                callback: (_) => _ready(),
               )
               ..addJavaScriptHandler(
                 handlerName: 'error',
-                callback: (args) {
-                  debugPrint('geetest error: $args');
-                },
+                callback: (_) => _fail(),
               )
               ..addJavaScriptHandler(
                 handlerName: 'close',
-                callback: (args) => Get.back(),
+                callback: (_) => _finish(),
               );
           },
+          onReceivedError: (_, request, _) {
+            if (request.isForMainFrame == true) _fail();
+          },
+          onReceivedHttpError: (_, request, _) {
+            if (request.isForMainFrame == true) _fail();
+          },
         ),
+        if (_loading || _error != null) _status(),
         Positioned(
           left: 8,
           top: 8,
           child: IconButton(
             icon: const Icon(Icons.close),
-            onPressed: Get.back,
+            onPressed: _finish,
             tooltip: '关闭',
           ),
         ),

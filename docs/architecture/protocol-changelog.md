@@ -60,3 +60,11 @@ APP 签名与 WBI 是两套，差异（盐、时间字段、签名字段、值�
 `gaia_source` 之类，CI 不会红，只有服务端的风控画像会变。比对位置是上游的
 `lib/http/video.dart::videoUrl` 与 `rust/crates/bili-api/src/request.rs` 的
 `play_url`。
+
+## 2026-11-13：短信极验预检覆盖 WebView（#140）
+
+既有 iOS 原生 SDK 预检继续使用 `client_type=ios&pt=20`；Android 等
+WebView 路径现在也检查 `gettype.php`，只发送 `gt`，与页面获取配置一致。
+两者都使用 `NoAccount`，仅明确的 `error_34` 触发现有的一次整组注册刷新；
+网络错误不当作注册失效。短信请求参数与签名未变，未修改 bili-protocol，
+因此不调整其版本号或重建无关 fixture。登录请求仍随 #65 迁移。

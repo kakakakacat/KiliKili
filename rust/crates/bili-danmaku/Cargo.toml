@@ -11,7 +11,6 @@ description = "弹幕引擎：标记自己、合并、过滤、按 100ms 分桶�
 bili-domain = { path = "../bili-domain" }
 regex = { workspace = true }
 serde.workspace = true
-tracing.workspace = true
 
 [dev-dependencies]
 bili-api = { path = "../bili-api", default-features = false }

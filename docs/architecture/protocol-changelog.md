@@ -60,3 +60,17 @@ APP 签名与 WBI 是两套，差异（盐、时间字段、签名字段、值�
 `gaia_source` 之类，CI 不会红，只有服务端的风控画像会变。比对位置是上游的
 `lib/http/video.dart::videoUrl` 与 `rust/crates/bili-api/src/request.rs` 的
 `play_url`。
+
+## 2026-11-13：修正搜索发现的迁移请求面（issue #120）
+
+搜索发现原接口是 App 主机的 `/x/v2/search/recommend`，S9 却将它写成
+Web 主机的 `/x/web-interface/wbi/search/square`，并遗漏原来由
+`AccountManager` 注入的 App 签名和推荐账号 `access_key`。真实匿名请求
+对照：同一组参数发往 square 返回业务 `code=-400`，发往 recommend
+返回 `code=0` 与 `data.list`；这不是搜索结果页或 HTTP 400。
+
+本次恢复原 App 路径、主机与 `appkey` / `ts` / `sign`，登录态沿用
+`AccountType.recommend` 的 `access_key`，不发送 Web Cookie。这是修正
+迁移遗漏，未改变上游协议或签名算法，因此协议版本仍为 1。
+`bili-api::search::tests::recommend_uses_app_endpoint` 覆盖实际取数 URL、
+匿名 / 空凭据 / 登录凭据及独立计算的签名快照。

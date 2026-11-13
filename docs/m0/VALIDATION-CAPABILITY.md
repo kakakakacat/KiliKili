@@ -313,3 +313,8 @@ Rust 测试覆盖帧阈值/压缩、截断、缺失状态头、嵌套业务码�
 同份代码用 `CARGO_PROFILE_RELEASE_STRIP=none cargo build -p bridge_flutter --release`
 可加载，故本轮真实 FFI 验证使用该临时产物。仓库 release profile 未改动；
 此记录只限定本机 dylib 验证，不推断五端 app 打包结果。工具链升级另见 #134。
+
+搜索发现的 bridge 回归（#120）经本地 HTTP 服务核对 App 请求路径、
+签名字段和登录凭据，并跨 FFI 检查推荐词及业务 `-400` 错误值。
+Rust 取数测试另用独立计算的签名快照锁定匿名、空凭据和登录参数集。
+这不能替代设备上 App 主机连通性与真实账号的人工验证。

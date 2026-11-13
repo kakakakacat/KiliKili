@@ -82,7 +82,15 @@ Future<SearchTrendingResult> searchTrending({
 /// 搜索页默认词。
 Future<SearchTrendingResult> searchRecommend({
   required SearchContext context,
-}) => RustLib.instance.api.crateApiSearchSearchRecommend(context: context);
+  required String appkey,
+  required String appsec,
+  String? accessKey,
+}) => RustLib.instance.api.crateApiSearchSearchRecommend(
+  context: context,
+  appkey: appkey,
+  appsec: appsec,
+  accessKey: accessKey,
+);
 
 /// 番剧评分。
 class MediaScore {

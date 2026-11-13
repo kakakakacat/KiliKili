@@ -3685,12 +3685,22 @@ fn wire__crate__api__search__search_recommend_impl(
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
             let api_context = <crate::api::search::SearchContext>::sse_decode(&mut deserializer);
+            let api_appkey = <String>::sse_decode(&mut deserializer);
+            let api_appsec = <String>::sse_decode(&mut deserializer);
+            let api_access_key = <Option<String>>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, ()>(
                     (move || async move {
-                        let output_ok =
-                            Ok::<_, ()>(crate::api::search::search_recommend(api_context).await)?;
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::search::search_recommend(
+                                api_context,
+                                api_appkey,
+                                api_appsec,
+                                api_access_key,
+                            )
+                            .await,
+                        )?;
                         std::result::Result::Ok(output_ok)
                     })()
                     .await,

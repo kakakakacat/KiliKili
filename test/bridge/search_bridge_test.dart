@@ -35,7 +35,8 @@ void main() {
   });
 
   test('热搜经真实 Rust 网络路径和 FFI 返回冻结的基线结果', () async {
-    final body = File('$fixtureDir/search_trending.raw.json').readAsStringSync();
+    final body = File('$fixtureDir/search_trending.raw.json')
+        .readAsStringSync();
     final expected = jsonDecode(
       File('$fixtureDir/search_trending.rust.json').readAsStringSync(),
     ) as Map<String, dynamic>;
@@ -75,9 +76,58 @@ void main() {
       expect(got.keyword, want['keyword'], reason: '第 $i 条 keyword');
       expect(got.showName, want['show_name'], reason: '第 $i 条 show_name');
       expect(got.icon, want['icon'], reason: '第 $i 条 icon');
-      expect(got.showLiveIcon, want['show_live_icon'], reason: '第 $i 条 show_live_icon');
-      expect(got.recommendReason, want['recommend_reason'], reason: '第 $i 条 reason');
+      expect(
+        got.showLiveIcon,
+        want['show_live_icon'],
+        reason: '第 $i 条 show_live_icon',
+      );
+      expect(
+        got.recommendReason,
+        want['recommend_reason'],
+        reason: '第 $i 条 reason',
+      );
     }
+  }, skip: bridgeSkip);
+
+  test('搜索发现经 App 路径和签名通过 FFI 返回推荐词及业务错误', () async {
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    addTearDown(() => server.close(force: true));
+    final seen = <Uri>[];
+    server.listen((request) async {
+      seen.add(request.uri);
+      request.response.headers.contentType = ContentType.json;
+      request.response.write(
+        seen.length == 1
+            ? '{"code":0,"data":{"list":[{"keyword":"示例推荐"}]}}'
+            : '{"code":-400,"message":"请求错误"}',
+      );
+      await request.response.close();
+    });
+
+    final result = await rust_api.searchRecommend(
+      context: contextFor(server.port),
+      appkey: 'appkey',
+      appsec: 'appsec',
+      accessKey: 'test-access-key',
+    );
+    expect(result.errorKind, isNull);
+    expect(result.data!.single.keyword, '示例推荐');
+    expect(seen.single.path, '/x/v2/search/recommend');
+    expect(seen.single.queryParameters['access_key'], 'test-access-key');
+    expect(seen.single.queryParameters['appkey'], 'appkey');
+    expect(seen.single.queryParameters['ts'], '0');
+    expect(seen.single.queryParameters['sign'], isNotEmpty);
+    expect(seen.single.queryParameters.containsKey('w_rid'), isFalse);
+
+    final error = await rust_api.searchRecommend(
+      context: contextFor(server.port),
+      appkey: 'appkey',
+      appsec: 'appsec',
+    );
+    expect(error.data, isNull);
+    expect(error.errorCode, -400);
+    expect(error.errorDetail, 'code -400: 请求错误');
+    expect(seen.last.queryParameters.containsKey('access_key'), isFalse);
   }, skip: bridgeSkip);
 
   test('损坏的响应通过 FFI 返回协议错误', () async {

@@ -19,6 +19,8 @@ export 'package:kilikili/rust/api/misc.dart'
         BlackListItem,
         DanmakuFilter,
         FilterRule,
+        FollowList,
+        FollowUser,
         HotSongHeat,
         MatchContest,
         MatchSeason,
@@ -32,12 +34,16 @@ export 'package:kilikili/rust/api/misc.dart'
 ///
 /// 基线对应的**整个** `MusicHttp`（`lib/http/music.dart`）、整个
 /// `DanmakuFilterHttp`（`lib/http/danmaku_block.dart`）、`BlackHttp.blackList`、
-/// `MatchHttp.matchInfo` 与 `FollowHttp.sortFollowTag` 都已随迁移删除，
+/// `MatchHttp.matchInfo` 与**整个** `lib/http/{follow,fan}.dart` 都已随迁移删除，
 /// 按 ADR-011 决策四不留降级开关。写操作尤其不能留：只读降级只是多发一次
 /// 请求，写操作降级意味着**可能重复提交**（ADR-013 决策五）。
 ///
-/// `FollowHttp.followings` 与 `FanHttp.fans` 还在 Dart：它们共用 `FollowData`
-/// 模型，按 ADR-011 决策六要两个生产者一起迁，归 #66 的下一批。
+/// 关注列表与粉丝列表也在这里（#66 收尾）：它们是同一个响应形状，一起迁。
+/// 运行时模型 `FollowData` / `FollowItemModel` **这次删不掉**——还有四个
+/// 生产者在 Dart（`user.dart` 的 `followedUp` 与 `sameFollowing` 归 S7 #57，
+/// `member.dart` 的 `followUpGroup` 与 `getfollowSearch` 归 S6 #56），按
+/// ADR-011 决策六不为此把别的切片拖进来，过渡适配见
+/// `lib/services/rust/follow_compat.dart`。
 ///
 /// 这几条接口在 `ApiType.apiTypeSet` 里都没有登记，因此与基线拦截器一样
 /// 走 `main` 账号。
@@ -49,6 +55,10 @@ abstract final class RustMisc {
 
   /// 基线黑名单的固定页长。
   static const int blackListPageSize = 50;
+
+  /// 关注/粉丝列表的默认页长。基线两边都是 20（动态页的「全部 up 主」自己
+  /// 传 50，所以这里是默认值不是常量）。
+  static const int followListPageSize = 20;
 
   /// [write] 为 true 时带上 csrf。只读路径一律不带——凭据少走一段就少
   /// 一处泄漏面，而且「这条是不是写操作」在调用点一眼看得见
@@ -133,6 +143,56 @@ abstract final class RustMisc {
       return _unwrap(result.data, result.errorDetail, result.errorCode);
     } catch (e, st) {
       return _crashed('黑名单', e, st);
+    }
+  }
+
+  /// 一页关注列表（#66）。
+  ///
+  /// [orderType] 空串是「最近关注」，`attention` 是「最常访问」；空串也会
+  /// 发出去，与基线一致（理由见 `bili_api::follow::followings_request`）。
+  static Future<LoadingState<rust_api.FollowList>> followings({
+    required int vmid,
+    required int pn,
+    int ps = followListPageSize,
+    String orderType = '',
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await rust_api.fetchFollowings(
+        context: await _context(path: Api.followings),
+        vmid: vmid,
+        page: pn,
+        pageSize: ps,
+        orderType: orderType,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('关注列表', e, st);
+    }
+  }
+
+  /// 一页粉丝列表（#66）。
+  ///
+  /// [orderType] 传 null 时整条参数不发——基线 `FanHttp.fans` 的参数可空，
+  /// 与 [followings] 的空串不是一回事。
+  static Future<LoadingState<rust_api.FollowList>> fans({
+    required int vmid,
+    required int pn,
+    int ps = followListPageSize,
+    String? orderType,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await rust_api.fetchFans(
+        context: await _context(path: Api.fans),
+        vmid: vmid,
+        page: pn,
+        pageSize: ps,
+        orderType: orderType,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('粉丝列表', e, st);
     }
   }
 

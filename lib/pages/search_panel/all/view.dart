@@ -72,7 +72,7 @@ class _SearchAllPanelState
             child: SearchAllUserItem(item: e),
           );
         }),
-        if (controller.searchMedia != null) ...[
+        if (controller.searchMedia?.isNotEmpty ?? false) ...[
           _buildPgc(controller.searchMedia!),
           SliverToBoxAdapter(
             child: Divider(
@@ -93,11 +93,14 @@ class _SearchAllPanelState
   static Widget _buildPgc(List<SearchPgcItem> list) {
     final Widget child;
     if (list.length == 1) {
-      child = SearchPgcCard(item: list.first);
+      child = Align(
+        alignment: Alignment.centerLeft,
+        child: SizedBox(width: 240, child: SearchPgcCard(item: list.first)),
+      );
     } else {
       child = ListView.builder(
         padding: .zero,
-        itemExtent: 340,
+        itemExtent: 240,
         itemCount: list.length,
         scrollDirection: .horizontal,
         physics: const AlwaysScrollableScrollPhysics(),
@@ -106,11 +109,8 @@ class _SearchAllPanelState
         },
       );
     }
-    return SliverToBoxAdapter(child: SizedBox(height: 158, child: child));
+    return SliverToBoxAdapter(child: SizedBox(height: 320, child: child));
   }
 
-  late final pgcGridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
-    maxCrossAxisExtent: Grid.smallCardWidth * 2,
-    mainAxisExtent: 160,
-  );
+  late final pgcGridDelegate = Grid.coverCardDelegate(aspectRatio: 3 / 4);
 }

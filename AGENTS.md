@@ -160,11 +160,22 @@ PR**，不要只留在代码和 Issues 里：
   `music.dart` / `follow.dart` / `fan.dart` 当时都还在 Dart。
 - **合并前要仓库所有者明确许可。**
 - **合并排队，一次只合一个**——生成产物决定了并行合必冲突。
+- **PR 上的回归检查当前是关的**（2026-11-12 起，issue #114）：`ci.yml` 的
+  `pull_request:` 触发已注释掉，仓库 ruleset「main regression gate」改成
+  `disabled`。两处必须同时生效——只关一边的话，必需检查 `regression gate`
+  永不上报，PR 全部卡死在 `BLOCKED`。恢复时同样两处一起改回来。
+- 因此 **PR 上没有任何自动检查，合并前请自己在本机验**（至少
+  `cargo fmt --check` / `cargo clippy` / `cargo test`，动了 Dart 再跑
+  `flutter test`）。要在合并前跑一次完整回归：
+  `gh workflow run "Regression CI" --ref <分支>`。
+- 回归仍在跑的地方：合并进 main 的 push、每日 02:17 定时、手动 dispatch。
+  坏改动的发现点从「合并前」后移到「合并后」，合完顺手看一眼那次运行。
 - 必需检查叫 **`regression gate`**（`.github/workflows/ci.yml` 的 `gate` job
-  用 `needs:` 聚合 rust / flutter / android 三项）。每个 PR 都会打一次
-  Android APK，11–15 分钟，是全流程最慢的一项，按这个量级估时间。
-- `mergeable=MERGEABLE` 且 `mergeStateStatus=CLEAN` 才能合；`BLOCKED` 通常
-  只是 gate 还没上报。
+  用 `needs:` 聚合 rust / flutter / android 三项）。它只在上面那几种触发下
+  运行。恢复 PR 触发后，每个 PR 会打一次 Android APK，11–15 分钟，是全流程
+  最慢的一项，按这个量级估时间。
+- （PR 检查恢复后适用）`mergeable=MERGEABLE` 且 `mergeStateStatus=CLEAN`
+  才能合；`BLOCKED` 通常只是 gate 还没上报。
 - **不要 rebase 已开 PR 的分支**，用 `git merge origin/main` 跟上 main。
 - **堆叠 PR**：`gh pr create --base <上一个分支>`，合并顺序必须从下往上。
   注意上一个分支被删时 GitHub 会把堆在它上面的 PR 一并关掉——先把 base
@@ -197,6 +208,13 @@ PR**，不要只留在代码和 Issues 里：
   只用在下载 SDK 上。
 - 本机没有 fvm 时，issue 模板里写的 `.fvm/flutter_sdk/bin/dart` 按全局
   Flutter SDK 的 `dart` 来用。
+- Android 本地构建使用 `android/key.properties` 指向
+  `android/app/kilikili-release.jks`。这两个文件只在本机保存，已被 Git
+  忽略；迁移机器时须通过安全渠道同时备份密钥、别名和密码。同一包名的后续
+  Android 版本必须沿用原签名，否则不能原地升级。GitHub 手动发布工作流
+  仍读取现有 Secrets，切换签名身份前先核对旧版证书指纹与升级路径。
+- Android 的 JKS 只用于 Android；Apple 平台和 Windows 安装包分别按各自
+  的签名身份与证书流程处理，不共用此 JKS。
 
 ---
 

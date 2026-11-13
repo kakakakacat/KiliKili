@@ -1,6 +1,8 @@
 import 'dart:math';
 
 import 'package:kilikili/common/skeleton/video_card_h.dart';
+import 'package:kilikili/common/skeleton/video_card_v.dart';
+import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/sliver_single_child_delegate.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:flutter/rendering.dart';
@@ -8,6 +10,7 @@ import 'package:material_ui/material_ui.dart';
 
 mixin GridMixin {
   late final gridDelegate = Grid.videoCardHDelegate();
+  late final coverGridDelegate = Grid.coverCardDelegate();
 
   Widget get gridSkeleton => SliverGrid(
     gridDelegate: gridDelegate,
@@ -16,10 +19,28 @@ mixin GridMixin {
       child: VideoCardHSkeleton(),
     ),
   );
+
+  Widget get coverGridSkeleton => SliverGrid(
+    gridDelegate: coverGridDelegate,
+    delegate: const SliverSingleChildDelegate(
+      count: 10,
+      child: VideoCardVSkeleton(),
+    ),
+  );
 }
 
 abstract final class Grid {
   static final double smallCardWidth = Pref.smallCardWidth;
+
+  static SliverGridDelegateWithExtentAndRatio coverCardDelegate({
+    double aspectRatio = Style.coverCardRatio,
+  }) =>
+      SliverGridDelegateWithExtentAndRatio(
+        maxCrossAxisExtent: smallCardWidth,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 2,
+        childAspectRatio: aspectRatio,
+      );
 
   static SliverGridDelegateWithMaxCrossAxisExtent videoCardHDelegate({
     double mainAxisExtent = 110,

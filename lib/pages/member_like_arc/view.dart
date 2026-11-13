@@ -74,8 +74,7 @@ class _MemberLikeArcPageState extends State<MemberLikeArcPage> {
     mainAxisSpacing: Style.cardSpace,
     crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth,
-    childAspectRatio: Style.aspectRatio,
-    mainAxisExtent: MediaQuery.textScalerOf(context).scale(75),
+    childAspectRatio: Style.coverCardRatio,
   );
 
   Widget _buildBody(LoadingState<List<CoinLikeArcItem>?> loadingState) {

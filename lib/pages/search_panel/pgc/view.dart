@@ -1,4 +1,4 @@
-import 'package:kilikili/common/skeleton/media_bangumi.dart';
+import 'package:kilikili/common/skeleton/video_card_v.dart';
 import 'package:kilikili/common/sliver_single_child_delegate.dart';
 import 'package:kilikili/models/search/result.dart';
 import 'package:kilikili/pages/search_panel/controller.dart';
@@ -46,10 +46,7 @@ class _SearchPgcPanelState
     );
   }
 
-  late final gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
-    maxCrossAxisExtent: Grid.smallCardWidth * 2,
-    mainAxisExtent: 158,
-  );
+  late final gridDelegate = Grid.coverCardDelegate(aspectRatio: 3 / 4);
 
   @override
   Widget buildList(List<SearchPgcItem> list) {
@@ -70,7 +67,7 @@ class _SearchPgcPanelState
     gridDelegate: gridDelegate,
     delegate: const SliverSingleChildDelegate(
       count: 10,
-      child: MediaPgcSkeleton(),
+      child: VideoCardVSkeleton(),
     ),
   );
 }

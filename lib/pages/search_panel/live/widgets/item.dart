@@ -1,10 +1,11 @@
-import 'package:kilikili/common/style.dart';
+import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
+import 'package:kilikili/common/widgets/video_card/live_meta.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/services/rust/rust_search.dart';
 import 'package:kilikili/utils/num_utils.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
-import 'package:kilikili/services/rust/rust_search.dart';
 import 'package:material_ui/material_ui.dart';
 
 class LiveItem extends StatelessWidget {
@@ -19,115 +20,42 @@ class LiveItem extends StatelessWidget {
       title: liveItem.title,
       cover: liveItem.cover,
     );
-    return Card(
-      child: InkWell(
-        onTap: () => PageUtils.toLiveRoom(liveItem.roomid),
-        onLongPress: onLongPress,
-        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        borderRadius: const .all(.circular(12)),
-        child: Column(
-          crossAxisAlignment: .start,
-          children: [
-            AspectRatio(
-              aspectRatio: Style.aspectRatio,
-              child: LayoutBuilder(
-                builder: (context, boxConstraints) {
-                  double maxWidth = boxConstraints.maxWidth;
-                  double maxHeight = boxConstraints.maxHeight;
-                  return Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      NetworkImgLayer(
-                        src: liveItem.cover,
-                        width: maxWidth,
-                        height: maxHeight,
-                        borderRadius: const .vertical(top: .circular(12)),
-                      ),
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        child: liveStat(
-                          liveItem.online,
-                          liveItem.cateName,
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-            liveContent(theme),
-          ],
+    return CoverScrimCard(
+      cover: liveItem.cover,
+      title: liveItem.titleSpans.map((e) => e.text).join(),
+      upName: liveItem.uname,
+      onTap: () => PageUtils.toLiveRoom(liveItem.roomid),
+      onLongPress: onLongPress,
+      onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+      // 命中词上色。高亮色压在随封面变化的遮罩上，对比度不像 colors.title
+      // 那样由 Rust 保证，所以按遮罩的明暗在主题色的两端里挑一个：浅遮罩
+      // （深文字）配深色调，深遮罩（浅文字）配浅色调。
+      titleBuilder: (context, colors) => Text.rich(
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        TextSpan(
+          style: TextStyle(height: 1.32, color: colors.title),
+          children: liveItem.titleSpans
+              .map(
+                (e) => TextSpan(
+                  text: e.text,
+                  style: e.isEm
+                      ? TextStyle(
+                          color: colors.title.computeLuminance() > 0.5
+                              ? theme.colorScheme.primaryFixed
+                              : theme.colorScheme.onPrimaryFixedVariant,
+                        )
+                      : null,
+                ),
+              )
+              .toList(),
         ),
       ),
-    );
-  }
-
-  Widget liveContent(ThemeData theme) => Expanded(
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(9, 8, 9, 6),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text.rich(
-            TextSpan(
-              children: liveItem.titleSpans
-                  .map(
-                    (e) => TextSpan(
-                      text: e.text,
-                      style: TextStyle(
-                        color: e.isEm
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.onSurface,
-                      ),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ),
-          Text(
-            liveItem.uname!,
-            maxLines: 1,
-            style: TextStyle(
-              fontSize: theme.textTheme.labelMedium!.fontSize,
-              color: theme.colorScheme.outline,
-            ),
-          ),
-        ],
+      topStart: CoverWatchedPill(
+        watched: '${NumUtils.numFormat(liveItem.online)}围观',
       ),
-    ),
-  );
-
-  Widget liveStat(int? online, String? cateName) {
-    return Container(
-      height: 45,
-      padding: const EdgeInsets.only(top: 22, left: 8, right: 8),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: <Color>[
-            Colors.transparent,
-            Colors.black54,
-          ],
-          tileMode: TileMode.mirror,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            cateName!,
-            style: const TextStyle(fontSize: 11, color: Colors.white),
-          ),
-          Text(
-            '${NumUtils.numFormat(online)}围观',
-            style: const TextStyle(fontSize: 11, color: Colors.white),
-          ),
-        ],
-      ),
+      metaBuilder: (context, colors) =>
+          liveMeta(colors: colors, areaName: liveItem.cateName),
     );
   }
 }

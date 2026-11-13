@@ -3,6 +3,7 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
+import 'package:kilikili/rust/api/cover_scrim.dart';
 import 'package:kilikili/rust/api/danmaku.dart';
 import 'package:kilikili/rust/api/dm_view.dart';
 import 'package:kilikili/rust/api/init.dart';
@@ -111,6 +112,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FilterRule dco_decode_box_autoadd_filter_rule(dynamic raw);
+
+  @protected
+  FollowList dco_decode_box_autoadd_follow_list(dynamic raw);
 
   @protected
   HistoryNode dco_decode_box_autoadd_history_node(dynamic raw);
@@ -331,6 +335,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ClipInfo dco_decode_clip_info(dynamic raw);
 
   @protected
+  CoverScrimStyle dco_decode_cover_scrim_style(dynamic raw);
+
+  @protected
   DanmakuBucketItem dco_decode_danmaku_bucket_item(dynamic raw);
 
   @protected
@@ -395,6 +402,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FilterRuleResult dco_decode_filter_rule_result(dynamic raw);
+
+  @protected
+  FollowList dco_decode_follow_list(dynamic raw);
+
+  @protected
+  FollowListResult dco_decode_follow_list_result(dynamic raw);
+
+  @protected
+  FollowUser dco_decode_follow_user(dynamic raw);
 
   @protected
   FormatCandidateInput dco_decode_format_candidate_input(dynamic raw);
@@ -464,6 +480,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<FilterRule> dco_decode_list_filter_rule(dynamic raw);
+
+  @protected
+  List<FollowUser> dco_decode_list_follow_user(dynamic raw);
 
   @protected
   List<FormatCandidateInput> dco_decode_list_format_candidate_input(
@@ -865,6 +884,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FilterRule? dco_decode_opt_box_autoadd_filter_rule(dynamic raw);
+
+  @protected
+  FollowList? dco_decode_opt_box_autoadd_follow_list(dynamic raw);
 
   @protected
   HistoryNode? dco_decode_opt_box_autoadd_history_node(dynamic raw);
@@ -1542,6 +1564,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   FilterRule sse_decode_box_autoadd_filter_rule(SseDeserializer deserializer);
 
   @protected
+  FollowList sse_decode_box_autoadd_follow_list(SseDeserializer deserializer);
+
+  @protected
   HistoryNode sse_decode_box_autoadd_history_node(SseDeserializer deserializer);
 
   @protected
@@ -1838,6 +1863,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ClipInfo sse_decode_clip_info(SseDeserializer deserializer);
 
   @protected
+  CoverScrimStyle sse_decode_cover_scrim_style(SseDeserializer deserializer);
+
+  @protected
   DanmakuBucketItem sse_decode_danmaku_bucket_item(
     SseDeserializer deserializer,
   );
@@ -1918,6 +1946,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FilterRuleResult sse_decode_filter_rule_result(SseDeserializer deserializer);
+
+  @protected
+  FollowList sse_decode_follow_list(SseDeserializer deserializer);
+
+  @protected
+  FollowListResult sse_decode_follow_list_result(SseDeserializer deserializer);
+
+  @protected
+  FollowUser sse_decode_follow_user(SseDeserializer deserializer);
 
   @protected
   FormatCandidateInput sse_decode_format_candidate_input(
@@ -2003,6 +2040,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<FilterRule> sse_decode_list_filter_rule(SseDeserializer deserializer);
+
+  @protected
+  List<FollowUser> sse_decode_list_follow_user(SseDeserializer deserializer);
 
   @protected
   List<FormatCandidateInput> sse_decode_list_format_candidate_input(
@@ -2506,6 +2546,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FilterRule? sse_decode_opt_box_autoadd_filter_rule(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FollowList? sse_decode_opt_box_autoadd_follow_list(
     SseDeserializer deserializer,
   );
 
@@ -3394,6 +3439,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_follow_list(
+    FollowList self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_history_node(
     HistoryNode self,
     SseSerializer serializer,
@@ -3811,6 +3862,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_clip_info(ClipInfo self, SseSerializer serializer);
 
   @protected
+  void sse_encode_cover_scrim_style(
+    CoverScrimStyle self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_danmaku_bucket_item(
     DanmakuBucketItem self,
     SseSerializer serializer,
@@ -3908,6 +3965,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     FilterRuleResult self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_follow_list(FollowList self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_follow_list_result(
+    FollowListResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_follow_user(FollowUser self, SseSerializer serializer);
 
   @protected
   void sse_encode_format_candidate_input(
@@ -4011,6 +4080,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_filter_rule(
     List<FilterRule> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_follow_user(
+    List<FollowUser> self,
     SseSerializer serializer,
   );
 
@@ -4683,6 +4758,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_filter_rule(
     FilterRule? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_follow_list(
+    FollowList? self,
     SseSerializer serializer,
   );
 

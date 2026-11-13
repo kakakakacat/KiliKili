@@ -1,13 +1,14 @@
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/common/widgets/stat/stat.dart';
+import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/widgets/video_popup_menu.dart';
 import 'package:kilikili/http/search.dart';
+import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/models/home/rcmd/result.dart';
 import 'package:kilikili/models/model_rec_video_item.dart';
 import 'package:kilikili/models_new/video/video_detail/dimension.dart';
+import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/app_scheme.dart';
 import 'package:kilikili/utils/date_utils.dart';
 import 'package:kilikili/utils/duration_utils.dart';
@@ -86,178 +87,89 @@ class VideoCardV extends StatelessWidget {
       cover: videoItem.cover,
       bvid: videoItem.bvid,
     );
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Card(
-          child: InkWell(
-            onTap: onPushDetail,
-            onLongPress: onLongPress,
-            onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-            borderRadius: const .all(.circular(12)),
-            child: Column(
-              crossAxisAlignment: .start,
-              children: [
-                AspectRatio(
-                  aspectRatio: Style.aspectRatio,
-                  child: LayoutBuilder(
-                    builder: (context, boxConstraints) {
-                      double maxWidth = boxConstraints.maxWidth;
-                      double maxHeight = boxConstraints.maxHeight;
-                      return Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          NetworkImgLayer(
-                            src: videoItem.cover,
-                            width: maxWidth,
-                            height: maxHeight,
-                            borderRadius: const .vertical(top: .circular(12)),
-                          ),
-                          if (videoItem.duration > 0)
-                            PBadge(
-                              bottom: 6,
-                              right: 7,
-                              size: .small,
-                              type: .gray,
-                              text: DurationUtils.formatDuration(
-                                videoItem.duration,
-                              ),
-                            ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-                content(context),
-              ],
-            ),
-          ),
-        ),
-        if (videoItem.goto == 'av')
-          Positioned(
-            right: -5,
-            bottom: -2,
-            width: 29,
-            height: 29,
-            child: VideoPopupMenu(
-              iconSize: 17,
-              videoItem: videoItem,
-              onRemove: onRemove,
-            ),
+    return CoverScrimCard(
+      cover: videoItem.cover,
+      title: videoItem.title,
+      upName: videoItem.owner.name?.toString(),
+      // 匿名态下服务端照样会给 is_followed，不验登录会在未登录时也打上勾。
+      upFollowed: videoItem.isFollowed && Accounts.main.isLogin,
+      onTap: onPushDetail,
+      onLongPress: onLongPress,
+      onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+      topStart: CoverStatsPill(
+        stats: [
+          (StatType.play, videoItem.stat.view),
+          // 推荐流的 stat 里只有 view / like / danmaku，没有评论数，所以
+          // 这一项是**弹幕数**。要换成评论数得先有接口给。
+          if (videoItem.goto != 'picture')
+            (StatType.danmaku, videoItem.stat.danmu),
+        ],
+      ),
+      coverOverlays: [
+        if (videoItem.duration > 0)
+          CoverDurationPill(
+            top: 6,
+            right: 6,
+            text: DurationUtils.formatDuration(videoItem.duration),
           ),
       ],
+      trailing: videoItem.goto == 'av'
+          ? SizedBox.square(
+              dimension: 29,
+              child: VideoPopupMenu(
+                iconSize: 17,
+                onCover: true,
+                videoItem: videoItem,
+                onRemove: onRemove,
+              ),
+            )
+          : null,
+      metaBuilder: _meta,
     );
   }
 
-  Widget content(BuildContext context) {
-    final theme = Theme.of(context);
-    return Expanded(
-      child: Padding(
-        padding: const .fromLTRB(6, 5, 6, 5),
-        child: Column(
-          crossAxisAlignment: .start,
-          children: [
-            Expanded(
-              child: Text(
-                videoItem.title,
-                maxLines: 2,
-                overflow: .ellipsis,
-                style: const TextStyle(height: 1.38),
-              ),
-            ),
-            videoStat(theme),
-            Row(
-              spacing: 2,
-              children: [
-                if (videoItem.goto == 'bangumi')
-                  PBadge(
-                    text: videoItem.pgcBadge,
-                    isStack: false,
-                    size: .small,
-                    type: .line_primary,
-                    fontSize: 9,
-                  ),
-                if (videoItem.rcmdReason != null)
-                  PBadge(
-                    text: videoItem.rcmdReason,
-                    isStack: false,
-                    size: .small,
-                    type: .secondary,
-                  ),
-                if (videoItem.goto == 'picture')
-                  const PBadge(
-                    text: '动态',
-                    isStack: false,
-                    size: .small,
-                    type: .line_primary,
-                    fontSize: 9,
-                  ),
-                if (videoItem.isFollowed)
-                  const PBadge(
-                    text: '已关注',
-                    isStack: false,
-                    size: .small,
-                    type: .secondary,
-                  ),
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    videoItem.owner.name.toString(),
-                    maxLines: 1,
-                    overflow: .ellipsis,
-                    semanticsLabel: 'UP：${videoItem.owner.name}',
-                    style: TextStyle(
-                      height: 1.5,
-                      fontSize: theme.textTheme.labelMedium!.fontSize,
-                      color: theme.colorScheme.outline,
-                    ),
-                  ),
-                ),
-                if (videoItem.goto == 'av') const SizedBox(width: 10),
-              ],
-            ),
-          ],
-        ),
+  /// UP 名之后那几项：角标 + 发布时间。
+  ///
+  /// 播放量与弹幕数已经挪到封面左上角的药丸里（issue #108），这一行只剩
+  /// 「这条稿件是什么」而不是「它有多热」。
+  List<Widget> _meta(BuildContext context, CoverScrimColors colors) => [
+    if (videoItem.goto == 'bangumi')
+      PBadge(
+        text: videoItem.pgcBadge,
+        isStack: false,
+        size: .small,
+        type: .line_primary,
+        fontSize: 9,
       ),
-    );
-  }
+    if (videoItem.rcmdReason != null)
+      PBadge(
+        text: videoItem.rcmdReason,
+        isStack: false,
+        size: .small,
+        type: .secondary,
+      ),
+    if (videoItem.goto == 'picture')
+      const PBadge(
+        text: '动态',
+        isStack: false,
+        size: .small,
+        type: .line_primary,
+        fontSize: 9,
+      ),
+    if (videoItem is RcmdVideoItemModel) ...[
+      const Spacer(),
+      Text(
+        DateFormatUtils.dateFormat(
+          videoItem.pubdate,
+          short: shortFormat,
+          long: longFormat,
+        ),
+        maxLines: 1,
+        style: TextStyle(fontSize: 11, color: colors.subtitle),
+      ),
+    ],
+  ];
 
   static final shortFormat = DateFormat('M-d');
   static final longFormat = DateFormat('yy-M-d');
-
-  Widget videoStat(ThemeData theme) {
-    return Row(
-      children: [
-        StatWidget(
-          type: .play,
-          value: videoItem.stat.view,
-        ),
-        if (videoItem.goto != 'picture') ...[
-          const SizedBox(width: 4),
-          StatWidget(
-            type: .danmaku,
-            value: videoItem.stat.danmu,
-          ),
-        ],
-        if (videoItem is RcmdVideoItemModel) ...[
-          const Spacer(),
-          Text.rich(
-            maxLines: 1,
-            TextSpan(
-              style: TextStyle(
-                fontSize: theme.textTheme.labelSmall!.fontSize,
-                color: theme.colorScheme.outline.withValues(alpha: 0.8),
-              ),
-              text: DateFormatUtils.dateFormat(
-                videoItem.pubdate,
-                short: shortFormat,
-                long: longFormat,
-              ),
-            ),
-          ),
-          const SizedBox(width: 2),
-        ],
-      ],
-    );
-  }
 }

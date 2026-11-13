@@ -51,6 +51,37 @@ pgc 成为删得最多的一块
 修订：2026-11-12（自动播放默认值 #16）——实质改动 154 → **155**，
 仅重命名波及 737 → **736**；修改总数仍为 891，新增和删除数不变。
 `storage_pref.dart` 从仅重命名转为有实质改动。
+修订：2026-11-12（关注/粉丝列表，#66 收尾，为本次）—— 实质改动
+154 → **157**，仅重命名波及 737 → **732**，新增文件 465 → **469**，
+删除文件 128 → **130**，「修改」总数 891 → **889**。本次数字含**尚未提交**
+的工作树改动。`lib/http/{follow,fan}.dart` 两个整文件删掉（从 M 转进 D，
+其中 `follow.dart` 上一版刚进「有实质改动」，这一版就删干净了）；
+`lib/http/dynamics.dart`、`lib/models/dynamics/up.dart`、
+`lib/pages/fan/controller.dart`、`lib/pages/follow/child/child_controller.dart`
+四个从「仅重命名」转入「有实质改动」。
+
+修订：2026-11-12（竖版视频封面改大卡片 + 底部叠加文案，issue #108，
+为本次）—— 实质改动 154 → **168**，仅重命名波及 737 → **724**，新增文件
+465 → **471**，「修改」总数 891 → **892**，删除文件不变（128）。这是
+**第一次因为界面改动而扩大分叉面**：以前每一轮都是迁业务逻辑，这一轮动的
+是上游的视图层，性质不同，见 §4.4。
+
+修订：2026-11-13（issue #108 横版视频及合集封面统一为大卡片）——
+实质改动 168 → **217**，仅重命名波及 724 → **675**；修改的上游文件
+仍为 892。新增文件按当前分支重算为 **472**，其中 `lib/common/` 为 3 个。
+本轮新增的 49 个实质改动文件集中在搜索、收藏、历史、稍后再看、离线缓存、
+动态、播放列表及其共用卡片，见 §4.4。
+
+修订：2026-11-13（合入最新 main，包含关注/粉丝列表 #111）——按 §6 重算：
+修改的上游文件 **890**，其中实质改动 **220**、仅重命名 **670**；新增
+**476**，删除 **130**。这组数包含两条分支各自的改动，不把同一文件重复计数。
+
+修订：2026-11-13（#108 封面角标等高）——新增一个布局回归测试，新增文件
+**476 → 477**；修改的上游文件集合与其分类不变。
+
+修订：2026-11-13（合入自动播放默认值 #16）——按 §6 的分类，
+`storage_pref.dart` 从仅重命名转为有实质改动：实质改动 **220 → 221**，
+仅重命名 **670 → 669**；修改、新增和删除文件总数不变。
 
 前述 #89 修订的差额**不全是那次改动**：上一版是在 #79 的工作树上算的，#90 合进
 main 前的最后一个提交（CDN 判据跟着算法搬家）没算进去——它删掉四个 Dart
@@ -90,21 +121,21 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 | 类别 | 数量 |
 | --- | ---: |
-| 修改的上游既有文件 | 891 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 737 |
-| &nbsp;&nbsp;其中：有实质改动 | **154** |
-| 新增文件 | 465 |
-| 删除文件 | **128** |
+| 修改的上游既有文件 | 890 |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 670 |
+| &nbsp;&nbsp;其中：有实质改动 | **220** |
+| 新增文件 | 477 |
+| 删除文件 | **130** |
 
-「修改」总数持续下降（935 → 909 → 897 → 894），不是改动变少，而是其中
-一部分文件**被删除**了（迁移掉的模型），从 M 转到了 D。删除数从 57 一路
-到 125，来源是 S10 的 PGC 两批、S11a 的直播三批与取流（#79）。
+「修改」总数一路下降（935 → 909 → 897 → 891），部分文件是因迁移被删除，
+从 M 转到了 D。#108 的界面改动一度把它顶回 892；合入 #111 的关注/粉丝
+切片后是 890。删除数到 130，来源包括 PGC、直播、取流及关注/粉丝接口迁移。
 
 ## 3. 包名重命名：分叉面的主体
 
 `ba430476b chore: rename app package identifiers to KiliKili` 把每个 Dart
 文件的 `package:PiliPlus/` 改成了 `package:kilikili/`，一次触及 992 个文件。
-**当前分叉面里 737 个文件只有这一处差异。**
+**当前分叉面里 670 个文件只有这一处差异。**
 
 对同步的影响很具体：上游每改动一个 Dart 文件，我们这边大概率冲突，但
 **冲突内容永远是那一行 import**。处理方式是取上游版本后重新套用重命名，
@@ -115,7 +146,8 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 4. 有实质改动的上游文件
 
-154 个。业务层 typed 直连迁移集中列在 §4.1，其余改动逐个列在 §4.3。
+220 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
+见 §4.4，其余改动逐个列在 §4.3。
 
 ### 4.1 typed 直连迁移触及的上游文件
 
@@ -136,7 +168,8 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | S11a 直播第二批（取流） | #61 / #86 | `lib/http/live.dart`、`lib/pages/live_room/controller.dart`、`lib/utils/video_utils.dart`（`getLiveCdnUrl` 改吃 FRB 的 `LiveCodec`）；留下单向适配 `lib/services/rust/live_playurl_compat.dart` |
 | 弹幕屏蔽规则的两个写操作 | #66 #50 / #100 | `lib/pages/danmaku_block/controller.dart`、`lib/pages/video/widgets/header_control.dart`；**删掉 `lib/http/danmaku_block.dart`**。仓库头两条走 Rust 的写操作，形状见 ADR-013 |
 | 短评五条写操作 | #60 #50 / 本次 | `lib/pages/pgc_review/**`；**删掉 `lib/http/pgc.dart`**（迁完整个文件只剩这五条） |
-| 想听 / 关注分组排序 | #66 #50 / 本次 | `lib/pages/music/view.dart`、`lib/pages/follow_tag_sort/view.dart`、`lib/http/follow.dart`（瘦身）；**删掉 `lib/http/music.dart`** |
+| 想听 / 关注分组排序 | #66 #50 / #104 | `lib/pages/music/view.dart`、`lib/pages/follow_tag_sort/view.dart`、`lib/http/follow.dart`（瘦身）；**删掉 `lib/http/music.dart`** |
+| S15 关注/粉丝列表（#66 收尾） | #66 / 本次 | `lib/pages/follow/child/child_controller.dart`、`lib/pages/fan/controller.dart`、`lib/http/dynamics.dart`（`followings` 改吃 Rust，同一条接口不留第二份实现）、`lib/models/dynamics/up.dart`；**删掉 `lib/http/{follow,fan}.dart`**；留下单向适配 `lib/services/rust/follow_compat.dart`（`FollowData` 还有四个生产者在 S6 #56 / S7 #57） |
 | S11a 直播第三批（剩余六条只读） | #61 / #87 | `lib/http/live.dart`、`lib/pages/{live_emote,live_search,live_dm_block}/**`、`lib/pages/live_room/{controller.dart,contribution_rank/**}`、`lib/pages/member/{view.dart,widget/{medal_wall,user_info_card}.dart}`、`lib/pages/common/publish/common_rich_text_pub_page.dart`；留下单向适配 `lib/services/rust/live_rest_compat.dart` |
 
 **同步时怎么处理这一类冲突**：上游在这些文件里的改动，多数落在我们已经
@@ -214,6 +247,42 @@ H5 房间信息）、第二批 7 个（`live_room_play_info/` 整个目录）、
 `.github/workflows/build.yml` 与 `ios.yml` 也在分叉面里，但**只有包名重命名**，
 没有逻辑改动。
 
+### 4.4 封面卡片改版触及的上游文件
+
+issue #108 把视频封面从「顶部封面图 + 底部独立文案区」改成
+「整张封面 + 底部叠加文案」，遮罩配色由 `bili_core::cover_scrim` 按封面
+取色算出。搜索结果、收藏、历史、稍后再看等原先的横向图文行也使用
+同一组件；格子改为按封面比例排布。离线缓存优先从本地封面文件取色，
+断网时文案仍与实际显示的封面匹配。
+
+| 文件 | 性质 |
+| --- | --- |
+| `lib/common/widgets/video_card/video_card_v.dart` | 首页推荐卡，改用新的 `CoverScrimCard` |
+| `lib/common/style.dart` | 新增 `coverCardRatio`（4:3）与 `coverCardRadius`（14）两个常量 |
+| `lib/common/widgets/video_popup_menu.dart` | 新增 `onCover`：压在遮罩上时图标改白色 + 阴影 |
+| `lib/common/skeleton/video_card_v.dart` | 骨架跟着变成整块封面，否则加载完会重排 |
+| `lib/pages/{rcmd,live,live_follow,live_search,live_area_detail,search_panel/live,pgc,pgc_index,member_pgc,member_coin_arc,member_like_arc,member_home}/**` | 卡片本体改用 `CoverScrimCard`；对应 grid delegate 去掉给文字留的 `mainAxisExtent`（格子现在就是封面本身），视频/直播格子的 `childAspectRatio` 从 16:10 收到 4:3 |
+| `lib/common/widgets/video_card/video_card_h.dart`、`lib/utils/grid.dart` | 横版视频卡改用共用遮罩，并让搜索、热门、相关视频等格子按 4:3 排布 |
+| `lib/pages/{search_panel,member_search,video/reply_search_item,history,history_search,later,later_search,fav_detail,fav_search,fav_sort,fav,member_video,member_video_web,member_favorite,member_season_series,member_cheese,music,subscription,subscription_detail,download}/**` | 视频、番剧、课程、收藏夹与离线缓存原有横向图文行改为整张封面卡；保留选择、进度、菜单与跳转入口 |
+| `lib/pages/{dynamics,video/medialist}/**`、`lib/services/rust/rust_cover_scrim.dart` | 动态与播放列表共用遮罩；离线文件经同一 Rust 算法取色 |
+
+卡片上的信息分三层，改哪一层决定了去哪里改：**底部遮罩**里的标题、UP 名
+及辅助信息，颜色由 `cover_scrim` 保证对比度；UP 名的主题色药丸也由 Rust
+根据当前主题色与封面合成结果选出底色、文字色；**封面左上角**的播放量等统计
+与**右上角**的时长角标落在封面上，不在那套保证里，所以一律自带
+`black45` 底 + 白字；`CoverScrimCard` 自带的阴影与 14px 圆角是**有意偏离
+全局 `cardTheme`** 的（那边 `shadowColor` 是透明），理由写在该类的
+`elevation` 字段注释上。
+
+**同步时怎么处理这一类冲突**：上游若改这些文件里的**信息**（多了一个角标、
+换了一个字段），照常同步到新的卡片结构里；若改的是**布局**（padding、
+Column 顺序、文字层级），丢弃——那一层我们已经整个换掉了。遮罩的取色与
+对比度在 Rust，上游不会有对应改动。
+
+这一类与 §4.1 的区别值得记一笔：§4.1 是把业务逻辑搬出宿主，分叉面是
+「上游文件变空」；这里是**纯视图层改动**，上游文件还在、还是 Widget 树，
+只是树形不同。所以它不适用 §4.1 的「协议改动同步到 bili-api」判据。
+
 ### 同步时的注意点
 
 - `lib/http/video.dart` 与 `lib/http/search.dart` 是**上游高频改动区**，
@@ -229,17 +298,18 @@ H5 房间信息）、第二批 7 个（`live_room_play_info/` 整个目录）、
 
 ## 5. 新增文件
 
-465 个，不与上游冲突，按区域分布：
+476 个，不与上游冲突，按区域分布：
 
 | 区域 | 文件数 | 内容 |
 | --- | ---: | --- |
-| `rust/` | 298 | Rust workspace：6 个 crate、golden fixture 与快照 |
+| `rust/` | 302 | Rust workspace：6 个 crate、golden fixture 与快照 |
 | `rust_builder/` | 46 | cargokit，把 Rust 接入 Flutter 各端构建 |
-| `lib/services/` | 32 | Rust 开关、shadow mode、各切片的取数封装 |
-| `test/` | 27 | parity 测试与桥接层集成测试 |
-| `lib/rust/` | 24 | FRB 生成的 Dart 绑定 |
+| `lib/services/` | 34 | Rust 开关、shadow mode、各切片的取数封装 |
+| `test/` | 28 | parity 测试与桥接层集成测试 |
+| `lib/rust/` | 25 | FRB 生成的 Dart 绑定 |
 | `tool/` | 13 | 构建准备、FRB 生成、README 统计、产物核对、fixture 生成 |
 | `docs/` | 14 | RFC、ADR、M0 记录、QA 清单 |
+| `lib/common/` | 3 | 封面大卡片、统计药丸与直播卡共用的文案行（issue #108） |
 | `lib/pages/` | 1 | 从控制器里搬出来的基线弹幕引擎（`danmaku/engine.dart`） |
 | `lib/utils/` | 1 | 从 `SubtitleUtils` 里搬出来的基线字幕转换（`subtitle_format.dart`） |
 | 其他 | 9 | workflow、`AGENTS.md` / `CLAUDE.md`、README 统计图、`flutter_rust_bridge.yaml` |

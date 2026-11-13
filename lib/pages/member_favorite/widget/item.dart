@@ -1,7 +1,6 @@
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/models_new/space/space_fav/list.dart';
 import 'package:kilikili/pages/subscription_detail/view.dart';
 import 'package:kilikili/utils/bili_utils.dart';
@@ -19,20 +18,38 @@ class MemberFavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    void onLongPress() => imageSaveDialog(
-      title: item.title,
-      cover: item.cover,
-    );
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
+    void onLongPress() => imageSaveDialog(title: item.title, cover: item.cover);
+    final info = item.type == 0
+        ? '${item.mediaCount}个内容 · ${BiliUtils.isPublicFavText(item.attr)}'
+        : item.type == 11
+        ? '${item.mediaCount}个内容 · ${item.upper?.name}'
+        : item.type == 21
+        ? '${item.mediaCount}个视频 · ${NumUtils.numFormat(item.viewCount)}播放'
+        : '${item.mediaCount}个内容';
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: CoverScrimCard(
+        cover: item.cover,
+        title: item.title ?? '',
+        upName: item.type == 21 ? item.upper?.name : null,
+        coverOverlays: [
+          if (item.type == 21)
+            const PBadge(right: 6, top: 6, text: '合集')
+          else if (item.type == 11)
+            const PBadge(right: 6, top: 6, text: '收藏夹'),
+        ],
+        metaBuilder: (context, colors) => [
+          Flexible(
+            child: Text(
+              info,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 11, color: colors.subtitle),
+            ),
+          ),
+        ],
         onTap: () async {
-          if (item.state == 1) {
-            // invalid
-            return;
-          }
-
+          if (item.state == 1) return;
           if (item.type == 0 || item.type == 11) {
             final isDeleted = await Get.toNamed(
               '/favDetail',
@@ -43,80 +60,11 @@ class MemberFavItem extends StatelessWidget {
             );
             onDelete?.call(isDeleted);
           } else {
-            SubDetailPage.toSubDetailPage(
-              item.id!,
-              subInfo: item,
-            );
+            SubDetailPage.toSubDetailPage(item.id!, subInfo: item);
           }
         },
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Style.safeSpace,
-            vertical: 5,
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  AspectRatio(
-                    aspectRatio: Style.aspectRatio,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) => NetworkImgLayer(
-                        src: item.cover,
-                        width: constraints.maxWidth,
-                        height: constraints.maxHeight,
-                      ),
-                    ),
-                  ),
-                  if (item.type == 21)
-                    const PBadge(
-                      right: 6,
-                      top: 6,
-                      text: '合集',
-                    )
-                  else if (item.type == 11)
-                    const PBadge(
-                      right: 6,
-                      top: 6,
-                      text: '收藏夹',
-                    ),
-                ],
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.title ?? '',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const Spacer(),
-                    Text(
-                      item.type == 0
-                          ? '${item.mediaCount}个内容 · ${BiliUtils.isPublicFavText(item.attr)}'
-                          : item.type == 11
-                          ? '${item.mediaCount}个内容 · ${item.upper?.name}'
-                          : item.type == 21
-                          ? '创建者: ${item.upper?.name}\n${item.mediaCount}个视频 · ${NumUtils.numFormat(item.viewCount)}播放'
-                          : '${item.mediaCount}个内容',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: theme.colorScheme.outline,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

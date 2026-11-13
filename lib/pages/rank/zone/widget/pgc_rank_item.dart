@@ -1,7 +1,6 @@
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
-import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/common/widgets/stat/stat.dart';
+import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/utils/app_scheme.dart';
 import 'package:kilikili/utils/platform_utils.dart';
@@ -17,79 +16,34 @@ class PgcRankCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
-        onTap: () {
-          if (item.url != null) {
-            PiliScheme.routePushFromUrl(item.url!);
-          }
-        },
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: CoverScrimCard(
+        cover: item.cover,
+        title: item.title ?? '',
+        onTap: item.url == null
+            ? null
+            : () => PiliScheme.routePushFromUrl(item.url!),
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Style.safeSpace,
-            vertical: 5,
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AspectRatio(
-                aspectRatio: Style.aspectRatio3x4,
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return NetworkImgLayer(
-                      width: constraints.maxWidth,
-                      height: constraints.maxHeight,
-                      src: item.cover,
-                      borderRadius: const BorderRadius.all(
-                        Radius.circular(6),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(item.title!),
-                    ),
-                    if (item.newEpIndexShow?.isNotEmpty == true) ...[
-                      Text(
-                        item.newEpIndexShow!,
-                        maxLines: 1,
-                        style: TextStyle(
-                          fontSize: 12,
-                          height: 1,
-                          color: Theme.of(context).colorScheme.outline,
-                          overflow: TextOverflow.clip,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                    ],
-                    Row(
-                      children: [
-                        StatWidget(
-                          type: StatType.play,
-                          value: item.view,
-                        ),
-                        const SizedBox(width: 8),
-                        StatWidget(
-                          type: StatType.follow,
-                          value: item.follow,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+        topStart: CoverStatsPill(
+          stats: [
+            (StatType.play, item.view),
+            (StatType.follow, item.follow),
+          ],
         ),
+        metaBuilder: item.newEpIndexShow?.isNotEmpty == true
+            ? (context, colors) => [
+                Flexible(
+                  child: Text(
+                    item.newEpIndexShow!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 11, color: colors.subtitle),
+                  ),
+                ),
+              ]
+            : null,
       ),
     );
   }

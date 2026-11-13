@@ -25,6 +25,7 @@ fixture（它们带有同一个版本号，对不上时 golden 测试会失败�
 
 | 协议面 | 加入于 | 生成器 | 测试 |
 | --- | --- | --- | --- |
+| gRPC metadata（设备/locale/network/fawkes）与弹幕/字幕 unary 请求面 | 2026-11-13，issue #133 | 迁移前 `2705b39d6` 的 protobuf.dart 编码（占位凭据） | `bili-api/tests/grpc_metadata.rs`、`grpc_fetch.rs` |
 | APP 签名（`appkey`/`ts`/`sign`） | 2026-11-11，S11a 第一批 / issue #61 | `tool/fixture-gen/app_sign_fixture.dart` | `bili-protocol/tests/app_sign_golden.rs` |
 | 直播取流请求面（`protocol`/`format`/`codec`/`ptype`/`dolby`/`panorama`/`web_location`） | 2026-11-11，S11a 第二批 / issue #61 | 无独立生成器，核对方向相反，见下 | `bili-api/tests/live_golden.rs::room_play_info_request_matches_the_frozen_snapshot` |
 | 直播剩余三条签名接口的请求面（搜索的 APP 参数集；屏蔽设置与贡献榜的 WBI 参数集，各带一个 `web_location=444.8`） | 2026-11-11，S11a 第三批 / issue #61 | 同上 | `bili-api/tests/live_golden.rs::signed_requests_match_the_frozen_snapshot` |

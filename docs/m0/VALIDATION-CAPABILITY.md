@@ -194,7 +194,7 @@ Android 的 Rust 交叉编译改为手动 dispatch（§2.1）；五个 app workf
 **job 的 `name:` 就是 ruleset 认的那个检查名**，改掉它 ruleset 就对不上，
 所有 PR 会永久停在 `BLOCKED`。这是本机制唯一会静默失效的方式。
 
-门本身**只聚合、不跑测试**：`needs: [rust, flutter, android, ios, macos,
+门本身**只聚合、不跑测试**：`needs: [rust, flutter, proto, android, ios, macos,
 windows, linux]`，再逐个核对 `needs.*.result`。真正的回归在被聚合的工作流
 里，在门里重跑一遍只会让同一份测试跑两次。`rust.yml` 与 `flutter-test.yml`
 为此改成纯 `workflow_call`，只由 ci.yml 调用，不再自己监听事件。
@@ -207,7 +207,7 @@ windows, linux]`，再逐个核对 `needs.*.result`。真正的回归在被聚�
 - **被聚合的两条可复用工作流刻意不加 `paths` 过滤。** 必需检查一旦在某些 PR
   上缺席就是永久 pending，只改 fixture 或 workflow 的 PR 会卡死。ci.yml 里
   那条注释说的就是这件事。
-- **只有 rust / flutter / android 三项强制 `success`。** ios / macos /
+- **rust / flutter / proto / android 四项强制 `success`。** ios / macos /
   windows / linux 带 `if: github.event_name == 'schedule' ||
   inputs.full_platforms`，平时是 skipped；门只在 `full_platforms` 为真时才
   核对这四项。
@@ -292,3 +292,24 @@ Docker 27.3.1，已承载 6 个生产容器
 2. ~~**工具链版本两端钉死**~~ ✅ 已完成。Flutter 由 `.fvmrc` 锁 3.47.9；`rust/rust-toolchain.toml` 钉 1.97.0 + rustfmt/clippy + 七个 target；`rust/Cargo.lock` 已提交。
 3. **Windows 侧已知障碍**（本机开发用，CI 不受影响）：需开启开发者模式（Flutter symlink 支持）；Rust `target/` 嵌套深，易触发 260 字符路径限制，仓库应置于短路径并开启长路径支持。~~libmpv DLL 的安装包分发方式~~ ✅ 已确认随包分发，见 §2.1。
 4. ~~**`.gitignore` 补 Rust `target/`**~~ ✅ 已完成（`.gitignore:157` `/rust/target/`）。仍需遵守：**仅用 git 同步**，不要将仓库置于 iCloud/OneDrive/Dropbox；`build/`、`target/`、`.dart_tool/`、`Pods/` 等产物不得跨机同步。
+
+
+### gRPC 描述符与传输验证（#133，2026-11-13）
+
+`proto.yml` 在 Ubuntu 独立运行生成器格式检查、描述符校验测试和
+`tool/proto-generate.sh --check`，其结果由 regression gate 强制聚合。
+不增加五端构建依赖，不恢复 PR 触发或 ruleset。描述符编译使用 compile_fds，
+没有 protoc 外部二进制要求；普通 app 构建只编译签入的 prost 生成代码。
+
+Rust 测试覆盖帧阈值/压缩、截断、缺失状态头、嵌套业务码、metadata 五头、
+真实 reqwest 字节响应与读写超时重试差异。Flutter bridge 测试新增 metadata、
+分段字节、typed 字幕、损坏响应错误值与嵌套业务码，替换旧的字幕解析开关测试。
+离线 Dart/Rust 解帧 parity 不 import lib/，对照同一真实脱敏帧的载荷。
+这些能力不替代登录态、系统代理、证书与设备上的人工验证。
+
+
+本机 macOS 的 Rust 1.97 release 动态库在默认 `strip=debuginfo` 后出现
+`mis-aligned LINKEDIT string pool`，dyld 在进入任何业务测试前拒绝加载。
+同份代码用 `CARGO_PROFILE_RELEASE_STRIP=none cargo build -p bridge_flutter --release`
+可加载，故本轮真实 FFI 验证使用该临时产物。仓库 release profile 未改动；
+此记录只限定本机 dylib 验证，不推断五端 app 打包结果。工具链升级另见 #134。

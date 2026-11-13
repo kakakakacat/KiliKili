@@ -164,10 +164,10 @@ PiliPlus-Rust/
 
 注：阶段 1 无需一次性创建所有 crates；按功能边界逐个加入。拆分的原则是**可独立测试和可替换**，而不是目录越多越好。
 
-实际落地与上表的偏离（2026-11-11）：
+实际落地与上表的偏离（更新于 2026-11-13）：
 
 - 当前存在的 crate 是 `bili-domain` / `bili-api` / `bili-protocol` / `bili-core` /
-  `bili-danmaku` / `bridge_flutter` 六个。`bili-protocol` 不在上表里，是 Review
+  `bili-danmaku` / `bili-grpc` / `bridge_flutter` 七个。`bili-protocol` 不在上表里，是 Review
   后按 §16.7 从 `bili-api` 里拆出来的——易变协议与稳定数据层的改动频率差一个
   量级。
 - **弹幕解码没有放进 `bili-danmaku`**：`DmSegMobileReply` 的解码落在 `bili-api`
@@ -178,6 +178,11 @@ PiliPlus-Rust/
   不用改」——这才是上表所说「解码、索引、过滤、调度」里真正独立于协议的
   部分。跨 FFI 的形状（Rust 持有分桶结果，Dart 每 100ms 取一桶）与正则不
   等价时的处理见 [ADR-010](adr/ADR-010-danmaku-engine-ffi-and-regex.md)。
+
+- `bili-grpc`（#133 / ADR-012）仅放按消息依赖闭包生成的 prost 类型，不导出给
+  FRB。生成器是独立开发工具，普通构建不运行它、不需要 protoc。首批只覆盖
+  metadata 和弹幕/字幕请求；已有两个手写响应解码器继续保留。gRPC 帧、状态头
+  与二进制 POST 在 `bili-api`，协议设备常量在 `bili-protocol`。
 
 ## 5. 第一阶段：Flutter → Rust Core（P0）
 

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:kilikili/grpc/bilibili/community/service/dm/v1.pb.dart';
-import 'package:kilikili/services/rust/dm_view_normalize.dart';
+import 'dm_view_oracle.dart';
 import 'package:fixnum/fixnum.dart';
 
 /// `DmView` 字幕 golden fixture 的生成器。

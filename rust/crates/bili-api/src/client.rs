@@ -188,7 +188,7 @@ pub(crate) async fn send_write<T: HttpTransport>(
             headers: ctx.all_headers(),
             body: PostBody::Form(form),
             timeout: ctx.timeout,
-            idempotency: prepared.idempotency,
+            retry_policy: prepared.idempotency.retry_policy(),
         })
         .await?;
 
@@ -376,8 +376,8 @@ mod tests {
         let seen = stub.seen_post.lock().expect("锁未被毒化");
         let seen = seen.as_ref().expect("写请求应当送到传输层");
         assert_eq!(
-            seen.idempotency,
-            Idempotency::Idempotent,
+            seen.retry_policy,
+            Idempotency::Idempotent.retry_policy(),
             "幂等级别必须原样传到传输层，否则重试规则就落空了"
         );
         assert_eq!(

@@ -2,7 +2,7 @@
 
 pub mod cover_scrim;
 pub mod danmaku;
-pub mod dm_view;
+pub mod grpc;
 pub mod init;
 pub mod live;
 pub mod media_select;

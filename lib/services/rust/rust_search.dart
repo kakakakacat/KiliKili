@@ -1,3 +1,4 @@
+import 'package:kilikili/common/constants.dart';
 import 'package:kilikili/http/api.dart';
 import 'package:kilikili/http/browser_ua.dart';
 import 'package:kilikili/http/constants.dart';
@@ -60,16 +61,18 @@ abstract final class RustSearch {
   /// 搜索接口统一走 recommend 账号，见类文档。
   static Account get _account => Accounts.get(AccountType.recommend);
 
-  /// 热搜与默认词不走 WBI 签名，`mixinKey` 留空即可。
+  /// 热搜不签名，搜索发现走 App 签名，两者的 `mixinKey` 都留空。
   static Future<rust_api.SearchContext> _context({
     required String path,
     String mixinKey = '',
+    bool app = false,
     List<(String, String)> extraHeaders = const [],
   }) async {
     final account = _account;
     return rust_api.SearchContext(
-      baseUrl: HttpString.apiBaseUrl,
-      cookie: await RustRequest.cookieFor(account, path),
+      baseUrl: app ? HttpString.appBaseUrl : HttpString.apiBaseUrl,
+      // App 请求沿用原拦截器的 access_key 身份，不混入 Web Cookie。
+      cookie: app ? null : await RustRequest.cookieFor(account, path),
       headers: [
         ...RustRequest.headersFor(account),
         ...extraHeaders,
@@ -299,8 +302,13 @@ abstract final class RustSearch {
   static Future<LoadingState<SearchRcmdData>> searchRecommend() async {
     if (!RustCore.isReady) return const Error(_notReady);
     try {
-      final context = await _context(path: Api.searchRecommend);
-      final res = await rust_api.searchRecommend(context: context);
+      final context = await _context(path: Api.searchRecommend, app: true);
+      final res = await rust_api.searchRecommend(
+        context: context,
+        appkey: Constants.appKey,
+        appsec: Constants.appSec,
+        accessKey: _account.accessKey,
+      );
       final data = res.data;
       if (data == null) return _failure(res.errorDetail, res.errorCode);
       return Success(SearchRcmdData(list: data));

@@ -610,6 +610,9 @@ abstract class RustLibApi extends BaseApi {
 
   Future<SearchTrendingResult> crateApiSearchSearchRecommend({
     required SearchContext context,
+    required String appkey,
+    required String appsec,
+    String? accessKey,
   });
 
   Future<SearchTrendingResult> crateApiSearchSearchTrending({
@@ -3813,12 +3816,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @override
   Future<SearchTrendingResult> crateApiSearchSearchRecommend({
     required SearchContext context,
+    required String appkey,
+    required String appsec,
+    String? accessKey,
   }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_box_autoadd_search_context(context, serializer);
+          sse_encode_String(appkey, serializer);
+          sse_encode_String(appsec, serializer);
+          sse_encode_opt_String(accessKey, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -3831,7 +3840,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: null,
         ),
         constMeta: kCrateApiSearchSearchRecommendConstMeta,
-        argValues: [context],
+        argValues: [context, appkey, appsec, accessKey],
         apiImpl: this,
       ),
     );
@@ -3840,7 +3849,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiSearchSearchRecommendConstMeta =>
       const TaskConstMeta(
         debugName: "search_recommend",
-        argNames: ["context"],
+        argNames: ["context", "appkey", "appsec", "accessKey"],
       );
 
   @override

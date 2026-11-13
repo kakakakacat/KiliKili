@@ -56,7 +56,7 @@ pub mod path {
     /// 热搜榜。
     pub const SEARCH_TRENDING: &str = "/x/v2/search/trending/ranking";
     /// 搜索页默认词。
-    pub const SEARCH_RECOMMEND: &str = "/x/web-interface/wbi/search/square";
+    pub const SEARCH_RECOMMEND: &str = "/x/v2/search/recommend";
 }
 
 /// 分类型搜索的业务入参。与基线 `SearchHttp.searchByType` 的签名一一对应。
@@ -214,29 +214,39 @@ pub async fn fetch_trending<T: HttpTransport>(
     parse_trending(&body, needs_top)
 }
 
-/// 取搜索页默认词。
+/// 取搜索页默认词。`ctx.base_url` 必须是 App 主机。
 ///
-/// 查询参数是基线写死的一组 App 端标识（`build` / `mobi_app` / …）：
-/// 这个接口在 Web 端标识下会返回空列表，所以不能省。
+/// 保留基线的 App 端标识（`build` / `mobi_app` / …）与签名；
+/// Web square 并不是同义接口，带这组参数请求它会返回业务 -400。
 ///
 /// # Errors
 /// 见 [`send`]；解析失败见 [`parse_recommend`]。
 pub async fn fetch_recommend<T: HttpTransport>(
     transport: &T,
     ctx: &RequestContext,
+    appkey: &str,
+    appsec: &str,
+    access_key: Option<&str>,
+    ts: i64,
 ) -> Result<Vec<SearchTrendingItem>, DomainError> {
+    let mut query = vec![
+        ("build".to_owned(), "8430300".to_owned()),
+        ("channel".to_owned(), "master".to_owned()),
+        ("version".to_owned(), "8.43.0".to_owned()),
+        ("c_locale".to_owned(), "zh_CN".to_owned()),
+        ("mobi_app".to_owned(), "android".to_owned()),
+        ("platform".to_owned(), "android".to_owned()),
+        ("s_locale".to_owned(), "zh_CN".to_owned()),
+        ("from".to_owned(), "2".to_owned()),
+    ];
+    // 原请求由 AccountManager 补 App 签名与推荐账号的 access_key；
+    // 迁入 Rust 后不再经过该拦截器，不能只搬调用点显式写出的参数。
+    if let Some(key) = access_key.filter(|key| !key.is_empty()) {
+        query.push(("access_key".to_owned(), key.to_owned()));
+    }
     let prepared = PreparedRequest {
         path: path::SEARCH_RECOMMEND,
-        query: vec![
-            ("build".to_owned(), "8430300".to_owned()),
-            ("channel".to_owned(), "master".to_owned()),
-            ("version".to_owned(), "8.43.0".to_owned()),
-            ("c_locale".to_owned(), "zh_CN".to_owned()),
-            ("mobi_app".to_owned(), "android".to_owned()),
-            ("platform".to_owned(), "android".to_owned()),
-            ("s_locale".to_owned(), "zh_CN".to_owned()),
-            ("from".to_owned(), "2".to_owned()),
-        ],
+        query: bili_protocol::app_sign::sign(&query, appkey, appsec, ts),
     };
     let body = send(transport, ctx, &prepared).await?;
     parse_recommend(&body)
@@ -651,6 +661,75 @@ fn lenient_i64(value: &Value, key: &str) -> Option<i64> {
 #[allow(clippy::expect_used)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn recommend_uses_app_endpoint() {
+        struct AppEndpoint {
+            access_key: Option<&'static str>,
+        }
+        impl HttpTransport for AppEndpoint {
+            async fn post(
+                &self,
+                _: crate::http::HttpPost,
+            ) -> Result<crate::http::HttpResponse, DomainError> {
+                panic!("推荐只发 GET");
+            }
+
+            async fn get(
+                &self,
+                request: crate::http::HttpGet,
+            ) -> Result<crate::http::HttpResponse, DomainError> {
+                assert!(
+                    request
+                        .url
+                        .starts_with("https://app.bilibili.com/x/v2/search/recommend?"),
+                    "搜索发现必须沿用 App 接口，Web square 会返回 -400"
+                );
+                let url = reqwest::Url::parse(&request.url).expect("URL 应合法");
+                let query: std::collections::BTreeMap<_, _> = url.query_pairs().collect();
+                assert_eq!(query.get("build").map(|s| s.as_ref()), Some("8430300"));
+                assert_eq!(query.get("appkey").map(|s| s.as_ref()), Some("appkey"));
+                assert_eq!(query.get("ts").map(|s| s.as_ref()), Some("1700000000"));
+                assert_eq!(query.get("access_key").map(|s| s.as_ref()), self.access_key);
+                // 冻结值由独立的 Python hashlib 计算，避免只核对同一实现。
+                let sign = if self.access_key.is_some() {
+                    "dbc4837eb421aee298d366dc01b40050"
+                } else {
+                    "a1a33a92fd84076d5e4914509c9c5ac5"
+                };
+                assert_eq!(query.get("sign").map(|s| s.as_ref()), Some(sign));
+                assert!(!query.contains_key("w_rid"));
+                assert!(!query.contains_key("wts"));
+                Ok(crate::http::HttpResponse {
+                    status: 200,
+                    body: envelope(r#"{"list":[{"keyword":"示例推荐"}]}"#),
+                })
+            }
+        }
+        let ctx = RequestContext {
+            base_url: "https://app.bilibili.com".to_owned(),
+            cookie: None,
+            csrf: None,
+            headers: vec![],
+            timeout: std::time::Duration::from_secs(10),
+        };
+        for access_key in [None, Some(""), Some("test-access-key")] {
+            let transport = AppEndpoint {
+                access_key: access_key.filter(|k| !k.is_empty()),
+            };
+            let items = fetch_recommend(
+                &transport,
+                &ctx,
+                "appkey",
+                "appsec",
+                access_key,
+                1_700_000_000,
+            )
+            .await
+            .expect("推荐应成功");
+            assert_eq!(items[0].keyword, "示例推荐");
+        }
+    }
 
     fn envelope(data: &str) -> String {
         format!(r#"{{"code":0,"message":"0","ttl":1,"data":{data}}}"#)

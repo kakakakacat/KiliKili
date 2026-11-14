@@ -1,6 +1,6 @@
 //! 动态路径的 typed FRB 导出（S5 / #55）。
 
-use std::time::Duration;
+use std::{fmt, time::Duration};
 
 use bili_api::{dynamic, http::RequestContext, transport_reqwest::ReqwestTransport};
 use bili_domain::error::{DomainError, ErrorKind};
@@ -8,7 +8,7 @@ use bili_domain::redact::Redacted;
 
 use crate::api::{grpc::GrpcContext, init, transport::TransportSettings, write::WriteResult};
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct DynamicWriteContext {
     pub base_url: String,
     pub cookie: Option<String>,
@@ -16,6 +16,16 @@ pub struct DynamicWriteContext {
     pub headers: Vec<(String, String)>,
     pub timeout_ms: u64,
     pub transport: TransportSettings,
+}
+
+impl fmt::Debug for DynamicWriteContext {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("DynamicWriteContext")
+            .field("base_url", &self.base_url)
+            .field("credentials", &"<redacted>")
+            .field("timeout_ms", &self.timeout_ms)
+            .finish_non_exhaustive()
+    }
 }
 
 impl DynamicWriteContext {

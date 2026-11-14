@@ -13,7 +13,6 @@ use crate::{
     http::{HttpTransport, RequestContext, RetryPolicy},
     request::{CsrfIn, PreparedWrite, WriteBody},
 };
-use bili_domain::error::DomainError as DynamicError;
 
 /// 与 Dart 的 `DynRedReq(tabOffset: [TabOffset(tab: 1)])` 字节一致。
 /// 这里只需四个字段，保留局部消息定义，避免引入整棵动态协议树。
@@ -46,6 +45,7 @@ pub const LIKE_LIST_PATH: &str = "/bilibili.app.dynamic.v2.Dynamic/LikeList";
 pub const THUMB_PATH: &str = "/x/dynamic/feed/dyn/thumb";
 pub const SET_TOP_PATH: &str = "/x/dynamic/feed/space/set_top";
 pub const RM_TOP_PATH: &str = "/x/dynamic/feed/space/rm_top";
+pub const PRIVATE_PUB_PATH: &str = "/x/dynamic/feed/dyn/private_pub_setting";
 
 /// 点赞与取消赞都是目标状态（1 / 2），重试是幂等的。
 #[must_use]
@@ -75,6 +75,25 @@ pub fn top_request(dynamic_id: &str, set_top: bool) -> PreparedWrite {
     }
 }
 
+#[must_use]
+pub fn private_pub_request(dynamic_id: &str, dyn_type: Option<i64>, action: &str) -> PreparedWrite {
+    let mut object_id = serde_json::Map::new();
+    object_id.insert("dyn_id".to_owned(), json!(dynamic_id));
+    if let Some(dyn_type) = dyn_type {
+        object_id.insert("dyn_type".to_owned(), json!(dyn_type));
+    }
+    PreparedWrite {
+        path: PRIVATE_PUB_PATH,
+        query: vec![("platform".to_owned(), "web".to_owned())],
+        body: WriteBody::Json(json!({
+            "object_id": serde_json::Value::Object(object_id).to_string(),
+            "action": action,
+        })),
+        csrf: CsrfIn::Query,
+        idempotency: Idempotency::Idempotent,
+    }
+}
+
 /// # Errors
 /// 传输或业务信封失败时返回分类错误。
 pub async fn send_thumb<T: HttpTransport>(
@@ -82,7 +101,7 @@ pub async fn send_thumb<T: HttpTransport>(
     context: &RequestContext,
     dynamic_id: &str,
     up: i32,
-) -> Result<(), DynamicError> {
+) -> Result<(), DomainError> {
     crate::video_write::send_write(transport, context, &thumb_request(dynamic_id, up)).await
 }
 
@@ -93,8 +112,23 @@ pub async fn send_top<T: HttpTransport>(
     context: &RequestContext,
     dynamic_id: &str,
     set_top: bool,
-) -> Result<(), DynamicError> {
+) -> Result<(), DomainError> {
     crate::video_write::send_write(transport, context, &top_request(dynamic_id, set_top)).await
+}
+
+pub async fn send_private_pub<T: HttpTransport>(
+    transport: &T,
+    context: &RequestContext,
+    dynamic_id: &str,
+    dyn_type: Option<i64>,
+    action: &str,
+) -> Result<(), DomainError> {
+    crate::video_write::send_write(
+        transport,
+        context,
+        &private_pub_request(dynamic_id, dyn_type, action),
+    )
+    .await
 }
 
 #[derive(Clone, PartialEq, Message)]

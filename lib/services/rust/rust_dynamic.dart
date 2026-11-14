@@ -9,6 +9,32 @@ import 'package:kilikili/services/rust_core.dart';
 
 /// 动态接口的 typed Rust 入口。gRPC 凭据只在请求时传入 Rust。
 abstract final class RustDynamic {
+  static Future<WriteResult> privatePubSetting({
+    required Object dynamicId,
+    int? dynType,
+    required String action,
+  }) async {
+    if (!RustCore.isReady) {
+      return const WriteResult(
+        errorKind: 'storage',
+        errorDetail: 'Rust Core 未就绪',
+      );
+    }
+    try {
+      return await api.privatePubSetting(
+        context: await _writeContext(Api.dynPrivatePubSetting),
+        dynamicId: dynamicId.toString(),
+        dynType: dynType,
+        action: action,
+      );
+    } catch (_) {
+      return const WriteResult(
+        errorKind: 'protocol',
+        errorDetail: '动态私密设置请求未完成',
+      );
+    }
+  }
+
   static Future<api.DynamicWriteContext> _writeContext(
     String endpoint, {
     bool referer = false,

@@ -653,33 +653,6 @@ abstract final class DynamicsHttp {
     }
   }
 
-  static Future<LoadingState<void>> dynPrivatePubSetting({
-    required Object dynId,
-    int? dynType,
-    required String action,
-  }) async {
-    final res = await Request().post(
-      Api.dynPrivatePubSetting,
-      queryParameters: {
-        'platform': 'web',
-        'csrf': Accounts.main.csrf,
-      },
-      data: {
-        "object_id": jsonEncode({
-          "dyn_id": dynId.toString(),
-          "dyn_type": ?dynType,
-        }),
-        "action": action,
-      },
-      options: Options(contentType: Headers.jsonContentType),
-    );
-    if (res.data['code'] == 0) {
-      return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   static Future<LoadingState<void>> editDyn({
     required Object dynId,
     Object? repostDynId,

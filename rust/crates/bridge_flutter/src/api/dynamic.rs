@@ -79,6 +79,27 @@ pub async fn top_dynamic(
     WriteResult::from_result(result)
 }
 
+pub async fn private_pub_setting(
+    context: DynamicWriteContext,
+    dynamic_id: String,
+    dyn_type: Option<i64>,
+    action: String,
+) -> WriteResult {
+    let (ctx, transport) = context.split();
+    let result = init::runtime()
+        .spawn(async move {
+            dynamic::send_private_pub(&transport, &ctx, &dynamic_id, dyn_type, &action).await
+        })
+        .await
+        .unwrap_or_else(|_| {
+            Err(DomainError::new(
+                ErrorKind::Protocol,
+                "动态私密设置工作任务未完成",
+            ))
+        });
+    WriteResult::from_result(result)
+}
+
 #[derive(Debug, Clone)]
 pub struct DynRedResult {
     pub data: Option<i64>,

@@ -32,6 +32,18 @@ Future<WriteResult> topDynamic({
   setTop: setTop,
 );
 
+Future<WriteResult> privatePubSetting({
+  required DynamicWriteContext context,
+  required String dynamicId,
+  PlatformInt64? dynType,
+  required String action,
+}) => RustLib.instance.api.crateApiDynamicPrivatePubSetting(
+  context: context,
+  dynamicId: dynamicId,
+  dynType: dynType,
+  action: action,
+);
+
 Future<LikeListResult> fetchLikeList({
   required GrpcContext context,
   required String dynamicId,

@@ -10,7 +10,7 @@ import 'package:kilikili/rust/api/transport.dart';
 import 'package:kilikili/rust/api/write.dart';
 
 // These functions are ignored because they are not marked as `pub`: `split`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 Future<WriteResult> thumbDynamic({
   required DynamicWriteContext context,
@@ -42,6 +42,52 @@ Future<WriteResult> privatePubSetting({
   dynamicId: dynamicId,
   dynType: dynType,
   action: action,
+);
+
+Future<ReserveInfoResult> reserveInfo({
+  required DynamicWriteContext context,
+  required PlatformInt64 sid,
+}) =>
+    RustLib.instance.api.crateApiDynamicReserveInfo(context: context, sid: sid);
+
+Future<ReserveIdResult> createReserve({
+  required DynamicWriteContext context,
+  required int subType,
+  required String title,
+  required PlatformInt64 start,
+}) => RustLib.instance.api.crateApiDynamicCreateReserve(
+  context: context,
+  subType: subType,
+  title: title,
+  start: start,
+);
+
+Future<ReserveIdResult> updateReserve({
+  required DynamicWriteContext context,
+  required PlatformInt64 sid,
+  required int subType,
+  required String title,
+  required PlatformInt64 start,
+}) => RustLib.instance.api.crateApiDynamicUpdateReserve(
+  context: context,
+  sid: sid,
+  subType: subType,
+  title: title,
+  start: start,
+);
+
+Future<ReserveActionResult> dynReserve({
+  required DynamicWriteContext context,
+  PlatformInt64? reserveId,
+  int? status,
+  required String dynamicId,
+  PlatformInt64? total,
+}) => RustLib.instance.api.crateApiDynamicDynReserve(
+  context: context,
+  reserveId: reserveId,
+  status: status,
+  dynamicId: dynamicId,
+  total: total,
 );
 
 Future<LikeListResult> fetchLikeList({
@@ -236,6 +282,148 @@ class LikeListResult {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is LikeListResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+class ReserveActionData {
+  final int? finalBtnStatus;
+  final int? reserveUpdate;
+  final String? descUpdate;
+
+  const ReserveActionData({
+    this.finalBtnStatus,
+    this.reserveUpdate,
+    this.descUpdate,
+  });
+
+  @override
+  int get hashCode =>
+      finalBtnStatus.hashCode ^ reserveUpdate.hashCode ^ descUpdate.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ReserveActionData &&
+          runtimeType == other.runtimeType &&
+          finalBtnStatus == other.finalBtnStatus &&
+          reserveUpdate == other.reserveUpdate &&
+          descUpdate == other.descUpdate;
+}
+
+class ReserveActionResult {
+  final ReserveActionData? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const ReserveActionResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ReserveActionResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+class ReserveCard {
+  final PlatformInt64 id;
+  final String title;
+  final PlatformInt64 livePlanStartTime;
+
+  const ReserveCard({
+    required this.id,
+    required this.title,
+    required this.livePlanStartTime,
+  });
+
+  @override
+  int get hashCode => id.hashCode ^ title.hashCode ^ livePlanStartTime.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ReserveCard &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          title == other.title &&
+          livePlanStartTime == other.livePlanStartTime;
+}
+
+class ReserveIdResult {
+  final PlatformInt64? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const ReserveIdResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ReserveIdResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+class ReserveInfoResult {
+  final ReserveCard? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const ReserveInfoResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ReserveInfoResult &&
           runtimeType == other.runtimeType &&
           data == other.data &&
           errorKind == other.errorKind &&

@@ -16,7 +16,7 @@ import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/reply/reply_option_type.dart';
 import 'package:kilikili/models/dynamics/result.dart' show PicModel;
 import 'package:kilikili/models/dynamics/vote_model.dart';
-import 'package:kilikili/models_new/dynamic/dyn_reserve_info/data.dart';
+import 'package:kilikili/rust/api/dynamic.dart' show ReserveCard;
 import 'package:kilikili/models_new/dynamic/dyn_topic_top/topic_item.dart';
 import 'package:kilikili/pages/common/publish/common_rich_text_pub_page.dart';
 import 'package:kilikili/pages/dynamics_create_reserve/view.dart';
@@ -106,7 +106,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
   late final Rx<ReplyOptionType> _replyOption;
   late final TextEditingController _titleEditCtr;
   late final _publishTime = Rxn<DateTime>();
-  final _reserveCard = Rxn<ReserveInfoData>();
+  final _reserveCard = Rxn<ReserveCard>();
 
   @override
   void initState() {
@@ -836,7 +836,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
                     Text('直播预约: ${reserveCard.title}'),
                     Text(
                       '${DateFormatUtils.longFormatD.format(
-                        DateTime.fromMillisecondsSinceEpoch(reserveCard.livePlanStartTime! * 1000),
+                        DateTime.fromMillisecondsSinceEpoch(reserveCard.livePlanStartTime.toInt() * 1000),
                       )} 直播',
                     ),
                   ],
@@ -861,9 +861,9 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
   }
 
   Future<void> _onReserve() async {
-    final ReserveInfoData? reserveInfo = await Navigator.of(context).push(
+    final ReserveCard? reserveInfo = await Navigator.of(context).push(
       GetPageRoute(
-        page: () => CreateReservePage(sid: _reserveCard.value?.id),
+        page: () => CreateReservePage(sid: _reserveCard.value?.id.toInt()),
       ),
     );
     if (reserveInfo != null) {

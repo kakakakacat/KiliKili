@@ -1,7 +1,7 @@
-//! 动态 gRPC 接口。当前先迁首页红点，其他接口随 #55 后续路径接入。
+//! 动态功能模块接口：gRPC 读取、REST 预约和写操作。
 
 use bili_domain::{
-    dynamic::{DynamicAuthor, LikeListPage, UnreadCount},
+    dynamic::{DynamicAuthor, LikeListPage, ReserveAction, ReserveInfo, UnreadCount},
     error::{DomainError, ErrorKind},
 };
 use prost::Message;
@@ -11,8 +11,158 @@ use crate::http::Idempotency;
 use crate::{
     grpc,
     http::{HttpTransport, RequestContext, RetryPolicy},
-    request::{CsrfIn, PreparedWrite, WriteBody},
+    request::{CsrfIn, PreparedRequest, PreparedWrite, WriteBody},
 };
+
+pub const RESERVE_INFO_PATH: &str = "/x/new-reserve/up/reserve/info";
+pub const CREATE_RESERVE_PATH: &str = "/x/new-reserve/up/reserve/create";
+pub const UPDATE_RESERVE_PATH: &str = "/x/new-reserve/up/reserve/update";
+pub const DYN_RESERVE_PATH: &str = "/x/dynamic/feed/reserve/click";
+
+fn reserve_info_request(sid: i64) -> PreparedRequest {
+    PreparedRequest {
+        path: RESERVE_INFO_PATH,
+        query: vec![
+            ("from".to_owned(), "1".to_owned()),
+            ("id".to_owned(), sid.to_string()),
+            ("web_location".to_owned(), "333.1365".to_owned()),
+        ],
+    }
+}
+
+fn reserve_write(
+    path: &'static str,
+    sub_type: i32,
+    title: &str,
+    start: i64,
+    sid: Option<i64>,
+) -> PreparedWrite {
+    let mut form = vec![
+        ("type".to_owned(), "2".to_owned()),
+        ("sub_type".to_owned(), sub_type.to_string()),
+        ("from".to_owned(), "1".to_owned()),
+        ("title".to_owned(), title.to_owned()),
+        ("live_plan_start_time".to_owned(), start.to_string()),
+    ];
+    if let Some(sid) = sid {
+        form.push(("id".to_owned(), sid.to_string()));
+    }
+    PreparedWrite {
+        path,
+        query: Vec::new(),
+        body: WriteBody::Form(form),
+        csrf: CsrfIn::Body,
+        idempotency: Idempotency::Unsafe,
+    }
+}
+
+#[must_use]
+pub fn create_reserve_request(sub_type: i32, title: &str, start: i64) -> PreparedWrite {
+    reserve_write(CREATE_RESERVE_PATH, sub_type, title, start, None)
+}
+
+#[must_use]
+pub fn update_reserve_request(sid: i64, sub_type: i32, title: &str, start: i64) -> PreparedWrite {
+    reserve_write(UPDATE_RESERVE_PATH, sub_type, title, start, Some(sid))
+}
+
+#[must_use]
+pub fn dyn_reserve_request(
+    reserve_id: Option<i64>,
+    status: Option<i32>,
+    dynamic_id: &str,
+    total: Option<i64>,
+) -> PreparedWrite {
+    let mut body = serde_json::Map::new();
+    if let Some(id) = reserve_id {
+        body.insert("reserve_id".to_owned(), json!(id));
+    }
+    if let Some(status) = status {
+        body.insert("cur_btn_status".to_owned(), json!(status));
+    }
+    body.insert("dynamic_id_str".to_owned(), json!(dynamic_id));
+    if let Some(total) = total {
+        body.insert("reserve_total".to_owned(), json!(total));
+    }
+    PreparedWrite {
+        path: DYN_RESERVE_PATH,
+        query: Vec::new(),
+        body: WriteBody::Json(serde_json::Value::Object(body)),
+        csrf: CsrfIn::Query,
+        idempotency: Idempotency::Unsafe,
+    }
+}
+
+fn unwrap_reserve<T: serde::de::DeserializeOwned>(body: &str) -> Result<T, DomainError> {
+    crate::envelope::unwrap_envelope(body)
+}
+
+pub async fn fetch_reserve_info<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    sid: i64,
+) -> Result<ReserveInfo, DomainError> {
+    let body = crate::client::send(transport, ctx, &reserve_info_request(sid)).await?;
+    unwrap_reserve(&body)
+}
+
+pub async fn send_create_reserve<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    sub_type: i32,
+    title: &str,
+    start: i64,
+) -> Result<i64, DomainError> {
+    let body = crate::client::send_write(
+        transport,
+        ctx,
+        &create_reserve_request(sub_type, title, start),
+    )
+    .await?;
+    let value: serde_json::Value = unwrap_reserve(&body)?;
+    value
+        .get("sid")
+        .and_then(serde_json::Value::as_i64)
+        .ok_or_else(|| DomainError::new(ErrorKind::Protocol, "创建预约响应缺少 sid"))
+}
+
+pub async fn send_update_reserve<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    sid: i64,
+    sub_type: i32,
+    title: &str,
+    start: i64,
+) -> Result<i64, DomainError> {
+    let body = crate::client::send_write(
+        transport,
+        ctx,
+        &update_reserve_request(sid, sub_type, title, start),
+    )
+    .await?;
+    let value: serde_json::Value = unwrap_reserve(&body)?;
+    value
+        .get("sid")
+        .and_then(serde_json::Value::as_i64)
+        .ok_or_else(|| DomainError::new(ErrorKind::Protocol, "更新预约响应缺少 sid"))
+}
+
+pub async fn send_dyn_reserve<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    reserve_id: Option<i64>,
+    status: Option<i32>,
+    dynamic_id: &str,
+    total: Option<i64>,
+) -> Result<ReserveAction, DomainError> {
+    let body = crate::client::send_write(
+        transport,
+        ctx,
+        &dyn_reserve_request(reserve_id, status, dynamic_id, total),
+    )
+    .await?;
+    unwrap_reserve(&body)
+}
 
 /// 与 Dart 的 `DynRedReq(tabOffset: [TabOffset(tab: 1)])` 字节一致。
 /// 这里只需四个字段，保留局部消息定义，避免引入整棵动态协议树。
@@ -376,5 +526,70 @@ mod tests {
             assert_eq!(top.idempotency, Idempotency::Idempotent);
             assert_eq!(top.body, WriteBody::Json(json!({ "dyn_str": "dyn-1" })));
         }
+    }
+
+    #[test]
+    fn reserve_requests_preserve_fields_and_csrf_locations() {
+        let info = reserve_info_request(42);
+        assert_eq!(info.path, RESERVE_INFO_PATH);
+        assert_eq!(
+            info.query,
+            [
+                ("from".to_owned(), "1".to_owned()),
+                ("id".to_owned(), "42".to_owned()),
+                ("web_location".to_owned(), "333.1365".to_owned()),
+            ]
+        );
+
+        let create = create_reserve_request(3, "预约", 1_800_000_000);
+        assert_eq!(create.path, CREATE_RESERVE_PATH);
+        assert_eq!(create.csrf, CsrfIn::Body);
+        assert_eq!(create.idempotency, Idempotency::Unsafe);
+        assert_eq!(
+            create.body,
+            WriteBody::Form(vec![
+                ("type".to_owned(), "2".to_owned()),
+                ("sub_type".to_owned(), "3".to_owned()),
+                ("from".to_owned(), "1".to_owned()),
+                ("title".to_owned(), "预约".to_owned()),
+                ("live_plan_start_time".to_owned(), "1800000000".to_owned()),
+            ])
+        );
+
+        let update = update_reserve_request(42, 0, "更新", 1_800_000_001);
+        assert_eq!(update.path, UPDATE_RESERVE_PATH);
+        assert!(
+            matches!(update.body, WriteBody::Form(ref fields) if fields.last() == Some(&("id".to_owned(), "42".to_owned())))
+        );
+
+        let click = dyn_reserve_request(Some(7), Some(1), "dyn-42", Some(9));
+        assert_eq!(click.path, DYN_RESERVE_PATH);
+        assert_eq!(click.csrf, CsrfIn::Query);
+        assert_eq!(
+            click.body,
+            WriteBody::Json(json!({
+                "reserve_id": 7, "cur_btn_status": 1,
+                "dynamic_id_str": "dyn-42", "reserve_total": 9
+            }))
+        );
+    }
+
+    #[test]
+    #[allow(clippy::expect_used)]
+    fn reserve_results_parse_typed_payloads() {
+        let info: ReserveInfo = unwrap_reserve(
+            r#"{"code":0,"data":{"id":42,"title":"预约","live_plan_start_time":1800000000}}"#,
+        )
+        .expect("reserve info should parse");
+        assert_eq!(info.id, 42);
+        assert_eq!(info.title, "预约");
+
+        let action: ReserveAction = unwrap_reserve(
+            r#"{"code":0,"data":{"final_btn_status":1,"reserve_update":9,"desc_update":"已预约"}}"#,
+        )
+        .expect("reserve action should parse");
+        assert_eq!(action.final_btn_status, Some(1));
+        assert_eq!(action.reserve_update, Some(9));
+        assert_eq!(action.desc_update.as_deref(), Some("已预约"));
     }
 }

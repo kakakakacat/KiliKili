@@ -101,6 +101,184 @@ pub async fn private_pub_setting(
 }
 
 #[derive(Debug, Clone)]
+pub struct ReserveInfoResult {
+    pub data: Option<ReserveCard>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ReserveCard {
+    pub id: i64,
+    pub title: String,
+    pub live_plan_start_time: i64,
+}
+
+#[derive(Debug, Clone)]
+pub struct ReserveIdResult {
+    pub data: Option<i64>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ReserveActionResult {
+    pub data: Option<ReserveActionData>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ReserveActionData {
+    pub final_btn_status: Option<i32>,
+    pub reserve_update: Option<i32>,
+    pub desc_update: Option<String>,
+}
+
+pub async fn reserve_info(context: DynamicWriteContext, sid: i64) -> ReserveInfoResult {
+    let (ctx, transport) = context.split();
+    let result = init::runtime()
+        .spawn(async move { dynamic::fetch_reserve_info(&transport, &ctx, sid).await })
+        .await
+        .unwrap_or_else(|_| {
+            Err(DomainError::new(
+                ErrorKind::Protocol,
+                "预约信息工作任务未完成",
+            ))
+        });
+    match result {
+        Ok(data) => ReserveInfoResult {
+            data: Some(ReserveCard {
+                id: data.id,
+                title: data.title,
+                live_plan_start_time: data.live_plan_start_time,
+            }),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(error) => ReserveInfoResult {
+            data: None,
+            error_kind: Some(error.kind().to_string()),
+            error_detail: Some(error.detail().into()),
+            error_code: error.code(),
+        },
+    }
+}
+
+pub async fn create_reserve(
+    context: DynamicWriteContext,
+    sub_type: i32,
+    title: String,
+    start: i64,
+) -> ReserveIdResult {
+    let (ctx, transport) = context.split();
+    let result = init::runtime()
+        .spawn(async move {
+            dynamic::send_create_reserve(&transport, &ctx, sub_type, &title, start).await
+        })
+        .await
+        .unwrap_or_else(|_| {
+            Err(DomainError::new(
+                ErrorKind::Protocol,
+                "创建预约工作任务未完成",
+            ))
+        });
+    match result {
+        Ok(data) => ReserveIdResult {
+            data: Some(data),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(error) => ReserveIdResult {
+            data: None,
+            error_kind: Some(error.kind().to_string()),
+            error_detail: Some(error.detail().into()),
+            error_code: error.code(),
+        },
+    }
+}
+
+pub async fn update_reserve(
+    context: DynamicWriteContext,
+    sid: i64,
+    sub_type: i32,
+    title: String,
+    start: i64,
+) -> ReserveIdResult {
+    let (ctx, transport) = context.split();
+    let result = init::runtime()
+        .spawn(async move {
+            dynamic::send_update_reserve(&transport, &ctx, sid, sub_type, &title, start).await
+        })
+        .await
+        .unwrap_or_else(|_| {
+            Err(DomainError::new(
+                ErrorKind::Protocol,
+                "更新预约工作任务未完成",
+            ))
+        });
+    match result {
+        Ok(data) => ReserveIdResult {
+            data: Some(data),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(error) => ReserveIdResult {
+            data: None,
+            error_kind: Some(error.kind().to_string()),
+            error_detail: Some(error.detail().into()),
+            error_code: error.code(),
+        },
+    }
+}
+
+pub async fn dyn_reserve(
+    context: DynamicWriteContext,
+    reserve_id: Option<i64>,
+    status: Option<i32>,
+    dynamic_id: String,
+    total: Option<i64>,
+) -> ReserveActionResult {
+    let (ctx, transport) = context.split();
+    let result = init::runtime()
+        .spawn(async move {
+            dynamic::send_dyn_reserve(&transport, &ctx, reserve_id, status, &dynamic_id, total)
+                .await
+        })
+        .await
+        .unwrap_or_else(|_| {
+            Err(DomainError::new(
+                ErrorKind::Protocol,
+                "动态预约工作任务未完成",
+            ))
+        });
+    match result {
+        Ok(data) => ReserveActionResult {
+            data: Some(ReserveActionData {
+                final_btn_status: data.final_btn_status,
+                reserve_update: data.reserve_update,
+                desc_update: data.desc_update,
+            }),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(error) => ReserveActionResult {
+            data: None,
+            error_kind: Some(error.kind().to_string()),
+            error_detail: Some(error.detail().into()),
+            error_code: error.code(),
+        },
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct DynRedResult {
     pub data: Option<i64>,
     pub error_kind: Option<String>,

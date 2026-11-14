@@ -308,6 +308,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReplyReplyList dco_decode_box_autoadd_reply_reply_list(dynamic raw);
 
   @protected
+  ReserveActionData dco_decode_box_autoadd_reserve_action_data(dynamic raw);
+
+  @protected
+  ReserveCard dco_decode_box_autoadd_reserve_card(dynamic raw);
+
+  @protected
   SearchAllData dco_decode_box_autoadd_search_all_data(dynamic raw);
 
   @protected
@@ -1100,6 +1106,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReplyReplyList? dco_decode_opt_box_autoadd_reply_reply_list(dynamic raw);
 
   @protected
+  ReserveActionData? dco_decode_opt_box_autoadd_reserve_action_data(
+    dynamic raw,
+  );
+
+  @protected
+  ReserveCard? dco_decode_opt_box_autoadd_reserve_card(dynamic raw);
+
+  @protected
   SearchAllData? dco_decode_opt_box_autoadd_search_all_data(dynamic raw);
 
   @protected
@@ -1393,6 +1407,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ReplyReplyListResult dco_decode_reply_reply_list_result(dynamic raw);
+
+  @protected
+  ReserveActionData dco_decode_reserve_action_data(dynamic raw);
+
+  @protected
+  ReserveActionResult dco_decode_reserve_action_result(dynamic raw);
+
+  @protected
+  ReserveCard dco_decode_reserve_card(dynamic raw);
+
+  @protected
+  ReserveIdResult dco_decode_reserve_id_result(dynamic raw);
+
+  @protected
+  ReserveInfoResult dco_decode_reserve_info_result(dynamic raw);
 
   @protected
   SearchActivityItem dco_decode_search_activity_item(dynamic raw);
@@ -1909,6 +1938,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReplyReplyList sse_decode_box_autoadd_reply_reply_list(
     SseDeserializer deserializer,
   );
+
+  @protected
+  ReserveActionData sse_decode_box_autoadd_reserve_action_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ReserveCard sse_decode_box_autoadd_reserve_card(SseDeserializer deserializer);
 
   @protected
   SearchAllData sse_decode_box_autoadd_search_all_data(
@@ -2941,6 +2978,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  ReserveActionData? sse_decode_opt_box_autoadd_reserve_action_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ReserveCard? sse_decode_opt_box_autoadd_reserve_card(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SearchAllData? sse_decode_opt_box_autoadd_search_all_data(
     SseDeserializer deserializer,
   );
@@ -3312,6 +3359,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ReplyReplyListResult sse_decode_reply_reply_list_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ReserveActionData sse_decode_reserve_action_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ReserveActionResult sse_decode_reserve_action_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ReserveCard sse_decode_reserve_card(SseDeserializer deserializer);
+
+  @protected
+  ReserveIdResult sse_decode_reserve_id_result(SseDeserializer deserializer);
+
+  @protected
+  ReserveInfoResult sse_decode_reserve_info_result(
     SseDeserializer deserializer,
   );
 
@@ -3999,6 +4067,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_reply_reply_list(
     ReplyReplyList self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_reserve_action_data(
+    ReserveActionData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_reserve_card(
+    ReserveCard self,
     SseSerializer serializer,
   );
 
@@ -5332,6 +5412,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_reserve_action_data(
+    ReserveActionData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_reserve_card(
+    ReserveCard? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_search_all_data(
     SearchAllData? self,
     SseSerializer serializer,
@@ -5808,6 +5900,33 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_reply_reply_list_result(
     ReplyReplyListResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_reserve_action_data(
+    ReserveActionData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_reserve_action_result(
+    ReserveActionResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_reserve_card(ReserveCard self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_reserve_id_result(
+    ReserveIdResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_reserve_info_result(
+    ReserveInfoResult self,
     SseSerializer serializer,
   );
 

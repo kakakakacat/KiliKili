@@ -9,6 +9,88 @@ import 'package:kilikili/services/rust_core.dart';
 
 /// 动态接口的 typed Rust 入口。gRPC 凭据只在请求时传入 Rust。
 abstract final class RustDynamic {
+  static Future<api.ReserveInfoResult> reserveInfo({required int sid}) async {
+    if (!RustCore.isReady) {
+      return const api.ReserveInfoResult(
+        errorKind: 'storage', errorDetail: 'Rust Core 未就绪',
+      );
+    }
+    try {
+      return await api.reserveInfo(
+        context: await _writeContext(Api.reserveInfo),
+        sid: sid,
+      );
+    } catch (_) {
+      return const api.ReserveInfoResult(
+        errorKind: 'protocol', errorDetail: '预约信息请求未完成',
+      );
+    }
+  }
+
+  static Future<api.ReserveIdResult> createReserve({
+    required int subType, required String title, required int start,
+  }) async {
+    if (!RustCore.isReady) {
+      return const api.ReserveIdResult(
+        errorKind: 'storage', errorDetail: 'Rust Core 未就绪',
+      );
+    }
+    try {
+      return await api.createReserve(
+        context: await _writeContext(Api.createReserve),
+        subType: subType, title: title, start: start,
+      );
+    } catch (_) {
+      return const api.ReserveIdResult(
+        errorKind: 'protocol', errorDetail: '创建预约请求未完成',
+      );
+    }
+  }
+
+  static Future<api.ReserveIdResult> updateReserve({
+    required int sid, required int subType, required String title,
+    required int start,
+  }) async {
+    if (!RustCore.isReady) {
+      return const api.ReserveIdResult(
+        errorKind: 'storage', errorDetail: 'Rust Core 未就绪',
+      );
+    }
+    try {
+      return await api.updateReserve(
+        context: await _writeContext(Api.updateReserve),
+        sid: sid, subType: subType, title: title, start: start,
+      );
+    } catch (_) {
+      return const api.ReserveIdResult(
+        errorKind: 'protocol', errorDetail: '更新预约请求未完成',
+      );
+    }
+  }
+
+  static Future<api.ReserveActionResult> dynReserve({
+    required int? reserveId, required int? status, required String dynamicId,
+    required int? total,
+  }) async {
+    if (!RustCore.isReady) {
+      return const api.ReserveActionResult(
+        errorKind: 'storage', errorDetail: 'Rust Core 未就绪',
+      );
+    }
+    try {
+      return await api.dynReserve(
+        context: await _writeContext(Api.dynReserve),
+        reserveId: reserveId,
+        status: status, dynamicId: dynamicId,
+        total: total,
+      );
+    } catch (_) {
+      return const api.ReserveActionResult(
+        errorKind: 'protocol', errorDetail: '动态预约请求未完成',
+      );
+    }
+  }
+
   static Future<WriteResult> privatePubSetting({
     required Object dynamicId,
     int? dynType,

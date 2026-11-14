@@ -58,3 +58,4 @@ pub mod user_list;
 pub mod video_detail;
 pub mod video_feed;
 pub mod video_page;
+pub mod video_write;

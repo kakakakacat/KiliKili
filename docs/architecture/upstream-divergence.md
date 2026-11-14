@@ -149,6 +149,23 @@ RFC §10.1 规定了要固定 `UPSTREAM_COMMIT` 并记录 rebase/merge 策略，
 「有实质改动」。`lib/plugin/pl_player/view/view.dart` 已由 §4.1 的 S3 行覆盖，
 不重复计数。
 
+修订：2026-11-13（S4 视频页写操作 #54，为本次）——按 §6 对当前工作树
+重算：上游修改文件仍为 **891**，其中实质改动 **232 → 238**、仅重命名
+**659 → 653**；新增 **511 → 521**，删除 **144 → 146**。
+
+六个上游文件从仅重命名转为有实质改动：`lib/pages/article/controller.dart`、
+`lib/pages/fav/pgc/controller.dart`、`lib/pages/member/controller.dart`、
+`lib/pages/video/reply/widgets/reply_item_grpc.dart`、
+`lib/pages/whisper_link_setting/controller.dart`、`lib/utils/request_utils.dart`
+——它们都是改调用点，把 `VideoHttp` 的写操作换成 `RustVideoWrite`。另外
+十一个被触及的上游文件（`lib/http/video.dart`、`lib/pages/video/**`、
+`lib/plugin/pl_player/controller.dart` 等）已由 §4.1 的既有行覆盖，不重复计数。
+
+删除的两个是 `lib/models_new/triple/{ugc,pgc}_triple.dart`——这是**第一次
+删掉上游从未被我们改过的文件**：它们此前连包名重命名都没碰到（`fromJson`
+里没有 import），既不在「修改」里也不在「仅重命名」里，直接从未触及转进
+「删除」。所以本次修改总数一个没动，删除数 +2。
+
 ## 1. 基准
 
 ```
@@ -167,14 +184,15 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 类别 | 数量 |
 | --- | ---: |
 | 修改的上游既有文件 | 891 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 659 |
-| &nbsp;&nbsp;其中：有实质改动 | **232** |
-| 新增文件 | 511 |
-| 删除文件 | **144** |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 653 |
+| &nbsp;&nbsp;其中：有实质改动 | **238** |
+| 新增文件 | 521 |
+| 删除文件 | **146** |
 
 「修改」总数一路下降（935 → 909 → 897 → 891），部分文件是因迁移被删除，
 从 M 转到了 D。#108 的界面改动一度把它顶回 892；合入 #111 的关注/粉丝
-切片后是 890。删除数到 144，来源包括 PGC、直播、取流及关注/粉丝接口迁移。
+切片后是 890。删除数到 146，来源包括 PGC、直播、取流、关注/粉丝接口迁移，以及 S4 的
+两个三连模型。
 
 ## 3. 包名重命名：分叉面的主体
 
@@ -191,7 +209,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 4. 有实质改动的上游文件
 
-232 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
+238 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
 见 §4.4，其余改动逐个列在 §4.3。
 
 ### 4.1 typed 直连迁移触及的上游文件
@@ -215,6 +233,7 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | 短评五条写操作 | #60 #50 / 本次 | `lib/pages/pgc_review/**`；**删掉 `lib/http/pgc.dart`**（迁完整个文件只剩这五条） |
 | 想听 / 关注分组排序 | #66 #50 / #104 | `lib/pages/music/view.dart`、`lib/pages/follow_tag_sort/view.dart`、`lib/http/follow.dart`（瘦身）；**删掉 `lib/http/music.dart`** |
 | S15 关注/粉丝列表（#66 收尾） | #66 / 本次 | `lib/pages/follow/child/child_controller.dart`、`lib/pages/fan/controller.dart`、`lib/http/dynamics.dart`（`followings` 改吃 Rust，同一条接口不留第二份实现）、`lib/models/dynamics/up.dart`；**删掉 `lib/http/{follow,fan}.dart`**；留下单向适配 `lib/services/rust/follow_compat.dart`（`FollowData` 还有四个生产者在 S6 #56 / S7 #57） |
+| S4 视频页写操作（点赞/点踩/投币/三连/关注/删评论/追番/四条上报/不感兴趣） | #54 #50 / 本次 | `lib/http/video.dart`（瘦身到只剩 `replyAdd` 与四条只读）、`lib/common/widgets/video_popup_menu.dart`、`lib/pages/{article,blacklist,member,fan,whisper_link_setting,live_room,fav/pgc}/controller.dart`、`lib/pages/common/common_intro_controller.dart`、`lib/pages/dynamics/widgets/author_panel.dart`、`lib/pages/video/{controller.dart,introduction/{ugc,pgc}/controller.dart,reply/widgets/reply_item_grpc.dart}`、`lib/plugin/pl_player/controller.dart`、`lib/utils/request_utils.dart`；**删掉 `lib/models_new/triple/{ugc,pgc}_triple.dart`**。`replyAdd` 刻意留在 Dart，理由见 ADR-013 |
 | S11a 直播第三批（剩余六条只读） | #61 / #87 | `lib/http/live.dart`、`lib/pages/{live_emote,live_search,live_dm_block}/**`、`lib/pages/live_room/{controller.dart,contribution_rank/**}`、`lib/pages/member/{view.dart,widget/{medal_wall,user_info_card}.dart}`、`lib/pages/common/publish/common_rich_text_pub_page.dart`；留下单向适配 `lib/services/rust/live_rest_compat.dart` |
 
 **同步时怎么处理这一类冲突**：上游在这些文件里的改动，多数落在我们已经
@@ -230,13 +249,17 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 
 ### 4.2 删除的上游文件
 
-128 个：被 typed 结构取代的模型、迁空的 `lib/http` 文件，以及判据搬家后
+130 个：被 typed 结构取代的模型、迁空的 `lib/http` 文件，以及判据搬家后
 随之作废的 Dart 测试。
+
+（这张表按区域分类，与 §2 的 146 口径不同：§2 数的是整个仓库
+`--diff-filter=D` 的结果，含 `tool/`、生成器输入等非上游文件。）
 
 | 区域 | 数量 | 内容 |
 | --- | ---: | --- |
 | `lib/models_new/` | 117 | live（39）、pgc（25）、reply（18）、video 的 ai_conclusion/note_list/play_info/video_shot（12）、emote（4）、match（4）、popular（4）、reply2reply（3）、blacklist（2）、music（2）、reply_interaction（2）、search（1）、sponsor_block（1） |
 | `lib/models/` | 3 | `search/search_esports.dart`、`user/danmaku_block.dart`、`video/play/url.dart` |
+| `lib/models_new/triple/` | 2 | `ugc_triple.dart`、`pgc_triple.dart`——随 S4 的一键三连迁移删除；**这两个上游从未被我们改过**（`fromJson` 里没有 import，连包名重命名都没碰到），是头两个从「未触及」直接转进「删除」的文件 |
 | `lib/http/` | 5 | `black.dart`、`match.dart`（整个文件只有只读接口，迁完即空）、`danmaku_block.dart`、`music.dart`、`pgc.dart`（写操作迁完即空） |
 | `test/` | 3 | `utils/{audio_quality_select,cdn_url,video_quality_select}_test.dart`——判据随 #79 搬进 `bili-core`，Dart 这边的用例跟着搬走 |
 

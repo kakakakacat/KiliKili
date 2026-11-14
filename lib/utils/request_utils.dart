@@ -14,7 +14,6 @@ import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/member.dart';
 import 'package:kilikili/http/user.dart';
 import 'package:kilikili/http/validate.dart';
-import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/models/login/model.dart';
 import 'package:kilikili/models_new/fav/fav_detail/media.dart';
@@ -26,6 +25,7 @@ import 'package:kilikili/pages/fav_detail/controller.dart'
     show BaseFavController;
 import 'package:kilikili/pages/group_panel/view.dart';
 import 'package:kilikili/pages/login/geetest/geetest_webview_dialog.dart';
+import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/extension/context_ext.dart';
 import 'package:kilikili/utils/extension/size_ext.dart';
@@ -143,7 +143,7 @@ abstract final class RequestUtils {
     }
     feedBack();
     if (!isFollow) {
-      final res = await VideoHttp.relationMod(
+      final res = await RustVideoWrite.relationMod(
         mid: mid,
         act: 1,
         reSrc: 11,
@@ -233,7 +233,7 @@ abstract final class RequestUtils {
               DialogOption(
                 onPressed: () async {
                   Get.back();
-                  final res = await VideoHttp.relationMod(
+                  final res = await RustVideoWrite.relationMod(
                     mid: mid,
                     act: 2,
                     reSrc: 11,

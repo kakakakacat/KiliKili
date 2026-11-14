@@ -24,6 +24,7 @@ pub mod user_list;
 pub mod video;
 pub mod video_feed;
 pub mod video_page;
+pub mod video_write;
 
 #[cfg(test)]
 mod tests {

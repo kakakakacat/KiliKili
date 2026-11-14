@@ -27,6 +27,7 @@ import 'package:kilikili/models/common/video/source_type.dart';
 import 'package:kilikili/models/common/video/video_decode_type.dart';
 import 'package:kilikili/models/common/video/video_type.dart';
 import 'package:kilikili/services/rust/play_url_ext.dart';
+import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/services/rust/sponsor_block_compat.dart';
 import 'package:kilikili/services/rust/rust_play_url.dart';
 import 'package:kilikili/models_new/download/bili_download_entry_info.dart';
@@ -1265,7 +1266,7 @@ class VideoDetailController extends GetxController
 
   void updateMediaListHistory(int aid) {
     if (args['sortField'] != null) {
-      VideoHttp.medialistHistory(
+      RustVideoWrite.medialistHistory(
         desc: _mediaDesc ? 1 : 0,
         oid: aid,
         upperMid: args['mediaId'],

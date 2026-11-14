@@ -325,3 +325,26 @@ Rust 测试覆盖帧阈值/压缩、截断、缺失状态头、嵌套业务码�
 签名字段和登录凭据，并跨 FFI 检查推荐词及业务 `-400` 错误值。
 Rust 取数测试另用独立计算的签名快照锁定匿名、空凭据和登录参数集。
 这不能替代设备上 App 主机连通性与真实账号的人工验证。
+
+### 视频页写操作的请求面验证（#54，2026-11-13）
+
+S4 的十四条写操作在 CI 上有两层保护，分工是 ADR-013 决策六定的：
+
+- **Rust 单测**（`bili-api::video_write::tests`）钉住**构造出来的**
+  `PreparedWrite`：路径、字段名与取值、参数在查询串还是体里、幂等级别。
+- **bridge job**（`test/bridge/video_write_bridge_test.dart`，十条用例）
+  起一个本地 HTTP 桩服务端，钉住**真的发出去的**那一个——跨过 FFI、经过
+  `send_write` 补 csrf、经过 reqwest 编码之后落到服务端手上的东西：
+  方法（「不感兴趣」必须仍是 GET）、content-type（`roomEntryAction` 必须
+  是 JSON）、csrf 的位置（体 / 查询串 / 不带）、APP 签名字段是否随请求
+  发出、以及非法 BV 号与「两个 id 都给」时**一个字节都不发**。
+
+第二层是必需的：content-type 与 csrf 位置这两类错误在任何单测里都不会
+出现——单测看的是构造产物，而它们是发送时才成形的。ADR-013 补充三记过
+同一件事（写操作信封「没有载荷才是正常」也是桩服务端抓到的）。
+
+另有 `bili-protocol/tests/bvid_golden.rs` 对照 Dart 基线的 BV↔av 编码，
+期望值由 `tool/fixture-gen/bvid_fixture.dart` 产出（ADR-008 决策三）。
+
+**这些都不替代真机验证**：登录态下的 csrf、风控（gaia）拦截、以及
+APP 端接口在真实 `access_key` 下的行为，按 EPIC #67 统一留到 Phase 2。

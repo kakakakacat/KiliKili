@@ -8,7 +8,6 @@ import 'package:kilikili/common/assets.dart';
 import 'package:kilikili/http/browser_ua.dart';
 import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/common/account_type.dart';
 import 'package:kilikili/models/common/audio_normalization.dart';
 import 'package:kilikili/models/common/super_resolution_type.dart';
@@ -29,6 +28,7 @@ import 'package:kilikili/plugin/pl_player/models/video_fit_type.dart';
 import 'package:kilikili/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:kilikili/plugin/pl_player/utils/fullscreen.dart';
 import 'package:kilikili/services/rust/rust_video_page.dart';
+import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/services/service_locator.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/android/android_helper.dart';
@@ -1589,7 +1589,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     }
 
     Future<void> send() {
-      return VideoHttp.heartBeat(
+      return RustVideoWrite.heartBeat(
         aid: aid ?? _aid,
         bvid: bvid ?? _bvid,
         cid: cid ?? this.cid,

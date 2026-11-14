@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:kilikili/common/constants.dart';
 import 'package:kilikili/common/widgets/pair.dart';
 import 'package:kilikili/http/api.dart';
-import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/reply.dart';
@@ -146,34 +145,6 @@ abstract final class DynamicsHttp {
   //   }
   // }
 
-  // 动态点赞
-  static Future<LoadingState<void>> thumbDynamic({
-    required String? dynamicId,
-    required int? up,
-  }) async {
-    final res = await Request().post(
-      Api.thumbDynamic,
-      queryParameters: {
-        'csrf': Accounts.main.csrf,
-      },
-      data: {
-        'dyn_id_str': dynamicId,
-        'up': up,
-        'spmid': '333.1365.0.0',
-      },
-      options: Options(
-        headers: {
-          'referer': HttpString.dynamicShareBaseUrl,
-        },
-      ),
-    );
-    if (res.data['code'] == 0) {
-      return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   static Future<LoadingState<Map?>> createDynamic({
     dynamic mid,
     dynamic dynIdStr, // repost dyn
@@ -290,44 +261,6 @@ abstract final class DynamicsHttp {
       } catch (e, s) {
         return Error('$e\n\n$s');
       }
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<void>> setTop({
-    required Object dynamicId,
-  }) async {
-    final res = await Request().post(
-      Api.setTopDyn,
-      queryParameters: {
-        'csrf': Accounts.main.csrf,
-      },
-      data: {
-        'dyn_str': dynamicId,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<void>> rmTop({
-    required Object dynamicId,
-  }) async {
-    final res = await Request().post(
-      Api.rmTopDyn,
-      queryParameters: {
-        'csrf': Accounts.main.csrf,
-      },
-      data: {
-        'dyn_str': dynamicId,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return const Success(null);
     } else {
       return Error(res.data['message']);
     }

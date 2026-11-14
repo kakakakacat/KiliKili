@@ -110,6 +110,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Dash dco_decode_box_autoadd_dash(dynamic raw);
 
   @protected
+  DynamicWriteContext dco_decode_box_autoadd_dynamic_write_context(dynamic raw);
+
+  @protected
   EmoteMeta dco_decode_box_autoadd_emote_meta(dynamic raw);
 
   @protected
@@ -137,6 +140,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   HotSongHeat dco_decode_box_autoadd_hot_song_heat(dynamic raw);
 
   @protected
+  int dco_decode_box_autoadd_i_32(dynamic raw);
+
+  @protected
   PlatformInt64 dco_decode_box_autoadd_i_64(dynamic raw);
 
   @protected
@@ -144,6 +150,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LanguageOptions dco_decode_box_autoadd_language_options(dynamic raw);
+
+  @protected
+  LikeListPage dco_decode_box_autoadd_like_list_page(dynamic raw);
 
   @protected
   LiveAppIdentity dco_decode_box_autoadd_live_app_identity(dynamic raw);
@@ -385,6 +394,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   DynRedResult dco_decode_dyn_red_result(dynamic raw);
 
   @protected
+  DynamicAuthor dco_decode_dynamic_author(dynamic raw);
+
+  @protected
+  DynamicWriteContext dco_decode_dynamic_write_context(dynamic raw);
+
+  @protected
   Emote dco_decode_emote(dynamic raw);
 
   @protected
@@ -472,6 +487,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LanguageOptions dco_decode_language_options(dynamic raw);
 
   @protected
+  LikeListPage dco_decode_like_list_page(dynamic raw);
+
+  @protected
+  LikeListResult dco_decode_like_list_result(dynamic raw);
+
+  @protected
   List<String> dco_decode_list_String(dynamic raw);
 
   @protected
@@ -500,6 +521,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<Durl> dco_decode_list_durl(dynamic raw);
+
+  @protected
+  List<DynamicAuthor> dco_decode_list_dynamic_author(dynamic raw);
 
   @protected
   List<Emote> dco_decode_list_emote(dynamic raw);
@@ -930,6 +954,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   HotSongHeat? dco_decode_opt_box_autoadd_hot_song_heat(dynamic raw);
 
   @protected
+  int? dco_decode_opt_box_autoadd_i_32(dynamic raw);
+
+  @protected
   PlatformInt64? dco_decode_opt_box_autoadd_i_64(dynamic raw);
 
   @protected
@@ -937,6 +964,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LanguageOptions? dco_decode_opt_box_autoadd_language_options(dynamic raw);
+
+  @protected
+  LikeListPage? dco_decode_opt_box_autoadd_like_list_page(dynamic raw);
 
   @protected
   LiveFollowSection? dco_decode_opt_box_autoadd_live_follow_section(
@@ -1613,6 +1643,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Dash sse_decode_box_autoadd_dash(SseDeserializer deserializer);
 
   @protected
+  DynamicWriteContext sse_decode_box_autoadd_dynamic_write_context(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   EmoteMeta sse_decode_box_autoadd_emote_meta(SseDeserializer deserializer);
 
   @protected
@@ -1644,6 +1679,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  int sse_decode_box_autoadd_i_32(SseDeserializer deserializer);
+
+  @protected
   PlatformInt64 sse_decode_box_autoadd_i_64(SseDeserializer deserializer);
 
   @protected
@@ -1651,6 +1689,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LanguageOptions sse_decode_box_autoadd_language_options(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LikeListPage sse_decode_box_autoadd_like_list_page(
     SseDeserializer deserializer,
   );
 
@@ -1982,6 +2025,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   DynRedResult sse_decode_dyn_red_result(SseDeserializer deserializer);
 
   @protected
+  DynamicAuthor sse_decode_dynamic_author(SseDeserializer deserializer);
+
+  @protected
+  DynamicWriteContext sse_decode_dynamic_write_context(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   Emote sse_decode_emote(SseDeserializer deserializer);
 
   @protected
@@ -2075,6 +2126,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LanguageOptions sse_decode_language_options(SseDeserializer deserializer);
 
   @protected
+  LikeListPage sse_decode_like_list_page(SseDeserializer deserializer);
+
+  @protected
+  LikeListResult sse_decode_like_list_result(SseDeserializer deserializer);
+
+  @protected
   List<String> sse_decode_list_String(SseDeserializer deserializer);
 
   @protected
@@ -2113,6 +2170,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<Durl> sse_decode_list_durl(SseDeserializer deserializer);
+
+  @protected
+  List<DynamicAuthor> sse_decode_list_dynamic_author(
+    SseDeserializer deserializer,
+  );
 
   @protected
   List<Emote> sse_decode_list_emote(SseDeserializer deserializer);
@@ -2659,6 +2721,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  int? sse_decode_opt_box_autoadd_i_32(SseDeserializer deserializer);
+
+  @protected
   PlatformInt64? sse_decode_opt_box_autoadd_i_64(SseDeserializer deserializer);
 
   @protected
@@ -2668,6 +2733,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LanguageOptions? sse_decode_opt_box_autoadd_language_options(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LikeListPage? sse_decode_opt_box_autoadd_like_list_page(
     SseDeserializer deserializer,
   );
 
@@ -3546,6 +3616,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_box_autoadd_dash(Dash self, SseSerializer serializer);
 
   @protected
+  void sse_encode_box_autoadd_dynamic_write_context(
+    DynamicWriteContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_emote_meta(
     EmoteMeta self,
     SseSerializer serializer,
@@ -3597,6 +3673,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_i_32(int self, SseSerializer serializer);
+
+  @protected
   void sse_encode_box_autoadd_i_64(
     PlatformInt64 self,
     SseSerializer serializer,
@@ -3611,6 +3690,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_language_options(
     LanguageOptions self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_like_list_page(
+    LikeListPage self,
     SseSerializer serializer,
   );
 
@@ -4062,6 +4147,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_dyn_red_result(DynRedResult self, SseSerializer serializer);
 
   @protected
+  void sse_encode_dynamic_author(DynamicAuthor self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_dynamic_write_context(
+    DynamicWriteContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_emote(Emote self, SseSerializer serializer);
 
   @protected
@@ -4179,6 +4273,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_like_list_page(LikeListPage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_like_list_result(
+    LikeListResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_String(List<String> self, SseSerializer serializer);
 
   @protected
@@ -4225,6 +4328,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_list_durl(List<Durl> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_dynamic_author(
+    List<DynamicAuthor> self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_list_emote(List<Emote> self, SseSerializer serializer);
@@ -4950,6 +5059,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_i_32(int? self, SseSerializer serializer);
+
+  @protected
   void sse_encode_opt_box_autoadd_i_64(
     PlatformInt64? self,
     SseSerializer serializer,
@@ -4964,6 +5076,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_language_options(
     LanguageOptions? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_like_list_page(
+    LikeListPage? self,
     SseSerializer serializer,
   );
 

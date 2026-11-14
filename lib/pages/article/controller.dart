@@ -12,6 +12,7 @@ import 'package:kilikili/models_new/dynamic/dyn_mention/item.dart';
 import 'package:kilikili/pages/common/dyn/common_dyn_controller.dart';
 import 'package:kilikili/pages/common/reply/reply_controller.dart';
 import 'package:kilikili/services/rust/rust_video_write.dart';
+import 'package:kilikili/services/rust/rust_dynamic.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/app_scheme.dart';
 import 'package:kilikili/utils/extension/get_ext.dart';
@@ -211,18 +212,18 @@ class ArticleController extends CommonDynController
     final like = stats.value?.like;
     if (like == null) return;
     final isLike = like.status ?? false;
-    final res = await DynamicsHttp.thumbDynamic(
+    final res = await RustDynamic.thumb(
       dynamicId: opusData?.idStr ?? articleData?.dynIdStr,
       up: isLike ? 2 : 1,
     );
-    if (res.isSuccess) {
+    if (res.errorKind == null) {
       like
         ..status = !isLike
         ..count = (like.count ?? 0) + (isLike ? -1 : 1);
       stats.refresh();
       SmartDialog.showToast(!isLike ? '点赞成功' : '取消赞');
     } else {
-      res.toast();
+      SmartDialog.showToast(res.errorDetail ?? '动态点赞失败');
     }
   }
 

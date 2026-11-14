@@ -1,10 +1,5 @@
 import 'package:kilikili/grpc/bilibili/app/dynamic/v2.pb.dart'
     show
-        OpusType,
-        OpusDetailReq,
-        OpusDetailResp,
-        LikeListReq,
-        LikeListReply,
         RepostListReq,
         RepostListRsp,
         RepostType;
@@ -29,40 +24,6 @@ abstract final class DynGrpc {
   //     DynSpaceRsp.fromBuffer,
   //   );
   // }
-
-  static Future<LoadingState<OpusDetailResp>> opusDetail({
-    OpusType? opusType,
-    required int oid,
-  }) {
-    return GrpcReq.request(
-      GrpcUrl.opusDetail,
-      OpusDetailReq(
-        opusType: opusType,
-        oid: Int64(oid),
-      ),
-      OpusDetailResp.fromBuffer,
-    );
-  }
-
-  static Future<LoadingState<LikeListReply>> likeList({
-    required String dynamicId,
-    Int64? dynType,
-    Int64? rid,
-    Int64? uidOffset,
-    required int page,
-  }) {
-    return GrpcReq.request(
-      GrpcUrl.likeList,
-      LikeListReq(
-        dynamicId: dynamicId,
-        dynType: dynType,
-        rid: rid,
-        uidOffset: uidOffset,
-        page: page,
-      ),
-      LikeListReply.fromBuffer,
-    );
-  }
 
   static Future<LoadingState<RepostListRsp>> repostList({
     required String dynamicId,

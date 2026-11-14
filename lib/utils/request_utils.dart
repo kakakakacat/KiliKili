@@ -26,6 +26,7 @@ import 'package:kilikili/pages/fav_detail/controller.dart'
 import 'package:kilikili/pages/group_panel/view.dart';
 import 'package:kilikili/pages/login/geetest/geetest_webview_dialog.dart';
 import 'package:kilikili/services/rust/rust_video_write.dart';
+import 'package:kilikili/services/rust/rust_dynamic.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/extension/context_ext.dart';
 import 'package:kilikili/utils/extension/size_ext.dart';
@@ -417,18 +418,18 @@ abstract final class RequestUtils {
       return;
     }
 
-    final res = await DynamicsHttp.thumbDynamic(
+    final res = await RustDynamic.thumb(
       dynamicId: item.idStr!,
       up: status ? 2 : 1, // 1 已点赞 2 不喜欢 0 未操作
     );
-    if (res.isSuccess) {
+    if (res.errorKind == null) {
       SmartDialog.showToast(status ? '取消赞' : '点赞成功');
       like
         ?..count = (like.count ?? 0) + (status ? -1 : 1)
         ..status = !status;
       onSuccess();
     } else {
-      res.toast();
+      SmartDialog.showToast(res.errorDetail ?? '动态点赞失败');
     }
   }
 

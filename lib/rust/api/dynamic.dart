@@ -7,8 +7,46 @@ import 'package:kilikili/rust/frb_generated.dart';
 import 'package:kilikili/rust/api/grpc.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:kilikili/rust/api/transport.dart';
+import 'package:kilikili/rust/api/write.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `fmt`
+// These functions are ignored because they are not marked as `pub`: `split`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+
+Future<WriteResult> thumbDynamic({
+  required DynamicWriteContext context,
+  required String dynamicId,
+  required int up,
+}) => RustLib.instance.api.crateApiDynamicThumbDynamic(
+  context: context,
+  dynamicId: dynamicId,
+  up: up,
+);
+
+Future<WriteResult> topDynamic({
+  required DynamicWriteContext context,
+  required String dynamicId,
+  required bool setTop,
+}) => RustLib.instance.api.crateApiDynamicTopDynamic(
+  context: context,
+  dynamicId: dynamicId,
+  setTop: setTop,
+);
+
+Future<LikeListResult> fetchLikeList({
+  required GrpcContext context,
+  required String dynamicId,
+  PlatformInt64? dynType,
+  PlatformInt64? rid,
+  PlatformInt64? uidOffset,
+  required int page,
+}) => RustLib.instance.api.crateApiDynamicFetchLikeList(
+  context: context,
+  dynamicId: dynamicId,
+  dynType: dynType,
+  rid: rid,
+  uidOffset: uidOffset,
+  page: page,
+);
 
 Future<DynRedResult> fetchDynRed({required GrpcContext context}) =>
     RustLib.instance.api.crateApiDynamicFetchDynRed(context: context);
@@ -37,6 +75,155 @@ class DynRedResult {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is DynRedResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+class DynamicAuthor {
+  final PlatformInt64 mid;
+  final String name;
+  final String face;
+  final String sign;
+  final int level;
+  final bool isSeniorMember;
+  final String? pendantImage;
+  final int? vipStatus;
+  final int? vipType;
+  final int? officialType;
+
+  const DynamicAuthor({
+    required this.mid,
+    required this.name,
+    required this.face,
+    required this.sign,
+    required this.level,
+    required this.isSeniorMember,
+    this.pendantImage,
+    this.vipStatus,
+    this.vipType,
+    this.officialType,
+  });
+
+  @override
+  int get hashCode =>
+      mid.hashCode ^
+      name.hashCode ^
+      face.hashCode ^
+      sign.hashCode ^
+      level.hashCode ^
+      isSeniorMember.hashCode ^
+      pendantImage.hashCode ^
+      vipStatus.hashCode ^
+      vipType.hashCode ^
+      officialType.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DynamicAuthor &&
+          runtimeType == other.runtimeType &&
+          mid == other.mid &&
+          name == other.name &&
+          face == other.face &&
+          sign == other.sign &&
+          level == other.level &&
+          isSeniorMember == other.isSeniorMember &&
+          pendantImage == other.pendantImage &&
+          vipStatus == other.vipStatus &&
+          vipType == other.vipType &&
+          officialType == other.officialType;
+}
+
+class DynamicWriteContext {
+  final String baseUrl;
+  final String? cookie;
+  final String? csrf;
+  final List<(String, String)> headers;
+  final BigInt timeoutMs;
+  final TransportSettings transport;
+
+  const DynamicWriteContext({
+    required this.baseUrl,
+    this.cookie,
+    this.csrf,
+    required this.headers,
+    required this.timeoutMs,
+    required this.transport,
+  });
+
+  @override
+  int get hashCode =>
+      baseUrl.hashCode ^
+      cookie.hashCode ^
+      csrf.hashCode ^
+      headers.hashCode ^
+      timeoutMs.hashCode ^
+      transport.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DynamicWriteContext &&
+          runtimeType == other.runtimeType &&
+          baseUrl == other.baseUrl &&
+          cookie == other.cookie &&
+          csrf == other.csrf &&
+          headers == other.headers &&
+          timeoutMs == other.timeoutMs &&
+          transport == other.transport;
+}
+
+class LikeListPage {
+  final List<DynamicAuthor> items;
+  final bool hasMore;
+  final PlatformInt64 totalCount;
+
+  const LikeListPage({
+    required this.items,
+    required this.hasMore,
+    required this.totalCount,
+  });
+
+  @override
+  int get hashCode => items.hashCode ^ hasMore.hashCode ^ totalCount.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LikeListPage &&
+          runtimeType == other.runtimeType &&
+          items == other.items &&
+          hasMore == other.hasMore &&
+          totalCount == other.totalCount;
+}
+
+class LikeListResult {
+  final LikeListPage? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const LikeListResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LikeListResult &&
           runtimeType == other.runtimeType &&
           data == other.data &&
           errorKind == other.errorKind &&

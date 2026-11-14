@@ -172,6 +172,14 @@ RFC §10.1 规定了要固定 `UPSTREAM_COMMIT` 并记录 rebase/merge 策略，
 其中实质改动 **238 → 239**、仅重命名 **653 → 652**；新增文件
 **521 → 526**，删除仍为 **146**。
 
+修订：2026-11-14（S5 #55 继续迁点赞列表、点赞与置顶）——
+`lib/pages/member_dynamics/controller.dart` 和
+`lib/pages/common/dyn/like_list/{controller,view,widgets/item}.dart`
+四个文件此前仅被包名重命名提交触及，本次转为实质改动。`lib/http/dynamics.dart`、
+`lib/pages/article/controller.dart`、`lib/utils/request_utils.dart` 已在既有实质
+改动集合里。按 §6 对本轮工作树核对：上游修改文件仍为 **891**，实质改动
+**239 → 243**、仅重命名 **652 → 648**；新增 **526**、删除 **146** 不变。
+
 ## 1. 基准
 
 ```
@@ -190,8 +198,8 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 类别 | 数量 |
 | --- | ---: |
 | 修改的上游既有文件 | 891 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 652 |
-| &nbsp;&nbsp;其中：有实质改动 | **239** |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 648 |
+| &nbsp;&nbsp;其中：有实质改动 | **243** |
 | 新增文件 | 526 |
 | 删除文件 | **146** |
 

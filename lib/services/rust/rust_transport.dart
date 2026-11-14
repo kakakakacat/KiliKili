@@ -33,4 +33,24 @@ abstract final class RustTransport {
       http1Only: !Pref.enableHttp2,
     );
   }
+
+  /// 同 [current]，但**不重试**。
+  ///
+  /// 给高频自动触发的上报用（心跳、历史上报、进直播间、medialist）：
+  /// 重试它们的收益接近零——下一次上报马上就来——代价却是**账号级**的
+  /// 风控计数（ADR-013 决策三「上报类的例外」）。
+  ///
+  /// 这是传输配置的事，不是幂等级别的事：那几条接口在 Rust 侧照样定级为
+  /// `Idempotent`，两者不要混。
+  static TransportSettings silentReport() {
+    final base = current();
+    return TransportSettings(
+      retryCount: 0,
+      retryDelayMs: base.retryDelayMs,
+      proxyHost: base.proxyHost,
+      proxyPort: base.proxyPort,
+      acceptInvalidCerts: base.acceptInvalidCerts,
+      http1Only: base.http1Only,
+    );
+  }
 }

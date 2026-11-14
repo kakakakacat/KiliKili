@@ -278,7 +278,10 @@ mod write_tests {
         assert_eq!(req.path, path::DANMAKU_FILTER_ADD);
         assert_eq!(req.form_string(), "type=0&filter=剧透");
         assert!(
-            req.form.iter().all(|(k, _)| k != "csrf"),
+            req.form_fields()
+                .expect("这条是表单体")
+                .iter()
+                .all(|(k, _)| k != "csrf"),
             "csrf 不该出现在构造产物里——它由 send_write 统一补，\
              这样请求快照才不含凭据"
         );

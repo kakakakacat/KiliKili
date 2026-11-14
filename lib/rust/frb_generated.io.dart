@@ -25,6 +25,7 @@ import 'package:kilikili/rust/api/video_detail.dart';
 import 'package:kilikili/rust/api/video_detail_fetch.dart';
 import 'package:kilikili/rust/api/video_feed.dart';
 import 'package:kilikili/rust/api/video_page.dart';
+import 'package:kilikili/rust/api/video_write.dart';
 import 'package:kilikili/rust/api/wbi.dart';
 import 'package:kilikili/rust/api/write.dart';
 
@@ -59,6 +60,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AiOutlinePart dco_decode_ai_outline_part(dynamic raw);
 
   @protected
+  AppWriteContext dco_decode_app_write_context(dynamic raw);
+
+  @protected
   Artist dco_decode_artist(dynamic raw);
 
   @protected
@@ -84,6 +88,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   AiConclusion dco_decode_box_autoadd_ai_conclusion(dynamic raw);
+
+  @protected
+  AppWriteContext dco_decode_box_autoadd_app_write_context(dynamic raw);
 
   @protected
   BlackList dco_decode_box_autoadd_black_list(dynamic raw);
@@ -331,6 +338,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   VideoShot dco_decode_box_autoadd_video_shot(dynamic raw);
+
+  @protected
+  VideoWriteContext dco_decode_box_autoadd_video_write_context(dynamic raw);
 
   @protected
   Volume dco_decode_box_autoadd_volume(dynamic raw);
@@ -1268,6 +1278,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PgcTimelineResult dco_decode_pgc_timeline_result(dynamic raw);
 
   @protected
+  PgcTripleResult dco_decode_pgc_triple_result(dynamic raw);
+
+  @protected
   PgcUpInfo dco_decode_pgc_up_info(dynamic raw);
 
   @protected
@@ -1460,6 +1473,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   TitleSpan dco_decode_title_span(dynamic raw);
 
   @protected
+  ToastResult dco_decode_toast_result(dynamic raw);
+
+  @protected
   TransportSettings dco_decode_transport_settings(dynamic raw);
 
   @protected
@@ -1473,6 +1489,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int dco_decode_u_8(dynamic raw);
+
+  @protected
+  UgcTripleResult dco_decode_ugc_triple_result(dynamic raw);
 
   @protected
   void dco_decode_unit(dynamic raw);
@@ -1505,6 +1524,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   VideoShotResult dco_decode_video_shot_result(dynamic raw);
 
   @protected
+  VideoWriteContext dco_decode_video_write_context(dynamic raw);
+
+  @protected
   ViewPoint dco_decode_view_point(dynamic raw);
 
   @protected
@@ -1529,6 +1551,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   AiOutlinePart sse_decode_ai_outline_part(SseDeserializer deserializer);
+
+  @protected
+  AppWriteContext sse_decode_app_write_context(SseDeserializer deserializer);
 
   @protected
   Artist sse_decode_artist(SseDeserializer deserializer);
@@ -1560,6 +1585,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   AiConclusion sse_decode_box_autoadd_ai_conclusion(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  AppWriteContext sse_decode_box_autoadd_app_write_context(
     SseDeserializer deserializer,
   );
 
@@ -1891,6 +1921,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   VideoShot sse_decode_box_autoadd_video_shot(SseDeserializer deserializer);
+
+  @protected
+  VideoWriteContext sse_decode_box_autoadd_video_write_context(
+    SseDeserializer deserializer,
+  );
 
   @protected
   Volume sse_decode_box_autoadd_volume(SseDeserializer deserializer);
@@ -3108,6 +3143,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  PgcTripleResult sse_decode_pgc_triple_result(SseDeserializer deserializer);
+
+  @protected
   PgcUpInfo sse_decode_pgc_up_info(SseDeserializer deserializer);
 
   @protected
@@ -3342,6 +3380,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   TitleSpan sse_decode_title_span(SseDeserializer deserializer);
 
   @protected
+  ToastResult sse_decode_toast_result(SseDeserializer deserializer);
+
+  @protected
   TransportSettings sse_decode_transport_settings(SseDeserializer deserializer);
 
   @protected
@@ -3355,6 +3396,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int sse_decode_u_8(SseDeserializer deserializer);
+
+  @protected
+  UgcTripleResult sse_decode_ugc_triple_result(SseDeserializer deserializer);
 
   @protected
   void sse_decode_unit(SseDeserializer deserializer);
@@ -3395,6 +3439,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   VideoShotResult sse_decode_video_shot_result(SseDeserializer deserializer);
 
   @protected
+  VideoWriteContext sse_decode_video_write_context(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   ViewPoint sse_decode_view_point(SseDeserializer deserializer);
 
   @protected
@@ -3420,6 +3469,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_ai_outline_part(AiOutlinePart self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_app_write_context(
+    AppWriteContext self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_artist(Artist self, SseSerializer serializer);
@@ -3457,6 +3512,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_ai_conclusion(
     AiConclusion self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_app_write_context(
+    AppWriteContext self,
     SseSerializer serializer,
   );
 
@@ -3925,6 +3986,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_video_shot(
     VideoShot self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_video_write_context(
+    VideoWriteContext self,
     SseSerializer serializer,
   );
 
@@ -5495,6 +5562,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_pgc_triple_result(
+    PgcTripleResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_pgc_up_info(PgcUpInfo self, SseSerializer serializer);
 
   @protected
@@ -5801,6 +5874,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_title_span(TitleSpan self, SseSerializer serializer);
 
   @protected
+  void sse_encode_toast_result(ToastResult self, SseSerializer serializer);
+
+  @protected
   void sse_encode_transport_settings(
     TransportSettings self,
     SseSerializer serializer,
@@ -5817,6 +5893,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_u_8(int self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_ugc_triple_result(
+    UgcTripleResult self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_unit(void self, SseSerializer serializer);
@@ -5869,6 +5951,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_video_shot_result(
     VideoShotResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_video_write_context(
+    VideoWriteContext self,
     SseSerializer serializer,
   );
 

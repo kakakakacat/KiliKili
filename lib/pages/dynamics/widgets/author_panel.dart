@@ -9,11 +9,11 @@ import 'package:kilikili/common/widgets/translucent_row.dart';
 import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/user.dart';
-import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/pages/dynamics/controller.dart';
 import 'package:kilikili/pages/save_panel/view.dart';
 import 'package:kilikili/services/rust/rust_reply.dart';
+import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/bili_utils.dart';
 import 'package:kilikili/utils/color_utils.dart';
@@ -633,7 +633,7 @@ class AuthorPanel extends StatelessWidget {
                       ReportOptions.dynamicReport,
                       (reasonType, reasonDesc, banUid) {
                         if (banUid) {
-                          VideoHttp.relationMod(
+                          RustVideoWrite.relationMod(
                             mid: moduleAuthor.mid!,
                             act: 5,
                             reSrc: 11,

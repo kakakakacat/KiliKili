@@ -14,6 +14,7 @@
 //! `docs/architecture/adr/ADR-008-protocol-versioning.md`。
 
 pub mod app_sign;
+pub mod bvid;
 pub mod grpc;
 pub mod keys;
 pub mod risk;

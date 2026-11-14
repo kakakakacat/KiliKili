@@ -27,6 +27,7 @@ fixture（它们带有同一个版本号，对不上时 golden 测试会失败�
 | --- | --- | --- | --- |
 | gRPC metadata（设备/locale/network/fawkes）与弹幕/字幕 unary 请求面 | 2026-11-13，issue #133 | 迁移前 `2705b39d6` 的 protobuf.dart 编码（占位凭据） | `bili-api/tests/grpc_metadata.rs`、`grpc_fetch.rs` |
 | APP 签名（`appkey`/`ts`/`sign`） | 2026-11-11，S11a 第一批 / issue #61 | `tool/fixture-gen/app_sign_fixture.dart` | `bili-protocol/tests/app_sign_golden.rs` |
+| BV 号 ↔ av 号编码（58 进制字母表、两次换位、异或掩码） | 2026-11-13，S4 / issue #54 | `tool/fixture-gen/bvid_fixture.dart` | `bili-protocol/tests/bvid_golden.rs` |
 | 直播取流请求面（`protocol`/`format`/`codec`/`ptype`/`dolby`/`panorama`/`web_location`） | 2026-11-11，S11a 第二批 / issue #61 | 无独立生成器，核对方向相反，见下 | `bili-api/tests/live_golden.rs::room_play_info_request_matches_the_frozen_snapshot` |
 | 直播剩余三条签名接口的请求面（搜索的 APP 参数集；屏蔽设置与贡献榜的 WBI 参数集，各带一个 `web_location=444.8`） | 2026-11-11，S11a 第三批 / issue #61 | 同上 | `bili-api/tests/live_golden.rs::signed_requests_match_the_frozen_snapshot` |
 
@@ -74,3 +75,28 @@ Web 主机的 `/x/web-interface/wbi/search/square`，并遗漏原来由
 迁移遗漏，未改变上游协议或签名算法，因此协议版本仍为 1。
 `bili-api::search::tests::recommend_uses_app_endpoint` 覆盖实际取数 URL、
 匿名 / 空凭据 / 登录凭据及独立计算的签名快照。
+
+## 2026-11-13：视频页写操作的请求面（issue #54）
+
+S4 把 `lib/http/video.dart` 的十四条写操作搬进 `bili-api::video_write`。
+**没有新的签名算法**——APP 端那四条（点赞、点踩、投币、不感兴趣）复用
+既有的 `bili-protocol::app_sign`，web 端那十条不签名。因此不记版本号，
+按「新增覆盖面不计入版本号」处理。
+
+新增的是一份协议**编码**：BV 号与 av 号的互转（上表最后一行）。它此前
+只存在于 Dart 的 `IdUtils`，而写操作的参数是 `aid`、调用点只有 `bvid`，
+于是它第一次成为 Rust 侧的必需品。
+
+这一面值得单独一行，是因为错的表现特别隐蔽：算错一位不会报错，只会让
+请求指向**另一个稿件**——点赞点到别人头上。golden 覆盖往返、边界值
+（接近 51 位上限）与**字母表的每一位**，最后一项是必须的：样本未必用上
+全部 58 个字符，改一个没被命中的位置，往返测试照样全绿。
+
+**基线那一份还活着**：`IdUtils.bv2av` 仍被几十处未迁的 Dart 路径使用。
+两份实现并存期间由上面那份 golden 对照同一组样本钉住；Dart 那份随最后
+一个调用点删除。同步上游时若 `IdUtils` 的字母表或掩码变了，golden 会红
+——这正是它存在的意义。
+
+写操作的请求面本身不靠 golden 冻结，靠的是 ADR-013 决策六的请求快照：
+Rust 单测钉住构造出来的 `PreparedWrite`，`test/bridge/video_write_bridge_test.dart`
+起桩服务端钉住**真的发出去的**那一个。

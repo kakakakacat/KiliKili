@@ -248,10 +248,11 @@ pub fn play_url(
 /// （ADR-013 决策二）。
 ///
 /// **csrf 不在这里。** 它由 [`crate::client::send_write`] 从
-/// [`crate::http::RequestContext`] 统一补进表单，是全仓库唯一的注入点
-/// （ADR-013 决策四）。因此本结构是**纯业务参数**，可以原样写进请求快照
-/// 而不含任何凭据——这正是 ADR-013 决策六要的那份对照物。
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// [`crate::http::RequestContext`] 按 [`PreparedWrite::csrf`] 指定的位置
+/// 补上，是全仓库唯一的注入点（ADR-013 决策四）。因此本结构是**纯业务
+/// 参数**，可以原样写进请求快照而不含任何凭据——这正是 ADR-013 决策六
+/// 要的那份对照物。
+#[derive(Debug, Clone, PartialEq)]
 pub struct PreparedWrite {
     pub path: &'static str,
     /// 查询串。**写请求也可能有**：`sortFollowTag` 就把
@@ -260,14 +261,48 @@ pub struct PreparedWrite {
     /// 多数写操作是空的；留着是因为「参数在体里」只是惯例，不是协议保证，
     /// 发现一条例外就得整条链路改一遍，不如一开始就带上。
     pub query: Vec<(String, String)>,
-    /// 表单字段。顺序即发送顺序，被请求快照钉住。
-    pub form: Vec<(String, String)>,
+    /// 请求体。顺序即发送顺序，被请求快照钉住。
+    pub body: WriteBody,
+    /// csrf 补在哪里。见 [`CsrfIn`]。
+    pub csrf: CsrfIn,
     /// 这条写操作重发安全不安全。
     pub idempotency: Idempotency,
 }
 
+/// 写请求的体。
+///
+/// 两种都是真实存在的形态，**不能统一**（ADR-013 决策一）：调用点显式写
+/// `Headers.formUrlEncodedContentType` 的是表单，没写的那些吃的是 dio
+/// 的默认值——`BaseOptions` 里没设 `contentType`，于是默认 JSON
+/// （`lib/http/init.dart`）。`roomEntryAction` 正是后者。
+#[derive(Debug, Clone, PartialEq)]
+pub enum WriteBody {
+    /// `application/x-www-form-urlencoded`。
+    Form(Vec<(String, String)>),
+    /// `application/json`。用 [`serde_json::Value`] 而不是已序列化的字符串：
+    /// csrf 要能被注入进去，而往一段字符串里插字段只能靠拼接。
+    Json(serde_json::Value),
+}
+
+/// csrf 补在请求的哪个位置。
+///
+/// 基线把它散在 126 处，位置并不统一：绝大多数在表单里，`roomEntryAction`
+/// 在查询串里，APP 端接口则根本没有 csrf（走 `access_key` + APP 签名）。
+/// 做成枚举而不是一个 `bool`，是因为「补错位置」与「没补」表现完全一样
+/// ——服务端都回 `-111`，看起来像协议问题。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CsrfIn {
+    /// 补进请求体。表单体追加一个字段，JSON 体插入一个键。
+    Body,
+    /// 补进查询串。例：`roomEntryAction`。
+    Query,
+    /// 不带。APP 端接口（`app.bilibili.com`）用 `access_key` 鉴权，
+    /// 带上 csrf 既无用也让请求面与基线对不上。
+    None,
+}
+
 impl PreparedWrite {
-    /// 最常见的形态：只有表单，没有查询串。
+    /// 最常见的形态：只有表单，没有查询串，csrf 补进表单。
     #[must_use]
     pub fn form_only(
         path: &'static str,
@@ -277,20 +312,34 @@ impl PreparedWrite {
         Self {
             path,
             query: Vec::new(),
-            form,
+            body: WriteBody::Form(form),
+            csrf: CsrfIn::Body,
             idempotency,
         }
     }
 
+    /// 表单字段。JSON 体返回 `None`——调用方要么是测试在断言形状，要么
+    /// 就是走错了分支，两种情况下给一个空切片都会把问题藏起来。
+    #[must_use]
+    pub fn form_fields(&self) -> Option<&[(String, String)]> {
+        match &self.body {
+            WriteBody::Form(f) => Some(f),
+            WriteBody::Json(_) => None,
+        }
+    }
+
     /// 拼成 `k=v&k=v` 形式。与 [`PreparedRequest::query_string`] 一样，
-    /// 仅用于测试断言。
+    /// 仅用于测试断言。JSON 体拼出来的是它的紧凑序列化。
     #[must_use]
     pub fn form_string(&self) -> String {
-        self.form
-            .iter()
-            .map(|(k, v)| format!("{k}={v}"))
-            .collect::<Vec<_>>()
-            .join("&")
+        match &self.body {
+            WriteBody::Form(form) => form
+                .iter()
+                .map(|(k, v)| format!("{k}={v}"))
+                .collect::<Vec<_>>()
+                .join("&"),
+            WriteBody::Json(v) => v.to_string(),
+        }
     }
 }
 

@@ -1,9 +1,9 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models_new/follow/data.dart';
 import 'package:kilikili/pages/follow_type/controller.dart';
 import 'package:kilikili/services/rust/follow_compat.dart';
 import 'package:kilikili/services/rust/rust_misc.dart';
+import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -41,7 +41,7 @@ class FansController extends FollowTypeController {
   }
 
   Future<void> onRemoveFan(int index, int mid) async {
-    final res = await VideoHttp.relationMod(
+    final res = await RustVideoWrite.relationMod(
       mid: mid,
       act: 7,
       reSrc: 11,

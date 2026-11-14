@@ -11,7 +11,7 @@ use bili_protocol::risk::{Entropy, RiskTokens};
 
 use crate::http::{HttpGet, HttpPost, HttpTransport, PostBody, RequestContext, check_status};
 use crate::playurl::{self, Outcome};
-use crate::request::{self, PlayUrlParams, PreparedRequest, PreparedWrite};
+use crate::request::{self, CsrfIn, PlayUrlParams, PreparedRequest, PreparedWrite, WriteBody};
 
 /// 取视频详情。
 ///
@@ -150,32 +150,58 @@ pub(crate) async fn send<T: HttpTransport>(
 /// 三件事只在这里做，各自都有理由不散到调用点去：
 ///
 /// 1. **补 csrf**。基线是 126 处各自写 `'csrf': Accounts.main.csrf`；这里
-///    是唯一注入点（ADR-013 决策四）。未登录时 `ctx.csrf` 为 `None`，
-///    不补——服务端会以 `-101` 拒绝，那是正确的失败，比本地伪造一个空
-///    csrf 要诚实。
-/// 2. **挑 content-type**。[`PostBody`] 自己带，调用点不经手。
+///    是唯一注入点（ADR-013 决策四）。位置由 [`PreparedWrite::csrf`] 指定
+///    ——基线并不统一：多数在体里，`roomEntryAction` 在查询串上，APP 端
+///    接口根本没有 csrf。未登录时 `ctx.csrf` 为 `None`，不补——服务端会以
+///    `-101` 拒绝，那是正确的失败，比本地伪造一个空 csrf 要诚实。
+/// 2. **挑 content-type**。由 [`WriteBody`] 决定，调用点不经手。
 /// 3. **把幂等级别交给传输层**。重试规则见 [`crate::http::should_retry`]。
 ///
 /// # Errors
-/// 传输与状态码两类失败。业务信封由调用方解。
+/// 传输与状态码两类失败，外加 JSON 体无处放 csrf（判协议错误）。业务信封
+/// 由调用方解。
 pub(crate) async fn send_write<T: HttpTransport>(
     transport: &T,
     ctx: &RequestContext,
     prepared: &PreparedWrite,
 ) -> Result<String, DomainError> {
-    let base = ctx.base_url.trim_end_matches('/');
-    let url = if prepared.query.is_empty() {
-        format!("{base}{}", prepared.path)
-    } else {
-        format!("{base}{}?{}", prepared.path, encode_query(&prepared.query))
-    };
+    let mut query = prepared.query.clone();
+    let mut body = prepared.body.clone();
 
-    let mut form = prepared.form.clone();
     if let Some(csrf) = &ctx.csrf {
-        form.push(("csrf".to_owned(), csrf.expose().clone()));
+        let csrf = csrf.expose().clone();
+        match (prepared.csrf, &mut body) {
+            (CsrfIn::Body, WriteBody::Form(form)) => form.push(("csrf".to_owned(), csrf)),
+            (CsrfIn::Body, WriteBody::Json(value)) => {
+                // 非对象的 JSON 体插不进字段。当前没有这种接口；真出现了
+                // 就该在构造处把 csrf 挪到查询串，而不是在这里静默丢掉它
+                // ——丢掉的表现是服务端回 -111，看起来像协议问题。
+                let Some(obj) = value.as_object_mut() else {
+                    return Err(DomainError::new(
+                        bili_domain::error::ErrorKind::Protocol,
+                        "JSON 体不是对象，csrf 无处可放——构造处应改用 CsrfIn::Query",
+                    ));
+                };
+                obj.insert("csrf".to_owned(), serde_json::Value::String(csrf));
+            }
+            (CsrfIn::Query, _) => query.push(("csrf".to_owned(), csrf)),
+            (CsrfIn::None, _) => {}
+        }
     }
 
-    // 只记 path 与幂等级别：表单里有业务标识符，csrf 更是凭据。
+    let base = ctx.base_url.trim_end_matches('/');
+    let url = if query.is_empty() {
+        format!("{base}{}", prepared.path)
+    } else {
+        format!("{base}{}?{}", prepared.path, encode_query(&query))
+    };
+
+    let post_body = match body {
+        WriteBody::Form(form) => PostBody::Form(form),
+        WriteBody::Json(value) => PostBody::Json(value.to_string()),
+    };
+
+    // 只记 path 与幂等级别：体里有业务标识符，csrf 更是凭据。
     tracing::debug!(
         path = prepared.path,
         idempotency = ?prepared.idempotency,
@@ -186,7 +212,7 @@ pub(crate) async fn send_write<T: HttpTransport>(
         .post(HttpPost {
             url,
             headers: ctx.all_headers(),
-            body: PostBody::Form(form),
+            body: post_body,
             timeout: ctx.timeout,
             retry_policy: prepared.idempotency.retry_policy(),
         })
@@ -310,7 +336,8 @@ mod tests {
         let prepared = PreparedWrite {
             path: "/x/relation/tags/update_sort",
             query: vec![("x-bili-device-req-json".to_owned(), "{\"a\":1}".to_owned())],
-            form: vec![("tagids".to_owned(), "1,2".to_owned())],
+            body: WriteBody::Form(vec![("tagids".to_owned(), "1,2".to_owned())]),
+            csrf: CsrfIn::Body,
             idempotency: Idempotency::Idempotent,
         };
         block_on(send_write(&stub, &ctx_logged_in(), &prepared)).expect("桩传输必定成功");
@@ -349,6 +376,59 @@ mod tests {
             ],
             "csrf 必须由这一层补，且补在业务字段之后"
         );
+    }
+
+    /// `roomEntryAction` 的 csrf 在查询串上，体是 JSON。两件事都与
+    /// 「写操作的参数都在表单里」的惯例相反，而且是基线实际的形状。
+    #[test]
+    fn a_json_write_puts_csrf_on_the_query_string() {
+        let stub = StubTransport::ok(200, r#"{"code":0,"message":"0"}"#);
+        let prepared = PreparedWrite {
+            path: "/xlive/web-room/v1/index/roomEntryAction",
+            query: Vec::new(),
+            body: WriteBody::Json(serde_json::json!({"room_id": 123, "platform": "pc"})),
+            csrf: CsrfIn::Query,
+            idempotency: Idempotency::Idempotent,
+        };
+        block_on(send_write(&stub, &ctx_logged_in(), &prepared)).expect("桩传输必定成功");
+
+        let seen = stub.seen_post.lock().expect("锁未被毒化");
+        let seen = seen.as_ref().expect("写请求应当送到传输层");
+        assert!(
+            seen.url.ends_with("?csrf=csrf-placeholder"),
+            "csrf 应当补在查询串上: {}",
+            seen.url
+        );
+        let PostBody::Json(body) = &seen.body else {
+            panic!("这条接口的体是 JSON，不是表单");
+        };
+        // room_id 必须是数字而不是字符串：基线传的是 `Object`，dio 按
+        // JSON 序列化，服务端看到的是数字。
+        assert!(body.contains("\"room_id\":123"), "体不对: {body}");
+        assert!(!body.contains("csrf"), "csrf 不该同时出现在体里: {body}");
+    }
+
+    /// APP 端接口用 `access_key` 鉴权，没有 csrf 这回事。补上去不会报错，
+    /// 只会让请求面与基线对不上——那正是决策六要盯的东西。
+    #[test]
+    fn a_write_marked_no_csrf_never_gets_one() {
+        let stub = StubTransport::ok(200, r#"{"code":0,"message":"0"}"#);
+        let prepared = PreparedWrite {
+            path: "/x/v2/view/like",
+            query: Vec::new(),
+            body: WriteBody::Form(vec![("aid".to_owned(), "2".to_owned())]),
+            csrf: CsrfIn::None,
+            idempotency: Idempotency::Idempotent,
+        };
+        block_on(send_write(&stub, &ctx_logged_in(), &prepared)).expect("桩传输必定成功");
+
+        let seen = stub.seen_post.lock().expect("锁未被毒化");
+        let seen = seen.as_ref().expect("写请求应当送到传输层");
+        assert!(!seen.url.contains("csrf"), "URL 不该有 csrf: {}", seen.url);
+        let PostBody::Form(fields) = &seen.body else {
+            panic!("写请求应当是表单体");
+        };
+        assert!(fields.iter().all(|(k, _)| k != "csrf"), "表单不该有 csrf");
     }
 
     #[test]

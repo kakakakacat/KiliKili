@@ -22,5 +22,6 @@ pub mod video_detail;
 pub mod video_detail_fetch;
 pub mod video_feed;
 pub mod video_page;
+pub mod video_write;
 pub mod wbi;
 pub mod write;

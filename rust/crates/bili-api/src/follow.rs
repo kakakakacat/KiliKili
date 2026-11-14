@@ -18,7 +18,7 @@ use bili_domain::user_list::{FollowList, FollowUser, OfficialVerify};
 use serde::Deserialize;
 
 use crate::http::{HttpTransport, Idempotency, RequestContext};
-use crate::request::{PreparedRequest, PreparedWrite};
+use crate::request::{CsrfIn, PreparedRequest, PreparedWrite, WriteBody};
 
 /// 接口路径。与基线 `lib/http/api.dart` 保持一致。
 pub mod path {
@@ -197,7 +197,8 @@ pub fn sort_follow_tag_request(tagids: &str) -> PreparedWrite {
             "x-bili-device-req-json".to_owned(),
             DEVICE_REQ_JSON.to_owned(),
         )],
-        form: vec![("tagids".to_owned(), tagids.to_owned())],
+        body: WriteBody::Form(vec![("tagids".to_owned(), tagids.to_owned())]),
+        csrf: CsrfIn::Body,
         idempotency: Idempotency::Idempotent,
     }
 }

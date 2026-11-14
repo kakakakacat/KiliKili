@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/member.dart';
 import 'package:kilikili/http/user.dart';
-import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/common/member/tab_type.dart';
 import 'package:kilikili/models/model_owner.dart';
 import 'package:kilikili/models_new/space/space/data.dart';
@@ -13,6 +12,7 @@ import 'package:kilikili/models_new/space/space/reservation_card_list.dart';
 import 'package:kilikili/models_new/space/space/setting.dart';
 import 'package:kilikili/models_new/space/space/tab2.dart';
 import 'package:kilikili/pages/common/common_data_controller.dart';
+import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/extension/nested_scroll_ext.dart';
 import 'package:kilikili/utils/request_utils.dart';
@@ -236,7 +236,7 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
 
   Future<void> _onBlock() async {
     final isBlocked = relation.value == 128;
-    final res = await VideoHttp.relationMod(
+    final res = await RustVideoWrite.relationMod(
       mid: mid,
       act: isBlocked ? 6 : 5,
       reSrc: 11,
@@ -272,7 +272,7 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
   }
 
   Future<void> onRemoveFan() async {
-    final res = await VideoHttp.relationMod(mid: mid, act: 7, reSrc: 11);
+    final res = await RustVideoWrite.relationMod(mid: mid, act: 7, reSrc: 11);
     if (res.isSuccess) {
       isFollowed = null;
       if (relation.value == 4) {

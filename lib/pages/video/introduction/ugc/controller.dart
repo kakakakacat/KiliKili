@@ -27,6 +27,7 @@ import 'package:kilikili/pages/dynamics_repost/view.dart';
 import 'package:kilikili/pages/video/related/controller.dart';
 import 'package:kilikili/pages/video/reply/controller.dart';
 import 'package:kilikili/plugin/pl_player/models/play_repeat.dart';
+import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/services/service_locator.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/android/android_helper.dart';
@@ -241,7 +242,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       SmartDialog.showToast('已三连');
       return;
     }
-    final result = await VideoHttp.ugcTriple(bvid: bvid);
+    final result = await RustVideoWrite.ugcTriple(bvid: bvid);
     if (result case Success(:final response)) {
       late final stat = videoDetail.value.stat;
       if (response.like == true && !hasLike.value) {
@@ -279,7 +280,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       return;
     }
     final newVal = !hasLike.value;
-    final result = await VideoHttp.likeVideo(bvid: bvid, type: newVal);
+    final result = await RustVideoWrite.likeVideo(bvid: bvid, like: newVal);
     if (result case Success(:final response)) {
       SmartDialog.showToast(newVal ? response : '取消赞');
       videoDetail.value.stat?.like += newVal ? 1 : -1;
@@ -297,9 +298,9 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       SmartDialog.showToast('账号未登录');
       return;
     }
-    final res = await VideoHttp.dislikeVideo(
+    final res = await RustVideoWrite.dislikeVideo(
       bvid: bvid,
-      type: !hasDislike.value,
+      dislike: !hasDislike.value,
     );
     if (res.isSuccess) {
       if (!hasDislike.value) {
@@ -480,7 +481,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
     }
     int attr = followStatus.value.attribute ?? 0;
     if (attr == 128) {
-      final res = await VideoHttp.relationMod(
+      final res = await RustVideoWrite.relationMod(
         mid: mid,
         act: 6,
         reSrc: 11,

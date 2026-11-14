@@ -21,6 +21,7 @@ import 'package:kilikili/pages/video/reply/controller.dart';
 import 'package:kilikili/plugin/pl_player/models/play_repeat.dart';
 import 'package:kilikili/services/rust/pgc_detail_compat.dart';
 import 'package:kilikili/services/rust/rust_pgc.dart';
+import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/services/service_locator.dart';
 import 'package:kilikili/utils/android/android_helper.dart';
 import 'package:kilikili/utils/bili_utils.dart';
@@ -167,7 +168,7 @@ class PgcIntroController extends CommonIntroController {
       return;
     }
     final newVal = !hasLike.value;
-    final result = await VideoHttp.likeVideo(bvid: bvid, type: newVal);
+    final result = await RustVideoWrite.likeVideo(bvid: bvid, like: newVal);
     if (result case Success(:final response)) {
       SmartDialog.showToast(newVal ? response : '取消赞');
       _stat?.like += newVal ? 1 : -1;
@@ -366,7 +367,7 @@ class PgcIntroController extends CommonIntroController {
 
   // 追番
   Future<void> pgcAdd() async {
-    final result = await VideoHttp.pgcAdd(seasonId: pgcItem.seasonId);
+    final result = await RustVideoWrite.pgcAdd(seasonId: pgcItem.seasonId);
     if (result case Success(:final response)) {
       isFollowed.value = true;
       followStatus.value = 2;
@@ -378,7 +379,7 @@ class PgcIntroController extends CommonIntroController {
 
   // 取消追番
   Future<void> pgcDel() async {
-    final result = await VideoHttp.pgcDel(seasonId: pgcItem.seasonId);
+    final result = await RustVideoWrite.pgcDel(seasonId: pgcItem.seasonId);
     if (result case Success(:final response)) {
       isFollowed.value = false;
       SmartDialog.showToast(response);
@@ -388,8 +389,8 @@ class PgcIntroController extends CommonIntroController {
   }
 
   Future<void> pgcUpdate(int status) async {
-    final result = await VideoHttp.pgcUpdate(
-      seasonId: pgcItem.seasonId.toString(),
+    final result = await RustVideoWrite.pgcUpdate(
+      seasonIds: pgcItem.seasonId.toString(),
       status: status,
     );
     if (result case Success(:final response)) {
@@ -459,7 +460,7 @@ class PgcIntroController extends CommonIntroController {
       SmartDialog.showToast('已三连');
       return;
     }
-    final result = await VideoHttp.pgcTriple(epId: epId, seasonId: seasonId);
+    final result = await RustVideoWrite.pgcTriple(epId: epId, seasonId: seasonId);
     if (result case Success(:final response)) {
       late final stat = _stat;
       if (response.like == 1 && !hasLike.value) {

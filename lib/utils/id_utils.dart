@@ -26,6 +26,22 @@ abstract final class IdUtils {
   static final digitOnlyRegExp = RegExp(r'^\d+$');
 
   /// av转bv
+  ///
+  /// ## Rust 侧还有一份，这是有意的（S4 / issue #54）
+  ///
+  /// `bili_protocol::bvid` 复刻了这里的 `av2bv` / `bv2av`。两份并存的理由
+  /// 在 ADR-011 补充十八：视频页的写操作参数是 `aid` 而调用点只有 `bvid`，
+  /// 而这段编码**算错一位不会报错，只会让写操作落到另一个稿件上**——
+  /// 点赞点到别人头上。那条路径上不能靠宿主转。
+  ///
+  /// **为什么这一份还留着**：`IdUtils` 被几十处尚未迁移的 Dart 路径用着，
+  /// 按切片边界它不属于任何一片。
+  ///
+  /// **随谁删**：最后一个 Dart 调用点（预计是 Phase 2 清 `lib/http` 残留
+  /// 那一轮），不是某个单独的切片。并存期间由
+  /// `rust/crates/bili-protocol/tests/bvid_golden.rs` 对照同一组样本钉住，
+  /// 期望值由 `tool/fixture-gen/bvid_fixture.dart` 从本文件产出——**改了
+  /// 下面这两个函数或字母表，要重新生成那份 fixture**，否则 CI 会红。
   static String av2bv(int aid) {
     final bytes = ['B', 'V', '1', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
     int bvIndex = bytes.length - 1;

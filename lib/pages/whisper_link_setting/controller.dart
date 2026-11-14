@@ -6,10 +6,10 @@ import 'package:kilikili/grpc/bilibili/app/im/v1.pb.dart';
 import 'package:kilikili/grpc/im.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/msg.dart';
-import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models_new/msg/im_user_infos/datum.dart';
 import 'package:kilikili/models_new/msg/msg_dnd/uid_setting.dart';
 import 'package:kilikili/models_new/msg/session_ss/data.dart';
+import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/widgets.dart' show Text;
@@ -118,7 +118,7 @@ class WhisperLinkSettingController extends GetxController {
 
   Future<void> setBlock(bool isBlocked) async {
     if (isBlocked) {
-      final res = await VideoHttp.relationMod(
+      final res = await RustVideoWrite.relationMod(
         mid: talkerUid,
         act: 6,
         reSrc: 11,
@@ -136,7 +136,7 @@ class WhisperLinkSettingController extends GetxController {
         title: const Text('确认拉黑该用户'),
         content: const Text('加入黑名单后，将自动解除关注关系和对该用户的合集订阅关系，禁止该用户与我互动或查看我的空间'),
         onConfirm: () async {
-          final res = await VideoHttp.relationMod(
+          final res = await RustVideoWrite.relationMod(
             mid: talkerUid,
             act: 5,
             reSrc: 11,

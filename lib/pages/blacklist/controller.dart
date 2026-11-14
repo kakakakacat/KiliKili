@@ -1,8 +1,8 @@
 import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/video.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
 import 'package:kilikili/services/rust/rust_misc.dart';
+import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/extension/num_ext.dart';
 import 'package:kilikili/utils/global_data.dart';
@@ -44,7 +44,7 @@ class BlackListController
       title: Text('确定将 $name 移出黑名单？'),
     );
     if (confirm) {
-      final result = await VideoHttp.relationMod(mid: mid, act: 6, reSrc: 11);
+      final result = await RustVideoWrite.relationMod(mid: mid, act: 6, reSrc: 11);
       if (result.isSuccess) {
         loadingState
           ..value.data!.removeAt(index)

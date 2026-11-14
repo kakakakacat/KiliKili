@@ -7,7 +7,6 @@ import 'package:kilikili/common/widgets/dialog/report.dart';
 import 'package:kilikili/common/widgets/flutter/text_field/controller.dart';
 import 'package:kilikili/http/live.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/common/super_chat_type.dart';
 import 'package:kilikili/models/common/video/base_quality.dart';
 import 'package:kilikili/models/model_owner.dart';
@@ -25,6 +24,7 @@ import 'package:kilikili/plugin/pl_player/controller.dart';
 import 'package:kilikili/plugin/pl_player/models/data_source.dart';
 import 'package:kilikili/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:kilikili/services/rust/rust_live.dart';
+import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/services/service_locator.dart';
 import 'package:kilikili/tcp/live.dart';
 import 'package:kilikili/utils/accounts.dart';
@@ -214,7 +214,7 @@ class LiveRoomController extends GetxController {
     queryLiveUrl(autoFullScreenFlag: true);
     queryLiveInfoH5();
     if (Accounts.heartbeat.isLogin && !Pref.historyPause) {
-      VideoHttp.roomEntryAction(roomId: roomId);
+      RustVideoWrite.roomEntryAction(roomId: roomId);
     }
     if (showSuperChat) {
       pageController = PageController();

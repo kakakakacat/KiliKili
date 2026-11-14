@@ -77,6 +77,10 @@ pub struct HttpPost {
 }
 ```
 
+> 落地后这个形状分成了两层：`PreparedWrite`（纯业务参数，带
+> `WriteBody` 与 `CsrfIn`）与 `HttpPost`（传输层看到的东西，幂等级别已
+> 折算成 `RetryPolicy`）。分层的由来见补充七、八。
+
 重试规则**只有两档**：
 
 | 幂等级别 | 传输层行为 |
@@ -270,6 +274,11 @@ if (res.data['code'] == 0) {
 - **第二批（2026-11-12）**：短评五条（#60，`lib/http/pgc.dart` 整个删除）与
   想听 / 关注分组排序（#66，`lib/http/music.dart` 整个删除）。七条接口覆盖了
   三个幂等档位，并逼出两处在第一批没遇到的形状，见补充五、六。
+- **S4 视频页写操作（2026-11-13，issue #54）**：`lib/http/video.dart` 的
+  十五条写操作迁走十四条（`replyAdd` 留下，见补充十一）。本片是第一次
+  **一个切片横跨三个主机、三套鉴权**，于是 `PreparedWrite` 从「路径 + 查询串
+  + 表单 + 幂等级别」长出了 `WriteBody` 与 `CsrfIn` 两个维度（补充七、八）。
+  决策三那张逐条定级表第一次被整表执行，其中两格在实现时被改过，见补充九。
 - 其余决策随各写操作切片落地。
 
 ## 第一次落地之后的补充
@@ -365,7 +374,112 @@ if (res.data['code'] == 0) {
 - **没有定「写操作的 golden fixture 怎么脱敏」。** 写操作的响应没什么可
   冻的（决策六），真正要钉的请求快照里反而**不能有真凭据**——这一条跟着
   第一个写操作切片的实现补进来，现在写等于凭空规定。
+
+  **已有答案（2026-11-13，S4）**：请求快照里根本不出现凭据，因为
+  `PreparedWrite` 按设计就不含 csrf（它由 `send_write` 在发送时补）。
+  需要凭据参与构造的只有 APP 签名那一类，测试里用的是占位
+  `appkey`/`appsec`/`access_key`——前两者本就是公开的移动端标识、不是用户
+  凭据，`access_key` 则填一个固定占位串。于是「脱敏」在这条路径上不是一道
+  工序，而是类型带来的结果。
 - **没碰 gRPC 里的写操作。** 点赞、发评论的主路径可能走 gRPC，那条传输
   还没有（ADR-012 / #49）。本 ADR 定的是语义（幂等分级、csrf、不降级、
   请求面对照），它对两种传输都成立；gRPC 的具体承载由 ADR-012 回答，
   两份 ADR 的边界就在这里。
+
+## S4（视频页写操作 / issue #54）落地后的补充
+
+### 补充七：请求体不是只有表单，`PostBody::Json` 真的有人用
+
+决策一把 `PostBody` 写成 `Form` 与 `Json` 两种，理由是「dio 不指定
+contentType 时的默认值就是 JSON，基线有一批调用点正是靠这个默认值」。
+前两批七条接口全是表单，于是 `PreparedWrite` 只带了一个 `form` 字段，
+`send_write` 写死 `PostBody::Form`——那条理由当时没有被兑现。
+
+`roomEntryAction` 是第一条兑现它的接口：调用点没写 `contentType`，
+`BaseOptions` 里也没设，于是走了 dio 的默认 `application/json`。
+
+因此 `PreparedWrite.form` 换成了 `body: WriteBody`，`Json` 变体持
+`serde_json::Value` 而不是已序列化的字符串——csrf 要能插进去，而往一段
+字符串里插字段只能靠拼接。
+
+**这条的代价值得记一笔**：如果当初把它统一成表单，CI 会全绿，真机上
+服务端会回一个业务错误码，而从现象完全反推不出是 content-type 错了。
+决策六说「对照物是请求面」，content-type 正是请求面的一部分。
+
+### 补充八：csrf 的位置不统一，于是它进了类型
+
+决策四说「csrf 由 `send_write` 统一补」，前两批里它永远补在表单末尾。
+S4 撞上两种例外：
+
+- `roomEntryAction` 的 csrf 在**查询串**上（基线 `queryParameters`）；
+- APP 端那四条（`app.bilibili.com` 的点赞、点踩、投币、不感兴趣）**根本
+  没有 csrf**，鉴权靠 `access_key` + APP 签名，这是基线拦截器
+  `account_mgr.dart` 的 `isApp` 分支定的。
+
+于是 `PreparedWrite` 多了 `csrf: CsrfIn { Body, Query, None }`。做成枚举
+而不是 `bool`，是因为**补错位置与没补的表现完全一样**：服务端都回
+`-111`，看起来像协议问题。
+
+同样的理由决定了桥接层有**两个**上下文（`VideoWriteContext` 与
+`AppWriteContext`）而不是一个带一半空字段的：APP 端那个没有 `cookie`
+字段，于是「给 APP 端接口带上 Cookie」在类型上就不成立。
+
+### 补充九：决策三那张表，整表执行时改了两格
+
+决策三把 `video.dart` 的十五条逐条定级，作为样例。真正迁的时候，有两格
+与表里写的不同——都是因为**去调用点验了一遍**（补充五的教训）：
+
+1. **`feedDislike` / `feedDislikeCancel` 根本不是 POST**。它们在表里没有，
+   因为那张表是 `grep 'Request().post'` 数出来的，而这两条用的是 GET。
+   它们改的是服务端状态，语义上是写操作，但请求面是只读那一套，因此没有
+   幂等级别可填——重试规则由 `RetryPolicy::Read` 决定。**照搬，不改成
+   POST**：这一片的任务是迁移，不是修接口。
+2. **点赞的 `like` 取值是反的**。表里写「参数是 `like: '0'/'1'`，置为语义
+   不是 toggle」——定级没错，但没写明哪个是哪个。APP 端这条接口
+   **`0` 才是点赞，`1` 是取消**，与 web 端 `/x/web-interface/archive/like`
+   的 `1=赞 2=取消` 相反。写反了不报错，表现是点赞变成取消。
+   映射连同依据一起收进了 `bili_api::video_write::like_request`，并由
+   `like_state_mapping_is_pinned` 与跨 FFI 的桩服务端测试两头钉住。
+
+### 补充十：「上报类的例外」落在传输配置上，形态是一个独立的构造函数
+
+决策三说上报类该传 `retry_count: 0`，并强调「这是传输配置的事，不是幂等
+级别的事」。落地形态是 `RustTransport.silentReport()`——与
+`RustTransport.current()` 并列的一个构造函数，只把 `retryCount` 置 0，
+其余开关照旧。
+
+不做成调用点的一个 `retryCount: 0` 参数，是因为那样每条上报都要自己记得
+传；不做成接口级的默认，是因为那会让「重试规则」在幂等级别之外多一个
+藏起来的来源——正是决策三警告过的混淆。
+
+心跳还有一条**不在传输层**的约束：未登录时基线的拦截器直接把请求 reject
+掉（`account_mgr.dart` 里 `!account.isLogin && path == Api.heartBeat`）。
+这个判断要的是账号状态，账号体系在宿主，所以它留在
+`RustVideoWrite.heartBeat` 的第一行。
+
+### 补充十一：`replyAdd` 刻意没迁，它是本片唯一的 `Unsafe`
+
+决策三把 `replyAdd` 定为 `Unsafe`（重发 = 用户看得见的两条相同评论）。
+本片**没有迁它**，理由不是风险而是依赖：
+
+它返回的是一个 protobuf `ReplyInfo`，经 `RequestUtils.replyCast` 还原后
+以 protobuf 字节存进 Hive，再由**gRPC 驱动的**评论区消费。把它迁过来，
+等于先把评论区的 gRPC 模型迁完——那是 S2（#52）的范围，也正是本 ADR
+「刻意没做」里写的「没碰 gRPC 里的写操作」。
+
+记在这里是因为：`video.dart` 迁完之后只剩 `replyAdd` 一条写操作，下一个
+人看到会以为是漏了。它不是漏的，它在等 #52。
+
+### 补充十二：标识符参数收紧成 `int` 会把编译期问题推成运行期问题
+
+基线这几条上报的签名是 `Object`（`historyReport(aid: Object, ...)`）。
+迁移时很自然想收紧成 `int`——但调用点传进来的是 `dynamic`，收紧**不会在
+编译期报出来**，只会在某一个入口上变成运行时 `TypeError`。
+
+真实的例子：`VideoDetailController.updateMediaListHistory` 传的
+`args['mediaId']` 来自路由参数，有的入口放进去的是 `item.id`（int），
+有的是 `item.id.toString()`（String，见 `lib/pages/fav/video/view.dart`）。
+
+所以 `RustVideoWrite` 的上报类照收 `Object`，在 Dart 侧折算成数字，折不出
+就不发请求。跨 FFI 的那一侧仍然是 `i64`——宽容只在宿主这一层，协议那一层
+不含糊。

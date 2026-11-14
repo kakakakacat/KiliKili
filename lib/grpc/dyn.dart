@@ -1,5 +1,3 @@
-import 'package:kilikili/grpc/bilibili/app/dynamic/v1.pb.dart'
-    show DynRedReq, TabOffset, DynRedReply;
 import 'package:kilikili/grpc/bilibili/app/dynamic/v2.pb.dart'
     show
         OpusType,
@@ -31,15 +29,6 @@ abstract final class DynGrpc {
   //     DynSpaceRsp.fromBuffer,
   //   );
   // }
-
-  static Future<int?> dynRed() async {
-    final res = await GrpcReq.request(
-      GrpcUrl.dynRed,
-      DynRedReq(tabOffset: [TabOffset(tab: 1)]),
-      DynRedReply.fromBuffer,
-    );
-    return res.dataOrNull?.dynRedItem.count.toInt();
-  }
 
   static Future<LoadingState<OpusDetailResp>> opusDetail({
     OpusType? opusType,

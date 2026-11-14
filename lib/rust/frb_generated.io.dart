@@ -5,6 +5,7 @@
 
 import 'package:kilikili/rust/api/cover_scrim.dart';
 import 'package:kilikili/rust/api/danmaku.dart';
+import 'package:kilikili/rust/api/dynamic.dart';
 import 'package:kilikili/rust/api/grpc.dart';
 import 'package:kilikili/rust/api/init.dart';
 import 'package:kilikili/rust/api/live.dart';
@@ -369,6 +370,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Durl dco_decode_durl(dynamic raw);
+
+  @protected
+  DynRedResult dco_decode_dyn_red_result(dynamic raw);
 
   @protected
   Emote dco_decode_emote(dynamic raw);
@@ -1938,6 +1942,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Durl sse_decode_durl(SseDeserializer deserializer);
+
+  @protected
+  DynRedResult sse_decode_dyn_red_result(SseDeserializer deserializer);
 
   @protected
   Emote sse_decode_emote(SseDeserializer deserializer);
@@ -3983,6 +3990,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_durl(Durl self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_dyn_red_result(DynRedResult self, SseSerializer serializer);
 
   @protected
   void sse_encode_emote(Emote self, SseSerializer serializer);

@@ -41,7 +41,7 @@ pub struct GrpcContext {
     pub transport: TransportSettings,
 }
 impl GrpcContext {
-    fn split(self) -> (RequestContext, ReqwestTransport) {
+    pub(crate) fn split(self) -> (RequestContext, ReqwestTransport) {
         let headers = grpc_metadata::headers(&self.identity.into_domain());
         (
             RequestContext {

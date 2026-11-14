@@ -149,6 +149,12 @@ RFC §10.1 规定了要固定 `UPSTREAM_COMMIT` 并记录 rebase/merge 策略，
 「有实质改动」。`lib/plugin/pl_player/view/view.dart` 已由 §4.1 的 S3 行覆盖，
 不重复计数。
 
+修订：2026-11-14（S5 #55 的动态红点 gRPC 路径）——本次触及上游既有文件
+`lib/grpc/dyn.dart` 与 `lib/pages/main/controller.dart`。前者删除了 Dart 的
+`dynRed` 请求与 protobuf 解析，属于新增的实质分叉；后者此前已因 #128
+列入实质改动，本次只是把红点调用指向 Rust。此处记录的是本次变动的文件集合，
+未把旧版汇总数字误写成当前全仓统计。
+
 ## 1. 基准
 
 ```

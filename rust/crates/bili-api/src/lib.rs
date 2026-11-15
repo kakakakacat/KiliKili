@@ -32,6 +32,7 @@ pub mod client;
 pub mod danmaku;
 pub mod danmaku_filter;
 pub mod dm_view;
+pub mod dynamic;
 pub mod envelope;
 pub mod follow;
 pub mod grpc;

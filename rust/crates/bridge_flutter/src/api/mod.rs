@@ -2,6 +2,7 @@
 
 pub mod cover_scrim;
 pub mod danmaku;
+pub mod dynamic;
 pub mod grpc;
 pub mod init;
 pub mod live;

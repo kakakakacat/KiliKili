@@ -100,3 +100,12 @@ S4 把 `lib/http/video.dart` 的十四条写操作搬进 `bili-api::video_write`
 写操作的请求面本身不靠 golden 冻结，靠的是 ADR-013 决策六的请求快照：
 Rust 单测钉住构造出来的 `PreparedWrite`，`test/bridge/video_write_bridge_test.dart`
 起桩服务端钉住**真的发出去的**那一个。
+
+## 2026-11-15：动态预约与投票请求面（issue #55）
+
+预约创建/更新继续使用原有表单字段与 body csrf；动态预约按钮仍为 JSON body、
+查询串 csrf。投票创建/编辑继续使用 JSON `vote_info` 与查询串 csrf；投票提交
+保留 `csrf`、`csrf_token` 与查询串三处同值。新增 `CsrfIn::BodyAndQueryWithToken`
+只表达这一条接口的既有请求形状，不改变签名算法，也不增加协议版本。请求字段、
+内容类型、CSRF 位置和写操作不重试行为由 `bili-api::dynamic` 单测覆盖；真实登录态
+响应样本尚缺，解析字段需要后续以脱敏样本复核。

@@ -6,6 +6,7 @@
 
 pub mod danmaku;
 pub mod danmaku_filter;
+pub mod dynamic;
 pub mod error;
 pub mod live;
 pub mod match_info;

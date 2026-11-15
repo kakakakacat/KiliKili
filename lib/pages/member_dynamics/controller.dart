@@ -1,4 +1,4 @@
-import 'package:kilikili/http/dynamics.dart';
+import 'package:kilikili/services/rust/rust_dynamic.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/member.dart';
 import 'package:kilikili/http/msg.dart';
@@ -61,10 +61,8 @@ class MemberDynamicsController
   }
 
   Future<void> onSetTop(bool isTop, Object dynamicId) async {
-    final res = await (isTop
-        ? DynamicsHttp.rmTop(dynamicId: dynamicId)
-        : DynamicsHttp.setTop(dynamicId: dynamicId));
-    if (res.isSuccess) {
+    final res = await RustDynamic.top(dynamicId: dynamicId, setTop: !isTop);
+    if (res.errorKind == null) {
       List<DynamicItemModel> list = loadingState.value.data!;
       list[0].modules
         ..moduleTag = null
@@ -84,7 +82,7 @@ class MemberDynamicsController
         SmartDialog.showToast('置顶成功');
       }
     } else {
-      res.toast();
+      SmartDialog.showToast(res.errorDetail ?? '动态置顶失败');
     }
   }
 }

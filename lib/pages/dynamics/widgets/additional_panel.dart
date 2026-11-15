@@ -2,10 +2,10 @@ import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/selection_text.dart';
-import 'package:kilikili/http/dynamics.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/pages/dynamics/widgets/vote.dart';
+import 'package:kilikili/services/rust/rust_dynamic.dart';
 import 'package:kilikili/utils/app_scheme.dart';
 import 'package:kilikili/utils/num_utils.dart';
 import 'package:get/get.dart';
@@ -177,23 +177,24 @@ Widget? addWidget(
                               : btn.disable == 1
                               ? null
                               : () async {
-                                  final res = await DynamicsHttp.dynReserve(
+                                  final res = await RustDynamic.dynReserve(
                                     reserveId: reserve.rid,
-                                    curBtnStatus: btn.status,
-                                    dynamicIdStr: idStr,
-                                    reserveTotal: reserve.reserveTotal,
+                                    status: btn.status,
+                                    dynamicId: idStr.toString(),
+                                    total: reserve.reserveTotal,
                                   );
-                                  if (res case Success(:final response)) {
+                                  final response = res.data;
+                                  if (response != null) {
                                     reserve
                                       ..desc2?.text = response.descUpdate
-                                      ..reserveTotal = response.reserveUpdate
+                                      ..reserveTotal = response.reserveUpdate?.toInt()
                                       ..button!.status =
                                           response.finalBtnStatus;
                                     if (context.mounted) {
                                       (context as Element?)?.markNeedsBuild();
                                     }
                                   } else {
-                                    res.toast();
+                                    Error(res.errorDetail ?? '动态预约请求失败', code: res.errorCode).toast();
                                   }
                                 },
                           child: Text(

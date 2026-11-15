@@ -8,7 +8,6 @@ import 'package:kilikili/models/common/dynamic/dynamics_type.dart';
 import 'package:kilikili/models/common/reply/reply_option_type.dart';
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/models/dynamics/up.dart';
-import 'package:kilikili/models/dynamics/vote_model.dart';
 import 'package:kilikili/models_new/article/article_info/data.dart';
 import 'package:kilikili/models_new/article/article_list/data.dart';
 import 'package:kilikili/models_new/article/article_view/data.dart';
@@ -19,7 +18,6 @@ import 'package:kilikili/models_new/dynamic/dyn_reaction/data.dart';
 import 'package:kilikili/models_new/dynamic/dyn_topic_feed/topic_card_list.dart';
 import 'package:kilikili/models_new/dynamic/dyn_topic_top/top_details.dart';
 import 'package:kilikili/models_new/dynamic/dyn_topic_top/topic_item.dart';
-import 'package:kilikili/models_new/followee_votes/vote.dart';
 import 'package:kilikili/services/rust/follow_compat.dart';
 import 'package:kilikili/services/rust/rust_misc.dart';
 import 'package:kilikili/utils/accounts.dart';
@@ -317,51 +315,6 @@ abstract final class DynamicsHttp {
     }
   }
 
-  static Future<LoadingState<VoteInfo>> voteInfo(dynamic voteId) async {
-    final res = await Request().get(
-      Api.voteInfo,
-      queryParameters: {'vote_id': voteId},
-    );
-    if (res.data['code'] == 0) {
-      final voteInfo = VoteInfo.fromSeparatedJson(res.data['data']);
-      return voteInfo.voteId == null
-          ? const Error('无效的投票id')
-          : Success(voteInfo);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<VoteInfo>> doVote({
-    required int voteId,
-    required List<int> votes,
-    bool anonymous = false,
-    int? dynamicId,
-  }) async {
-    final csrf = Accounts.main.csrf;
-    final data = {
-      'vote_id': voteId,
-      'votes': votes,
-      'voter_uid': Accounts.main.mid,
-      'status': anonymous ? 1 : 0,
-      'op_bit': 0,
-      'dynamic_id': dynamicId ?? 0,
-      'csrf_token': csrf,
-      'csrf': csrf,
-    };
-    final res = await Request().post(
-      Api.doVote,
-      queryParameters: {'csrf': csrf},
-      data: data,
-      options: Options(contentType: Headers.jsonContentType),
-    );
-    if (res.data['code'] == 0) {
-      return Success(VoteInfo.fromJson(res.data['data']['vote_info']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   static Future<LoadingState<TopDetails?>> topicTop({
     required Object topicId,
   }) async {
@@ -504,52 +457,6 @@ abstract final class DynamicsHttp {
     if (res.data['code'] == 0) {
       return Success(
         DynMentionData.fromJson(res.data['data']).groups,
-      );
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<int?>> createVote(VoteInfo voteInfo) async {
-    final res = await Request().post(
-      Api.createVote,
-      queryParameters: {'csrf': Accounts.main.csrf},
-      data: {'vote_info': voteInfo.toJson()},
-    );
-    if (res.data['code'] == 0) {
-      return Success(res.data['data']?['vote_id']);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<int?>> updateVote(VoteInfo voteInfo) async {
-    final res = await Request().post(
-      Api.updateVote,
-      queryParameters: {'csrf': Accounts.main.csrf},
-      data: {'vote_info': voteInfo.toJson()},
-    );
-    if (res.data['code'] == 0) {
-      return Success(res.data['data']?['vote_id']);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<List<FolloweeVote>?>> followeeVotes({
-    required dynamic voteId,
-  }) async {
-    final res = await Request().get(
-      Api.followeeVotes,
-      queryParameters: {
-        'vote_id': voteId,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(
-        (res.data['data']?['votes'] as List?)
-            ?.map((e) => FolloweeVote.fromJson(e))
-            .toList(),
       );
     } else {
       return Error(res.data['message']);

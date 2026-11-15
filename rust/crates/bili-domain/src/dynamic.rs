@@ -46,3 +46,48 @@ pub struct ReserveAction {
     pub reserve_update: Option<i32>,
     pub desc_update: Option<String>,
 }
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct VoteOption {
+    pub opt_idx: Option<i32>,
+    pub opt_desc: Option<String>,
+    #[serde(default)]
+    pub cnt: i64,
+    pub img_url: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct VoteInfo {
+    pub choice_cnt: Option<i32>,
+    pub default_share: Option<i32>,
+    pub desc: Option<String>,
+    pub end_time: Option<i64>,
+    pub status: Option<i32>,
+    pub uid: Option<i64>,
+    pub vote_id: Option<i64>,
+    #[serde(default)]
+    pub join_num: i64,
+    pub title: Option<String>,
+    pub ctime: Option<i64>,
+    pub my_votes: Option<Vec<i32>>,
+    #[serde(default)]
+    pub options: Vec<VoteOption>,
+    pub options_cnt: Option<i32>,
+    pub voter_level: Option<i32>,
+    pub face: Option<String>,
+    pub name: Option<String>,
+    #[serde(rename = "type")]
+    pub vote_type: Option<i32>,
+    pub vote_publisher: Option<i64>,
+    pub duration: Option<i64>,
+    pub only_fans_level: Option<i32>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct FolloweeVote {
+    pub uid: i64,
+    pub name: String,
+    pub face: String,
+    pub votes: Vec<i32>,
+    pub ctime: i64,
+}

@@ -15,7 +15,7 @@ import 'package:kilikili/http/dynamics.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/reply/reply_option_type.dart';
 import 'package:kilikili/models/dynamics/result.dart' show PicModel;
-import 'package:kilikili/models/dynamics/vote_model.dart';
+import 'package:kilikili/rust/api/dynamic.dart' as rust;
 import 'package:kilikili/rust/api/dynamic.dart' show ReserveCard;
 import 'package:kilikili/models_new/dynamic/dyn_topic_top/topic_item.dart';
 import 'package:kilikili/pages/common/publish/common_rich_text_pub_page.dart';
@@ -650,7 +650,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
       final voteItem = editController.items.firstWhereOrNull(
         (e) => e.type == RichTextType.vote,
       );
-      final voteInfo = await Navigator.of(context).push<VoteInfo>(
+      final voteInfo = await Navigator.of(context).push<rust.VoteInfoData>(
         GetPageRoute(
           page: () => CreateVotePage(
             voteId: voteItem?.id == null ? null : int.parse(voteItem!.id!),

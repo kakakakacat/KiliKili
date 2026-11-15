@@ -185,6 +185,26 @@ pub(crate) async fn send_write<T: HttpTransport>(
                 obj.insert("csrf".to_owned(), serde_json::Value::String(csrf));
             }
             (CsrfIn::Query, _) => query.push(("csrf".to_owned(), csrf)),
+            (CsrfIn::BodyAndQueryWithToken, WriteBody::Json(value)) => {
+                let Some(obj) = value.as_object_mut() else {
+                    return Err(DomainError::new(
+                        bili_domain::error::ErrorKind::Protocol,
+                        "JSON 体不是对象，动态投票 csrf 无处可放",
+                    ));
+                };
+                obj.insert("csrf".to_owned(), serde_json::Value::String(csrf.clone()));
+                obj.insert(
+                    "csrf_token".to_owned(),
+                    serde_json::Value::String(csrf.clone()),
+                );
+                query.push(("csrf".to_owned(), csrf));
+            }
+            (CsrfIn::BodyAndQueryWithToken, WriteBody::Form(_)) => {
+                return Err(DomainError::new(
+                    bili_domain::error::ErrorKind::Protocol,
+                    "动态投票 csrf 需要 JSON 请求体",
+                ));
+            }
             (CsrfIn::None, _) => {}
         }
     }
@@ -406,6 +426,28 @@ mod tests {
         // JSON 序列化，服务端看到的是数字。
         assert!(body.contains("\"room_id\":123"), "体不对: {body}");
         assert!(!body.contains("csrf"), "csrf 不该同时出现在体里: {body}");
+    }
+
+    #[test]
+    fn dynamic_vote_csrf_is_repeated_in_body_and_query() {
+        let stub = StubTransport::ok(200, r#"{"code":0}"#);
+        let prepared = PreparedWrite {
+            path: "/x/vote/do_vote",
+            query: Vec::new(),
+            body: WriteBody::Json(serde_json::json!({ "vote_id": 7 })),
+            csrf: CsrfIn::BodyAndQueryWithToken,
+            idempotency: Idempotency::Unsafe,
+        };
+        block_on(send_write(&stub, &ctx_logged_in(), &prepared)).expect("桩传输必定成功");
+        let seen = stub.seen_post.lock().expect("锁未被毒化");
+        let seen = seen.as_ref().expect("写请求应当送到传输层");
+        assert!(seen.url.ends_with("?csrf=csrf-placeholder"));
+        let PostBody::Json(body) = &seen.body else {
+            panic!("投票请求应为 JSON");
+        };
+        let value: serde_json::Value = serde_json::from_str(body).expect("JSON 请求体有效");
+        assert_eq!(value["csrf"], "csrf-placeholder");
+        assert_eq!(value["csrf_token"], "csrf-placeholder");
     }
 
     /// APP 端接口用 `access_key` 鉴权，没有 csrf 这回事。补上去不会报错，

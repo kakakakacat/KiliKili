@@ -296,6 +296,9 @@ pub enum CsrfIn {
     Body,
     /// 补进查询串。例：`roomEntryAction`。
     Query,
+    /// 同时补入 JSON 体的 `csrf` 与 `csrf_token`，并补入查询串。动态投票
+    /// 接口在三个位置重复校验同一 token。
+    BodyAndQueryWithToken,
     /// 不带。APP 端接口（`app.bilibili.com`）用 `access_key` 鉴权，
     /// 带上 csrf 既无用也让请求面与基线对不上。
     None,

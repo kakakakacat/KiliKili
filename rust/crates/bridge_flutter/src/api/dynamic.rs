@@ -279,6 +279,276 @@ pub async fn dyn_reserve(
 }
 
 #[derive(Debug, Clone)]
+pub struct VoteOptionData {
+    pub opt_idx: Option<i32>,
+    pub opt_desc: Option<String>,
+    pub cnt: i64,
+    pub img_url: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct VoteInfoData {
+    pub choice_cnt: Option<i32>,
+    pub default_share: Option<i32>,
+    pub desc: Option<String>,
+    pub end_time: Option<i64>,
+    pub status: Option<i32>,
+    pub uid: Option<i64>,
+    pub vote_id: Option<i64>,
+    pub join_num: i64,
+    pub title: Option<String>,
+    pub ctime: Option<i64>,
+    pub my_votes: Option<Vec<i32>>,
+    pub options: Vec<VoteOptionData>,
+    pub options_cnt: Option<i32>,
+    pub voter_level: Option<i32>,
+    pub face: Option<String>,
+    pub name: Option<String>,
+    pub vote_type: Option<i32>,
+    pub vote_publisher: Option<i64>,
+    pub duration: Option<i64>,
+    pub only_fans_level: Option<i32>,
+}
+
+#[derive(Debug, Clone)]
+pub struct VoteInfoResult {
+    pub data: Option<VoteInfoData>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+#[derive(Debug, Clone)]
+pub struct VoteIdResult {
+    pub data: Option<i64>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+#[derive(Debug, Clone)]
+pub struct FolloweeVoteData {
+    pub uid: i64,
+    pub name: String,
+    pub face: String,
+    pub votes: Vec<i32>,
+    pub ctime: i64,
+}
+
+#[derive(Debug, Clone)]
+pub struct FolloweeVotesResult {
+    pub data: Option<Vec<FolloweeVoteData>>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+fn into_vote_data(info: bili_domain::dynamic::VoteInfo) -> VoteInfoData {
+    VoteInfoData {
+        choice_cnt: info.choice_cnt,
+        default_share: info.default_share,
+        desc: info.desc,
+        end_time: info.end_time,
+        status: info.status,
+        uid: info.uid,
+        vote_id: info.vote_id,
+        join_num: info.join_num,
+        title: info.title,
+        ctime: info.ctime,
+        my_votes: info.my_votes,
+        options: info
+            .options
+            .into_iter()
+            .map(|option| VoteOptionData {
+                opt_idx: option.opt_idx,
+                opt_desc: option.opt_desc,
+                cnt: option.cnt,
+                img_url: option.img_url,
+            })
+            .collect(),
+        options_cnt: info.options_cnt,
+        voter_level: info.voter_level,
+        face: info.face,
+        name: info.name,
+        vote_type: info.vote_type,
+        vote_publisher: info.vote_publisher,
+        duration: info.duration,
+        only_fans_level: info.only_fans_level,
+    }
+}
+
+fn into_vote_domain(info: VoteInfoData) -> bili_domain::dynamic::VoteInfo {
+    bili_domain::dynamic::VoteInfo {
+        choice_cnt: info.choice_cnt,
+        default_share: info.default_share,
+        desc: info.desc,
+        end_time: info.end_time,
+        status: info.status,
+        uid: info.uid,
+        vote_id: info.vote_id,
+        join_num: info.join_num,
+        title: info.title,
+        ctime: info.ctime,
+        my_votes: info.my_votes,
+        options: info
+            .options
+            .into_iter()
+            .map(|option| bili_domain::dynamic::VoteOption {
+                opt_idx: option.opt_idx,
+                opt_desc: option.opt_desc,
+                cnt: option.cnt,
+                img_url: option.img_url,
+            })
+            .collect(),
+        options_cnt: info.options_cnt,
+        voter_level: info.voter_level,
+        face: info.face,
+        name: info.name,
+        vote_type: info.vote_type,
+        vote_publisher: info.vote_publisher,
+        duration: info.duration,
+        only_fans_level: info.only_fans_level,
+    }
+}
+
+pub async fn vote_info(context: DynamicWriteContext, vote_id: i64) -> VoteInfoResult {
+    let (ctx, transport) = context.split();
+    let result = init::runtime()
+        .spawn(async move { dynamic::fetch_vote_info(&transport, &ctx, vote_id).await })
+        .await
+        .unwrap_or_else(|_| {
+            Err(DomainError::new(
+                ErrorKind::Protocol,
+                "投票信息工作任务未完成",
+            ))
+        });
+    match result {
+        Ok(info) => VoteInfoResult {
+            data: Some(into_vote_data(info)),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(error) => VoteInfoResult {
+            data: None,
+            error_kind: Some(error.kind().to_string()),
+            error_detail: Some(error.detail().into()),
+            error_code: error.code(),
+        },
+    }
+}
+
+pub async fn do_vote(
+    context: DynamicWriteContext,
+    vote_id: i64,
+    votes: Vec<i32>,
+    anonymous: bool,
+    dynamic_id: Option<i64>,
+    voter_uid: Option<i64>,
+) -> VoteInfoResult {
+    let (ctx, transport) = context.split();
+    let result = init::runtime()
+        .spawn(async move {
+            dynamic::send_do_vote(
+                &transport, &ctx, vote_id, &votes, anonymous, dynamic_id, voter_uid,
+            )
+            .await
+        })
+        .await
+        .unwrap_or_else(|_| {
+            Err(DomainError::new(
+                ErrorKind::Protocol,
+                "投票提交工作任务未完成",
+            ))
+        });
+    match result {
+        Ok(info) => VoteInfoResult {
+            data: Some(into_vote_data(info)),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(error) => VoteInfoResult {
+            data: None,
+            error_kind: Some(error.kind().to_string()),
+            error_detail: Some(error.detail().into()),
+            error_code: error.code(),
+        },
+    }
+}
+
+pub async fn save_vote(
+    context: DynamicWriteContext,
+    info: VoteInfoData,
+    update: bool,
+) -> VoteIdResult {
+    let (ctx, transport) = context.split();
+    let result = init::runtime()
+        .spawn(async move {
+            dynamic::send_save_vote(&transport, &ctx, &into_vote_domain(info), update).await
+        })
+        .await
+        .unwrap_or_else(|_| {
+            Err(DomainError::new(
+                ErrorKind::Protocol,
+                "投票保存工作任务未完成",
+            ))
+        });
+    match result {
+        Ok(data) => VoteIdResult {
+            data: Some(data),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(error) => VoteIdResult {
+            data: None,
+            error_kind: Some(error.kind().to_string()),
+            error_detail: Some(error.detail().into()),
+            error_code: error.code(),
+        },
+    }
+}
+
+pub async fn followee_votes(context: DynamicWriteContext, vote_id: i64) -> FolloweeVotesResult {
+    let (ctx, transport) = context.split();
+    let result = init::runtime()
+        .spawn(async move { dynamic::fetch_followee_votes(&transport, &ctx, vote_id).await })
+        .await
+        .unwrap_or_else(|_| {
+            Err(DomainError::new(
+                ErrorKind::Protocol,
+                "关注者投票工作任务未完成",
+            ))
+        });
+    match result {
+        Ok(items) => FolloweeVotesResult {
+            data: Some(
+                items
+                    .into_iter()
+                    .map(|item| FolloweeVoteData {
+                        uid: item.uid,
+                        name: item.name,
+                        face: item.face,
+                        votes: item.votes,
+                        ctime: item.ctime,
+                    })
+                    .collect(),
+            ),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(error) => FolloweeVotesResult {
+            data: None,
+            error_kind: Some(error.kind().to_string()),
+            error_detail: Some(error.detail().into()),
+            error_code: error.code(),
+        },
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct DynRedResult {
     pub data: Option<i64>,
     pub error_kind: Option<String>,

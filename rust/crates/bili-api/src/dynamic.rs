@@ -1,7 +1,10 @@
 //! 动态功能模块接口：gRPC 读取、REST 预约和写操作。
 
 use bili_domain::{
-    dynamic::{DynamicAuthor, LikeListPage, ReserveAction, ReserveInfo, UnreadCount},
+    dynamic::{
+        DynamicAuthor, FolloweeVote, LikeListPage, ReserveAction, ReserveInfo, UnreadCount,
+        VoteInfo,
+    },
     error::{DomainError, ErrorKind},
 };
 use prost::Message;
@@ -18,6 +21,175 @@ pub const RESERVE_INFO_PATH: &str = "/x/new-reserve/up/reserve/info";
 pub const CREATE_RESERVE_PATH: &str = "/x/new-reserve/up/reserve/create";
 pub const UPDATE_RESERVE_PATH: &str = "/x/new-reserve/up/reserve/update";
 pub const DYN_RESERVE_PATH: &str = "/x/dynamic/feed/reserve/click";
+pub const VOTE_INFO_PATH: &str = "/x/vote/vote_info";
+pub const DO_VOTE_PATH: &str = "/x/vote/do_vote";
+pub const CREATE_VOTE_PATH: &str = "/x/vote/create";
+pub const UPDATE_VOTE_PATH: &str = "/x/vote/update";
+pub const FOLLOWEE_VOTES_PATH: &str = "/vote_svr/v1/vote_svr/followee_votes";
+
+#[must_use]
+pub fn vote_info_request(vote_id: i64) -> PreparedRequest {
+    PreparedRequest {
+        path: VOTE_INFO_PATH,
+        query: vec![("vote_id".to_owned(), vote_id.to_string())],
+    }
+}
+
+fn vote_json(info: &VoteInfo) -> serde_json::Value {
+    let mut value = json!({
+        "title": info.title,
+        "desc": info.desc,
+        "type": info.vote_type,
+        "choice_cnt": info.choice_cnt,
+        "duration": info.duration,
+        "options": info.options.iter().map(|option| json!({
+            "opt_desc": option.opt_desc,
+            "img_url": option.img_url,
+        })).collect::<Vec<_>>(),
+        "only_fans_level": info.only_fans_level,
+        "vote_publisher": info.vote_publisher,
+        "vote_id": info.vote_id,
+    });
+    if info.vote_id.is_none()
+        && let Some(object) = value.as_object_mut()
+    {
+        object.remove("vote_id");
+    }
+    value
+}
+
+#[must_use]
+pub fn do_vote_request(
+    vote_id: i64,
+    votes: &[i32],
+    anonymous: bool,
+    dynamic_id: Option<i64>,
+    voter_uid: Option<i64>,
+) -> PreparedWrite {
+    PreparedWrite {
+        path: DO_VOTE_PATH,
+        query: Vec::new(),
+        body: WriteBody::Json(json!({
+            "vote_id": vote_id,
+            "votes": votes,
+            "voter_uid": voter_uid.unwrap_or_default(),
+            "status": i32::from(anonymous),
+            "op_bit": 0,
+            "dynamic_id": dynamic_id.unwrap_or_default(),
+        })),
+        csrf: CsrfIn::BodyAndQueryWithToken,
+        idempotency: Idempotency::Unsafe,
+    }
+}
+
+#[must_use]
+pub fn save_vote_request(info: &VoteInfo, update: bool) -> PreparedWrite {
+    PreparedWrite {
+        path: if update {
+            UPDATE_VOTE_PATH
+        } else {
+            CREATE_VOTE_PATH
+        },
+        query: Vec::new(),
+        body: WriteBody::Json(json!({ "vote_info": vote_json(info) })),
+        csrf: CsrfIn::Query,
+        idempotency: Idempotency::Unsafe,
+    }
+}
+
+#[must_use]
+pub fn followee_votes_request(vote_id: i64) -> PreparedRequest {
+    PreparedRequest {
+        path: FOLLOWEE_VOTES_PATH,
+        query: vec![("vote_id".to_owned(), vote_id.to_string())],
+    }
+}
+
+pub fn parse_vote_info(body: &str) -> Result<VoteInfo, DomainError> {
+    let data: serde_json::Value = crate::envelope::unwrap_envelope(body)?;
+    let mut info: VoteInfo = serde_json::from_value(
+        data.get("vote_info")
+            .cloned()
+            .ok_or_else(|| DomainError::new(ErrorKind::Protocol, "投票响应缺少 vote_info"))?,
+    )
+    .map_err(|_| DomainError::new(ErrorKind::Protocol, "投票信息结构无法解析"))?;
+    info.my_votes = data
+        .get("my_votes")
+        .and_then(serde_json::Value::as_array)
+        .map(|values| {
+            values
+                .iter()
+                .filter_map(serde_json::Value::as_i64)
+                .filter_map(|value| i32::try_from(value).ok())
+                .collect()
+        });
+    if info.vote_id.is_none() {
+        return Err(DomainError::new(ErrorKind::Protocol, "无效的投票 id"));
+    }
+    Ok(info)
+}
+
+pub fn parse_vote_result(body: &str) -> Result<VoteInfo, DomainError> {
+    let data: serde_json::Value = crate::envelope::unwrap_envelope(body)?;
+    serde_json::from_value(
+        data.get("vote_info")
+            .cloned()
+            .ok_or_else(|| DomainError::new(ErrorKind::Protocol, "投票结果缺少 vote_info"))?,
+    )
+    .map_err(|_| DomainError::new(ErrorKind::Protocol, "投票结果结构无法解析"))
+}
+
+pub async fn fetch_vote_info<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    vote_id: i64,
+) -> Result<VoteInfo, DomainError> {
+    let body = crate::client::send(transport, ctx, &vote_info_request(vote_id)).await?;
+    parse_vote_info(&body)
+}
+
+pub async fn send_do_vote<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    vote_id: i64,
+    votes: &[i32],
+    anonymous: bool,
+    dynamic_id: Option<i64>,
+    voter_uid: Option<i64>,
+) -> Result<VoteInfo, DomainError> {
+    let body = crate::client::send_write(
+        transport,
+        ctx,
+        &do_vote_request(vote_id, votes, anonymous, dynamic_id, voter_uid),
+    )
+    .await?;
+    parse_vote_result(&body)
+}
+
+pub async fn send_save_vote<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    info: &VoteInfo,
+    update: bool,
+) -> Result<i64, DomainError> {
+    let body = crate::client::send_write(transport, ctx, &save_vote_request(info, update)).await?;
+    let data: serde_json::Value = crate::envelope::unwrap_envelope(&body)?;
+    data.get("vote_id")
+        .and_then(serde_json::Value::as_i64)
+        .or(info.vote_id)
+        .ok_or_else(|| DomainError::new(ErrorKind::Protocol, "保存投票响应缺少 vote_id"))
+}
+
+pub async fn fetch_followee_votes<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    vote_id: i64,
+) -> Result<Vec<FolloweeVote>, DomainError> {
+    let body = crate::client::send(transport, ctx, &followee_votes_request(vote_id)).await?;
+    let data: serde_json::Value = crate::envelope::unwrap_envelope(&body)?;
+    serde_json::from_value(data.get("votes").cloned().unwrap_or_else(|| json!([])))
+        .map_err(|_| DomainError::new(ErrorKind::Protocol, "关注者投票列表结构无法解析"))
+}
 
 fn reserve_info_request(sid: i64) -> PreparedRequest {
     PreparedRequest {
@@ -591,5 +763,70 @@ mod tests {
         assert_eq!(action.final_btn_status, Some(1));
         assert_eq!(action.reserve_update, Some(9));
         assert_eq!(action.desc_update.as_deref(), Some("已预约"));
+    }
+
+    #[test]
+    fn voting_requests_keep_legacy_csrf_and_wire_fields() {
+        let read = vote_info_request(12);
+        assert_eq!(read.path, VOTE_INFO_PATH);
+        assert_eq!(read.query, [("vote_id".to_owned(), "12".to_owned())]);
+
+        let vote = VoteInfo {
+            choice_cnt: Some(1),
+            default_share: None,
+            desc: Some("desc".to_owned()),
+            end_time: None,
+            status: None,
+            uid: None,
+            vote_id: None,
+            join_num: 0,
+            title: Some("title".to_owned()),
+            ctime: None,
+            my_votes: None,
+            options: vec![bili_domain::dynamic::VoteOption {
+                opt_idx: None,
+                opt_desc: Some("A".to_owned()),
+                cnt: 0,
+                img_url: None,
+            }],
+            options_cnt: None,
+            voter_level: None,
+            face: None,
+            name: None,
+            vote_type: Some(0),
+            vote_publisher: Some(5),
+            duration: Some(60),
+            only_fans_level: Some(0),
+        };
+        let create = save_vote_request(&vote, false);
+        assert_eq!(create.path, CREATE_VOTE_PATH);
+        assert_eq!(create.csrf, CsrfIn::Query);
+        assert_eq!(create.idempotency, Idempotency::Unsafe);
+        let WriteBody::Json(body) = create.body else {
+            panic!("投票保存请求为 JSON")
+        };
+        assert!(body["vote_info"].get("vote_id").is_none());
+        assert_eq!(body["vote_info"]["options"][0]["opt_desc"], "A");
+
+        let submit = do_vote_request(12, &[1, 3], true, Some(99), Some(5));
+        assert_eq!(submit.path, DO_VOTE_PATH);
+        assert_eq!(submit.csrf, CsrfIn::BodyAndQueryWithToken);
+        assert_eq!(
+            submit.body,
+            WriteBody::Json(json!({
+                "vote_id": 12, "votes": [1, 3], "voter_uid": 5,
+                "status": 1, "op_bit": 0, "dynamic_id": 99
+            }))
+        );
+    }
+
+    #[test]
+    #[allow(clippy::expect_used)]
+    fn vote_info_parser_combines_embedded_data_and_my_votes() {
+        let info = parse_vote_info(r#"{"code":0,"data":{"vote_info":{"vote_id":12,"title":"poll","type":0,"options":[{"opt_idx":1,"opt_desc":"A"}]},"my_votes":[1]}}"#)
+            .expect("vote response should parse");
+        assert_eq!(info.vote_id, Some(12));
+        assert_eq!(info.my_votes, Some(vec![1]));
+        assert_eq!(info.options[0].cnt, 0);
     }
 }

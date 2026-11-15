@@ -361,6 +361,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Volume dco_decode_box_autoadd_volume(dynamic raw);
 
   @protected
+  VoteInfoData dco_decode_box_autoadd_vote_info_data(dynamic raw);
+
+  @protected
   CdnServiceEntry dco_decode_cdn_service_entry(dynamic raw);
 
   @protected
@@ -449,6 +452,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FollowUser dco_decode_follow_user(dynamic raw);
+
+  @protected
+  FolloweeVoteData dco_decode_followee_vote_data(dynamic raw);
+
+  @protected
+  FolloweeVotesResult dco_decode_followee_votes_result(dynamic raw);
 
   @protected
   FormatCandidateInput dco_decode_format_candidate_input(dynamic raw);
@@ -545,6 +554,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<FollowUser> dco_decode_list_follow_user(dynamic raw);
+
+  @protected
+  List<FolloweeVoteData> dco_decode_list_followee_vote_data(dynamic raw);
 
   @protected
   List<FormatCandidateInput> dco_decode_list_format_candidate_input(
@@ -734,6 +746,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<ViewPoint> dco_decode_list_view_point(dynamic raw);
+
+  @protected
+  List<VoteOptionData> dco_decode_list_vote_option_data(dynamic raw);
 
   @protected
   LiveAppIdentity dco_decode_live_app_identity(dynamic raw);
@@ -1143,6 +1158,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Volume? dco_decode_opt_box_autoadd_volume(dynamic raw);
 
   @protected
+  VoteInfoData? dco_decode_opt_box_autoadd_vote_info_data(dynamic raw);
+
+  @protected
   List<String>? dco_decode_opt_list_String(dynamic raw);
 
   @protected
@@ -1168,6 +1186,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<FeedVideoItem>? dco_decode_opt_list_feed_video_item(dynamic raw);
+
+  @protected
+  List<FolloweeVoteData>? dco_decode_opt_list_followee_vote_data(dynamic raw);
 
   @protected
   List<GrpcSubtitle>? dco_decode_opt_list_grpc_subtitle(dynamic raw);
@@ -1207,6 +1228,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<PopularSeriesListItem>? dco_decode_opt_list_popular_series_list_item(
     dynamic raw,
   );
+
+  @protected
+  Int32List? dco_decode_opt_list_prim_i_32_strict(dynamic raw);
 
   @protected
   Int64List? dco_decode_opt_list_prim_i_64_strict(dynamic raw);
@@ -1590,6 +1614,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Volume dco_decode_volume(dynamic raw);
+
+  @protected
+  VoteIdResult dco_decode_vote_id_result(dynamic raw);
+
+  @protected
+  VoteInfoData dco_decode_vote_info_data(dynamic raw);
+
+  @protected
+  VoteInfoResult dco_decode_vote_info_result(dynamic raw);
+
+  @protected
+  VoteOptionData dco_decode_vote_option_data(dynamic raw);
 
   @protected
   WriteResult dco_decode_write_result(dynamic raw);
@@ -2011,6 +2047,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Volume sse_decode_box_autoadd_volume(SseDeserializer deserializer);
 
   @protected
+  VoteInfoData sse_decode_box_autoadd_vote_info_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   CdnServiceEntry sse_decode_cdn_service_entry(SseDeserializer deserializer);
 
   @protected
@@ -2115,6 +2156,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FollowUser sse_decode_follow_user(SseDeserializer deserializer);
+
+  @protected
+  FolloweeVoteData sse_decode_followee_vote_data(SseDeserializer deserializer);
+
+  @protected
+  FolloweeVotesResult sse_decode_followee_votes_result(
+    SseDeserializer deserializer,
+  );
 
   @protected
   FormatCandidateInput sse_decode_format_candidate_input(
@@ -2231,6 +2280,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<FollowUser> sse_decode_list_follow_user(SseDeserializer deserializer);
+
+  @protected
+  List<FolloweeVoteData> sse_decode_list_followee_vote_data(
+    SseDeserializer deserializer,
+  );
 
   @protected
   List<FormatCandidateInput> sse_decode_list_format_candidate_input(
@@ -2490,6 +2544,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<ViewPoint> sse_decode_list_view_point(SseDeserializer deserializer);
+
+  @protected
+  List<VoteOptionData> sse_decode_list_vote_option_data(
+    SseDeserializer deserializer,
+  );
 
   @protected
   LiveAppIdentity sse_decode_live_app_identity(SseDeserializer deserializer);
@@ -3027,6 +3086,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Volume? sse_decode_opt_box_autoadd_volume(SseDeserializer deserializer);
 
   @protected
+  VoteInfoData? sse_decode_opt_box_autoadd_vote_info_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<String>? sse_decode_opt_list_String(SseDeserializer deserializer);
 
   @protected
@@ -3060,6 +3124,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<FeedVideoItem>? sse_decode_opt_list_feed_video_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<FolloweeVoteData>? sse_decode_opt_list_followee_vote_data(
     SseDeserializer deserializer,
   );
 
@@ -3117,6 +3186,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<PopularSeriesListItem>? sse_decode_opt_list_popular_series_list_item(
     SseDeserializer deserializer,
   );
+
+  @protected
+  Int32List? sse_decode_opt_list_prim_i_32_strict(SseDeserializer deserializer);
 
   @protected
   Int64List? sse_decode_opt_list_prim_i_64_strict(SseDeserializer deserializer);
@@ -3586,6 +3658,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Volume sse_decode_volume(SseDeserializer deserializer);
+
+  @protected
+  VoteIdResult sse_decode_vote_id_result(SseDeserializer deserializer);
+
+  @protected
+  VoteInfoData sse_decode_vote_info_data(SseDeserializer deserializer);
+
+  @protected
+  VoteInfoResult sse_decode_vote_info_result(SseDeserializer deserializer);
+
+  @protected
+  VoteOptionData sse_decode_vote_option_data(SseDeserializer deserializer);
 
   @protected
   WriteResult sse_decode_write_result(SseDeserializer deserializer);
@@ -4164,6 +4248,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_box_autoadd_volume(Volume self, SseSerializer serializer);
 
   @protected
+  void sse_encode_box_autoadd_vote_info_data(
+    VoteInfoData self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_cdn_service_entry(
     CdnServiceEntry self,
     SseSerializer serializer,
@@ -4294,6 +4384,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_follow_user(FollowUser self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_followee_vote_data(
+    FolloweeVoteData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_followee_votes_result(
+    FolloweeVotesResult self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_format_candidate_input(
@@ -4439,6 +4541,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_follow_user(
     List<FollowUser> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_followee_vote_data(
+    List<FolloweeVoteData> self,
     SseSerializer serializer,
   );
 
@@ -4790,6 +4898,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_view_point(
     List<ViewPoint> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_vote_option_data(
+    List<VoteOptionData> self,
     SseSerializer serializer,
   );
 
@@ -5472,6 +5586,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_vote_info_data(
+    VoteInfoData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_list_String(List<String>? self, SseSerializer serializer);
 
   @protected
@@ -5516,6 +5636,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_feed_video_item(
     List<FeedVideoItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_followee_vote_data(
+    List<FolloweeVoteData>? self,
     SseSerializer serializer,
   );
 
@@ -5588,6 +5714,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_popular_series_list_item(
     List<PopularSeriesListItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_prim_i_32_strict(
+    Int32List? self,
     SseSerializer serializer,
   );
 
@@ -6202,6 +6334,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_volume(Volume self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_vote_id_result(VoteIdResult self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_vote_info_data(VoteInfoData self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_vote_info_result(
+    VoteInfoResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_vote_option_data(
+    VoteOptionData self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_write_result(WriteResult self, SseSerializer serializer);

@@ -9,8 +9,8 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:kilikili/rust/api/transport.dart';
 import 'package:kilikili/rust/api/write.dart';
 
-// These functions are ignored because they are not marked as `pub`: `split`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These functions are ignored because they are not marked as `pub`: `into_vote_data`, `into_vote_domain`, `split`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 Future<WriteResult> thumbDynamic({
   required DynamicWriteContext context,
@@ -88,6 +88,48 @@ Future<ReserveActionResult> dynReserve({
   status: status,
   dynamicId: dynamicId,
   total: total,
+);
+
+Future<VoteInfoResult> voteInfo({
+  required DynamicWriteContext context,
+  required PlatformInt64 voteId,
+}) => RustLib.instance.api.crateApiDynamicVoteInfo(
+  context: context,
+  voteId: voteId,
+);
+
+Future<VoteInfoResult> doVote({
+  required DynamicWriteContext context,
+  required PlatformInt64 voteId,
+  required List<int> votes,
+  required bool anonymous,
+  PlatformInt64? dynamicId,
+  PlatformInt64? voterUid,
+}) => RustLib.instance.api.crateApiDynamicDoVote(
+  context: context,
+  voteId: voteId,
+  votes: votes,
+  anonymous: anonymous,
+  dynamicId: dynamicId,
+  voterUid: voterUid,
+);
+
+Future<VoteIdResult> saveVote({
+  required DynamicWriteContext context,
+  required VoteInfoData info,
+  required bool update,
+}) => RustLib.instance.api.crateApiDynamicSaveVote(
+  context: context,
+  info: info,
+  update: update,
+);
+
+Future<FolloweeVotesResult> followeeVotes({
+  required DynamicWriteContext context,
+  required PlatformInt64 voteId,
+}) => RustLib.instance.api.crateApiDynamicFolloweeVotes(
+  context: context,
+  voteId: voteId,
 );
 
 Future<LikeListResult> fetchLikeList({
@@ -232,6 +274,72 @@ class DynamicWriteContext {
           headers == other.headers &&
           timeoutMs == other.timeoutMs &&
           transport == other.transport;
+}
+
+class FolloweeVoteData {
+  final PlatformInt64 uid;
+  final String name;
+  final String face;
+  final Int32List votes;
+  final PlatformInt64 ctime;
+
+  const FolloweeVoteData({
+    required this.uid,
+    required this.name,
+    required this.face,
+    required this.votes,
+    required this.ctime,
+  });
+
+  @override
+  int get hashCode =>
+      uid.hashCode ^
+      name.hashCode ^
+      face.hashCode ^
+      votes.hashCode ^
+      ctime.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FolloweeVoteData &&
+          runtimeType == other.runtimeType &&
+          uid == other.uid &&
+          name == other.name &&
+          face == other.face &&
+          votes == other.votes &&
+          ctime == other.ctime;
+}
+
+class FolloweeVotesResult {
+  final List<FolloweeVoteData>? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const FolloweeVotesResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FolloweeVotesResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
 }
 
 class LikeListPage {
@@ -429,4 +537,189 @@ class ReserveInfoResult {
           errorKind == other.errorKind &&
           errorDetail == other.errorDetail &&
           errorCode == other.errorCode;
+}
+
+class VoteIdResult {
+  final PlatformInt64? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const VoteIdResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is VoteIdResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+class VoteInfoData {
+  final int? choiceCnt;
+  final int? defaultShare;
+  final String? desc;
+  final PlatformInt64? endTime;
+  final int? status;
+  final PlatformInt64? uid;
+  final PlatformInt64? voteId;
+  final PlatformInt64 joinNum;
+  final String? title;
+  final PlatformInt64? ctime;
+  final Int32List? myVotes;
+  final List<VoteOptionData> options;
+  final int? optionsCnt;
+  final int? voterLevel;
+  final String? face;
+  final String? name;
+  final int? voteType;
+  final PlatformInt64? votePublisher;
+  final PlatformInt64? duration;
+  final int? onlyFansLevel;
+
+  const VoteInfoData({
+    this.choiceCnt,
+    this.defaultShare,
+    this.desc,
+    this.endTime,
+    this.status,
+    this.uid,
+    this.voteId,
+    required this.joinNum,
+    this.title,
+    this.ctime,
+    this.myVotes,
+    required this.options,
+    this.optionsCnt,
+    this.voterLevel,
+    this.face,
+    this.name,
+    this.voteType,
+    this.votePublisher,
+    this.duration,
+    this.onlyFansLevel,
+  });
+
+  @override
+  int get hashCode =>
+      choiceCnt.hashCode ^
+      defaultShare.hashCode ^
+      desc.hashCode ^
+      endTime.hashCode ^
+      status.hashCode ^
+      uid.hashCode ^
+      voteId.hashCode ^
+      joinNum.hashCode ^
+      title.hashCode ^
+      ctime.hashCode ^
+      myVotes.hashCode ^
+      options.hashCode ^
+      optionsCnt.hashCode ^
+      voterLevel.hashCode ^
+      face.hashCode ^
+      name.hashCode ^
+      voteType.hashCode ^
+      votePublisher.hashCode ^
+      duration.hashCode ^
+      onlyFansLevel.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is VoteInfoData &&
+          runtimeType == other.runtimeType &&
+          choiceCnt == other.choiceCnt &&
+          defaultShare == other.defaultShare &&
+          desc == other.desc &&
+          endTime == other.endTime &&
+          status == other.status &&
+          uid == other.uid &&
+          voteId == other.voteId &&
+          joinNum == other.joinNum &&
+          title == other.title &&
+          ctime == other.ctime &&
+          myVotes == other.myVotes &&
+          options == other.options &&
+          optionsCnt == other.optionsCnt &&
+          voterLevel == other.voterLevel &&
+          face == other.face &&
+          name == other.name &&
+          voteType == other.voteType &&
+          votePublisher == other.votePublisher &&
+          duration == other.duration &&
+          onlyFansLevel == other.onlyFansLevel;
+}
+
+class VoteInfoResult {
+  final VoteInfoData? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const VoteInfoResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is VoteInfoResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+class VoteOptionData {
+  final int? optIdx;
+  final String? optDesc;
+  final PlatformInt64 cnt;
+  final String? imgUrl;
+
+  const VoteOptionData({
+    this.optIdx,
+    this.optDesc,
+    required this.cnt,
+    this.imgUrl,
+  });
+
+  @override
+  int get hashCode =>
+      optIdx.hashCode ^ optDesc.hashCode ^ cnt.hashCode ^ imgUrl.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is VoteOptionData &&
+          runtimeType == other.runtimeType &&
+          optIdx == other.optIdx &&
+          optDesc == other.optDesc &&
+          cnt == other.cnt &&
+          imgUrl == other.imgUrl;
 }

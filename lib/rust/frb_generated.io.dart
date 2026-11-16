@@ -9,6 +9,7 @@ import 'package:kilikili/rust/api/dynamic.dart';
 import 'package:kilikili/rust/api/grpc.dart';
 import 'package:kilikili/rust/api/init.dart';
 import 'package:kilikili/rust/api/live.dart';
+import 'package:kilikili/rust/api/login.dart';
 import 'package:kilikili/rust/api/media_select.dart';
 import 'package:kilikili/rust/api/misc.dart';
 import 'package:kilikili/rust/api/pgc.dart';
@@ -97,6 +98,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   bool dco_decode_box_autoadd_bool(dynamic raw);
+
+  @protected
+  CaptchaRegistrationData dco_decode_box_autoadd_captcha_registration_data(
+    dynamic raw,
+  );
+
+  @protected
+  CaptchaSolutionData dco_decode_box_autoadd_captcha_solution_data(dynamic raw);
 
   @protected
   DanmakuEngineOptions dco_decode_box_autoadd_danmaku_engine_options(
@@ -194,6 +203,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveShieldInfo dco_decode_box_autoadd_live_shield_info(dynamic raw);
 
   @protected
+  LoginContext dco_decode_box_autoadd_login_context(dynamic raw);
+
+  @protected
+  LoginTokensData dco_decode_box_autoadd_login_tokens_data(dynamic raw);
+
+  @protected
   LoudnormConfig dco_decode_box_autoadd_loudnorm_config(dynamic raw);
 
   @protected
@@ -231,6 +246,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   OfficialVerify dco_decode_box_autoadd_official_verify(dynamic raw);
+
+  @protected
+  PasswordLoginState dco_decode_box_autoadd_password_login_state(dynamic raw);
 
   @protected
   PgcContext dco_decode_box_autoadd_pgc_context(dynamic raw);
@@ -284,6 +302,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PopularSeriesOne dco_decode_box_autoadd_popular_series_one(dynamic raw);
 
   @protected
+  QrCodeData dco_decode_box_autoadd_qr_code_data(dynamic raw);
+
+  @protected
+  QrPollState dco_decode_box_autoadd_qr_poll_state(dynamic raw);
+
+  @protected
   ReplyContext dco_decode_box_autoadd_reply_context(dynamic raw);
 
   @protected
@@ -314,6 +338,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReserveCard dco_decode_box_autoadd_reserve_card(dynamic raw);
 
   @protected
+  RiskVerificationData dco_decode_box_autoadd_risk_verification_data(
+    dynamic raw,
+  );
+
+  @protected
+  SafeCenterInfoData dco_decode_box_autoadd_safe_center_info_data(dynamic raw);
+
+  @protected
   SearchAllData dco_decode_box_autoadd_search_all_data(dynamic raw);
 
   @protected
@@ -327,6 +359,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SegmentBase dco_decode_box_autoadd_segment_base(dynamic raw);
+
+  @protected
+  SmsSendState dco_decode_box_autoadd_sms_send_state(dynamic raw);
 
   @protected
   SponsorBlockContext dco_decode_box_autoadd_sponsor_block_context(dynamic raw);
@@ -362,6 +397,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   VoteInfoData dco_decode_box_autoadd_vote_info_data(dynamic raw);
+
+  @protected
+  CaptchaKeyResult dco_decode_captcha_key_result(dynamic raw);
+
+  @protected
+  CaptchaRegistrationData dco_decode_captcha_registration_data(dynamic raw);
+
+  @protected
+  CaptchaRegistrationResult dco_decode_captcha_registration_result(dynamic raw);
+
+  @protected
+  CaptchaSolutionData dco_decode_captcha_solution_data(dynamic raw);
 
   @protected
   CdnServiceEntry dco_decode_cdn_service_entry(dynamic raw);
@@ -629,6 +676,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<LiveUrlInfo> dco_decode_list_live_url_info(dynamic raw);
 
   @protected
+  List<LoginCookieData> dco_decode_list_login_cookie_data(dynamic raw);
+
+  @protected
+  List<LoginDeviceData> dco_decode_list_login_device_data(dynamic raw);
+
+  @protected
   List<MatchContest> dco_decode_list_match_contest(dynamic raw);
 
   @protected
@@ -888,6 +941,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveUrlInfo dco_decode_live_url_info(dynamic raw);
 
   @protected
+  LoginContext dco_decode_login_context(dynamic raw);
+
+  @protected
+  LoginCookieData dco_decode_login_cookie_data(dynamic raw);
+
+  @protected
+  LoginDeviceData dco_decode_login_device_data(dynamic raw);
+
+  @protected
+  LoginDevicesResult dco_decode_login_devices_result(dynamic raw);
+
+  @protected
+  LoginTokensData dco_decode_login_tokens_data(dynamic raw);
+
+  @protected
+  LoginTokensResult dco_decode_login_tokens_result(dynamic raw);
+
+  @protected
   LoudnormConfig dco_decode_loudnorm_config(dynamic raw);
 
   @protected
@@ -936,6 +1007,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   NoteListResult dco_decode_note_list_result(dynamic raw);
 
   @protected
+  OauthCodeResult dco_decode_oauth_code_result(dynamic raw);
+
+  @protected
   OfficialVerify dco_decode_official_verify(dynamic raw);
 
   @protected
@@ -949,6 +1023,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   bool? dco_decode_opt_box_autoadd_bool(dynamic raw);
+
+  @protected
+  CaptchaRegistrationData? dco_decode_opt_box_autoadd_captcha_registration_data(
+    dynamic raw,
+  );
 
   @protected
   DanmakuFilter? dco_decode_opt_box_autoadd_danmaku_filter(dynamic raw);
@@ -1024,6 +1103,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveShieldInfo? dco_decode_opt_box_autoadd_live_shield_info(dynamic raw);
 
   @protected
+  LoginTokensData? dco_decode_opt_box_autoadd_login_tokens_data(dynamic raw);
+
+  @protected
   MatchContest? dco_decode_opt_box_autoadd_match_contest(dynamic raw);
 
   @protected
@@ -1052,6 +1134,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   OfficialVerify? dco_decode_opt_box_autoadd_official_verify(dynamic raw);
+
+  @protected
+  PasswordLoginState? dco_decode_opt_box_autoadd_password_login_state(
+    dynamic raw,
+  );
 
   @protected
   PgcIndexCondition? dco_decode_opt_box_autoadd_pgc_index_condition(
@@ -1100,6 +1187,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PopularSeriesOne? dco_decode_opt_box_autoadd_popular_series_one(dynamic raw);
 
   @protected
+  QrCodeData? dco_decode_opt_box_autoadd_qr_code_data(dynamic raw);
+
+  @protected
+  QrPollState? dco_decode_opt_box_autoadd_qr_poll_state(dynamic raw);
+
+  @protected
   ReplyCursor? dco_decode_opt_box_autoadd_reply_cursor(dynamic raw);
 
   @protected
@@ -1129,6 +1222,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReserveCard? dco_decode_opt_box_autoadd_reserve_card(dynamic raw);
 
   @protected
+  RiskVerificationData? dco_decode_opt_box_autoadd_risk_verification_data(
+    dynamic raw,
+  );
+
+  @protected
+  SafeCenterInfoData? dco_decode_opt_box_autoadd_safe_center_info_data(
+    dynamic raw,
+  );
+
+  @protected
   SearchAllData? dco_decode_opt_box_autoadd_search_all_data(dynamic raw);
 
   @protected
@@ -1136,6 +1239,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SegmentBase? dco_decode_opt_box_autoadd_segment_base(dynamic raw);
+
+  @protected
+  SmsSendState? dco_decode_opt_box_autoadd_sms_send_state(dynamic raw);
 
   @protected
   SponsorUserInfo? dco_decode_opt_box_autoadd_sponsor_user_info(dynamic raw);
@@ -1210,6 +1316,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<LiveEmotePackage>? dco_decode_opt_list_live_emote_package(dynamic raw);
 
   @protected
+  List<LoginDeviceData>? dco_decode_opt_list_login_device_data(dynamic raw);
+
+  @protected
   List<MediaStream>? dco_decode_opt_list_media_stream(dynamic raw);
 
   @protected
@@ -1266,6 +1375,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<ViewPoint>? dco_decode_opt_list_view_point(dynamic raw);
+
+  @protected
+  PasswordLoginResult dco_decode_password_login_result(dynamic raw);
+
+  @protected
+  PasswordLoginState dco_decode_password_login_state(dynamic raw);
+
+  @protected
+  PasswordLoginStatus dco_decode_password_login_status(dynamic raw);
 
   @protected
   PgcBriefImage dco_decode_pgc_brief_image(dynamic raw);
@@ -1397,6 +1515,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PopularSeriesOneResult dco_decode_popular_series_one_result(dynamic raw);
 
   @protected
+  QrCodeData dco_decode_qr_code_data(dynamic raw);
+
+  @protected
+  QrCodeResult dco_decode_qr_code_result(dynamic raw);
+
+  @protected
+  QrPollResult dco_decode_qr_poll_result(dynamic raw);
+
+  @protected
+  QrPollState dco_decode_qr_poll_state(dynamic raw);
+
+  @protected
+  QrPollStatus dco_decode_qr_poll_status(dynamic raw);
+
+  @protected
   (String, String) dco_decode_record_string_string(dynamic raw);
 
   @protected
@@ -1446,6 +1579,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ReserveInfoResult dco_decode_reserve_info_result(dynamic raw);
+
+  @protected
+  RiskVerificationData dco_decode_risk_verification_data(dynamic raw);
+
+  @protected
+  SafeCenterInfoData dco_decode_safe_center_info_data(dynamic raw);
+
+  @protected
+  SafeCenterInfoResult dco_decode_safe_center_info_result(dynamic raw);
 
   @protected
   SearchActivityItem dco_decode_search_activity_item(dynamic raw);
@@ -1524,6 +1666,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SkipSegmentsResult dco_decode_skip_segments_result(dynamic raw);
+
+  @protected
+  SmsSendResult dco_decode_sms_send_result(dynamic raw);
+
+  @protected
+  SmsSendState dco_decode_sms_send_state(dynamic raw);
+
+  @protected
+  SmsSendStatus dco_decode_sms_send_status(dynamic raw);
 
   @protected
   SongHeat dco_decode_song_heat(dynamic raw);
@@ -1695,6 +1846,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool sse_decode_box_autoadd_bool(SseDeserializer deserializer);
 
   @protected
+  CaptchaRegistrationData sse_decode_box_autoadd_captcha_registration_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  CaptchaSolutionData sse_decode_box_autoadd_captcha_solution_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   DanmakuEngineOptions sse_decode_box_autoadd_danmaku_engine_options(
     SseDeserializer deserializer,
   );
@@ -1822,6 +1983,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  LoginContext sse_decode_box_autoadd_login_context(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LoginTokensData sse_decode_box_autoadd_login_tokens_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   LoudnormConfig sse_decode_box_autoadd_loudnorm_config(
     SseDeserializer deserializer,
   );
@@ -1865,6 +2036,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   OfficialVerify sse_decode_box_autoadd_official_verify(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PasswordLoginState sse_decode_box_autoadd_password_login_state(
     SseDeserializer deserializer,
   );
 
@@ -1946,6 +2122,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  QrCodeData sse_decode_box_autoadd_qr_code_data(SseDeserializer deserializer);
+
+  @protected
+  QrPollState sse_decode_box_autoadd_qr_poll_state(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   ReplyContext sse_decode_box_autoadd_reply_context(
     SseDeserializer deserializer,
   );
@@ -1984,6 +2168,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReserveCard sse_decode_box_autoadd_reserve_card(SseDeserializer deserializer);
 
   @protected
+  RiskVerificationData sse_decode_box_autoadd_risk_verification_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SafeCenterInfoData sse_decode_box_autoadd_safe_center_info_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SearchAllData sse_decode_box_autoadd_search_all_data(
     SseDeserializer deserializer,
   );
@@ -2003,6 +2197,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SegmentBase sse_decode_box_autoadd_segment_base(SseDeserializer deserializer);
+
+  @protected
+  SmsSendState sse_decode_box_autoadd_sms_send_state(
+    SseDeserializer deserializer,
+  );
 
   @protected
   SponsorBlockContext sse_decode_box_autoadd_sponsor_block_context(
@@ -2048,6 +2247,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   VoteInfoData sse_decode_box_autoadd_vote_info_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  CaptchaKeyResult sse_decode_captcha_key_result(SseDeserializer deserializer);
+
+  @protected
+  CaptchaRegistrationData sse_decode_captcha_registration_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  CaptchaRegistrationResult sse_decode_captcha_registration_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  CaptchaSolutionData sse_decode_captcha_solution_data(
     SseDeserializer deserializer,
   );
 
@@ -2385,6 +2602,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<LiveUrlInfo> sse_decode_list_live_url_info(SseDeserializer deserializer);
 
   @protected
+  List<LoginCookieData> sse_decode_list_login_cookie_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<LoginDeviceData> sse_decode_list_login_device_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<MatchContest> sse_decode_list_match_contest(
     SseDeserializer deserializer,
   );
@@ -2712,6 +2939,28 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveUrlInfo sse_decode_live_url_info(SseDeserializer deserializer);
 
   @protected
+  LoginContext sse_decode_login_context(SseDeserializer deserializer);
+
+  @protected
+  LoginCookieData sse_decode_login_cookie_data(SseDeserializer deserializer);
+
+  @protected
+  LoginDeviceData sse_decode_login_device_data(SseDeserializer deserializer);
+
+  @protected
+  LoginDevicesResult sse_decode_login_devices_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LoginTokensData sse_decode_login_tokens_data(SseDeserializer deserializer);
+
+  @protected
+  LoginTokensResult sse_decode_login_tokens_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   LoudnormConfig sse_decode_loudnorm_config(SseDeserializer deserializer);
 
   @protected
@@ -2762,6 +3011,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   NoteListResult sse_decode_note_list_result(SseDeserializer deserializer);
 
   @protected
+  OauthCodeResult sse_decode_oauth_code_result(SseDeserializer deserializer);
+
+  @protected
   OfficialVerify sse_decode_official_verify(SseDeserializer deserializer);
 
   @protected
@@ -2779,6 +3031,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   bool? sse_decode_opt_box_autoadd_bool(SseDeserializer deserializer);
+
+  @protected
+  CaptchaRegistrationData? sse_decode_opt_box_autoadd_captcha_registration_data(
+    SseDeserializer deserializer,
+  );
 
   @protected
   DanmakuFilter? sse_decode_opt_box_autoadd_danmaku_filter(
@@ -2888,6 +3145,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  LoginTokensData? sse_decode_opt_box_autoadd_login_tokens_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   MatchContest? sse_decode_opt_box_autoadd_match_contest(
     SseDeserializer deserializer,
   );
@@ -2932,6 +3194,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   OfficialVerify? sse_decode_opt_box_autoadd_official_verify(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PasswordLoginState? sse_decode_opt_box_autoadd_password_login_state(
     SseDeserializer deserializer,
   );
 
@@ -3002,6 +3269,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  QrCodeData? sse_decode_opt_box_autoadd_qr_code_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  QrPollState? sse_decode_opt_box_autoadd_qr_poll_state(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   ReplyCursor? sse_decode_opt_box_autoadd_reply_cursor(
     SseDeserializer deserializer,
   );
@@ -3047,6 +3324,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  RiskVerificationData? sse_decode_opt_box_autoadd_risk_verification_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SafeCenterInfoData? sse_decode_opt_box_autoadd_safe_center_info_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SearchAllData? sse_decode_opt_box_autoadd_search_all_data(
     SseDeserializer deserializer,
   );
@@ -3058,6 +3345,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SegmentBase? sse_decode_opt_box_autoadd_segment_base(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SmsSendState? sse_decode_opt_box_autoadd_sms_send_state(
     SseDeserializer deserializer,
   );
 
@@ -3160,6 +3452,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<LoginDeviceData>? sse_decode_opt_list_login_device_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<MediaStream>? sse_decode_opt_list_media_stream(
     SseDeserializer deserializer,
   );
@@ -3238,6 +3535,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<ViewPoint>? sse_decode_opt_list_view_point(SseDeserializer deserializer);
+
+  @protected
+  PasswordLoginResult sse_decode_password_login_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PasswordLoginState sse_decode_password_login_state(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PasswordLoginStatus sse_decode_password_login_status(
+    SseDeserializer deserializer,
+  );
 
   @protected
   PgcBriefImage sse_decode_pgc_brief_image(SseDeserializer deserializer);
@@ -3393,6 +3705,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  QrCodeData sse_decode_qr_code_data(SseDeserializer deserializer);
+
+  @protected
+  QrCodeResult sse_decode_qr_code_result(SseDeserializer deserializer);
+
+  @protected
+  QrPollResult sse_decode_qr_poll_result(SseDeserializer deserializer);
+
+  @protected
+  QrPollState sse_decode_qr_poll_state(SseDeserializer deserializer);
+
+  @protected
+  QrPollStatus sse_decode_qr_poll_status(SseDeserializer deserializer);
+
+  @protected
   (String, String) sse_decode_record_string_string(
     SseDeserializer deserializer,
   );
@@ -3452,6 +3779,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ReserveInfoResult sse_decode_reserve_info_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  RiskVerificationData sse_decode_risk_verification_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SafeCenterInfoData sse_decode_safe_center_info_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SafeCenterInfoResult sse_decode_safe_center_info_result(
     SseDeserializer deserializer,
   );
 
@@ -3550,6 +3892,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SkipSegmentsResult sse_decode_skip_segments_result(
     SseDeserializer deserializer,
   );
+
+  @protected
+  SmsSendResult sse_decode_sms_send_result(SseDeserializer deserializer);
+
+  @protected
+  SmsSendState sse_decode_sms_send_state(SseDeserializer deserializer);
+
+  @protected
+  SmsSendStatus sse_decode_sms_send_status(SseDeserializer deserializer);
 
   @protected
   SongHeat sse_decode_song_heat(SseDeserializer deserializer);
@@ -3753,6 +4104,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_box_autoadd_bool(bool self, SseSerializer serializer);
 
   @protected
+  void sse_encode_box_autoadd_captcha_registration_data(
+    CaptchaRegistrationData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_captcha_solution_data(
+    CaptchaSolutionData self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_danmaku_engine_options(
     DanmakuEngineOptions self,
     SseSerializer serializer,
@@ -3930,6 +4293,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_login_context(
+    LoginContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_login_tokens_data(
+    LoginTokensData self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_loudnorm_config(
     LoudnormConfig self,
     SseSerializer serializer,
@@ -4004,6 +4379,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_official_verify(
     OfficialVerify self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_password_login_state(
+    PasswordLoginState self,
     SseSerializer serializer,
   );
 
@@ -4107,6 +4488,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_qr_code_data(
+    QrCodeData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_qr_poll_state(
+    QrPollState self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_reply_context(
     ReplyContext self,
     SseSerializer serializer,
@@ -4167,6 +4560,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_risk_verification_data(
+    RiskVerificationData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_safe_center_info_data(
+    SafeCenterInfoData self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_search_all_data(
     SearchAllData self,
     SseSerializer serializer,
@@ -4193,6 +4598,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_segment_base(
     SegmentBase self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_sms_send_state(
+    SmsSendState self,
     SseSerializer serializer,
   );
 
@@ -4250,6 +4661,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_vote_info_data(
     VoteInfoData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_captcha_key_result(
+    CaptchaKeyResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_captcha_registration_data(
+    CaptchaRegistrationData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_captcha_registration_result(
+    CaptchaRegistrationResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_captcha_solution_data(
+    CaptchaSolutionData self,
     SseSerializer serializer,
   );
 
@@ -4673,6 +5108,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_live_url_info(
     List<LiveUrlInfo> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_login_cookie_data(
+    List<LoginCookieData> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_login_device_data(
+    List<LoginDeviceData> self,
     SseSerializer serializer,
   );
 
@@ -5127,6 +5574,39 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_live_url_info(LiveUrlInfo self, SseSerializer serializer);
 
   @protected
+  void sse_encode_login_context(LoginContext self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_login_cookie_data(
+    LoginCookieData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_login_device_data(
+    LoginDeviceData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_login_devices_result(
+    LoginDevicesResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_login_tokens_data(
+    LoginTokensData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_login_tokens_result(
+    LoginTokensResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_loudnorm_config(
     LoudnormConfig self,
     SseSerializer serializer,
@@ -5187,6 +5667,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_oauth_code_result(
+    OauthCodeResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_official_verify(
     OfficialVerify self,
     SseSerializer serializer,
@@ -5209,6 +5695,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_opt_box_autoadd_bool(bool? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_captcha_registration_data(
+    CaptchaRegistrationData? self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_opt_box_autoadd_danmaku_filter(
@@ -5340,6 +5832,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_login_tokens_data(
+    LoginTokensData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_match_contest(
     MatchContest? self,
     SseSerializer serializer,
@@ -5396,6 +5894,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_official_verify(
     OfficialVerify? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_password_login_state(
+    PasswordLoginState? self,
     SseSerializer serializer,
   );
 
@@ -5484,6 +5988,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_qr_code_data(
+    QrCodeData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_qr_poll_state(
+    QrPollState? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_reply_cursor(
     ReplyCursor? self,
     SseSerializer serializer,
@@ -5538,6 +6054,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_risk_verification_data(
+    RiskVerificationData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_safe_center_info_data(
+    SafeCenterInfoData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_search_all_data(
     SearchAllData? self,
     SseSerializer serializer,
@@ -5552,6 +6080,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_segment_base(
     SegmentBase? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_sms_send_state(
+    SmsSendState? self,
     SseSerializer serializer,
   );
 
@@ -5682,6 +6216,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_list_login_device_data(
+    List<LoginDeviceData>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_list_media_stream(
     List<MediaStream>? self,
     SseSerializer serializer,
@@ -5786,6 +6326,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_view_point(
     List<ViewPoint>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_password_login_result(
+    PasswordLoginResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_password_login_state(
+    PasswordLoginState self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_password_login_status(
+    PasswordLoginStatus self,
     SseSerializer serializer,
   );
 
@@ -5985,6 +6543,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_qr_code_data(QrCodeData self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_qr_code_result(QrCodeResult self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_qr_poll_result(QrPollResult self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_qr_poll_state(QrPollState self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_qr_poll_status(QrPollStatus self, SseSerializer serializer);
+
+  @protected
   void sse_encode_record_string_string(
     (String, String) self,
     SseSerializer serializer,
@@ -6059,6 +6632,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_reserve_info_result(
     ReserveInfoResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_risk_verification_data(
+    RiskVerificationData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_safe_center_info_data(
+    SafeCenterInfoData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_safe_center_info_result(
+    SafeCenterInfoResult self,
     SseSerializer serializer,
   );
 
@@ -6190,6 +6781,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     SkipSegmentsResult self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_sms_send_result(SmsSendResult self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_sms_send_state(SmsSendState self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_sms_send_status(SmsSendStatus self, SseSerializer serializer);
 
   @protected
   void sse_encode_song_heat(SongHeat self, SseSerializer serializer);

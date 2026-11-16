@@ -30,6 +30,7 @@ fixture（它们带有同一个版本号，对不上时 golden 测试会失败�
 | BV 号 ↔ av 号编码（58 进制字母表、两次换位、异或掩码） | 2026-11-13，S4 / issue #54 | `tool/fixture-gen/bvid_fixture.dart` | `bili-protocol/tests/bvid_golden.rs` |
 | 直播取流请求面（`protocol`/`format`/`codec`/`ptype`/`dolby`/`panorama`/`web_location`） | 2026-11-11，S11a 第二批 / issue #61 | 无独立生成器，核对方向相反，见下 | `bili-api/tests/live_golden.rs::room_play_info_request_matches_the_frozen_snapshot` |
 | 直播剩余三条签名接口的请求面（搜索的 APP 参数集；屏蔽设置与贡献榜的 WBI 参数集，各带一个 `web_location=444.8`） | 2026-11-11，S11a 第三批 / issue #61 | 同上 | `bili-api/tests/live_golden.rs::signed_requests_match_the_frozen_snapshot` |
+| 登录请求面：设备号（16 随机字节 + 7 字节 BCD 本地时间 + 8 随机字节 + 和校验）、`login_session_id`（md5(buvid+毫秒)）、密码与 `dt` 的 RSA PKCS#1 v1.5 加密及 `dt` 多出的一层百分号编码 | 2026-11-16，S14 / issue #65 | 无独立生成器，核对方向相反，见下 | `bili-protocol/src/login_ids.rs`、`login_crypto.rs` 的单测，`bili-api/tests/login_golden.rs`，`test/services/rust/login_parity_test.dart` |
 
 APP 签名与 WBI 是两套，差异（盐、时间字段、签名字段、值的编码口径）列在
 `bili-protocol/src/app_sign.rs` 的模块文档里。两者在当前参数集上碰巧同
@@ -109,3 +110,23 @@ Rust 单测钉住构造出来的 `PreparedWrite`，`test/bridge/video_write_brid
 只表达这一条接口的既有请求形状，不改变签名算法，也不增加协议版本。请求字段、
 内容类型、CSRF 位置和写操作不重试行为由 `bili-api::dynamic` 单测覆盖；真实登录态
 响应样本尚缺，解析字段需要后续以脱敏样本复核。
+
+## 2026-11-16：登录请求面加入，核对方向同样相反（issue #65）
+
+登录的签名算法没有新东西（仍是 APP 签名），**新增的是参数集与两处编码**：
+
+- `device_id` / `bili_local_id`：基线 `LoginUtils.genDeviceId` 里那句
+  `Digest(bytes).toString()` **不是 md5**，`crypto` 包的 `Digest` 只是字节
+  序列的包装，`toString` 即十六进制化。当成哈希实现会得到长度只有一半的
+  设备号，而服务端不会因此报参数错误，只会给一个风控分支。
+- `dt` 字段：基线写的是
+  `Uri.encodeComponent(Encrypter(RSA(...)).encrypt(...).base64)`，于是表单
+  序列化时 `%` 会被**再编码一次**（`%2F` → `%252F`），签名覆盖的也是编码
+  后的值。看起来像 bug，但它是服务端实际收到的形状，去掉这一层等于改请求面。
+  `password` 字段**没有**这一层，两者的差异原样保留。
+
+核对方向与直播取流那条相同（Rust 先冻结、Dart 侧独立算一遍），原因也相同：
+被复刻的不只是算法，还有参数集本身，而基线那一侧随本切片删除了。
+
+fixture 里的 token 一律是 `fake-*` 字面量，快照只记形状不记值——登录响应
+就是凭据本身，详见 `rust/crates/bili-api/tests/login_golden.rs` 的模块文档。

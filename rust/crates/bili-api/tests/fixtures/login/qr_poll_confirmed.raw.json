@@ -1,0 +1,23 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "mid": 10000001,
+    "access_token": "fake-access-token",
+    "refresh_token": "fake-refresh-token",
+    "expires_in": 2592000,
+    "token_info": null,
+    "cookie_info": {
+      "cookies": [
+        {"name": "SESSDATA", "value": "fake-sessdata", "http_only": 1, "expires": 1800000000},
+        {"name": "bili_jct", "value": "fake-csrf", "http_only": 0, "expires": 1800000000},
+        {"name": "DedeUserID", "value": "10000001", "http_only": 0, "expires": 1800000000},
+        {"name": "broken-cookie"}
+      ],
+      "domains": [".bilibili.com"]
+    },
+    "sso": ["https://passport.bilibili.com/api/v2/sso"],
+    "is_new": false
+  }
+}

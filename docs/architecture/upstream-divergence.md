@@ -207,6 +207,27 @@ RFC §10.1 规定了要固定 `UPSTREAM_COMMIT` 并记录 rebase/merge 策略，
 `test/plugin/pl_player/volume_indicator_test.dart`；手势与音量控制器不变。
 同步上游时保留竖向填充展示，只合入控制行为相关的改动。
 
+修订：2026-11-16（S14 登录流程迁 Rust，issue #65）——`lib/http/login.dart`
+整个删掉，连同它独有的模型 `lib/models_new/login_devices/{data,device}.dart`、
+`lib/models/login/captcha_config.dart` 与对应测试
+`test/pages/login/geetest/captcha_config_test.dart`。按 §6 分类：
+`lib/pages/login/controller.dart`、`lib/pages/login_devices/{controller,view}.dart`、
+`lib/pages/setting/view.dart` 四个此前只被重命名提交 `ba430476b` 触及的文件转为
+实质改动；三个「仅重命名」的文件（`login.dart`、`login_devices/data.dart`、
+那个测试）从「修改」转入「删除」，另两个此前完全未被触及的上游文件
+（`login_devices/device.dart`、`captcha_config.dart`）也进入「删除」。
+
+修改 **890 → 887**、实质改动 **253 → 257**、仅重命名 **637 → 630**、
+删除 **149 → 154**、新增 **529 → 555**（Rust 侧 5 个模块 + 1 个 golden 测试
++ 16 份 fixture 与快照，Dart 侧 FRB 绑定、取数封装与两个测试各若干）。
+
+这一片的分叉面性质与取流那次相同，但更彻底：**上游文件里不再剩转发**。
+登录的签名、RSA 加密、设备号生成、三种状态的判别全部在
+`rust/crates/bili-{protocol,domain,api}/src/login*.rs`，宿主侧只剩「把
+cookie 存进账号体系」。同步上游时 `lib/http/login.dart` 的任何改动都
+**不要照上游解**——那个文件在本 fork 已经不存在，要改的是 Rust 侧
+（见 RFC §2.3 与 ADR-011 补充十三）。
+
 ## 1. 基准
 
 ```
@@ -412,15 +433,15 @@ Column 顺序、文字层级），丢弃——那一层我们已经整个换掉�
 
 ## 5. 新增文件
 
-529 个，不与上游冲突，按区域分布：
+555 个，不与上游冲突，按区域分布：
 
 | 区域 | 文件数 | 内容 |
 | --- | ---: | --- |
-| `rust/` | 331 | Rust workspace：6 个 crate、golden fixture 与快照 |
+| `rust/` | 353 | Rust workspace：6 个 crate、golden fixture 与快照 |
 | `rust_builder/` | 46 | cargokit，把 Rust 接入 Flutter 各端构建 |
-| `lib/services/` | 36 | Rust 开关、shadow mode、各切片的取数封装 |
-| `test/` | 33 | parity 测试与桥接层集成测试 |
-| `lib/rust/` | 28 | FRB 生成的 Dart 绑定 |
+| `lib/services/` | 37 | Rust 开关、shadow mode、各切片的取数封装 |
+| `test/` | 35 | parity 测试与桥接层集成测试 |
+| `lib/rust/` | 29 | FRB 生成的 Dart 绑定 |
 | `tool/` | 21 | 构建准备、FRB 生成、proto 生成、README 统计、产物核对、fixture 生成 |
 | `docs/` | 17 | RFC、ADR、M0 记录、QA 清单 |
 | `shaders/` | 1 | Liquid Glass 背板折射着色器 |

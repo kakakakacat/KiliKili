@@ -50,6 +50,7 @@ import 'package:kilikili/plugin/pl_player/widgets/common_btn.dart';
 import 'package:kilikili/plugin/pl_player/widgets/forward_seek.dart';
 import 'package:kilikili/plugin/pl_player/widgets/mpv_convert_webp.dart';
 import 'package:kilikili/plugin/pl_player/widgets/play_pause_btn.dart';
+import 'package:kilikili/plugin/pl_player/widgets/volume_indicator.dart';
 import 'package:kilikili/services/rust/rust_video_page.dart';
 import 'package:kilikili/utils/android/bindings.g.dart';
 import 'package:kilikili/utils/cache_manager.dart';
@@ -1492,51 +1493,16 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
         /// 音量🔊 控制条展示
         IgnorePointer(
-          ignoring: true,
-          child: Align(
-            alignment: Alignment.center,
-            child: Obx(
-              () {
-                final volume = plPlayerController.volume.value;
-                return AnimatedOpacity(
-                  curve: Curves.easeInOut,
-                  opacity: plPlayerController.volumeIndicator.value ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 150),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 5,
-                    ),
-                    decoration: const BoxDecoration(
-                      color: Color(0x88000000),
-                      borderRadius: BorderRadius.all(Radius.circular(64)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Icon(
-                          volume == 0.0
-                              ? Icons.volume_off
-                              : volume < 0.5
-                              ? Icons.volume_down
-                              : Icons.volume_up,
-                          color: Colors.white,
-                          size: 20.0,
-                        ),
-                        const SizedBox(width: 2.0),
-                        Text(
-                          '${(volume * 100.0).round()}%',
-                          style: const TextStyle(
-                            fontSize: 13.0,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+          child: Obx(
+            () => AnimatedOpacity(
+              curve: Curves.easeInOut,
+              opacity: plPlayerController.volumeIndicator.value ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 150),
+              child: VolumeIndicator(
+                level:
+                    plPlayerController.volume.value /
+                    plPlayerController.maxVolume,
+              ),
             ),
           ),
         ),

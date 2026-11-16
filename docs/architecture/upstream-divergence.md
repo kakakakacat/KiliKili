@@ -199,6 +199,14 @@ RFC §10.1 规定了要固定 `UPSTREAM_COMMIT` 并记录 rebase/merge 策略，
 分类增加辅助图标和胶囊背景，选中态跟随现有 TabController，移除底部指示条。
 同步上游时保留这层样式与选中态绑定，分类数据和页面切换逻辑仍按上游同步。
 
+修订：2026-11-16（#136 音量竖向胶囊）——修改
+`lib/plugin/pl_player/view/view.dart`，该文件此前已被 #79、#141、#143 实质修改，
+本次不扩大上游修改文件集合，新增文件 **527 → 529**，并重算 §5 的区域分布。
+新增独立展示组件
+`lib/plugin/pl_player/widgets/volume_indicator.dart` 与
+`test/plugin/pl_player/volume_indicator_test.dart`；手势与音量控制器不变。
+同步上游时保留竖向填充展示，只合入控制行为相关的改动。
+
 ## 1. 基准
 
 ```
@@ -219,7 +227,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 修改的上游既有文件 | 890 |
 | &nbsp;&nbsp;其中：仅因包名重命名而改动 | 637 |
 | &nbsp;&nbsp;其中：有实质改动 | **253** |
-| 新增文件 | 527 |
+| 新增文件 | 529 |
 | 删除文件 | **149** |
 
 「修改」总数一路下降（935 → 909 → 897 → 891），部分文件是因迁移被删除，
@@ -404,20 +412,21 @@ Column 顺序、文字层级），丢弃——那一层我们已经整个换掉�
 
 ## 5. 新增文件
 
-511 个，不与上游冲突，按区域分布：
+529 个，不与上游冲突，按区域分布：
 
 | 区域 | 文件数 | 内容 |
 | --- | ---: | --- |
-| `rust/` | 322 | Rust workspace：6 个 crate、golden fixture 与快照 |
+| `rust/` | 331 | Rust workspace：6 个 crate、golden fixture 与快照 |
 | `rust_builder/` | 46 | cargokit，把 Rust 接入 Flutter 各端构建 |
-| `lib/services/` | 34 | Rust 开关、shadow mode、各切片的取数封装 |
-| `test/` | 31 | parity 测试与桥接层集成测试 |
-| `lib/rust/` | 25 | FRB 生成的 Dart 绑定 |
-| `tool/` | 20 | 构建准备、FRB 生成、proto 生成、README 统计、产物核对、fixture 生成 |
+| `lib/services/` | 36 | Rust 开关、shadow mode、各切片的取数封装 |
+| `test/` | 33 | parity 测试与桥接层集成测试 |
+| `lib/rust/` | 28 | FRB 生成的 Dart 绑定 |
+| `tool/` | 21 | 构建准备、FRB 生成、proto 生成、README 统计、产物核对、fixture 生成 |
 | `docs/` | 17 | RFC、ADR、M0 记录、QA 清单 |
 | `shaders/` | 1 | Liquid Glass 背板折射着色器 |
 | `lib/common/` | 3 | 封面大卡片、统计药丸与直播卡共用的文案行（issue #108） |
 | `lib/pages/` | 1 | 从控制器里搬出来的基线弹幕引擎（`danmaku/engine.dart`） |
+| `lib/plugin/` | 1 | 播放器竖向音量指示组件（issue #136） |
 | `lib/utils/` | 1 | 从 `SubtitleUtils` 里搬出来的基线字幕转换（`subtitle_format.dart`） |
 | 其他 | 10 | workflow、`AGENTS.md` / `CLAUDE.md`、README 统计图、`flutter_rust_bridge.yaml` |
 

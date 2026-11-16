@@ -224,15 +224,16 @@ RFC §10.1 规定了要固定 `UPSTREAM_COMMIT` 并记录 rebase/merge 策略，
 整个删掉，连同它独有的模型 `lib/models_new/login_devices/{data,device}.dart`、
 `lib/models/login/captcha_config.dart` 与对应测试
 `test/pages/login/geetest/captcha_config_test.dart`。按 §6 分类：
-`lib/pages/login/controller.dart`、`lib/pages/login_devices/{controller,view}.dart`、
-`lib/pages/setting/view.dart` 四个此前只被重命名提交 `ba430476b` 触及的文件转为
-实质改动；三个「仅重命名」的文件（`login.dart`、`login_devices/data.dart`、
-那个测试）从「修改」转入「删除」，另两个此前完全未被触及的上游文件
-（`login_devices/device.dart`、`captcha_config.dart`）也进入「删除」。
+`lib/pages/login_devices/{controller,view}.dart`、`lib/pages/setting/view.dart`
+三个此前只被重命名提交 `ba430476b` 触及的文件转为实质改动；四个原在「修改」
+里的文件转入「删除」——`login.dart` 与 `captcha_config.dart` 刚被 #140 改成
+实质改动，`login_devices/data.dart` 与那个测试则一直是仅重命名；
+`login_devices/device.dart` 此前完全未被触及，也直接进入「删除」。
 
-修改 **890 → 887**、实质改动 **253 → 257**、仅重命名 **637 → 630**、
-删除 **149 → 154**、新增 **529 → 555**（Rust 侧 5 个模块 + 1 个 golden 测试
+修改 **891 → 887**、实质改动 **258 → 259**、仅重命名 **633 → 628**、
+删除 **149 → 154**、新增 **537 → 563**（Rust 侧 5 个模块 + 1 个 golden 测试
 + 16 份 fixture 与快照，Dart 侧 FRB 绑定、取数封装与两个测试各若干）。
+`lib/pages/login/controller.dart` 已在 #140 转为实质改动，本次不再重复计入。
 
 这一片的分叉面性质与取流那次相同，但更彻底：**上游文件里不再剩转发**。
 登录的签名、RSA 加密、设备号生成、三种状态的判别全部在
@@ -258,16 +259,17 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 | 类别 | 数量 |
 | --- | ---: |
-| 修改的上游既有文件 | 890 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 637 |
-| &nbsp;&nbsp;其中：有实质改动 | **253** |
-| 新增文件 | 529 |
-| 删除文件 | **149** |
+| 修改的上游既有文件 | 887 |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 628 |
+| &nbsp;&nbsp;其中：有实质改动 | **259** |
+| 新增文件 | 563 |
+| 删除文件 | **154** |
 
-「修改」总数一路下降（935 → 909 → 897 → 891），部分文件是因迁移被删除，
-从 M 转到了 D。#108 的界面改动一度把它顶回 892；合入 #111 的关注/粉丝
-切片后是 890。删除数到 149，来源包括 PGC、直播、取流、关注/粉丝接口迁移，以及 S4 的
-两个三连模型。
+「修改」总数一路下降（935 → 909 → 897 → 891 → 887），部分文件是因迁移被
+删除，从 M 转到了 D。#108 的界面改动一度把它顶回 892；合入 #111 的关注/
+粉丝切片后是 890，#140 的登录修复使其回到 891，S14 登录切片再删掉四个后
+是 887。删除数到 154，来源包括 PGC、直播、取流、关注/粉丝、登录接口迁移，
+以及 S4 的两个三连模型。
 
 ## 3. 包名重命名：分叉面的主体
 
@@ -446,20 +448,20 @@ Column 顺序、文字层级），丢弃——那一层我们已经整个换掉�
 
 ## 5. 新增文件
 
-555 个，不与上游冲突，按区域分布：
+563 个，不与上游冲突，按区域分布：
 
 | 区域 | 文件数 | 内容 |
 | --- | ---: | --- |
 | `rust/` | 353 | Rust workspace：6 个 crate、golden fixture 与快照 |
 | `rust_builder/` | 46 | cargokit，把 Rust 接入 Flutter 各端构建 |
 | `lib/services/` | 37 | Rust 开关、shadow mode、各切片的取数封装 |
-| `test/` | 35 | parity 测试与桥接层集成测试 |
+| `test/` | 38 | parity 测试与桥接层集成测试 |
 | `lib/rust/` | 29 | FRB 生成的 Dart 绑定 |
 | `tool/` | 21 | 构建准备、FRB 生成、proto 生成、README 统计、产物核对、fixture 生成 |
-| `docs/` | 17 | RFC、ADR、M0 记录、QA 清单 |
+| `docs/` | 19 | RFC、ADR、M0 记录、QA 清单 |
 | `shaders/` | 1 | Liquid Glass 背板折射着色器 |
 | `lib/common/` | 3 | 封面大卡片、统计药丸与直播卡共用的文案行（issue #108） |
-| `lib/pages/` | 1 | 从控制器里搬出来的基线弹幕引擎（`danmaku/engine.dart`） |
+| `lib/pages/` | 4 | 基线弹幕引擎（`danmaku/engine.dart`）、验证码弹窗外壳、极验页面脚本、短信验证码输入框 |
 | `lib/plugin/` | 1 | 播放器竖向音量指示组件（issue #136） |
 | `lib/utils/` | 1 | 从 `SubtitleUtils` 里搬出来的基线字幕转换（`subtitle_format.dart`） |
 | 其他 | 10 | workflow、`AGENTS.md` / `CLAUDE.md`、README 统计图、`flutter_rust_bridge.yaml` |

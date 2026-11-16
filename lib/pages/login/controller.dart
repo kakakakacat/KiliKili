@@ -27,6 +27,7 @@ class LoginPageController extends GetxController
   final TextEditingController usernameTextController = TextEditingController();
   final TextEditingController passwordTextController = TextEditingController();
   final TextEditingController smsCodeTextController = TextEditingController();
+  final FocusNode smsCodeFocusNode = FocusNode();
   final TextEditingController cookieTextController = TextEditingController();
 
   late final codeInfo = LoadingState<QrCodeData>.loading().obs;
@@ -48,6 +49,8 @@ class LoginPageController extends GetxController
 
   bool _isReq = false;
   bool _isVerifyingCaptcha = false;
+  bool _isSendingSmsCode = false;
+  bool _isLoggingInBySms = false;
 
   @override
   void onInit() {
@@ -67,6 +70,7 @@ class LoginPageController extends GetxController
     usernameTextController.dispose();
     passwordTextController.dispose();
     smsCodeTextController.dispose();
+    smsCodeFocusNode.dispose();
     cookieTextController.dispose();
     super.onClose();
   }
@@ -149,15 +153,15 @@ class LoginPageController extends GetxController
         // 这一组的 token 来自上一步（preCapture 或登录接口给的 URL）。
         token: captchaData.token ?? '',
       );
-      if (Platform.isIOS && canRefreshRegistration) {
+      if (canRefreshRegistration) {
         // 只有短信验证这条路支持用 preCapture 换一组新注册。
         // 「这组还能不能用、换不换、换到哪一组」全在 Rust
         // （`bili_api::login::resolve_captcha`），这里只拿结论。
         final resolved = await RustLogin.resolveCaptcha(
           session,
-          // 原生极验 SDK 与 WebView 用的是两份配置，必须各查各的；
-          // 基线这条探测固定带 iOS 原生的参数。
-          nativeIos: true,
+          // 原生极验 SDK 与 WebView 用的是两份配置，必须各查各的：
+          // 只有 iOS 走原生 SDK，探测才带 client_type=ios&pt=20（#140）。
+          nativeIos: Platform.isIOS,
         );
         if (isClosed) return;
         if (resolved case Error(:final errMsg)) {
@@ -444,6 +448,18 @@ class LoginPageController extends GetxController
 
   // 短信验证码登录
   Future<void> loginBySmsCode() async {
+    if (isClosed || _isLoggingInBySms) return;
+    _isLoggingInBySms = true;
+    try {
+      await _loginBySmsCode();
+    } catch (_) {
+      if (!isClosed) SmartDialog.showToast('登录失败，请稍后重试');
+    } finally {
+      _isLoggingInBySms = false;
+    }
+  }
+
+  Future<void> _loginBySmsCode() async {
     if (telTextController.text.isEmpty) {
       SmartDialog.showToast('手机号不能为空');
       return;
@@ -461,12 +477,15 @@ class LoginPageController extends GetxController
       SmartDialog.showToast('验证码已过期，请重新获取');
       return;
     }
+    // 取公钥与发请求都在 Rust 的同一次调用里，参数在进入 await 前一次读完，
+    // 不存在基线那种「取公钥期间输入框被改」的混用窗口（#140）。
     final res = await RustLogin.loginBySms(
       cid: selectedCountryCodeId.countryId.toString(),
       tel: telTextController.text,
       code: smsCodeTextController.text,
       captchaKey: captchaKey,
     );
+    if (isClosed) return;
     if (res case Error(:final errMsg)) {
       SmartDialog.showToast(errMsg ?? '登录失败');
       return;
@@ -482,6 +501,23 @@ class LoginPageController extends GetxController
   // 合成 [SmsSendStatus]：基线要在成功响应的 `recaptcha_url` 非空、失败码
   // -105、以及参数不全时另调 preCapture 三处各判一次。
   Future<void> sendSmsCode() async {
+    if (isClosed ||
+        _isSendingSmsCode ||
+        _isVerifyingCaptcha ||
+        smsSendCooldown.value > 0) {
+      return;
+    }
+    _isSendingSmsCode = true;
+    try {
+      await _sendSmsCode();
+    } catch (_) {
+      if (!isClosed) SmartDialog.showToast('发送验证码失败，请稍后重试');
+    } finally {
+      _isSendingSmsCode = false;
+    }
+  }
+
+  Future<void> _sendSmsCode() async {
     if (telTextController.text.isEmpty) {
       SmartDialog.showToast('手机号不能为空');
       return;
@@ -491,6 +527,7 @@ class LoginPageController extends GetxController
       tel: telTextController.text,
       captcha: _captchaSolution(),
     );
+    if (isClosed) return;
     if (res case Error(:final errMsg)) {
       SmartDialog.showToast(errMsg ?? '发送失败');
       return;
@@ -502,6 +539,8 @@ class LoginPageController extends GetxController
         smsSendTimestamp = DateTime.now().millisecondsSinceEpoch;
         smsSendCooldown.value = 60;
         captchaKey = state.captchaKey ?? '';
+        // 拿到验证码就把焦点交给输入框，省掉一次手点（#140）。
+        smsCodeFocusNode.requestFocus();
         smsSendCooldownTimer = Timer.periodic(const Duration(seconds: 1), (
           timer,
         ) {

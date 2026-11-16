@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/member.dart';
-import 'package:kilikili/http/user.dart';
 import 'package:kilikili/models/common/member/tab_type.dart';
 import 'package:kilikili/models/model_owner.dart';
 import 'package:kilikili/models_new/space/space/data.dart';

@@ -1,17 +1,12 @@
 import 'package:kilikili/common/widgets/custom_icon.dart';
 import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/user.dart';
 import 'package:kilikili/models/common/account_type.dart';
 import 'package:kilikili/models/common/later_view_type.dart';
 import 'package:kilikili/models/common/mine_tab_type.dart';
 import 'package:kilikili/models/common/theme/theme_type.dart';
 import 'package:kilikili/models_new/fav/fav_folder/data.dart';
 import 'package:kilikili/models_new/fav/fav_folder/list.dart';
-import 'package:kilikili/models_new/history/data.dart';
-import 'package:kilikili/models_new/history/list.dart';
-import 'package:kilikili/models_new/later/data.dart';
-import 'package:kilikili/models_new/later/list.dart';
 import 'package:kilikili/models_new/sub/sub/list.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
 import 'package:kilikili/services/account_service.dart';
@@ -22,6 +17,7 @@ import 'package:kilikili/utils/storage.dart';
 import 'package:kilikili/utils/storage_key.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:kilikili/utils/theme_utils.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/services/rust/rust_user.dart';
 import 'package:kilikili/services/rust/sub_compat.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -369,14 +365,14 @@ class FavCtr extends CommonListController<FavFolderData, FavFolderInfo>
   );
 }
 
-class HistoryCtr extends CommonListController<HistoryData, HistoryItemModel>
+class HistoryCtr extends CommonListController<HistoryPage, HistoryItem>
     with MineRefreshMixin {
   int? viewAt;
   int? max;
 
   @override
-  List<HistoryItemModel>? getDataList(HistoryData response) {
-    final last = response.list?.lastOrNull;
+  List<HistoryItem>? getDataList(HistoryPage response) {
+    final last = response.list.lastOrNull;
     if (last == null) {
       isEnd = true;
       max = viewAt = null;
@@ -389,7 +385,7 @@ class HistoryCtr extends CommonListController<HistoryData, HistoryItemModel>
   }
 
   @override
-  Future<LoadingState<HistoryData>> customGetData() => UserHttp.historyList(
+  Future<LoadingState<HistoryPage>> customGetData() => RustHistory.historyList(
     type: 'all',
     viewAt: viewAt,
     max: max,
@@ -405,16 +401,16 @@ class HistoryCtr extends CommonListController<HistoryData, HistoryItemModel>
   }
 }
 
-class LaterCtr extends CommonListController<LaterData, LaterItemModel>
+class LaterCtr extends CommonListController<LaterPage, LaterItem>
     with MineRefreshMixin {
   @override
-  List<LaterItemModel>? getDataList(LaterData response) {
+  List<LaterItem>? getDataList(LaterPage response) {
     count = response.count;
     return response.list;
   }
 
   @override
-  Future<LoadingState<LaterData>> customGetData() => UserHttp.seeYouLater(
+  Future<LoadingState<LaterPage>> customGetData() => RustHistory.seeYouLater(
     page: page,
     ps: _ps,
     viewed: LaterViewType.all.type,

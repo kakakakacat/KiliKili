@@ -11,7 +11,6 @@ import 'package:kilikili/common/widgets/scroll_behavior.dart'
     show NoOverscrollIndicator;
 import 'package:kilikili/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/user.dart';
 import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/models_new/space/space/reservation_card_list.dart';
 import 'package:kilikili/pages/coin_log/controller.dart';

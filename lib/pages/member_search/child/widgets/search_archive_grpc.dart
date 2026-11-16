@@ -3,7 +3,7 @@ import 'package:kilikili/common/widgets/custom_icon.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/grpc/bilibili/app/interfaces/v1.pb.dart' show Arc;
-import 'package:kilikili/http/user.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/utils/date_utils.dart';
 import 'package:kilikili/utils/duration_utils.dart';
@@ -119,7 +119,7 @@ class SearchArchiveGrpc extends StatelessWidget {
               ),
               PopupMenuItem(
                 height: 45,
-                onTap: () => UserHttp.toViewLater(bvid: bvid),
+                onTap: () => RustHistory.toViewLater(bvid: bvid),
                 child: const Row(
                   spacing: 6,
                   children: [

@@ -2,7 +2,7 @@ import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/button/icon_button.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/selection_text.dart';
-import 'package:kilikili/http/user.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/pages/common/publish/publish_route.dart';
 import 'package:kilikili/utils/image_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
@@ -93,7 +93,7 @@ void imageSaveDialog({
                           tooltip: '稍后再看',
                           onPressed: () => {
                             Get.back(),
-                            UserHttp.toViewLater(aid: aid, bvid: bvid),
+                            RustHistory.toViewLater(aid: aid, bvid: bvid),
                           },
                           icon: const Icon(Icons.watch_later_outlined),
                         ),

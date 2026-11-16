@@ -1,34 +1,44 @@
 import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/user.dart';
-import 'package:kilikili/models_new/history/data.dart';
-import 'package:kilikili/models_new/history/list.dart';
-import 'package:kilikili/pages/common/multi_select/base.dart';
+import 'package:kilikili/pages/common/multi_select/id_based.dart';
 import 'package:kilikili/pages/common/search/common_search_controller.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:flutter/widgets.dart' show Text;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class HistorySearchController
-    extends CommonSearchController<HistoryData, HistoryItemModel>
-    with CommonMultiSelectMixin<HistoryItemModel>, DeleteItemMixin {
+    extends CommonSearchController<HistoryPage, HistoryItem>
+    with IdMultiSelectMixin<HistoryPage, HistoryItem, String> {
   @override
-  Future<LoadingState<HistoryData>> customGetData() => UserHttp.searchHistory(
-    pn: page,
-    keyword: editController.value.text,
-    account: account,
-  );
+  Future<LoadingState<HistoryPage>> customGetData() =>
+      RustHistory.searchHistory(
+        pn: page,
+        keyword: editController.value.text,
+        account: account,
+      );
 
   @override
-  List<HistoryItemModel>? getDataList(HistoryData response) {
+  List<HistoryItem>? getDataList(HistoryPage response) {
     return response.list;
   }
 
+  /// 删除接口认的就是这个串，也在同一个列表里唯一，直接拿它当选中态的 id。
+  @override
+  String idOf(HistoryItem item) => '${item.history.business}_${item.kid}';
+
+  /// 搜索页的多选条是自己的，不与别的 tab 共用。
+  @override
+  final RxBool enableMultiSelect = false.obs;
+
+  @override
+  final RxInt rxCount = 0.obs;
+
   final account = Accounts.history;
 
-  Future<void> onDelHistory(int index, kid, String business) async {
-    final res = await UserHttp.delHistory(
+  Future<void> onDelHistory(int index, int? kid, String? business) async {
+    final res = await RustHistory.delHistory(
       '${business}_$kid',
       account: account,
     );
@@ -50,15 +60,13 @@ class HistorySearchController
       content: const Text('确认删除所选历史记录吗？'),
       onConfirm: () async {
         SmartDialog.showLoading(msg: '请求中');
-        final removeList = allChecked.toSet();
-        final response = await UserHttp.delHistory(
-          removeList
-              .map((item) => '${item.history.business!}_${item.kid!}')
-              .join(','),
+        final removed = allChecked.map(idOf).toSet();
+        final response = await RustHistory.delHistory(
+          removed.join(','),
           account: account,
         );
         if (response.isSuccess) {
-          afterDelete(removeList);
+          afterDeleteIds(removed);
           SmartDialog.showToast('已删除');
         } else {
           response.toast();

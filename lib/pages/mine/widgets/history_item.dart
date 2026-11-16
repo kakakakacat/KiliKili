@@ -1,6 +1,7 @@
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/models_new/history/list.dart';
-import 'package:kilikili/pages/history/widgets/item.dart' show onPushHistory;
+import 'package:kilikili/services/rust/rust_history.dart';
+import 'package:kilikili/pages/history/widgets/item.dart'
+    show historyLabel, historyProgressIndicator, onPushHistory;
 import 'package:material_ui/material_ui.dart';
 
 class MineHistoryItem extends StatelessWidget {
@@ -10,12 +11,12 @@ class MineHistoryItem extends StatelessWidget {
     required this.onPop,
   });
 
-  final HistoryItemModel item;
+  final HistoryItem item;
   final VoidCallback onPop;
 
   @override
   Widget build(BuildContext context) {
-    final hasDuration = item.hasDuration;
+    final hasDuration = item.duration != null && item.duration != 0;
     return GestureDetector(
       onTap: () => onPushHistory(item).whenComplete(onPop),
       behavior: .opaque,
@@ -31,8 +32,8 @@ class MineHistoryItem extends StatelessWidget {
                 height: 110,
               ),
               if (hasDuration)
-                ...item.progressIndicator(ColorScheme.of(context)),
-              ?item.label,
+                ...historyProgressIndicator(item, ColorScheme.of(context)),
+              ?historyLabel(item),
             ],
           ),
           const SizedBox(height: 8),

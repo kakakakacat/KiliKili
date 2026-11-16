@@ -168,3 +168,169 @@ pub struct VideoTag {
     pub tag_type: Option<String>,
     pub music_id: Option<String>,
 }
+
+// ------------------------------------------------- 历史记录 / 稍后再看
+
+/// 一页观看历史。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct HistoryPage {
+    /// 顶部的业务分页签（视频/直播/专栏…）。只有首次拉取给。
+    pub tabs: Vec<HistoryTab>,
+    pub list: Vec<HistoryItem>,
+}
+
+/// 一个业务分页签。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct HistoryTab {
+    pub kind: Option<String>,
+    pub name: Option<String>,
+}
+
+/// 一条观看历史。
+///
+/// ## 这里没有 `label` 与 `progressIndicator`
+///
+/// 基线 `HistoryItemModel` 上挂着两个返回 Widget 的 getter（角标、进度条）。
+/// 它们是渲染，按 AGENTS.md §2 留在宿主；判据所需的原始值
+/// （[`is_fav`](Self::is_fav)、[`badge`](Self::badge)、
+/// [`live_status`](Self::live_status)、[`progress`](Self::progress)）都在这里。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct HistoryItem {
+    pub title: Option<String>,
+    pub cover: Option<String>,
+    /// 多封面（合集类条目）。`cover` 为空时取它的第一张。
+    pub covers: Vec<String>,
+    pub uri: Option<String>,
+    pub videos: Option<i64>,
+    pub author_name: Option<String>,
+    pub author_mid: Option<i64>,
+    /// 观看时间，Unix 秒。
+    pub view_at: Option<i64>,
+    /// 观看进度，**秒**。`-1` 表示已看完。
+    ///
+    /// 播放器要的是毫秒，且「已看完」应当从头播而不是跳到末尾——换算规则
+    /// 见 [`playback_progress_ms`](Self::playback_progress_ms)。
+    pub progress: Option<i64>,
+    pub badge: Option<String>,
+    pub show_title: Option<String>,
+    pub duration: Option<i64>,
+    /// `1` 表示已收藏，界面优先显示「已收藏」角标而不是 `badge`。
+    pub is_fav: Option<i64>,
+    /// 历史条目的 id，删除时用它。
+    pub kid: Option<i64>,
+    pub tag_name: Option<String>,
+    /// 直播条目的开播状态，`1` 为直播中。角标颜色按它决定。
+    pub live_status: Option<i64>,
+    pub history: HistoryRef,
+}
+
+/// 历史条目指向的那个东西。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct HistoryRef {
+    pub oid: Option<i64>,
+    pub epid: Option<i64>,
+    pub bvid: Option<String>,
+    pub page: Option<i64>,
+    /// **`0` 归一成 `None`**：服务端对没有分 P 信息的条目给 0，而 0 不是
+    /// 一个合法 cid，照搬会让播放器拿它去请求。基线 `History.fromJson`
+    /// 就是这么归一的。
+    pub cid: Option<i64>,
+    pub business: Option<String>,
+}
+
+impl HistoryItem {
+    /// 续播位置，**毫秒**；没有进度时为 `None`。
+    ///
+    /// 两条规则都来自基线 `HistoryItemModel.playbackProgress`，是「协议没
+    /// 规定、但两端必须一致」的那一类：
+    ///
+    /// - 历史接口以**秒**计，播放器要毫秒；
+    /// - `-1`（已看完）要换成 `0`，否则重新打开会从末尾续播，而末尾的位置
+    ///   来自取流账号的另一套进度，不是这条历史。
+    #[must_use]
+    pub fn playback_progress_ms(&self) -> Option<i64> {
+        self.progress.map(|p| if p == -1 { 0 } else { p * 1000 })
+    }
+}
+
+/// 一页稍后再看。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct LaterPage {
+    pub count: Option<i64>,
+    pub list: Vec<LaterItem>,
+}
+
+/// 一条稍后再看。
+///
+/// 同样不带 Widget：基线 `LaterItemModel` 的 `label` / `progressIndicator`
+/// 是渲染，留在宿主；判据所需的原始值在这里。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct LaterItem {
+    pub aid: Option<i64>,
+    pub bvid: Option<String>,
+    pub pic: Option<String>,
+    pub title: Option<String>,
+    /// 番剧条目去掉季名前缀之后的分集名。
+    ///
+    /// 这一条**是规则不是渲染**：基线用 `title.replaceFirst('${季名} ', '')`
+    /// 从标题里切掉季名，切不切得掉取决于服务端两个字段的拼法，两端必须
+    /// 一致。非番剧条目为 `None`。
+    pub subtitle: Option<String>,
+    pub pubdate: Option<i64>,
+    pub duration: Option<i64>,
+    pub redirect_url: Option<String>,
+    /// `1` 表示联合投稿，界面显示「合作」角标。
+    pub is_cooperation: Option<i64>,
+    pub owner_mid: Option<i64>,
+    pub owner_name: Option<String>,
+    pub owner_face: Option<String>,
+    pub view: Option<i64>,
+    pub danmaku: Option<i64>,
+    /// 番剧的季名。
+    pub season_title: Option<String>,
+    pub ep_id: Option<i64>,
+    pub cid: Option<i64>,
+    /// 观看进度，**秒**；`-1` 已看完。
+    pub progress: Option<i64>,
+    pub is_pgc: Option<bool>,
+    /// 空串归一成 `None`——基线判的是「有没有这个角标」，空串要当没有。
+    pub pgc_label: Option<String>,
+    pub is_pugv: Option<bool>,
+    /// 充电专属。判据是 `charging_pay.level` 存在与否，不是某个布尔字段。
+    pub is_charging: bool,
+    /// **已按 `rotate` 摆正**的宽高：服务端对竖屏稿件给的是原始分辨率加一个
+    /// `rotate == 1`，基线 `Dimension.fromJson` 在解析时就把两者对调了。
+    /// 这是「协议没规定、但两端必须一致」的那一类——谁忘了换，封面就按错
+    /// 的方向占位。所以换在这里，导出面不再带 `rotate`。
+    pub width: Option<i64>,
+    pub height: Option<i64>,
+}
+
+/// 播放列表（medialist），一页。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct MediaList {
+    pub list: Vec<MediaListItem>,
+}
+
+/// 播放列表里的一项。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct MediaListItem {
+    pub aid: Option<i64>,
+    pub bvid: Option<String>,
+    pub title: Option<String>,
+    pub intro: Option<String>,
+    pub cover: Option<String>,
+    pub duration: Option<i64>,
+    pub badge: Option<String>,
+    /// `kind` 对应协议的 `type`。
+    pub kind: Option<i64>,
+    pub upper_mid: Option<i64>,
+    pub upper_name: Option<String>,
+    pub upper_face: Option<String>,
+    pub play: Option<i64>,
+    pub danmaku: Option<i64>,
+    /// **第一个分 P 的 cid**。基线 `MediaListItemModel.cid` 取的就是
+    /// `pages.first.id`——整个 `pages` 列表别处没人读，所以这里只留这一个
+    /// 值，不把列表原样搬过来。
+    pub first_page_cid: Option<i64>,
+}

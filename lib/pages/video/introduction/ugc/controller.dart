@@ -10,7 +10,6 @@ import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/member.dart';
 import 'package:kilikili/http/search.dart';
-import 'package:kilikili/http/user.dart';
 import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/common/video/source_type.dart';
 import 'package:kilikili/models_new/member_card_info/data.dart';

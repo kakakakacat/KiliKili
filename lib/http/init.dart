@@ -6,7 +6,6 @@ import 'package:kilikili/http/api.dart';
 import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/retry_interceptor.dart';
-import 'package:kilikili/http/user.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/accounts/account.dart';
 import 'package:kilikili/utils/accounts/account_manager/account_mgr.dart';

@@ -8,7 +8,7 @@ import 'package:kilikili/common/widgets/pendant_avatar.dart';
 import 'package:kilikili/common/widgets/translucent_row.dart';
 import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/user.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/pages/dynamics/controller.dart';
 import 'package:kilikili/pages/save_panel/view.dart';
@@ -300,7 +300,7 @@ class AuthorPanel extends StatelessWidget {
                 ListTile(
                   onTap: () {
                     Get.back();
-                    UserHttp.toViewLater(bvid: bvid);
+                    RustHistory.toViewLater(bvid: bvid);
                   },
                   minLeadingWidth: 0,
                   leading: const Icon(Icons.watch_later_outlined, size: 19),

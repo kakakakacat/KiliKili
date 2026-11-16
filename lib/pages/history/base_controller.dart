@@ -1,4 +1,4 @@
-import 'package:kilikili/http/user.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/storage.dart';
 import 'package:kilikili/utils/storage_key.dart';
@@ -33,7 +33,7 @@ class HistoryBaseController extends GetxController {
             onPressed: () async {
               Get.back();
               SmartDialog.showLoading(msg: '请求中');
-              final res = await UserHttp.clearHistory(account: account);
+              final res = await RustHistory.clearHistory(account: account);
               SmartDialog.dismiss();
               if (res.isSuccess) {
                 SmartDialog.showToast('清空观看历史');
@@ -68,7 +68,7 @@ class HistoryBaseController extends GetxController {
           TextButton(
             onPressed: () async {
               SmartDialog.showLoading(msg: '请求中');
-              final res = await UserHttp.pauseHistory(
+              final res = await RustHistory.pauseHistory(
                 pauseStatus,
                 account: account,
               );

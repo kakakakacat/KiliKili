@@ -1,12 +1,12 @@
+import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:kilikili/common/widgets/select_mask.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/http/search.dart';
-import 'package:kilikili/http/user.dart';
-import 'package:kilikili/models_new/history/list.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/models_new/video/video_detail/dimension.dart';
 import 'package:kilikili/pages/article/view.dart';
-import 'package:kilikili/pages/common/multi_select/base.dart';
+import 'package:kilikili/pages/common/multi_select/id_based.dart';
 import 'package:kilikili/utils/date_utils.dart';
 import 'package:kilikili/utils/duration_utils.dart';
 import 'package:kilikili/utils/id_utils.dart';
@@ -17,16 +17,77 @@ import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
-class HistoryItem extends StatelessWidget {
-  const HistoryItem({
+/// 角标。基线把它做成 `HistoryItemModel.label`（一个返回 Widget 的 getter）
+/// ——那是渲染，随 S7 #57 搬到这里；判据所需的原始值
+/// （`isFav` / `badge` / `liveStatus`）由 Rust 给。
+Widget? historyLabel(HistoryItem item) {
+  final hasDuration = item.duration != null && item.duration != 0;
+  final top = hasDuration ? 54.0 : 6.0;
+  if (item.isFav == 1) {
+    return PBadge(text: '已收藏', top: top, right: 6.0, type: .gray);
+  }
+  if (item.badge?.isNotEmpty == true) {
+    return PBadge(
+      text: item.badge,
+      top: top,
+      right: 6.0,
+      // 直播条目没在播时角标置灰，与基线一致。
+      type: item.history.business == 'live' && item.liveStatus != 1
+          ? .gray
+          : .primary,
+    );
+  }
+  return null;
+}
+
+/// 历史记录的一张卡片。
+///
+/// 类名带 `Card` 后缀是为了给 Rust 的实体让出 `HistoryItem` 这个名字——
+/// 协议里的东西叫什么，导出面就叫什么，宿主的 widget 换个名字更便宜。
+/// 封面上的进度条与「看到哪」角标。
+///
+/// 与 [historyLabel] 同理：基线把它做成 `HistoryItemModel.progressIndicator`，
+/// 是渲染，随 S7 #57 搬到这里。列表卡片自己内联画了一份（它要把两件事拆到
+/// `topDuration` 与 `foregroundOverlays` 两个位置），这个版本给「我的」页
+/// 那种把两样叠在封面上的小卡片用。
+Iterable<Widget> historyProgressIndicator(
+  HistoryItem item,
+  ColorScheme colorScheme,
+) sync* {
+  final progress = item.progress;
+  final duration = item.duration;
+  yield PBadge(
+    text: progress == -1
+        ? '已看完'
+        : '${DurationUtils.formatDuration(progress)}/${DurationUtils.formatDuration(duration)}',
+    right: 6.0,
+    bottom: 8.0,
+    type: .gray,
+  );
+  if (progress != null && progress != 0 && duration != null && duration != 0) {
+    yield Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: VideoProgressIndicator(
+        color: colorScheme.primary,
+        backgroundColor: colorScheme.secondaryContainer,
+        progress: progress == -1 ? 1 : progress / duration,
+      ),
+    );
+  }
+}
+
+class HistoryItemCard extends StatelessWidget {
+  const HistoryItemCard({
     super.key,
     required this.item,
     required this.ctr,
     required this.onDelete,
   });
 
-  final HistoryItemModel item;
-  final MultiSelectBase ctr;
+  final HistoryItem item;
+  final IdMultiSelectMixin<dynamic, HistoryItem, String> ctr;
   final void Function(int kid, String business) onDelete;
 
   @override
@@ -35,8 +96,9 @@ class HistoryItem extends StatelessWidget {
     final business = item.history.business;
     final enableMultiSelect = ctr.enableMultiSelect.value;
     final progress = item.progress;
-    final hasProgress = item.hasDuration && progress != null && progress != 0;
-    final label = item.label;
+    final hasDuration = item.duration != null && item.duration != 0;
+    final hasProgress = hasDuration && progress != null && progress != 0;
+    final label = historyLabel(item);
     final date = item.viewAt == null
         ? ''
         : DateFormatUtils.chatFormat(item.viewAt!, isHistory: true);
@@ -51,7 +113,7 @@ class HistoryItem extends StatelessWidget {
       child: CoverScrimCard(
         cover: item.cover?.isNotEmpty == true
             ? item.cover
-            : item.covers?.firstOrNull,
+            : item.covers.firstOrNull,
         title: item.title ?? '',
         titleMaxLines: (item.videos ?? 0) > 1 ? 1 : 2,
         upName: item.authorName,
@@ -60,7 +122,7 @@ class HistoryItem extends StatelessWidget {
             : () => onPushHistory(item),
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        topDuration: item.hasDuration
+        topDuration: hasDuration
             ? progress == -1
                   ? '已看完'
                   : '${DurationUtils.formatDuration(progress)}/${DurationUtils.formatDuration(item.duration)}'
@@ -79,7 +141,7 @@ class HistoryItem extends StatelessWidget {
               ),
             ),
           Positioned.fill(
-            child: selectMask(colorScheme, item.checked),
+            child: selectMask(colorScheme, ctr.isChecked(item)),
           ),
         ],
         metaBuilder: (context, colors) => [
@@ -134,7 +196,7 @@ class HistoryItem extends StatelessWidget {
                   business != 'live' &&
                   business?.contains('article') != true)
                 PopupMenuItem(
-                  onTap: () => UserHttp.toViewLater(bvid: item.history.bvid),
+                  onTap: () => RustHistory.toViewLater(bvid: item.history.bvid),
                   height: 38,
                   child: const Row(
                     children: [
@@ -163,7 +225,7 @@ class HistoryItem extends StatelessWidget {
   }
 }
 
-Future<void> onPushHistory(HistoryItemModel item) async {
+Future<void> onPushHistory(HistoryItem item) async {
   final business = item.history.business;
   if (business?.contains('article') == true) {
     ArticlePage.toArticlePage(
@@ -180,7 +242,7 @@ Future<void> onPushHistory(HistoryItemModel item) async {
   } else if (business == 'pgc') {
     PageUtils.viewPgc(
       epId: item.history.epid,
-      progress: item.playbackProgress,
+      progress: RustHistory.playbackProgressMs(item.progress),
     );
   } else if (business == 'cheese') {
     if (item.uri?.isNotEmpty == true) {
@@ -188,7 +250,7 @@ Future<void> onPushHistory(HistoryItemModel item) async {
         item.uri!,
         isPgc: false,
         aid: item.history.oid,
-        progress: item.playbackProgress,
+        progress: RustHistory.playbackProgressMs(item.progress),
       );
     }
   } else {
@@ -216,7 +278,7 @@ Future<void> onPushHistory(HistoryItemModel item) async {
         cover: item.cover,
         title: item.title,
         dimension: dimension,
-        progress: item.playbackProgress,
+        progress: RustHistory.playbackProgressMs(item.progress),
       );
     }
   }

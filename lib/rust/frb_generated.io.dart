@@ -7,6 +7,7 @@ import 'package:kilikili/rust/api/cover_scrim.dart';
 import 'package:kilikili/rust/api/danmaku.dart';
 import 'package:kilikili/rust/api/dynamic.dart';
 import 'package:kilikili/rust/api/grpc.dart';
+import 'package:kilikili/rust/api/history.dart';
 import 'package:kilikili/rust/api/init.dart';
 import 'package:kilikili/rust/api/live.dart';
 import 'package:kilikili/rust/api/login.dart';
@@ -145,7 +146,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   GrpcIdentity dco_decode_box_autoadd_grpc_identity(dynamic raw);
 
   @protected
+  HistoryContext dco_decode_box_autoadd_history_context(dynamic raw);
+
+  @protected
   HistoryNode dco_decode_box_autoadd_history_node(dynamic raw);
+
+  @protected
+  HistoryPage dco_decode_box_autoadd_history_page(dynamic raw);
 
   @protected
   HotSongHeat dco_decode_box_autoadd_hot_song_heat(dynamic raw);
@@ -161,6 +168,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LanguageOptions dco_decode_box_autoadd_language_options(dynamic raw);
+
+  @protected
+  LaterPage dco_decode_box_autoadd_later_page(dynamic raw);
 
   @protected
   LevelInfo dco_decode_box_autoadd_level_info(dynamic raw);
@@ -227,6 +237,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MatchTeam dco_decode_box_autoadd_match_team(dynamic raw);
+
+  @protected
+  MediaList dco_decode_box_autoadd_media_list(dynamic raw);
+
+  @protected
+  MediaListParams dco_decode_box_autoadd_media_list_params(dynamic raw);
 
   @protected
   MediaScore dco_decode_box_autoadd_media_score(dynamic raw);
@@ -572,7 +588,28 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   GrpcSubtitlesResult dco_decode_grpc_subtitles_result(dynamic raw);
 
   @protected
+  HistoryContext dco_decode_history_context(dynamic raw);
+
+  @protected
+  HistoryItem dco_decode_history_item(dynamic raw);
+
+  @protected
   HistoryNode dco_decode_history_node(dynamic raw);
+
+  @protected
+  HistoryPage dco_decode_history_page(dynamic raw);
+
+  @protected
+  HistoryPageResult dco_decode_history_page_result(dynamic raw);
+
+  @protected
+  HistoryRef dco_decode_history_ref(dynamic raw);
+
+  @protected
+  HistoryStatusResult dco_decode_history_status_result(dynamic raw);
+
+  @protected
+  HistoryTab dco_decode_history_tab(dynamic raw);
 
   @protected
   HotSongHeat dco_decode_hot_song_heat(dynamic raw);
@@ -594,6 +631,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LanguageOptions dco_decode_language_options(dynamic raw);
+
+  @protected
+  LaterItem dco_decode_later_item(dynamic raw);
+
+  @protected
+  LaterPage dco_decode_later_page(dynamic raw);
+
+  @protected
+  LaterPageResult dco_decode_later_page_result(dynamic raw);
 
   @protected
   LevelInfo dco_decode_level_info(dynamic raw);
@@ -670,7 +716,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<GrpcSubtitle> dco_decode_list_grpc_subtitle(dynamic raw);
 
   @protected
+  List<HistoryItem> dco_decode_list_history_item(dynamic raw);
+
+  @protected
+  List<HistoryTab> dco_decode_list_history_tab(dynamic raw);
+
+  @protected
   List<LanguageItem> dco_decode_list_language_item(dynamic raw);
+
+  @protected
+  List<LaterItem> dco_decode_list_later_item(dynamic raw);
 
   @protected
   List<LiveArea> dco_decode_list_live_area(dynamic raw);
@@ -742,6 +797,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<MatchContest> dco_decode_list_match_contest(dynamic raw);
+
+  @protected
+  List<MediaListItem> dco_decode_list_media_list_item(dynamic raw);
 
   @protected
   List<MediaStream> dco_decode_list_media_stream(dynamic raw);
@@ -1051,6 +1109,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MatchTeam dco_decode_match_team(dynamic raw);
 
   @protected
+  MediaList dco_decode_media_list(dynamic raw);
+
+  @protected
+  MediaListItem dco_decode_media_list_item(dynamic raw);
+
+  @protected
+  MediaListParams dco_decode_media_list_params(dynamic raw);
+
+  @protected
+  MediaListResult dco_decode_media_list_result(dynamic raw);
+
+  @protected
   MediaScore dco_decode_media_score(dynamic raw);
 
   @protected
@@ -1125,6 +1195,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   HistoryNode? dco_decode_opt_box_autoadd_history_node(dynamic raw);
 
   @protected
+  HistoryPage? dco_decode_opt_box_autoadd_history_page(dynamic raw);
+
+  @protected
   HotSongHeat? dco_decode_opt_box_autoadd_hot_song_heat(dynamic raw);
 
   @protected
@@ -1138,6 +1211,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LanguageOptions? dco_decode_opt_box_autoadd_language_options(dynamic raw);
+
+  @protected
+  LaterPage? dco_decode_opt_box_autoadd_later_page(dynamic raw);
 
   @protected
   LevelInfo? dco_decode_opt_box_autoadd_level_info(dynamic raw);
@@ -1193,6 +1269,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MatchTeam? dco_decode_opt_box_autoadd_match_team(dynamic raw);
+
+  @protected
+  MediaList? dco_decode_opt_box_autoadd_media_list(dynamic raw);
 
   @protected
   MediaScore? dco_decode_opt_box_autoadd_media_score(dynamic raw);
@@ -2061,7 +2140,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  HistoryContext sse_decode_box_autoadd_history_context(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   HistoryNode sse_decode_box_autoadd_history_node(SseDeserializer deserializer);
+
+  @protected
+  HistoryPage sse_decode_box_autoadd_history_page(SseDeserializer deserializer);
 
   @protected
   HotSongHeat sse_decode_box_autoadd_hot_song_heat(
@@ -2081,6 +2168,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LanguageOptions sse_decode_box_autoadd_language_options(
     SseDeserializer deserializer,
   );
+
+  @protected
+  LaterPage sse_decode_box_autoadd_later_page(SseDeserializer deserializer);
 
   @protected
   LevelInfo sse_decode_box_autoadd_level_info(SseDeserializer deserializer);
@@ -2177,6 +2267,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MatchTeam sse_decode_box_autoadd_match_team(SseDeserializer deserializer);
+
+  @protected
+  MediaList sse_decode_box_autoadd_media_list(SseDeserializer deserializer);
+
+  @protected
+  MediaListParams sse_decode_box_autoadd_media_list_params(
+    SseDeserializer deserializer,
+  );
 
   @protected
   MediaScore sse_decode_box_autoadd_media_score(SseDeserializer deserializer);
@@ -2618,7 +2716,32 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  HistoryContext sse_decode_history_context(SseDeserializer deserializer);
+
+  @protected
+  HistoryItem sse_decode_history_item(SseDeserializer deserializer);
+
+  @protected
   HistoryNode sse_decode_history_node(SseDeserializer deserializer);
+
+  @protected
+  HistoryPage sse_decode_history_page(SseDeserializer deserializer);
+
+  @protected
+  HistoryPageResult sse_decode_history_page_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  HistoryRef sse_decode_history_ref(SseDeserializer deserializer);
+
+  @protected
+  HistoryStatusResult sse_decode_history_status_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  HistoryTab sse_decode_history_tab(SseDeserializer deserializer);
 
   @protected
   HotSongHeat sse_decode_hot_song_heat(SseDeserializer deserializer);
@@ -2640,6 +2763,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LanguageOptions sse_decode_language_options(SseDeserializer deserializer);
+
+  @protected
+  LaterItem sse_decode_later_item(SseDeserializer deserializer);
+
+  @protected
+  LaterPage sse_decode_later_page(SseDeserializer deserializer);
+
+  @protected
+  LaterPageResult sse_decode_later_page_result(SseDeserializer deserializer);
 
   @protected
   LevelInfo sse_decode_level_info(SseDeserializer deserializer);
@@ -2736,9 +2868,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<HistoryItem> sse_decode_list_history_item(SseDeserializer deserializer);
+
+  @protected
+  List<HistoryTab> sse_decode_list_history_tab(SseDeserializer deserializer);
+
+  @protected
   List<LanguageItem> sse_decode_list_language_item(
     SseDeserializer deserializer,
   );
+
+  @protected
+  List<LaterItem> sse_decode_list_later_item(SseDeserializer deserializer);
 
   @protected
   List<LiveArea> sse_decode_list_live_area(SseDeserializer deserializer);
@@ -2840,6 +2981,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<MatchContest> sse_decode_list_match_contest(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<MediaListItem> sse_decode_list_media_list_item(
     SseDeserializer deserializer,
   );
 
@@ -3223,6 +3369,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MatchTeam sse_decode_match_team(SseDeserializer deserializer);
 
   @protected
+  MediaList sse_decode_media_list(SseDeserializer deserializer);
+
+  @protected
+  MediaListItem sse_decode_media_list_item(SseDeserializer deserializer);
+
+  @protected
+  MediaListParams sse_decode_media_list_params(SseDeserializer deserializer);
+
+  @protected
+  MediaListResult sse_decode_media_list_result(SseDeserializer deserializer);
+
+  @protected
   MediaScore sse_decode_media_score(SseDeserializer deserializer);
 
   @protected
@@ -3313,6 +3471,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  HistoryPage? sse_decode_opt_box_autoadd_history_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   HotSongHeat? sse_decode_opt_box_autoadd_hot_song_heat(
     SseDeserializer deserializer,
   );
@@ -3330,6 +3493,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LanguageOptions? sse_decode_opt_box_autoadd_language_options(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LaterPage? sse_decode_opt_box_autoadd_later_page(
     SseDeserializer deserializer,
   );
 
@@ -3415,6 +3583,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MatchTeam? sse_decode_opt_box_autoadd_match_team(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MediaList? sse_decode_opt_box_autoadd_media_list(
     SseDeserializer deserializer,
   );
 
@@ -4524,8 +4697,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_history_context(
+    HistoryContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_history_node(
     HistoryNode self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_history_page(
+    HistoryPage self,
     SseSerializer serializer,
   );
 
@@ -4553,6 +4738,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_language_options(
     LanguageOptions self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_later_page(
+    LaterPage self,
     SseSerializer serializer,
   );
 
@@ -4685,6 +4876,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_match_team(
     MatchTeam self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_media_list(
+    MediaList self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_media_list_params(
+    MediaListParams self,
     SseSerializer serializer,
   );
 
@@ -5280,7 +5483,37 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_history_context(
+    HistoryContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_history_item(HistoryItem self, SseSerializer serializer);
+
+  @protected
   void sse_encode_history_node(HistoryNode self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_history_page(HistoryPage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_history_page_result(
+    HistoryPageResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_history_ref(HistoryRef self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_history_status_result(
+    HistoryStatusResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_history_tab(HistoryTab self, SseSerializer serializer);
 
   @protected
   void sse_encode_hot_song_heat(HotSongHeat self, SseSerializer serializer);
@@ -5306,6 +5539,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_language_options(
     LanguageOptions self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_later_item(LaterItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_later_page(LaterPage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_later_page_result(
+    LaterPageResult self,
     SseSerializer serializer,
   );
 
@@ -5433,8 +5678,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_history_item(
+    List<HistoryItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_history_tab(
+    List<HistoryTab> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_language_item(
     List<LanguageItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_later_item(
+    List<LaterItem> self,
     SseSerializer serializer,
   );
 
@@ -5567,6 +5830,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_match_contest(
     List<MatchContest> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_media_list_item(
+    List<MediaListItem> self,
     SseSerializer serializer,
   );
 
@@ -6093,6 +6362,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_match_team(MatchTeam self, SseSerializer serializer);
 
   @protected
+  void sse_encode_media_list(MediaList self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_media_list_item(MediaListItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_media_list_params(
+    MediaListParams self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_media_list_result(
+    MediaListResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_media_score(MediaScore self, SseSerializer serializer);
 
   @protected
@@ -6201,6 +6488,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_history_page(
+    HistoryPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_hot_song_heat(
     HotSongHeat? self,
     SseSerializer serializer,
@@ -6224,6 +6517,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_language_options(
     LanguageOptions? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_later_page(
+    LaterPage? self,
     SseSerializer serializer,
   );
 
@@ -6326,6 +6625,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_match_team(
     MatchTeam? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_media_list(
+    MediaList? self,
     SseSerializer serializer,
   );
 

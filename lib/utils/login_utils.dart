@@ -2,7 +2,6 @@ import 'dart:async' show FutureOr;
 import 'dart:io' show Platform;
 
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/user.dart';
 import 'package:kilikili/main.dart' show webViewEnvironment;
 import 'package:kilikili/services/account_service.dart';
 import 'package:kilikili/utils/accounts.dart';

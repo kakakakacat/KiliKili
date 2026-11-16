@@ -2,7 +2,7 @@ import 'dart:async' show FutureOr, Timer;
 
 import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/user.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/models/common/video/source_type.dart';
 import 'package:kilikili/models_new/fav/fav_folder/data.dart';
 import 'package:kilikili/models_new/video/video_detail/data.dart';
@@ -154,8 +154,8 @@ abstract class CommonIntroController extends GetxController
 
   Future<void> viewLater() async {
     final res = await (hasLater.value
-        ? UserHttp.toViewDel(aids: aid)
-        : UserHttp.toViewLater(bvid: bvid));
+        ? RustHistory.toViewDel(aids: '$aid')
+        : RustHistory.toViewLater(bvid: bvid));
     if (res.isSuccess) hasLater.toggle();
   }
 }

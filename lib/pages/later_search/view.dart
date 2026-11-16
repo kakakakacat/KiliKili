@@ -1,6 +1,6 @@
 import 'package:kilikili/models/common/video/source_type.dart';
-import 'package:kilikili/models_new/later/data.dart';
-import 'package:kilikili/models_new/later/list.dart';
+import 'package:kilikili/models_new/video/video_detail/dimension.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/pages/common/search/common_search_page.dart';
 import 'package:kilikili/pages/later/widgets/video_card_h_later.dart';
 import 'package:kilikili/pages/later_search/controller.dart';
@@ -20,7 +20,7 @@ class LaterSearchPage extends StatefulWidget {
 }
 
 class _LaterSearchPageState
-    extends CommonSearchPageState<LaterSearchPage, LaterData, LaterItemModel>
+    extends CommonSearchPageState<LaterSearchPage, LaterPage, LaterItem>
     with GridMixin {
   late final enablePlayAll = Pref.enablePlayAll;
 
@@ -39,22 +39,20 @@ class _LaterSearchPageState
     return [
       TextButton(
         style: btnStyle,
-        onPressed: () => RequestUtils.onCopyOrMove<LaterItemModel>(
+        onPressed: () => RequestUtils.onCopyOrMoveLater(
           context: context,
           isCopy: true,
           ctr: controller,
-          mediaId: null,
           mid: controller.mid,
         ),
         child: Text('复制', style: textStyle),
       ),
       TextButton(
         style: btnStyle,
-        onPressed: () => RequestUtils.onCopyOrMove<LaterItemModel>(
+        onPressed: () => RequestUtils.onCopyOrMoveLater(
           context: context,
           isCopy: false,
           ctr: controller,
-          mediaId: null,
           mid: controller.mid,
         ),
         child: Text('移动', style: textStyle),
@@ -63,7 +61,7 @@ class _LaterSearchPageState
   }
 
   @override
-  Widget buildList(List<LaterItemModel> list) {
+  Widget buildList(List<LaterItem> list) {
     return SliverGrid.builder(
       gridDelegate: coverGridDelegate,
       itemBuilder: (context, index) {
@@ -81,7 +79,10 @@ class _LaterSearchPageState
               cid: cid,
               cover: item.pic,
               title: item.title,
-              dimension: item.dimension,
+              // Rust 给的宽高已按 rotate 摆正。
+              dimension: item.width == null || item.height == null
+                  ? null
+                  : Dimension(width: item.width, height: item.height),
               extraArguments: enablePlayAll
                   ? {
                       'oid': item.aid,

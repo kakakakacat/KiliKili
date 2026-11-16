@@ -1,5 +1,5 @@
 import 'package:kilikili/common/widgets/custom_icon.dart';
-import 'package:kilikili/http/user.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/models/home/rcmd/result.dart';
 import 'package:kilikili/models/model_video.dart';
 import 'package:kilikili/models_new/space/space_archive/item.dart';
@@ -67,7 +67,7 @@ class VideoPopupMenu extends StatelessWidget {
                     _VideoCustomAction(
                       '稍后再看',
                       const Icon(MdiIcons.clockTimeEightOutline, size: 16),
-                      () => UserHttp.toViewLater(bvid: videoItem.bvid),
+                      () => RustHistory.toViewLater(bvid: videoItem.bvid),
                     ),
                   if (videoItem.cid != null && Pref.enableAi)
                     _VideoCustomAction(

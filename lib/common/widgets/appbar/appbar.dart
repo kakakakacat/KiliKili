@@ -4,7 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 class MultiSelectAppBarWidget extends StatelessWidget
     implements PreferredSizeWidget {
-  final MultiSelectBase ctr;
+  final MultiSelectBar ctr;
   final bool? visible;
   final AppBar child;
   final List<Widget>? actions;

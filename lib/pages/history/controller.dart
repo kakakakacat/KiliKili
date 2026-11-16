@@ -1,11 +1,9 @@
 import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/user.dart';
-import 'package:kilikili/models_new/history/data.dart';
-import 'package:kilikili/models_new/history/list.dart';
-import 'package:kilikili/models_new/history/tab.dart';
-import 'package:kilikili/pages/common/multi_select/multi_select_controller.dart';
+import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/pages/common/multi_select/id_based.dart';
 import 'package:kilikili/pages/history/base_controller.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/utils/accounts/account.dart';
 import 'package:kilikili/utils/extension/scroll_controller_ext.dart';
 import 'package:kilikili/utils/storage.dart';
@@ -15,8 +13,10 @@ import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class HistoryController
-    extends MultiSelectController<HistoryData, HistoryItemModel>
-    with GetSingleTickerProviderStateMixin {
+    extends CommonListController<HistoryPage, HistoryItem>
+    with
+        IdMultiSelectMixin<HistoryPage, HistoryItem, String>,
+        GetSingleTickerProviderStateMixin {
   HistoryController(this.type);
 
   late final baseCtr = Get.put(HistoryBaseController());
@@ -51,14 +51,19 @@ class HistoryController
   }
 
   @override
-  List<HistoryItemModel>? getDataList(HistoryData response) {
+  List<HistoryItem>? getDataList(HistoryPage response) {
     return response.list;
   }
 
+  /// 删除接口认的就是这个串（`${business}_${kid}`），正好也在同一个列表里
+  /// 唯一，所以直接拿它当选中态的 id，不另造一个。
   @override
-  bool customHandleResponse(bool isRefresh, Success<HistoryData> response) {
+  String idOf(HistoryItem item) => '${item.history.business}_${item.kid}';
+
+  @override
+  bool customHandleResponse(bool isRefresh, Success<HistoryPage> response) {
     final data = response.response;
-    final last = data.list?.lastOrNull;
+    final last = data.list.lastOrNull;
     if (last == null) {
       isEnd = true;
       max = viewAt = null;
@@ -69,8 +74,8 @@ class HistoryController
     }
 
     if (isRefresh && type == null) {
-      final tab = data.tab;
-      if (tabs.isEmpty && tab != null && tab.isNotEmpty) {
+      final tab = data.tabs;
+      if (tabs.isEmpty && tab.isNotEmpty) {
         tabs.value = tab;
         tabController = TabController(length: tab.length + 1, vsync: this);
       }
@@ -81,7 +86,7 @@ class HistoryController
 
   // 观看历史暂停状态
   Future<void> historyStatus() async {
-    final res = await UserHttp.historyStatus(account: account);
+    final res = await RustHistory.historyStatus(account: account);
     if (res case Success(:final response)) {
       baseCtr.pauseStatus.value = response;
       GStorage.localCache.put(LocalCacheKey.historyPause, response);
@@ -91,7 +96,7 @@ class HistoryController
   }
 
   // 删除某条历史记录
-  void delHistory(HistoryItemModel item) {
+  void delHistory(HistoryItem item) {
     _onDelete({item});
   }
 
@@ -107,17 +112,16 @@ class HistoryController
     }
   }
 
-  Future<void> _onDelete(Set<HistoryItemModel> removeList) async {
+  Future<void> _onDelete(Set<HistoryItem> removeList) async {
     SmartDialog.showLoading(msg: '请求中');
-    final res = await UserHttp.delHistory(
-      removeList
-          .map((item) => '${item.history.business}_${item.kid}')
-          .join(','),
+    final ids = removeList.map(idOf).toSet();
+    final res = await RustHistory.delHistory(
+      ids.join(','),
       account: account,
     );
     SmartDialog.dismiss();
     if (res.isSuccess) {
-      afterDelete(removeList);
+      afterDeleteIds(ids);
       SmartDialog.showToast('已删除');
     } else {
       res.toast();
@@ -136,7 +140,7 @@ class HistoryController
   }
 
   @override
-  Future<LoadingState<HistoryData>> customGetData() => UserHttp.historyList(
+  Future<LoadingState<HistoryPage>> customGetData() => RustHistory.historyList(
     type: type ?? 'all',
     max: max,
     viewAt: viewAt,

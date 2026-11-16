@@ -6,7 +6,6 @@ import 'package:kilikili/common/widgets/scroll_physics.dart'
     show tabBarScrollPhysics;
 import 'package:kilikili/common/widgets/view_safe_area.dart';
 import 'package:kilikili/models/common/later_view_type.dart';
-import 'package:kilikili/models_new/later/list.dart';
 import 'package:kilikili/pages/later/base_controller.dart';
 import 'package:kilikili/pages/later/controller.dart';
 import 'package:kilikili/utils/accounts.dart';
@@ -166,11 +165,10 @@ class _LaterPageState extends State<LaterPage>
           style: btnStyle,
           onPressed: () {
             final ctr = currCtr();
-            RequestUtils.onCopyOrMove<LaterItemModel>(
+            RequestUtils.onCopyOrMoveLater(
               context: context,
               isCopy: true,
               ctr: ctr,
-              mediaId: null,
               mid: ctr.mid,
             );
           },
@@ -180,11 +178,10 @@ class _LaterPageState extends State<LaterPage>
           style: btnStyle,
           onPressed: () {
             final ctr = currCtr();
-            RequestUtils.onCopyOrMove<LaterItemModel>(
+            RequestUtils.onCopyOrMoveLater(
               context: context,
               isCopy: false,
               ctr: ctr,
-              mediaId: null,
               mid: ctr.mid,
             );
           },

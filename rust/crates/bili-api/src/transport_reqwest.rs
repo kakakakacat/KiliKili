@@ -307,15 +307,43 @@ fn failure_shape(e: &reqwest::Error) -> FailureShape {
 
 /// reqwest 错误到领域错误的映射。
 ///
-/// 错误信息里**不含**请求头，只含 reqwest 自己的描述与 URL——URL 带查询
-/// 参数，其中有 `w_rid`/`wts` 但没有凭据（凭据在头里）。
+/// **不要用 `e.to_string()`**（issue #156）。reqwest 的 `Display` 在末尾
+/// 无条件追加 ` for url (<完整 URL>)`，而这条字符串会一路走到
+/// `DomainError::detail` → FFI 的 `error_detail` → Dart 的 `Error(errMsg)`
+/// → `SmartDialog.showToast`，也就是**直接显示在屏幕上**。
+///
+/// 这里原先写着「URL 里有 `w_rid`/`wts` 但没有凭据（凭据在头里）」——那
+/// 句话在 `CsrfIn::Query` 和 `access_key` 上查询串之后就不成立了：
+/// `login::fetch_login_devices` 的查询串同时带 `csrf=` 与 `access_key=`。
+/// 一次普通的超时就能把 access_key 摆到 toast 上。
+///
+/// 所以描述由固定文案给出，URL 只保留主机名——定位问题够用，且主机名是
+/// 一组 `&'static str` 常量，不含任何用户数据。
 fn map_reqwest_error(e: &reqwest::Error) -> DomainError {
     let kind = if e.is_decode() {
         ErrorKind::Protocol
     } else {
         ErrorKind::Network
     };
-    DomainError::new(kind, e.to_string())
+    // 顺序与 [`failure_shape`] 一致：连接阶段超时两个谓词同时为真。
+    let what = if e.is_connect() {
+        "连接失败"
+    } else if e.is_timeout() {
+        "请求超时"
+    } else if e.is_decode() {
+        "响应解析失败"
+    } else if e.is_redirect() {
+        "重定向次数过多"
+    } else if e.is_body() {
+        "请求或响应主体错误"
+    } else {
+        "网络错误"
+    };
+    let detail = match e.url().and_then(reqwest::Url::host_str) {
+        Some(host) => format!("{what}（{host}）"),
+        None => what.to_owned(),
+    };
+    DomainError::new(kind, detail)
 }
 
 #[cfg(test)]
@@ -403,5 +431,41 @@ mod tests {
         if let Err(e) = client(&bad) {
             assert_eq!(e.kind(), ErrorKind::Network);
         }
+    }
+
+    /// issue #156：错误描述会被原样 toast 出来，里面不能有凭据。
+    ///
+    /// 用 127.0.0.1 上一个必然拒绝连接的端口造一个真实的
+    /// `reqwest::Error`——不构造假错误，因为要验的恰恰是 reqwest 自己的
+    /// `Display` 不被我们带进 `detail`。查询串里塞进凭据名的字面值，
+    /// 断言它们一个都不出现。
+    #[tokio::test]
+    async fn error_detail_never_carries_the_query_string() {
+        let url = concat!(
+            "http://127.0.0.1:1/x/passport-login/web/device/list",
+            "?csrf=CSRF_SHOULD_NOT_LEAK&access_key=AK_SHOULD_NOT_LEAK"
+        );
+
+        let err = reqwest::Client::new()
+            .get(url)
+            .send()
+            .await
+            .expect_err("127.0.0.1:1 必定连不上");
+
+        assert!(
+            err.to_string().contains("AK_SHOULD_NOT_LEAK"),
+            "前提：reqwest 的 Display 确实带 URL，否则这个测试就失去意义了"
+        );
+
+        let detail = map_reqwest_error(&err).detail().to_owned();
+        assert!(
+            !detail.contains("CSRF_SHOULD_NOT_LEAK") && !detail.contains("AK_SHOULD_NOT_LEAK"),
+            "凭据泄进了用户可见的错误描述：{detail}"
+        );
+        assert!(!detail.contains('?'), "查询串整段都不该出现：{detail}");
+        assert!(
+            detail.contains("127.0.0.1"),
+            "主机名要留着，否则定位不了问题：{detail}"
+        );
     }
 }

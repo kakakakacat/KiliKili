@@ -20,6 +20,7 @@ use base64::engine::general_purpose::STANDARD as BASE64;
 use percent_encoding::{AsciiSet, NON_ALPHANUMERIC, utf8_percent_encode};
 use rsa::pkcs1::DecodeRsaPublicKey as _;
 use rsa::pkcs8::DecodePublicKey as _;
+use rsa::traits::PublicKeyParts as _;
 use rsa::{Pkcs1v15Encrypt, RsaPublicKey};
 
 /// Dart `Uri.encodeComponent` 的保留集，与 [`crate::app_sign`] 同一套。
@@ -60,12 +61,25 @@ impl std::error::Error for CryptoError {}
 /// `RSA PUBLIC KEY`（PKCS#1），线上两种都出现过。只认一种的话，另一种
 /// 会在"密码错误"的伪装下失败。
 ///
+/// 解析成功后还要求模数不短于 2048 bit（issue #156）。这是防御性的一层：
+/// 要下发弱公钥，攻击者得先是 TLS MITM，而到了那一步密码请求的明文他本来
+/// 就看得见，弱公钥并不额外给他什么。基线的 `RSAKeyParser` 同样不校验。
+/// 加这一条只因为代价是一次比较，而「服务端某天换了短密钥」这件事没有
+/// 别的地方会发现。
+///
 /// # Errors
-/// 两种格式都解析不出 → [`CryptoError::BadKey`]。
+/// 两种格式都解析不出，或模数短于 2048 bit → [`CryptoError::BadKey`]。
 pub fn parse_public_key(pem: &str) -> Result<RsaPublicKey, CryptoError> {
-    RsaPublicKey::from_public_key_pem(pem.trim())
+    /// 可接受的最小模数字节数（2048 bit）。
+    const MIN_MODULUS_BYTES: usize = 256;
+
+    let key = RsaPublicKey::from_public_key_pem(pem.trim())
         .or_else(|_| RsaPublicKey::from_pkcs1_pem(pem.trim()))
-        .map_err(|_| CryptoError::BadKey)
+        .map_err(|_| CryptoError::BadKey)?;
+    if key.size() < MIN_MODULUS_BYTES {
+        return Err(CryptoError::BadKey);
+    }
+    Ok(key)
 }
 
 /// 用公钥加密并 base64。PKCS#1 v1.5 填充，与基线 `encrypt` 包的默认一致。
@@ -117,12 +131,19 @@ mod tests {
     use rsa::pkcs8::EncodePublicKey as _;
     use rsa::{Pkcs1v15Encrypt as Padding, RsaPrivateKey};
 
+    /// 2048 位：`parse_public_key` 的下限就是它（issue #156），再短的
+    /// 密钥连解析都过不去。生成一次复用——2048 位在 debug 下要几秒，
+    /// 每个用例各生成一次会让这个 crate 的测试明显变慢。
     fn key_pair() -> (RsaPrivateKey, RsaPublicKey) {
-        // 1024 位足够测试，且生成得快；线上密钥长度由服务端决定。
-        let mut rng = rsa::rand_core::OsRng;
-        let private = RsaPrivateKey::new(&mut rng, 1024).expect("生成测试密钥");
-        let public = RsaPublicKey::from(&private);
-        (private, public)
+        static PAIR: std::sync::OnceLock<(RsaPrivateKey, RsaPublicKey)> =
+            std::sync::OnceLock::new();
+        PAIR.get_or_init(|| {
+            let mut rng = rsa::rand_core::OsRng;
+            let private = RsaPrivateKey::new(&mut rng, 2048).expect("生成测试密钥");
+            let public = RsaPublicKey::from(&private);
+            (private, public)
+        })
+        .clone()
     }
 
     #[test]
@@ -169,5 +190,18 @@ mod tests {
     #[test]
     fn garbage_key_is_rejected_rather_than_guessed() {
         assert_eq!(parse_public_key("not a pem"), Err(CryptoError::BadKey));
+    }
+
+    /// issue #156：格式合法但模数过短的公钥也要拒。
+    #[test]
+    fn short_modulus_is_rejected_even_though_the_pem_parses() {
+        let mut rng = rsa::rand_core::OsRng;
+        let weak = RsaPublicKey::from(&RsaPrivateKey::new(&mut rng, 1024).expect("生成弱密钥"));
+        let pem = weak
+            .to_public_key_pem(rsa::pkcs8::LineEnding::LF)
+            .expect("导出 SPKI");
+        // PEM 本身没问题——拒绝的理由只能是长度。
+        assert!(RsaPublicKey::from_public_key_pem(&pem).is_ok());
+        assert_eq!(parse_public_key(&pem), Err(CryptoError::BadKey));
     }
 }

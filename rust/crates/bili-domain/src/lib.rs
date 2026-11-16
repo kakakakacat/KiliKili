@@ -20,6 +20,7 @@ pub mod regex_compat;
 pub mod reply;
 pub mod search;
 pub mod session;
+pub mod space;
 pub mod sponsor_block;
 pub mod subtitle;
 pub mod user;

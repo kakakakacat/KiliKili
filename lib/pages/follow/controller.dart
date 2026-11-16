@@ -1,9 +1,9 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/member.dart';
 import 'package:kilikili/models/common/follow_order_type.dart';
 import 'package:kilikili/models/member/tags.dart';
 import 'package:kilikili/pages/follow/child/child_controller.dart';
 import 'package:kilikili/services/rust/rust_relation.dart';
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/storage.dart';
 import 'package:kilikili/utils/storage_key.dart';
@@ -57,8 +57,8 @@ class FollowController extends GetxController with GetTickerProviderStateMixin {
   }
 
   Future<void> _queryUserName() async {
-    final res = await MemberHttp.memberCardInfo(mid: mid);
-    name.value = res.dataOrNull?.card?.name;
+    final res = await RustSpace.memberCard(mid: mid);
+    name.value = res.dataOrNull?.name;
   }
 
   Future<void> queryFollowUpTags() async {

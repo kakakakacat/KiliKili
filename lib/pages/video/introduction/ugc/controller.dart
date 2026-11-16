@@ -8,11 +8,10 @@ import 'package:kilikili/http/api.dart';
 import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/member.dart';
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/http/search.dart';
 import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/common/video/source_type.dart';
-import 'package:kilikili/models_new/member_card_info/data.dart';
 import 'package:kilikili/services/rust/rust_video_page.dart';
 import 'package:kilikili/models_new/video/video_detail/data.dart';
 import 'package:kilikili/models_new/video/video_detail/dimension.dart';
@@ -52,7 +51,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   final RxBool status = true.obs;
 
   // up主粉丝数
-  final Rx<MemberCardInfoData> userStat = MemberCardInfoData().obs;
+  final Rxn<MemberCard> userStat = Rxn<MemberCard>();
   // 服务端给的关注关系。Rust 侧的 `Relation` 是不可变的，界面要的「乐观
   // 改一下再等接口确认」因此拆到 [followAttr]——把可变性塞回导出结构是
   // 让宿主的习惯泄进 Rust（ADR-011 / AGENTS.md §2）。
@@ -210,7 +209,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       if (mid == null) {
         return;
       }
-      final res = await MemberHttp.memberCardInfo(mid: mid);
+      final res = await RustSpace.memberCard(mid: mid);
       if (res case Success(:final response)) {
         userStat.value = response;
       }

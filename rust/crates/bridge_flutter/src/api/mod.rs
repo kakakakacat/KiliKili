@@ -18,6 +18,7 @@ pub mod relation;
 pub mod reply;
 pub mod search;
 pub mod search_suggest;
+pub mod space;
 pub mod sponsor_block;
 pub mod subtitle;
 pub mod transport;

@@ -1963,6 +1963,11 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   }
 
   void onShowMemberPage(int? mid) {
+    // 没有 mid 就没有可看的主页。基线把 null 一路传到取数处换一个业务
+    // 错误码，那只是把「点了没反应」变成「点了弹个错」。
+    if (mid == null) {
+      return;
+    }
     videoDetailController.childKey.currentState?.showBottomSheet(
       constraints: const BoxConstraints(),
       dragHeight: 100,

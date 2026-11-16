@@ -1,0 +1,40 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "mid": 300000101,
+    "name": "示例up主甲",
+    "sex": "保密",
+    "face": "//i1.example.test/bfs/face/aaaaaaaa.jpg",
+    "face_nft": 0,
+    "sign": "这是示例签名",
+    "rank": 10000,
+    "level": 6,
+    "jointime": 0,
+    "moral": 0,
+    "silence": 0,
+    "coins": 0,
+    "fans_badge": true,
+    "official": { "role": 1, "title": "示例认证头衔", "desc": "", "type": 0 },
+    "vip": {
+      "type": 2,
+      "status": 1,
+      "due_date": 1800000000,
+      "label": { "text": "年度大会员", "label_theme": "annual_vip" }
+    },
+    "is_followed": true,
+    "top_photo": "//i0.example.test/bfs/space/bbbbbbbb.png",
+    "live_room": {
+      "roomStatus": 1,
+      "liveStatus": 0,
+      "url": "https://live.example.test/4000011",
+      "title": "示例直播间标题",
+      "cover": "//i0.example.test/bfs/live/cccccccc.jpg",
+      "roomid": 4000011,
+      "roundStatus": 0,
+      "watched_show": { "switch": true, "num": 1234, "text_large": "1234人看过" }
+    },
+    "is_senior_member": 1
+  }
+}

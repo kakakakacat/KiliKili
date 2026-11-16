@@ -13,12 +13,10 @@ import 'package:kilikili/models/common/member/archive_sort_type_app.dart';
 import 'package:kilikili/models/common/member/contribute_type.dart';
 import 'package:kilikili/models/common/member/web_ss_type.dart';
 import 'package:kilikili/models/dynamics/result.dart';
-import 'package:kilikili/models/member/info.dart';
 import 'package:kilikili/models/member/tags.dart';
 import 'package:kilikili/models_new/member/coin_like_arc/data.dart';
 import 'package:kilikili/models_new/member/search_archive/data.dart';
 import 'package:kilikili/models_new/member/season_web/data.dart';
-import 'package:kilikili/models_new/member_card_info/data.dart';
 import 'package:kilikili/models_new/member_guard/data.dart';
 import 'package:kilikili/models_new/space/space/data.dart';
 import 'package:kilikili/models_new/space/space_archive/data.dart';
@@ -37,28 +35,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 abstract final class MemberHttp {
-  static Future<void> reportMember(
-    dynamic mid, {
-    String? reason,
-    int? reasonV2,
-  }) async {
-    final res = await Request().post(
-      Api.reportMember,
-      data: {
-        'mid': mid,
-        'reason': reason,
-        'reason_v2': ?reasonV2,
-        'csrf': Accounts.main.csrf,
-      },
-      options: Options(contentType: Headers.formUrlEncodedContentType),
-    );
-    if (res.data['status'] == true) {
-      SmartDialog.showToast('举报成功');
-    } else {
-      SmartDialog.showToast('举报失败');
-    }
-  }
-
   static Future<LoadingState<SpaceArticleData>> spaceArticle({
     required int mid,
     required int page,
@@ -281,69 +257,6 @@ abstract final class MemberHttp {
     }
   }
 
-  static Future<LoadingState<MemberInfoModel>> memberInfo({
-    required int mid,
-    String token = '',
-  }) async {
-    String dmImgStr = Utils.base64EncodeRandomString(16, 64);
-    String dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
-    final params = await WbiSign.makSign({
-      'mid': mid,
-      'token': token,
-      'platform': 'web',
-      'web_location': 1550101,
-      'dm_img_list': '[]',
-      'dm_img_str': dmImgStr,
-      'dm_cover_img_str': dmCoverImgStr,
-      'dm_img_inter': '{"ds":[],"wh":[0,0,0],"of":[0,0,0]}',
-    });
-    final res = await Request().get(
-      Api.memberInfo,
-      queryParameters: params,
-      options: Options(
-        headers: {
-          'origin': 'https://space.bilibili.com',
-          'referer': 'https://space.bilibili.com/$mid/dynamic',
-          'user-agent': BrowserUa.pc,
-        },
-      ),
-    );
-    if (res.data['code'] == 0) {
-      return Success(MemberInfoModel.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<Map>> memberStat({int? mid}) async {
-    final res = await Request().get(
-      Api.userStat,
-      queryParameters: {'vmid': mid},
-    );
-    if (res.data['code'] == 0) {
-      return Success(res.data['data']);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<MemberCardInfoData>> memberCardInfo({
-    int? mid,
-  }) async {
-    final res = await Request().get(
-      Api.memberCardInfo,
-      queryParameters: {
-        'mid': mid,
-        'photo': false,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(MemberCardInfoData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   static Future<LoadingState<SearchArchiveData>> searchArchive({
     required Object mid,
     int tid = 0, // e.g. pugv: 196
@@ -499,33 +412,6 @@ abstract final class MemberHttp {
     );
     if (res.data['code'] == 0) {
       return Success(DynamicsDataModel.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  // 获取up置顶
-  static Future<LoadingState<List<MemberTagItemModel>?>> getTopVideo() async {
-    final res = await Request().get(Api.getTopVideoApi);
-    if (res.data['code'] == 0) {
-      return Success(
-        (res.data['data'] as List?)
-            ?.map<MemberTagItemModel>((e) => MemberTagItemModel.fromJson(e))
-            .toList(),
-      );
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  // 获取up播放数、点赞数
-  static Future<LoadingState<Map>> memberView({required int mid}) async {
-    final res = await Request().get(
-      Api.getMemberViewApi,
-      queryParameters: {'mid': mid},
-    );
-    if (res.data['code'] == 0) {
-      return Success(res.data['data']);
     } else {
       return Error(res.data['message']);
     }

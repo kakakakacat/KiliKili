@@ -1,5 +1,5 @@
-import 'package:kilikili/http/member.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/services/rust/rust_misc.dart' show FollowList, FollowUser;
 import 'package:kilikili/utils/accounts.dart';
 import 'package:get/get.dart';
@@ -30,8 +30,8 @@ abstract class FollowTypeController
   }
 
   Future<void> queryUserName() async {
-    final res = await MemberHttp.memberCardInfo(mid: mid);
-    name.value = res.dataOrNull?.card?.name;
+    final res = await RustSpace.memberCard(mid: mid);
+    name.value = res.dataOrNull?.name;
   }
 
   @override

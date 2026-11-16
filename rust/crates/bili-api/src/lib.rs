@@ -54,6 +54,7 @@ pub mod request;
 pub mod search;
 pub mod search_suggest;
 pub mod search_text;
+pub mod space;
 pub mod sponsor_block;
 pub mod subtitle;
 #[cfg(feature = "reqwest-transport")]

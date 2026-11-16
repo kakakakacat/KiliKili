@@ -1,8 +1,8 @@
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/member.dart';
 import 'package:kilikili/models/common/member/archive_order_type_app.dart';
-import 'package:kilikili/models/member/info.dart';
 import 'package:kilikili/models_new/space/space_archive/data.dart';
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/models_new/space/space_archive/item.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
 import 'package:kilikili/utils/accounts.dart';
@@ -15,9 +15,20 @@ class HorizontalMemberPageController
 
   dynamic mid;
 
-  final Rx<LoadingState<MemberInfoModel>> userState =
-      LoadingState<MemberInfoModel>.loading().obs;
-  final RxMap userStat = {}.obs;
+  final Rx<LoadingState<MemberInfo>> userState =
+      LoadingState<MemberInfo>.loading().obs;
+
+  /// 关注态单独拿出来。
+  ///
+  /// 基线是就地改 `userState.value.data.isFollowed`；`MemberInfo` 来自
+  /// Rust，字段是 final 的。关注与否本来也**不是这条接口的事实**，它会被
+  /// 另一条写接口改掉，按 AGENTS.md §2 属于界面状态，归控制器。
+  final RxnBool isFollowed = RxnBool();
+
+  /// 关注数 / 粉丝数 / 获赞数，各自来自不同接口，按需填。
+  final RxnInt following = RxnInt();
+  final RxnInt follower = RxnInt();
+  final RxnInt likes = RxnInt();
 
   @override
   void onInit() {
@@ -27,18 +38,20 @@ class HorizontalMemberPageController
   }
 
   Future<void> getUserInfo() async {
-    final res = await MemberHttp.memberInfo(mid: mid);
+    final res = await RustSpace.memberInfo(mid: mid);
     userState.value = res;
-    if (res.isSuccess) {
+    if (res case Success(:final response)) {
+      isFollowed.value = response.isFollowed;
       getMemberStat();
       getMemberView();
     }
   }
 
   Future<void> getMemberStat() async {
-    final res = await MemberHttp.memberStat(mid: mid);
+    final res = await RustSpace.memberRelationStat(mid: mid);
     if (res case Success(:final response)) {
-      userStat.addAll(response);
+      following.value = response.following;
+      follower.value = response.follower;
     }
   }
 
@@ -46,9 +59,9 @@ class HorizontalMemberPageController
     if (!Accounts.main.isLogin) {
       return;
     }
-    final res = await MemberHttp.memberView(mid: mid);
+    final res = await RustSpace.memberUpStat(mid: mid);
     if (res case Success(:final response)) {
-      userStat.addAll(response);
+      likes.value = response.likes;
     }
   }
 

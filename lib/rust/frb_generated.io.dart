@@ -21,6 +21,7 @@ import 'package:kilikili/rust/api/relation.dart';
 import 'package:kilikili/rust/api/reply.dart';
 import 'package:kilikili/rust/api/search.dart';
 import 'package:kilikili/rust/api/search_suggest.dart';
+import 'package:kilikili/rust/api/space.dart';
 import 'package:kilikili/rust/api/sponsor_block.dart';
 import 'package:kilikili/rust/api/subtitle.dart';
 import 'package:kilikili/rust/api/transport.dart';
@@ -251,6 +252,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MediaStream dco_decode_box_autoadd_media_stream(dynamic raw);
 
   @protected
+  MemberCard dco_decode_box_autoadd_member_card(dynamic raw);
+
+  @protected
+  MemberInfo dco_decode_box_autoadd_member_info(dynamic raw);
+
+  @protected
+  MemberRelationStat dco_decode_box_autoadd_member_relation_stat(dynamic raw);
+
+  @protected
+  MemberUpStat dco_decode_box_autoadd_member_up_stat(dynamic raw);
+
+  @protected
   MiscContext dco_decode_box_autoadd_misc_context(dynamic raw);
 
   @protected
@@ -392,6 +405,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SmsSendState dco_decode_box_autoadd_sms_send_state(dynamic raw);
+
+  @protected
+  SpaceContext dco_decode_box_autoadd_space_context(dynamic raw);
 
   @protected
   SponsorBlockContext dco_decode_box_autoadd_sponsor_block_context(dynamic raw);
@@ -1127,6 +1143,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MediaStream dco_decode_media_stream(dynamic raw);
 
   @protected
+  MemberCard dco_decode_member_card(dynamic raw);
+
+  @protected
+  MemberCardResult dco_decode_member_card_result(dynamic raw);
+
+  @protected
+  MemberInfo dco_decode_member_info(dynamic raw);
+
+  @protected
+  MemberInfoResult dco_decode_member_info_result(dynamic raw);
+
+  @protected
+  MemberRelationStat dco_decode_member_relation_stat(dynamic raw);
+
+  @protected
+  MemberRelationStatResult dco_decode_member_relation_stat_result(dynamic raw);
+
+  @protected
+  MemberUpStat dco_decode_member_up_stat(dynamic raw);
+
+  @protected
+  MemberUpStatResult dco_decode_member_up_stat_result(dynamic raw);
+
+  @protected
   MiscContext dco_decode_misc_context(dynamic raw);
 
   @protected
@@ -1275,6 +1315,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MediaScore? dco_decode_opt_box_autoadd_media_score(dynamic raw);
+
+  @protected
+  MemberCard? dco_decode_opt_box_autoadd_member_card(dynamic raw);
+
+  @protected
+  MemberInfo? dco_decode_opt_box_autoadd_member_info(dynamic raw);
+
+  @protected
+  MemberRelationStat? dco_decode_opt_box_autoadd_member_relation_stat(
+    dynamic raw,
+  );
+
+  @protected
+  MemberUpStat? dco_decode_opt_box_autoadd_member_up_stat(dynamic raw);
 
   @protected
   MusicComment? dco_decode_opt_box_autoadd_music_comment(dynamic raw);
@@ -1773,6 +1827,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReplyReplyListResult dco_decode_reply_reply_list_result(dynamic raw);
 
   @protected
+  ReportResult dco_decode_report_result(dynamic raw);
+
+  @protected
   ReserveActionData dco_decode_reserve_action_data(dynamic raw);
 
   @protected
@@ -1885,6 +1942,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SongHeat dco_decode_song_heat(dynamic raw);
+
+  @protected
+  SpaceContext dco_decode_space_context(dynamic raw);
 
   @protected
   SponsorBlockContext dco_decode_sponsor_block_context(dynamic raw);
@@ -2283,6 +2343,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MediaStream sse_decode_box_autoadd_media_stream(SseDeserializer deserializer);
 
   @protected
+  MemberCard sse_decode_box_autoadd_member_card(SseDeserializer deserializer);
+
+  @protected
+  MemberInfo sse_decode_box_autoadd_member_info(SseDeserializer deserializer);
+
+  @protected
+  MemberRelationStat sse_decode_box_autoadd_member_relation_stat(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MemberUpStat sse_decode_box_autoadd_member_up_stat(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   MiscContext sse_decode_box_autoadd_misc_context(SseDeserializer deserializer);
 
   @protected
@@ -2476,6 +2552,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SmsSendState sse_decode_box_autoadd_sms_send_state(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceContext sse_decode_box_autoadd_space_context(
     SseDeserializer deserializer,
   );
 
@@ -3387,6 +3468,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MediaStream sse_decode_media_stream(SseDeserializer deserializer);
 
   @protected
+  MemberCard sse_decode_member_card(SseDeserializer deserializer);
+
+  @protected
+  MemberCardResult sse_decode_member_card_result(SseDeserializer deserializer);
+
+  @protected
+  MemberInfo sse_decode_member_info(SseDeserializer deserializer);
+
+  @protected
+  MemberInfoResult sse_decode_member_info_result(SseDeserializer deserializer);
+
+  @protected
+  MemberRelationStat sse_decode_member_relation_stat(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MemberRelationStatResult sse_decode_member_relation_stat_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MemberUpStat sse_decode_member_up_stat(SseDeserializer deserializer);
+
+  @protected
+  MemberUpStatResult sse_decode_member_up_stat_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   MiscContext sse_decode_misc_context(SseDeserializer deserializer);
 
   @protected
@@ -3593,6 +3704,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MediaScore? sse_decode_opt_box_autoadd_media_score(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MemberCard? sse_decode_opt_box_autoadd_member_card(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MemberInfo? sse_decode_opt_box_autoadd_member_info(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MemberRelationStat? sse_decode_opt_box_autoadd_member_relation_stat(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MemberUpStat? sse_decode_opt_box_autoadd_member_up_stat(
     SseDeserializer deserializer,
   );
 
@@ -4245,6 +4376,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  ReportResult sse_decode_report_result(SseDeserializer deserializer);
+
+  @protected
   ReserveActionData sse_decode_reserve_action_data(
     SseDeserializer deserializer,
   );
@@ -4387,6 +4521,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SongHeat sse_decode_song_heat(SseDeserializer deserializer);
+
+  @protected
+  SpaceContext sse_decode_space_context(SseDeserializer deserializer);
 
   @protected
   SponsorBlockContext sse_decode_sponsor_block_context(
@@ -4904,6 +5041,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_member_card(
+    MemberCard self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_member_info(
+    MemberInfo self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_member_relation_stat(
+    MemberRelationStat self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_member_up_stat(
+    MemberUpStat self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_misc_context(
     MiscContext self,
     SseSerializer serializer,
@@ -5176,6 +5337,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_sms_send_state(
     SmsSendState self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_context(
+    SpaceContext self,
     SseSerializer serializer,
   );
 
@@ -6386,6 +6553,45 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_media_stream(MediaStream self, SseSerializer serializer);
 
   @protected
+  void sse_encode_member_card(MemberCard self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_member_card_result(
+    MemberCardResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_member_info(MemberInfo self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_member_info_result(
+    MemberInfoResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_member_relation_stat(
+    MemberRelationStat self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_member_relation_stat_result(
+    MemberRelationStatResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_member_up_stat(MemberUpStat self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_member_up_stat_result(
+    MemberUpStatResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_misc_context(MiscContext self, SseSerializer serializer);
 
   @protected
@@ -6637,6 +6843,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_media_score(
     MediaScore? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_member_card(
+    MemberCard? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_member_info(
+    MemberInfo? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_member_relation_stat(
+    MemberRelationStat? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_member_up_stat(
+    MemberUpStat? self,
     SseSerializer serializer,
   );
 
@@ -7475,6 +7705,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_report_result(ReportResult self, SseSerializer serializer);
+
+  @protected
   void sse_encode_reserve_action_data(
     ReserveActionData self,
     SseSerializer serializer,
@@ -7659,6 +7892,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_song_heat(SongHeat self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_context(SpaceContext self, SseSerializer serializer);
 
   @protected
   void sse_encode_sponsor_block_context(

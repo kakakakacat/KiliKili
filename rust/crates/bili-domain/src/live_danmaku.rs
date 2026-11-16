@@ -28,7 +28,7 @@ pub struct LiveDanmakuReply {
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct LiveMessageSegment {
     pub text: String,
-    pub emote: Option<LiveDanmakuEmote>,
+    pub emote_index: Option<u32>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct LiveDanmakuMessage {

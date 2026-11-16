@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:kilikili/rust/api/live.dart';
@@ -48,5 +49,26 @@ class LiveSuperChatState {
         roomId: random.nextInt(2147483647),
       ),
     );
+  }
+}
+
+/// 延迟移除属于展示寿命；销毁后连尚未触发的 post-frame 调度也不得复活。
+class LiveSuperChatRemoval {
+  Timer? _timer;
+  bool _disposed = false;
+
+  void schedule(void Function() onRemove) {
+    if (_disposed) return;
+    _timer?.cancel();
+    _timer = Timer(const Duration(seconds: 1), () {
+      _timer = null;
+      if (!_disposed) onRemove();
+    });
+  }
+
+  void dispose() {
+    _disposed = true;
+    _timer?.cancel();
+    _timer = null;
   }
 }

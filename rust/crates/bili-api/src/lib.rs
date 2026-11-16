@@ -41,6 +41,8 @@ pub mod grpc_metadata;
 pub mod http;
 pub mod live;
 pub mod live_danmaku;
+#[cfg(feature = "reqwest-transport")]
+pub mod live_socket;
 pub mod match_info;
 pub mod music;
 pub mod nav;

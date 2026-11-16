@@ -934,10 +934,8 @@ class LiveIndexResult {
 
 /// 粉丝勋章。
 ///
-/// **跨切片共享**：本模块的贡献榜与勋章墙产出它，而 SuperChat 与弹幕
-/// 长连接里的每条消息也带同一结构（S11b / #62，阻塞在 ADR-012）。
-/// Dart 的 `UinfoMedal` 因此删不掉，由 `live_rest_compat.dart` 单向
-/// 适配，随 S11b 迁完一并删。
+/// 贡献榜、勋章墙、弹幕与 SC 共用；宿主直接消费此结构，
+/// 不再转回已删除的 UinfoMedal（#62）。
 class LiveMedal {
   final String? name;
   final PlatformInt64? level;

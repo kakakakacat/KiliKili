@@ -348,3 +348,21 @@ S4 的十四条写操作在 CI 上有两层保护，分工是 ADR-013 决策六�
 
 **这些都不替代真机验证**：登录态下的 csrf、风控（gaia）拦截、以及
 APP 端接口在真实 `access_key` 下的行为，按 EPIC #67 统一留到 Phase 2。
+
+
+### 直播弹幕长连接验证（#62，2026-11-16）
+
+新增离线协议/压缩与 typed golden、真实本地 WebSocket 服务器和会话注册表测试，
+覆盖候选地址、鉴权错误码、30 秒心跳序号、连接/鉴权/接收中取消、有界队列和
+终止错误排空。历史弹幕与 SC 的真实脱敏样本先经独立 Dart 全字段 parity，
+再删除旧模型和一次性对照测试。
+
+`test/bridge/live_danmaku_bridge_test.dart` 沿用 `KILIKILI_RUST_BRIDGE_TESTS=1`
+门槛，实际加载原生库，验证三条 REST 的 typed 字段、请求头覆盖、zlib 消息批次
+和 generation；默认未启用时跳过。宿主另有不加载账号/Pref 的订阅寿命和 SC
+延迟移除测试。新增 WebSocket 不引入另一套 TLS 后端，使用既有 reqwest Upgrade；
+brotli 与 Aho-Corasick 复用已有依赖版本。CI 触发与合并门槛不变。
+
+这些证据不代表五端人工回归已执行，登录态、代理/证书、后台和高频房间仍留
+Phase 2，见 RELEASE-VALIDATION。当前机器验证原生库可通过
+`KILIKILI_LIVE_BRIDGE_LIBRARY=<绝对动态库路径>` 指定，与 CI 默认 release 路径隔离。

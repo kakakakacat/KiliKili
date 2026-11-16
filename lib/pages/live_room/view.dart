@@ -365,7 +365,11 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                   children: [
                     SuperChatCard(
                       item: item,
-                      onRemove: () => _liveRoomController.fsSC.value = null,
+                      onRemove: () {
+                        if (identical(_liveRoomController.fsSC.value, item)) {
+                          _liveRoomController.fsSC.value = null;
+                        }
+                      },
                       onReport: () => _liveRoomController.reportSC(item),
                     ),
                     Positioned(

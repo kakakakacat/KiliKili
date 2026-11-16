@@ -261,3 +261,65 @@ async fn prefetch_overrides_headers_case_insensitively() {
     );
     assert_eq!(ctx.headers.len(), 5);
 }
+
+#[test]
+fn repeated_emotes_do_not_duplicate_remote_urls_in_segments() {
+    let mut v: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/live_danmaku/danmaku.json")).unwrap();
+    let mut extra: serde_json::Value =
+        serde_json::from_str(v["info"][0][15]["extra"].as_str().unwrap()).unwrap();
+    let key = extra["emots"]
+        .as_object()
+        .unwrap()
+        .keys()
+        .next()
+        .unwrap()
+        .clone();
+    let url = "https://example.invalid/long-emote-image";
+    extra["emots"][&key]["url"] = url.into();
+    v["info"][0][15]["extra"] = serde_json::to_string(&extra).unwrap().into();
+    v["info"][1] = key.repeat(128).into();
+    let parsed = parse_event(&serde_json::to_vec(&v).unwrap(), 100)
+        .unwrap()
+        .unwrap()
+        .danmaku
+        .unwrap();
+    assert_eq!(parsed.segments.len(), 128);
+    assert_eq!(
+        serde_json::to_string(&parsed).unwrap().matches(url).count(),
+        1
+    );
+}
+
+#[test]
+fn emote_matching_keeps_wire_order_and_rejects_excessive_segments() {
+    let mut v: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/live_danmaku/danmaku.json")).unwrap();
+    let mut extra: serde_json::Value =
+        serde_json::from_str(v["info"][0][15]["extra"].as_str().unwrap()).unwrap();
+    let emote = extra["emots"]
+        .as_object()
+        .unwrap()
+        .values()
+        .next()
+        .unwrap()
+        .clone();
+    // RegExp 的同位置分支按原 JSON Map 顺序取第一个，不能排序后换成短 key。
+    let entries = format!("{{\"ab\":{},\"a\":{}}}", emote, emote);
+    extra.as_object_mut().unwrap().remove("emots");
+    let mut extra_raw = serde_json::to_string(&extra).unwrap();
+    extra_raw.pop();
+    extra_raw.push_str(&format!(",\"emots\":{entries}}}"));
+    v["info"][0][15]["extra"] = extra_raw.into();
+    v["info"][1] = "ab".into();
+    let message = parse_event(&serde_json::to_vec(&v).unwrap(), 100)
+        .unwrap()
+        .unwrap()
+        .danmaku
+        .unwrap();
+    assert_eq!(message.emotes[0].key, "ab");
+    assert_eq!(message.segments.len(), 1);
+    assert_eq!(message.segments[0].emote_index, Some(0));
+    v["info"][1] = ("ab".repeat(3000) + &"z".repeat(1024 * 1024)).into();
+    assert!(parse_event(&serde_json::to_vec(&v).unwrap(), 100).is_err());
+}

@@ -43,6 +43,7 @@ class SuperChatCard extends StatefulWidget {
 
 class _SuperChatCardState extends State<SuperChatCard> {
   Timer? _timer;
+  final _removal = LiveSuperChatRemoval();
   RxInt? _remains;
 
   @override
@@ -66,11 +67,13 @@ class _SuperChatCardState extends State<SuperChatCard> {
 
   void _remove() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Timer(const Duration(seconds: 1), _onRemove);
+      if (!mounted) return;
+      _removal.schedule(_onRemove);
     });
   }
 
   void _onRemove() {
+    if (!mounted) return;
     widget
       ..item.expired = true
       ..onRemove?.call();
@@ -97,6 +100,7 @@ class _SuperChatCardState extends State<SuperChatCard> {
 
   @override
   void dispose() {
+    _removal.dispose();
     _cancelTimer();
     super.dispose();
   }

@@ -6,6 +6,7 @@ pub mod dynamic;
 pub mod grpc;
 pub mod init;
 pub mod live;
+pub mod live_danmaku;
 pub mod media_select;
 pub mod misc;
 pub mod pgc;

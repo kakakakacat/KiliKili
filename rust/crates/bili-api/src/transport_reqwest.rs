@@ -66,7 +66,7 @@ impl ClientKey {
 /// 实际上恒为个位数。
 static CLIENT_CACHE: OnceLock<Mutex<HashMap<ClientKey, reqwest::Client>>> = OnceLock::new();
 
-fn client(config: &TransportConfig) -> Result<reqwest::Client, DomainError> {
+pub(crate) fn client(config: &TransportConfig) -> Result<reqwest::Client, DomainError> {
     let cache = CLIENT_CACHE.get_or_init(|| Mutex::new(HashMap::new()));
     let key = ClientKey::of(config);
 

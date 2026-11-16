@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1896185236;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -599090802;
 
 // Section: executor
 
@@ -1505,6 +1505,98 @@ fn wire__crate__api__live__fetch_live_contribution_rank_impl(
         },
     )
 }
+fn wire__crate__api__live_danmaku__fetch_live_danmaku_prefetch_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_live_danmaku_prefetch",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::live::LiveContext>::sse_decode(&mut deserializer);
+            let api_room_id = <i64>::sse_decode(&mut deserializer);
+            let api_user_agent = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::live_danmaku::fetch_live_danmaku_prefetch(
+                                api_context,
+                                api_room_id,
+                                api_user_agent,
+                            )
+                            .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__live_danmaku__fetch_live_danmaku_token_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_live_danmaku_token",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::live::LiveContext>::sse_decode(&mut deserializer);
+            let api_room_id = <i64>::sse_decode(&mut deserializer);
+            let api_mixin_key = <String>::sse_decode(&mut deserializer);
+            let api_wts = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::live_danmaku::fetch_live_danmaku_token(
+                                api_context,
+                                api_room_id,
+                                api_mixin_key,
+                                api_wts,
+                            )
+                            .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__live__fetch_live_emoticons_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -2019,6 +2111,49 @@ fn wire__crate__api__live__fetch_live_shield_info_impl(
                                 api_room_id,
                                 api_mixin_key,
                                 api_wts,
+                            )
+                            .await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__live_danmaku__fetch_live_super_chat_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fetch_live_super_chat",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_context = <crate::api::live::LiveContext>::sse_decode(&mut deserializer);
+            let api_room_id = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let output_ok = Ok::<_, ()>(
+                            crate::api::live_danmaku::fetch_live_super_chat(
+                                api_context,
+                                api_room_id,
                             )
                             .await,
                         )?;
@@ -3595,6 +3730,193 @@ fn wire__crate__api__video_write__like_video_impl(
                     .await,
                 )
             }
+        },
+    )
+}
+fn wire__crate__api__live_danmaku__live_danmaku_filter_mask_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "live_danmaku_filter_mask",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_candidates =
+                <Vec<crate::api::live_danmaku::LiveFilterCandidate>>::sse_decode(&mut deserializer);
+            let api_rules =
+                <crate::api::live_danmaku::LiveBlockRules>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>(crate::api::live_danmaku::live_danmaku_filter_mask(
+                    api_candidates,
+                    api_rules,
+                ))?;
+                std::result::Result::Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__live_danmaku__live_socket_close_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "live_socket_close",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_session_id = <i64>::sse_decode(&mut deserializer);
+            let api_generation = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>(crate::api::live_danmaku::live_socket_close(
+                    api_session_id,
+                    api_generation,
+                ))?;
+                std::result::Result::Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__live_danmaku__live_socket_open_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "live_socket_open",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_servers = <Vec<String>>::sse_decode(&mut deserializer);
+            let api_room_id = <i64>::sse_decode(&mut deserializer);
+            let api_uid = <i64>::sse_decode(&mut deserializer);
+            let api_token = <String>::sse_decode(&mut deserializer);
+            let api_generation = <i64>::sse_decode(&mut deserializer);
+            let api_transport =
+                <crate::api::transport::TransportSettings>::sse_decode(&mut deserializer);
+            let api_rules =
+                <crate::api::live_danmaku::LiveBlockRules>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>(crate::api::live_danmaku::live_socket_open(
+                    api_servers,
+                    api_room_id,
+                    api_uid,
+                    api_token,
+                    api_generation,
+                    api_transport,
+                    api_rules,
+                ))?;
+                std::result::Result::Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__live_danmaku__live_socket_poll_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "live_socket_poll",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_session_id = <i64>::sse_decode(&mut deserializer);
+            let api_generation = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>(crate::api::live_danmaku::live_socket_poll(
+                    api_session_id,
+                    api_generation,
+                ))?;
+                std::result::Result::Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__live_danmaku__live_socket_set_rules_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "live_socket_set_rules",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_session_id = <i64>::sse_decode(&mut deserializer);
+            let api_generation = <i64>::sse_decode(&mut deserializer);
+            let api_rules =
+                <crate::api::live_danmaku::LiveBlockRules>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>(crate::api::live_danmaku::live_socket_set_rules(
+                    api_session_id,
+                    api_generation,
+                    api_rules,
+                ))?;
+                std::result::Result::Ok(output_ok)
+            })())
         },
     )
 }
@@ -6492,6 +6814,18 @@ impl SseDecode for Vec<crate::api::misc::BlackListItem> {
     }
 }
 
+impl SseDecode for Vec<bool> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<bool>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::api::playback::CdnServiceEntry> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -6722,6 +7056,32 @@ impl SseDecode for Vec<crate::api::live::LiveContributionRankItem> {
     }
 }
 
+impl SseDecode for Vec<crate::api::live_danmaku::LiveDanmakuEmoteEntry> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::live_danmaku::LiveDanmakuEmoteEntry>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::live_danmaku::LiveDanmakuMessage> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::live_danmaku::LiveDanmakuMessage>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::api::live::LiveEmotePackage> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -6748,6 +7108,20 @@ impl SseDecode for Vec<crate::api::live::LiveEmoticon> {
     }
 }
 
+impl SseDecode for Vec<crate::api::live_danmaku::LiveEvent> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::live_danmaku::LiveEvent>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::api::live::LiveFeedback> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -6767,6 +7141,20 @@ impl SseDecode for Vec<crate::api::live::LiveFeedbackReason> {
         let mut ans_ = Vec::with_capacity(len_ as usize);
         for idx_ in 0..len_ {
             ans_.push(<crate::api::live::LiveFeedbackReason>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::live_danmaku::LiveFilterCandidate> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::live_danmaku::LiveFilterCandidate>::sse_decode(
                 deserializer,
             ));
         }
@@ -6805,6 +7193,20 @@ impl SseDecode for Vec<crate::api::live::LiveMedalWallItem> {
         let mut ans_ = Vec::with_capacity(len_ as usize);
         for idx_ in 0..len_ {
             ans_.push(<crate::api::live::LiveMedalWallItem>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::live_danmaku::LiveMessageSegment> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::live_danmaku::LiveMessageSegment>::sse_decode(
                 deserializer,
             ));
         }
@@ -6891,6 +7293,20 @@ impl SseDecode for Vec<crate::api::live::LiveStream> {
         let mut ans_ = Vec::with_capacity(len_ as usize);
         for idx_ in 0..len_ {
             ans_.push(<crate::api::live::LiveStream>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::live_danmaku::LiveSuperChat> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::live_danmaku::LiveSuperChat>::sse_decode(
+                deserializer,
+            ));
         }
         return ans_;
     }
@@ -7492,6 +7908,18 @@ impl SseDecode for crate::api::live::LiveAreasResult {
     }
 }
 
+impl SseDecode for crate::api::live_danmaku::LiveBlockRules {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_keywords = <Vec<String>>::sse_decode(deserializer);
+        let mut var_uids = <Vec<i64>>::sse_decode(deserializer);
+        return crate::api::live_danmaku::LiveBlockRules {
+            keywords: var_keywords,
+            uids: var_uids,
+        };
+    }
+}
+
 impl SseDecode for crate::api::live::LiveCodec {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -7564,6 +7992,134 @@ impl SseDecode for crate::api::live::LiveContributionRankResult {
     }
 }
 
+impl SseDecode for crate::api::live_danmaku::LiveDanmakuEmote {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_isOfficial = <bool>::sse_decode(deserializer);
+        let mut var_url = <String>::sse_decode(deserializer);
+        let mut var_emoticonUnique = <String>::sse_decode(deserializer);
+        let mut var_width = <f64>::sse_decode(deserializer);
+        let mut var_height = <f64>::sse_decode(deserializer);
+        return crate::api::live_danmaku::LiveDanmakuEmote {
+            is_official: var_isOfficial,
+            url: var_url,
+            emoticon_unique: var_emoticonUnique,
+            width: var_width,
+            height: var_height,
+        };
+    }
+}
+
+impl SseDecode for crate::api::live_danmaku::LiveDanmakuEmoteEntry {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_key = <String>::sse_decode(deserializer);
+        let mut var_emote = <crate::api::live_danmaku::LiveDanmakuEmote>::sse_decode(deserializer);
+        return crate::api::live_danmaku::LiveDanmakuEmoteEntry {
+            key: var_key,
+            emote: var_emote,
+        };
+    }
+}
+
+impl SseDecode for crate::api::live_danmaku::LiveDanmakuMessage {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_id = <String>::sse_decode(deserializer);
+        let mut var_mid = <i64>::sse_decode(deserializer);
+        let mut var_dmType = <i64>::sse_decode(deserializer);
+        let mut var_ts = <i64>::sse_decode(deserializer);
+        let mut var_ct = <String>::sse_decode(deserializer);
+        let mut var_color = <i64>::sse_decode(deserializer);
+        let mut var_mode = <i64>::sse_decode(deserializer);
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_text = <String>::sse_decode(deserializer);
+        let mut var_segments =
+            <Vec<crate::api::live_danmaku::LiveMessageSegment>>::sse_decode(deserializer);
+        let mut var_emotes =
+            <Vec<crate::api::live_danmaku::LiveDanmakuEmoteEntry>>::sse_decode(deserializer);
+        let mut var_uemote =
+            <Option<crate::api::live_danmaku::LiveDanmakuEmote>>::sse_decode(deserializer);
+        let mut var_reply =
+            <Option<crate::api::live_danmaku::LiveDanmakuReply>>::sse_decode(deserializer);
+        let mut var_medal = <Option<crate::api::live::LiveMedal>>::sse_decode(deserializer);
+        return crate::api::live_danmaku::LiveDanmakuMessage {
+            id: var_id,
+            mid: var_mid,
+            dm_type: var_dmType,
+            ts: var_ts,
+            ct: var_ct,
+            color: var_color,
+            mode: var_mode,
+            name: var_name,
+            text: var_text,
+            segments: var_segments,
+            emotes: var_emotes,
+            uemote: var_uemote,
+            reply: var_reply,
+            medal: var_medal,
+        };
+    }
+}
+
+impl SseDecode for crate::api::live_danmaku::LiveDanmakuPrefetchResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data =
+            <Option<Vec<crate::api::live_danmaku::LiveDanmakuMessage>>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::live_danmaku::LiveDanmakuPrefetchResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::live_danmaku::LiveDanmakuReply {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_mid = <i64>::sse_decode(deserializer);
+        let mut var_name = <Option<String>>::sse_decode(deserializer);
+        return crate::api::live_danmaku::LiveDanmakuReply {
+            mid: var_mid,
+            name: var_name,
+        };
+    }
+}
+
+impl SseDecode for crate::api::live_danmaku::LiveDanmakuToken {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_token = <String>::sse_decode(deserializer);
+        let mut var_servers = <Vec<String>>::sse_decode(deserializer);
+        return crate::api::live_danmaku::LiveDanmakuToken {
+            token: var_token,
+            servers: var_servers,
+        };
+    }
+}
+
+impl SseDecode for crate::api::live_danmaku::LiveDanmakuTokenResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data =
+            <Option<crate::api::live_danmaku::LiveDanmakuToken>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::live_danmaku::LiveDanmakuTokenResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
 impl SseDecode for crate::api::live::LiveEmotePackage {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -7613,6 +8169,41 @@ impl SseDecode for crate::api::live::LiveEmoticon {
     }
 }
 
+impl SseDecode for crate::api::live_danmaku::LiveEvent {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_kind = <crate::api::live_danmaku::LiveEventKind>::sse_decode(deserializer);
+        let mut var_danmaku =
+            <Option<crate::api::live_danmaku::LiveDanmakuMessage>>::sse_decode(deserializer);
+        let mut var_superChat =
+            <Option<crate::api::live_danmaku::LiveSuperChat>>::sse_decode(deserializer);
+        let mut var_text = <Option<String>>::sse_decode(deserializer);
+        let mut var_count = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::live_danmaku::LiveEvent {
+            kind: var_kind,
+            danmaku: var_danmaku,
+            super_chat: var_superChat,
+            text: var_text,
+            count: var_count,
+        };
+    }
+}
+
+impl SseDecode for crate::api::live_danmaku::LiveEventKind {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::live_danmaku::LiveEventKind::Danmaku,
+            1 => crate::api::live_danmaku::LiveEventKind::SuperChat,
+            2 => crate::api::live_danmaku::LiveEventKind::WatchedChange,
+            3 => crate::api::live_danmaku::LiveEventKind::OnlineRankCount,
+            4 => crate::api::live_danmaku::LiveEventKind::RoomChange,
+            _ => unreachable!("Invalid variant for LiveEventKind: {}", inner),
+        };
+    }
+}
+
 impl SseDecode for crate::api::live::LiveFeedback {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -7641,6 +8232,18 @@ impl SseDecode for crate::api::live::LiveFeedbackReason {
             name: var_name,
             id_type: var_idType,
             reason_id: var_reasonId,
+        };
+    }
+}
+
+impl SseDecode for crate::api::live_danmaku::LiveFilterCandidate {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_text = <String>::sse_decode(deserializer);
+        let mut var_mid = <i64>::sse_decode(deserializer);
+        return crate::api::live_danmaku::LiveFilterCandidate {
+            text: var_text,
+            mid: var_mid,
         };
     }
 }
@@ -7844,6 +8447,18 @@ impl SseDecode for crate::api::live::LiveMedalWallResult {
             error_kind: var_errorKind,
             error_detail: var_errorDetail,
             error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::live_danmaku::LiveMessageSegment {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_text = <String>::sse_decode(deserializer);
+        let mut var_emoteIndex = <Option<u32>>::sse_decode(deserializer);
+        return crate::api::live_danmaku::LiveMessageSegment {
+            text: var_text,
+            emote_index: var_emoteIndex,
         };
     }
 }
@@ -8140,6 +8755,84 @@ impl SseDecode for crate::api::live::LiveShieldUser {
     }
 }
 
+impl SseDecode for crate::api::live_danmaku::LiveSocketActionResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::live_danmaku::LiveSocketActionResult {
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::live_danmaku::LiveSocketBatch {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_sessionId = <i64>::sse_decode(deserializer);
+        let mut var_generation = <i64>::sse_decode(deserializer);
+        let mut var_events = <Vec<crate::api::live_danmaku::LiveEvent>>::sse_decode(deserializer);
+        let mut var_dropped = <u64>::sse_decode(deserializer);
+        let mut var_ended = <bool>::sse_decode(deserializer);
+        return crate::api::live_danmaku::LiveSocketBatch {
+            session_id: var_sessionId,
+            generation: var_generation,
+            events: var_events,
+            dropped: var_dropped,
+            ended: var_ended,
+        };
+    }
+}
+
+impl SseDecode for crate::api::live_danmaku::LiveSocketHandle {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_sessionId = <i64>::sse_decode(deserializer);
+        let mut var_generation = <i64>::sse_decode(deserializer);
+        return crate::api::live_danmaku::LiveSocketHandle {
+            session_id: var_sessionId,
+            generation: var_generation,
+        };
+    }
+}
+
+impl SseDecode for crate::api::live_danmaku::LiveSocketOpenResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data =
+            <Option<crate::api::live_danmaku::LiveSocketHandle>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::live_danmaku::LiveSocketOpenResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::live_danmaku::LiveSocketPollResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data =
+            <Option<crate::api::live_danmaku::LiveSocketBatch>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::live_danmaku::LiveSocketPollResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
 impl SseDecode for crate::api::live::LiveStream {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -8148,6 +8841,80 @@ impl SseDecode for crate::api::live::LiveStream {
         return crate::api::live::LiveStream {
             protocol_name: var_protocolName,
             format: var_format,
+        };
+    }
+}
+
+impl SseDecode for crate::api::live_danmaku::LiveSuperChat {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_id = <i64>::sse_decode(deserializer);
+        let mut var_uid = <i64>::sse_decode(deserializer);
+        let mut var_price = <i64>::sse_decode(deserializer);
+        let mut var_backgroundImage = <Option<String>>::sse_decode(deserializer);
+        let mut var_backgroundColor = <String>::sse_decode(deserializer);
+        let mut var_backgroundBottomColor = <String>::sse_decode(deserializer);
+        let mut var_backgroundPriceColor = <String>::sse_decode(deserializer);
+        let mut var_messageFontColor = <String>::sse_decode(deserializer);
+        let mut var_startTime = <i64>::sse_decode(deserializer);
+        let mut var_endTime = <i64>::sse_decode(deserializer);
+        let mut var_message = <String>::sse_decode(deserializer);
+        let mut var_token = <String>::sse_decode(deserializer);
+        let mut var_ts = <i64>::sse_decode(deserializer);
+        let mut var_userInfo =
+            <crate::api::live_danmaku::LiveSuperChatUser>::sse_decode(deserializer);
+        let mut var_medal = <Option<crate::api::live::LiveMedal>>::sse_decode(deserializer);
+        let mut var_roomId = <i64>::sse_decode(deserializer);
+        return crate::api::live_danmaku::LiveSuperChat {
+            id: var_id,
+            uid: var_uid,
+            price: var_price,
+            background_image: var_backgroundImage,
+            background_color: var_backgroundColor,
+            background_bottom_color: var_backgroundBottomColor,
+            background_price_color: var_backgroundPriceColor,
+            message_font_color: var_messageFontColor,
+            start_time: var_startTime,
+            end_time: var_endTime,
+            message: var_message,
+            token: var_token,
+            ts: var_ts,
+            user_info: var_userInfo,
+            medal: var_medal,
+            room_id: var_roomId,
+        };
+    }
+}
+
+impl SseDecode for crate::api::live_danmaku::LiveSuperChatResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data =
+            <Option<Vec<crate::api::live_danmaku::LiveSuperChat>>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::live_danmaku::LiveSuperChatResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::live_danmaku::LiveSuperChatUser {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_face = <String>::sse_decode(deserializer);
+        let mut var_faceFrame = <Option<String>>::sse_decode(deserializer);
+        let mut var_uname = <String>::sse_decode(deserializer);
+        let mut var_nameColor = <String>::sse_decode(deserializer);
+        return crate::api::live_danmaku::LiveSuperChatUser {
+            face: var_face,
+            face_frame: var_faceFrame,
+            uname: var_uname,
+            name_color: var_nameColor,
         };
     }
 }
@@ -8693,6 +9460,58 @@ impl SseDecode for Option<crate::api::dynamic::LikeListPage> {
     }
 }
 
+impl SseDecode for Option<crate::api::live_danmaku::LiveDanmakuEmote> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::live_danmaku::LiveDanmakuEmote>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::live_danmaku::LiveDanmakuMessage> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::live_danmaku::LiveDanmakuMessage>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::live_danmaku::LiveDanmakuReply> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::live_danmaku::LiveDanmakuReply>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::live_danmaku::LiveDanmakuToken> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::live_danmaku::LiveDanmakuToken>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
 impl SseDecode for Option<crate::api::live::LiveFollowSection> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -8803,6 +9622,45 @@ impl SseDecode for Option<crate::api::live::LiveShieldInfo> {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         if (<bool>::sse_decode(deserializer)) {
             return Some(<crate::api::live::LiveShieldInfo>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::live_danmaku::LiveSocketBatch> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::live_danmaku::LiveSocketBatch>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::live_danmaku::LiveSocketHandle> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::live_danmaku::LiveSocketHandle>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::live_danmaku::LiveSuperChat> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::live_danmaku::LiveSuperChat>::sse_decode(
+                deserializer,
+            ));
         } else {
             return None;
         }
@@ -9499,11 +10357,37 @@ impl SseDecode for Option<Vec<crate::api::live::LiveContributionRankItem>> {
     }
 }
 
+impl SseDecode for Option<Vec<crate::api::live_danmaku::LiveDanmakuMessage>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(
+                <Vec<crate::api::live_danmaku::LiveDanmakuMessage>>::sse_decode(deserializer),
+            );
+        } else {
+            return None;
+        }
+    }
+}
+
 impl SseDecode for Option<Vec<crate::api::live::LiveEmotePackage>> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         if (<bool>::sse_decode(deserializer)) {
             return Some(<Vec<crate::api::live::LiveEmotePackage>>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<Vec<crate::api::live_danmaku::LiveSuperChat>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<Vec<crate::api::live_danmaku::LiveSuperChat>>::sse_decode(
                 deserializer,
             ));
         } else {
@@ -12123,192 +13007,210 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        37 => wire__crate__api__live__fetch_live_emoticons_impl(port, ptr, rust_vec_len, data_len),
-        38 => wire__crate__api__live__fetch_live_fav_tags_impl(port, ptr, rust_vec_len, data_len),
-        39 => wire__crate__api__live__fetch_live_follow_impl(port, ptr, rust_vec_len, data_len),
-        40 => wire__crate__api__live__fetch_live_index_impl(port, ptr, rust_vec_len, data_len),
-        41 => wire__crate__api__live__fetch_live_medal_name_impl(port, ptr, rust_vec_len, data_len),
-        42 => wire__crate__api__live__fetch_live_medal_wall_impl(port, ptr, rust_vec_len, data_len),
-        43 => wire__crate__api__live__fetch_live_room_area_list_impl(
+        37 => wire__crate__api__live_danmaku__fetch_live_danmaku_prefetch_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        44 => wire__crate__api__live__fetch_live_room_h5_impl(port, ptr, rust_vec_len, data_len),
-        45 => wire__crate__api__live__fetch_live_room_play_info_impl(
+        38 => wire__crate__api__live_danmaku__fetch_live_danmaku_token_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        46 => wire__crate__api__live__fetch_live_search_impl(port, ptr, rust_vec_len, data_len),
-        47 => {
+        39 => wire__crate__api__live__fetch_live_emoticons_impl(port, ptr, rust_vec_len, data_len),
+        40 => wire__crate__api__live__fetch_live_fav_tags_impl(port, ptr, rust_vec_len, data_len),
+        41 => wire__crate__api__live__fetch_live_follow_impl(port, ptr, rust_vec_len, data_len),
+        42 => wire__crate__api__live__fetch_live_index_impl(port, ptr, rust_vec_len, data_len),
+        43 => wire__crate__api__live__fetch_live_medal_name_impl(port, ptr, rust_vec_len, data_len),
+        44 => wire__crate__api__live__fetch_live_medal_wall_impl(port, ptr, rust_vec_len, data_len),
+        45 => wire__crate__api__live__fetch_live_room_area_list_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        46 => wire__crate__api__live__fetch_live_room_h5_impl(port, ptr, rust_vec_len, data_len),
+        47 => wire__crate__api__live__fetch_live_room_play_info_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        48 => wire__crate__api__live__fetch_live_search_impl(port, ptr, rust_vec_len, data_len),
+        49 => {
             wire__crate__api__live__fetch_live_second_list_impl(port, ptr, rust_vec_len, data_len)
         }
-        48 => {
+        50 => {
             wire__crate__api__live__fetch_live_shield_info_impl(port, ptr, rust_vec_len, data_len)
         }
-        49 => wire__crate__api__misc__fetch_match_info_impl(port, ptr, rust_vec_len, data_len),
-        50 => wire__crate__api__video_page__fetch_note_list_impl(port, ptr, rust_vec_len, data_len),
-        51 => {
+        51 => wire__crate__api__live_danmaku__fetch_live_super_chat_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        52 => wire__crate__api__misc__fetch_match_info_impl(port, ptr, rust_vec_len, data_len),
+        53 => wire__crate__api__video_page__fetch_note_list_impl(port, ptr, rust_vec_len, data_len),
+        54 => {
             wire__crate__api__video_page__fetch_online_total_impl(port, ptr, rust_vec_len, data_len)
         }
-        52 => {
+        55 => {
             wire__crate__api__pgc__fetch_pgc_default_index_impl(port, ptr, rust_vec_len, data_len)
         }
-        53 => wire__crate__api__pgc__fetch_pgc_index_impl(port, ptr, rust_vec_len, data_len),
-        54 => {
+        56 => wire__crate__api__pgc__fetch_pgc_index_impl(port, ptr, rust_vec_len, data_len),
+        57 => {
             wire__crate__api__pgc__fetch_pgc_index_condition_impl(port, ptr, rust_vec_len, data_len)
         }
-        55 => wire__crate__api__pgc__fetch_pgc_rank_impl(port, ptr, rust_vec_len, data_len),
-        56 => wire__crate__api__pgc__fetch_pgc_reviews_impl(port, ptr, rust_vec_len, data_len),
-        57 => {
+        58 => wire__crate__api__pgc__fetch_pgc_rank_impl(port, ptr, rust_vec_len, data_len),
+        59 => wire__crate__api__pgc__fetch_pgc_reviews_impl(port, ptr, rust_vec_len, data_len),
+        60 => {
             wire__crate__api__pgc__fetch_pgc_season_detail_impl(port, ptr, rust_vec_len, data_len)
         }
-        58 => wire__crate__api__pgc__fetch_pgc_timeline_impl(port, ptr, rust_vec_len, data_len),
-        59 => wire__crate__api__video_page__fetch_play_info_impl(port, ptr, rust_vec_len, data_len),
-        60 => {
+        61 => wire__crate__api__pgc__fetch_pgc_timeline_impl(port, ptr, rust_vec_len, data_len),
+        62 => wire__crate__api__video_page__fetch_play_info_impl(port, ptr, rust_vec_len, data_len),
+        63 => {
             wire__crate__api__play_url_fetch__fetch_play_url_impl(port, ptr, rust_vec_len, data_len)
         }
-        61 => wire__crate__api__video_feed__fetch_popular_precious_impl(
+        64 => wire__crate__api__video_feed__fetch_popular_precious_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        62 => wire__crate__api__video_feed__fetch_popular_series_list_impl(
+        65 => wire__crate__api__video_feed__fetch_popular_series_list_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        63 => wire__crate__api__video_feed__fetch_popular_series_one_impl(
+        66 => wire__crate__api__video_feed__fetch_popular_series_one_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        64 => wire__crate__api__sponsor_block__fetch_port_video_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        65 => {
-            wire__crate__api__pgc__fetch_pugv_season_detail_impl(port, ptr, rust_vec_len, data_len)
-        }
-        66 => {
-            wire__crate__api__video_feed__fetch_rank_videos_impl(port, ptr, rust_vec_len, data_len)
-        }
-        67 => wire__crate__api__video_feed__fetch_related_videos_impl(
+        67 => wire__crate__api__sponsor_block__fetch_port_video_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
         68 => {
+            wire__crate__api__pgc__fetch_pugv_season_detail_impl(port, ptr, rust_vec_len, data_len)
+        }
+        69 => {
+            wire__crate__api__video_feed__fetch_rank_videos_impl(port, ptr, rust_vec_len, data_len)
+        }
+        70 => wire__crate__api__video_feed__fetch_related_videos_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        71 => {
             wire__crate__api__reply__fetch_reply_interaction_impl(port, ptr, rust_vec_len, data_len)
         }
-        69 => wire__crate__api__reply__fetch_reply_list_anonymous_impl(
+        72 => wire__crate__api__reply__fetch_reply_list_anonymous_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        70 => {
+        73 => {
             wire__crate__api__reply__fetch_reply_list_paged_impl(port, ptr, rust_vec_len, data_len)
         }
-        71 => {
+        74 => {
             wire__crate__api__reply__fetch_reply_reply_list_impl(port, ptr, rust_vec_len, data_len)
         }
-        72 => wire__crate__api__pgc__fetch_season_status_impl(port, ptr, rust_vec_len, data_len),
-        73 => wire__crate__api__sponsor_block__fetch_skip_segments_impl(
+        75 => wire__crate__api__pgc__fetch_season_status_impl(port, ptr, rust_vec_len, data_len),
+        76 => wire__crate__api__sponsor_block__fetch_skip_segments_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        74 => wire__crate__api__sponsor_block__fetch_sponsor_uptime_impl(
+        77 => wire__crate__api__sponsor_block__fetch_sponsor_uptime_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        75 => wire__crate__api__sponsor_block__fetch_sponsor_user_info_impl(
+        78 => wire__crate__api__sponsor_block__fetch_sponsor_user_info_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        76 => wire__crate__api__video_detail_fetch__fetch_video_detail_impl(
+        79 => wire__crate__api__video_detail_fetch__fetch_video_detail_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        77 => {
+        80 => {
             wire__crate__api__video_page__fetch_video_shot_impl(port, ptr, rust_vec_len, data_len)
         }
-        78 => wire__crate__api__dynamic__followee_votes_impl(port, ptr, rust_vec_len, data_len),
-        80 => wire__crate__api__video_write__heart_beat_impl(port, ptr, rust_vec_len, data_len),
-        81 => wire__crate__api__video_write__history_report_impl(port, ptr, rust_vec_len, data_len),
-        82 => wire__crate__api__init__init_app_impl(port, ptr, rust_vec_len, data_len),
-        83 => wire__crate__api__video_write__like_video_impl(port, ptr, rust_vec_len, data_len),
-        85 => wire__crate__api__video_write__media_list_history_impl(
+        81 => wire__crate__api__dynamic__followee_votes_impl(port, ptr, rust_vec_len, data_len),
+        83 => wire__crate__api__video_write__heart_beat_impl(port, ptr, rust_vec_len, data_len),
+        84 => wire__crate__api__video_write__history_report_impl(port, ptr, rust_vec_len, data_len),
+        85 => wire__crate__api__init__init_app_impl(port, ptr, rust_vec_len, data_len),
+        86 => wire__crate__api__video_write__like_video_impl(port, ptr, rust_vec_len, data_len),
+        93 => wire__crate__api__video_write__media_list_history_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        88 => wire__crate__api__search_suggest__parse_search_suggest_impl(
+        96 => wire__crate__api__search_suggest__parse_search_suggest_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        89 => wire__crate__api__video_detail__parse_video_detail_impl(
+        97 => wire__crate__api__video_detail__parse_video_detail_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        90 => wire__crate__api__video_write__pgc_add_impl(port, ptr, rust_vec_len, data_len),
-        92 => wire__crate__api__video_write__pgc_del_impl(port, ptr, rust_vec_len, data_len),
-        93 => wire__crate__api__pgc__pgc_review_del_impl(port, ptr, rust_vec_len, data_len),
-        94 => wire__crate__api__pgc__pgc_review_dislike_impl(port, ptr, rust_vec_len, data_len),
-        95 => wire__crate__api__pgc__pgc_review_like_impl(port, ptr, rust_vec_len, data_len),
-        96 => wire__crate__api__pgc__pgc_review_modify_impl(port, ptr, rust_vec_len, data_len),
-        97 => wire__crate__api__pgc__pgc_review_post_impl(port, ptr, rust_vec_len, data_len),
-        98 => wire__crate__api__video_write__pgc_triple_impl(port, ptr, rust_vec_len, data_len),
-        99 => wire__crate__api__video_write__pgc_update_impl(port, ptr, rust_vec_len, data_len),
-        101 => {
+        98 => wire__crate__api__video_write__pgc_add_impl(port, ptr, rust_vec_len, data_len),
+        100 => wire__crate__api__video_write__pgc_del_impl(port, ptr, rust_vec_len, data_len),
+        101 => wire__crate__api__pgc__pgc_review_del_impl(port, ptr, rust_vec_len, data_len),
+        102 => wire__crate__api__pgc__pgc_review_dislike_impl(port, ptr, rust_vec_len, data_len),
+        103 => wire__crate__api__pgc__pgc_review_like_impl(port, ptr, rust_vec_len, data_len),
+        104 => wire__crate__api__pgc__pgc_review_modify_impl(port, ptr, rust_vec_len, data_len),
+        105 => wire__crate__api__pgc__pgc_review_post_impl(port, ptr, rust_vec_len, data_len),
+        106 => wire__crate__api__video_write__pgc_triple_impl(port, ptr, rust_vec_len, data_len),
+        107 => wire__crate__api__video_write__pgc_update_impl(port, ptr, rust_vec_len, data_len),
+        109 => {
             wire__crate__api__dynamic__private_pub_setting_impl(port, ptr, rust_vec_len, data_len)
         }
-        102 => wire__crate__api__video_write__relation_mod_impl(port, ptr, rust_vec_len, data_len),
-        103 => wire__crate__api__video_write__reply_del_impl(port, ptr, rust_vec_len, data_len),
-        104 => wire__crate__api__dynamic__reserve_info_impl(port, ptr, rust_vec_len, data_len),
-        105 => {
+        110 => wire__crate__api__video_write__relation_mod_impl(port, ptr, rust_vec_len, data_len),
+        111 => wire__crate__api__video_write__reply_del_impl(port, ptr, rust_vec_len, data_len),
+        112 => wire__crate__api__dynamic__reserve_info_impl(port, ptr, rust_vec_len, data_len),
+        113 => {
             wire__crate__api__video_write__room_entry_action_impl(port, ptr, rust_vec_len, data_len)
         }
-        106 => wire__crate__api__dynamic__save_vote_impl(port, ptr, rust_vec_len, data_len),
-        107 => wire__crate__api__search__search_all_impl(port, ptr, rust_vec_len, data_len),
-        108 => wire__crate__api__search__search_article_impl(port, ptr, rust_vec_len, data_len),
-        109 => wire__crate__api__search__search_live_impl(port, ptr, rust_vec_len, data_len),
-        110 => wire__crate__api__search__search_pgc_impl(port, ptr, rust_vec_len, data_len),
-        111 => wire__crate__api__search__search_recommend_impl(port, ptr, rust_vec_len, data_len),
-        112 => wire__crate__api__search__search_trending_impl(port, ptr, rust_vec_len, data_len),
-        113 => wire__crate__api__search__search_user_impl(port, ptr, rust_vec_len, data_len),
-        114 => wire__crate__api__search__search_video_impl(port, ptr, rust_vec_len, data_len),
-        117 => wire__crate__api__misc__sort_follow_tag_impl(port, ptr, rust_vec_len, data_len),
-        119 => wire__crate__api__dynamic__thumb_dynamic_impl(port, ptr, rust_vec_len, data_len),
-        120 => wire__crate__api__dynamic__top_dynamic_impl(port, ptr, rust_vec_len, data_len),
-        121 => wire__crate__api__video_write__ugc_triple_impl(port, ptr, rust_vec_len, data_len),
-        122 => wire__crate__api__dynamic__update_reserve_impl(port, ptr, rust_vec_len, data_len),
-        123 => wire__crate__api__misc__update_wish_impl(port, ptr, rust_vec_len, data_len),
-        124 => wire__crate__api__dynamic__vote_info_impl(port, ptr, rust_vec_len, data_len),
-        125 => wire__crate__api__wbi__wbi_mixin_key_impl(port, ptr, rust_vec_len, data_len),
-        126 => wire__crate__api__wbi__wbi_sign_impl(port, ptr, rust_vec_len, data_len),
+        114 => wire__crate__api__dynamic__save_vote_impl(port, ptr, rust_vec_len, data_len),
+        115 => wire__crate__api__search__search_all_impl(port, ptr, rust_vec_len, data_len),
+        116 => wire__crate__api__search__search_article_impl(port, ptr, rust_vec_len, data_len),
+        117 => wire__crate__api__search__search_live_impl(port, ptr, rust_vec_len, data_len),
+        118 => wire__crate__api__search__search_pgc_impl(port, ptr, rust_vec_len, data_len),
+        119 => wire__crate__api__search__search_recommend_impl(port, ptr, rust_vec_len, data_len),
+        120 => wire__crate__api__search__search_trending_impl(port, ptr, rust_vec_len, data_len),
+        121 => wire__crate__api__search__search_user_impl(port, ptr, rust_vec_len, data_len),
+        122 => wire__crate__api__search__search_video_impl(port, ptr, rust_vec_len, data_len),
+        125 => wire__crate__api__misc__sort_follow_tag_impl(port, ptr, rust_vec_len, data_len),
+        127 => wire__crate__api__dynamic__thumb_dynamic_impl(port, ptr, rust_vec_len, data_len),
+        128 => wire__crate__api__dynamic__top_dynamic_impl(port, ptr, rust_vec_len, data_len),
+        129 => wire__crate__api__video_write__ugc_triple_impl(port, ptr, rust_vec_len, data_len),
+        130 => wire__crate__api__dynamic__update_reserve_impl(port, ptr, rust_vec_len, data_len),
+        131 => wire__crate__api__misc__update_wish_impl(port, ptr, rust_vec_len, data_len),
+        132 => wire__crate__api__dynamic__vote_info_impl(port, ptr, rust_vec_len, data_len),
+        133 => wire__crate__api__wbi__wbi_mixin_key_impl(port, ptr, rust_vec_len, data_len),
+        134 => wire__crate__api__wbi__wbi_sign_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -12333,23 +13235,34 @@ fn pde_ffi_dispatcher_sync_impl(
         13 => wire__crate__api__danmaku__danmaku_progress_step_impl(ptr, rust_vec_len, data_len),
         18 => wire__crate__api__playback__durl_play_urls_impl(ptr, rust_vec_len, data_len),
         20 => wire__crate__api__cover_scrim__fallback_cover_scrim_impl(ptr, rust_vec_len, data_len),
-        79 => wire__crate__api__playback__has_volume_measurement_impl(ptr, rust_vec_len, data_len),
-        84 => wire__crate__api__playback__loudnorm_params_impl(ptr, rust_vec_len, data_len),
-        86 => wire__crate__api__playback__merge_video_streams_impl(ptr, rust_vec_len, data_len),
-        87 => wire__crate__api__playback__missing_video_quality_below_highest_impl(
+        82 => wire__crate__api__playback__has_volume_measurement_impl(ptr, rust_vec_len, data_len),
+        87 => wire__crate__api__live_danmaku__live_danmaku_filter_mask_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        91 => wire__crate__api__playback__pgc_clip_segments_impl(ptr, rust_vec_len, data_len),
-        100 => wire__crate__api__playback__pick_cdn_url_impl(ptr, rust_vec_len, data_len),
-        115 => {
+        88 => wire__crate__api__live_danmaku__live_socket_close_impl(ptr, rust_vec_len, data_len),
+        89 => wire__crate__api__live_danmaku__live_socket_open_impl(ptr, rust_vec_len, data_len),
+        90 => wire__crate__api__live_danmaku__live_socket_poll_impl(ptr, rust_vec_len, data_len),
+        91 => {
+            wire__crate__api__live_danmaku__live_socket_set_rules_impl(ptr, rust_vec_len, data_len)
+        }
+        92 => wire__crate__api__playback__loudnorm_params_impl(ptr, rust_vec_len, data_len),
+        94 => wire__crate__api__playback__merge_video_streams_impl(ptr, rust_vec_len, data_len),
+        95 => wire__crate__api__playback__missing_video_quality_below_highest_impl(
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        99 => wire__crate__api__playback__pgc_clip_segments_impl(ptr, rust_vec_len, data_len),
+        108 => wire__crate__api__playback__pick_cdn_url_impl(ptr, rust_vec_len, data_len),
+        123 => {
             wire__crate__api__media_select__select_target_audio_impl(ptr, rust_vec_len, data_len)
         }
-        116 => {
+        124 => {
             wire__crate__api__media_select__select_target_video_impl(ptr, rust_vec_len, data_len)
         }
-        118 => wire__crate__api__playback__stream_play_urls_impl(ptr, rust_vec_len, data_len),
+        126 => wire__crate__api__playback__stream_play_urls_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -13791,6 +14704,27 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::live::LiveAreasResult>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveBlockRules {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.keywords.into_into_dart().into_dart(),
+            self.uids.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveBlockRules
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveBlockRules>
+    for crate::api::live_danmaku::LiveBlockRules
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveBlockRules {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::live::LiveCodec {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -13880,6 +14814,172 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::live::LiveContributionRankRes
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveDanmakuEmote {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.is_official.into_into_dart().into_dart(),
+            self.url.into_into_dart().into_dart(),
+            self.emoticon_unique.into_into_dart().into_dart(),
+            self.width.into_into_dart().into_dart(),
+            self.height.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveDanmakuEmote
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveDanmakuEmote>
+    for crate::api::live_danmaku::LiveDanmakuEmote
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveDanmakuEmote {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveDanmakuEmoteEntry {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.key.into_into_dart().into_dart(),
+            self.emote.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveDanmakuEmoteEntry
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveDanmakuEmoteEntry>
+    for crate::api::live_danmaku::LiveDanmakuEmoteEntry
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveDanmakuEmoteEntry {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveDanmakuMessage {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.id.into_into_dart().into_dart(),
+            self.mid.into_into_dart().into_dart(),
+            self.dm_type.into_into_dart().into_dart(),
+            self.ts.into_into_dart().into_dart(),
+            self.ct.into_into_dart().into_dart(),
+            self.color.into_into_dart().into_dart(),
+            self.mode.into_into_dart().into_dart(),
+            self.name.into_into_dart().into_dart(),
+            self.text.into_into_dart().into_dart(),
+            self.segments.into_into_dart().into_dart(),
+            self.emotes.into_into_dart().into_dart(),
+            self.uemote.into_into_dart().into_dart(),
+            self.reply.into_into_dart().into_dart(),
+            self.medal.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveDanmakuMessage
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveDanmakuMessage>
+    for crate::api::live_danmaku::LiveDanmakuMessage
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveDanmakuMessage {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveDanmakuPrefetchResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveDanmakuPrefetchResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveDanmakuPrefetchResult>
+    for crate::api::live_danmaku::LiveDanmakuPrefetchResult
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveDanmakuPrefetchResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveDanmakuReply {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.mid.into_into_dart().into_dart(),
+            self.name.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveDanmakuReply
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveDanmakuReply>
+    for crate::api::live_danmaku::LiveDanmakuReply
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveDanmakuReply {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveDanmakuToken {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.token.into_into_dart().into_dart(),
+            self.servers.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveDanmakuToken
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveDanmakuToken>
+    for crate::api::live_danmaku::LiveDanmakuToken
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveDanmakuToken {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveDanmakuTokenResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveDanmakuTokenResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveDanmakuTokenResult>
+    for crate::api::live_danmaku::LiveDanmakuTokenResult
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveDanmakuTokenResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::live::LiveEmotePackage {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -13949,6 +15049,54 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::live::LiveEmoticon>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveEvent {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.kind.into_into_dart().into_dart(),
+            self.danmaku.into_into_dart().into_dart(),
+            self.super_chat.into_into_dart().into_dart(),
+            self.text.into_into_dart().into_dart(),
+            self.count.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveEvent
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveEvent>
+    for crate::api::live_danmaku::LiveEvent
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveEvent {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveEventKind {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::Danmaku => 0.into_dart(),
+            Self::SuperChat => 1.into_dart(),
+            Self::WatchedChange => 2.into_dart(),
+            Self::OnlineRankCount => 3.into_dart(),
+            Self::RoomChange => 4.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveEventKind
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveEventKind>
+    for crate::api::live_danmaku::LiveEventKind
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveEventKind {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::live::LiveFeedback {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -13991,6 +15139,27 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::live::LiveFeedbackReason>
     for crate::api::live::LiveFeedbackReason
 {
     fn into_into_dart(self) -> crate::api::live::LiveFeedbackReason {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveFilterCandidate {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.text.into_into_dart().into_dart(),
+            self.mid.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveFilterCandidate
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveFilterCandidate>
+    for crate::api::live_danmaku::LiveFilterCandidate
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveFilterCandidate {
         self
     }
 }
@@ -14266,6 +15435,27 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::live::LiveMedalWallResult>
     for crate::api::live::LiveMedalWallResult
 {
     fn into_into_dart(self) -> crate::api::live::LiveMedalWallResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveMessageSegment {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.text.into_into_dart().into_dart(),
+            self.emote_index.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveMessageSegment
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveMessageSegment>
+    for crate::api::live_danmaku::LiveMessageSegment
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveMessageSegment {
         self
     }
 }
@@ -14663,6 +15853,119 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::live::LiveShieldUser>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveSocketActionResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveSocketActionResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveSocketActionResult>
+    for crate::api::live_danmaku::LiveSocketActionResult
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveSocketActionResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveSocketBatch {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.session_id.into_into_dart().into_dart(),
+            self.generation.into_into_dart().into_dart(),
+            self.events.into_into_dart().into_dart(),
+            self.dropped.into_into_dart().into_dart(),
+            self.ended.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveSocketBatch
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveSocketBatch>
+    for crate::api::live_danmaku::LiveSocketBatch
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveSocketBatch {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveSocketHandle {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.session_id.into_into_dart().into_dart(),
+            self.generation.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveSocketHandle
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveSocketHandle>
+    for crate::api::live_danmaku::LiveSocketHandle
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveSocketHandle {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveSocketOpenResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveSocketOpenResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveSocketOpenResult>
+    for crate::api::live_danmaku::LiveSocketOpenResult
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveSocketOpenResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveSocketPollResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveSocketPollResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveSocketPollResult>
+    for crate::api::live_danmaku::LiveSocketPollResult
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveSocketPollResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::live::LiveStream {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -14677,6 +15980,87 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::live::LiveStream>
     for crate::api::live::LiveStream
 {
     fn into_into_dart(self) -> crate::api::live::LiveStream {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveSuperChat {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.id.into_into_dart().into_dart(),
+            self.uid.into_into_dart().into_dart(),
+            self.price.into_into_dart().into_dart(),
+            self.background_image.into_into_dart().into_dart(),
+            self.background_color.into_into_dart().into_dart(),
+            self.background_bottom_color.into_into_dart().into_dart(),
+            self.background_price_color.into_into_dart().into_dart(),
+            self.message_font_color.into_into_dart().into_dart(),
+            self.start_time.into_into_dart().into_dart(),
+            self.end_time.into_into_dart().into_dart(),
+            self.message.into_into_dart().into_dart(),
+            self.token.into_into_dart().into_dart(),
+            self.ts.into_into_dart().into_dart(),
+            self.user_info.into_into_dart().into_dart(),
+            self.medal.into_into_dart().into_dart(),
+            self.room_id.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveSuperChat
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveSuperChat>
+    for crate::api::live_danmaku::LiveSuperChat
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveSuperChat {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveSuperChatResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveSuperChatResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveSuperChatResult>
+    for crate::api::live_danmaku::LiveSuperChatResult
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveSuperChatResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::live_danmaku::LiveSuperChatUser {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.face.into_into_dart().into_dart(),
+            self.face_frame.into_into_dart().into_dart(),
+            self.uname.into_into_dart().into_dart(),
+            self.name_color.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::live_danmaku::LiveSuperChatUser
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::live_danmaku::LiveSuperChatUser>
+    for crate::api::live_danmaku::LiveSuperChatUser
+{
+    fn into_into_dart(self) -> crate::api::live_danmaku::LiveSuperChatUser {
         self
     }
 }
@@ -18619,6 +20003,16 @@ impl SseEncode for Vec<crate::api::misc::BlackListItem> {
     }
 }
 
+impl SseEncode for Vec<bool> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <bool>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::api::playback::CdnServiceEntry> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -18799,6 +20193,26 @@ impl SseEncode for Vec<crate::api::live::LiveContributionRankItem> {
     }
 }
 
+impl SseEncode for Vec<crate::api::live_danmaku::LiveDanmakuEmoteEntry> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::live_danmaku::LiveDanmakuEmoteEntry>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::live_danmaku::LiveDanmakuMessage> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::live_danmaku::LiveDanmakuMessage>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::api::live::LiveEmotePackage> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -18819,6 +20233,16 @@ impl SseEncode for Vec<crate::api::live::LiveEmoticon> {
     }
 }
 
+impl SseEncode for Vec<crate::api::live_danmaku::LiveEvent> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::live_danmaku::LiveEvent>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::api::live::LiveFeedback> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -18835,6 +20259,16 @@ impl SseEncode for Vec<crate::api::live::LiveFeedbackReason> {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <crate::api::live::LiveFeedbackReason>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::live_danmaku::LiveFilterCandidate> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::live_danmaku::LiveFilterCandidate>::sse_encode(item, serializer);
         }
     }
 }
@@ -18865,6 +20299,16 @@ impl SseEncode for Vec<crate::api::live::LiveMedalWallItem> {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <crate::api::live::LiveMedalWallItem>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::live_danmaku::LiveMessageSegment> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::live_danmaku::LiveMessageSegment>::sse_encode(item, serializer);
         }
     }
 }
@@ -18935,6 +20379,16 @@ impl SseEncode for Vec<crate::api::live::LiveStream> {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <crate::api::live::LiveStream>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::live_danmaku::LiveSuperChat> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::live_danmaku::LiveSuperChat>::sse_encode(item, serializer);
         }
     }
 }
@@ -19385,6 +20839,14 @@ impl SseEncode for crate::api::live::LiveAreasResult {
     }
 }
 
+impl SseEncode for crate::api::live_danmaku::LiveBlockRules {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<String>>::sse_encode(self.keywords, serializer);
+        <Vec<i64>>::sse_encode(self.uids, serializer);
+    }
+}
+
 impl SseEncode for crate::api::live::LiveCodec {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -19430,6 +20892,83 @@ impl SseEncode for crate::api::live::LiveContributionRankResult {
     }
 }
 
+impl SseEncode for crate::api::live_danmaku::LiveDanmakuEmote {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_official, serializer);
+        <String>::sse_encode(self.url, serializer);
+        <String>::sse_encode(self.emoticon_unique, serializer);
+        <f64>::sse_encode(self.width, serializer);
+        <f64>::sse_encode(self.height, serializer);
+    }
+}
+
+impl SseEncode for crate::api::live_danmaku::LiveDanmakuEmoteEntry {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.key, serializer);
+        <crate::api::live_danmaku::LiveDanmakuEmote>::sse_encode(self.emote, serializer);
+    }
+}
+
+impl SseEncode for crate::api::live_danmaku::LiveDanmakuMessage {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.id, serializer);
+        <i64>::sse_encode(self.mid, serializer);
+        <i64>::sse_encode(self.dm_type, serializer);
+        <i64>::sse_encode(self.ts, serializer);
+        <String>::sse_encode(self.ct, serializer);
+        <i64>::sse_encode(self.color, serializer);
+        <i64>::sse_encode(self.mode, serializer);
+        <String>::sse_encode(self.name, serializer);
+        <String>::sse_encode(self.text, serializer);
+        <Vec<crate::api::live_danmaku::LiveMessageSegment>>::sse_encode(self.segments, serializer);
+        <Vec<crate::api::live_danmaku::LiveDanmakuEmoteEntry>>::sse_encode(self.emotes, serializer);
+        <Option<crate::api::live_danmaku::LiveDanmakuEmote>>::sse_encode(self.uemote, serializer);
+        <Option<crate::api::live_danmaku::LiveDanmakuReply>>::sse_encode(self.reply, serializer);
+        <Option<crate::api::live::LiveMedal>>::sse_encode(self.medal, serializer);
+    }
+}
+
+impl SseEncode for crate::api::live_danmaku::LiveDanmakuPrefetchResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<Vec<crate::api::live_danmaku::LiveDanmakuMessage>>>::sse_encode(
+            self.data, serializer,
+        );
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::live_danmaku::LiveDanmakuReply {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i64>::sse_encode(self.mid, serializer);
+        <Option<String>>::sse_encode(self.name, serializer);
+    }
+}
+
+impl SseEncode for crate::api::live_danmaku::LiveDanmakuToken {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.token, serializer);
+        <Vec<String>>::sse_encode(self.servers, serializer);
+    }
+}
+
+impl SseEncode for crate::api::live_danmaku::LiveDanmakuTokenResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<crate::api::live_danmaku::LiveDanmakuToken>>::sse_encode(self.data, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
 impl SseEncode for crate::api::live::LiveEmotePackage {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -19460,6 +20999,39 @@ impl SseEncode for crate::api::live::LiveEmoticon {
     }
 }
 
+impl SseEncode for crate::api::live_danmaku::LiveEvent {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <crate::api::live_danmaku::LiveEventKind>::sse_encode(self.kind, serializer);
+        <Option<crate::api::live_danmaku::LiveDanmakuMessage>>::sse_encode(
+            self.danmaku,
+            serializer,
+        );
+        <Option<crate::api::live_danmaku::LiveSuperChat>>::sse_encode(self.super_chat, serializer);
+        <Option<String>>::sse_encode(self.text, serializer);
+        <Option<i64>>::sse_encode(self.count, serializer);
+    }
+}
+
+impl SseEncode for crate::api::live_danmaku::LiveEventKind {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::live_danmaku::LiveEventKind::Danmaku => 0,
+                crate::api::live_danmaku::LiveEventKind::SuperChat => 1,
+                crate::api::live_danmaku::LiveEventKind::WatchedChange => 2,
+                crate::api::live_danmaku::LiveEventKind::OnlineRankCount => 3,
+                crate::api::live_danmaku::LiveEventKind::RoomChange => 4,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
 impl SseEncode for crate::api::live::LiveFeedback {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -19477,6 +21049,14 @@ impl SseEncode for crate::api::live::LiveFeedbackReason {
         <Option<String>>::sse_encode(self.name, serializer);
         <Option<String>>::sse_encode(self.id_type, serializer);
         <Option<i64>>::sse_encode(self.reason_id, serializer);
+    }
+}
+
+impl SseEncode for crate::api::live_danmaku::LiveFilterCandidate {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.text, serializer);
+        <i64>::sse_encode(self.mid, serializer);
     }
 }
 
@@ -19602,6 +21182,14 @@ impl SseEncode for crate::api::live::LiveMedalWallResult {
         <Option<String>>::sse_encode(self.error_kind, serializer);
         <Option<String>>::sse_encode(self.error_detail, serializer);
         <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::live_danmaku::LiveMessageSegment {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.text, serializer);
+        <Option<u32>>::sse_encode(self.emote_index, serializer);
     }
 }
 
@@ -19785,11 +21373,101 @@ impl SseEncode for crate::api::live::LiveShieldUser {
     }
 }
 
+impl SseEncode for crate::api::live_danmaku::LiveSocketActionResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::live_danmaku::LiveSocketBatch {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i64>::sse_encode(self.session_id, serializer);
+        <i64>::sse_encode(self.generation, serializer);
+        <Vec<crate::api::live_danmaku::LiveEvent>>::sse_encode(self.events, serializer);
+        <u64>::sse_encode(self.dropped, serializer);
+        <bool>::sse_encode(self.ended, serializer);
+    }
+}
+
+impl SseEncode for crate::api::live_danmaku::LiveSocketHandle {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i64>::sse_encode(self.session_id, serializer);
+        <i64>::sse_encode(self.generation, serializer);
+    }
+}
+
+impl SseEncode for crate::api::live_danmaku::LiveSocketOpenResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<crate::api::live_danmaku::LiveSocketHandle>>::sse_encode(self.data, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::live_danmaku::LiveSocketPollResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<crate::api::live_danmaku::LiveSocketBatch>>::sse_encode(self.data, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
 impl SseEncode for crate::api::live::LiveStream {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <Option<String>>::sse_encode(self.protocol_name, serializer);
         <Vec<crate::api::live::LiveFormat>>::sse_encode(self.format, serializer);
+    }
+}
+
+impl SseEncode for crate::api::live_danmaku::LiveSuperChat {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i64>::sse_encode(self.id, serializer);
+        <i64>::sse_encode(self.uid, serializer);
+        <i64>::sse_encode(self.price, serializer);
+        <Option<String>>::sse_encode(self.background_image, serializer);
+        <String>::sse_encode(self.background_color, serializer);
+        <String>::sse_encode(self.background_bottom_color, serializer);
+        <String>::sse_encode(self.background_price_color, serializer);
+        <String>::sse_encode(self.message_font_color, serializer);
+        <i64>::sse_encode(self.start_time, serializer);
+        <i64>::sse_encode(self.end_time, serializer);
+        <String>::sse_encode(self.message, serializer);
+        <String>::sse_encode(self.token, serializer);
+        <i64>::sse_encode(self.ts, serializer);
+        <crate::api::live_danmaku::LiveSuperChatUser>::sse_encode(self.user_info, serializer);
+        <Option<crate::api::live::LiveMedal>>::sse_encode(self.medal, serializer);
+        <i64>::sse_encode(self.room_id, serializer);
+    }
+}
+
+impl SseEncode for crate::api::live_danmaku::LiveSuperChatResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<Vec<crate::api::live_danmaku::LiveSuperChat>>>::sse_encode(self.data, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::live_danmaku::LiveSuperChatUser {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.face, serializer);
+        <Option<String>>::sse_encode(self.face_frame, serializer);
+        <String>::sse_encode(self.uname, serializer);
+        <String>::sse_encode(self.name_color, serializer);
     }
 }
 
@@ -20169,6 +21847,46 @@ impl SseEncode for Option<crate::api::dynamic::LikeListPage> {
     }
 }
 
+impl SseEncode for Option<crate::api::live_danmaku::LiveDanmakuEmote> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::live_danmaku::LiveDanmakuEmote>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::live_danmaku::LiveDanmakuMessage> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::live_danmaku::LiveDanmakuMessage>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::live_danmaku::LiveDanmakuReply> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::live_danmaku::LiveDanmakuReply>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::live_danmaku::LiveDanmakuToken> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::live_danmaku::LiveDanmakuToken>::sse_encode(value, serializer);
+        }
+    }
+}
+
 impl SseEncode for Option<crate::api::live::LiveFollowSection> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -20265,6 +21983,36 @@ impl SseEncode for Option<crate::api::live::LiveShieldInfo> {
         <bool>::sse_encode(self.is_some(), serializer);
         if let Some(value) = self {
             <crate::api::live::LiveShieldInfo>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::live_danmaku::LiveSocketBatch> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::live_danmaku::LiveSocketBatch>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::live_danmaku::LiveSocketHandle> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::live_danmaku::LiveSocketHandle>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::live_danmaku::LiveSuperChat> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::live_danmaku::LiveSuperChat>::sse_encode(value, serializer);
         }
     }
 }
@@ -20849,12 +22597,32 @@ impl SseEncode for Option<Vec<crate::api::live::LiveContributionRankItem>> {
     }
 }
 
+impl SseEncode for Option<Vec<crate::api::live_danmaku::LiveDanmakuMessage>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <Vec<crate::api::live_danmaku::LiveDanmakuMessage>>::sse_encode(value, serializer);
+        }
+    }
+}
+
 impl SseEncode for Option<Vec<crate::api::live::LiveEmotePackage>> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <bool>::sse_encode(self.is_some(), serializer);
         if let Some(value) = self {
             <Vec<crate::api::live::LiveEmotePackage>>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<Vec<crate::api::live_danmaku::LiveSuperChat>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <Vec<crate::api::live_danmaku::LiveSuperChat>>::sse_encode(value, serializer);
         }
     }
 }

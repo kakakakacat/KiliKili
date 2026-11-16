@@ -9,6 +9,7 @@ use bili_domain::{
     live::LiveMedal,
     live_danmaku::*,
 };
+use serde::Deserialize;
 use serde_json::Value;
 use std::io::Read;
 use std::sync::atomic::{AtomicU32, Ordering};
@@ -255,6 +256,55 @@ fn emote(v: &Value) -> Result<LiveDanmakuEmote, DomainError> {
         height: v["height"].as_f64().unwrap_or(width),
     })
 }
+// 只在本切片保留表情 Map 的插入顺序，不能全局启用 serde_json
+// preserve_order：那会改变已有写接口的 JSON 请求字段顺序。
+#[derive(Debug, Default)]
+struct OrderedEmotes(Vec<LiveDanmakuEmoteEntry>);
+impl<'de> Deserialize<'de> for OrderedEmotes {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct Entries;
+        impl<'de> serde::de::Visitor<'de> for Entries {
+            type Value = OrderedEmotes;
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("直播表情对象")
+            }
+            fn visit_map<M: serde::de::MapAccess<'de>>(
+                self,
+                mut map: M,
+            ) -> Result<Self::Value, M::Error> {
+                let mut entries = Vec::new();
+                while let Some((key, value)) = map.next_entry::<String, Value>()? {
+                    if entries.len() >= 256 {
+                        return Err(serde::de::Error::custom("直播表情过多"));
+                    }
+                    entries.push(LiveDanmakuEmoteEntry {
+                        key,
+                        emote: emote(&value).map_err(serde::de::Error::custom)?,
+                    });
+                }
+                Ok(OrderedEmotes(entries))
+            }
+        }
+        deserializer.deserialize_map(Entries)
+    }
+}
+#[derive(Debug, Deserialize)]
+struct MessageExtra {
+    #[serde(default)]
+    emots: Option<OrderedEmotes>,
+}
+#[derive(Debug, Deserialize)]
+struct PrefetchRow {
+    #[serde(default)]
+    emots: Option<OrderedEmotes>,
+    #[serde(flatten)]
+    fields: serde_json::Map<String, Value>,
+}
+#[derive(Debug, Deserialize)]
+struct PrefetchData {
+    room: Option<Vec<PrefetchRow>>,
+}
+
 fn message(
     v: &Value,
     user: &Value,
@@ -262,18 +312,10 @@ fn message(
     check: &Value,
     uemote: &Value,
     reply: &Value,
+    emotes: Vec<LiveDanmakuEmoteEntry>,
 ) -> Result<LiveDanmakuMessage, DomainError> {
-    let mut emotes = Vec::new();
-    if let Some(map) = extra["emots"].as_object() {
-        for (key, e) in map {
-            emotes.push(LiveDanmakuEmoteEntry {
-                key: key.clone(),
-                emote: emote(e)?,
-            });
-        }
-    }
     let text = req_str(v, "text")?;
-    let segments = segments(&text, &emotes);
+    let segments = segments(&text, &emotes)?;
     Ok(LiveDanmakuMessage {
         id: req_str(extra, "id_str")?,
         mid: req_int(user, "uid")?,
@@ -304,51 +346,78 @@ fn message(
         medal: medal(&user["medal"]),
     })
 }
-fn segments(text: &str, emotes: &[LiveDanmakuEmoteEntry]) -> Vec<LiveMessageSegment> {
-    let mut result = Vec::new();
-    let mut rest = text;
-    while !rest.is_empty() {
-        let next = emotes
-            .iter()
-            .filter(|e| !e.key.is_empty())
-            .filter_map(|e| rest.find(&e.key).map(|p| (p, e)))
-            .min_by_key(|(p, _)| *p);
-        if let Some((pos, e)) = next {
-            if pos > 0 {
-                result.push(LiveMessageSegment {
-                    text: rest[..pos].into(),
-                    emote: None,
-                })
-            }
-            result.push(LiveMessageSegment {
-                text: e.key.clone(),
-                emote: Some(e.emote.clone()),
-            });
-            rest = &rest[pos + e.key.len()..];
-        } else {
-            result.push(LiveMessageSegment {
-                text: rest.into(),
-                emote: None,
-            });
-            break;
-        }
+// 一次多模式匹配保留原 Map 的分支优先级，避免每次命中都扫描整段剩余文本。
+// 片段只引用原表情表，重复短标记不会复制大 URL。
+fn segments(
+    text: &str,
+    emotes: &[LiveDanmakuEmoteEntry],
+) -> Result<Vec<LiveMessageSegment>, DomainError> {
+    if emotes.len() > 256 || emotes.iter().map(|e| e.key.len()).sum::<usize>() > 64 * 1024 {
+        return Err(invalid());
     }
-    result
+    let indexed: Vec<_> = emotes
+        .iter()
+        .enumerate()
+        .filter(|(_, e)| !e.key.is_empty())
+        .collect();
+    if indexed.is_empty() {
+        return Ok(if text.is_empty() {
+            Vec::new()
+        } else {
+            vec![LiveMessageSegment {
+                text: text.to_owned(),
+                emote_index: None,
+            }]
+        });
+    }
+    let matcher = aho_corasick::AhoCorasickBuilder::new()
+        .match_kind(aho_corasick::MatchKind::LeftmostFirst)
+        .build(indexed.iter().map(|(_, e)| e.key.as_str()))
+        .map_err(|_| invalid())?;
+    let mut result = Vec::new();
+    let mut start = 0;
+    for found in matcher.find_iter(text) {
+        if result.len() >= 2048 {
+            return Err(invalid());
+        }
+        if start < found.start() {
+            result.push(LiveMessageSegment {
+                text: text[start..found.start()].into(),
+                emote_index: None,
+            });
+        }
+        let index = indexed[found.pattern().as_usize()].0;
+        result.push(LiveMessageSegment {
+            text: text[found.start()..found.end()].into(),
+            emote_index: Some(index as u32),
+        });
+        start = found.end();
+    }
+    if start < text.len() {
+        result.push(LiveMessageSegment {
+            text: text[start..].into(),
+            emote_index: None,
+        });
+    }
+    if result.len() > 2048 {
+        return Err(invalid());
+    }
+    Ok(result)
 }
 pub fn parse_prefetch(body: &str) -> Result<Vec<LiveDanmakuMessage>, DomainError> {
-    let v: Value = unwrap_envelope(body)?;
+    let data: PrefetchData = unwrap_envelope(body)?;
     let mut out = Vec::new();
-    if let Some(room) = v["room"].as_array() {
-        for item in room {
-            out.push(message(
-                item,
-                &item["user"],
-                item,
-                &item["check_info"],
-                &item["emoticon"],
-                &item["reply"],
-            )?);
-        }
+    for row in data.room.unwrap_or_default() {
+        let item = Value::Object(row.fields);
+        out.push(message(
+            &item,
+            &item["user"],
+            &item,
+            &item["check_info"],
+            &item["emoticon"],
+            &item["reply"],
+            row.emots.unwrap_or_default().0,
+        )?);
     }
     Ok(out)
 }
@@ -407,7 +476,9 @@ pub fn parse_event(body: &[u8], room_id: i64) -> Result<Option<LiveEvent>, Domai
             let info = &v["info"];
             let first = &info[0];
             let content = &first[15];
-            let extra = json(content["extra"].as_str().ok_or_else(invalid)?.as_bytes())?;
+            let extra_raw = content["extra"].as_str().ok_or_else(invalid)?;
+            let extra = json(extra_raw.as_bytes())?;
+            let ordered: MessageExtra = serde_json::from_str(extra_raw).map_err(|_| invalid())?;
             event.danmaku = Some(message(
                 &serde_json::json!({"text":info[1]}),
                 &content["user"],
@@ -415,6 +486,7 @@ pub fn parse_event(body: &[u8], room_id: i64) -> Result<Option<LiveEvent>, Domai
                 &info[9],
                 &first[13],
                 &extra,
+                ordered.emots.unwrap_or_default().0,
             )?);
         }
         "SUPER_CHAT_MESSAGE" => {

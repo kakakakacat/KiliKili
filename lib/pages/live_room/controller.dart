@@ -637,6 +637,8 @@ class LiveRoomController extends GetxController {
         if (Platform.isAndroid && AndroidHelper.isPipMode) return;
         if (plPlayerController.showDanmaku &&
             (isFullScreen || plPlayerController.isDesktopPip)) {
+          // 十秒只限制浮层展示寿命，留言有效期仍以 Rust 数据为准；
+          // 这属于 Widget 生命周期，替换宿主时随浮层重写。
           fsSC.value = LiveSuperChatState(
             item.data,
             displayEndTime: math.min(

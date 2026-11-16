@@ -90,6 +90,11 @@ Stage 1                               Stage 2/3
 - 网络和存储的所有平台差异封装为 trait 或平台 Adapter。
 - 用户数据迁移必须可回滚，避免一次性删除旧数据库或缓存。
 
+直播消息长连接的具体约定见 [ADR-014](adr/ADR-014-live-message-session.md)：
+Rust 维护可取消会话、有界消息队列和 typed 事件，宿主每约 100ms 批量取数，
+通过 `session_id` / `generation` 丢弃过期结果；token、历史预取和醒目留言
+同属该网络边界，宿主不解析协议。
+
 ### 2.3 宿主可替换：逻辑归属的判据
 
 Stage 2 会把 Flutter 换成 Slint（也可能是别的跨平台框架）；**Rust 这一层

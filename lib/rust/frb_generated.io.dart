@@ -9,6 +9,7 @@ import 'package:kilikili/rust/api/dynamic.dart';
 import 'package:kilikili/rust/api/grpc.dart';
 import 'package:kilikili/rust/api/init.dart';
 import 'package:kilikili/rust/api/live.dart';
+import 'package:kilikili/rust/api/live_danmaku.dart';
 import 'package:kilikili/rust/api/media_select.dart';
 import 'package:kilikili/rust/api/misc.dart';
 import 'package:kilikili/rust/api/pgc.dart';
@@ -158,7 +159,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveAppIdentity dco_decode_box_autoadd_live_app_identity(dynamic raw);
 
   @protected
+  LiveBlockRules dco_decode_box_autoadd_live_block_rules(dynamic raw);
+
+  @protected
   LiveContext dco_decode_box_autoadd_live_context(dynamic raw);
+
+  @protected
+  LiveDanmakuEmote dco_decode_box_autoadd_live_danmaku_emote(dynamic raw);
+
+  @protected
+  LiveDanmakuMessage dco_decode_box_autoadd_live_danmaku_message(dynamic raw);
+
+  @protected
+  LiveDanmakuReply dco_decode_box_autoadd_live_danmaku_reply(dynamic raw);
+
+  @protected
+  LiveDanmakuToken dco_decode_box_autoadd_live_danmaku_token(dynamic raw);
 
   @protected
   LiveFollowSection dco_decode_box_autoadd_live_follow_section(dynamic raw);
@@ -192,6 +208,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LiveShieldInfo dco_decode_box_autoadd_live_shield_info(dynamic raw);
+
+  @protected
+  LiveSocketBatch dco_decode_box_autoadd_live_socket_batch(dynamic raw);
+
+  @protected
+  LiveSocketHandle dco_decode_box_autoadd_live_socket_handle(dynamic raw);
+
+  @protected
+  LiveSuperChat dco_decode_box_autoadd_live_super_chat(dynamic raw);
 
   @protected
   LoudnormConfig dco_decode_box_autoadd_loudnorm_config(dynamic raw);
@@ -526,6 +551,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<BlackListItem> dco_decode_list_black_list_item(dynamic raw);
 
   @protected
+  List<bool> dco_decode_list_bool(dynamic raw);
+
+  @protected
   List<CdnServiceEntry> dco_decode_list_cdn_service_entry(dynamic raw);
 
   @protected
@@ -584,16 +612,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<LiveDanmakuEmoteEntry> dco_decode_list_live_danmaku_emote_entry(
+    dynamic raw,
+  );
+
+  @protected
+  List<LiveDanmakuMessage> dco_decode_list_live_danmaku_message(dynamic raw);
+
+  @protected
   List<LiveEmotePackage> dco_decode_list_live_emote_package(dynamic raw);
 
   @protected
   List<LiveEmoticon> dco_decode_list_live_emoticon(dynamic raw);
 
   @protected
+  List<LiveEvent> dco_decode_list_live_event(dynamic raw);
+
+  @protected
   List<LiveFeedback> dco_decode_list_live_feedback(dynamic raw);
 
   @protected
   List<LiveFeedbackReason> dco_decode_list_live_feedback_reason(dynamic raw);
+
+  @protected
+  List<LiveFilterCandidate> dco_decode_list_live_filter_candidate(dynamic raw);
 
   @protected
   List<LiveFollowItem> dco_decode_list_live_follow_item(dynamic raw);
@@ -603,6 +645,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<LiveMedalWallItem> dco_decode_list_live_medal_wall_item(dynamic raw);
+
+  @protected
+  List<LiveMessageSegment> dco_decode_list_live_message_segment(dynamic raw);
 
   @protected
   List<LiveQn> dco_decode_list_live_qn(dynamic raw);
@@ -624,6 +669,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<LiveStream> dco_decode_list_live_stream(dynamic raw);
+
+  @protected
+  List<LiveSuperChat> dco_decode_list_live_super_chat(dynamic raw);
 
   @protected
   List<LiveUrlInfo> dco_decode_list_live_url_info(dynamic raw);
@@ -766,6 +814,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveAreasResult dco_decode_live_areas_result(dynamic raw);
 
   @protected
+  LiveBlockRules dco_decode_live_block_rules(dynamic raw);
+
+  @protected
   LiveCodec dco_decode_live_codec(dynamic raw);
 
   @protected
@@ -780,6 +831,29 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  LiveDanmakuEmote dco_decode_live_danmaku_emote(dynamic raw);
+
+  @protected
+  LiveDanmakuEmoteEntry dco_decode_live_danmaku_emote_entry(dynamic raw);
+
+  @protected
+  LiveDanmakuMessage dco_decode_live_danmaku_message(dynamic raw);
+
+  @protected
+  LiveDanmakuPrefetchResult dco_decode_live_danmaku_prefetch_result(
+    dynamic raw,
+  );
+
+  @protected
+  LiveDanmakuReply dco_decode_live_danmaku_reply(dynamic raw);
+
+  @protected
+  LiveDanmakuToken dco_decode_live_danmaku_token(dynamic raw);
+
+  @protected
+  LiveDanmakuTokenResult dco_decode_live_danmaku_token_result(dynamic raw);
+
+  @protected
   LiveEmotePackage dco_decode_live_emote_package(dynamic raw);
 
   @protected
@@ -789,10 +863,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveEmoticon dco_decode_live_emoticon(dynamic raw);
 
   @protected
+  LiveEvent dco_decode_live_event(dynamic raw);
+
+  @protected
+  LiveEventKind dco_decode_live_event_kind(dynamic raw);
+
+  @protected
   LiveFeedback dco_decode_live_feedback(dynamic raw);
 
   @protected
   LiveFeedbackReason dco_decode_live_feedback_reason(dynamic raw);
+
+  @protected
+  LiveFilterCandidate dco_decode_live_filter_candidate(dynamic raw);
 
   @protected
   LiveFollowItem dco_decode_live_follow_item(dynamic raw);
@@ -829,6 +912,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LiveMedalWallResult dco_decode_live_medal_wall_result(dynamic raw);
+
+  @protected
+  LiveMessageSegment dco_decode_live_message_segment(dynamic raw);
 
   @protected
   LiveQn dco_decode_live_qn(dynamic raw);
@@ -882,7 +968,31 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveShieldUser dco_decode_live_shield_user(dynamic raw);
 
   @protected
+  LiveSocketActionResult dco_decode_live_socket_action_result(dynamic raw);
+
+  @protected
+  LiveSocketBatch dco_decode_live_socket_batch(dynamic raw);
+
+  @protected
+  LiveSocketHandle dco_decode_live_socket_handle(dynamic raw);
+
+  @protected
+  LiveSocketOpenResult dco_decode_live_socket_open_result(dynamic raw);
+
+  @protected
+  LiveSocketPollResult dco_decode_live_socket_poll_result(dynamic raw);
+
+  @protected
   LiveStream dco_decode_live_stream(dynamic raw);
+
+  @protected
+  LiveSuperChat dco_decode_live_super_chat(dynamic raw);
+
+  @protected
+  LiveSuperChatResult dco_decode_live_super_chat_result(dynamic raw);
+
+  @protected
+  LiveSuperChatUser dco_decode_live_super_chat_user(dynamic raw);
 
   @protected
   LiveUrlInfo dco_decode_live_url_info(dynamic raw);
@@ -990,6 +1100,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LikeListPage? dco_decode_opt_box_autoadd_like_list_page(dynamic raw);
 
   @protected
+  LiveDanmakuEmote? dco_decode_opt_box_autoadd_live_danmaku_emote(dynamic raw);
+
+  @protected
+  LiveDanmakuMessage? dco_decode_opt_box_autoadd_live_danmaku_message(
+    dynamic raw,
+  );
+
+  @protected
+  LiveDanmakuReply? dco_decode_opt_box_autoadd_live_danmaku_reply(dynamic raw);
+
+  @protected
+  LiveDanmakuToken? dco_decode_opt_box_autoadd_live_danmaku_token(dynamic raw);
+
+  @protected
   LiveFollowSection? dco_decode_opt_box_autoadd_live_follow_section(
     dynamic raw,
   );
@@ -1022,6 +1146,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LiveShieldInfo? dco_decode_opt_box_autoadd_live_shield_info(dynamic raw);
+
+  @protected
+  LiveSocketBatch? dco_decode_opt_box_autoadd_live_socket_batch(dynamic raw);
+
+  @protected
+  LiveSocketHandle? dco_decode_opt_box_autoadd_live_socket_handle(dynamic raw);
+
+  @protected
+  LiveSuperChat? dco_decode_opt_box_autoadd_live_super_chat(dynamic raw);
 
   @protected
   MatchContest? dco_decode_opt_box_autoadd_match_contest(dynamic raw);
@@ -1207,7 +1340,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   dco_decode_opt_list_live_contribution_rank_item(dynamic raw);
 
   @protected
+  List<LiveDanmakuMessage>? dco_decode_opt_list_live_danmaku_message(
+    dynamic raw,
+  );
+
+  @protected
   List<LiveEmotePackage>? dco_decode_opt_list_live_emote_package(dynamic raw);
+
+  @protected
+  List<LiveSuperChat>? dco_decode_opt_list_live_super_chat(dynamic raw);
 
   @protected
   List<MediaStream>? dco_decode_opt_list_media_stream(dynamic raw);
@@ -1768,7 +1909,32 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  LiveBlockRules sse_decode_box_autoadd_live_block_rules(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   LiveContext sse_decode_box_autoadd_live_context(SseDeserializer deserializer);
+
+  @protected
+  LiveDanmakuEmote sse_decode_box_autoadd_live_danmaku_emote(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveDanmakuMessage sse_decode_box_autoadd_live_danmaku_message(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveDanmakuReply sse_decode_box_autoadd_live_danmaku_reply(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveDanmakuToken sse_decode_box_autoadd_live_danmaku_token(
+    SseDeserializer deserializer,
+  );
 
   @protected
   LiveFollowSection sse_decode_box_autoadd_live_follow_section(
@@ -1818,6 +1984,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LiveShieldInfo sse_decode_box_autoadd_live_shield_info(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveSocketBatch sse_decode_box_autoadd_live_socket_batch(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveSocketHandle sse_decode_box_autoadd_live_socket_handle(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveSuperChat sse_decode_box_autoadd_live_super_chat(
     SseDeserializer deserializer,
   );
 
@@ -2242,6 +2423,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<bool> sse_decode_list_bool(SseDeserializer deserializer);
+
+  @protected
   List<CdnServiceEntry> sse_decode_list_cdn_service_entry(
     SseDeserializer deserializer,
   );
@@ -2318,6 +2502,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<LiveDanmakuEmoteEntry> sse_decode_list_live_danmaku_emote_entry(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<LiveDanmakuMessage> sse_decode_list_live_danmaku_message(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<LiveEmotePackage> sse_decode_list_live_emote_package(
     SseDeserializer deserializer,
   );
@@ -2328,12 +2522,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<LiveEvent> sse_decode_list_live_event(SseDeserializer deserializer);
+
+  @protected
   List<LiveFeedback> sse_decode_list_live_feedback(
     SseDeserializer deserializer,
   );
 
   @protected
   List<LiveFeedbackReason> sse_decode_list_live_feedback_reason(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<LiveFilterCandidate> sse_decode_list_live_filter_candidate(
     SseDeserializer deserializer,
   );
 
@@ -2347,6 +2549,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<LiveMedalWallItem> sse_decode_list_live_medal_wall_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<LiveMessageSegment> sse_decode_list_live_message_segment(
     SseDeserializer deserializer,
   );
 
@@ -2380,6 +2587,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<LiveStream> sse_decode_list_live_stream(SseDeserializer deserializer);
+
+  @protected
+  List<LiveSuperChat> sse_decode_list_live_super_chat(
+    SseDeserializer deserializer,
+  );
 
   @protected
   List<LiveUrlInfo> sse_decode_list_live_url_info(SseDeserializer deserializer);
@@ -2568,6 +2780,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveAreasResult sse_decode_live_areas_result(SseDeserializer deserializer);
 
   @protected
+  LiveBlockRules sse_decode_live_block_rules(SseDeserializer deserializer);
+
+  @protected
   LiveCodec sse_decode_live_codec(SseDeserializer deserializer);
 
   @protected
@@ -2584,6 +2799,35 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  LiveDanmakuEmote sse_decode_live_danmaku_emote(SseDeserializer deserializer);
+
+  @protected
+  LiveDanmakuEmoteEntry sse_decode_live_danmaku_emote_entry(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveDanmakuMessage sse_decode_live_danmaku_message(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveDanmakuPrefetchResult sse_decode_live_danmaku_prefetch_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveDanmakuReply sse_decode_live_danmaku_reply(SseDeserializer deserializer);
+
+  @protected
+  LiveDanmakuToken sse_decode_live_danmaku_token(SseDeserializer deserializer);
+
+  @protected
+  LiveDanmakuTokenResult sse_decode_live_danmaku_token_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   LiveEmotePackage sse_decode_live_emote_package(SseDeserializer deserializer);
 
   @protected
@@ -2595,10 +2839,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveEmoticon sse_decode_live_emoticon(SseDeserializer deserializer);
 
   @protected
+  LiveEvent sse_decode_live_event(SseDeserializer deserializer);
+
+  @protected
+  LiveEventKind sse_decode_live_event_kind(SseDeserializer deserializer);
+
+  @protected
   LiveFeedback sse_decode_live_feedback(SseDeserializer deserializer);
 
   @protected
   LiveFeedbackReason sse_decode_live_feedback_reason(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveFilterCandidate sse_decode_live_filter_candidate(
     SseDeserializer deserializer,
   );
 
@@ -2645,6 +2900,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LiveMedalWallResult sse_decode_live_medal_wall_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveMessageSegment sse_decode_live_message_segment(
     SseDeserializer deserializer,
   );
 
@@ -2706,7 +2966,41 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LiveShieldUser sse_decode_live_shield_user(SseDeserializer deserializer);
 
   @protected
+  LiveSocketActionResult sse_decode_live_socket_action_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveSocketBatch sse_decode_live_socket_batch(SseDeserializer deserializer);
+
+  @protected
+  LiveSocketHandle sse_decode_live_socket_handle(SseDeserializer deserializer);
+
+  @protected
+  LiveSocketOpenResult sse_decode_live_socket_open_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveSocketPollResult sse_decode_live_socket_poll_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   LiveStream sse_decode_live_stream(SseDeserializer deserializer);
+
+  @protected
+  LiveSuperChat sse_decode_live_super_chat(SseDeserializer deserializer);
+
+  @protected
+  LiveSuperChatResult sse_decode_live_super_chat_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveSuperChatUser sse_decode_live_super_chat_user(
+    SseDeserializer deserializer,
+  );
 
   @protected
   LiveUrlInfo sse_decode_live_url_info(SseDeserializer deserializer);
@@ -2838,6 +3132,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  LiveDanmakuEmote? sse_decode_opt_box_autoadd_live_danmaku_emote(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveDanmakuMessage? sse_decode_opt_box_autoadd_live_danmaku_message(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveDanmakuReply? sse_decode_opt_box_autoadd_live_danmaku_reply(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveDanmakuToken? sse_decode_opt_box_autoadd_live_danmaku_token(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   LiveFollowSection? sse_decode_opt_box_autoadd_live_follow_section(
     SseDeserializer deserializer,
   );
@@ -2884,6 +3198,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LiveShieldInfo? sse_decode_opt_box_autoadd_live_shield_info(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveSocketBatch? sse_decode_opt_box_autoadd_live_socket_batch(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveSocketHandle? sse_decode_opt_box_autoadd_live_socket_handle(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LiveSuperChat? sse_decode_opt_box_autoadd_live_super_chat(
     SseDeserializer deserializer,
   );
 
@@ -3155,7 +3484,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   sse_decode_opt_list_live_contribution_rank_item(SseDeserializer deserializer);
 
   @protected
+  List<LiveDanmakuMessage>? sse_decode_opt_list_live_danmaku_message(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<LiveEmotePackage>? sse_decode_opt_list_live_emote_package(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<LiveSuperChat>? sse_decode_opt_list_live_super_chat(
     SseDeserializer deserializer,
   );
 
@@ -3858,8 +4197,38 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_live_block_rules(
+    LiveBlockRules self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_live_context(
     LiveContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_live_danmaku_emote(
+    LiveDanmakuEmote self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_live_danmaku_message(
+    LiveDanmakuMessage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_live_danmaku_reply(
+    LiveDanmakuReply self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_live_danmaku_token(
+    LiveDanmakuToken self,
     SseSerializer serializer,
   );
 
@@ -3926,6 +4295,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_live_shield_info(
     LiveShieldInfo self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_live_socket_batch(
+    LiveSocketBatch self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_live_socket_handle(
+    LiveSocketHandle self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_live_super_chat(
+    LiveSuperChat self,
     SseSerializer serializer,
   );
 
@@ -4494,6 +4881,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_bool(List<bool> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_cdn_service_entry(
     List<CdnServiceEntry> self,
     SseSerializer serializer,
@@ -4590,6 +4980,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_live_danmaku_emote_entry(
+    List<LiveDanmakuEmoteEntry> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_live_danmaku_message(
+    List<LiveDanmakuMessage> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_live_emote_package(
     List<LiveEmotePackage> self,
     SseSerializer serializer,
@@ -4602,6 +5004,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_live_event(
+    List<LiveEvent> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_live_feedback(
     List<LiveFeedback> self,
     SseSerializer serializer,
@@ -4610,6 +5018,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_live_feedback_reason(
     List<LiveFeedbackReason> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_live_filter_candidate(
+    List<LiveFilterCandidate> self,
     SseSerializer serializer,
   );
 
@@ -4628,6 +5042,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_live_medal_wall_item(
     List<LiveMedalWallItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_live_message_segment(
+    List<LiveMessageSegment> self,
     SseSerializer serializer,
   );
 
@@ -4667,6 +5087,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_live_stream(
     List<LiveStream> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_live_super_chat(
+    List<LiveSuperChat> self,
     SseSerializer serializer,
   );
 
@@ -4932,6 +5358,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_live_block_rules(
+    LiveBlockRules self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_live_codec(LiveCodec self, SseSerializer serializer);
 
   @protected
@@ -4946,6 +5378,48 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_live_contribution_rank_result(
     LiveContributionRankResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_danmaku_emote(
+    LiveDanmakuEmote self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_danmaku_emote_entry(
+    LiveDanmakuEmoteEntry self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_danmaku_message(
+    LiveDanmakuMessage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_danmaku_prefetch_result(
+    LiveDanmakuPrefetchResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_danmaku_reply(
+    LiveDanmakuReply self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_danmaku_token(
+    LiveDanmakuToken self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_danmaku_token_result(
+    LiveDanmakuTokenResult self,
     SseSerializer serializer,
   );
 
@@ -4965,11 +5439,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_live_emoticon(LiveEmoticon self, SseSerializer serializer);
 
   @protected
+  void sse_encode_live_event(LiveEvent self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_live_event_kind(LiveEventKind self, SseSerializer serializer);
+
+  @protected
   void sse_encode_live_feedback(LiveFeedback self, SseSerializer serializer);
 
   @protected
   void sse_encode_live_feedback_reason(
     LiveFeedbackReason self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_filter_candidate(
+    LiveFilterCandidate self,
     SseSerializer serializer,
   );
 
@@ -5030,6 +5516,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_live_medal_wall_result(
     LiveMedalWallResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_message_segment(
+    LiveMessageSegment self,
     SseSerializer serializer,
   );
 
@@ -5121,7 +5613,52 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_live_socket_action_result(
+    LiveSocketActionResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_socket_batch(
+    LiveSocketBatch self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_socket_handle(
+    LiveSocketHandle self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_socket_open_result(
+    LiveSocketOpenResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_socket_poll_result(
+    LiveSocketPollResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_live_stream(LiveStream self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_live_super_chat(LiveSuperChat self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_live_super_chat_result(
+    LiveSuperChatResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_live_super_chat_user(
+    LiveSuperChatUser self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_live_url_info(LiveUrlInfo self, SseSerializer serializer);
@@ -5280,6 +5817,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_live_danmaku_emote(
+    LiveDanmakuEmote? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_danmaku_message(
+    LiveDanmakuMessage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_danmaku_reply(
+    LiveDanmakuReply? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_danmaku_token(
+    LiveDanmakuToken? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_live_follow_section(
     LiveFollowSection? self,
     SseSerializer serializer,
@@ -5336,6 +5897,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_live_shield_info(
     LiveShieldInfo? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_socket_batch(
+    LiveSocketBatch? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_socket_handle(
+    LiveSocketHandle? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_super_chat(
+    LiveSuperChat? self,
     SseSerializer serializer,
   );
 
@@ -5676,8 +6255,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_list_live_danmaku_message(
+    List<LiveDanmakuMessage>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_list_live_emote_package(
     List<LiveEmotePackage>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_live_super_chat(
+    List<LiveSuperChat>? self,
     SseSerializer serializer,
   );
 

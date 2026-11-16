@@ -1,13 +1,9 @@
 import 'package:kilikili/common/constants.dart';
 import 'package:kilikili/http/api.dart';
-import 'package:kilikili/http/browser_ua.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/account_type.dart';
-import 'package:kilikili/models_new/live/live_danmaku/danmaku_msg.dart';
 import 'package:kilikili/services/rust/rust_live.dart' show LiveShieldUser;
-import 'package:kilikili/models_new/live/live_dm_info/data.dart';
-import 'package:kilikili/models_new/live/live_superchat/data.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/accounts/account.dart';
 import 'package:kilikili/utils/app_sign.dart';
@@ -16,19 +12,8 @@ import 'package:dio/dio.dart';
 
 /// 直播接口中**尚未迁到 Rust** 的那些。
 ///
-/// 只读部分已迁走十四条，见 `lib/services/rust/rust_live.dart`：分区三条、
-/// 首页推荐、分区二级列表、关注的直播、H5 房间信息、取流、表情包、
-/// 直播搜索、屏蔽设置、贡献榜、勋章墙、勋章名。这里剩下的是三类：
-///
-/// - **SuperChat（`superChatMsg`）**——它虽然是只读，却归 S11b（#62）：
-///   `SuperChatItem` 的第二个生产者是弹幕长连接的 `SUPER_CHAT_MESSAGE`
-///   （见 `live_room/controller.dart`），只迁 REST 这条，模型一行都删不
-///   掉。它还有 `expired`/`deleted` 两个可变的客户端状态，而 FRB 结构
-///   不可变；解析时还读 `GlobalData().showMedal` 这个全局设置。
-/// - 弹幕长连接相关（`liveRoomDmPrefetch`/`liveRoomGetDanmakuToken`）
-///   ——S11b（#62），阻塞在 ADR-012（#49）；
-/// - 全部写操作（发弹幕、收藏分区、禁言、增删屏蔽词与屏蔽用户、点赞
-///   上报、弹幕举报、SC 上报、反馈）——归 ADR-013（#50）。
+/// 只读接口由 `rust_live.dart` 和 `rust_live_danmaku.dart` 提供。
+/// 这里只保留写操作，随 ADR-013（#50）迁移。
 ///
 /// **`liveShieldUser` 名字像查询，实际是写**：`type: 1` 添加屏蔽用户、
 /// `type: 0` 移除，返回值只是新增那条的回显。它因此留在这里，但已经改成
@@ -75,55 +60,6 @@ abstract final class LiveHttp {
     );
     if (res.data['code'] == 0) {
       return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<List<DanmakuMsg>?>> liveRoomDmPrefetch({
-    required Object roomId,
-  }) async {
-    final res = await Request().get(
-      Api.liveRoomDmPrefetch,
-      queryParameters: {'roomid': roomId},
-      options: Options(
-        headers: {
-          'referer': 'https://live.bilibili.com/$roomId',
-          'user-agent': BrowserUa.pc,
-        },
-      ),
-    );
-    if (res.data['code'] == 0) {
-      try {
-        return Success(
-          (res.data['data']?['room'] as List?)
-              ?.map((e) => DanmakuMsg.fromPrefetch(e))
-              .toList(),
-        );
-      } catch (e) {
-        return Error(e.toString());
-      }
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<LiveDmInfoData>> liveRoomGetDanmakuToken({
-    required Object roomId,
-  }) async {
-    final res = await Request().get(
-      Api.liveRoomDmToken,
-      queryParameters: await WbiSign.makSign({
-        'id': roomId,
-        'web_location': 444.8,
-      }),
-    );
-    if (res.data['code'] == 0) {
-      try {
-        return Success(LiveDmInfoData.fromJson(res.data['data']));
-      } catch (e) {
-        return Error(e.toString());
-      }
     } else {
       return Error(res.data['message']);
     }
@@ -274,27 +210,6 @@ abstract final class LiveHttp {
     );
     if (res.data['code'] == 0) {
       return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  @pragma('vm:notify-debugger-on-exception')
-  static Future<LoadingState<SuperChatData>> superChatMsg(
-    int roomId,
-  ) async {
-    final res = await Request().get(
-      Api.superChatMsg,
-      queryParameters: {
-        'room_id': roomId,
-      },
-    );
-    if (res.data['code'] == 0) {
-      try {
-        return Success(SuperChatData.fromJson(res.data['data'], roomId));
-      } catch (e, s) {
-        return Error('$e\n\n$s');
-      }
     } else {
       return Error(res.data['message']);
     }

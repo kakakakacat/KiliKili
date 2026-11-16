@@ -38,7 +38,7 @@ class _SuperChatPanelState extends DebounceStreamState<SuperChatPanel, bool>
         itemCount: widget.controller.superChatMsg.length,
         findItemIndexCallback: (key) {
           final index = widget.controller.superChatMsg.indexWhere(
-            (i) => i.id == (key as ValueKey<int>).value,
+            (i) => i.data.id == (key as ValueKey<int>).value,
           );
           // Return item index directly - no need to multiply by 2.
           return index == -1 ? null : index;
@@ -46,7 +46,7 @@ class _SuperChatPanelState extends DebounceStreamState<SuperChatPanel, bool>
         itemBuilder: (context, index) {
           final item = widget.controller.superChatMsg[index];
           return SuperChatCard(
-            key: ValueKey(item.id),
+            key: ValueKey(item.data.id),
             item: item,
             onRemove: () => ctr?.add(true),
             persistentSC: persistentSC,

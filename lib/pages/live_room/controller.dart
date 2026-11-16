@@ -1,5 +1,4 @@
 import 'dart:async' show Timer, StreamSubscription;
-import 'dart:convert' show jsonDecode;
 import 'dart:io' show Platform;
 import 'dart:math' as math;
 
@@ -9,13 +8,8 @@ import 'package:kilikili/http/live.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/super_chat_type.dart';
 import 'package:kilikili/models/common/video/base_quality.dart';
-import 'package:kilikili/models/model_owner.dart';
-import 'package:kilikili/models_new/live/live_danmaku/danmaku_msg.dart';
-import 'package:kilikili/models_new/live/live_danmaku/live_emote.dart';
-import 'package:kilikili/models_new/live/live_dm_info/data.dart';
-import 'package:kilikili/models_new/live/live_medal_wall/uinfo_medal.dart';
 import 'package:kilikili/services/rust/live_playurl_compat.dart';
-import 'package:kilikili/models_new/live/live_superchat/item.dart';
+import 'package:kilikili/pages/live_room/superchat/super_chat_state.dart';
 import 'package:kilikili/pages/common/publish/publish_route.dart';
 import 'package:kilikili/pages/danmaku/danmaku_model.dart';
 import 'package:kilikili/pages/live_room/send_danmaku/view.dart';
@@ -23,10 +17,12 @@ import 'package:kilikili/pages/video/widgets/header_control.dart';
 import 'package:kilikili/plugin/pl_player/controller.dart';
 import 'package:kilikili/plugin/pl_player/models/data_source.dart';
 import 'package:kilikili/plugin/pl_player/utils/danmaku_options.dart';
+import 'package:kilikili/services/rust/live_message_session.dart';
+import 'package:kilikili/services/rust/rust_live_danmaku.dart';
+import 'package:kilikili/services/rust/rust_transport.dart';
 import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/services/service_locator.dart';
-import 'package:kilikili/tcp/live.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/android/bindings.g.dart';
 import 'package:kilikili/utils/connectivity_utils.dart';
@@ -34,7 +30,6 @@ import 'package:kilikili/utils/danmaku_utils.dart';
 import 'package:kilikili/utils/duration_utils.dart';
 import 'package:kilikili/utils/extension/iterable_ext.dart';
 import 'package:kilikili/utils/extension/rx_ext.dart';
-import 'package:kilikili/utils/global_data.dart';
 import 'package:kilikili/utils/num_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:kilikili/utils/storage.dart';
@@ -45,7 +40,8 @@ import 'package:kilikili/utils/utils.dart';
 import 'package:kilikili/utils/video_utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:easy_debounce/easy_throttle.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, kReleaseMode;
+import 'package:flutter/foundation.dart'
+    show debugPrint, kDebugMode, kReleaseMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -108,17 +104,17 @@ class LiveRoomController extends GetxController {
   });
 
   // dm
-  LiveDmInfoData? dmInfo;
   List<RichTextItem>? savedDanmaku;
   int builtLength = 0;
   final messages = <dynamic>[].obs;
   bool get shouldRefresh => builtLength != messages.length;
-  late final RxList<SuperChatItem> superChatMsg = <SuperChatItem>[].obs;
+  late final RxList<LiveSuperChatState> superChatMsg =
+      <LiveSuperChatState>[].obs;
   final disableAutoScroll = false.obs;
   bool autoScroll = true;
-  LiveMessageStream? _msgStream;
+  LiveMessageSession? _msgStream;
 
-  late final fsSC = Rxn<SuperChatItem>();
+  late final fsSC = Rxn<LiveSuperChatState>();
   late final enableFSSC = Pref.enableFullScreenSC;
   late final fsSCScale = Pref.fullScreenSCScale;
   late final fsSCOpacity = Pref.fullScreenSCOpacity;
@@ -422,27 +418,37 @@ class LiveRoomController extends GetxController {
     _msgStream = null;
   }
 
-  @pragma('vm:notify-debugger-on-exception')
-  Future<void> prefetch() async {
-    final res = await LiveHttp.liveRoomDmPrefetch(roomId: roomId);
-    if (res case Success(:final response)) {
-      if (response != null && response.isNotEmpty) {
-        messages.addAll(
-          response.where((item) => !isBlocked(item.text, item.extra.mid)),
-        );
-        scrollToBottom();
-      }
-    } else {
-      if (kDebugMode) {
-        Utils.reportError(res.toString());
-      }
+  bool _ownsSession(LiveMessageSession owner, int generation) =>
+      identical(_msgStream, owner) &&
+      owner.active &&
+      owner.generation == generation;
+
+  Future<void> prefetch(LiveMessageSession owner, int generation) async {
+    final res = await RustLiveDanmaku.prefetch(roomId);
+    if (!_ownsSession(owner, generation)) return;
+    if (res.data case final response?) {
+      final mask = liveDanmakuFilterMask(
+        candidates: response
+            .map((item) => LiveFilterCandidate(text: item.text, mid: item.mid))
+            .toList(),
+        rules: RustLiveDanmaku.rules(_keywordList, _shieldUids),
+      );
+      messages.addAll(
+        response.indexed
+            .where((entry) => mask[entry.$1])
+            .map((entry) => entry.$2),
+      );
+      scrollToBottom();
+    } else if (kDebugMode) {
+      Utils.reportError(res.errorDetail ?? '获取历史弹幕失败');
     }
   }
 
-  Future<void> getSuperChatMsg() async {
-    final res = await LiveHttp.superChatMsg(roomId);
-    if (res.dataOrNull?.list case final list? when list.isNotEmpty) {
-      superChatMsg.addAll(list);
+  Future<void> getSuperChatMsg(LiveMessageSession owner, int generation) async {
+    final res = await RustLiveDanmaku.superChat(roomId);
+    if (!_ownsSession(owner, generation)) return;
+    if (res.data case final list?) {
+      superChatMsg.addAll(list.map(LiveSuperChatState.new));
     }
   }
 
@@ -456,37 +462,75 @@ class LiveRoomController extends GetxController {
       // 没有屏蔽设置时 Rust 给空列表而不是 null，直接赋值即可。
       _keywordList = response.keywords;
       _shieldUids = response.shieldUsers.map((e) => e.uid).toSet();
+      _pushBlockRules();
     }
   }
 
   void updateBlockRules(List<String> keywords, Set<int> uids) {
     _keywordList = keywords;
     _shieldUids = uids;
+    _pushBlockRules();
   }
 
-  bool isBlocked(String text, Object uid) {
-    return _keywordList.any(text.contains) || _shieldUids.contains(uid);
+  void _pushBlockRules() {
+    final handle = _msgStream?.handle;
+    if (handle == null) return;
+    final result = liveSocketSetRules(
+      sessionId: handle.sessionId,
+      generation: handle.generation,
+      rules: RustLiveDanmaku.rules(_keywordList, _shieldUids),
+    );
+    if (result.errorKind != null) {
+      SmartDialog.showToast(result.errorDetail ?? '更新直播弹幕屏蔽设置失败');
+    }
   }
 
   void startLiveMsg() {
+    if (_msgStream?.active ?? false) return;
+    closeLiveMsg();
+    late final LiveMessageSession owner;
+    owner = LiveMessageSession(
+      token: () => RustLiveDanmaku.token(roomId),
+      open: (token, generation) => liveSocketOpen(
+        servers: token.servers,
+        roomId: roomId,
+        uid: Accounts.heartbeat.mid,
+        token: token.token,
+        generation: generation,
+        transport: RustTransport.current(),
+        rules: RustLiveDanmaku.rules(_keywordList, _shieldUids),
+      ),
+      poll: (handle) => liveSocketPoll(
+        sessionId: handle.sessionId,
+        generation: handle.generation,
+      ),
+      closeHandle: (handle) => liveSocketClose(
+        sessionId: handle.sessionId,
+        generation: handle.generation,
+      ),
+      onBatch: (batch) {
+        if (!_ownsSession(owner, batch.generation)) return;
+        if (kDebugMode && batch.dropped > BigInt.zero) {
+          debugPrint('直播弹幕队列丢弃 ${batch.dropped} 条消息');
+        }
+        for (final event in batch.events) {
+          if (!_ownsSession(owner, batch.generation)) return;
+          _danmakuListener(event);
+        }
+      },
+      onError: (kind, detail) {
+        if (identical(_msgStream, owner)) {
+          SmartDialog.showToast(detail ?? '直播弹幕连接失败（$kind）');
+        }
+      },
+    );
+    _msgStream = owner;
+    owner.start();
+    final generation = owner.generation;
     if (messages.isEmpty) {
-      prefetch();
-      if (showSuperChat) {
-        getSuperChatMsg();
-      }
+      prefetch(owner, generation);
+      if (showSuperChat) getSuperChatMsg(owner, generation);
     }
-    if (_msgStream != null) {
-      return;
-    }
-    if (dmInfo != null) {
-      initDm(dmInfo!);
-      return;
-    }
-    LiveHttp.liveRoomGetDanmakuToken(roomId: roomId).then((res) {
-      if (res case Success(:final response)) {
-        initDm(dmInfo = response);
-      }
-    });
   }
 
   void listener() {
@@ -542,23 +586,6 @@ class LiveRoomController extends GetxController {
     return queryLiveUrl();
   }
 
-  void initDm(LiveDmInfoData info) {
-    if (info.hostList.isEmpty) {
-      return;
-    }
-    _msgStream =
-        LiveMessageStream(
-            streamToken: info.token,
-            roomId: roomId,
-            uid: Accounts.heartbeat.mid,
-            servers: info.hostList
-                .map((host) => 'wss://${host.host}:${host.wssPort}/sub')
-                .toList(),
-          )
-          ..addEventListener(_danmakuListener)
-          ..init();
-  }
-
   void addDm(dynamic msg, [DanmakuContentItem<DanmakuExtra>? item]) {
     _trimDm();
 
@@ -576,121 +603,58 @@ class LiveRoomController extends GetxController {
     messages.addOnly(msg);
   }
 
-  @pragma('vm:notify-debugger-on-exception')
-  void _danmakuListener(dynamic obj) {
-    try {
-      // logger.i(' 原始弹幕消息 ======> ${jsonEncode(obj)}');
-      switch (obj['cmd']) {
-        case 'DANMU_MSG':
-          final info = obj['info'];
-          final first = info[0];
-          final content = first[15];
-          final user = content['user'];
-          // final midHash = first[7];
-          final uid = user['uid'] as int;
-          final msg = info[1];
-          if (isBlocked(msg, uid)) {
-            return;
-          }
-          final Map<String, dynamic> extra = jsonDecode(content['extra']);
-          final name = user['base']['name'];
-          BaseEmote? uemote;
-          if (first[13] case Map<String, dynamic> map) {
-            uemote = BaseEmote.fromJson(map);
-          }
-          final checkInfo = info[9];
-          final liveExtra = LiveDanmaku(
-            id: extra['id_str'],
-            mid: uid,
-            dmType: extra['dm_type'],
-            ts: checkInfo['ts'],
-            ct: checkInfo['ct'],
-          );
-          Owner? reply;
-          final replyMid = extra['reply_mid'];
-          if (replyMid != null && replyMid != 0) {
-            reply = Owner(
-              mid: replyMid,
-              name: extra['reply_uname'],
-            );
-          }
-          addDm(
-            DanmakuMsg(
-              name: name,
-              text: msg,
-              emots: (extra['emots'] as Map<String, dynamic>?)?.map(
-                (k, v) => MapEntry(k, BaseEmote.fromJson(v)),
-              ),
-              uemote: uemote,
-              extra: liveExtra,
-              reply: reply,
-              medalInfo: GlobalData().showMedal
-                  ? UinfoMedal.lightMedal(user['medal'])
-                  : null,
-            ),
-            DanmakuContentItem(
-              msg,
-              color: DanmakuOptions.blockColorful
-                  ? Colors.white
-                  : DmUtils.decimalToColor(extra['color']),
-              type: DmUtils.getPosition(extra['mode']),
-              // extra['send_from_me'] is invalid
-              selfSend: isLogin && uid == mid,
-              extra: liveExtra,
+  void _danmakuListener(LiveEvent event) {
+    switch (event.kind) {
+      case LiveEventKind.danmaku:
+        final item = event.danmaku;
+        if (item == null) return;
+        final extra = LiveDanmaku(
+          id: item.id,
+          mid: item.mid,
+          dmType: item.dmType,
+          ts: item.ts,
+          ct: item.ct,
+        );
+        addDm(
+          item,
+          DanmakuContentItem(
+            item.text,
+            color: DanmakuOptions.blockColorful
+                ? Colors.white
+                : DmUtils.decimalToColor(item.color),
+            type: DmUtils.getPosition(item.mode),
+            selfSend: isLogin && item.mid == mid,
+            extra: extra,
+          ),
+        );
+        break;
+      case LiveEventKind.superChat:
+        if (!showSuperChat || event.superChat == null) return;
+        final item = LiveSuperChatState(event.superChat!);
+        superChatMsg.insert(0, item);
+        addDm(item);
+        if (!enableFSSC) return;
+        if (Platform.isAndroid && AndroidHelper.isPipMode) return;
+        if (plPlayerController.showDanmaku &&
+            (isFullScreen || plPlayerController.isDesktopPip)) {
+          fsSC.value = LiveSuperChatState(
+            item.data,
+            displayEndTime: math.min(
+              item.data.endTime,
+              DateTime.now().millisecondsSinceEpoch ~/ 1000 + 10,
             ),
           );
-          break;
-        case 'SUPER_CHAT_MESSAGE' when showSuperChat:
-          final item = SuperChatItem.fromJson(obj['data'], roomId);
-          superChatMsg.insert(0, item);
-          addDm(item);
-          if (!enableFSSC) return;
-          if (Platform.isAndroid && AndroidHelper.isPipMode) return;
-          if (plPlayerController.showDanmaku &&
-              (isFullScreen || plPlayerController.isDesktopPip)) {
-            fsSC.value = item.copyWith(
-              endTime: math.min(
-                item.endTime,
-                DateTime.now().millisecondsSinceEpoch ~/ 1000 + 10,
-              ),
-            );
-          }
-          break;
-        // case 'SUPER_CHAT_MESSAGE_DELETE' when showSuperChat:
-        //   if (obj['roomid'] == roomId) {
-        //     final ids = obj['data']?['ids'] as List?;
-        //     if (ids != null && ids.isNotEmpty) {
-        //       if (superChatType == .valid) {
-        //         superChatMsg.removeWhere((e) => ids.contains(e.id));
-        //       } else {
-        //         bool? refresh;
-        //         for (final id in ids) {
-        //           if (superChatMsg.firstWhereOrNull((e) => e.id == id)
-        //               case final item?) {
-        //             item.deleted = true;
-        //             refresh ??= true;
-        //           }
-        //         }
-        //         if (refresh ?? false) {
-        //           superChatMsg.refresh();
-        //         }
-        //       }
-        //     }
-        //   }
-        case 'WATCHED_CHANGE':
-          watchedShow.value = obj['data']['text_large'];
-          break;
-        case 'ONLINE_RANK_COUNT':
-          onlineCount.value = NumUtils.numFormat(obj['data']['count']);
-          break;
-        case 'ROOM_CHANGE':
-          title.value = obj['data']['title'];
-          break;
-      }
-    } catch (e, s) {
-      if (kDebugMode) {
-        Utils.reportError(e, s);
-      }
+        }
+        break;
+      case LiveEventKind.watchedChange:
+        watchedShow.value = event.text;
+        break;
+      case LiveEventKind.onlineRankCount:
+        onlineCount.value = NumUtils.numFormat(event.count);
+        break;
+      case LiveEventKind.roomChange:
+        title.value = event.text ?? '';
+        break;
     }
   }
 
@@ -770,19 +734,19 @@ class LiveRoomController extends GetxController {
     );
   }
 
-  void onAtUser(DanmakuMsg item) {
+  void onAtUser(LiveDanmakuMessage item) {
     savedDanmaku = [
       RichTextItem.fromStart(
         '@${item.name} ',
-        rawText: item.extra.mid.toString(),
+        rawText: item.mid.toString(),
         type: .at,
-        id: item.extra.id.toString(),
+        id: item.id.toString(),
       ),
     ];
     onSendDanmaku();
   }
 
-  void reportSC(SuperChatItem item) {
+  void reportSC(LiveSuperChatState item) {
     if (!isLogin) {
       toastNotLogin();
       return;
@@ -794,13 +758,13 @@ class LiveRoomController extends GetxController {
       contentRequired: ReportOptions.liveDanmakuReportCheck,
       (reasonType, reasonDesc, banUid) {
         return LiveHttp.superChatReport(
-          id: item.id,
+          id: item.data.id,
           roomId: roomId,
-          uid: item.uid,
-          msg: item.message,
+          uid: item.data.uid,
+          msg: item.data.message,
           reason: ReportOptions.liveDanmakuReport['']![reasonType]!,
-          ts: item.ts,
-          token: item.token,
+          ts: item.data.ts,
+          token: item.data.token,
         );
       },
     );

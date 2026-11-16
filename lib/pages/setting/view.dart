@@ -2,13 +2,13 @@ import 'package:kilikili/common/widgets/custom_icon.dart';
 import 'package:kilikili/common/widgets/flutter/list_tile.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/view_safe_area.dart';
-import 'package:kilikili/http/login.dart';
 import 'package:kilikili/models/common/setting_type.dart';
 import 'package:kilikili/pages/about/view.dart';
 import 'package:kilikili/pages/login/controller.dart';
 import 'package:kilikili/pages/setting/common_setting.dart';
 import 'package:kilikili/pages/setting/widgets/multi_select_dialog.dart';
 import 'package:kilikili/pages/webdav/view.dart';
+import 'package:kilikili/services/rust/rust_login.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/accounts/account.dart';
 import 'package:kilikili/utils/extension/size_ext.dart';
@@ -226,7 +226,7 @@ class _SettingPageState extends State<SettingPage> {
 
   static Future<LoginAccount?> _logoutWrapper(LoginAccount account) async {
     try {
-      final res = await LoginHttp.logout(account);
+      final res = await RustLogin.logout(account);
       return res.isSuccess ? account : null;
     } catch (e, s) {
       Utils.reportError(e, s);

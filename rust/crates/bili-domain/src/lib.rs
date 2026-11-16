@@ -10,6 +10,7 @@ pub mod dynamic;
 pub mod error;
 pub mod live;
 pub mod live_danmaku;
+pub mod login;
 pub mod match_info;
 pub mod music;
 pub mod pgc;

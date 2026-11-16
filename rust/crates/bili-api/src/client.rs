@@ -185,6 +185,15 @@ pub(crate) async fn send_write<T: HttpTransport>(
                 obj.insert("csrf".to_owned(), serde_json::Value::String(csrf));
             }
             (CsrfIn::Query, _) => query.push(("csrf".to_owned(), csrf)),
+            (CsrfIn::BodyNamed(field), WriteBody::Form(form)) => {
+                form.push(((*field).to_owned(), csrf));
+            }
+            (CsrfIn::BodyNamed(_), WriteBody::Json(_)) => {
+                return Err(DomainError::new(
+                    bili_domain::error::ErrorKind::Protocol,
+                    "自定义 csrf 字段名目前只支持表单体",
+                ));
+            }
             (CsrfIn::BodyAndQueryWithToken, WriteBody::Json(value)) => {
                 let Some(obj) = value.as_object_mut() else {
                     return Err(DomainError::new(

@@ -43,6 +43,7 @@ pub mod live;
 pub mod live_danmaku;
 #[cfg(feature = "reqwest-transport")]
 pub mod live_socket;
+pub mod login;
 pub mod match_info;
 pub mod music;
 pub mod nav;

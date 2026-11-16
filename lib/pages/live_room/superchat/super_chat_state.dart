@@ -32,7 +32,7 @@ class LiveSuperChatState {
         message: '这是一条用于预览的醒目留言。',
         token: '',
         ts: now,
-        userInfo: LiveSuperChatUser(
+        userInfo: const LiveSuperChatUser(
           face: '',
           faceFrame: null,
           uname: 'UNAME',

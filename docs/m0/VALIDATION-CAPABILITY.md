@@ -366,3 +366,18 @@ brotli 与 Aho-Corasick 复用已有依赖版本。CI 触发与合并门槛不�
 这些证据不代表五端人工回归已执行，登录态、代理/证书、后台和高频房间仍留
 Phase 2，见 RELEASE-VALIDATION。当前机器验证原生库可通过
 `KILIKILI_LIVE_BRIDGE_LIBRARY=<绝对动态库路径>` 指定，与 CI 默认 release 路径隔离。
+
+### 短信验证码页面回归（#140）
+
+`flutter test --no-pub test/pages/login/geetest` 包含注册整组刷新测试和 WebView
+页面脚本测试。后者需要 PATH 中有 Node.js，使用其内置 `node:vm` 执行实际
+生成的脚本，覆盖 SDK 错误、配置失效、脚本异常、ready 通知和桥接延迟；
+不访问外网、不启动 Widget、不依赖 Flutter SDK 补丁。
+这不覆盖 Android/iOS 原生 WebView、原生 iOS 极验 SDK 或短信实际发送；
+它们仍须按 QA 矩阵 F09a 在最终安装包上验证。
+
+#140 交互补充：`flutter test --no-pub test/pages/login` 新增输入框与弹窗外壳
+Widget 测试，覆盖六位自动提交、粘贴过滤、重复提交保护、失败返回后编辑重试、
+焦点，以及 240px 窄屏、手机、平板、横屏和键盘避让。该组 Widget 测试需使用
+构建准备后的 material_ui/Flutter SDK；不将弹窗外壳测试视为真实 WebView 内部
+验证码布局或真实短信登录的端到端验证。

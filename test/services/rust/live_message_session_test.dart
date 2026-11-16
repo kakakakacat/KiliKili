@@ -75,8 +75,9 @@ void main() {
     );
     await Future.wait([session.start(), session.start()]);
     expect(opened, 1);
-    session.close();
-    session.close();
+    session
+      ..close()
+      ..close();
     expect(closed, 1);
   });
 }

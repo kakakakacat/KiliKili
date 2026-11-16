@@ -162,8 +162,9 @@ void main() {
             generation: 33,
           );
           expect(response.errorKind, isNull);
-          if (response.data!.events.isNotEmpty)
+          if (response.data!.events.isNotEmpty) {
             return response.data!.events.single;
+          }
           await Future<void>.delayed(const Duration(milliseconds: 10));
         }
         throw StateError('等待直播弹幕批次超时');

@@ -8,7 +8,9 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use bili_domain::error::{DomainError, ErrorKind};
-use bili_domain::live_danmaku::{LiveBlockRules, LiveEvent};
+use bili_domain::live_danmaku::{
+    LiveBlockRules, LiveDanmakuEmote, LiveDanmakuEmoteEntry, LiveEvent, LiveMessageSegment,
+};
 use futures_util::{SinkExt, StreamExt};
 use tokio::task::JoinHandle;
 use tokio_tungstenite::{
@@ -101,6 +103,74 @@ pub async fn connect(server: &str, config: &TransportConfig) -> Result<Socket, D
         .max_message_size(Some(MAX_MESSAGE))
         .max_frame_size(Some(MAX_MESSAGE));
     Ok(WebSocketStream::from_raw_socket(stream, Role::Client, Some(ws_config)).await)
+}
+
+// 按 typed 数据的内联结构和堆容量记账，不能用原 JSON 大小代替：
+// 一个短表情标记会展开成一个带 String 的片段，源字节预算挡不住这种放大。
+fn event_weight(event: &LiveEvent) -> usize {
+    fn emote_heap(emote: &LiveDanmakuEmote) -> usize {
+        emote.url.capacity() + emote.emoticon_unique.capacity()
+    }
+    fn medal_heap(medal: Option<&bili_domain::live::LiveMedal>) -> usize {
+        medal.map_or(0, |medal| {
+            [
+                medal.name.as_ref(),
+                medal.color_start.as_ref(),
+                medal.color_text.as_ref(),
+            ]
+            .into_iter()
+            .flatten()
+            .map(String::capacity)
+            .sum()
+        })
+    }
+    let mut weight =
+        std::mem::size_of::<(LiveEvent, usize)>() + event.text.as_ref().map_or(0, String::capacity);
+    if let Some(message) = &event.danmaku {
+        weight += [&message.id, &message.ct, &message.name, &message.text]
+            .into_iter()
+            .map(String::capacity)
+            .sum::<usize>();
+        weight += message.emotes.capacity() * std::mem::size_of::<LiveDanmakuEmoteEntry>();
+        weight += message.segments.capacity() * std::mem::size_of::<LiveMessageSegment>();
+        weight += message
+            .emotes
+            .iter()
+            .map(|entry| entry.key.capacity() + emote_heap(&entry.emote))
+            .sum::<usize>();
+        weight += message
+            .segments
+            .iter()
+            .map(|segment| segment.text.capacity())
+            .sum::<usize>();
+        weight += message.uemote.as_ref().map_or(0, emote_heap);
+        weight += message
+            .reply
+            .as_ref()
+            .and_then(|reply| reply.name.as_ref())
+            .map_or(0, String::capacity);
+        weight += medal_heap(message.medal.as_ref());
+    }
+    if let Some(sc) = &event.super_chat {
+        weight += [
+            &sc.background_color,
+            &sc.background_bottom_color,
+            &sc.background_price_color,
+            &sc.message_font_color,
+            &sc.message,
+            &sc.token,
+            &sc.user_info.face,
+            &sc.user_info.uname,
+            &sc.user_info.name_color,
+        ]
+        .into_iter()
+        .map(String::capacity)
+        .sum::<usize>();
+        weight += sc.background_image.as_ref().map_or(0, String::capacity);
+        weight += sc.user_info.face_frame.as_ref().map_or(0, String::capacity);
+        weight += medal_heap(sc.medal.as_ref());
+    }
+    weight
 }
 
 #[derive(Debug, Default)]
@@ -291,7 +361,8 @@ async fn run(
                                 5 if authenticated => {
                                     // 单条无效消息不影响同一个压缩包中的后续消息。
                                     if let Ok(Some(event)) = parse_event(&packet.body, room_id) {
-                                        state.lock().unwrap_or_else(|e| e.into_inner()).push(event, packet.body.len());
+                                        let weight = event_weight(&event);
+                                        state.lock().unwrap_or_else(|e| e.into_inner()).push(event, weight);
                                     }
                                 },
                                 _ => {},
@@ -323,6 +394,26 @@ mod tests {
             text: Some(n.to_string()),
             count: None,
         }
+    }
+
+    #[test]
+    fn typed_segment_expansion_counts_towards_queue_budget() {
+        let mut raw: serde_json::Value =
+            serde_json::from_str(include_str!("../tests/fixtures/live_danmaku/danmaku.json"))
+                .unwrap();
+        raw["info"][1] = "[热]".repeat(2048).into();
+        let bytes = serde_json::to_vec(&raw).unwrap();
+        let event = parse_event(&bytes, 1).unwrap().unwrap();
+        assert_eq!(event.danmaku.as_ref().unwrap().segments.len(), 2048);
+        let weight = event_weight(&event);
+        assert!(weight > bytes.len());
+        let mut state = State::default();
+        for _ in 0..128 {
+            state.push(event.clone(), weight);
+        }
+        assert!(state.bytes <= QUEUE_BYTES);
+        assert!(state.events.len() < 128);
+        assert!(state.dropped > 0);
     }
 
     #[test]

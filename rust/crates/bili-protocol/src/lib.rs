@@ -17,6 +17,8 @@ pub mod app_sign;
 pub mod bvid;
 pub mod grpc;
 pub mod keys;
+pub mod login_crypto;
+pub mod login_ids;
 pub mod risk;
 pub mod wbi;
 

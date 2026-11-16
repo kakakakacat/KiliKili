@@ -7,6 +7,7 @@ import 'package:kilikili/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:kilikili/common/widgets/view_insets_safe_area.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/pages/login/controller.dart';
+import 'package:kilikili/pages/login/sms_code_field.dart';
 import 'package:kilikili/utils/extension/size_ext.dart';
 import 'package:kilikili/utils/extension/widget_ext.dart';
 import 'package:kilikili/utils/image_utils.dart';
@@ -458,24 +459,20 @@ class _LoginPageState extends State<LoginPage> {
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
+                  child: SmsCodeField(
                     controller: _loginPageCtr.smsCodeTextController,
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.sms_outlined),
-                      border: InputBorder.none,
-                      labelText: '验证码',
-                    ),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
+                    focusNode: _loginPageCtr.smsCodeFocusNode,
+                    onSubmit: _loginPageCtr.loginBySmsCode,
                   ),
                 ),
                 Obx(
                   () => TextButton.icon(
                     onPressed: _loginPageCtr.smsSendCooldown > 0
                         ? null
-                        : _loginPageCtr.sendSmsCode,
+                        : () {
+                            _loginPageCtr.smsCodeFocusNode.requestFocus();
+                            _loginPageCtr.sendSmsCode();
+                          },
                     icon: const Icon(Icons.send),
                     label: Text(
                       _loginPageCtr.smsSendCooldown > 0

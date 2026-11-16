@@ -165,3 +165,99 @@ fn decompression_and_packet_count_budgets_are_enforced() {
     let raw = encode_packet(5, b"").unwrap();
     assert!(decode_packets(&raw.repeat(4097)).is_err());
 }
+
+#[test]
+fn super_chat_keeps_cards_without_valid_ids_and_truncates_numbers() {
+    let mut source: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/live_danmaku/super_chat.json")).unwrap();
+    let data = source["data"].as_object_mut().unwrap();
+    data.remove("id");
+    data.insert("uid".into(), serde_json::json!(42.9));
+    data.insert("start_time".into(), serde_json::json!(100.9));
+    data.insert("end_time".into(), serde_json::json!(200.9));
+    data.insert("ts".into(), serde_json::json!(-1.9));
+    let missing = source["data"].clone();
+    source["data"]["id"] = serde_json::json!("invalid");
+    let body = serde_json::json!({"code":0,"data":{"list":[missing,source["data"]]}}).to_string();
+    let items = parse_super_chat(&body, 42).unwrap();
+    assert_eq!(items.len(), 2);
+    for item in &items {
+        assert!((0..2147483647).contains(&item.id));
+        assert_eq!(item.uid, 42);
+        assert_eq!(item.start_time, 100);
+        assert_eq!(item.end_time, 200);
+        assert_eq!(item.ts, -1);
+    }
+    assert_ne!(items[0].id, items[1].id);
+    source["data"]["id"] = serde_json::json!(7.9);
+    let event = parse_event(&serde_json::to_vec(&source).unwrap(), 42)
+        .unwrap()
+        .unwrap();
+    assert_eq!(event.super_chat.unwrap().id, 7);
+    for invalid in [
+        serde_json::json!(9.223372036854776e18),
+        serde_json::json!(-9.223372036854778e18),
+    ] {
+        source["data"]["uid"] = invalid;
+        assert!(parse_event(&serde_json::to_vec(&source).unwrap(), 42).is_err());
+    }
+
+    let valid = serde_json::json!({"code":0,"data":{"list":[{"id":1}]}}).to_string();
+    assert!(parse_super_chat(&valid, 42).is_err());
+}
+
+#[tokio::test]
+async fn prefetch_overrides_headers_case_insensitively() {
+    use bili_api::http::{HttpGet, HttpPost, HttpResponse, HttpTransport, RequestContext};
+    use bili_domain::error::DomainError;
+    use std::{sync::Mutex, time::Duration};
+    struct Capture(Mutex<Option<HttpGet>>);
+    impl HttpTransport for Capture {
+        async fn get(&self, request: HttpGet) -> Result<HttpResponse, DomainError> {
+            *self.0.lock().unwrap() = Some(request);
+            Ok(HttpResponse {
+                status: 200,
+                body: r#"{"code":0,"data":{"room":[]}}"#.into(),
+            })
+        }
+        async fn post(&self, _: HttpPost) -> Result<HttpResponse, DomainError> {
+            panic!("预取不得发送POST")
+        }
+    }
+    let capture = Capture(Mutex::new(None));
+    let ctx = RequestContext {
+        base_url: "https://example.invalid".into(),
+        cookie: None,
+        csrf: None,
+        timeout: Duration::from_secs(5),
+        headers: vec![
+            ("Referer".into(), "old".into()),
+            ("REFERER".into(), "duplicate".into()),
+            ("User-Agent".into(), "old".into()),
+            ("USER-AGENT".into(), "duplicate".into()),
+            ("x-fixture".into(), "keep".into()),
+        ],
+    };
+    fetch_prefetch(&capture, &ctx, 42, "fixture-browser")
+        .await
+        .unwrap();
+    let request = capture.0.lock().unwrap().take().unwrap();
+    for (key, value) in [
+        ("referer", "https://live.bilibili.com/42"),
+        ("user-agent", "fixture-browser"),
+    ] {
+        let values: Vec<_> = request
+            .headers
+            .iter()
+            .filter(|(name, _)| name.eq_ignore_ascii_case(key))
+            .map(|(_, value)| value.as_str())
+            .collect();
+        assert_eq!(values, vec![value]);
+    }
+    assert!(
+        request
+            .headers
+            .contains(&("x-fixture".into(), "keep".into()))
+    );
+    assert_eq!(ctx.headers.len(), 5);
+}

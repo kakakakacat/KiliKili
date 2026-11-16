@@ -11,6 +11,7 @@ use bili_domain::{
 };
 use serde_json::Value;
 use std::io::Read;
+use std::sync::atomic::{AtomicU32, Ordering};
 const MAX_BYTES: usize = 8 * 1024 * 1024;
 const MAX_PACKETS: usize = 4096;
 const MAX_DEPTH: usize = 4;
@@ -204,7 +205,20 @@ pub async fn fetch_super_chat<T: HttpTransport>(
     )
 }
 fn int(v: &Value) -> Option<i64> {
-    v.as_i64().or_else(|| v.as_str()?.parse().ok())
+    v.as_i64().or_else(|| v.as_str()?.parse().ok()).or_else(|| {
+        let number = v.as_f64()?;
+        // i64::MAX 转 f64 会进位到 2^63，必须用半开区间排除溢出。
+        (number.is_finite()
+            && (-9_223_372_036_854_775_808.0..9_223_372_036_854_775_808.0).contains(&number))
+        .then(|| number.trunc() as i64)
+    })
+}
+
+fn local_super_chat_id() -> i64 {
+    // 旧模型以随机 id 保留缺少服务端 id 的卡片；计数器同样只提供本地展示键，
+    // 不把它当作有效举报 id。限定原先 nextInt(2147483647) 的取值范围。
+    static NEXT_ID: AtomicU32 = AtomicU32::new(0);
+    i64::from(NEXT_ID.fetch_add(1, Ordering::Relaxed) % 2_147_483_647)
 }
 fn string(v: &Value) -> Option<String> {
     v.as_str()
@@ -348,7 +362,7 @@ pub fn parse_super_chat(body: &str, room_id: i64) -> Result<Vec<LiveSuperChat>, 
 fn super_chat(v: &Value, room_id: i64) -> Result<LiveSuperChat, DomainError> {
     let u = &v["user_info"];
     Ok(LiveSuperChat {
-        id: req_int(v, "id")?,
+        id: int(&v["id"]).unwrap_or_else(local_super_chat_id),
         uid: req_int(v, "uid")?,
         price: req_int(v, "price")?,
         background_image: string(&v["background_image"]).filter(|s| !s.is_empty()),

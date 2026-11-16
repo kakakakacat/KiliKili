@@ -10,6 +10,7 @@ description = "数据层：REST 接口的请求构造、传输、DTO 与到领�
 [dependencies]
 base64 = "0.22"
 flate2 = "1"
+brotli = "8"
 bili-grpc = { path = "../bili-grpc" }
 prost.workspace = true
 bili-domain = { path = "../bili-domain" }

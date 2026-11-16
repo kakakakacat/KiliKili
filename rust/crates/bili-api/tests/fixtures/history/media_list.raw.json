@@ -1,0 +1,43 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "total_count": 2,
+    "has_more": false,
+    "media_list": [
+      {
+        "id": 100000021,
+        "bv_id": "BV1ee4y1e1e1",
+        "title": "示例列表稿件一",
+        "intro": "示例简介一",
+        "cover": "//i0.example.test/bfs/archive/iiiiiiii.jpg",
+        "duration": 480,
+        "type": 2,
+        "badge": { "text": "", "bg_color": "" },
+        "upper": {
+          "mid": 300000021,
+          "name": "示例up主戊",
+          "face": "//i1.example.test/bfs/face/jjjjjjjj.jpg"
+        },
+        "cnt_info": { "play": 5000, "danmaku": 20, "collect": 3 },
+        "pages": [
+          { "id": 200000021, "title": "P1", "duration": 240 },
+          { "id": 200000022, "title": "P2", "duration": 240 }
+        ]
+      },
+      {
+        "id": 100000022,
+        "bv_id": "BV1ff4y1f1f1",
+        "title": "示例列表稿件二",
+        "cover": "//i0.example.test/bfs/archive/kkkkkkkk.jpg",
+        "duration": 1200,
+        "type": 24,
+        "badge": { "text": "会员" },
+        "upper": { "mid": 300000022, "name": "示例出品方" },
+        "cnt_info": { "play": 88 },
+        "pages": []
+      }
+    ]
+  }
+}

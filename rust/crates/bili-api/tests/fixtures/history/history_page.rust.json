@@ -1,0 +1,99 @@
+{
+  "list": [
+    {
+      "author_mid": 300000001,
+      "author_name": "示例up主甲",
+      "badge": "",
+      "cover": "//i0.example.test/bfs/archive/aaaaaaaa.jpg",
+      "covers": [],
+      "duration": 600,
+      "history": {
+        "business": "archive",
+        "bvid": "BV1aa4y1a1a1",
+        "cid": 200000001,
+        "epid": 0,
+        "oid": 100000001,
+        "page": 1
+      },
+      "is_fav": 1,
+      "kid": 100000001,
+      "live_status": 0,
+      "progress": 125,
+      "show_title": "P1 示例分P名",
+      "tag_name": "视频",
+      "title": "示例稿件标题一",
+      "uri": "",
+      "videos": 3,
+      "view_at": 1762000000
+    },
+    {
+      "author_mid": 300000002,
+      "author_name": "示例主播乙",
+      "badge": "直播",
+      "cover": "",
+      "covers": [
+        "//i0.example.test/bfs/live/cccccccc.jpg",
+        "//i0.example.test/bfs/live/dddddddd.jpg"
+      ],
+      "duration": 0,
+      "history": {
+        "business": "live",
+        "bvid": "",
+        "cid": null,
+        "epid": 0,
+        "oid": 4000001,
+        "page": 1
+      },
+      "is_fav": 0,
+      "kid": 4000001,
+      "live_status": 1,
+      "progress": -1,
+      "show_title": "",
+      "tag_name": "直播",
+      "title": "示例直播间标题",
+      "uri": "https://live.example.test/4000001",
+      "videos": 1,
+      "view_at": 1761990000
+    },
+    {
+      "author_mid": null,
+      "author_name": null,
+      "badge": null,
+      "cover": null,
+      "covers": [],
+      "duration": null,
+      "history": {
+        "business": "article",
+        "bvid": null,
+        "cid": null,
+        "epid": null,
+        "oid": 5000001,
+        "page": null
+      },
+      "is_fav": null,
+      "kid": 5000001,
+      "live_status": null,
+      "progress": 0,
+      "show_title": null,
+      "tag_name": "专栏",
+      "title": "示例专栏标题",
+      "uri": null,
+      "videos": null,
+      "view_at": 1761980000
+    }
+  ],
+  "tabs": [
+    {
+      "kind": "archive",
+      "name": "视频"
+    },
+    {
+      "kind": "live",
+      "name": "直播"
+    },
+    {
+      "kind": "article",
+      "name": "专栏"
+    }
+  ]
+}

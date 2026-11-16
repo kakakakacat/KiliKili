@@ -1,0 +1,94 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "cursor": {
+      "max": 1000000000000001,
+      "view_at": 1762000000,
+      "business": "archive",
+      "ps": 20
+    },
+    "tab": [
+      { "type": "archive", "name": "视频" },
+      { "type": "live", "name": "直播" },
+      { "type": "article", "name": "专栏" }
+    ],
+    "list": [
+      {
+        "title": "示例稿件标题一",
+        "long_title": "",
+        "cover": "//i0.example.test/bfs/archive/aaaaaaaa.jpg",
+        "covers": null,
+        "uri": "",
+        "history": {
+          "oid": 100000001,
+          "epid": 0,
+          "bvid": "BV1aa4y1a1a1",
+          "page": 1,
+          "cid": 200000001,
+          "part": "",
+          "business": "archive",
+          "dt": 3
+        },
+        "videos": 3,
+        "author_name": "示例up主甲",
+        "author_face": "//i1.example.test/bfs/face/bbbbbbbb.jpg",
+        "author_mid": 300000001,
+        "view_at": 1762000000,
+        "progress": 125,
+        "badge": "",
+        "show_title": "P1 示例分P名",
+        "duration": 600,
+        "current": "",
+        "total": 0,
+        "new_desc": "",
+        "is_finish": 0,
+        "is_fav": 1,
+        "kid": 100000001,
+        "tag_name": "视频",
+        "live_status": 0
+      },
+      {
+        "title": "示例直播间标题",
+        "cover": "",
+        "covers": [
+          "//i0.example.test/bfs/live/cccccccc.jpg",
+          "//i0.example.test/bfs/live/dddddddd.jpg"
+        ],
+        "uri": "https://live.example.test/4000001",
+        "history": {
+          "oid": 4000001,
+          "epid": 0,
+          "bvid": "",
+          "page": 1,
+          "cid": 0,
+          "business": "live"
+        },
+        "videos": 1,
+        "author_name": "示例主播乙",
+        "author_mid": 300000002,
+        "view_at": 1761990000,
+        "progress": -1,
+        "badge": "直播",
+        "show_title": "",
+        "duration": 0,
+        "is_fav": 0,
+        "kid": 4000001,
+        "tag_name": "直播",
+        "live_status": 1
+      },
+      {
+        "title": "示例专栏标题",
+        "history": {
+          "oid": 5000001,
+          "business": "article"
+        },
+        "view_at": 1761980000,
+        "progress": 0,
+        "kid": 5000001,
+        "tag_name": "专栏"
+      }
+    ]
+  }
+}

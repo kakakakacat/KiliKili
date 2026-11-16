@@ -8,8 +8,13 @@ repository.workspace = true
 description = "数据层：REST 接口的请求构造、传输、DTO 与到领域实体的映射。"
 
 [dependencies]
+aho-corasick = "1"
+url.workspace = true
+futures-util = { version = "0.3", features = ["sink"] }
+tokio-tungstenite = { version = "0.28", default-features = false, features = ["handshake"] }
 base64 = "0.22"
 flate2 = "1"
+brotli = "9"
 bili-grpc = { path = "../bili-grpc" }
 prost.workspace = true
 bili-domain = { path = "../bili-domain" }
@@ -30,7 +35,7 @@ default = ["reqwest-transport"]
 reqwest-transport = ["dep:reqwest", "dep:tokio"]
 
 [dev-dependencies]
-tokio = { workspace = true, features = ["macros", "rt"] }
+tokio = { workspace = true, features = ["macros", "rt", "test-util", "net", "io-util"] }
 
 [lints]
 workspace = true

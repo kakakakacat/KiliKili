@@ -1,7 +1,6 @@
 import 'package:kilikili/common/assets.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/pendant_avatar.dart';
-import 'package:kilikili/services/rust/live_rest_compat.dart';
 import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/pages/member/widget/medal_widget.dart';
 import 'package:kilikili/utils/app_scheme.dart';
@@ -69,7 +68,7 @@ class MedalWall extends StatelessWidget {
             itemCount: response.list.length,
             itemBuilder: (context, index) {
               final item = response.list[index];
-              final uinfoMedal = toUinfoMedal(item.medal!);
+              final uinfoMedal = item.medal!;
               final isLiving = item.liveStatus == 1;
               return ListTile(
                 onTap: () {

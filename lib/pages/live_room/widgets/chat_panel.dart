@@ -1,3 +1,5 @@
+import 'package:kilikili/utils/global_data.dart';
+import 'package:kilikili/pages/danmaku/danmaku_model.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/flutter/live_list_view.dart';
 import 'package:kilikili/common/widgets/flutter/popup_menu.dart';
@@ -6,8 +8,8 @@ import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/scroll_physics.dart'
     show platformClampingPhysics;
 import 'package:kilikili/http/live.dart';
-import 'package:kilikili/models_new/live/live_danmaku/danmaku_msg.dart';
-import 'package:kilikili/models_new/live/live_superchat/item.dart';
+import 'package:kilikili/rust/api/live_danmaku.dart';
+import 'package:kilikili/pages/live_room/superchat/super_chat_state.dart';
 import 'package:kilikili/pages/live_room/controller.dart';
 import 'package:kilikili/pages/live_room/superchat/superchat_card.dart';
 import 'package:kilikili/pages/member/widget/medal_widget.dart';
@@ -60,9 +62,10 @@ class LiveRoomChatPanel extends StatelessWidget {
             itemBuilder: (_, index) {
               liveRoomController.chatSimpleIndex = index;
               final item = liveRoomController.messages[index];
-              if (item is DanmakuMsg) {
+              if (item is LiveDanmakuMessage) {
                 WidgetSpan? medal;
-                if (item.medalInfo case final medalInfo?) {
+                if ((GlobalData().showMedal ? item.medal : null)
+                    case final medalInfo?) {
                   try {
                     medal = WidgetSpan(
                       child: Padding(
@@ -92,7 +95,7 @@ class LiveRoomChatPanel extends StatelessWidget {
                         child: Text.rich(
                           TextSpan(
                             children: [
-                              if (item.extra.mid == liveRoomController.ruid)
+                              if (item.mid == liveRoomController.ruid)
                                 const WidgetSpan(
                                   child: Padding(
                                     padding: .only(right: 4),
@@ -110,7 +113,7 @@ class LiveRoomChatPanel extends StatelessWidget {
                                   color: nameColor,
                                   fontSize: 14,
                                 ),
-                                recognizer: item.extra.mid == 0
+                                recognizer: item.mid == 0
                                     ? null
                                     : (NoDeadlineTapGestureRecognizer()
                                         ..onTapUp = (e) => _showMsgMenu(
@@ -140,7 +143,7 @@ class LiveRoomChatPanel extends StatelessWidget {
                   ),
                 );
               }
-              if (item is SuperChatItem) {
+              if (item is LiveSuperChatState) {
                 return SuperChatCard(
                   item: item,
                   persistentSC: true,
@@ -157,7 +160,7 @@ class LiveRoomChatPanel extends StatelessWidget {
             right: 0,
             child: TextButton(
               onPressed: () {
-                final item = SuperChatItem.random;
+                final item = LiveSuperChatState.random;
                 liveRoomController
                   ..superChatMsg.insert(0, item)
                   ..addDm(item);
@@ -245,7 +248,7 @@ class LiveRoomChatPanel extends StatelessWidget {
     );
   }
 
-  InlineSpan _buildMsg(double devicePixelRatio, DanmakuMsg obj) {
+  InlineSpan _buildMsg(double devicePixelRatio, LiveDanmakuMessage obj) {
     final uemote = obj.uemote;
     if (uemote != null) {
       // "room_{{room_id}}_{{int}}" , "upower_[{{emote}}]" , "official_{{int}}"
@@ -265,57 +268,32 @@ class LiveRoomChatPanel extends StatelessWidget {
         ),
       );
     }
-    final emots = obj.emots;
-    if (emots != null) {
-      RegExp regExp = RegExp(emots.keys.map(RegExp.escape).join('|'));
-      final List<InlineSpan> spanChildren = <InlineSpan>[];
-      obj.text.splitMapJoin(
-        regExp,
-        onMatch: (match) {
-          final key = match[0]!;
-          final emote = emots[key]!;
-          spanChildren.add(
+    return TextSpan(
+      children: [
+        for (final segment in obj.segments)
+          if (segment.emoteIndex case final index?)
             WidgetSpan(
               child: NetworkImgLayer(
-                src: emote.url,
+                src: obj.emotes[index].emote.url,
                 type: .emote,
-                width: emote.width,
-                height: emote.height,
+                width: obj.emotes[index].emote.width,
+                height: obj.emotes[index].emote.height,
               ),
-            ),
-          );
-          return '';
-        },
-        onNonMatch: (String nonMatchStr) {
-          spanChildren.add(
+            )
+          else
             TextSpan(
-              text: nonMatchStr,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-              ),
+              text: segment.text,
+              style: const TextStyle(color: Colors.white, fontSize: 14),
             ),
-          );
-          return '';
-        },
-      );
-      return TextSpan(children: spanChildren);
-    } else {
-      return TextSpan(
-        text: obj.text,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 14,
-        ),
-      );
-    }
+      ],
+    );
   }
 
   void _showMsgMenu(
     BuildContext context,
     BuildContext itemContext,
     TapUpDetails details,
-    DanmakuMsg item,
+    LiveDanmakuMessage item,
   ) {
     final dx = details.globalPosition.dx;
     final renderBox = itemContext.findRenderObject() as RenderBox;
@@ -341,12 +319,49 @@ class LiveRoomChatPanel extends StatelessWidget {
         const CustomPopupMenuDivider(height: 1),
         PopupMenuItem(
           height: 38,
-          onTap: () => Utils.copyText(Utils.jsonEncoder.convert(item.toJson())),
+          onTap: () => Utils.copyText(
+            Utils.jsonEncoder.convert({
+              'id': item.id,
+              'mid': item.mid,
+              'name': item.name,
+              'text': item.text,
+              'dm_type': item.dmType,
+              'ts': item.ts,
+              'ct': item.ct,
+              'color': item.color,
+              'mode': item.mode,
+              'emotes': [
+                for (final entry in item.emotes)
+                  {
+                    'key': entry.key,
+                    'url': entry.emote.url,
+                    'is_official': entry.emote.isOfficial,
+                    'emoticon_unique': entry.emote.emoticonUnique,
+                    'width': entry.emote.width,
+                    'height': entry.emote.height,
+                  },
+              ],
+              if (item.reply case final reply?)
+                'reply': {
+                  'mid': reply.mid,
+                  'name': reply.name,
+                },
+              if (item.medal case final medal?)
+                'medal': {
+                  'name': medal.name,
+                  'level': medal.level,
+                  'id': medal.id,
+                  'ruid': medal.ruid,
+                  'color_start': medal.colorStart,
+                  'color_text': medal.colorText,
+                },
+            }),
+          ),
           child: const Text('复制弹幕信息', style: TextStyle(fontSize: 13)),
         ),
         PopupMenuItem(
           height: 38,
-          onTap: () => Get.toNamed('/member?mid=${item.extra.mid}'),
+          onTap: () => Get.toNamed('/member?mid=${item.mid}'),
           child: const Text('去TA的个人空间', style: TextStyle(fontSize: 13)),
         ),
         if (liveRoomController.isLogin) ...[
@@ -359,7 +374,7 @@ class LiveRoomChatPanel extends StatelessWidget {
             height: 38,
             onTap: () async {
               final res = await LiveHttp.liveShieldUser(
-                uid: item.extra.mid,
+                uid: item.mid,
                 roomid: liveRoomController.roomId,
                 type: 1,
               );
@@ -377,7 +392,13 @@ class LiveRoomChatPanel extends StatelessWidget {
               context,
               roomId: liveRoomController.roomId,
               msg: item.text,
-              extra: item.extra,
+              extra: LiveDanmaku(
+                id: item.id,
+                mid: item.mid,
+                dmType: item.dmType,
+                ts: item.ts,
+                ct: item.ct,
+              ),
             ),
             child: const Text('举报选中弹幕', style: TextStyle(fontSize: 13)),
           ),

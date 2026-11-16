@@ -242,6 +242,14 @@ cookie 存进账号体系」。同步上游时 `lib/http/login.dart` 的任何�
 **不要照上游解**——那个文件在本 fork 已经不存在，要改的是 Rust 侧
 （见 RFC §2.3 与 ADR-011 补充十三）。
 
+修订：2026-11-16（S11b #62，含合入最新 main）——按 §6 对合并后的 index 实测：
+修改上游文件 **882**，其中实质改动 **264**、仅重命名 **618**；
+新增 **584**、删除 **163**，另有 **10** 项重命名不计入 A/D。
+直播 token/历史预取/SC/长连接整体迁入 Rust，旧 TCP、弹幕和 SC 模型、
+粉丝勋章兼容层与一次性 parity 删除；聊天、SC、勋章消费者直接使用 typed 数据。
+同步上游时将协议/过滤/表情分段改动落在 Rust，宿主仅合布局与交互。
+数字包含本次暂存改动，不含被工具自动改写后恢复的编辑器和 macOS 配置。
+
 ## 1. 基准
 
 ```
@@ -259,11 +267,11 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 | 类别 | 数量 |
 | --- | ---: |
-| 修改的上游既有文件 | 887 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 628 |
-| &nbsp;&nbsp;其中：有实质改动 | **259** |
-| 新增文件 | 563 |
-| 删除文件 | **154** |
+| 修改的上游既有文件 | **882** |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | **618** |
+| &nbsp;&nbsp;其中：有实质改动 | **264** |
+| 新增文件 | **584** |
+| 删除文件 | **163** |
 
 「修改」总数一路下降（935 → 909 → 897 → 891 → 887），部分文件是因迁移被
 删除，从 M 转到了 D。#108 的界面改动一度把它顶回 892；合入 #111 的关注/
@@ -275,7 +283,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 `ba430476b chore: rename app package identifiers to KiliKili` 把每个 Dart
 文件的 `package:PiliPlus/` 改成了 `package:kilikili/`，一次触及 992 个文件。
-**当前分叉面里 637 个文件只有这一处差异。**
+**当前分叉面里 618 个文件只有这一处差异。**
 
 对同步的影响很具体：上游每改动一个 Dart 文件，我们这边大概率冲突，但
 **冲突内容永远是那一行 import**。处理方式是取上游版本后重新套用重命名，
@@ -286,7 +294,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 4. 有实质改动的上游文件
 
-253 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
+264 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
 见 §4.4，其余改动逐个列在 §4.3。
 
 ### 4.1 typed 直连迁移触及的上游文件
@@ -448,20 +456,20 @@ Column 顺序、文字层级），丢弃——那一层我们已经整个换掉�
 
 ## 5. 新增文件
 
-563 个，不与上游冲突，按区域分布：
+584 个，不与上游冲突，按区域分布：
 
 | 区域 | 文件数 | 内容 |
 | --- | ---: | --- |
-| `rust/` | 353 | Rust workspace：6 个 crate、golden fixture 与快照 |
+| `rust/` | 366 | Rust workspace：7 个 crate、golden fixture 与快照 |
 | `rust_builder/` | 46 | cargokit，把 Rust 接入 Flutter 各端构建 |
-| `lib/services/` | 37 | Rust 开关、shadow mode、各切片的取数封装 |
-| `test/` | 38 | parity 测试与桥接层集成测试 |
-| `lib/rust/` | 29 | FRB 生成的 Dart 绑定 |
+| `lib/services/` | 38 | 各切片的 typed 取数封装、会话寿命与传输适配 |
+| `test/` | 40 | parity 测试与桥接层集成测试 |
+| `lib/rust/` | 30 | FRB 生成的 Dart 绑定 |
 | `tool/` | 21 | 构建准备、FRB 生成、proto 生成、README 统计、产物核对、fixture 生成 |
-| `docs/` | 19 | RFC、ADR、M0 记录、QA 清单 |
+| `docs/` | 22 | RFC、ADR、M0 记录、QA 清单 |
 | `shaders/` | 1 | Liquid Glass 背板折射着色器 |
 | `lib/common/` | 3 | 封面大卡片、统计药丸与直播卡共用的文案行（issue #108） |
-| `lib/pages/` | 4 | 基线弹幕引擎（`danmaku/engine.dart`）、验证码弹窗外壳、极验页面脚本、短信验证码输入框 |
+| `lib/pages/` | 5 | 基线弹幕引擎（`danmaku/engine.dart`）、验证码弹窗外壳、极验页面脚本、短信验证码输入框、SC 展示状态 |
 | `lib/plugin/` | 1 | 播放器竖向音量指示组件（issue #136） |
 | `lib/utils/` | 1 | 从 `SubtitleUtils` 里搬出来的基线字幕转换（`subtitle_format.dart`） |
 | 其他 | 10 | workflow、`AGENTS.md` / `CLAUDE.md`、README 统计图、`flutter_rust_bridge.yaml` |

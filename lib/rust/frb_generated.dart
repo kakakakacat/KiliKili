@@ -9,6 +9,7 @@ import 'package:kilikili/rust/api/dynamic.dart';
 import 'package:kilikili/rust/api/grpc.dart';
 import 'package:kilikili/rust/api/init.dart';
 import 'package:kilikili/rust/api/live.dart';
+import 'package:kilikili/rust/api/live_danmaku.dart';
 import 'package:kilikili/rust/api/login.dart';
 import 'package:kilikili/rust/api/media_select.dart';
 import 'package:kilikili/rust/api/misc.dart';
@@ -95,7 +96,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 211450720;
+  int get rustContentHash => -2049556286;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -312,6 +313,20 @@ abstract class RustLibApi extends BaseApi {
     required PlatformInt64 wts,
   });
 
+  Future<LiveDanmakuPrefetchResult>
+  crateApiLiveDanmakuFetchLiveDanmakuPrefetch({
+    required LiveContext context,
+    required PlatformInt64 roomId,
+    required String userAgent,
+  });
+
+  Future<LiveDanmakuTokenResult> crateApiLiveDanmakuFetchLiveDanmakuToken({
+    required LiveContext context,
+    required PlatformInt64 roomId,
+    required String mixinKey,
+    required PlatformInt64 wts,
+  });
+
   Future<LiveEmotePackagesResult> crateApiLiveFetchLiveEmoticons({
     required LiveContext context,
     required PlatformInt64 roomId,
@@ -386,6 +401,11 @@ abstract class RustLibApi extends BaseApi {
     required PlatformInt64 roomId,
     required String mixinKey,
     required PlatformInt64 wts,
+  });
+
+  Future<LiveSuperChatResult> crateApiLiveDanmakuFetchLiveSuperChat({
+    required LiveContext context,
+    required PlatformInt64 roomId,
   });
 
   Future<MatchInfoResult> crateApiMiscFetchMatchInfo({
@@ -610,6 +630,37 @@ abstract class RustLibApi extends BaseApi {
     required AppWriteContext context,
     required String bvid,
     required bool like,
+  });
+
+  List<bool> crateApiLiveDanmakuLiveDanmakuFilterMask({
+    required List<LiveFilterCandidate> candidates,
+    required LiveBlockRules rules,
+  });
+
+  LiveSocketActionResult crateApiLiveDanmakuLiveSocketClose({
+    required PlatformInt64 sessionId,
+    required PlatformInt64 generation,
+  });
+
+  LiveSocketOpenResult crateApiLiveDanmakuLiveSocketOpen({
+    required List<String> servers,
+    required PlatformInt64 roomId,
+    required PlatformInt64 uid,
+    required String token,
+    required PlatformInt64 generation,
+    required TransportSettings transport,
+    required LiveBlockRules rules,
+  });
+
+  LiveSocketPollResult crateApiLiveDanmakuLiveSocketPoll({
+    required PlatformInt64 sessionId,
+    required PlatformInt64 generation,
+  });
+
+  LiveSocketActionResult crateApiLiveDanmakuLiveSocketSetRules({
+    required PlatformInt64 sessionId,
+    required PlatformInt64 generation,
+    required LiveBlockRules rules,
   });
 
   Future<PasswordLoginResult> crateApiLoginLoginByPassword({
@@ -2237,6 +2288,83 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<LiveDanmakuPrefetchResult>
+  crateApiLiveDanmakuFetchLiveDanmakuPrefetch({
+    required LiveContext context,
+    required PlatformInt64 roomId,
+    required String userAgent,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_live_context(context, serializer);
+          sse_encode_i_64(roomId, serializer);
+          sse_encode_String(userAgent, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 38,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_live_danmaku_prefetch_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiLiveDanmakuFetchLiveDanmakuPrefetchConstMeta,
+        argValues: [context, roomId, userAgent],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLiveDanmakuFetchLiveDanmakuPrefetchConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_live_danmaku_prefetch",
+        argNames: ["context", "roomId", "userAgent"],
+      );
+
+  @override
+  Future<LiveDanmakuTokenResult> crateApiLiveDanmakuFetchLiveDanmakuToken({
+    required LiveContext context,
+    required PlatformInt64 roomId,
+    required String mixinKey,
+    required PlatformInt64 wts,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_live_context(context, serializer);
+          sse_encode_i_64(roomId, serializer);
+          sse_encode_String(mixinKey, serializer);
+          sse_encode_i_64(wts, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 39,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_live_danmaku_token_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiLiveDanmakuFetchLiveDanmakuTokenConstMeta,
+        argValues: [context, roomId, mixinKey, wts],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLiveDanmakuFetchLiveDanmakuTokenConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_live_danmaku_token",
+        argNames: ["context", "roomId", "mixinKey", "wts"],
+      );
+
+  @override
   Future<LiveEmotePackagesResult> crateApiLiveFetchLiveEmoticons({
     required LiveContext context,
     required PlatformInt64 roomId,
@@ -2250,7 +2378,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 38,
+            funcId: 40,
             port: port_,
           );
         },
@@ -2285,7 +2413,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 39,
+            funcId: 41,
             port: port_,
           );
         },
@@ -2320,7 +2448,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 40,
+            funcId: 42,
             port: port_,
           );
         },
@@ -2359,7 +2487,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 41,
+            funcId: 43,
             port: port_,
           );
         },
@@ -2393,7 +2521,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 42,
+            funcId: 44,
             port: port_,
           );
         },
@@ -2428,7 +2556,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 43,
+            funcId: 45,
             port: port_,
           );
         },
@@ -2465,7 +2593,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 44,
+            funcId: 46,
             port: port_,
           );
         },
@@ -2500,7 +2628,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 45,
+            funcId: 47,
             port: port_,
           );
         },
@@ -2543,7 +2671,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 46,
+            funcId: 48,
             port: port_,
           );
         },
@@ -2584,7 +2712,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 47,
+            funcId: 49,
             port: port_,
           );
         },
@@ -2627,7 +2755,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 48,
+            funcId: 50,
             port: port_,
           );
         },
@@ -2673,7 +2801,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 49,
+            funcId: 51,
             port: port_,
           );
         },
@@ -2695,6 +2823,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<LiveSuperChatResult> crateApiLiveDanmakuFetchLiveSuperChat({
+    required LiveContext context,
+    required PlatformInt64 roomId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_live_context(context, serializer);
+          sse_encode_i_64(roomId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 52,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_live_super_chat_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiLiveDanmakuFetchLiveSuperChatConstMeta,
+        argValues: [context, roomId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLiveDanmakuFetchLiveSuperChatConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_live_super_chat",
+        argNames: ["context", "roomId"],
+      );
+
+  @override
   Future<MatchInfoResult> crateApiMiscFetchMatchInfo({
     required MiscContext context,
     required PlatformInt64 contestId,
@@ -2708,7 +2871,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 50,
+            funcId: 53,
             port: port_,
           );
         },
@@ -2748,7 +2911,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 51,
+            funcId: 54,
             port: port_,
           );
         },
@@ -2787,7 +2950,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 52,
+            funcId: 55,
             port: port_,
           );
         },
@@ -2824,7 +2987,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 53,
+            funcId: 56,
             port: port_,
           );
         },
@@ -2859,7 +3022,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 54,
+            funcId: 57,
             port: port_,
           );
         },
@@ -2897,7 +3060,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 55,
+            funcId: 58,
             port: port_,
           );
         },
@@ -2936,7 +3099,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 56,
+            funcId: 59,
             port: port_,
           );
         },
@@ -2976,7 +3139,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 57,
+            funcId: 60,
             port: port_,
           );
         },
@@ -3012,7 +3175,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 58,
+            funcId: 61,
             port: port_,
           );
         },
@@ -3051,7 +3214,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 59,
+            funcId: 62,
             port: port_,
           );
         },
@@ -3094,7 +3257,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 60,
+            funcId: 63,
             port: port_,
           );
         },
@@ -3141,7 +3304,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 61,
+            funcId: 64,
             port: port_,
           );
         },
@@ -3194,7 +3357,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 62,
+            funcId: 65,
             port: port_,
           );
         },
@@ -3227,7 +3390,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 63,
+            funcId: 66,
             port: port_,
           );
         },
@@ -3262,7 +3425,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 64,
+            funcId: 67,
             port: port_,
           );
         },
@@ -3299,7 +3462,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 65,
+            funcId: 68,
             port: port_,
           );
         },
@@ -3336,7 +3499,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 66,
+            funcId: 69,
             port: port_,
           );
         },
@@ -3371,7 +3534,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 67,
+            funcId: 70,
             port: port_,
           );
         },
@@ -3406,7 +3569,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 68,
+            funcId: 71,
             port: port_,
           );
         },
@@ -3443,7 +3606,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 69,
+            funcId: 72,
             port: port_,
           );
         },
@@ -3484,7 +3647,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 70,
+            funcId: 73,
             port: port_,
           );
         },
@@ -3525,7 +3688,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 71,
+            funcId: 74,
             port: port_,
           );
         },
@@ -3568,7 +3731,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 72,
+            funcId: 75,
             port: port_,
           );
         },
@@ -3603,7 +3766,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 73,
+            funcId: 76,
             port: port_,
           );
         },
@@ -3640,7 +3803,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 74,
+            funcId: 77,
             port: port_,
           );
         },
@@ -3673,7 +3836,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 75,
+            funcId: 78,
             port: port_,
           );
         },
@@ -3710,7 +3873,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 76,
+            funcId: 79,
             port: port_,
           );
         },
@@ -3757,7 +3920,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 77,
+            funcId: 80,
             port: port_,
           );
         },
@@ -3812,7 +3975,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 78,
+            funcId: 81,
             port: port_,
           );
         },
@@ -3847,7 +4010,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 79,
+            funcId: 82,
             port: port_,
           );
         },
@@ -3875,7 +4038,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_box_autoadd_volume(volume, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 80)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 83)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_bool,
@@ -3922,7 +4085,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 81,
+            funcId: 84,
             port: port_,
           );
         },
@@ -3979,7 +4142,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 82,
+            funcId: 85,
             port: port_,
           );
         },
@@ -4010,7 +4173,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 83,
+            funcId: 86,
             port: port_,
           );
         },
@@ -4046,7 +4209,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 84,
+            funcId: 87,
             port: port_,
           );
         },
@@ -4068,6 +4231,176 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  List<bool> crateApiLiveDanmakuLiveDanmakuFilterMask({
+    required List<LiveFilterCandidate> candidates,
+    required LiveBlockRules rules,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_list_live_filter_candidate(candidates, serializer);
+          sse_encode_box_autoadd_live_block_rules(rules, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 88)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_bool,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiLiveDanmakuLiveDanmakuFilterMaskConstMeta,
+        argValues: [candidates, rules],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLiveDanmakuLiveDanmakuFilterMaskConstMeta =>
+      const TaskConstMeta(
+        debugName: "live_danmaku_filter_mask",
+        argNames: ["candidates", "rules"],
+      );
+
+  @override
+  LiveSocketActionResult crateApiLiveDanmakuLiveSocketClose({
+    required PlatformInt64 sessionId,
+    required PlatformInt64 generation,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_i_64(sessionId, serializer);
+          sse_encode_i_64(generation, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 89)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_live_socket_action_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiLiveDanmakuLiveSocketCloseConstMeta,
+        argValues: [sessionId, generation],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLiveDanmakuLiveSocketCloseConstMeta =>
+      const TaskConstMeta(
+        debugName: "live_socket_close",
+        argNames: ["sessionId", "generation"],
+      );
+
+  @override
+  LiveSocketOpenResult crateApiLiveDanmakuLiveSocketOpen({
+    required List<String> servers,
+    required PlatformInt64 roomId,
+    required PlatformInt64 uid,
+    required String token,
+    required PlatformInt64 generation,
+    required TransportSettings transport,
+    required LiveBlockRules rules,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_list_String(servers, serializer);
+          sse_encode_i_64(roomId, serializer);
+          sse_encode_i_64(uid, serializer);
+          sse_encode_String(token, serializer);
+          sse_encode_i_64(generation, serializer);
+          sse_encode_box_autoadd_transport_settings(transport, serializer);
+          sse_encode_box_autoadd_live_block_rules(rules, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 90)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_live_socket_open_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiLiveDanmakuLiveSocketOpenConstMeta,
+        argValues: [servers, roomId, uid, token, generation, transport, rules],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLiveDanmakuLiveSocketOpenConstMeta =>
+      const TaskConstMeta(
+        debugName: "live_socket_open",
+        argNames: [
+          "servers",
+          "roomId",
+          "uid",
+          "token",
+          "generation",
+          "transport",
+          "rules",
+        ],
+      );
+
+  @override
+  LiveSocketPollResult crateApiLiveDanmakuLiveSocketPoll({
+    required PlatformInt64 sessionId,
+    required PlatformInt64 generation,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_i_64(sessionId, serializer);
+          sse_encode_i_64(generation, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 91)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_live_socket_poll_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiLiveDanmakuLiveSocketPollConstMeta,
+        argValues: [sessionId, generation],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLiveDanmakuLiveSocketPollConstMeta =>
+      const TaskConstMeta(
+        debugName: "live_socket_poll",
+        argNames: ["sessionId", "generation"],
+      );
+
+  @override
+  LiveSocketActionResult crateApiLiveDanmakuLiveSocketSetRules({
+    required PlatformInt64 sessionId,
+    required PlatformInt64 generation,
+    required LiveBlockRules rules,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_i_64(sessionId, serializer);
+          sse_encode_i_64(generation, serializer);
+          sse_encode_box_autoadd_live_block_rules(rules, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 92)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_live_socket_action_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiLiveDanmakuLiveSocketSetRulesConstMeta,
+        argValues: [sessionId, generation, rules],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLiveDanmakuLiveSocketSetRulesConstMeta =>
+      const TaskConstMeta(
+        debugName: "live_socket_set_rules",
+        argNames: ["sessionId", "generation", "rules"],
+      );
+
+  @override
   Future<PasswordLoginResult> crateApiLoginLoginByPassword({
     required LoginContext context,
     required String username,
@@ -4085,7 +4418,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 85,
+            funcId: 93,
             port: port_,
           );
         },
@@ -4126,7 +4459,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 86,
+            funcId: 94,
             port: port_,
           );
         },
@@ -4160,7 +4493,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 87,
+            funcId: 95,
             port: port_,
           );
         },
@@ -4194,7 +4527,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 88,
+            funcId: 96,
             port: port_,
           );
         },
@@ -4227,7 +4560,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 89,
+            funcId: 97,
             port: port_,
           );
         },
@@ -4259,7 +4592,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 90,
+            funcId: 98,
             port: port_,
           );
         },
@@ -4292,7 +4625,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 91,
+            funcId: 99,
             port: port_,
           );
         },
@@ -4326,7 +4659,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 92,
+            funcId: 100,
             port: port_,
           );
         },
@@ -4366,7 +4699,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 93,
+            funcId: 101,
             port: port_,
           );
         },
@@ -4401,7 +4734,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 94,
+            funcId: 102,
             port: port_,
           );
         },
@@ -4443,7 +4776,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 95,
+            funcId: 103,
             port: port_,
           );
         },
@@ -4487,7 +4820,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 96,
+            funcId: 104,
             port: port_,
           );
         },
@@ -4526,7 +4859,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 97,
+            funcId: 105,
             port: port_,
           );
         },
@@ -4558,7 +4891,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_box_autoadd_volume(volume, serializer);
           sse_encode_box_autoadd_loudnorm_config(config, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 98)!;
+          return pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 106,
+          )!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -4595,7 +4932,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 99,
+            funcId: 107,
             port: port_,
           );
         },
@@ -4630,7 +4967,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 100,
+            funcId: 108,
           )!;
         },
         codec: SseCodec(
@@ -4664,7 +5001,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 101,
+            funcId: 109,
           )!;
         },
         codec: SseCodec(
@@ -4696,7 +5033,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 102,
+            funcId: 110,
             port: port_,
           );
         },
@@ -4729,7 +5066,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 103,
+            funcId: 111,
             port: port_,
           );
         },
@@ -4764,7 +5101,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 104,
+            funcId: 112,
             port: port_,
           );
         },
@@ -4798,7 +5135,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 105,
+            funcId: 113,
           )!;
         },
         codec: SseCodec(
@@ -4832,7 +5169,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 106,
+            funcId: 114,
             port: port_,
           );
         },
@@ -4868,7 +5205,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 107,
+            funcId: 115,
             port: port_,
           );
         },
@@ -4904,7 +5241,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 108,
+            funcId: 116,
             port: port_,
           );
         },
@@ -4941,7 +5278,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 109,
+            funcId: 117,
             port: port_,
           );
         },
@@ -4981,7 +5318,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 110,
+            funcId: 118,
             port: port_,
           );
         },
@@ -5021,7 +5358,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 111,
+            funcId: 119,
             port: port_,
           );
         },
@@ -5055,7 +5392,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 112,
+            funcId: 120,
             port: port_,
           );
         },
@@ -5092,7 +5429,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 113,
+            funcId: 121,
             port: port_,
           );
         },
@@ -5131,7 +5468,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 114,
+            funcId: 122,
           )!;
         },
         codec: SseCodec(
@@ -5168,7 +5505,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 115,
+            funcId: 123,
             port: port_,
           );
         },
@@ -5209,7 +5546,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 116,
+            funcId: 124,
             port: port_,
           );
         },
@@ -5248,7 +5585,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 117,
+            funcId: 125,
             port: port_,
           );
         },
@@ -5282,7 +5619,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 118,
+            funcId: 126,
             port: port_,
           );
         },
@@ -5316,7 +5653,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 119,
+            funcId: 127,
             port: port_,
           );
         },
@@ -5353,7 +5690,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 120,
+            funcId: 128,
             port: port_,
           );
         },
@@ -5387,7 +5724,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 121,
+            funcId: 129,
             port: port_,
           );
         },
@@ -5421,7 +5758,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 122,
+            funcId: 130,
             port: port_,
           );
         },
@@ -5456,7 +5793,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 123,
+            funcId: 131,
             port: port_,
           );
         },
@@ -5490,7 +5827,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 124,
+            funcId: 132,
             port: port_,
           );
         },
@@ -5528,7 +5865,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 125,
+            funcId: 133,
             port: port_,
           );
         },
@@ -5565,7 +5902,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 126,
+            funcId: 134,
             port: port_,
           );
         },
@@ -5600,7 +5937,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 127,
+            funcId: 135,
             port: port_,
           );
         },
@@ -5634,7 +5971,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 128,
+            funcId: 136,
             port: port_,
           );
         },
@@ -5668,7 +6005,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 129,
+            funcId: 137,
           )!;
         },
         codec: SseCodec(
@@ -5708,7 +6045,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 130,
+            funcId: 138,
           )!;
         },
         codec: SseCodec(
@@ -5754,7 +6091,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 131,
+            funcId: 139,
             port: port_,
           );
         },
@@ -5784,7 +6121,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 132,
+            funcId: 140,
           )!;
         },
         codec: SseCodec(
@@ -5820,7 +6157,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 133,
+            funcId: 141,
             port: port_,
           );
         },
@@ -5857,7 +6194,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 134,
+            funcId: 142,
             port: port_,
           );
         },
@@ -5891,7 +6228,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 135,
+            funcId: 143,
             port: port_,
           );
         },
@@ -5932,7 +6269,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 136,
+            funcId: 144,
             port: port_,
           );
         },
@@ -5969,7 +6306,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 137,
+            funcId: 145,
             port: port_,
           );
         },
@@ -6003,7 +6340,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 138,
+            funcId: 146,
             port: port_,
           );
         },
@@ -6037,7 +6374,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 139,
+            funcId: 147,
             port: port_,
           );
         },
@@ -6071,7 +6408,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 140,
+            funcId: 148,
             port: port_,
           );
         },
@@ -6430,9 +6767,39 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  LiveBlockRules dco_decode_box_autoadd_live_block_rules(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_live_block_rules(raw);
+  }
+
+  @protected
   LiveContext dco_decode_box_autoadd_live_context(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_live_context(raw);
+  }
+
+  @protected
+  LiveDanmakuEmote dco_decode_box_autoadd_live_danmaku_emote(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_live_danmaku_emote(raw);
+  }
+
+  @protected
+  LiveDanmakuMessage dco_decode_box_autoadd_live_danmaku_message(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_live_danmaku_message(raw);
+  }
+
+  @protected
+  LiveDanmakuReply dco_decode_box_autoadd_live_danmaku_reply(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_live_danmaku_reply(raw);
+  }
+
+  @protected
+  LiveDanmakuToken dco_decode_box_autoadd_live_danmaku_token(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_live_danmaku_token(raw);
   }
 
   @protected
@@ -6499,6 +6866,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   LiveShieldInfo dco_decode_box_autoadd_live_shield_info(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_live_shield_info(raw);
+  }
+
+  @protected
+  LiveSocketBatch dco_decode_box_autoadd_live_socket_batch(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_live_socket_batch(raw);
+  }
+
+  @protected
+  LiveSocketHandle dco_decode_box_autoadd_live_socket_handle(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_live_socket_handle(raw);
+  }
+
+  @protected
+  LiveSuperChat dco_decode_box_autoadd_live_super_chat(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_live_super_chat(raw);
   }
 
   @protected
@@ -7683,6 +8068,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<bool> dco_decode_list_bool(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_bool).toList();
+  }
+
+  @protected
   List<CdnServiceEntry> dco_decode_list_cdn_service_entry(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_cdn_service_entry).toList();
@@ -7799,6 +8190,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<LiveDanmakuEmoteEntry> dco_decode_list_live_danmaku_emote_entry(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>)
+        .map(dco_decode_live_danmaku_emote_entry)
+        .toList();
+  }
+
+  @protected
+  List<LiveDanmakuMessage> dco_decode_list_live_danmaku_message(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_live_danmaku_message).toList();
+  }
+
+  @protected
   List<LiveEmotePackage> dco_decode_list_live_emote_package(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_live_emote_package).toList();
@@ -7811,6 +8218,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<LiveEvent> dco_decode_list_live_event(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_live_event).toList();
+  }
+
+  @protected
   List<LiveFeedback> dco_decode_list_live_feedback(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_live_feedback).toList();
@@ -7820,6 +8233,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<LiveFeedbackReason> dco_decode_list_live_feedback_reason(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_live_feedback_reason).toList();
+  }
+
+  @protected
+  List<LiveFilterCandidate> dco_decode_list_live_filter_candidate(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>)
+        .map(dco_decode_live_filter_candidate)
+        .toList();
   }
 
   @protected
@@ -7838,6 +8259,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<LiveMedalWallItem> dco_decode_list_live_medal_wall_item(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_live_medal_wall_item).toList();
+  }
+
+  @protected
+  List<LiveMessageSegment> dco_decode_list_live_message_segment(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_live_message_segment).toList();
   }
 
   @protected
@@ -7880,6 +8307,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<LiveStream> dco_decode_list_live_stream(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_live_stream).toList();
+  }
+
+  @protected
+  List<LiveSuperChat> dco_decode_list_live_super_chat(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_live_super_chat).toList();
   }
 
   @protected
@@ -8223,6 +8656,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  LiveBlockRules dco_decode_live_block_rules(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return LiveBlockRules(
+      keywords: dco_decode_list_String(arr[0]),
+      uids: dco_decode_list_prim_i_64_strict(arr[1]),
+    );
+  }
+
+  @protected
   LiveCodec dco_decode_live_codec(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -8284,6 +8729,111 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  LiveDanmakuEmote dco_decode_live_danmaku_emote(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return LiveDanmakuEmote(
+      isOfficial: dco_decode_bool(arr[0]),
+      url: dco_decode_String(arr[1]),
+      emoticonUnique: dco_decode_String(arr[2]),
+      width: dco_decode_f_64(arr[3]),
+      height: dco_decode_f_64(arr[4]),
+    );
+  }
+
+  @protected
+  LiveDanmakuEmoteEntry dco_decode_live_danmaku_emote_entry(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return LiveDanmakuEmoteEntry(
+      key: dco_decode_String(arr[0]),
+      emote: dco_decode_live_danmaku_emote(arr[1]),
+    );
+  }
+
+  @protected
+  LiveDanmakuMessage dco_decode_live_danmaku_message(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 14)
+      throw Exception('unexpected arr length: expect 14 but see ${arr.length}');
+    return LiveDanmakuMessage(
+      id: dco_decode_String(arr[0]),
+      mid: dco_decode_i_64(arr[1]),
+      dmType: dco_decode_i_64(arr[2]),
+      ts: dco_decode_i_64(arr[3]),
+      ct: dco_decode_String(arr[4]),
+      color: dco_decode_i_64(arr[5]),
+      mode: dco_decode_i_64(arr[6]),
+      name: dco_decode_String(arr[7]),
+      text: dco_decode_String(arr[8]),
+      segments: dco_decode_list_live_message_segment(arr[9]),
+      emotes: dco_decode_list_live_danmaku_emote_entry(arr[10]),
+      uemote: dco_decode_opt_box_autoadd_live_danmaku_emote(arr[11]),
+      reply: dco_decode_opt_box_autoadd_live_danmaku_reply(arr[12]),
+      medal: dco_decode_opt_box_autoadd_live_medal(arr[13]),
+    );
+  }
+
+  @protected
+  LiveDanmakuPrefetchResult dco_decode_live_danmaku_prefetch_result(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return LiveDanmakuPrefetchResult(
+      data: dco_decode_opt_list_live_danmaku_message(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  LiveDanmakuReply dco_decode_live_danmaku_reply(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return LiveDanmakuReply(
+      mid: dco_decode_i_64(arr[0]),
+      name: dco_decode_opt_String(arr[1]),
+    );
+  }
+
+  @protected
+  LiveDanmakuToken dco_decode_live_danmaku_token(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return LiveDanmakuToken(
+      token: dco_decode_String(arr[0]),
+      servers: dco_decode_list_String(arr[1]),
+    );
+  }
+
+  @protected
+  LiveDanmakuTokenResult dco_decode_live_danmaku_token_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return LiveDanmakuTokenResult(
+      data: dco_decode_opt_box_autoadd_live_danmaku_token(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
   LiveEmotePackage dco_decode_live_emote_package(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -8326,6 +8876,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  LiveEvent dco_decode_live_event(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return LiveEvent(
+      kind: dco_decode_live_event_kind(arr[0]),
+      danmaku: dco_decode_opt_box_autoadd_live_danmaku_message(arr[1]),
+      superChat: dco_decode_opt_box_autoadd_live_super_chat(arr[2]),
+      text: dco_decode_opt_String(arr[3]),
+      count: dco_decode_opt_box_autoadd_i_64(arr[4]),
+    );
+  }
+
+  @protected
+  LiveEventKind dco_decode_live_event_kind(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return LiveEventKind.values[raw as int];
+  }
+
+  @protected
   LiveFeedback dco_decode_live_feedback(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -8350,6 +8921,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       name: dco_decode_opt_String(arr[1]),
       idType: dco_decode_opt_String(arr[2]),
       reasonId: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  LiveFilterCandidate dco_decode_live_filter_candidate(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return LiveFilterCandidate(
+      text: dco_decode_String(arr[0]),
+      mid: dco_decode_i_64(arr[1]),
     );
   }
 
@@ -8523,6 +9106,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       errorKind: dco_decode_opt_String(arr[1]),
       errorDetail: dco_decode_opt_String(arr[2]),
       errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  LiveMessageSegment dco_decode_live_message_segment(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return LiveMessageSegment(
+      text: dco_decode_String(arr[0]),
+      emoteIndex: dco_decode_opt_box_autoadd_u_32(arr[1]),
     );
   }
 
@@ -8775,6 +9370,74 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  LiveSocketActionResult dco_decode_live_socket_action_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return LiveSocketActionResult(
+      errorKind: dco_decode_opt_String(arr[0]),
+      errorDetail: dco_decode_opt_String(arr[1]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[2]),
+    );
+  }
+
+  @protected
+  LiveSocketBatch dco_decode_live_socket_batch(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return LiveSocketBatch(
+      sessionId: dco_decode_i_64(arr[0]),
+      generation: dco_decode_i_64(arr[1]),
+      events: dco_decode_list_live_event(arr[2]),
+      dropped: dco_decode_u_64(arr[3]),
+      ended: dco_decode_bool(arr[4]),
+    );
+  }
+
+  @protected
+  LiveSocketHandle dco_decode_live_socket_handle(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return LiveSocketHandle(
+      sessionId: dco_decode_i_64(arr[0]),
+      generation: dco_decode_i_64(arr[1]),
+    );
+  }
+
+  @protected
+  LiveSocketOpenResult dco_decode_live_socket_open_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return LiveSocketOpenResult(
+      data: dco_decode_opt_box_autoadd_live_socket_handle(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  LiveSocketPollResult dco_decode_live_socket_poll_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return LiveSocketPollResult(
+      data: dco_decode_opt_box_autoadd_live_socket_batch(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
   LiveStream dco_decode_live_stream(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -8783,6 +9446,60 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     return LiveStream(
       protocolName: dco_decode_opt_String(arr[0]),
       format: dco_decode_list_live_format(arr[1]),
+    );
+  }
+
+  @protected
+  LiveSuperChat dco_decode_live_super_chat(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 16)
+      throw Exception('unexpected arr length: expect 16 but see ${arr.length}');
+    return LiveSuperChat(
+      id: dco_decode_i_64(arr[0]),
+      uid: dco_decode_i_64(arr[1]),
+      price: dco_decode_i_64(arr[2]),
+      backgroundImage: dco_decode_opt_String(arr[3]),
+      backgroundColor: dco_decode_String(arr[4]),
+      backgroundBottomColor: dco_decode_String(arr[5]),
+      backgroundPriceColor: dco_decode_String(arr[6]),
+      messageFontColor: dco_decode_String(arr[7]),
+      startTime: dco_decode_i_64(arr[8]),
+      endTime: dco_decode_i_64(arr[9]),
+      message: dco_decode_String(arr[10]),
+      token: dco_decode_String(arr[11]),
+      ts: dco_decode_i_64(arr[12]),
+      userInfo: dco_decode_live_super_chat_user(arr[13]),
+      medal: dco_decode_opt_box_autoadd_live_medal(arr[14]),
+      roomId: dco_decode_i_64(arr[15]),
+    );
+  }
+
+  @protected
+  LiveSuperChatResult dco_decode_live_super_chat_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return LiveSuperChatResult(
+      data: dco_decode_opt_list_live_super_chat(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  LiveSuperChatUser dco_decode_live_super_chat_user(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return LiveSuperChatUser(
+      face: dco_decode_String(arr[0]),
+      faceFrame: dco_decode_opt_String(arr[1]),
+      uname: dco_decode_String(arr[2]),
+      nameColor: dco_decode_String(arr[3]),
     );
   }
 
@@ -9282,6 +9999,34 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  LiveDanmakuEmote? dco_decode_opt_box_autoadd_live_danmaku_emote(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_live_danmaku_emote(raw);
+  }
+
+  @protected
+  LiveDanmakuMessage? dco_decode_opt_box_autoadd_live_danmaku_message(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null
+        ? null
+        : dco_decode_box_autoadd_live_danmaku_message(raw);
+  }
+
+  @protected
+  LiveDanmakuReply? dco_decode_opt_box_autoadd_live_danmaku_reply(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_live_danmaku_reply(raw);
+  }
+
+  @protected
+  LiveDanmakuToken? dco_decode_opt_box_autoadd_live_danmaku_token(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_live_danmaku_token(raw);
+  }
+
+  @protected
   LiveFollowSection? dco_decode_opt_box_autoadd_live_follow_section(
     dynamic raw,
   ) {
@@ -9345,6 +10090,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   LiveShieldInfo? dco_decode_opt_box_autoadd_live_shield_info(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_live_shield_info(raw);
+  }
+
+  @protected
+  LiveSocketBatch? dco_decode_opt_box_autoadd_live_socket_batch(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_live_socket_batch(raw);
+  }
+
+  @protected
+  LiveSocketHandle? dco_decode_opt_box_autoadd_live_socket_handle(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_live_socket_handle(raw);
+  }
+
+  @protected
+  LiveSuperChat? dco_decode_opt_box_autoadd_live_super_chat(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_live_super_chat(raw);
   }
 
   @protected
@@ -9767,9 +10530,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<LiveDanmakuMessage>? dco_decode_opt_list_live_danmaku_message(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_list_live_danmaku_message(raw);
+  }
+
+  @protected
   List<LiveEmotePackage>? dco_decode_opt_list_live_emote_package(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_list_live_emote_package(raw);
+  }
+
+  @protected
+  List<LiveSuperChat>? dco_decode_opt_list_live_super_chat(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_list_live_super_chat(raw);
   }
 
   @protected
@@ -12292,11 +13069,51 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  LiveBlockRules sse_decode_box_autoadd_live_block_rules(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_live_block_rules(deserializer));
+  }
+
+  @protected
   LiveContext sse_decode_box_autoadd_live_context(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_live_context(deserializer));
+  }
+
+  @protected
+  LiveDanmakuEmote sse_decode_box_autoadd_live_danmaku_emote(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_live_danmaku_emote(deserializer));
+  }
+
+  @protected
+  LiveDanmakuMessage sse_decode_box_autoadd_live_danmaku_message(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_live_danmaku_message(deserializer));
+  }
+
+  @protected
+  LiveDanmakuReply sse_decode_box_autoadd_live_danmaku_reply(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_live_danmaku_reply(deserializer));
+  }
+
+  @protected
+  LiveDanmakuToken sse_decode_box_autoadd_live_danmaku_token(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_live_danmaku_token(deserializer));
   }
 
   @protected
@@ -12383,6 +13200,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_live_shield_info(deserializer));
+  }
+
+  @protected
+  LiveSocketBatch sse_decode_box_autoadd_live_socket_batch(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_live_socket_batch(deserializer));
+  }
+
+  @protected
+  LiveSocketHandle sse_decode_box_autoadd_live_socket_handle(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_live_socket_handle(deserializer));
+  }
+
+  @protected
+  LiveSuperChat sse_decode_box_autoadd_live_super_chat(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_live_super_chat(deserializer));
   }
 
   @protected
@@ -13779,6 +14620,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<bool> sse_decode_list_bool(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <bool>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_bool(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<CdnServiceEntry> sse_decode_list_cdn_service_entry(
     SseDeserializer deserializer,
   ) {
@@ -14017,6 +14870,34 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<LiveDanmakuEmoteEntry> sse_decode_list_live_danmaku_emote_entry(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <LiveDanmakuEmoteEntry>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_live_danmaku_emote_entry(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<LiveDanmakuMessage> sse_decode_list_live_danmaku_message(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <LiveDanmakuMessage>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_live_danmaku_message(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<LiveEmotePackage> sse_decode_list_live_emote_package(
     SseDeserializer deserializer,
   ) {
@@ -14045,6 +14926,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<LiveEvent> sse_decode_list_live_event(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <LiveEvent>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_live_event(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<LiveFeedback> sse_decode_list_live_feedback(
     SseDeserializer deserializer,
   ) {
@@ -14068,6 +14961,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <LiveFeedbackReason>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_live_feedback_reason(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<LiveFilterCandidate> sse_decode_list_live_filter_candidate(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <LiveFilterCandidate>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_live_filter_candidate(deserializer));
     }
     return ans_;
   }
@@ -14108,6 +15015,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <LiveMedalWallItem>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_live_medal_wall_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<LiveMessageSegment> sse_decode_list_live_message_segment(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <LiveMessageSegment>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_live_message_segment(deserializer));
     }
     return ans_;
   }
@@ -14202,6 +15123,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <LiveStream>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_live_stream(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<LiveSuperChat> sse_decode_list_live_super_chat(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <LiveSuperChat>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_live_super_chat(deserializer));
     }
     return ans_;
   }
@@ -14838,6 +15773,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  LiveBlockRules sse_decode_live_block_rules(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_keywords = sse_decode_list_String(deserializer);
+    var var_uids = sse_decode_list_prim_i_64_strict(deserializer);
+    return LiveBlockRules(keywords: var_keywords, uids: var_uids);
+  }
+
+  @protected
   LiveCodec sse_decode_live_codec(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_codecName = sse_decode_opt_String(deserializer);
@@ -14910,6 +15853,122 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  LiveDanmakuEmote sse_decode_live_danmaku_emote(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_isOfficial = sse_decode_bool(deserializer);
+    var var_url = sse_decode_String(deserializer);
+    var var_emoticonUnique = sse_decode_String(deserializer);
+    var var_width = sse_decode_f_64(deserializer);
+    var var_height = sse_decode_f_64(deserializer);
+    return LiveDanmakuEmote(
+      isOfficial: var_isOfficial,
+      url: var_url,
+      emoticonUnique: var_emoticonUnique,
+      width: var_width,
+      height: var_height,
+    );
+  }
+
+  @protected
+  LiveDanmakuEmoteEntry sse_decode_live_danmaku_emote_entry(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_key = sse_decode_String(deserializer);
+    var var_emote = sse_decode_live_danmaku_emote(deserializer);
+    return LiveDanmakuEmoteEntry(key: var_key, emote: var_emote);
+  }
+
+  @protected
+  LiveDanmakuMessage sse_decode_live_danmaku_message(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_String(deserializer);
+    var var_mid = sse_decode_i_64(deserializer);
+    var var_dmType = sse_decode_i_64(deserializer);
+    var var_ts = sse_decode_i_64(deserializer);
+    var var_ct = sse_decode_String(deserializer);
+    var var_color = sse_decode_i_64(deserializer);
+    var var_mode = sse_decode_i_64(deserializer);
+    var var_name = sse_decode_String(deserializer);
+    var var_text = sse_decode_String(deserializer);
+    var var_segments = sse_decode_list_live_message_segment(deserializer);
+    var var_emotes = sse_decode_list_live_danmaku_emote_entry(deserializer);
+    var var_uemote = sse_decode_opt_box_autoadd_live_danmaku_emote(
+      deserializer,
+    );
+    var var_reply = sse_decode_opt_box_autoadd_live_danmaku_reply(deserializer);
+    var var_medal = sse_decode_opt_box_autoadd_live_medal(deserializer);
+    return LiveDanmakuMessage(
+      id: var_id,
+      mid: var_mid,
+      dmType: var_dmType,
+      ts: var_ts,
+      ct: var_ct,
+      color: var_color,
+      mode: var_mode,
+      name: var_name,
+      text: var_text,
+      segments: var_segments,
+      emotes: var_emotes,
+      uemote: var_uemote,
+      reply: var_reply,
+      medal: var_medal,
+    );
+  }
+
+  @protected
+  LiveDanmakuPrefetchResult sse_decode_live_danmaku_prefetch_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_list_live_danmaku_message(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return LiveDanmakuPrefetchResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  LiveDanmakuReply sse_decode_live_danmaku_reply(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_mid = sse_decode_i_64(deserializer);
+    var var_name = sse_decode_opt_String(deserializer);
+    return LiveDanmakuReply(mid: var_mid, name: var_name);
+  }
+
+  @protected
+  LiveDanmakuToken sse_decode_live_danmaku_token(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_token = sse_decode_String(deserializer);
+    var var_servers = sse_decode_list_String(deserializer);
+    return LiveDanmakuToken(token: var_token, servers: var_servers);
+  }
+
+  @protected
+  LiveDanmakuTokenResult sse_decode_live_danmaku_token_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_live_danmaku_token(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return LiveDanmakuTokenResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
   LiveEmotePackage sse_decode_live_emote_package(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_emoticons = sse_decode_list_live_emoticon(deserializer);
@@ -14957,6 +16016,34 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  LiveEvent sse_decode_live_event(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_kind = sse_decode_live_event_kind(deserializer);
+    var var_danmaku = sse_decode_opt_box_autoadd_live_danmaku_message(
+      deserializer,
+    );
+    var var_superChat = sse_decode_opt_box_autoadd_live_super_chat(
+      deserializer,
+    );
+    var var_text = sse_decode_opt_String(deserializer);
+    var var_count = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return LiveEvent(
+      kind: var_kind,
+      danmaku: var_danmaku,
+      superChat: var_superChat,
+      text: var_text,
+      count: var_count,
+    );
+  }
+
+  @protected
+  LiveEventKind sse_decode_live_event_kind(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return LiveEventKind.values[inner];
+  }
+
+  @protected
   LiveFeedback sse_decode_live_feedback(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_title = sse_decode_opt_String(deserializer);
@@ -14986,6 +16073,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       idType: var_idType,
       reasonId: var_reasonId,
     );
+  }
+
+  @protected
+  LiveFilterCandidate sse_decode_live_filter_candidate(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_text = sse_decode_String(deserializer);
+    var var_mid = sse_decode_i_64(deserializer);
+    return LiveFilterCandidate(text: var_text, mid: var_mid);
   }
 
   @protected
@@ -15182,6 +16279,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       errorDetail: var_errorDetail,
       errorCode: var_errorCode,
     );
+  }
+
+  @protected
+  LiveMessageSegment sse_decode_live_message_segment(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_text = sse_decode_String(deserializer);
+    var var_emoteIndex = sse_decode_opt_box_autoadd_u_32(deserializer);
+    return LiveMessageSegment(text: var_text, emoteIndex: var_emoteIndex);
   }
 
   @protected
@@ -15452,11 +16559,161 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  LiveSocketActionResult sse_decode_live_socket_action_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return LiveSocketActionResult(
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  LiveSocketBatch sse_decode_live_socket_batch(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_sessionId = sse_decode_i_64(deserializer);
+    var var_generation = sse_decode_i_64(deserializer);
+    var var_events = sse_decode_list_live_event(deserializer);
+    var var_dropped = sse_decode_u_64(deserializer);
+    var var_ended = sse_decode_bool(deserializer);
+    return LiveSocketBatch(
+      sessionId: var_sessionId,
+      generation: var_generation,
+      events: var_events,
+      dropped: var_dropped,
+      ended: var_ended,
+    );
+  }
+
+  @protected
+  LiveSocketHandle sse_decode_live_socket_handle(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_sessionId = sse_decode_i_64(deserializer);
+    var var_generation = sse_decode_i_64(deserializer);
+    return LiveSocketHandle(
+      sessionId: var_sessionId,
+      generation: var_generation,
+    );
+  }
+
+  @protected
+  LiveSocketOpenResult sse_decode_live_socket_open_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_live_socket_handle(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return LiveSocketOpenResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  LiveSocketPollResult sse_decode_live_socket_poll_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_live_socket_batch(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return LiveSocketPollResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
   LiveStream sse_decode_live_stream(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_protocolName = sse_decode_opt_String(deserializer);
     var var_format = sse_decode_list_live_format(deserializer);
     return LiveStream(protocolName: var_protocolName, format: var_format);
+  }
+
+  @protected
+  LiveSuperChat sse_decode_live_super_chat(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_i_64(deserializer);
+    var var_uid = sse_decode_i_64(deserializer);
+    var var_price = sse_decode_i_64(deserializer);
+    var var_backgroundImage = sse_decode_opt_String(deserializer);
+    var var_backgroundColor = sse_decode_String(deserializer);
+    var var_backgroundBottomColor = sse_decode_String(deserializer);
+    var var_backgroundPriceColor = sse_decode_String(deserializer);
+    var var_messageFontColor = sse_decode_String(deserializer);
+    var var_startTime = sse_decode_i_64(deserializer);
+    var var_endTime = sse_decode_i_64(deserializer);
+    var var_message = sse_decode_String(deserializer);
+    var var_token = sse_decode_String(deserializer);
+    var var_ts = sse_decode_i_64(deserializer);
+    var var_userInfo = sse_decode_live_super_chat_user(deserializer);
+    var var_medal = sse_decode_opt_box_autoadd_live_medal(deserializer);
+    var var_roomId = sse_decode_i_64(deserializer);
+    return LiveSuperChat(
+      id: var_id,
+      uid: var_uid,
+      price: var_price,
+      backgroundImage: var_backgroundImage,
+      backgroundColor: var_backgroundColor,
+      backgroundBottomColor: var_backgroundBottomColor,
+      backgroundPriceColor: var_backgroundPriceColor,
+      messageFontColor: var_messageFontColor,
+      startTime: var_startTime,
+      endTime: var_endTime,
+      message: var_message,
+      token: var_token,
+      ts: var_ts,
+      userInfo: var_userInfo,
+      medal: var_medal,
+      roomId: var_roomId,
+    );
+  }
+
+  @protected
+  LiveSuperChatResult sse_decode_live_super_chat_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_list_live_super_chat(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return LiveSuperChatResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  LiveSuperChatUser sse_decode_live_super_chat_user(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_face = sse_decode_String(deserializer);
+    var var_faceFrame = sse_decode_opt_String(deserializer);
+    var var_uname = sse_decode_String(deserializer);
+    var var_nameColor = sse_decode_String(deserializer);
+    return LiveSuperChatUser(
+      face: var_face,
+      faceFrame: var_faceFrame,
+      uname: var_uname,
+      nameColor: var_nameColor,
+    );
   }
 
   @protected
@@ -16105,6 +17362,58 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  LiveDanmakuEmote? sse_decode_opt_box_autoadd_live_danmaku_emote(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_live_danmaku_emote(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  LiveDanmakuMessage? sse_decode_opt_box_autoadd_live_danmaku_message(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_live_danmaku_message(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  LiveDanmakuReply? sse_decode_opt_box_autoadd_live_danmaku_reply(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_live_danmaku_reply(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  LiveDanmakuToken? sse_decode_opt_box_autoadd_live_danmaku_token(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_live_danmaku_token(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   LiveFollowSection? sse_decode_opt_box_autoadd_live_follow_section(
     SseDeserializer deserializer,
   ) {
@@ -16229,6 +17538,45 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_box_autoadd_live_shield_info(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  LiveSocketBatch? sse_decode_opt_box_autoadd_live_socket_batch(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_live_socket_batch(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  LiveSocketHandle? sse_decode_opt_box_autoadd_live_socket_handle(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_live_socket_handle(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  LiveSuperChat? sse_decode_opt_box_autoadd_live_super_chat(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_live_super_chat(deserializer));
     } else {
       return null;
     }
@@ -17061,6 +18409,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<LiveDanmakuMessage>? sse_decode_opt_list_live_danmaku_message(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_list_live_danmaku_message(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   List<LiveEmotePackage>? sse_decode_opt_list_live_emote_package(
     SseDeserializer deserializer,
   ) {
@@ -17068,6 +18429,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_list_live_emote_package(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  List<LiveSuperChat>? sse_decode_opt_list_live_super_chat(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_list_live_super_chat(deserializer));
     } else {
       return null;
     }
@@ -20081,12 +21455,57 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_live_block_rules(
+    LiveBlockRules self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_live_block_rules(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_live_context(
     LiveContext self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_live_context(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_live_danmaku_emote(
+    LiveDanmakuEmote self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_live_danmaku_emote(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_live_danmaku_message(
+    LiveDanmakuMessage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_live_danmaku_message(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_live_danmaku_reply(
+    LiveDanmakuReply self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_live_danmaku_reply(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_live_danmaku_token(
+    LiveDanmakuToken self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_live_danmaku_token(self, serializer);
   }
 
   @protected
@@ -20186,6 +21605,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_live_shield_info(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_live_socket_batch(
+    LiveSocketBatch self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_live_socket_batch(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_live_socket_handle(
+    LiveSocketHandle self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_live_socket_handle(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_live_super_chat(
+    LiveSuperChat self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_live_super_chat(self, serializer);
   }
 
   @protected
@@ -21406,6 +22852,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_bool(List<bool> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_bool(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_cdn_service_entry(
     List<CdnServiceEntry> self,
     SseSerializer serializer,
@@ -21616,6 +23071,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_live_danmaku_emote_entry(
+    List<LiveDanmakuEmoteEntry> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_live_danmaku_emote_entry(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_live_danmaku_message(
+    List<LiveDanmakuMessage> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_live_danmaku_message(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_live_emote_package(
     List<LiveEmotePackage> self,
     SseSerializer serializer,
@@ -21640,6 +23119,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_live_event(
+    List<LiveEvent> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_live_event(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_live_feedback(
     List<LiveFeedback> self,
     SseSerializer serializer,
@@ -21660,6 +23151,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_live_feedback_reason(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_live_filter_candidate(
+    List<LiveFilterCandidate> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_live_filter_candidate(item, serializer);
     }
   }
 
@@ -21696,6 +23199,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_live_medal_wall_item(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_live_message_segment(
+    List<LiveMessageSegment> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_live_message_segment(item, serializer);
     }
   }
 
@@ -21777,6 +23292,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_live_stream(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_live_super_chat(
+    List<LiveSuperChat> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_live_super_chat(item, serializer);
     }
   }
 
@@ -22354,6 +23881,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_live_block_rules(
+    LiveBlockRules self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_String(self.keywords, serializer);
+    sse_encode_list_prim_i_64_strict(self.uids, serializer);
+  }
+
+  @protected
   void sse_encode_live_codec(LiveCodec self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_opt_String(self.codecName, serializer);
@@ -22399,6 +23936,95 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_live_danmaku_emote(
+    LiveDanmakuEmote self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_bool(self.isOfficial, serializer);
+    sse_encode_String(self.url, serializer);
+    sse_encode_String(self.emoticonUnique, serializer);
+    sse_encode_f_64(self.width, serializer);
+    sse_encode_f_64(self.height, serializer);
+  }
+
+  @protected
+  void sse_encode_live_danmaku_emote_entry(
+    LiveDanmakuEmoteEntry self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.key, serializer);
+    sse_encode_live_danmaku_emote(self.emote, serializer);
+  }
+
+  @protected
+  void sse_encode_live_danmaku_message(
+    LiveDanmakuMessage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.id, serializer);
+    sse_encode_i_64(self.mid, serializer);
+    sse_encode_i_64(self.dmType, serializer);
+    sse_encode_i_64(self.ts, serializer);
+    sse_encode_String(self.ct, serializer);
+    sse_encode_i_64(self.color, serializer);
+    sse_encode_i_64(self.mode, serializer);
+    sse_encode_String(self.name, serializer);
+    sse_encode_String(self.text, serializer);
+    sse_encode_list_live_message_segment(self.segments, serializer);
+    sse_encode_list_live_danmaku_emote_entry(self.emotes, serializer);
+    sse_encode_opt_box_autoadd_live_danmaku_emote(self.uemote, serializer);
+    sse_encode_opt_box_autoadd_live_danmaku_reply(self.reply, serializer);
+    sse_encode_opt_box_autoadd_live_medal(self.medal, serializer);
+  }
+
+  @protected
+  void sse_encode_live_danmaku_prefetch_result(
+    LiveDanmakuPrefetchResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_list_live_danmaku_message(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_live_danmaku_reply(
+    LiveDanmakuReply self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_64(self.mid, serializer);
+    sse_encode_opt_String(self.name, serializer);
+  }
+
+  @protected
+  void sse_encode_live_danmaku_token(
+    LiveDanmakuToken self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.token, serializer);
+    sse_encode_list_String(self.servers, serializer);
+  }
+
+  @protected
+  void sse_encode_live_danmaku_token_result(
+    LiveDanmakuTokenResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_live_danmaku_token(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
   void sse_encode_live_emote_package(
     LiveEmotePackage self,
     SseSerializer serializer,
@@ -22432,6 +24058,25 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_live_event(LiveEvent self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_live_event_kind(self.kind, serializer);
+    sse_encode_opt_box_autoadd_live_danmaku_message(self.danmaku, serializer);
+    sse_encode_opt_box_autoadd_live_super_chat(self.superChat, serializer);
+    sse_encode_opt_String(self.text, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.count, serializer);
+  }
+
+  @protected
+  void sse_encode_live_event_kind(
+    LiveEventKind self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
   void sse_encode_live_feedback(LiveFeedback self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_opt_String(self.title, serializer);
@@ -22450,6 +24095,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_opt_String(self.name, serializer);
     sse_encode_opt_String(self.idType, serializer);
     sse_encode_opt_box_autoadd_i_64(self.reasonId, serializer);
+  }
+
+  @protected
+  void sse_encode_live_filter_candidate(
+    LiveFilterCandidate self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.text, serializer);
+    sse_encode_i_64(self.mid, serializer);
   }
 
   @protected
@@ -22593,6 +24248,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_opt_String(self.errorKind, serializer);
     sse_encode_opt_String(self.errorDetail, serializer);
     sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_live_message_segment(
+    LiveMessageSegment self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.text, serializer);
+    sse_encode_opt_box_autoadd_u_32(self.emoteIndex, serializer);
   }
 
   @protected
@@ -22801,10 +24466,116 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_live_socket_action_result(
+    LiveSocketActionResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_live_socket_batch(
+    LiveSocketBatch self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_64(self.sessionId, serializer);
+    sse_encode_i_64(self.generation, serializer);
+    sse_encode_list_live_event(self.events, serializer);
+    sse_encode_u_64(self.dropped, serializer);
+    sse_encode_bool(self.ended, serializer);
+  }
+
+  @protected
+  void sse_encode_live_socket_handle(
+    LiveSocketHandle self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_64(self.sessionId, serializer);
+    sse_encode_i_64(self.generation, serializer);
+  }
+
+  @protected
+  void sse_encode_live_socket_open_result(
+    LiveSocketOpenResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_live_socket_handle(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_live_socket_poll_result(
+    LiveSocketPollResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_live_socket_batch(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
   void sse_encode_live_stream(LiveStream self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_opt_String(self.protocolName, serializer);
     sse_encode_list_live_format(self.format, serializer);
+  }
+
+  @protected
+  void sse_encode_live_super_chat(
+    LiveSuperChat self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_64(self.id, serializer);
+    sse_encode_i_64(self.uid, serializer);
+    sse_encode_i_64(self.price, serializer);
+    sse_encode_opt_String(self.backgroundImage, serializer);
+    sse_encode_String(self.backgroundColor, serializer);
+    sse_encode_String(self.backgroundBottomColor, serializer);
+    sse_encode_String(self.backgroundPriceColor, serializer);
+    sse_encode_String(self.messageFontColor, serializer);
+    sse_encode_i_64(self.startTime, serializer);
+    sse_encode_i_64(self.endTime, serializer);
+    sse_encode_String(self.message, serializer);
+    sse_encode_String(self.token, serializer);
+    sse_encode_i_64(self.ts, serializer);
+    sse_encode_live_super_chat_user(self.userInfo, serializer);
+    sse_encode_opt_box_autoadd_live_medal(self.medal, serializer);
+    sse_encode_i_64(self.roomId, serializer);
+  }
+
+  @protected
+  void sse_encode_live_super_chat_result(
+    LiveSuperChatResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_list_live_super_chat(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_live_super_chat_user(
+    LiveSuperChatUser self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.face, serializer);
+    sse_encode_opt_String(self.faceFrame, serializer);
+    sse_encode_String(self.uname, serializer);
+    sse_encode_String(self.nameColor, serializer);
   }
 
   @protected
@@ -23318,6 +25089,58 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_live_danmaku_emote(
+    LiveDanmakuEmote? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_live_danmaku_emote(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_danmaku_message(
+    LiveDanmakuMessage? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_live_danmaku_message(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_danmaku_reply(
+    LiveDanmakuReply? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_live_danmaku_reply(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_danmaku_token(
+    LiveDanmakuToken? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_live_danmaku_token(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_box_autoadd_live_follow_section(
     LiveFollowSection? self,
     SseSerializer serializer,
@@ -23444,6 +25267,45 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_box_autoadd_live_shield_info(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_socket_batch(
+    LiveSocketBatch? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_live_socket_batch(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_socket_handle(
+    LiveSocketHandle? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_live_socket_handle(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_live_super_chat(
+    LiveSuperChat? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_live_super_chat(self, serializer);
     }
   }
 
@@ -24284,6 +26146,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_list_live_danmaku_message(
+    List<LiveDanmakuMessage>? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_list_live_danmaku_message(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_list_live_emote_package(
     List<LiveEmotePackage>? self,
     SseSerializer serializer,
@@ -24293,6 +26168,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_list_live_emote_package(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_list_live_super_chat(
+    List<LiveSuperChat>? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_list_live_super_chat(self, serializer);
     }
   }
 

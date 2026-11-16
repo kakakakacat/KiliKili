@@ -4,7 +4,7 @@ import 'dart:math' as math;
 import 'package:kilikili/common/widgets/custom_icon.dart';
 import 'package:kilikili/common/widgets/extra_hittest_stack.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:kilikili/models_new/live/live_superchat/item.dart';
+import 'package:kilikili/pages/live_room/superchat/super_chat_state.dart';
 import 'package:kilikili/pages/live_room/superchat/superchat_card.dart';
 import 'package:kilikili/plugin/pl_player/utils/fullscreen.dart';
 import 'package:kilikili/utils/extension/num_ext.dart';
@@ -29,7 +29,7 @@ class _FullScreenScState extends State<FullScreenSc> {
   var _opacity = Pref.fullScreenSCOpacity;
   var _scale = Pref.fullScreenSCScale;
 
-  final _randomSC = SuperChatItem.random;
+  final _randomSC = LiveSuperChatState.random;
   late ColorScheme _colorScheme;
 
   @override

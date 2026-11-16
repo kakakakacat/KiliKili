@@ -1,5 +1,5 @@
 import 'package:kilikili/common/style.dart';
-import 'package:kilikili/models_new/live/live_medal_wall/uinfo_medal.dart';
+import 'package:kilikili/rust/api/live.dart';
 import 'package:kilikili/utils/color_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -21,14 +21,14 @@ class MedalWidget extends StatelessWidget {
 
   MedalWidget.fromMedalInfo({
     super.key,
-    required UinfoMedal medal,
+    required LiveMedal medal,
     this.fontSize = _kFontSize,
     this.strutStyle = _kStrutStyle,
     this.padding = _kPadding,
   }) : medalName = medal.name!,
        level = medal.level!,
-       backgroundColor = ColourUtils.parseMedalColor(medal.v2MedalColorStart!),
-       nameColor = ColourUtils.parseColor(medal.v2MedalColorText!);
+       backgroundColor = ColourUtils.parseMedalColor(medal.colorStart!),
+       nameColor = ColourUtils.parseColor(medal.colorText!);
 
   final String medalName;
   final int level;

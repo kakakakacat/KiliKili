@@ -191,6 +191,13 @@ RFC §10.1 规定了要固定 `UPSTREAM_COMMIT` 并记录 rebase/merge 策略，
 按 §6 的集合口径，实质改动 **246 → 250**、仅重命名 **645 → 641**，修改总数仍为
 **891**；新增仍为 **526**，删除 **148 → 149**。
 
+修订：2026-11-16（#136 音量竖向胶囊）——修改
+`lib/plugin/pl_player/view/view.dart`，该文件此前已被 #79、#141、#143 实质修改，
+本次不扩大上游修改文件集合。新增独立展示组件
+`lib/plugin/pl_player/widgets/volume_indicator.dart` 与
+`test/plugin/pl_player/volume_indicator_test.dart`；手势与音量控制器不变。
+同步上游时保留竖向填充展示，只合入控制行为相关的改动。
+
 ## 1. 基准
 
 ```

@@ -1,0 +1,92 @@
+[
+  {
+    "group": 1,
+    "key": "fav_video",
+    "reversed": false,
+    "value": 1
+  },
+  {
+    "group": 1,
+    "key": "bangumi",
+    "reversed": false,
+    "value": 1
+  },
+  {
+    "group": 1,
+    "key": "comic",
+    "reversed": false,
+    "value": 0
+  },
+  {
+    "group": 1,
+    "key": "coins_video",
+    "reversed": false,
+    "value": 1
+  },
+  {
+    "group": 1,
+    "key": "likes_video",
+    "reversed": false,
+    "value": 0
+  },
+  {
+    "group": 1,
+    "key": "played_game",
+    "reversed": false,
+    "value": 1
+  },
+  {
+    "group": 1,
+    "key": "dress_up",
+    "reversed": false,
+    "value": 1
+  },
+  {
+    "group": 1,
+    "key": "disable_following",
+    "reversed": true,
+    "value": 0
+  },
+  {
+    "group": 1,
+    "key": "disable_show_fans",
+    "reversed": true,
+    "value": 1
+  },
+  {
+    "group": 2,
+    "key": "close_space_medal",
+    "reversed": true,
+    "value": 0
+  },
+  {
+    "group": 2,
+    "key": "only_show_wearing",
+    "reversed": true,
+    "value": 1
+  },
+  {
+    "group": 2,
+    "key": "disable_show_school",
+    "reversed": true,
+    "value": null
+  },
+  {
+    "group": 3,
+    "key": "live_playback",
+    "reversed": false,
+    "value": 1
+  },
+  {
+    "group": 3,
+    "key": "charge_video",
+    "reversed": false,
+    "value": 0
+  },
+  {
+    "group": 3,
+    "key": "lesson_video",
+    "reversed": false,
+    "value": 1
+  }
+]

@@ -43,6 +43,7 @@ import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:kilikili/utils/utils.dart';
 import 'package:kilikili/services/rust/rust_relation.dart';
+import 'package:kilikili/services/rust/rust_user.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -222,7 +223,7 @@ class _MemberPageState extends State<MemberPage> {
                     Widget trailing = FilledButton.tonal(
                       onPressed: () async {
                         final isFollow = e.isFollow;
-                        final res = await UserHttp.spaceReserve(
+                        final res = await RustUser.spaceReserve(
                           sid: e.sid!,
                           isFollow: isFollow,
                         );

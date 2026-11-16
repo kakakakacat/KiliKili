@@ -25,7 +25,7 @@ import 'package:kilikili/models/common/video/cdn_type.dart';
 import 'package:kilikili/models/common/video/subtitle_pref_type.dart';
 import 'package:kilikili/models/common/video/video_decode_type.dart';
 import 'package:kilikili/models/user/danmaku_rule.dart';
-import 'package:kilikili/models/user/info.dart';
+import 'package:kilikili/services/rust/rust_user.dart';
 import 'package:kilikili/pages/setting/pages/fullscreen_sc.dart'
     show kFullScreenSCWidth;
 import 'package:kilikili/plugin/pl_player/models/audio_output_type.dart';
@@ -53,8 +53,9 @@ abstract final class Pref {
   static final Box _video = GStorage.video;
   static final Box _localCache = GStorage.localCache;
 
-  static UserInfoData? get userInfoCache =>
-      GStorage.userInfo.get('userInfoCache');
+  /// 登录用户信息的本地缓存。解不出来（含老版本留下的二进制帧）就是 null。
+  static UserInfo? get userInfoCache =>
+      RustUser.cachedUserInfo(GStorage.userInfo.get('userInfoCache'));
 
   static List<double> get dynamicDetailRatio => List<double>.from(
     _setting.get(

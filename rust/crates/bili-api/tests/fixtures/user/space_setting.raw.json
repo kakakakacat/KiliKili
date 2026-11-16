@@ -1,0 +1,23 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "privacy": {
+      "fav_video": 1,
+      "bangumi": 1,
+      "comic": 0,
+      "coins_video": 1,
+      "likes_video": 0,
+      "played_game": 1,
+      "dress_up": 1,
+      "disable_following": 0,
+      "disable_show_fans": 1,
+      "close_space_medal": 0,
+      "only_show_wearing": 1,
+      "live_playback": 1,
+      "charge_video": 0,
+      "lesson_video": 1
+    }
+  }
+}

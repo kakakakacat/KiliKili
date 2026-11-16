@@ -18,6 +18,7 @@ import 'package:kilikili/utils/extension/nested_scroll_ext.dart';
 import 'package:kilikili/utils/request_utils.dart';
 import 'package:kilikili/utils/share_utils.dart';
 import 'package:kilikili/utils/storage_pref.dart';
+import 'package:kilikili/services/rust/rust_user.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart'
     show ExtendedNestedScrollViewState;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -291,7 +292,7 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
   }
 
   Future<void> vipExpAdd() async {
-    final res = await UserHttp.vipExpAdd();
+    final res = await RustUser.vipExpAdd();
     if (res.isSuccess) {
       SmartDialog.showToast('领取成功');
     } else {

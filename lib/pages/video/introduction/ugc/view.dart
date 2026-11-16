@@ -21,7 +21,7 @@ import 'package:kilikili/models_new/video/video_detail/desc_v2.dart';
 import 'package:kilikili/models_new/video/video_detail/episode.dart';
 import 'package:kilikili/models_new/video/video_detail/staff.dart';
 import 'package:kilikili/models_new/video/video_detail/stat.dart';
-import 'package:kilikili/models_new/video/video_tag/data.dart';
+import 'package:kilikili/services/rust/rust_user.dart' show VideoTag;
 import 'package:kilikili/pages/mine/controller.dart';
 import 'package:kilikili/pages/search/widgets/search_text.dart';
 import 'package:kilikili/pages/video/controller.dart';
@@ -1025,7 +1025,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     ),
   );
 
-  Widget _buildTags(List<VideoTagItem> tags) {
+  Widget _buildTags(List<VideoTag> tags) {
     return Padding(
       padding: const .only(top: 8),
       child: Wrap(

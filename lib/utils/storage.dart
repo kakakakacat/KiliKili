@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:kilikili/models/model_owner.dart';
 import 'package:kilikili/models/user/danmaku_rule_adapter.dart';
-import 'package:kilikili/models/user/info.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/accounts/account_adapter.dart';
 import 'package:kilikili/utils/accounts/account_type_adapter.dart';
@@ -16,7 +15,18 @@ import 'package:hive_ce/hive.dart';
 import 'package:path/path.dart' as path;
 
 abstract final class GStorage {
-  static late final Box<UserInfoData> userInfo;
+  /// 登录用户信息的本地缓存，存的是**一段 JSON**（S7 #57）。
+  ///
+  /// 基线存的是 `UserInfoData` 对象，靠 Hive 适配器序列化。typed 直连之后
+  /// 导出结构不可变，适配器无从生成，所以改存 JSON，序列化由 Rust 负责
+  /// （`RustUser.cacheUserInfo`）。
+  ///
+  /// **盒名换了**（`userInfo` → `userInfoJson`）：老盒里是 typeId 4/5 的
+  /// 二进制帧，适配器已随模型删除，再去打开它会在 `openBox` 阶段抛
+  /// 「unknown typeId」。换名之后老盒不再被打开，并在这里一次性删掉。
+  /// 代价是老用户升级后首屏的头像/昵称空一下，等 nav 回来——这是换格式
+  /// 一次性的成本，已在 #57 里确认过。
+  static late final Box<String> userInfo;
   static late final Box<dynamic> historyWord;
   static late final Box<dynamic> localCache;
   static late final Box<dynamic> setting;
@@ -28,10 +38,17 @@ abstract final class GStorage {
     Hive.init(path.join(appSupportDirPath, 'hive'));
     regAdapter();
 
+    // 老的 `userInfo` 盒里是 typeId 4/5 的二进制帧，适配器已随模型删除
+    // （S7 #57）。不删的话它只是占着磁盘；删掉也顺带让「换格式」这件事
+    // 不留第二份真相。失败忽略——盒本来就可能不存在。
+    try {
+      await Hive.deleteBoxFromDisk('userInfo');
+    } catch (_) {}
+
     await Future.wait([
       // 登录用户信息
-      Hive.openBox<UserInfoData>(
-        'userInfo',
+      Hive.openBox<String>(
+        'userInfoJson',
         compactionStrategy: (int entries, int deletedEntries) {
           return deletedEntries > 2;
         },
@@ -99,8 +116,6 @@ abstract final class GStorage {
   static void regAdapter() {
     Hive
       ..registerAdapter(OwnerAdapter())
-      ..registerAdapter(UserInfoDataAdapter())
-      ..registerAdapter(LevelInfoAdapter())
       ..registerAdapter(BiliCookieJarAdapter())
       ..registerAdapter(LoginAccountAdapter())
       ..registerAdapter(AccountTypeAdapter())

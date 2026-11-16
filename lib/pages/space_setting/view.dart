@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/space_setting/privacy.dart';
+import 'package:kilikili/services/rust/rust_user.dart';
 import 'package:kilikili/pages/space_setting/controller.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -33,11 +33,14 @@ class _SpaceSettingPageState extends State<SpaceSettingPage> {
     super.dispose();
   }
 
-  Widget _buildBody(ThemeData theme, LoadingState<Privacy?> loadingState) {
+  Widget _buildBody(
+    ThemeData theme,
+    LoadingState<List<PrivacySetting>> loadingState,
+  ) {
     return switch (loadingState) {
       Loading() => const SizedBox.shrink(),
-      Success<Privacy?>(:final response) =>
-        response == null
+      Success<List<PrivacySetting>>(:final response) =>
+        response.isEmpty
             ? scrollErrorWidget(onReload: _controller.onReload)
             : Builder(
                 builder: (context) {
@@ -58,25 +61,25 @@ class _SpaceSettingPageState extends State<SpaceSettingPage> {
                     slivers: [
                       dividerL,
                       SliverList.separated(
-                        itemCount: response.list1.length,
+                        itemCount: _group(response, 1).length,
                         itemBuilder: (context, index) {
-                          return _item(response.list1[index]);
+                          return _item(_group(response, 1)[index]);
                         },
                         separatorBuilder: (context, index) => divider,
                       ),
                       dividerL,
                       SliverList.separated(
-                        itemCount: response.list2.length,
+                        itemCount: _group(response, 2).length,
                         itemBuilder: (context, index) {
-                          return _item(response.list2[index]);
+                          return _item(_group(response, 2)[index]);
                         },
                         separatorBuilder: (context, index) => divider,
                       ),
                       dividerL,
                       SliverList.separated(
-                        itemCount: response.list3.length,
+                        itemCount: _group(response, 3).length,
                         itemBuilder: (context, index) {
-                          return _item(response.list3[index]);
+                          return _item(_group(response, 3)[index]);
                         },
                         separatorBuilder: (context, index) => divider,
                       ),
@@ -95,20 +98,16 @@ class _SpaceSettingPageState extends State<SpaceSettingPage> {
     };
   }
 
-  Widget _item(SpaceSettingModel item) {
+  /// 界面上的第几组。分组由 Rust 给（它与 key、是否反相一样属于协议语义），
+  /// 这里只按它筛一遍。
+  List<PrivacySetting> _group(List<PrivacySetting> all, int group) =>
+      all.where((e) => e.group == group).toList();
+
+  Widget _item(PrivacySetting item) {
     return Builder(
       builder: (context) {
         void onChanged([bool? value]) {
-          _controller.hasMod ??= true;
-
-          value ??= !item.boolVal;
-          item.value = item.isReverse
-              ? value
-                    ? 0
-                    : 1
-              : value
-              ? 1
-              : 0;
+          _controller.toggle(item, value);
           (context as Element).markNeedsBuild();
         }
 
@@ -116,14 +115,15 @@ class _SpaceSettingPageState extends State<SpaceSettingPage> {
           dense: true,
           onTap: onChanged,
           title: Text(
-            item.name,
+            // 标题是文案，留在宿主；key 与「是否反相」在 Rust。
+            RustUser.privacyLabels[item.key] ?? item.key,
             style: const TextStyle(fontSize: 14),
           ),
           trailing: Transform.scale(
             alignment: Alignment.centerRight,
             scale: 0.8,
             child: Switch(
-              value: item.boolVal,
+              value: _controller.isOn(item),
               onChanged: onChanged,
             ),
           ),

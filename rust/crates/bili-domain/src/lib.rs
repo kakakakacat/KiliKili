@@ -22,6 +22,7 @@ pub mod search;
 pub mod session;
 pub mod sponsor_block;
 pub mod subtitle;
+pub mod user;
 pub mod user_list;
 pub mod video;
 pub mod video_feed;

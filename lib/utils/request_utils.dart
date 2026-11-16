@@ -39,6 +39,7 @@ import 'package:kilikili/utils/storage_key.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:kilikili/utils/theme_utils.dart';
 import 'package:kilikili/utils/utils.dart';
+import 'package:kilikili/services/rust/rust_user.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -610,7 +611,11 @@ abstract final class RequestUtils {
   }
 
   static Future<void> showUserRealName(String mid) async {
-    final res = await UserHttp.getUserRealName(mid);
+    // 基线这里收的是字符串 mid（路由参数直给）。Rust 侧的签名是 i64——
+    // 协议上它就是个数字，让类型在边界处收紧，解析不出来就不发请求。
+    final id = int.tryParse(mid);
+    if (id == null) return;
+    final res = await RustUser.getUserRealName(id);
     if (res case Success(:final response)) {
       final show = !response.name.isNullOrEmpty;
       showDialog(

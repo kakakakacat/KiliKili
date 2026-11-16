@@ -12,7 +12,7 @@ import 'package:kilikili/models/common/image_preview_type.dart';
 import 'package:kilikili/models/common/image_type.dart';
 import 'package:kilikili/models_new/pgc/pgc_info_model/stat.dart';
 import 'package:kilikili/models_new/video/video_detail/episode.dart';
-import 'package:kilikili/models_new/video/video_tag/data.dart';
+import 'package:kilikili/services/rust/rust_user.dart' show VideoTag;
 import 'package:kilikili/pages/video/controller.dart';
 import 'package:kilikili/pages/video/introduction/pgc/controller.dart';
 import 'package:kilikili/pages/video/introduction/pgc/widgets/episode.dart';
@@ -31,7 +31,7 @@ import 'package:material_ui/material_ui.dart';
 class PgcIntroPage extends StatefulWidget {
   final String heroTag;
   final ShowEpisodes showEpisodes;
-  final Function(PgcSeasonDetail videoDetail, List<VideoTagItem>? videoTags)
+  final Function(PgcSeasonDetail videoDetail, List<VideoTag>? videoTags)
   showIntroDetail;
   final double maxWidth;
   final bool isPortrait;

@@ -1,0 +1,38 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "count": 2,
+    "has_more": false,
+    "list": [
+      {
+        "id": 900001,
+        "fid": 9001,
+        "mid": 800000601,
+        "attr": 0,
+        "title": "示例收藏夹",
+        "cover": "https://example.invalid/bfs/archive/f1.jpg",
+        "upper": { "mid": 800000601, "name": "示例作者", "face": "https://example.invalid/bfs/face/x.jpg" },
+        "cover_type": 2,
+        "intro": "示例简介",
+        "ctime": 1700000401,
+        "mtime": 1700000402,
+        "state": 0,
+        "fav_state": 1,
+        "media_count": 37,
+        "view_count": 0,
+        "type": 11,
+        "cnt_info": { "play": 1024, "danmaku": 8 }
+      },
+      {
+        "id": 900002,
+        "title": "示例合集",
+        "cover": "https://example.invalid/bfs/archive/f2.jpg",
+        "media_count": 5,
+        "state": 1,
+        "type": 21
+      }
+    ]
+  }
+}

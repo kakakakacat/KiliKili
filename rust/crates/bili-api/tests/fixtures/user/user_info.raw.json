@@ -1,0 +1,38 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "isLogin": true,
+    "email_verified": 1,
+    "face": "https://example.invalid/bfs/face/u.jpg",
+    "face_nft": 0,
+    "level_info": {
+      "current_level": 5,
+      "current_min": 10800,
+      "current_exp": 11000,
+      "next_exp": 28800
+    },
+    "mid": 800000501,
+    "mobile_verified": 1,
+    "money": 12.5,
+    "moral": 70,
+    "official": { "role": 0, "title": "", "desc": "", "type": -1 },
+    "officialVerify": { "type": -1, "desc": "" },
+    "pendant": { "pid": 0, "name": "", "image": "" },
+    "scores": 0,
+    "uname": "示例用户",
+    "vipDueDate": 1800000000000,
+    "vipStatus": 1,
+    "vipType": 2,
+    "vip_pay_type": 1,
+    "vip_theme_type": 0,
+    "vip_label": { "text": "年度大会员", "label_theme": "annual_vip" },
+    "vip_avatar_subscript": 1,
+    "vip_nickname_color": "#FB7299",
+    "wallet": { "mid": 800000501, "bcoin_balance": 0 },
+    "has_shop": false,
+    "shop_url": "",
+    "is_senior_member": 1
+  }
+}

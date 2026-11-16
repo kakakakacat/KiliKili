@@ -4,7 +4,7 @@ import 'package:kilikili/common/widgets/scroll_physics.dart'
 import 'package:kilikili/common/widgets/selection_text.dart';
 import 'package:kilikili/common/widgets/stat/stat.dart';
 import 'package:kilikili/models/common/stat_type.dart';
-import 'package:kilikili/models_new/video/video_tag/data.dart';
+import 'package:kilikili/services/rust/rust_user.dart' show VideoTag;
 import 'package:kilikili/pages/common/slide/common_slide_page.dart';
 import 'package:kilikili/pages/pgc_review/view.dart';
 import 'package:kilikili/pages/search/widgets/search_text.dart';
@@ -16,7 +16,7 @@ import 'package:material_ui/material_ui.dart';
 
 class PgcIntroPanel extends CommonSlidePage {
   final PgcSeasonDetail item;
-  final List<VideoTagItem>? videoTags;
+  final List<VideoTag>? videoTags;
 
   const PgcIntroPanel({
     super.key,

@@ -1,57 +1,16 @@
 import 'package:kilikili/http/api.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models/user/info.dart';
-import 'package:kilikili/models/user/stat.dart';
-import 'package:kilikili/models_new/coin_log/data.dart';
 import 'package:kilikili/models_new/history/data.dart';
 import 'package:kilikili/models_new/later/data.dart';
-import 'package:kilikili/models_new/login_log/data.dart';
 import 'package:kilikili/models_new/media_list/data.dart';
-import 'package:kilikili/models_new/space_setting/data.dart';
-import 'package:kilikili/models_new/sub/sub/data.dart';
-import 'package:kilikili/models_new/user_real_name/data.dart';
-import 'package:kilikili/models_new/video/video_tag/data.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/accounts/account.dart';
-import 'package:kilikili/utils/app_sign.dart';
-import 'package:kilikili/utils/global_data.dart';
 import 'package:kilikili/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 abstract final class UserHttp {
-  // static Future<dynamic> userStat({required int mid}) async {
-  //   final res = await Request().get(
-  //     Api.userStat,
-  //     queryParameters: {'vmid': mid},
-  //   );
-  //   if (res.data['code'] == 0) {
-  //     return {'status': true, 'data': res.data['data']};
-  //   } else {
-  //     return {'status': false};
-  //   }
-  // }
-
-  static Future<LoadingState<UserInfoData>> userInfo() async {
-    final res = await Request().get(Api.userInfo);
-    if (res.data['code'] == 0) {
-      UserInfoData data = UserInfoData.fromJson(res.data['data']);
-      GlobalData().coins = data.money;
-      return Success(data);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<UserStat>> userStatOwner() async {
-    final res = await Request().get(Api.userStatOwner);
-    if (res.data['code'] == 0) {
-      return Success(UserStat.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
 
   // 稍后再看
   static Future<LoadingState<LaterData>> seeYouLater({
@@ -292,47 +251,6 @@ abstract final class UserHttp {
     }
   }
 
-  // 我的订阅
-  static Future<LoadingState<SubData>> userSubFolder({
-    required int mid,
-    required int pn,
-    required int ps,
-  }) async {
-    final res = await Request().get(
-      Api.userSubFolder,
-      queryParameters: {
-        'up_mid': mid,
-        'ps': ps,
-        'pn': pn,
-        'platform': 'web',
-      },
-    );
-    if (res.data['code'] == 0 && res.data['data'] is Map) {
-      return Success(SubData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<List<VideoTagItem>?>> videoTags({
-    required String bvid,
-    Object? cid,
-  }) async {
-    final res = await Request().get(
-      Api.videoTags,
-      queryParameters: {'bvid': bvid, 'cid': ?cid},
-    );
-    if (res.data['code'] == 0) {
-      return Success(
-        (res.data['data'] as List?)
-            ?.map((e) => VideoTagItem.fromJson(e))
-            .toList(),
-      );
-    } else {
-      return const Error(null);
-    }
-  }
-
   // 稍后再看列表
   static Future<LoadingState<MediaListData>> getMediaList({
     required Object type,
@@ -363,171 +281,6 @@ abstract final class UserHttp {
     );
     if (res.data['code'] == 0) {
       return Success(MediaListData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<num?>> getCoin() async {
-    final res = await Request().get(Api.getCoin);
-    if (res.data['code'] == 0) {
-      return Success(res.data['data']?['money']);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<void>> dynamicReport({
-    required Object mid,
-    required Object dynId,
-    required int reasonType,
-    String? reasonDesc,
-  }) async {
-    final res = await Request().post(
-      Api.dynamicReport,
-      queryParameters: {
-        'csrf': Accounts.main.csrf,
-      },
-      data: {
-        "accused_uid": mid,
-        "dynamic_id": dynId,
-        "reason_type": reasonType,
-        "reason_desc": reasonDesc,
-      },
-      options: Options(contentType: Headers.formUrlEncodedContentType),
-    );
-    if (res.data['code'] == 0) {
-      return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<SpaceSettingData>> spaceSetting() async {
-    final res = await Request().get(
-      Api.spaceSetting,
-      queryParameters: {
-        'mid': Accounts.main.mid,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(SpaceSettingData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<void>> spaceSettingMod(
-    Map<String, dynamic> data,
-  ) async {
-    final res = await Request().post(
-      Api.spaceSettingMod,
-      queryParameters: {
-        'csrf': Accounts.main.csrf,
-      },
-      data: data,
-      options: Options(contentType: Headers.formUrlEncodedContentType),
-    );
-    if (res.data['code'] == 0) {
-      return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<void>> vipExpAdd() async {
-    final res = await Request().post(
-      Api.vipExpAdd,
-      queryParameters: {
-        'mid': Accounts.main.mid,
-        'csrf': Accounts.main.csrf,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<CoinLogData>> coinLog() async {
-    final res = await Request().get(
-      Api.coinLog,
-      queryParameters: {
-        'jsonp': 'jsonp',
-        'web_location': '333.33',
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(CoinLogData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<LoginLogData>> loginLog() async {
-    final res = await Request().get(
-      Api.loginLog,
-      queryParameters: {
-        'jsonp': 'jsonp',
-        'web_location': '333.33',
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(LoginLogData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<CoinLogData>> expLog() async {
-    final res = await Request().get(
-      Api.expLog,
-      queryParameters: {
-        'jsonp': 'jsonp',
-        'web_location': '333.33',
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(CoinLogData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<UserRealNameData>> getUserRealName(
-    Object mid,
-  ) async {
-    final params = {
-      'access_key': Accounts.main.accessKey,
-      'up_mid': mid,
-    };
-    AppSign.appSign(params);
-    final res = await Request().get(
-      Api.userRealName,
-      queryParameters: params,
-    );
-    if (res.data['code'] == 0) {
-      return Success(UserRealNameData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<void>> spaceReserve({
-    required Object sid,
-    required bool isFollow,
-  }) async {
-    final res = await Request().post(
-      isFollow ? Api.spaceReserveCancel : Api.spaceReserve,
-      data: {
-        'sid': sid,
-        'csrf': Accounts.main.csrf,
-      },
-      options: Options(contentType: Headers.formUrlEncodedContentType),
-    );
-    if (res.data['code'] == 0) {
-      return const Success(null);
     } else {
       return Error(res.data['message']);
     }

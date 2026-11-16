@@ -9,7 +9,7 @@ import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/member/profile_type.dart';
-import 'package:kilikili/models/user/info.dart';
+import 'package:kilikili/services/rust/rust_user.dart';
 import 'package:kilikili/models_new/account_myinfo/data.dart';
 import 'package:kilikili/pages/mine/controller.dart';
 import 'package:kilikili/services/account_service.dart';
@@ -99,18 +99,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 );
                 _loadingState = Success(data);
                 accountService.face.value = data.face!;
-                try {
-                  UserInfoData userInfo = Pref.userInfoCache!
-                    ..uname = data.name
-                    ..face = data.face;
-                  GStorage.userInfo.put('userInfoCache', userInfo);
-                } catch (_) {}
-                try {
-                  Get.find<MineController>().userInfo
-                    ..value.uname = data.name
-                    ..value.face = data.face
-                    ..refresh();
-                } catch (_) {}
+                _updateCachedProfile(uname: data.name, face: data.face);
               } else {
                 _loadingState = Error(res.data['message']);
               }
@@ -377,16 +366,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               data
                 ..name = _textController.text
                 ..coins = data.coins! - 6;
-              try {
-                UserInfoData userInfo = Pref.userInfoCache!
-                  ..uname = _textController.text;
-                GStorage.userInfo.put('userInfoCache', userInfo);
-              } catch (_) {}
-              try {
-                Get.find<MineController>().userInfo
-                  ..value.uname = _textController.text
-                  ..refresh();
-              } catch (_) {}
+              _updateCachedProfile(uname: _textController.text);
             } else if (type == ProfileType.sign) {
               data.sign = _textController.text;
             } else if (type == ProfileType.birthday) {
@@ -541,6 +521,29 @@ class _EditProfilePageState extends State<EditProfilePage> {
       SmartDialog.showToast(e.toString());
     }
   }
+
+  /// 改名/换头像之后同步本地缓存与「我的」页。
+  ///
+  /// Rust 的 `UserInfo` 不可变，所以是「读出来 → 换两个字段 → 写回去」，
+  /// 换字段由 `RustUser.withProfile` 做——让这里自己 `UserInfo(...)` 重建
+  /// 要填齐全部字段，加字段时一定漏，而漏掉的会悄悄从缓存里消失。
+  void _updateCachedProfile({String? uname, String? face}) {
+    final cached = Pref.userInfoCache;
+    if (cached != null) {
+      final updated = RustUser.withProfile(cached, uname: uname, face: face);
+      final json = RustUser.cacheUserInfo(updated);
+      if (json != null) {
+        GStorage.userInfo.put('userInfoCache', json);
+      }
+    }
+    try {
+      final ctr = Get.find<MineController>();
+      ctr.userInfo
+        ..value = RustUser.withProfile(ctr.userInfo.value, uname: uname, face: face)
+        ..refresh();
+    } catch (_) {}
+  }
+
 }
 
 class CropAspectRatioPresetCustom implements CropAspectRatioPresetData {

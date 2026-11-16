@@ -1,17 +1,13 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/user.dart';
-import 'package:kilikili/models_new/login_log/data.dart';
-import 'package:kilikili/models_new/login_log/list.dart';
 import 'package:kilikili/pages/log_table/controller.dart';
+import 'package:kilikili/services/rust/rust_user.dart';
 
-class LoginLogController extends LogController<LoginLogData, LoginLogItem> {
+class LoginLogController extends LogController<List<LoginLogItem>, LoginLogItem> {
   @override
-  List<LoginLogItem>? getDataList(LoginLogData response) {
-    return response.list;
-  }
+  List<LoginLogItem>? getDataList(List<LoginLogItem> response) => response;
 
   @override
-  Future<LoadingState<LoginLogData>> customGetData() => UserHttp.loginLog();
+  Future<LoadingState<List<LoginLogItem>>> customGetData() => RustUser.loginLog();
 
   @override
   List<(int, String)> getFlexAndText(LoginLogItem item) {

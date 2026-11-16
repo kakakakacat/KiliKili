@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:kilikili/models/user/info.dart';
+import 'package:kilikili/services/rust/rust_user.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:get/get.dart';
 
@@ -11,7 +11,7 @@ class AccountService extends GetxService {
   @override
   void onInit() {
     super.onInit();
-    UserInfoData? userInfo = Pref.userInfoCache;
+    final userInfo = Pref.userInfoCache;
     if (userInfo != null) {
       face.value = userInfo.face ?? '';
       isLogin.value = true;

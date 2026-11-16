@@ -20,6 +20,7 @@ pub mod search_suggest;
 pub mod sponsor_block;
 pub mod subtitle;
 pub mod transport;
+pub mod user;
 pub mod video_detail;
 pub mod video_detail_fetch;
 pub mod video_feed;

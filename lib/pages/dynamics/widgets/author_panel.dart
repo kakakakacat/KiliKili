@@ -27,6 +27,7 @@ import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/request_utils.dart';
 import 'package:kilikili/utils/share_utils.dart';
 import 'package:kilikili/utils/storage_pref.dart';
+import 'package:kilikili/services/rust/rust_user.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -639,7 +640,7 @@ class AuthorPanel extends StatelessWidget {
                             reSrc: 11,
                           );
                         }
-                        return UserHttp.dynamicReport(
+                        return RustUser.dynamicReport(
                           mid: moduleAuthor.mid!,
                           dynId: item.idStr,
                           reasonType: reasonType,

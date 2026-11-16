@@ -14,6 +14,7 @@ import 'package:kilikili/utils/global_data.dart';
 import 'package:kilikili/utils/login_utils.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:kilikili/utils/utils.dart';
+import 'package:kilikili/services/rust/rust_user.dart';
 import 'package:brotli/brotli.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
@@ -52,7 +53,7 @@ class Request {
   }
 
   static Future<void> setCoin() async {
-    final res = await UserHttp.getCoin();
+    final res = await RustUser.getCoin();
     if (res case Success(:final response)) {
       GlobalData().coins = response;
     }

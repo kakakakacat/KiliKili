@@ -1,0 +1,9 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "captcha_key": "",
+    "recaptcha_url": "https://passport.bilibili.com/x/safecenter/captcha?recaptcha_token=fake-token&gee_gt=fake-gt&gee_challenge=fake-challenge"
+  }
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "device_name": "Pixel 7",
+    "is_current_device": true,
+    "latest_login_at": "2026-11-10 21:04:11",
+    "source": "android_hd"
+  },
+  {
+    "device_name": "Chrome on Windows",
+    "is_current_device": false,
+    "latest_login_at": "2026-10-02 08:17:52",
+    "source": "web"
+  },
+  {
+    "device_name": null,
+    "is_current_device": false,
+    "latest_login_at": "2026-09-01 00:00:00",
+    "source": null
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "state": "confirmed",
+  "tokens": {
+    "access_token": "<redacted>",
+    "cookie_names": [
+      "SESSDATA",
+      "bili_jct",
+      "DedeUserID"
+    ],
+    "expires_in": 2592000,
+    "refresh_token": "<redacted>"
+  }
+}

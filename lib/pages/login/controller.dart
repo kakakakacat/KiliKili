@@ -6,11 +6,10 @@ import 'package:kilikili/common/widgets/button/icon_button.dart';
 import 'package:kilikili/common/widgets/radio_widget.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/login.dart';
 import 'package:kilikili/models/common/account_type.dart';
-import 'package:kilikili/models/login/captcha_config.dart';
 import 'package:kilikili/models/login/model.dart';
 import 'package:kilikili/pages/login/geetest/geetest_webview_dialog.dart';
+import 'package:kilikili/services/rust/rust_login.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/accounts/account.dart';
 import 'package:kilikili/utils/platform_utils.dart';
@@ -31,8 +30,7 @@ class LoginPageController extends GetxController
   final FocusNode smsCodeFocusNode = FocusNode();
   final TextEditingController cookieTextController = TextEditingController();
 
-  late final codeInfo =
-      LoadingState<({String authCode, String url})>.loading().obs;
+  late final codeInfo = LoadingState<QrCodeData>.loading().obs;
 
   late final TabController tabController;
 
@@ -78,7 +76,7 @@ class LoginPageController extends GetxController
   }
 
   Future<void> refreshQRCode() async {
-    final res = await LoginHttp.getHDcode();
+    final res = await RustLogin.qrCode();
     if (res case Success(:final response)) {
       qrCodeTimer?.cancel();
       codeInfo.value = res;
@@ -94,21 +92,32 @@ class LoginPageController extends GetxController
         if (_isReq || tabController.index != 2) return;
 
         _isReq = true;
-        LoginHttp.codePoll(response.authCode).then((value) async {
+        RustLogin.qrCodePoll(response.authCode).then((poll) async {
           _isReq = false;
-          if (value['status']) {
-            t.cancel();
-            statusQRCode.value = '扫码成功';
-            await setAccount(
-              value['data'],
-              value['data']['cookie_info']['cookies'],
-            );
-            Get.back();
-          } else if (value['code'] == 86038) {
-            t.cancel();
-            qrCodeLeftTime.value = 0;
-          } else {
-            statusQRCode.value = value['msg'];
+          if (poll case Error(:final errMsg)) {
+            // 轮询失败只是这一次的网络问题，不停表：二维码还在有效期内。
+            statusQRCode.value = errMsg ?? '';
+            return;
+          }
+          final state = poll.data;
+          switch (state.status) {
+            // 三种状态在 Rust 侧已经分好（含 86038 这个失效码），这里
+            // 不再靠 code 判一次。
+            case QrPollStatus.confirmed:
+              final tokens = state.tokens;
+              if (tokens == null) {
+                statusQRCode.value = '扫码成功但未返回身份信息';
+                return;
+              }
+              t.cancel();
+              statusQRCode.value = '扫码成功';
+              await setAccount(tokens);
+              Get.back();
+            case QrPollStatus.expired:
+              t.cancel();
+              qrCodeLeftTime.value = 0;
+            case QrPollStatus.pending:
+              statusQRCode.value = state.message ?? '';
           }
         });
       });
@@ -138,33 +147,28 @@ class LoginPageController extends GetxController
         ..validate = null
         ..seccode = null
         ..geetest = null;
-      LoginCaptcha session = (
+      var session = CaptchaRegistrationData(
         gt: geeGt,
         challenge: geeChallenge,
-        token: captchaData.token,
+        // 这一组的 token 来自上一步（preCapture 或登录接口给的 URL）。
+        token: captchaData.token ?? '',
       );
       if (canRefreshRegistration) {
-        // 登录切片 #65 尚未迁移；沿用现有注册刷新，避免本次修复拆散 gt/challenge/token。
-        final resolved = await resolveLoginCaptcha(
+        // 只有短信验证这条路支持用 preCapture 换一组新注册。
+        // 「这组还能不能用、换不换、换到哪一组」全在 Rust
+        // （`bili_api::login::resolve_captcha`），这里只拿结论。
+        final resolved = await RustLogin.resolveCaptcha(
           session,
-          isUnavailable: (gt) => LoginHttp.isGeetestConfigUnavailable(
-            gt,
-            nativeIOS: Platform.isIOS,
-          ),
-          refresh: () async {
-            if (isClosed) return null;
-            final res = await LoginHttp.preCapture();
-            return res['status'] == true
-                ? parseLoginCaptcha(res['data'])
-                : null;
-          },
+          // 原生极验 SDK 与 WebView 用的是两份配置，必须各查各的：
+          // 只有 iOS 走原生 SDK，探测才带 client_type=ios&pt=20（#140）。
+          nativeIos: Platform.isIOS,
         );
         if (isClosed) return;
-        if (resolved == null) {
-          SmartDialog.showToast('验证码服务暂时不可用，请稍后重试或使用扫码登录');
+        if (resolved case Error(:final errMsg)) {
+          SmartDialog.showToast(errMsg ?? '验证码服务暂时不可用，请稍后重试或使用扫码登录');
           return;
         }
-        session = resolved;
+        session = resolved.data;
       }
 
       final res = await GeetestWebviewDialog.geetest(
@@ -260,251 +264,186 @@ class LoginPageController extends GetxController
   }
 
   // app端密码登录
+  //
+  // 「登录成没成、要不要验证码、要不要先验手机号」由 Rust 判定
+  // （`bili_api::login`），这里只按结论走界面（ADR-013 决策八）。
   Future<void> loginByPassword() async {
-    String username = usernameTextController.text;
-    String password = passwordTextController.text;
+    final username = usernameTextController.text;
+    final password = passwordTextController.text;
     if (username.isEmpty || password.isEmpty) {
       SmartDialog.showToast('用户名或密码不能为空');
       return;
     }
-    // if ((passwordFormKey.currentState as FormState).validate()) {
-    final webKeyRes = await LoginHttp.getWebKey();
-    if (!webKeyRes['status']) {
-      SmartDialog.showToast(webKeyRes['msg']);
-      return;
-    }
-    String salt = webKeyRes['data']['hash'];
-    String key = webKeyRes['data']['key'];
-    final res = await LoginHttp.loginByPwd(
+
+    // 公钥与盐不再经手 Dart：Rust 在同一次调用里取公钥、加密、发请求，
+    // 明文密码不落任何结构体（见 `RustLogin` 的"凭据边界"）。
+    final res = await RustLogin.loginByPassword(
       username: username,
       password: password,
-      key: key,
-      salt: salt,
-      geeValidate: captchaData.validate,
-      geeSeccode: captchaData.seccode,
-      geeChallenge: captchaData.geetest?.challenge,
-      recaptchaToken: captchaData.token,
+      captcha: _captchaSolution(),
     );
-    if (res['status']) {
-      final data = res['data'];
-      if (data == null) {
-        SmartDialog.showToast('登录异常，接口未返回数据：${res["msg"]}');
-        return;
-      }
-      if (data['status'] == 2) {
-        SmartDialog.showToast(data['message']);
-        // return;
-        //{"code":0,"message":"0","ttl":1,"data":{"status":2,"message":"本次登录环境存在风险, 需使用手机号进行验证或绑定","url":"https://passport.bilibili.com/h5-app/passport/risk/verify?tmp_token=9e785433940891dfa78f033fb7928181&request_id=e5a6d6480df04097870be56c6e60f7ef&source=risk","token_info":null,"cookie_info":null,"sso":null,"is_new":false,"is_tourist":false}}
-        String url = data['url']!;
-        Uri currentUri = Uri.parse(url);
-        final safeCenterRes = await LoginHttp.safeCenterGetInfo(
-          tmpCode: currentUri.queryParameters['tmp_token']!,
-        );
-        //{"code":0,"message":"0","ttl":1,"data":{"account_info":{"hide_tel":"111*****111","hide_mail":"aaa*****aaaa.aaa","bind_mail":true,"bind_tel":true,"tel_verify":true,"mail_verify":true,"unneeded_check":false,"bind_safe_question":false,"mid":1111111},"member_info":{"nickname":"xxxxxxx","face":"https://i0.hdslb.com/bfs/face/xxxxxxx.jpg","realname_status":false},"sns_info":{"bind_google":false,"bind_fb":false,"bind_apple":false,"bind_qq":true,"bind_weibo":true,"bind_wechat":false},"account_safe":{"score":80}}}
-        if (!safeCenterRes['status']) {
-          SmartDialog.showToast(
-            "获取安全验证信息失败，请尝试其它登录方式\n"
-            "(${safeCenterRes['code']}) ${safeCenterRes['msg']}",
-          );
-          return;
-        }
-        Map<String, String> accountInfo = {
-          "hindTel": safeCenterRes['data']['account_info']!["hide_tel"],
-          "hindMail": safeCenterRes['data']['account_info']!["hide_mail"],
-        };
-        if (!safeCenterRes['data']['account_info']!['tel_verify']) {
-          SmartDialog.showToast("当前账号未支持手机号验证，请尝试其它登录方式");
-          return;
-        }
-
-        TextEditingController textFieldController = TextEditingController();
-        String captchaKey = '';
-        showDialog(
-          context: Get.context!,
-          builder: (context) => AlertDialog(
-            titlePadding: const .only(left: 16, top: 18, right: 16, bottom: 12),
-            contentPadding: const .symmetric(horizontal: 16),
-            actionsPadding: const .symmetric(horizontal: 16, vertical: 12),
-            title: const Text("本次登录需要验证您的手机号", textAlign: .center),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  accountInfo['hindTel'] ?? '未能获取手机号',
-                  style: const TextStyle(fontSize: 18),
-                ),
-                // 带有清空按钮的输入框
-                TextField(
-                  style: const TextStyle(fontSize: 15),
-                  controller: textFieldController,
-                  textAlign: TextAlign.center,
-                  decoration: InputDecoration(
-                    hintText: "请输入短信验证码",
-                    hintStyle: const TextStyle(fontSize: 15),
-                    suffixIcon: iconButton(
-                      icon: const Icon(Icons.clear),
-                      size: 32,
-                      onPressed: textFieldController.clear,
-                    ),
-                    suffixIconConstraints: const BoxConstraints(
-                      maxHeight: 32,
-                      maxWidth: 32,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: const Text("发送验证码"),
-                onPressed: () async {
-                  final preCaptureRes = await LoginHttp.preCapture();
-                  if (!preCaptureRes['status'] ||
-                      preCaptureRes['data'] == null) {
-                    SmartDialog.showToast(
-                      "获取验证码失败，请尝试其它登录方式\n"
-                      "(${preCaptureRes['code']}) ${preCaptureRes['msg']} ${preCaptureRes['data']}",
-                    );
-                    return;
-                  }
-                  String geeGt = preCaptureRes['data']['gee_gt'];
-                  String geeChallenge = preCaptureRes['data']['gee_challenge'];
-                  captchaData.token = preCaptureRes['data']['recaptcha_token'];
-                  if (!isGeeArgumentValid(geeGt, geeChallenge)) {
-                    SmartDialog.showToast(
-                      "获取极验参数为空，请尝试其它登录方式\n"
-                      "(${preCaptureRes['code']}) ${preCaptureRes['msg']} ${preCaptureRes['data']}",
-                    );
-                    return;
-                  }
-
-                  getCaptcha(
-                    geeGt,
-                    geeChallenge,
-                    () async {
-                      final safeCenterSendSmsCodeRes =
-                          await LoginHttp.safeCenterSmsCode(
-                            tmpCode: currentUri.queryParameters['tmp_token']!,
-                            geeChallenge: captchaData.geetest?.challenge,
-                            geeSeccode: captchaData.seccode,
-                            geeValidate: captchaData.validate,
-                            recaptchaToken: captchaData.token,
-                            refererUrl: url,
-                          );
-                      if (!safeCenterSendSmsCodeRes['status']) {
-                        SmartDialog.showToast(
-                          "发送短信验证码失败，请尝试其它登录方式\n"
-                          "(${safeCenterSendSmsCodeRes['code']}) ${safeCenterSendSmsCodeRes['msg']}",
-                        );
-                        return;
-                      }
-                      SmartDialog.showToast("短信验证码已发送，请查收");
-                      captchaKey =
-                          safeCenterSendSmsCodeRes['data']['captcha_key'];
-                    },
-                    canRefreshRegistration: true,
-                  );
-                },
-              ),
-              TextButton(
-                onPressed: Get.back,
-                child: Text(
-                  "取消",
-                  style: TextStyle(color: ThemeUtils.theme.colorScheme.outline),
-                ),
-              ),
-              TextButton(
-                onPressed: () async {
-                  String? code = textFieldController.text;
-                  if (code.isEmpty) {
-                    SmartDialog.showToast("请输入短信验证码");
-                    return;
-                  }
-                  final safeCenterSmsVerifyRes =
-                      await LoginHttp.safeCenterSmsVerify(
-                        code: code,
-                        tmpCode: currentUri.queryParameters['tmp_token']!,
-                        requestId: currentUri.queryParameters['request_id']!,
-                        source: currentUri.queryParameters['source']!,
-                        captchaKey: captchaKey,
-                        refererUrl: url,
-                      );
-                  if (!safeCenterSmsVerifyRes['status']) {
-                    SmartDialog.showToast(
-                      "验证短信验证码失败，请尝试其它登录方式\n"
-                      "(${safeCenterSmsVerifyRes['code']}) ${safeCenterSmsVerifyRes['msg']}",
-                    );
-                    return;
-                  }
-                  SmartDialog.showToast("验证成功，正在登录");
-                  final oauth2AccessTokenRes =
-                      await LoginHttp.oauth2AccessToken(
-                        code: safeCenterSmsVerifyRes['data']['code'],
-                      );
-                  if (!oauth2AccessTokenRes['status']) {
-                    SmartDialog.showToast(
-                      "登录失败，请尝试其它登录方式\n"
-                      "(${oauth2AccessTokenRes['code']}) ${oauth2AccessTokenRes['msg']}",
-                    );
-                    return;
-                  }
-                  final data = oauth2AccessTokenRes['data'];
-                  if (data['token_info'] == null ||
-                      data['cookie_info'] == null) {
-                    SmartDialog.showToast(
-                      '登录异常，接口未返回身份信息，可能是因为账号风控，请尝试其它登录方式。\n${oauth2AccessTokenRes["msg"]}，\n $data',
-                    );
-                    return;
-                  }
-                  Get.back();
-                  SmartDialog.showToast('正在保存身份信息');
-                  TextInput.finishAutofillContext();
-                  await setAccount(
-                    data['token_info'],
-                    data['cookie_info']['cookies'],
-                  );
-                  Get.back();
-                },
-                child: const Text("确认"),
-              ),
-            ],
-          ),
-        ).whenComplete(textFieldController.dispose);
-
-        return;
-      }
-      if (data['token_info'] == null || data['cookie_info'] == null) {
-        SmartDialog.showToast(
-          '登录异常，接口未返回身份信息，可能是因为账号风控，请尝试其它登录方式。\n${res["msg"]}，\n $data',
-        );
-        return;
-      }
-      SmartDialog.showToast('正在保存身份信息');
-      TextInput.finishAutofillContext();
-      await setAccount(data['token_info'], data['cookie_info']['cookies']);
-      Get.back();
-    } else {
-      // handle login result
-      switch (res['code']) {
-        case 0:
-          // login success
-          break;
-        case -105:
-          String captureUrl = res['data']['url'];
-          Uri captureUri = Uri.parse(captureUrl);
-          captchaData.token = captureUri.queryParameters['recaptcha_token']!;
-          String geeGt = captureUri.queryParameters['gee_gt']!;
-          String geeChallenge = captureUri.queryParameters['gee_challenge']!;
-
-          getCaptcha(geeGt, geeChallenge, loginByPassword);
-          break;
-        default:
-          SmartDialog.showToast(res['msg']);
-          // login failed
-          break;
-      }
+    if (res case Error(:final errMsg)) {
+      SmartDialog.showToast(errMsg ?? '登录失败');
+      return;
     }
-    // }
+    final state = res.data;
+    switch (state.status) {
+      case PasswordLoginStatus.authenticated:
+        final tokens = state.tokens;
+        if (tokens == null) {
+          SmartDialog.showToast('登录异常，接口未返回身份信息');
+          return;
+        }
+        SmartDialog.showToast('正在保存身份信息');
+        TextInput.finishAutofillContext();
+        await setAccount(tokens);
+        Get.back();
+      case PasswordLoginStatus.captchaRequired:
+        final registration = state.captcha;
+        if (registration == null) return;
+        captchaData.token = registration.token;
+        // 过了人机验证再用同样的用户名密码重来一次。
+        getCaptcha(registration.gt, registration.challenge, loginByPassword);
+      case PasswordLoginStatus.riskControl:
+        final risk = state.risk;
+        if (risk == null) return;
+        await _verifyTelBeforeLogin(risk);
+    }
+  }
+
+  /// 风控：本次登录要求先验证手机号。
+  ///
+  /// 从基线 `loginByPassword` 里原样搬出来的一段弹窗流程——它本来嵌在
+  /// 登录函数中间，和三条接口的解析混在一起。参数 [risk] 里的 tmp_code /
+  /// request_id / source 由 Rust 从服务端给的 URL 解析好，不再在界面层
+  /// 用 `!` 从查询串里现扒。
+  Future<void> _verifyTelBeforeLogin(RiskVerificationData risk) async {
+    SmartDialog.showToast(risk.message);
+
+    final infoRes = await RustLogin.safeCenterInfo(risk.tmpCode);
+    if (infoRes case Error(:final errMsg, :final code)) {
+      SmartDialog.showToast("获取安全验证信息失败，请尝试其它登录方式\n($code) $errMsg");
+      return;
+    }
+    final info = infoRes.data;
+    if (!info.telVerify) {
+      SmartDialog.showToast("当前账号未支持手机号验证，请尝试其它登录方式");
+      return;
+    }
+    if (isClosed || Get.context == null) return;
+
+    final textFieldController = TextEditingController();
+    // 这一轮验证的短信凭证，发送成功后回填，提交时用。
+    String smsCaptchaKey = '';
+    await showDialog(
+      context: Get.context!,
+      builder: (context) => AlertDialog(
+        titlePadding: const .only(left: 16, top: 18, right: 16, bottom: 12),
+        contentPadding: const .symmetric(horizontal: 16),
+        actionsPadding: const .symmetric(horizontal: 16, vertical: 12),
+        title: const Text("本次登录需要验证您的手机号", textAlign: .center),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              info.hideTel ?? '未能获取手机号',
+              style: const TextStyle(fontSize: 18),
+            ),
+            // 带有清空按钮的输入框
+            TextField(
+              style: const TextStyle(fontSize: 15),
+              controller: textFieldController,
+              textAlign: TextAlign.center,
+              decoration: InputDecoration(
+                hintText: "请输入短信验证码",
+                hintStyle: const TextStyle(fontSize: 15),
+                suffixIcon: iconButton(
+                  icon: const Icon(Icons.clear),
+                  size: 32,
+                  onPressed: textFieldController.clear,
+                ),
+                suffixIconConstraints: const BoxConstraints(
+                  maxHeight: 32,
+                  maxWidth: 32,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text("发送验证码"),
+            onPressed: () async {
+              final preCaptureRes = await RustLogin.preCapture();
+              if (preCaptureRes case Error(:final errMsg, :final code)) {
+                SmartDialog.showToast("获取验证码失败，请尝试其它登录方式\n($code) $errMsg");
+                return;
+              }
+              final registration = preCaptureRes.data;
+              captchaData.token = registration.token;
+              getCaptcha(
+                registration.gt,
+                registration.challenge,
+                () async {
+                  final smsRes = await RustLogin.safeCenterSms(
+                    verification: risk,
+                    captcha: _captchaSolution(),
+                  );
+                  if (smsRes case Error(:final errMsg, :final code)) {
+                    SmartDialog.showToast(
+                      "发送短信验证码失败，请尝试其它登录方式\n($code) $errMsg",
+                    );
+                    return;
+                  }
+                  SmartDialog.showToast("短信验证码已发送，请查收");
+                  smsCaptchaKey = smsRes.data;
+                },
+                canRefreshRegistration: true,
+              );
+            },
+          ),
+          TextButton(
+            onPressed: Get.back,
+            child: Text(
+              "取消",
+              style: TextStyle(color: ThemeUtils.theme.colorScheme.outline),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              final code = textFieldController.text;
+              if (code.isEmpty) {
+                SmartDialog.showToast("请输入短信验证码");
+                return;
+              }
+              final verifyRes = await RustLogin.safeCenterVerify(
+                verification: risk,
+                code: code,
+                captchaKey: smsCaptchaKey,
+              );
+              if (verifyRes case Error(:final errMsg, :final code)) {
+                SmartDialog.showToast("验证短信验证码失败，请尝试其它登录方式\n($code) $errMsg");
+                return;
+              }
+              SmartDialog.showToast("验证成功，正在登录");
+              final tokenRes = await RustLogin.exchangeOauthCode(
+                verifyRes.data,
+              );
+              if (tokenRes case Error(:final errMsg, :final code)) {
+                SmartDialog.showToast("登录失败，请尝试其它登录方式\n($code) $errMsg");
+                return;
+              }
+              Get.back();
+              SmartDialog.showToast('正在保存身份信息');
+              TextInput.finishAutofillContext();
+              await setAccount(tokenRes.data);
+              Get.back();
+            },
+            child: const Text("确认"),
+          ),
+        ],
+      ),
+    ).whenComplete(textFieldController.dispose);
   }
 
   // 短信验证码登录
@@ -538,37 +477,29 @@ class LoginPageController extends GetxController
       SmartDialog.showToast('验证码已过期，请重新获取');
       return;
     }
-    // 取公钥期间仍可编辑，不能把新输入与本次提交的验证码混用。
-    final tel = telTextController.text;
-    final code = smsCodeTextController.text;
-    final sessionKey = captchaKey;
-    final cid = selectedCountryCodeId.countryId;
-    final webKeyRes = await LoginHttp.getWebKey();
-    if (isClosed) return;
-    if (!webKeyRes['status']) {
-      SmartDialog.showToast(webKeyRes['msg']);
-      return;
-    }
-    String key = webKeyRes['data']['key'];
-    final res = await LoginHttp.loginBySms(
-      tel: tel,
-      code: code,
-      captchaKey: sessionKey,
-      cid: cid,
-      key: key,
+    // 取公钥与发请求都在 Rust 的同一次调用里，参数在进入 await 前一次读完，
+    // 不存在基线那种「取公钥期间输入框被改」的混用窗口（#140）。
+    final res = await RustLogin.loginBySms(
+      cid: selectedCountryCodeId.countryId.toString(),
+      tel: telTextController.text,
+      code: smsCodeTextController.text,
+      captchaKey: captchaKey,
     );
     if (isClosed) return;
-    if (res['status']) {
-      SmartDialog.showToast('登录成功');
-      final data = res['data'];
-      await setAccount(data['token_info'], data['cookie_info']['cookies']);
-      Get.back();
-    } else {
-      SmartDialog.showToast(res['msg']);
+    if (res case Error(:final errMsg)) {
+      SmartDialog.showToast(errMsg ?? '登录失败');
+      return;
     }
+    SmartDialog.showToast('登录成功');
+    await setAccount(res.data);
+    Get.back();
   }
 
   // app端验证码
+  //
+  // 「发出去了」与「要先过人机验证」是服务端的两种回应，由 Rust 判定后
+  // 合成 [SmsSendStatus]：基线要在成功响应的 `recaptcha_url` 非空、失败码
+  // -105、以及参数不全时另调 preCapture 三处各判一次。
   Future<void> sendSmsCode() async {
     if (isClosed ||
         _isSendingSmsCode ||
@@ -591,138 +522,67 @@ class LoginPageController extends GetxController
       SmartDialog.showToast('手机号不能为空');
       return;
     }
-    // String? guestId;
-    // final webKeyRes = await LoginHttp.getWebKey();
-    // if (!webKeyRes['status']) {
-    //   SmartDialog.showToast(webKeyRes['msg']);
-    // } else {
-    //   String key = webKeyRes['data']['key'];
-    //   final guestIdRes = await LoginHttp.getGuestId(key);
-    //   if (!guestIdRes['status']) {
-    //     SmartDialog.showToast(guestIdRes['msg']);
-    //   } else {
-    //     guestId = guestIdRes['data']['guest_id'];
-    //   }
-    // }
-    // final preCaptureRes = await LoginHttp.preCapture();
-    // if (!preCaptureRes['status']) {
-    //   SmartDialog.showToast("获取验证码失败，请尝试其它登录方式\n"
-    //       "(${preCaptureRes['code']}) ${preCaptureRes['msg']}");
-    //   return;
-    // }
-    // String geeGt = preCaptureRes['data']['gee_gt']!;
-    // String geeChallenge = preCaptureRes['data']['gee_challenge'];
-    // captchaData.token = preCaptureRes['data']['recaptcha_token']!;
-
-    // getCaptcha(geeGt, geeChallenge, () async {
-
-    // final safeCenterSendSmsCodeRes =
-    // await LoginHttp.safeCenterSmsCode(
-    //   tmpCode: currentUri.queryParameters['tmp_token']!,
-    //   geeChallenge: geeChallenge,
-    //   geeSeccode: captchaData.seccode!,
-    //   geeValidate: captchaData.validate!,
-    //   recaptchaToken: captchaData.token!,
-    //   refererUrl: url,
-    // );
-    // if (!safeCenterSendSmsCodeRes['status']) {
-    //   SmartDialog.showToast("发送短信验证码失败，请尝试其它登录方式\n"
-    //       "(${safeCenterSendSmsCodeRes['code']}) ${safeCenterSendSmsCodeRes['msg']}");
-    //   return;
-    // }
-    // SmartDialog.showToast("短信验证码已发送，请查收");
-    // captchaKey = safeCenterSendSmsCodeRes['data']['captcha_key'];
-
-    final res = await LoginHttp.sendSmsCode(
+    final res = await RustLogin.sendSmsCode(
+      cid: selectedCountryCodeId.countryId.toString(),
       tel: telTextController.text,
-      cid: selectedCountryCodeId.countryId,
-      // deviceTouristId: guestId,
-      geeValidate: captchaData.validate,
-      geeSeccode: captchaData.seccode,
-      geeChallenge: captchaData.geetest?.challenge,
-      recaptchaToken: captchaData.token,
+      captcha: _captchaSolution(),
     );
     if (isClosed) return;
-    if (res['status']) {
-      SmartDialog.showToast('发送成功');
-      smsSendTimestamp = DateTime.now().millisecondsSinceEpoch;
-      smsSendCooldown.value = 60;
-      captchaKey = res['data']['captcha_key'];
-      smsCodeFocusNode.requestFocus();
-      smsSendCooldownTimer = Timer.periodic(const Duration(seconds: 1), (
-        timer,
-      ) {
-        smsSendCooldown.value = 60 - timer.tick;
-        if (smsSendCooldown <= 0) {
-          smsSendCooldownTimer?.cancel();
-          smsSendCooldown.value = 0;
-        }
-      });
-    } else {
-      // handle login result
-      switch (res['code']) {
-        case 0:
-        case -105:
-          String? captureUrl = res['data']?['recaptcha_url'];
-          String? geeGt;
-          String? geeChallenge;
-          if (captureUrl != null && captureUrl.isNotEmpty) {
-            Uri captureUri = Uri.parse(captureUrl);
-            captchaData.token = captureUri.queryParameters['recaptcha_token'];
-            geeGt = captureUri.queryParameters['gee_gt'];
-            geeChallenge = captureUri.queryParameters['gee_challenge'];
+    if (res case Error(:final errMsg)) {
+      SmartDialog.showToast(errMsg ?? '发送失败');
+      return;
+    }
+    final state = res.data;
+    switch (state.status) {
+      case SmsSendStatus.sent:
+        SmartDialog.showToast('发送成功');
+        smsSendTimestamp = DateTime.now().millisecondsSinceEpoch;
+        smsSendCooldown.value = 60;
+        captchaKey = state.captchaKey ?? '';
+        // 拿到验证码就把焦点交给输入框，省掉一次手点（#140）。
+        smsCodeFocusNode.requestFocus();
+        smsSendCooldownTimer = Timer.periodic(const Duration(seconds: 1), (
+          timer,
+        ) {
+          smsSendCooldown.value = 60 - timer.tick;
+          if (smsSendCooldown <= 0) {
+            smsSendCooldownTimer?.cancel();
+            smsSendCooldown.value = 0;
           }
-
-          if (!isGeeArgumentValid(geeGt, geeChallenge)) {
-            if (kDebugMode) {
-              debugPrint(
-                '验证信息错误：${res["msg"]}\n返回内容：${res["data"]}，尝试另一个验证码接口',
-              );
-            }
-            final preCaptureRes = await LoginHttp.preCapture();
-            if (isClosed) return;
-            if (!preCaptureRes['status'] || preCaptureRes['data'] == null) {
-              SmartDialog.showToast(
-                "获取验证码失败，请尝试其它登录方式\n"
-                "(${preCaptureRes['code']}) ${preCaptureRes['msg']} ${preCaptureRes['data']}",
-              );
-              return;
-            }
-            geeGt = preCaptureRes['data']['gee_gt'];
-            geeChallenge = preCaptureRes['data']['gee_challenge'];
-            captchaData.token = preCaptureRes['data']['recaptcha_token'];
-          }
-
-          if (!isGeeArgumentValid(geeGt, geeChallenge)) {
-            SmartDialog.showToast("获取验证码失败，请尝试其它登录方式\n");
-            return;
-          }
-
-          getCaptcha(
-            geeGt!,
-            geeChallenge!,
-            sendSmsCode,
-            canRefreshRegistration: true,
-          );
-          break;
-        default:
-          SmartDialog.showToast(res['msg']);
-          break;
-      }
+        });
+      case SmsSendStatus.captchaRequired:
+        final registration = state.captcha;
+        if (registration == null) return;
+        captchaData.token = registration.token;
+        getCaptcha(
+          registration.gt,
+          registration.challenge,
+          sendSmsCode,
+          canRefreshRegistration: true,
+        );
     }
   }
 
-  bool isGeeArgumentValid(String? geeGt, String? geeChallenge) {
-    return geeGt?.isNotEmpty == true &&
-        geeChallenge?.isNotEmpty == true &&
-        captchaData.token?.isNotEmpty == true;
-  }
+  /// 把界面手里的人机验证结果摊成跨 FFI 的形状。
+  CaptchaSolutionData _captchaSolution() => CaptchaSolutionData(
+    challenge: captchaData.geetest?.challenge,
+    seccode: captchaData.seccode,
+    validate: captchaData.validate,
+    token: captchaData.token,
+  );
 
-  Future<void> setAccount(Map tokenInfo, List cookieInfo) async {
+  /// 把 Rust 交回来的身份材料存进账号体系。
+  ///
+  /// 存储是宿主的事（RFC-0001 §2.3）：Rust 不保存任何凭据，它只是把登录
+  /// 接口的响应解析好交回来，真相源仍然只有 `lib/utils/accounts/` 一处。
+  Future<void> setAccount(LoginTokensData tokens) async {
     final account = LoginAccount(
-      BiliCookieJar.fromList(cookieInfo),
-      tokenInfo['access_token'],
-      tokenInfo['refresh_token'],
+      BiliCookieJar.fromList([
+        for (final cookie in tokens.cookies)
+          {'name': cookie.name, 'value': cookie.value},
+      ]),
+      tokens.accessToken,
+      tokens.refreshToken,
     );
     await Future.wait([?account.onChange(), AnonymousAccount().delete()]);
     for (int i = 0; i < AccountType.values.length; i++) {

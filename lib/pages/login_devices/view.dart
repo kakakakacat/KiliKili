@@ -4,7 +4,7 @@ import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/view_sliver_safe_area.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/login_devices/device.dart';
+import 'package:kilikili/services/rust/rust_login.dart';
 import 'package:kilikili/pages/login_devices/controller.dart';
 import 'package:kilikili/utils/extension/widget_ext.dart';
 import 'package:get/get.dart';
@@ -43,12 +43,12 @@ class LoginDevicesPageState extends State<LoginDevicesPage> {
 
   Widget _buildBody(
     ColorScheme colorScheme,
-    LoadingState<List<LoginDevice>?> loadingState,
+    LoadingState<List<LoginDeviceData>?> loadingState,
   ) {
     switch (loadingState) {
       case Loading():
         return const SliverToBoxAdapter();
-      case Success<List<LoginDevice>?>(:final response):
+      case Success<List<LoginDeviceData>?>(:final response):
         if (response != null && response.isNotEmpty) {
           final divider = Divider(
             height: 1,
@@ -71,7 +71,7 @@ class LoginDevicesPageState extends State<LoginDevicesPage> {
     }
   }
 
-  Widget _buildItem(ColorScheme colorScheme, LoginDevice item) {
+  Widget _buildItem(ColorScheme colorScheme, LoginDeviceData item) {
     final style = TextStyle(fontSize: 13, color: colorScheme.outline);
     return ListTile(
       dense: true,
@@ -83,9 +83,7 @@ class LoginDevicesPageState extends State<LoginDevicesPage> {
         '${item.latestLoginAt} ${item.source}',
         style: style,
       ),
-      trailing: item.isCurrentDevice == true
-          ? Text('(本机)', style: style)
-          : null,
+      trailing: item.isCurrentDevice ? Text('(本机)', style: style) : null,
     );
   }
 }

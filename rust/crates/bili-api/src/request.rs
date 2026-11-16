@@ -299,6 +299,12 @@ pub enum CsrfIn {
     /// 同时补入 JSON 体的 `csrf` 与 `csrf_token`，并补入查询串。动态投票
     /// 接口在三个位置重复校验同一 token。
     BodyAndQueryWithToken,
+    /// 补进请求体，但字段名由接口定。
+    ///
+    /// 目前只有登出（`/login/exit/v2`）这一条：它要的是 `biliCSRF`。
+    /// 不把它并进 [`Self::Body`] 再传个名字，是因为绝大多数接口的键名
+    /// 就是 `csrf`，多一个参数等于每个调用点都要答一遍"叫什么"。
+    BodyNamed(&'static str),
     /// 不带。APP 端接口（`app.bilibili.com`）用 `access_key` 鉴权，
     /// 带上 csrf 既无用也让请求面与基线对不上。
     None,

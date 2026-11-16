@@ -40,6 +40,7 @@ pub mod grpc_danmaku;
 pub mod grpc_metadata;
 pub mod http;
 pub mod live;
+pub mod login;
 pub mod match_info;
 pub mod music;
 pub mod nav;

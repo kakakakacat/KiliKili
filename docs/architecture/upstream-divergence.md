@@ -191,9 +191,17 @@ RFC §10.1 规定了要固定 `UPSTREAM_COMMIT` 并记录 rebase/merge 策略，
 按 §6 的集合口径，实质改动 **246 → 250**、仅重命名 **645 → 641**，修改总数仍为
 **891**；新增仍为 **526**，删除 **148 → 149**。
 
+修订：2026-11-16（#138 首页分类胶囊）——按 §6 检查，
+`lib/pages/home/view.dart` 此前仅被重命名提交 `ba430476b` 触及，本次转为
+实质改动。同步 main 后按 §6 重算：修改 **890**、实质改动 **253**、
+仅重命名 **637**、新增 **527**、删除 **149**；另有 10 项重命名不计入 A/D。
+相较同一 main 基线，本切片使实质改动 +1、仅重命名 −1，其余数量不变。
+分类增加辅助图标和胶囊背景，选中态跟随现有 TabController，移除底部指示条。
+同步上游时保留这层样式与选中态绑定，分类数据和页面切换逻辑仍按上游同步。
+
 修订：2026-11-16（#136 音量竖向胶囊）——修改
 `lib/plugin/pl_player/view/view.dart`，该文件此前已被 #79、#141、#143 实质修改，
-本次不扩大上游修改文件集合。新增独立展示组件
+本次不扩大上游修改文件集合，新增文件 **527 → 529**。新增独立展示组件
 `lib/plugin/pl_player/widgets/volume_indicator.dart` 与
 `test/plugin/pl_player/volume_indicator_test.dart`；手势与音量控制器不变。
 同步上游时保留竖向填充展示，只合入控制行为相关的改动。
@@ -215,22 +223,22 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 | 类别 | 数量 |
 | --- | ---: |
-| 修改的上游既有文件 | 891 |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 648 |
-| &nbsp;&nbsp;其中：有实质改动 | **243** |
-| 新增文件 | 526 |
-| 删除文件 | **146** |
+| 修改的上游既有文件 | 890 |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | 637 |
+| &nbsp;&nbsp;其中：有实质改动 | **253** |
+| 新增文件 | 529 |
+| 删除文件 | **149** |
 
 「修改」总数一路下降（935 → 909 → 897 → 891），部分文件是因迁移被删除，
 从 M 转到了 D。#108 的界面改动一度把它顶回 892；合入 #111 的关注/粉丝
-切片后是 890。删除数到 146，来源包括 PGC、直播、取流、关注/粉丝接口迁移，以及 S4 的
+切片后是 890。删除数到 149，来源包括 PGC、直播、取流、关注/粉丝接口迁移，以及 S4 的
 两个三连模型。
 
 ## 3. 包名重命名：分叉面的主体
 
 `ba430476b chore: rename app package identifiers to KiliKili` 把每个 Dart
 文件的 `package:PiliPlus/` 改成了 `package:kilikili/`，一次触及 992 个文件。
-**当前分叉面里 661 个文件只有这一处差异。**
+**当前分叉面里 637 个文件只有这一处差异。**
 
 对同步的影响很具体：上游每改动一个 Dart 文件，我们这边大概率冲突，但
 **冲突内容永远是那一行 import**。处理方式是取上游版本后重新套用重命名，
@@ -241,7 +249,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 4. 有实质改动的上游文件
 
-238 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
+253 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
 见 §4.4，其余改动逐个列在 §4.3。
 
 ### 4.1 typed 直连迁移触及的上游文件
@@ -410,13 +418,14 @@ Column 顺序、文字层级），丢弃——那一层我们已经整个换掉�
 | `rust/` | 322 | Rust workspace：6 个 crate、golden fixture 与快照 |
 | `rust_builder/` | 46 | cargokit，把 Rust 接入 Flutter 各端构建 |
 | `lib/services/` | 34 | Rust 开关、shadow mode、各切片的取数封装 |
-| `test/` | 31 | parity 测试与桥接层集成测试 |
+| `test/` | 32 | parity 测试与桥接层集成测试 |
 | `lib/rust/` | 25 | FRB 生成的 Dart 绑定 |
 | `tool/` | 20 | 构建准备、FRB 生成、proto 生成、README 统计、产物核对、fixture 生成 |
 | `docs/` | 17 | RFC、ADR、M0 记录、QA 清单 |
 | `shaders/` | 1 | Liquid Glass 背板折射着色器 |
 | `lib/common/` | 3 | 封面大卡片、统计药丸与直播卡共用的文案行（issue #108） |
 | `lib/pages/` | 1 | 从控制器里搬出来的基线弹幕引擎（`danmaku/engine.dart`） |
+| `lib/plugin/` | 1 | 播放器竖向音量指示组件（issue #136） |
 | `lib/utils/` | 1 | 从 `SubtitleUtils` 里搬出来的基线字幕转换（`subtitle_format.dart`） |
 | 其他 | 10 | workflow、`AGENTS.md` / `CLAUDE.md`、README 统计图、`flutter_rust_bridge.yaml` |
 

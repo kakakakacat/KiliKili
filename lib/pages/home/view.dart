@@ -2,6 +2,7 @@ import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/custom_height_widget.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/scroll_physics.dart' show tabBarView;
+import 'package:kilikili/models/common/home_tab_type.dart';
 import 'package:kilikili/pages/common/common_page.dart';
 import 'package:kilikili/pages/home/controller.dart';
 import 'package:kilikili/pages/main/controller.dart';
@@ -50,11 +51,72 @@ class _HomePageState extends CommonPageState<HomePage>
           width: double.infinity,
           child: TabBar(
             controller: _homeController.tabController,
-            tabs: _homeController.tabs.map((e) => Tab(text: e.label)).toList(),
+            tabs: _homeController.tabs.indexed.map((entry) {
+              final (index, tab) = entry;
+              return Tab(
+                child: AnimatedBuilder(
+                  animation: _homeController.tabController.animation!,
+                  builder: (context, child) {
+                    final controller = _homeController.tabController;
+                    // 点击时跟随目标页，手势滑动时跟随页面位置，避免另存选中状态。
+                    final selectedIndex = controller.indexIsChanging
+                        ? controller.index
+                        : controller.animation!.value.round();
+                    final selected = selectedIndex == index;
+                    final foreground = selected
+                        ? _colorScheme.onPrimary
+                        : _colorScheme.onSurfaceVariant;
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      alignment: Alignment.center,
+                      decoration: ShapeDecoration(
+                        color: selected
+                            ? _colorScheme.primary
+                            : _colorScheme.surfaceContainerHighest,
+                        shape: const StadiumBorder(),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            switch (tab) {
+                              HomeTabType.live => Icons.live_tv_outlined,
+                              HomeTabType.rcmd => Icons.auto_awesome_outlined,
+                              HomeTabType.hot =>
+                                Icons.local_fire_department_outlined,
+                              HomeTabType.rank => Icons.grid_view_rounded,
+                              HomeTabType.bangumi => Icons.animation_outlined,
+                              HomeTabType.cinema => Icons.movie_outlined,
+                            },
+                            size: 18,
+                            color: foreground,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            tab.label,
+                            style: TextStyle(
+                              color: foreground,
+                              fontWeight: selected
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              );
+            }).toList(),
             isScrollable: true,
+            indicator: const BoxDecoration(),
+            labelPadding: const EdgeInsets.symmetric(
+              horizontal: 4,
+              vertical: 4,
+            ),
             dividerColor: Colors.transparent,
             dividerHeight: 0,
-            splashBorderRadius: Style.mdRadius,
+            splashBorderRadius: const BorderRadius.all(Radius.circular(24)),
             tabAlignment: TabAlignment.center,
             onTap: (_) {
               feedBack();

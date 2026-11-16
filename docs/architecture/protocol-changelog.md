@@ -101,6 +101,14 @@ S4 把 `lib/http/video.dart` 的十四条写操作搬进 `bili-api::video_write`
 Rust 单测钉住构造出来的 `PreparedWrite`，`test/bridge/video_write_bridge_test.dart`
 起桩服务端钉住**真的发出去的**那一个。
 
+## 2026-11-13：短信极验预检覆盖 WebView（#140）
+
+既有 iOS 原生 SDK 预检继续使用 `client_type=ios&pt=20`；Android 等
+WebView 路径现在也检查 `gettype.php`，只发送 `gt`，与页面获取配置一致。
+两者都使用 `NoAccount`，仅明确的 `error_34` 触发现有的一次整组注册刷新；
+网络错误不当作注册失效。短信请求参数与签名未变，未修改 bili-protocol，
+因此不调整其版本号或重建无关 fixture。登录请求仍随 #65 迁移。
+
 ## 2026-11-15：动态预约与投票请求面（issue #55）
 
 预约创建/更新继续使用原有表单字段与 body csrf；动态预约按钮仍为 JSON body、

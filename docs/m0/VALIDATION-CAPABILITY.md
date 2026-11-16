@@ -348,3 +348,18 @@ S4 的十四条写操作在 CI 上有两层保护，分工是 ADR-013 决策六�
 
 **这些都不替代真机验证**：登录态下的 csrf、风控（gaia）拦截、以及
 APP 端接口在真实 `access_key` 下的行为，按 EPIC #67 统一留到 Phase 2。
+
+### 短信验证码页面回归（#140）
+
+`flutter test --no-pub test/pages/login/geetest` 包含注册整组刷新测试和 WebView
+页面脚本测试。后者需要 PATH 中有 Node.js，使用其内置 `node:vm` 执行实际
+生成的脚本，覆盖 SDK 错误、配置失效、脚本异常、ready 通知和桥接延迟；
+不访问外网、不启动 Widget、不依赖 Flutter SDK 补丁。
+这不覆盖 Android/iOS 原生 WebView、原生 iOS 极验 SDK 或短信实际发送；
+它们仍须按 QA 矩阵 F09a 在最终安装包上验证。
+
+#140 交互补充：`flutter test --no-pub test/pages/login` 新增输入框与弹窗外壳
+Widget 测试，覆盖六位自动提交、粘贴过滤、重复提交保护、失败返回后编辑重试、
+焦点，以及 240px 窄屏、手机、平板、横屏和键盘避让。该组 Widget 测试需使用
+构建准备后的 material_ui/Flutter SDK；不将弹窗外壳测试视为真实 WebView 内部
+验证码布局或真实短信登录的端到端验证。

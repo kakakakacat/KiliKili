@@ -28,6 +28,7 @@ class LoginPageController extends GetxController
   final TextEditingController usernameTextController = TextEditingController();
   final TextEditingController passwordTextController = TextEditingController();
   final TextEditingController smsCodeTextController = TextEditingController();
+  final FocusNode smsCodeFocusNode = FocusNode();
   final TextEditingController cookieTextController = TextEditingController();
 
   late final codeInfo =
@@ -50,6 +51,8 @@ class LoginPageController extends GetxController
 
   bool _isReq = false;
   bool _isVerifyingCaptcha = false;
+  bool _isSendingSmsCode = false;
+  bool _isLoggingInBySms = false;
 
   @override
   void onInit() {
@@ -69,6 +72,7 @@ class LoginPageController extends GetxController
     usernameTextController.dispose();
     passwordTextController.dispose();
     smsCodeTextController.dispose();
+    smsCodeFocusNode.dispose();
     cookieTextController.dispose();
     super.onClose();
   }
@@ -139,11 +143,14 @@ class LoginPageController extends GetxController
         challenge: geeChallenge,
         token: captchaData.token,
       );
-      if (Platform.isIOS && canRefreshRegistration) {
-        // Only SMS verification supports a new registration from preCapture.
+      if (canRefreshRegistration) {
+        // 登录切片 #65 尚未迁移；沿用现有注册刷新，避免本次修复拆散 gt/challenge/token。
         final resolved = await resolveLoginCaptcha(
           session,
-          isUnavailable: LoginHttp.isGeetestConfigUnavailable,
+          isUnavailable: (gt) => LoginHttp.isGeetestConfigUnavailable(
+            gt,
+            nativeIOS: Platform.isIOS,
+          ),
           refresh: () async {
             if (isClosed) return null;
             final res = await LoginHttp.preCapture();
@@ -502,6 +509,18 @@ class LoginPageController extends GetxController
 
   // 短信验证码登录
   Future<void> loginBySmsCode() async {
+    if (isClosed || _isLoggingInBySms) return;
+    _isLoggingInBySms = true;
+    try {
+      await _loginBySmsCode();
+    } catch (_) {
+      if (!isClosed) SmartDialog.showToast('登录失败，请稍后重试');
+    } finally {
+      _isLoggingInBySms = false;
+    }
+  }
+
+  Future<void> _loginBySmsCode() async {
     if (telTextController.text.isEmpty) {
       SmartDialog.showToast('手机号不能为空');
       return;
@@ -519,19 +538,26 @@ class LoginPageController extends GetxController
       SmartDialog.showToast('验证码已过期，请重新获取');
       return;
     }
+    // 取公钥期间仍可编辑，不能把新输入与本次提交的验证码混用。
+    final tel = telTextController.text;
+    final code = smsCodeTextController.text;
+    final sessionKey = captchaKey;
+    final cid = selectedCountryCodeId.countryId;
     final webKeyRes = await LoginHttp.getWebKey();
+    if (isClosed) return;
     if (!webKeyRes['status']) {
       SmartDialog.showToast(webKeyRes['msg']);
       return;
     }
     String key = webKeyRes['data']['key'];
     final res = await LoginHttp.loginBySms(
-      tel: telTextController.text,
-      code: smsCodeTextController.text,
-      captchaKey: captchaKey,
-      cid: selectedCountryCodeId.countryId,
+      tel: tel,
+      code: code,
+      captchaKey: sessionKey,
+      cid: cid,
       key: key,
     );
+    if (isClosed) return;
     if (res['status']) {
       SmartDialog.showToast('登录成功');
       final data = res['data'];
@@ -544,6 +570,23 @@ class LoginPageController extends GetxController
 
   // app端验证码
   Future<void> sendSmsCode() async {
+    if (isClosed ||
+        _isSendingSmsCode ||
+        _isVerifyingCaptcha ||
+        smsSendCooldown.value > 0) {
+      return;
+    }
+    _isSendingSmsCode = true;
+    try {
+      await _sendSmsCode();
+    } catch (_) {
+      if (!isClosed) SmartDialog.showToast('发送验证码失败，请稍后重试');
+    } finally {
+      _isSendingSmsCode = false;
+    }
+  }
+
+  Future<void> _sendSmsCode() async {
     if (telTextController.text.isEmpty) {
       SmartDialog.showToast('手机号不能为空');
       return;
@@ -599,11 +642,13 @@ class LoginPageController extends GetxController
       geeChallenge: captchaData.geetest?.challenge,
       recaptchaToken: captchaData.token,
     );
+    if (isClosed) return;
     if (res['status']) {
       SmartDialog.showToast('发送成功');
       smsSendTimestamp = DateTime.now().millisecondsSinceEpoch;
       smsSendCooldown.value = 60;
       captchaKey = res['data']['captcha_key'];
+      smsCodeFocusNode.requestFocus();
       smsSendCooldownTimer = Timer.periodic(const Duration(seconds: 1), (
         timer,
       ) {
@@ -635,6 +680,7 @@ class LoginPageController extends GetxController
               );
             }
             final preCaptureRes = await LoginHttp.preCapture();
+            if (isClosed) return;
             if (!preCaptureRes['status'] || preCaptureRes['data'] == null) {
               SmartDialog.showToast(
                 "获取验证码失败，请尝试其它登录方式\n"

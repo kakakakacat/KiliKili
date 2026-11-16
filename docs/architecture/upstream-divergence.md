@@ -207,6 +207,19 @@ RFC §10.1 规定了要固定 `UPSTREAM_COMMIT` 并记录 rebase/merge 策略，
 `test/plugin/pl_player/volume_indicator_test.dart`；手势与音量控制器不变。
 同步上游时保留竖向填充展示，只合入控制行为相关的改动。
 
+修订：2026-11-13（#140 短信验证码空白页）——修改上游的
+`lib/http/login.dart`、`lib/models/login/captcha_config.dart`、
+`lib/pages/login/controller.dart`、`lib/pages/login/geetest/geetest_webview_dialog.dart`；
+按 §6 检查，四者此前均只有重命名提交 `ba430476b`，本次各转入实质改动。
+新增 `geetest_html.dart` 与其脚本回归测试；原生 iOS 构建补丁保持适用。
+本次相对父提交：实质改动 +4、仅重命名 -4、新增 +2，修改及删除总数不变。
+
+修订：2026-11-16（#140 短信登录交互）——`lib/pages/login/view.dart` 此前
+仅由包名重命名提交触及，本次转为实质改动；相对本分支上一提交，实质改动
++1、仅重命名 −1，修改总数不变。控制器与 WebView 弹窗已在 #140 修改集合中。
+新增验证码输入组件、自适应弹窗外壳及对应 Widget 测试；同步上游时保留焦点、
+自动提交防重与自适应约束，验证码请求及签名仍沿用现有实现。
+
 ## 1. 基准
 
 ```

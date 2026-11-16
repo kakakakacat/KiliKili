@@ -347,12 +347,18 @@ abstract final class LoginHttp {
     }
   }
 
-  // 检查原生 iOS 验证码配置是否已失效
-  static Future<bool> isGeetestConfigUnavailable(String gt) async {
+  // WebView 与原生 SDK 必须分别检查各自使用的配置。
+  static Future<bool> isGeetestConfigUnavailable(
+    String gt, {
+    bool nativeIOS = false,
+  }) async {
     try {
       final res = await Request().get<String>(
         'https://api.geetest.com/gettype.php',
-        queryParameters: {'gt': gt, 'client_type': 'ios', 'pt': 20},
+        queryParameters: {
+          'gt': gt,
+          if (nativeIOS) ...{'client_type': 'ios', 'pt': 20},
+        },
         options: Options(
           responseType: ResponseType.plain,
           extra: {'account': const NoAccount()},

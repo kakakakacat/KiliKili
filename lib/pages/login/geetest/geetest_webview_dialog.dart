@@ -5,6 +5,7 @@ import 'dart:io' show Platform;
 import 'package:kilikili/http/browser_ua.dart';
 import 'package:kilikili/main.dart';
 import 'package:kilikili/pages/login/geetest/geetest_html.dart';
+import 'package:kilikili/pages/login/geetest/captcha_dialog_frame.dart';
 import 'package:kilikili/plugin/linux_webview.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
@@ -155,80 +156,82 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
       );
     }
 
-    return Stack(
-      children: [
-        InAppWebView(
-          webViewEnvironment: webViewEnvironment,
-          initialSettings: InAppWebViewSettings(
-            clearCache: true,
-            javaScriptEnabled: true,
-            forceDark: ForceDark.AUTO,
-            useHybridComposition: true,
-            algorithmicDarkeningAllowed: true,
-            useShouldOverrideUrlLoading: true,
-            userAgent: BrowserUa.mob,
-            mixedContentMode: .MIXED_CONTENT_ALWAYS_ALLOW,
+    return CaptchaDialogFrame(
+      child: Stack(
+        children: [
+          InAppWebView(
+            webViewEnvironment: webViewEnvironment,
+            initialSettings: InAppWebViewSettings(
+              clearCache: true,
+              javaScriptEnabled: true,
+              forceDark: ForceDark.AUTO,
+              useHybridComposition: true,
+              algorithmicDarkeningAllowed: true,
+              useShouldOverrideUrlLoading: true,
+              userAgent: BrowserUa.mob,
+              mixedContentMode: .MIXED_CONTENT_ALWAYS_ALLOW,
 
-            incognito: true,
-            allowFileAccess: false,
-            allowsLinkPreview: false,
-            allowContentAccess: false,
-            useOnDownloadStart: false,
-            geolocationEnabled: false,
-            thirdPartyCookiesEnabled: false,
-            enterpriseAuthenticationAppLinkPolicyEnabled: false,
-            saveFormData: false,
-            safeBrowsingEnabled: false,
-            isFraudulentWebsiteWarningEnabled: false,
-            domStorageEnabled: false,
-            databaseEnabled: false,
-            cacheEnabled: false,
-            cacheMode: .LOAD_NO_CACHE,
+              incognito: true,
+              allowFileAccess: false,
+              allowsLinkPreview: false,
+              allowContentAccess: false,
+              useOnDownloadStart: false,
+              geolocationEnabled: false,
+              thirdPartyCookiesEnabled: false,
+              enterpriseAuthenticationAppLinkPolicyEnabled: false,
+              saveFormData: false,
+              safeBrowsingEnabled: false,
+              isFraudulentWebsiteWarningEnabled: false,
+              domStorageEnabled: false,
+              databaseEnabled: false,
+              cacheEnabled: false,
+              cacheMode: .LOAD_NO_CACHE,
 
-            horizontalScrollBarEnabled: false,
-            verticalScrollBarEnabled: false,
-            overScrollMode: .NEVER,
+              horizontalScrollBarEnabled: false,
+              verticalScrollBarEnabled: false,
+              overScrollMode: .NEVER,
 
-            pageZoom: Platform.isIOS ? 3 : 1,
+              pageZoom: 1,
+            ),
+            initialData: InAppWebViewInitialData(data: _html),
+            onWebViewCreated: (ctr) {
+              ctr
+                ..addJavaScriptHandler(
+                  handlerName: 'success',
+                  callback: (args) => _success(args.isEmpty ? null : args[0]),
+                )
+                ..addJavaScriptHandler(
+                  handlerName: 'ready',
+                  callback: (_) => _ready(),
+                )
+                ..addJavaScriptHandler(
+                  handlerName: 'error',
+                  callback: (_) => _fail(),
+                )
+                ..addJavaScriptHandler(
+                  handlerName: 'close',
+                  callback: (_) => _finish(),
+                );
+            },
+            onReceivedError: (_, request, _) {
+              if (request.isForMainFrame == true) _fail();
+            },
+            onReceivedHttpError: (_, request, _) {
+              if (request.isForMainFrame == true) _fail();
+            },
           ),
-          initialData: InAppWebViewInitialData(data: _html),
-          onWebViewCreated: (ctr) {
-            ctr
-              ..addJavaScriptHandler(
-                handlerName: 'success',
-                callback: (args) => _success(args.isEmpty ? null : args[0]),
-              )
-              ..addJavaScriptHandler(
-                handlerName: 'ready',
-                callback: (_) => _ready(),
-              )
-              ..addJavaScriptHandler(
-                handlerName: 'error',
-                callback: (_) => _fail(),
-              )
-              ..addJavaScriptHandler(
-                handlerName: 'close',
-                callback: (_) => _finish(),
-              );
-          },
-          onReceivedError: (_, request, _) {
-            if (request.isForMainFrame == true) _fail();
-          },
-          onReceivedHttpError: (_, request, _) {
-            if (request.isForMainFrame == true) _fail();
-          },
-        ),
-        if (_loading || _error != null) _status(),
-        Positioned(
-          left: 8,
-          top: 8,
-          child: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: _finish,
-            tooltip: '关闭',
+          if (_loading || _error != null) _status(),
+          Positioned(
+            left: 8,
+            top: 8,
+            child: IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: _finish,
+              tooltip: '关闭',
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -329,3 +329,9 @@ Rust 测试覆盖帧阈值/压缩、截断、缺失状态头、嵌套业务码�
 不访问外网、不启动 Widget、不依赖 Flutter SDK 补丁。
 这不覆盖 Android/iOS 原生 WebView、原生 iOS 极验 SDK 或短信实际发送；
 它们仍须按 QA 矩阵 F09a 在最终安装包上验证。
+
+#140 交互补充：`flutter test --no-pub test/pages/login` 新增输入框与弹窗外壳
+Widget 测试，覆盖六位自动提交、粘贴过滤、重复提交保护、失败返回后编辑重试、
+焦点，以及 240px 窄屏、手机、平板、横屏和键盘避让。该组 Widget 测试需使用
+构建准备后的 material_ui/Flutter SDK；不将弹窗外壳测试视为真实 WebView 内部
+验证码布局或真实短信登录的端到端验证。

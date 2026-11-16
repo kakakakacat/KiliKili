@@ -1,7 +1,6 @@
 import 'package:kilikili/http/dynamics.dart';
 import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/common/dynamic/article_type.dart';
 import 'package:kilikili/models/common/image_preview_type.dart';
 import 'package:kilikili/models/dynamics/article_content_model.dart'
@@ -12,6 +11,8 @@ import 'package:kilikili/models_new/article/article_view/data.dart';
 import 'package:kilikili/models_new/dynamic/dyn_mention/item.dart';
 import 'package:kilikili/pages/common/dyn/common_dyn_controller.dart';
 import 'package:kilikili/pages/common/reply/reply_controller.dart';
+import 'package:kilikili/services/rust/rust_video_write.dart';
+import 'package:kilikili/services/rust/rust_dynamic.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/app_scheme.dart';
 import 'package:kilikili/utils/extension/get_ext.dart';
@@ -182,7 +183,7 @@ class ArticleController extends CommonDynController
     if (isLoaded.value) {
       queryData();
       if (Accounts.heartbeat.isLogin && !Pref.historyPause) {
-        VideoHttp.historyReport(aid: commentId, type: 5);
+        RustVideoWrite.historyReport(aid: commentId, type: 5);
       }
     }
   }
@@ -211,18 +212,18 @@ class ArticleController extends CommonDynController
     final like = stats.value?.like;
     if (like == null) return;
     final isLike = like.status ?? false;
-    final res = await DynamicsHttp.thumbDynamic(
+    final res = await RustDynamic.thumb(
       dynamicId: opusData?.idStr ?? articleData?.dynIdStr,
       up: isLike ? 2 : 1,
     );
-    if (res.isSuccess) {
+    if (res.errorKind == null) {
       like
         ..status = !isLike
         ..count = (like.count ?? 0) + (isLike ? -1 : 1);
       stats.refresh();
       SmartDialog.showToast(!isLike ? '点赞成功' : '取消赞');
     } else {
-      res.toast();
+      SmartDialog.showToast(res.errorDetail ?? '动态点赞失败');
     }
   }
 

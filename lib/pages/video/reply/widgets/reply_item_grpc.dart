@@ -20,7 +20,6 @@ import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
 import 'package:kilikili/grpc/reply.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/reply.dart';
-import 'package:kilikili/http/video.dart';
 import 'package:kilikili/pages/article/view.dart';
 import 'package:kilikili/pages/dynamics/widgets/vote.dart';
 import 'package:kilikili/pages/member/widget/medal_widget.dart';
@@ -29,6 +28,7 @@ import 'package:kilikili/pages/video/controller.dart';
 import 'package:kilikili/pages/video/reply/widgets/reply_threaded_indent_box.dart';
 import 'package:kilikili/pages/video/reply/widgets/zan_grpc.dart';
 import 'package:kilikili/pages/video/reply_reply/tree.dart';
+import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/app_scheme.dart';
 import 'package:kilikili/utils/bili_utils.dart';
@@ -1374,7 +1374,7 @@ class ReplyItemGrpc extends StatelessWidget {
                 return;
               }
               SmartDialog.showLoading(msg: '删除中...');
-              final res = await VideoHttp.replyDel(
+              final res = await RustVideoWrite.replyDel(
                 type: item.type.toInt(),
                 oid: item.oid.toInt(),
                 rpid: item.id.toInt(),

@@ -4,12 +4,12 @@ import 'package:kilikili/common/widgets/avatars.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/dialog/report.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/http/dynamics.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/badge_type.dart';
 import 'package:kilikili/models/common/image_preview_type.dart';
-import 'package:kilikili/models/dynamics/vote_model.dart';
-import 'package:kilikili/models_new/followee_votes/vote.dart';
+import 'package:kilikili/models/model_owner.dart';
+import 'package:kilikili/rust/api/dynamic.dart' as rust;
+import 'package:kilikili/services/rust/rust_dynamic.dart';
 import 'package:kilikili/pages/dynamics/widgets/vote_decoration.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/date_utils.dart';
@@ -22,8 +22,8 @@ import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class VotePanel extends StatefulWidget {
-  final VoteInfo voteInfo;
-  final FutureOr<LoadingState<VoteInfo>> Function(Set<int>, bool) onVote;
+  final rust.VoteInfoData voteInfo;
+  final FutureOr<rust.VoteInfoResult> Function(Set<int>, bool) onVote;
 
   const VotePanel({
     super.key,
@@ -38,7 +38,7 @@ class VotePanel extends StatefulWidget {
 class _VotePanelState extends State<VotePanel> {
   late bool anonymous = false;
 
-  late VoteInfo _voteInfo;
+  late rust.VoteInfoData _voteInfo;
   late final RxList<int> groupValue =
       (_voteInfo.myVotes?.toList() ?? <int>[]).obs;
   late var _percentage = _cnt2Percentage(_voteInfo.options);
@@ -48,18 +48,16 @@ class _VotePanelState extends State<VotePanel> {
   late bool _showPercentage = !_enabled;
   late final _maxCnt = _voteInfo.choiceCnt ?? _voteInfo.options.length;
   final isLogin = Accounts.main.isLogin;
-  late final followeeVote = Rxn<List<FolloweeVote>>();
+  late final followeeVote = Rxn<List<rust.FolloweeVoteData>>();
 
   @override
   void initState() {
     super.initState();
     _voteInfo = widget.voteInfo;
     if (isLogin) {
-      DynamicsHttp.followeeVotes(voteId: _voteInfo.voteId).then((res) {
+      RustDynamic.followeeVotes(voteId: _voteInfo.voteId!).then((res) {
         if (!mounted) return;
-        if (res case Success(:final response)) {
-          followeeVote.value = response;
-        }
+        followeeVote.value = res.data;
       });
     }
   }
@@ -86,7 +84,7 @@ class _VotePanelState extends State<VotePanel> {
       Flexible(
         child: Padding(
           padding: const .symmetric(vertical: 8),
-          child: _voteInfo.type == 1
+          child: _voteInfo.voteType == 1
               ? GridView.builder(
                   shrinkWrap: true,
                   padding: EdgeInsets.zero,
@@ -123,14 +121,17 @@ class _VotePanelState extends State<VotePanel> {
                         anonymous,
                       );
                       if (!mounted) return;
-                      if (res case Success(:final response)) {
+                      if (res.data case final response?) {
                         _enabled = false;
                         _showPercentage = true;
                         _voteInfo = response;
                         _percentage = _cnt2Percentage(_voteInfo.options);
                         setState(() {});
                       } else {
-                        res.toast();
+                        Error(
+                          res.errorDetail ?? '投票提交失败',
+                          code: res.errorCode,
+                        ).toast();
                       }
                     }
                   : null,
@@ -170,7 +171,7 @@ class _VotePanelState extends State<VotePanel> {
                               (e) => ListTile(
                                 dense: true,
                                 onTap: () =>
-                                    Get.toNamed('/member?mid=${e.mid}'),
+                                    Get.toNamed('/member?mid=${e.uid}'),
                                 leading: NetworkImgLayer(
                                   src: e.face,
                                   width: 40,
@@ -216,7 +217,12 @@ class _VotePanelState extends State<VotePanel> {
                   children: [
                     avatars(
                       colorScheme: theme.colorScheme,
-                      users: list.take(3),
+                      users: list
+                          .take(3)
+                          .map(
+                            (e) =>
+                                Owner(mid: e.uid, name: e.name, face: e.face),
+                          ),
                     ),
                     Icon(
                       size: 18,
@@ -451,7 +457,7 @@ class _VotePanelState extends State<VotePanel> {
     (itemCtx as Element).markNeedsBuild();
   }
 
-  static List<double> _cnt2Percentage(List<Option> options) {
+  static List<double> _cnt2Percentage(List<rust.VoteOptionData> options) {
     final total = options.fold(0, (sum, opt) => sum + opt.cnt);
     return total == 0
         ? List<double>.filled(options.length, 0)
@@ -534,9 +540,9 @@ Future<void> showVoteDialog(
   int voteId, {
   int? dynamicId,
 }) async {
-  final voteInfo = await DynamicsHttp.voteInfo(voteId);
+  final voteInfo = await RustDynamic.voteInfo(voteId: voteId);
   if (context.mounted) {
-    if (voteInfo case Success(:final response)) {
+    if (voteInfo.data case final response?) {
       showDialog(
         context: context,
         builder: (context) => Dialog(
@@ -545,18 +551,22 @@ Future<void> showVoteDialog(
             padding: const .all(24),
             child: VotePanel(
               voteInfo: response,
-              onVote: (votes, anonymous) => DynamicsHttp.doVote(
+              onVote: (votes, anonymous) => RustDynamic.doVote(
                 voteId: voteId,
                 votes: votes.toList(),
                 anonymous: anonymous,
                 dynamicId: dynamicId,
+                voterUid: Accounts.main.mid,
               ),
             ),
           ),
         ),
       );
     } else {
-      voteInfo.toast();
+      Error(
+        voteInfo.errorDetail ?? '投票信息读取失败',
+        code: voteInfo.errorCode,
+      ).toast();
     }
   }
 }

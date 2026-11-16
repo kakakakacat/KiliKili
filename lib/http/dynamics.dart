@@ -1,9 +1,6 @@
-import 'dart:convert';
-
 import 'package:kilikili/common/constants.dart';
 import 'package:kilikili/common/widgets/pair.dart';
 import 'package:kilikili/http/api.dart';
-import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/reply.dart';
@@ -11,7 +8,6 @@ import 'package:kilikili/models/common/dynamic/dynamics_type.dart';
 import 'package:kilikili/models/common/reply/reply_option_type.dart';
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/models/dynamics/up.dart';
-import 'package:kilikili/models/dynamics/vote_model.dart';
 import 'package:kilikili/models_new/article/article_info/data.dart';
 import 'package:kilikili/models_new/article/article_list/data.dart';
 import 'package:kilikili/models_new/article/article_view/data.dart';
@@ -19,12 +15,9 @@ import 'package:kilikili/models_new/bubble/data.dart';
 import 'package:kilikili/models_new/dynamic/dyn_mention/data.dart';
 import 'package:kilikili/models_new/dynamic/dyn_mention/group.dart';
 import 'package:kilikili/models_new/dynamic/dyn_reaction/data.dart';
-import 'package:kilikili/models_new/dynamic/dyn_reserve/data.dart';
-import 'package:kilikili/models_new/dynamic/dyn_reserve_info/data.dart';
 import 'package:kilikili/models_new/dynamic/dyn_topic_feed/topic_card_list.dart';
 import 'package:kilikili/models_new/dynamic/dyn_topic_top/top_details.dart';
 import 'package:kilikili/models_new/dynamic/dyn_topic_top/topic_item.dart';
-import 'package:kilikili/models_new/followee_votes/vote.dart';
 import 'package:kilikili/services/rust/follow_compat.dart';
 import 'package:kilikili/services/rust/rust_misc.dart';
 import 'package:kilikili/utils/accounts.dart';
@@ -145,34 +138,6 @@ abstract final class DynamicsHttp {
   //     return {'status': false, 'msg': res.data['message']};
   //   }
   // }
-
-  // 动态点赞
-  static Future<LoadingState<void>> thumbDynamic({
-    required String? dynamicId,
-    required int? up,
-  }) async {
-    final res = await Request().post(
-      Api.thumbDynamic,
-      queryParameters: {
-        'csrf': Accounts.main.csrf,
-      },
-      data: {
-        'dyn_id_str': dynamicId,
-        'up': up,
-        'spmid': '333.1365.0.0',
-      },
-      options: Options(
-        headers: {
-          'referer': HttpString.dynamicShareBaseUrl,
-        },
-      ),
-    );
-    if (res.data['code'] == 0) {
-      return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
 
   static Future<LoadingState<Map?>> createDynamic({
     dynamic mid,
@@ -295,44 +260,6 @@ abstract final class DynamicsHttp {
     }
   }
 
-  static Future<LoadingState<void>> setTop({
-    required Object dynamicId,
-  }) async {
-    final res = await Request().post(
-      Api.setTopDyn,
-      queryParameters: {
-        'csrf': Accounts.main.csrf,
-      },
-      data: {
-        'dyn_str': dynamicId,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<void>> rmTop({
-    required Object dynamicId,
-  }) async {
-    final res = await Request().post(
-      Api.rmTopDyn,
-      queryParameters: {
-        'csrf': Accounts.main.csrf,
-      },
-      data: {
-        'dyn_str': dynamicId,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   static Future<LoadingState<ArticleInfoData>> articleInfo({
     required Object cvId,
   }) async {
@@ -383,51 +310,6 @@ abstract final class DynamicsHttp {
     );
     if (res.data['code'] == 0) {
       return Success(DynamicItemModel.fromOpusJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<VoteInfo>> voteInfo(dynamic voteId) async {
-    final res = await Request().get(
-      Api.voteInfo,
-      queryParameters: {'vote_id': voteId},
-    );
-    if (res.data['code'] == 0) {
-      final voteInfo = VoteInfo.fromSeparatedJson(res.data['data']);
-      return voteInfo.voteId == null
-          ? const Error('无效的投票id')
-          : Success(voteInfo);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<VoteInfo>> doVote({
-    required int voteId,
-    required List<int> votes,
-    bool anonymous = false,
-    int? dynamicId,
-  }) async {
-    final csrf = Accounts.main.csrf;
-    final data = {
-      'vote_id': voteId,
-      'votes': votes,
-      'voter_uid': Accounts.main.mid,
-      'status': anonymous ? 1 : 0,
-      'op_bit': 0,
-      'dynamic_id': dynamicId ?? 0,
-      'csrf_token': csrf,
-      'csrf': csrf,
-    };
-    final res = await Request().post(
-      Api.doVote,
-      queryParameters: {'csrf': csrf},
-      data: data,
-      options: Options(contentType: Headers.jsonContentType),
-    );
-    if (res.data['code'] == 0) {
-      return Success(VoteInfo.fromJson(res.data['data']['vote_info']));
     } else {
       return Error(res.data['message']);
     }
@@ -521,31 +403,6 @@ abstract final class DynamicsHttp {
     }
   }
 
-  static Future<LoadingState<DynReserveData>> dynReserve({
-    required Object? reserveId,
-    required Object? curBtnStatus,
-    required Object dynamicIdStr,
-    required Object? reserveTotal,
-  }) async {
-    final res = await Request().post(
-      Api.dynReserve,
-      queryParameters: {
-        'csrf': Accounts.main.csrf,
-      },
-      data: {
-        'reserve_id': ?reserveId,
-        'cur_btn_status': ?curBtnStatus,
-        'dynamic_id_str': dynamicIdStr,
-        'reserve_total': ?reserveTotal,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(DynReserveData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   static Future<LoadingState<List<TopicItem>?>> dynTopicRcmd({
     int ps = 25,
   }) async {
@@ -601,147 +458,6 @@ abstract final class DynamicsHttp {
       return Success(
         DynMentionData.fromJson(res.data['data']).groups,
       );
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<int?>> createVote(VoteInfo voteInfo) async {
-    final res = await Request().post(
-      Api.createVote,
-      queryParameters: {'csrf': Accounts.main.csrf},
-      data: {'vote_info': voteInfo.toJson()},
-    );
-    if (res.data['code'] == 0) {
-      return Success(res.data['data']?['vote_id']);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<int?>> updateVote(VoteInfo voteInfo) async {
-    final res = await Request().post(
-      Api.updateVote,
-      queryParameters: {'csrf': Accounts.main.csrf},
-      data: {'vote_info': voteInfo.toJson()},
-    );
-    if (res.data['code'] == 0) {
-      return Success(res.data['data']?['vote_id']);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<int?>> createReserve({
-    int subType = 0,
-    required String title,
-    required int livePlanStartTime,
-  }) async {
-    final res = await Request().post(
-      Api.createReserve,
-      data: {
-        'type': 2,
-        'sub_type': subType,
-        'from': 1,
-        'title': title,
-        'live_plan_start_time': livePlanStartTime,
-        'csrf': Accounts.main.csrf,
-      },
-      options: Options(contentType: Headers.formUrlEncodedContentType),
-    );
-    if (res.data['code'] == 0) {
-      return Success(res.data['data']?['sid']);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<int?>> updateReserve({
-    int subType = 0,
-    required String title,
-    required int livePlanStartTime,
-    required int sid,
-  }) async {
-    final res = await Request().post(
-      Api.updateReserve,
-      data: {
-        'type': 2,
-        'sub_type': subType,
-        'from': 1,
-        'title': title,
-        'live_plan_start_time': livePlanStartTime,
-        'id': sid,
-        'csrf': Accounts.main.csrf,
-      },
-      options: Options(contentType: Headers.formUrlEncodedContentType),
-    );
-    if (res.data['code'] == 0) {
-      return Success(res.data['data']?['sid']);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<ReserveInfoData>> reserveInfo({
-    required dynamic sid,
-  }) async {
-    final res = await Request().get(
-      Api.reserveInfo,
-      queryParameters: {
-        'from': 1,
-        'id': sid,
-        'web_location': 333.1365,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(ReserveInfoData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<List<FolloweeVote>?>> followeeVotes({
-    required dynamic voteId,
-  }) async {
-    final res = await Request().get(
-      Api.followeeVotes,
-      queryParameters: {
-        'vote_id': voteId,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(
-        (res.data['data']?['votes'] as List?)
-            ?.map((e) => FolloweeVote.fromJson(e))
-            .toList(),
-      );
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<void>> dynPrivatePubSetting({
-    required Object dynId,
-    int? dynType,
-    required String action,
-  }) async {
-    final res = await Request().post(
-      Api.dynPrivatePubSetting,
-      queryParameters: {
-        'platform': 'web',
-        'csrf': Accounts.main.csrf,
-      },
-      data: {
-        "object_id": jsonEncode({
-          "dyn_id": dynId.toString(),
-          "dyn_type": ?dynType,
-        }),
-        "action": action,
-      },
-      options: Options(contentType: Headers.jsonContentType),
-    );
-    if (res.data['code'] == 0) {
-      return const Success(null);
     } else {
       return Error(res.data['message']);
     }

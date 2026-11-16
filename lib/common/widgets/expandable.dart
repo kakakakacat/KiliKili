@@ -1,6 +1,48 @@
 import 'package:kilikili/common/widgets/animated_multi_height.dart';
 import 'package:material_ui/material_ui.dart';
 
+/// 简介区展开 / 折叠的动画时长。
+///
+/// 标题高度、简介高度与标题旁的三角指示共用同一个值：三者是同一次点击的
+/// 反馈，分开调会在动画中途看出错位。原为 300ms，按 #141 先调到 180ms，
+/// 真机复看仍嫌拖沓，再降到 120ms。
+const Duration kIntroExpandDuration = Duration(milliseconds: 120);
+
+/// 配套曲线，同样三者共用。
+///
+/// 原先高度走 `Curves.linear`：起手那几帧位移太小，读起来像「先愣一下再动」，
+/// 所以同样的毫秒数在手上会比纸面更慢。easeOutCubic 把位移压到前半程，
+/// 不改时长也明显更利落（#141 二次反馈）。
+const Curve kIntroExpandCurve = Curves.easeOutCubic;
+
+/// 标题旁的展开 / 折叠三角指示。
+///
+/// 刻意不画在 [ExpandablePanel] 内部：面板内部是折叠态与展开态两份
+/// 内容的即时换位，放进去会被整块换掉，方向看着是瞬间跳变而不是
+/// 转过去。放在外面由隐式动画独立驱动，连点时能从当前角度接着转（#141）。
+class ExpandIndicator extends StatelessWidget {
+  const ExpandIndicator({
+    super.key,
+    required this.expand,
+    this.color,
+    this.size = 22,
+  });
+
+  final bool expand;
+  final Color? color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedRotation(
+      turns: expand ? 0.5 : 0,
+      duration: kIntroExpandDuration,
+      curve: kIntroExpandCurve,
+      child: Icon(Icons.arrow_drop_down, size: size, color: color),
+    );
+  }
+}
+
 class ExpandablePanel extends StatelessWidget {
   final bool expand;
 
@@ -21,9 +63,9 @@ class ExpandablePanel extends StatelessWidget {
       alignment: .topLeft,
       firstChild: collapsed,
       secondChild: expanded,
-      sizeCurve: Curves.linear,
+      sizeCurve: kIntroExpandCurve,
       crossFadeState: expand ? .showSecond : .showFirst,
-      duration: const Duration(milliseconds: 300),
+      duration: kIntroExpandDuration,
     );
   }
 }

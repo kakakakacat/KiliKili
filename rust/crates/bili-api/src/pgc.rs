@@ -870,11 +870,18 @@ mod review_write_tests {
         let modify = review_modify_request(7, 99, 4, "还行");
         assert_ne!(post.path, modify.path);
         assert!(
-            modify.form.iter().any(|(k, _)| k == "review_id"),
+            modify
+                .form_fields()
+                .expect("这条是表单体")
+                .iter()
+                .any(|(k, _)| k == "review_id"),
             "修改必须带 review_id，否则它就变成了再发一条"
         );
         assert!(
-            post.form.iter().all(|(k, _)| k != "review_id"),
+            post.form_fields()
+                .expect("这条是表单体")
+                .iter()
+                .all(|(k, _)| k != "review_id"),
             "发表不该带 review_id"
         );
     }

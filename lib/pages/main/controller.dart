@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:kilikili/common/widgets/view_safe_area.dart';
-import 'package:kilikili/grpc/dyn.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/msg.dart';
 import 'package:kilikili/models/common/dynamic/dynamic_badge_mode.dart';
@@ -13,6 +12,7 @@ import 'package:kilikili/pages/dynamics/controller.dart';
 import 'package:kilikili/pages/home/controller.dart';
 import 'package:kilikili/pages/mine/view.dart';
 import 'package:kilikili/services/account_service.dart';
+import 'package:kilikili/services/rust/rust_dynamic.dart';
 import 'package:kilikili/utils/extension/get_ext.dart';
 import 'package:kilikili/utils/extension/iterable_ext.dart';
 import 'package:kilikili/utils/feed_back.dart';
@@ -198,9 +198,9 @@ class MainController extends GetxController
     if (!accountService.isLogin.value || !hasDyn) {
       return;
     }
-    DynGrpc.dynRed().then((res) {
-      if (res != null) {
-        setDynCount(res);
+    RustDynamic.dynRed().then((res) {
+      if (res.data case final count?) {
+        setDynCount(count.toInt());
       }
     });
   }

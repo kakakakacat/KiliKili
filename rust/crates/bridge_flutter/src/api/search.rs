@@ -658,11 +658,26 @@ pub async fn search_trending(
 }
 
 /// 搜索页默认词。
-pub async fn search_recommend(context: SearchContext) -> SearchTrendingResult {
-    let (ctx, transport, _, _) = context.split();
+pub async fn search_recommend(
+    context: SearchContext,
+    appkey: String,
+    appsec: String,
+    access_key: Option<String>,
+) -> SearchTrendingResult {
+    let (ctx, transport, _, ts) = context.split();
 
     let joined = init::runtime()
-        .spawn(async move { search::fetch_recommend(&transport, &ctx).await })
+        .spawn(async move {
+            search::fetch_recommend(
+                &transport,
+                &ctx,
+                &appkey,
+                &appsec,
+                access_key.as_deref(),
+                ts,
+            )
+            .await
+        })
         .await;
 
     match flatten(joined) {

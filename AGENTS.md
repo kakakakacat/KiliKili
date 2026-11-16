@@ -123,6 +123,14 @@ dart analyze lib
 >
 > 同理，本机 `flutter test` 只能跑不碰 widget 层与 `Pref`/`storage` 的测试；
 > 其余只能靠 CI（CI 会先跑 `prepare-build.sh`）。
+>
+> **交集判据有一个例外：自己给 `lib/scripts/*.patch` 新加符号的时候。**
+> 那个符号只存在于打过补丁的 SDK，未跑 `prepare-build.sh` 的机器上会在
+> **自己刚改过的文件里**报 `undefined_*`，交集必然非空，但并不说明改错了。
+> 当前已知的这类符号：`DoubleTapGestureRecognizer.doubleTapTimeout`
+> （`double_tap_gesture.patch`，见 #143）、`DoubleTapGestureRecognizer.checkUp`。
+> 遇到时先用 `git apply --check` 确认补丁能干净打上（只读，不动 SDK），
+> 真正的编译验证交给 CI。
 
 ---
 
@@ -182,7 +190,31 @@ PR**，不要只留在代码和 Issues 里：
   改到 `main` 再合，或恢复那个 ref 后重开。
 - 五端 app 构建（`build.yml` / `win_x64.yml` / `linux_x64.yml` …）保持
   `workflow_dispatch` 手动触发，**不要提议打开 `pull_request` 触发**；需要
-  验证构建时手动 dispatch。
+  验证构建时手动 dispatch。dispatch 时把不需要的平台显式置 false，
+  `tag` 留空——填了 `tag` 会直接建一个 GitHub Release：
+
+  ```sh
+  gh workflow run build.yml --ref <分支> \
+      -f build_android=true -f build_ios=false -f build_mac=false \
+      -f build_win_x64=false -f build_linux_x64=false -f tag=""
+  ```
+
+- **取 APK 产物不要用 `gh run download`。** `build.yml` 的上传步骤用了
+  `archive: false`，于是：产物名就是**文件名本身**（形如
+  `KiliKili_android_<版本>-<短 sha>+<versionCode>_arm64-v8a.apk`），
+  `-n Android_arm64-v8a` 这种按平台猜的名字找不到；而且 APK 本身就是 zip，
+  `gh run download` 会把它**当压缩包解开**，把七百来个条目摊进目标目录，
+  还会因 `res/` 下有大小写同名的条目（`2f.xml` 与 `2F.xml`）在 Windows 上
+  中途失败：`error extracting "res/2f.xml": openat 2f.xml: file exists`。
+  正确做法是按 artifact id 取原始字节：
+
+  ```sh
+  gh api repos/<owner>/<repo>/actions/artifacts -q ...   # 或 .../runs/<id>/artifacts
+  gh api repos/<owner>/<repo>/actions/artifacts/<id>/zip > x.apk
+  ```
+
+  核对下载大小与 `size_in_bytes` 一致即可确认拿到的是 APK 原文件，
+  不是再套一层的压缩包。
 
 ---
 
@@ -208,11 +240,21 @@ PR**，不要只留在代码和 Issues 里：
   只用在下载 SDK 上。
 - 本机没有 fvm 时，issue 模板里写的 `.fvm/flutter_sdk/bin/dart` 按全局
   Flutter SDK 的 `dart` 来用。
-- Android 本地构建使用 `android/key.properties` 指向
-  `android/app/kilikili-release.jks`。这两个文件只在本机保存，已被 Git
-  忽略；迁移机器时须通过安全渠道同时备份密钥、别名和密码。同一包名的后续
-  Android 版本必须沿用原签名，否则不能原地升级。GitHub 手动发布工作流
-  仍读取现有 Secrets，切换签名身份前先核对旧版证书指纹与升级路径。
+- Android 签名：本地构建读 `android/key.properties`（指向
+  `android/app/kilikili-release.jks`）。两个文件已被 Git 忽略、只在当事人本机，
+  **不是每台开发机都有**（例：2026-11-13 用的这台就没有）。迁移机器时
+  须通过安全渠道同时备份密钥、别名和密码。同一包名的后续 Android 版本必须
+  沿用原签名，否则不能原地升级。
+
+- **CI 构出来的 APK 是一次性 debug 签名，包与包之间不能覆盖安装。**
+  仓库目前**一个 Actions secret 都没有**（`gh api
+  repos/<owner>/<repo>/actions/secrets` 返回 `total_count: 0`），所以
+  `build.yml` 那步 `if [ ! -z "${{ secrets.SIGN_KEYSTORE_BASE64 }}" ]` 永远不执行，
+  `key.properties` 不会生成，`build.gradle.kts` 回落到
+  `signingConfigs["debug"]`——而 CI runner 的 debug keystore 是每台现生成的。
+  因此换一个 CI 包就要先 `adb uninstall`，会清掉登录态、设置与离线缓存；
+  这些包也**不能对外分发**。带 `tag` 发一次版同样是 debug 签名，以后补上
+  正式签名时老用户无法原地升级。修法见 issue #146。
 - Android 的 JKS 只用于 Android；Apple 平台和 Windows 安装包分别按各自
   的签名身份与证书流程处理，不共用此 JKS。
 

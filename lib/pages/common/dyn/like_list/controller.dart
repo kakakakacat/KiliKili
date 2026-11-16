@@ -1,24 +1,22 @@
-import 'package:kilikili/grpc/bilibili/app/dynamic/v2.pb.dart'
-    show LikeListReply, ModuleAuthor;
-import 'package:kilikili/grpc/dyn.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
-import 'package:fixnum/fixnum.dart' show Int64;
+import 'package:kilikili/rust/api/dynamic.dart';
+import 'package:kilikili/services/rust/rust_dynamic.dart';
 import 'package:get/get.dart';
 
 class DynLikeController
-    extends CommonListController<LikeListReply, ModuleAuthor> {
+    extends CommonListController<LikeListPage, DynamicAuthor> {
   DynLikeController(this.id, {int count = -1}) : count = RxInt(count);
   final String id;
 
-  Int64? _uidOffset;
+  int? _uidOffset;
   final RxInt count;
 
   @override
-  List<ModuleAuthor>? getDataList(LikeListReply response) {
+  List<DynamicAuthor>? getDataList(LikeListPage response) {
     count.value = response.totalCount.toInt();
-    final list = response.list;
-    _uidOffset = list.lastOrNull?.mid;
+    final list = response.items;
+    _uidOffset = list.lastOrNull?.mid.toInt();
     if (!response.hasMore) {
       isEnd = true;
     }
@@ -26,11 +24,15 @@ class DynLikeController
   }
 
   @override
-  Future<LoadingState<LikeListReply>> customGetData() => DynGrpc.likeList(
-    dynamicId: id,
-    uidOffset: _uidOffset,
-    page: page,
-  );
+  Future<LoadingState<LikeListPage>> customGetData() async {
+    final result = await RustDynamic.likeList(
+      dynamicId: id,
+      uidOffset: _uidOffset,
+      page: page,
+    );
+    if (result.data case final data?) return Success(data);
+    return Error(result.errorDetail ?? '动态点赞列表获取失败');
+  }
 
   @override
   Future<void> onRefresh() {

@@ -6,6 +6,7 @@
 
 pub mod danmaku;
 pub mod danmaku_filter;
+pub mod dynamic;
 pub mod error;
 pub mod live;
 pub mod match_info;
@@ -24,6 +25,7 @@ pub mod user_list;
 pub mod video;
 pub mod video_feed;
 pub mod video_page;
+pub mod video_write;
 
 #[cfg(test)]
 mod tests {

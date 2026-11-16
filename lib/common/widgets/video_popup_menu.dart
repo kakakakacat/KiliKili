@@ -1,6 +1,5 @@
 import 'package:kilikili/common/widgets/custom_icon.dart';
 import 'package:kilikili/http/user.dart';
-import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/home/rcmd/result.dart';
 import 'package:kilikili/models/model_video.dart';
 import 'package:kilikili/models_new/space/space_archive/item.dart';
@@ -8,6 +7,7 @@ import 'package:kilikili/pages/mine/controller.dart';
 import 'package:kilikili/pages/search/widgets/search_text.dart';
 import 'package:kilikili/pages/video/ai_conclusion/view.dart';
 import 'package:kilikili/pages/video/introduction/ugc/controller.dart';
+import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:kilikili/utils/utils.dart';
@@ -133,7 +133,7 @@ class VideoPopupMenu extends StatelessWidget {
                             onTap: (_) async {
                               Get.back();
                               SmartDialog.showLoading(msg: '正在提交');
-                              final res = await VideoHttp.feedDislike(
+                              final res = await RustVideoWrite.feedDislike(
                                 reasonId: r?.id,
                                 feedbackId: f?.id,
                                 id: item.param!,
@@ -189,7 +189,7 @@ class VideoPopupMenu extends StatelessWidget {
                                         msg: '正在提交',
                                       );
                                       final res =
-                                          await VideoHttp.feedDislikeCancel(
+                                          await RustVideoWrite.feedDislikeCancel(
                                             id: item.param!,
                                             goto: item.goto!,
                                           );
@@ -226,9 +226,9 @@ class VideoPopupMenu extends StatelessWidget {
                                     onPressed: () async {
                                       Get.back();
                                       SmartDialog.showLoading(msg: '正在提交');
-                                      final res = await VideoHttp.dislikeVideo(
+                                      final res = await RustVideoWrite.dislikeVideo(
                                         bvid: videoItem.bvid!,
-                                        type: true,
+                                        dislike: true,
                                       );
                                       SmartDialog.dismiss();
                                       if (res.isSuccess) {
@@ -247,9 +247,9 @@ class VideoPopupMenu extends StatelessWidget {
                                     onPressed: () async {
                                       Get.back();
                                       SmartDialog.showLoading(msg: '正在提交');
-                                      final res = await VideoHttp.dislikeVideo(
+                                      final res = await RustVideoWrite.dislikeVideo(
                                         bvid: videoItem.bvid!,
-                                        type: false,
+                                        dislike: false,
                                       );
                                       SmartDialog.dismiss();
                                       SmartDialog.showToast(
@@ -302,7 +302,7 @@ class VideoPopupMenu extends StatelessWidget {
                             TextButton(
                               onPressed: () async {
                                 Get.back();
-                                final res = await VideoHttp.relationMod(
+                                final res = await RustVideoWrite.relationMod(
                                   mid: videoItem.owner.mid!,
                                   act: 5,
                                   reSrc: 11,

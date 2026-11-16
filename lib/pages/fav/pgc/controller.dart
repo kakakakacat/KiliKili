@@ -1,9 +1,9 @@
 import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models_new/fav/fav_pgc/data.dart';
 import 'package:kilikili/models_new/fav/fav_pgc/list.dart';
 import 'package:kilikili/pages/common/multi_select/multi_select_controller.dart';
+import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -52,7 +52,7 @@ class FavPgcController
 
   // 取消追番
   Future<void> pgcDel(int index, seasonId) async {
-    final result = await VideoHttp.pgcDel(seasonId: seasonId);
+    final result = await RustVideoWrite.pgcDel(seasonId: seasonId);
     if (result case Success(:final response)) {
       loadingState
         ..value.data!.removeAt(index)
@@ -70,8 +70,8 @@ class FavPgcController
 
   Future<void> onUpdateList(int followStatus) async {
     final removeList = allChecked.toSet();
-    final res = await VideoHttp.pgcUpdate(
-      seasonId: removeList.map((item) => item.seasonId).join(','),
+    final res = await RustVideoWrite.pgcUpdate(
+      seasonIds: removeList.map((item) => item.seasonId).join(','),
       status: followStatus,
     );
     if (res case Success(:final response)) {
@@ -97,8 +97,8 @@ class FavPgcController
   }
 
   Future<void> onUpdate(int index, int followStatus, int? seasonId) async {
-    final res = await VideoHttp.pgcUpdate(
-      seasonId: seasonId.toString(),
+    final res = await RustVideoWrite.pgcUpdate(
+      seasonIds: seasonId.toString(),
       status: followStatus,
     );
     if (res case Success(:final response)) {

@@ -8,6 +8,7 @@ import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/models_new/dynamic/dyn_mention/item.dart';
 import 'package:kilikili/pages/common/dyn/common_dyn_controller.dart';
 import 'package:kilikili/pages/common/reply/reply_controller.dart';
+import 'package:kilikili/services/rust/rust_dynamic.dart';
 import 'package:kilikili/utils/id_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -61,17 +62,19 @@ class DynamicDetailController extends CommonDynController
   }
 
   Future<LoadingState> onSetPubSetting(bool isPrivate, Object dynId) async {
-    final res = await DynamicsHttp.dynPrivatePubSetting(
-      dynId: dynId,
+    final res = await RustDynamic.privatePubSetting(
+      dynamicId: dynId,
       action: isPrivate ? 'public_pub' : 'private_pub',
     );
-    if (res.isSuccess) {
+    if (res.errorKind == null) {
       dynItem.modules.moduleAuthor?.badgeText = isPrivate ? null : '仅自己可见';
       SmartDialog.showToast('设置成功');
     } else {
-      res.toast();
+      SmartDialog.showToast(res.errorDetail ?? '设置失败');
     }
-    return res;
+    return res.errorKind == null
+        ? const Success(null)
+        : Error(res.errorDetail ?? '设置失败');
   }
 
   Future<void> onSetReplySubject(int action) async {

@@ -409,3 +409,31 @@ Phase 2。
 - **不碰 `Pref.enableHttp2`**。用户开了它，Rust 这条路径照样按
   `TransportConfig.http1_only = false` 走 h2——网关两种都接受，这一点
   基线已经验证了十几个版本。
+
+
+## 首批落地（#133，2026-11-13）
+
+`HttpPost` 的策略字段采用显式 `retry_policy: RetryPolicy`：只读 gRPC 为
+`Read`，既有 REST 写构造为 `Write(Idempotency)`；仅有写幂等级别无法表达
+只读 POST 的超时重试，这个差别已由真实 reqwest 桩测试锁定。重试判据本身不变。
+
+`bili-grpc` 按根消息生成 metadata 与两个弹幕请求，不生成无消费者的响应树。
+`tool/proto-generate.sh --check` 用临时目录重生成并逐文件比较；开发工具从
+现有 pbjson 描述符及已删除 metadata 子树的机械快照取输入，正常构建无 protoc。
+Dart protobuf 的 setter 会保留显式零值/空串，prost 默认 proto3 标量会省略它；
+生成前给标量补 synthetic optional 来保留存在性，不改字段号、类型或 wire 格式。
+匿名、空 access_key 和占位非空 access_key 的五个 metadata 头均与 Dart 编码对照。
+
+`dmSegMobileRaw` 的传输及 `dmViewSubtitles` 的完整网络/解析边界由 Rust 接管，
+`requestRaw`、字幕 JSON 桥接与开关/降级删除。字幕旧 Dart 类仍与视频详情 JSON
+来源共用，只保留无算法的字段适配，随该来源迁移后删除。其他弹幕引擎开关及
+下载用的 Dart 分段消息消费者不在本单范围。
+
+一处修正原盘点：`metadata/device.pb.dart` 还有 generated relative import，
+经 `dynamic/v2 → vas/garb → Device` 被动态 UI 间接消费，**不能**随 metadata
+编码迁移删除。保留 Device 的三个 Dart 生成文件，待 S5/S6 最后消费者迁完；
+其余 metadata 子树已删除。基线编码已不再引用这些残留类型。
+
+离线解帧 parity 使用真实匿名响应的脱敏投影，来源与处理见
+`rust/crates/bili-api/tests/fixtures/grpc/README.md`。网络桩与 FFI 证明完整链路
+能返回字节/typed 字幕和错误值；登录态、代理/证书及真机回归仍留 Phase 2。

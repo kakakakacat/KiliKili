@@ -23,6 +23,9 @@ pub const CREDENTIAL_KEYS: &[&str] = &[
     "cookie",
     "set-cookie",
     "authorization",
+    "x-bili-metadata-bin",
+    "x-bili-device-bin",
+    "buvid",
     "dedeuserid__ckmd5",
     "sid",
 ];

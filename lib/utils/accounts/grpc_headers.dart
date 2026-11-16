@@ -1,86 +1,32 @@
-import 'dart:convert';
-
-import 'package:kilikili/common/constants.dart';
-import 'package:kilikili/grpc/bilibili/metadata.pb.dart';
-import 'package:kilikili/grpc/bilibili/metadata/device.pb.dart';
-import 'package:kilikili/grpc/bilibili/metadata/fawkes.pb.dart';
-import 'package:kilikili/grpc/bilibili/metadata/locale.pb.dart';
-import 'package:kilikili/grpc/bilibili/metadata/network.pb.dart' as network;
+import 'package:kilikili/rust/api/grpc.dart' as api;
 import 'package:kilikili/utils/accounts/account.dart';
 import 'package:kilikili/utils/utils.dart';
 
+/// 尚未迁移的 gRPC 调用也共用 Rust 编码，避免两套设备头在后续切片中漂移。
+// Device 的 Dart 生成类型仍被 dynamic/v2 → vas/garb 间接依赖，保留到 S5/S6
+// 最后一个消费者迁完再删（#133）；本文件已经不再使用它编码 metadata。
 abstract final class GrpcHeaders {
-  static const _build = 2001100;
-  static const _versionName = '2.0.1';
-  static const _biliChannel = 'master';
-  static const _mobiApp = 'android_hd';
-  static const _device = 'android';
+  static api.GrpcIdentity _identity({String? accessKey, String buvid = ''}) =>
+      api.GrpcIdentity(
+        accessKey: accessKey,
+        buvid: buvid,
+        sessionId: Utils.generateRandomString(8),
+      );
 
-  static String get _traceId => Constants.traceId;
-  static String get _sessionId => Utils.generateRandomString(8);
+  static String get fawkes => Map.fromEntries(
+    api
+        .buildGrpcHeaders(identity: _identity())
+        .map((e) => MapEntry(e.$1, e.$2)),
+  )['x-bili-fawkes-req-bin']!;
 
-  static final Map<String, String> _base = {
-    'grpc-encoding': 'gzip',
-    'gzip-accept-encoding': 'gzip,identity',
-    'user-agent': Constants.userAgent,
-    'x-bili-gaia-vtoken': '',
-    'x-bili-aurora-zone': '',
-    'x-bili-trace-id': _traceId,
-    'bili-http-engine': 'cronet',
-    // 'te': 'trailers', // dio not supported
-    'x-bili-network-bin': base64Encode(
-      network.Network(type: network.NetworkType.WIFI).writeToBuffer(),
-    ),
-    'x-bili-locale-bin': base64Encode(
-      Locale(
-        cLocale: LocaleIds(language: 'zh', region: 'CN', script: 'Hans'),
-        sLocale: LocaleIds(language: 'zh', region: 'CN', script: 'Hans'),
-        timezone: 'Asia/Shanghai',
-      ).writeToBuffer(),
-    ),
-    'x-bili-exps-bin': '',
-  };
-
-  static String get fawkes => base64Encode(
-    FawkesReq(
-      appkey: _mobiApp,
-      env: 'prod',
-      sessionId: _sessionId,
-    ).writeToBuffer(),
+  static Map<String, String> newHeaders(Account account) => Map.fromEntries(
+    api
+        .buildGrpcHeaders(
+          identity: _identity(
+            accessKey: account.accessKey,
+            buvid: account.buvid,
+          ),
+        )
+        .map((e) => MapEntry(e.$1, e.$2)),
   );
-
-  static Map<String, String> newHeaders(Account account) {
-    return {
-      ..._base,
-      if (account.accessKey != null)
-        'authorization': 'identify_v1 ${account.accessKey}',
-      'buvid': account.buvid,
-      'x-bili-fawkes-req-bin': fawkes,
-      'x-bili-device-bin': base64Encode(
-        Device(
-          appId: 5,
-          build: _build,
-          buvid: account.buvid,
-          mobiApp: _mobiApp,
-          platform: _device,
-          channel: _biliChannel,
-          brand: _device,
-          model: _device,
-          osver: '15',
-          versionName: _versionName,
-        ).writeToBuffer(),
-      ),
-      'x-bili-metadata-bin': base64Encode(
-        Metadata(
-          accessKey: account.accessKey,
-          mobiApp: _mobiApp,
-          device: _device,
-          build: _build,
-          channel: _biliChannel,
-          buvid: account.buvid,
-          platform: _device,
-        ).writeToBuffer(),
-      ),
-    };
-  }
 }

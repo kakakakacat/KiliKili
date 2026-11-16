@@ -8,6 +8,10 @@ repository.workspace = true
 description = "数据层：REST 接口的请求构造、传输、DTO 与到领域实体的映射。"
 
 [dependencies]
+base64 = "0.22"
+flate2 = "1"
+bili-grpc = { path = "../bili-grpc" }
+prost.workspace = true
 bili-domain = { path = "../bili-domain" }
 bili-protocol = { path = "../bili-protocol" }
 percent-encoding = "2.3"

@@ -1,6 +1,6 @@
-import 'package:kilikili/http/dynamics.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/dynamic/dyn_reserve_info/data.dart';
+import 'package:kilikili/rust/api/dynamic.dart' as rust;
+import 'package:kilikili/services/rust/rust_dynamic.dart';
 import 'package:kilikili/utils/utils.dart';
 import 'package:get/get.dart';
 
@@ -29,43 +29,43 @@ class CreateReserveController extends GetxController {
   }
 
   Future<void> queryData() async {
-    final res = await DynamicsHttp.reserveInfo(sid: sid);
-    if (res case Success(:final response)) {
+    final res = await RustDynamic.reserveInfo(sid: sid!);
+    if (res.data case final response?) {
       key = Utils.generateRandomString(6);
-      title.value = response.title!;
+      title.value = response.title;
       date.value = DateTime.fromMillisecondsSinceEpoch(
-        response.livePlanStartTime! * 1000,
+        response.livePlanStartTime * 1000,
       );
       canCreate.value = true;
     } else {
-      res.toast();
+      Error(res.errorDetail ?? '预约信息请求失败', code: res.errorCode).toast();
     }
   }
 
   Future<void> onCreate() async {
     final livePlanStartTime = date.value.millisecondsSinceEpoch ~/ 1000;
     final res = sid == null
-        ? await DynamicsHttp.createReserve(
+        ? await RustDynamic.createReserve(
             title: title.value,
             subType: subType.value,
-            livePlanStartTime: livePlanStartTime,
+            start: livePlanStartTime,
           )
-        : await DynamicsHttp.updateReserve(
+        : await RustDynamic.updateReserve(
             sid: sid!,
             subType: subType.value,
             title: title.value,
-            livePlanStartTime: livePlanStartTime,
+            start: livePlanStartTime,
           );
-    if (res case Success(:final response)) {
+    if (res.data case final response?) {
       Get.back(
-        result: ReserveInfoData(
+        result: rust.ReserveCard(
           id: response,
           title: title.value,
           livePlanStartTime: livePlanStartTime,
         ),
       );
     } else {
-      res.toast();
+      Error(res.errorDetail ?? '预约保存失败', code: res.errorCode).toast();
     }
   }
 }

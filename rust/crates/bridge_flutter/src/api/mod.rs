@@ -2,7 +2,8 @@
 
 pub mod cover_scrim;
 pub mod danmaku;
-pub mod dm_view;
+pub mod dynamic;
+pub mod grpc;
 pub mod init;
 pub mod live;
 pub mod media_select;
@@ -21,5 +22,6 @@ pub mod video_detail;
 pub mod video_detail_fetch;
 pub mod video_feed;
 pub mod video_page;
+pub mod video_write;
 pub mod wbi;
 pub mod write;

@@ -29,8 +29,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Both reusable workflows always run. Path filtering here would leave a
-  # required check absent on some PRs, including fixture and workflow edits.
+  # 三条可复用工作流均运行；按路径过滤会让 fixture/工作流改动缺少必需状态。
   rust:
     name: Rust checks and golden fixtures
     uses: ./.github/workflows/rust.yml
@@ -38,6 +37,10 @@ jobs:
   flutter:
     name: Dart baseline and real FFI
     uses: ./.github/workflows/flutter-test.yml
+
+  proto:
+    name: Protobuf descriptor consistency
+    uses: ./.github/workflows/proto.yml
 
   android:
     name: Android package and native library
@@ -105,10 +108,11 @@ jobs:
   gate:
     name: regression gate
     if: always()
-    needs: [rust, flutter, android, ios, macos, windows, linux]
+    needs: [rust, flutter, proto, android, ios, macos, windows, linux]
     runs-on: ubuntu-latest
     env:
       RUST_RESULT: ${{ needs.rust.result }}
+      PROTO_RESULT: ${{ needs.proto.result }}
       FLUTTER_RESULT: ${{ needs.flutter.result }}
       ANDROID_RESULT: ${{ needs.android.result }}
       IOS_RESULT: ${{ needs.ios.result }}
@@ -121,7 +125,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for result in "$RUST_RESULT" "$FLUTTER_RESULT" "$ANDROID_RESULT"; do
+          for result in "$RUST_RESULT" "$FLUTTER_RESULT" "$PROTO_RESULT" "$ANDROID_RESULT"; do
             if [[ "$result" != success ]]; then
               echo "Required PR check ended with: $result" >&2
               exit 1

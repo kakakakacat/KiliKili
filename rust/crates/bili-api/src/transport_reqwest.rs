@@ -30,8 +30,8 @@ use std::time::Duration;
 use bili_domain::error::{DomainError, ErrorKind};
 
 use crate::http::{
-    FailureShape, HttpGet, HttpPost, HttpResponse, HttpTransport, PostBody, ProxyConfig,
-    RetryPolicy, TransportConfig, should_retry,
+    FailureShape, HttpBytesResponse, HttpGet, HttpPost, HttpResponse, HttpTransport, PostBody,
+    ProxyConfig, RetryPolicy, TransportConfig, should_retry,
 };
 
 /// 连接超时。基线 `BaseOptions.connectTimeout` 为 10s；请求整体超时由
@@ -147,12 +147,31 @@ impl HttpTransport for ReqwestTransport {
         }
     }
 
+    async fn post_bytes(&self, request: HttpPost) -> Result<HttpBytesResponse, DomainError> {
+        let client = client(&self.config)?;
+        let mut attempt = 0;
+        loop {
+            match send_bytes_once(&client, &request).await {
+                Ok(response) => return Ok(response),
+                Err(error) => {
+                    if attempt >= self.config.retry_count
+                        || !should_retry(request.retry_policy, failure_shape(&error))
+                    {
+                        return Err(map_reqwest_error(&error));
+                    }
+                    attempt += 1;
+                    tokio::time::sleep(backoff_delay(attempt, self.config.retry_delay_ms)).await;
+                }
+            }
+        }
+    }
+
     async fn post(&self, request: HttpPost) -> Result<HttpResponse, DomainError> {
         let client = client(&self.config)?;
 
         // 与 GET 唯一的区别就在这个 policy 上：写请求按它自己的幂等级别
         // 决定能不能重发，**不要**改成 RetryPolicy::Read（ADR-013 决策一）。
-        let policy = request.idempotency.retry_policy();
+        let policy = request.retry_policy;
 
         let mut attempt: u32 = 0;
         loop {
@@ -174,6 +193,43 @@ impl HttpTransport for ReqwestTransport {
     }
 }
 
+async fn send_bytes_once(
+    client: &reqwest::Client,
+    request: &HttpPost,
+) -> Result<HttpBytesResponse, reqwest::Error> {
+    let mut builder = client.post(&request.url).timeout(request.timeout);
+    for (key, value) in &request.headers {
+        builder = builder.header(key, value);
+    }
+    builder = match &request.body {
+        PostBody::Form(fields) => builder.form(fields),
+        PostBody::Json(text) => builder
+            .header("content-type", "application/json")
+            .body(text.clone()),
+        PostBody::Bytes { content_type, data } => builder
+            .header("content-type", content_type)
+            .body(data.clone()),
+    };
+    let response = builder.send().await?;
+    let status = response.status().as_u16();
+    let headers = response
+        .headers()
+        .iter()
+        .map(|(key, value)| {
+            (
+                key.as_str().to_owned(),
+                String::from_utf8_lossy(value.as_bytes()).into_owned(),
+            )
+        })
+        .collect();
+    let body = response.bytes().await?.to_vec();
+    Ok(HttpBytesResponse {
+        status,
+        headers,
+        body,
+    })
+}
+
 async fn send_post_once(
     client: &reqwest::Client,
     request: &HttpPost,
@@ -190,6 +246,9 @@ async fn send_post_once(
         PostBody::Json(text) => builder
             .header("content-type", "application/json")
             .body(text.clone()),
+        PostBody::Bytes { content_type, data } => builder
+            .header("content-type", content_type)
+            .body(data.clone()),
     };
 
     let resp = builder.send().await?;

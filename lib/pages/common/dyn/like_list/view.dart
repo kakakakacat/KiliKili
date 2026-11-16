@@ -3,12 +3,11 @@ import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/common/widgets/scroll_physics.dart'
     show platformAlwaysClampingPhysics;
-import 'package:kilikili/grpc/bilibili/app/dynamic/v2.pb.dart'
-    show ModuleAuthor;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/pages/common/dyn/common_dyn_page.dart';
 import 'package:kilikili/pages/common/dyn/like_list/controller.dart';
 import 'package:kilikili/pages/common/dyn/like_list/widgets/item.dart';
+import 'package:kilikili/rust/api/dynamic.dart' show DynamicAuthor;
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart' hide ListTile;
 
@@ -29,7 +28,7 @@ class DynLikePage extends StatelessWidget {
     if (controller.loadingState.value == .loading()) {
       controller.queryData();
     }
-    Widget buildBody(LoadingState<List<ModuleAuthor>?> state) {
+    Widget buildBody(LoadingState<List<DynamicAuthor>?> state) {
       return switch (state) {
         Loading() => const SliverFillRemaining(child: m3eLoading),
         Success(:final response) =>

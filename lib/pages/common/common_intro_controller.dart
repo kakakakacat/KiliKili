@@ -3,7 +3,6 @@ import 'dart:async' show FutureOr, Timer;
 import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/user.dart';
-import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/common/video/source_type.dart';
 import 'package:kilikili/models_new/fav/fav_folder/data.dart';
 import 'package:kilikili/models_new/video/video_detail/data.dart';
@@ -13,6 +12,7 @@ import 'package:kilikili/models_new/video/video_tag/data.dart';
 import 'package:kilikili/pages/video/controller.dart';
 import 'package:kilikili/pages/video/introduction/ugc/widgets/triple_mixin.dart';
 import 'package:kilikili/services/rust/rust_video_page.dart';
+import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/global_data.dart';
 import 'package:kilikili/utils/page_utils.dart';
@@ -128,7 +128,7 @@ abstract class CommonIntroController extends GetxController
     if (stat == null) {
       return;
     }
-    final res = await VideoHttp.coinVideo(
+    final res = await RustVideoWrite.coinVideo(
       bvid: bvid,
       multiply: coin,
       selectLike: coinWithLike ? 1 : 0,

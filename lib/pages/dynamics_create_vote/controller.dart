@@ -1,8 +1,8 @@
 import 'package:kilikili/common/widgets/dialog/dialog.dart';
-import 'package:kilikili/http/dynamics.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/msg.dart';
-import 'package:kilikili/models/dynamics/vote_model.dart';
+import 'package:kilikili/rust/api/dynamic.dart' as rust;
+import 'package:kilikili/services/rust/rust_dynamic.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/utils.dart';
 import 'package:flutter/widgets.dart' show Text;
@@ -16,9 +16,9 @@ class CreateVoteController extends GetxController {
   final RxString title = ''.obs;
   final RxString desc = ''.obs;
   final RxInt type = 0.obs;
-  final RxList<Option> options = <Option>[
-    Option(optDesc: '', imgUrl: ''),
-    Option(optDesc: '', imgUrl: ''),
+  final RxList<rust.VoteOptionData> options = <rust.VoteOptionData>[
+    const rust.VoteOptionData(optDesc: '', imgUrl: '', cnt: 0),
+    const rust.VoteOptionData(optDesc: '', imgUrl: '', cnt: 0),
   ].obs;
   final RxInt choiceCnt = 1.obs;
   final now = DateTime.now();
@@ -57,8 +57,8 @@ class CreateVoteController extends GetxController {
   }
 
   Future<void> queryData() async {
-    final res = await DynamicsHttp.voteInfo(voteId);
-    if (res case Success(:final response)) {
+    final res = await RustDynamic.voteInfo(voteId: voteId!);
+    if (res.data case final response?) {
       key = Utils.generateRandomString(6);
       title.value = response.title!;
       desc.value = response.desc ?? '';
@@ -72,7 +72,7 @@ class CreateVoteController extends GetxController {
     } else {
       showConfirmDialog(
         context: Get.context!,
-        title: Text(res.toString()),
+        title: Text(res.errorDetail ?? '投票信息读取失败'),
         onConfirm: Get.back,
       );
     }
@@ -86,27 +86,77 @@ class CreateVoteController extends GetxController {
     }
   }
 
+  void addOption() {
+    options.add(const rust.VoteOptionData(optDesc: '', imgUrl: '', cnt: 0));
+    updateCanCreate();
+  }
+
   Future<void> onCreate() async {
-    final voteInfo = VoteInfo(
-      title: title.value,
-      desc: desc.value,
-      type: type.value,
-      duration: endtime.value.difference(now).inSeconds,
-      options: options,
-      onlyFansLevel: 0,
+    final voteInfo = rust.VoteInfoData(
       choiceCnt: choiceCnt.value,
-      votePublisher: Accounts.main.mid,
+      defaultShare: null,
+      desc: desc.value,
+      endTime: null,
+      status: null,
+      uid: Accounts.main.mid,
       voteId: voteId,
+      joinNum: 0,
+      title: title.value,
+      ctime: null,
+      myVotes: null,
+      options: options.toList(),
+      optionsCnt: options.length,
+      voterLevel: null,
+      face: null,
+      name: null,
+      voteType: type.value,
+      votePublisher: Accounts.main.mid,
+      duration: endtime.value.difference(now).inSeconds,
+      onlyFansLevel: 0,
     );
-    final res = await (voteId == null
-        ? DynamicsHttp.createVote(voteInfo)
-        : DynamicsHttp.updateVote(voteInfo));
-    if (res case Success(:final response)) {
-      voteInfo.voteId = response;
-      Get.back(result: voteInfo);
+    final res = await RustDynamic.saveVote(
+      info: voteInfo,
+      update: voteId != null,
+    );
+    if (res.data case final response?) {
+      Get.back(
+        result: rust.VoteInfoData(
+          choiceCnt: voteInfo.choiceCnt,
+          defaultShare: voteInfo.defaultShare,
+          desc: voteInfo.desc,
+          endTime: voteInfo.endTime,
+          status: voteInfo.status,
+          uid: voteInfo.uid,
+          voteId: response,
+          joinNum: voteInfo.joinNum,
+          title: voteInfo.title,
+          ctime: voteInfo.ctime,
+          myVotes: voteInfo.myVotes,
+          options: voteInfo.options,
+          optionsCnt: voteInfo.optionsCnt,
+          voterLevel: voteInfo.voterLevel,
+          face: voteInfo.face,
+          name: voteInfo.name,
+          voteType: voteInfo.voteType,
+          votePublisher: voteInfo.votePublisher,
+          duration: voteInfo.duration,
+          onlyFansLevel: voteInfo.onlyFansLevel,
+        ),
+      );
     } else {
-      res.toast();
+      Error(res.errorDetail ?? '投票保存失败', code: res.errorCode).toast();
     }
+  }
+
+  void updateOption(int index, {String? desc, String? imageUrl}) {
+    final current = options[index];
+    options[index] = rust.VoteOptionData(
+      optIdx: current.optIdx,
+      optDesc: desc ?? current.optDesc,
+      cnt: current.cnt,
+      imgUrl: imageUrl ?? current.imgUrl,
+    );
+    updateCanCreate();
   }
 
   Future<void> onUpload(int index, String path) async {
@@ -116,10 +166,7 @@ class CreateVoteController extends GetxController {
       biz: 'vote',
     );
     if (res case Success(:final response)) {
-      options
-        ..[index].imgUrl = response.imageUrl
-        ..refresh();
-      updateCanCreate();
+      updateOption(index, imageUrl: response.imageUrl);
     } else {
       res.toast();
     }

@@ -1,0 +1,42 @@
+{
+  "protocol_version": 1,
+  "alphabet": "FcwAPNKTMug3GV5Lj7EJnHpWsx4tb8haYeviqBz6rkCy12mUSDQX9RdoZf",
+  "cases": [
+    {
+      "aid": 2,
+      "bvid": "BV1xx411c7mD"
+    },
+    {
+      "aid": 1,
+      "bvid": "BV1xx411c7mQ"
+    },
+    {
+      "aid": 57,
+      "bvid": "BV1xx411c7UF"
+    },
+    {
+      "aid": 58,
+      "bvid": "BV1xx411c7mf"
+    },
+    {
+      "aid": 366088782,
+      "bvid": "BV1L94y1H7CV"
+    },
+    {
+      "aid": 80433022,
+      "bvid": "BV1GJ411x7h7"
+    },
+    {
+      "aid": 170001,
+      "bvid": "BV17x411w7KC"
+    },
+    {
+      "aid": 1000000000,
+      "bvid": "BV1n44y1F76R"
+    },
+    {
+      "aid": 2251799813685246,
+      "bvid": "BV1aPPTfmvQB"
+    }
+  ]
+}

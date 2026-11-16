@@ -1,0 +1,23 @@
+# 描述符一致性只在 Ubuntu 开发工具环境检查，普通跨平台构建不需要生成器。
+name: Protobuf generation
+on:
+  workflow_call:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tool/proto-generator
+      - name: Check generator format and descriptor validation
+        working-directory: rust
+        run: |
+          cargo fmt --manifest-path ../tool/proto-generator/Cargo.toml --check
+          cargo test --locked --manifest-path ../tool/proto-generator/Cargo.toml
+      - name: Check generated messages match descriptors
+        run: tool/proto-generate.sh --check

@@ -82,13 +82,20 @@ x86_64 的 Linux + Windows 已经能回答这个问题，且一分钟内结束�
 能发现的，要靠五个 app workflow——而它们一直是手动 dispatch。
 
 `rust/rust-toolchain.toml` 仍钉着七个 target，手动跑与本地跑的覆盖面不变。
+直接运行 Rust 检查时，工具链固定为 Rust 1.100.0；两台开发机与
+Rust workflow 均从该文件选择版本。
+`rust/Cargo.toml` 的 `rust-version = "1.97"` 仍表示最低支持版本，
+不会仅因升级验证工具链就提高。七个 target 与检查项目保持不变。
 **建议 dispatch 的时机**：改动触及 FFI/桥接层、升级 FRB 或工具链、发版前。
 
 **含义：一个只改 Dart 的 PR，在合并前没有任何环节验证过它还能编译出 app。**
 需要这个保证时，必须在合并前手动 dispatch 对应 workflow 并把结论记进 PR。
 自 `ee41df52c`（cargokit 接入 app 构建）之后尤其要注意：五个 app workflow 里
-没有任何 rust/cargo 设置步骤，Rust 工具链完全依赖 runner 自带环境满足
-`rust/rust-toolchain.toml` 钉的 1.97.0 与七个 target，Android 侧还要
+没有任何 rust/cargo 设置步骤，cargokit 会显式执行
+`rustup run stable cargo`，因此 app 使用 runner 的
+`stable` 工具链，不会自动遵循 `rust/rust-toolchain.toml` 固定的 1.100.0。
+Rust workflow 与直接在 `rust/` 下执行的 Cargo 命令才使用固定版本；
+验证 app 构建时须核对实际的 stable 版本，Android 侧还要
 `android.ndkVersion` 对得上。这条路径只能靠手动 dispatch 验证。
 
 #### 已验证：五端产物均含 Rust 库（2026-11-10）
@@ -194,7 +201,7 @@ Android 的 Rust 交叉编译改为手动 dispatch（§2.1）；五个 app workf
 **job 的 `name:` 就是 ruleset 认的那个检查名**，改掉它 ruleset 就对不上，
 所有 PR 会永久停在 `BLOCKED`。这是本机制唯一会静默失效的方式。
 
-门本身**只聚合、不跑测试**：`needs: [rust, flutter, android, ios, macos,
+门本身**只聚合、不跑测试**：`needs: [rust, flutter, proto, android, ios, macos,
 windows, linux]`，再逐个核对 `needs.*.result`。真正的回归在被聚合的工作流
 里，在门里重跑一遍只会让同一份测试跑两次。`rust.yml` 与 `flutter-test.yml`
 为此改成纯 `workflow_call`，只由 ci.yml 调用，不再自己监听事件。
@@ -207,7 +214,7 @@ windows, linux]`，再逐个核对 `needs.*.result`。真正的回归在被聚�
 - **被聚合的两条可复用工作流刻意不加 `paths` 过滤。** 必需检查一旦在某些 PR
   上缺席就是永久 pending，只改 fixture 或 workflow 的 PR 会卡死。ci.yml 里
   那条注释说的就是这件事。
-- **只有 rust / flutter / android 三项强制 `success`。** ios / macos /
+- **rust / flutter / proto / android 四项强制 `success`。** ios / macos /
   windows / linux 带 `if: github.event_name == 'schedule' ||
   inputs.full_platforms`，平时是 skipped；门只在 `full_platforms` 为真时才
   核对这四项。
@@ -289,6 +296,55 @@ Docker 27.3.1，已承载 6 个生产容器
 开发在两台机器间通过 git 同步，需提前规避：
 
 1. ~~**`.gitattributes` 需补全**~~ ✅ 已完成（`f113d9136`，现 49 行）。原问题：跨 macOS/Windows 换行符不统一会产生大量假 diff，并使 `cargo fmt --check` 与 `dart format` 在两端判定不一致导致 CI 红。
-2. ~~**工具链版本两端钉死**~~ ✅ 已完成。Flutter 由 `.fvmrc` 锁 3.47.9；`rust/rust-toolchain.toml` 钉 1.97.0 + rustfmt/clippy + 七个 target；`rust/Cargo.lock` 已提交。
+2. ~~**工具链版本两端钉死**~~ ✅ 已完成。Flutter 由 `.fvmrc` 锁 3.47.9；`rust/rust-toolchain.toml` 钉 1.100.0 + rustfmt/clippy + 七个 target；`rust/Cargo.lock` 已提交。app 构建仍显式使用 stable，见 §2.1。
 3. **Windows 侧已知障碍**（本机开发用，CI 不受影响）：需开启开发者模式（Flutter symlink 支持）；Rust `target/` 嵌套深，易触发 260 字符路径限制，仓库应置于短路径并开启长路径支持。~~libmpv DLL 的安装包分发方式~~ ✅ 已确认随包分发，见 §2.1。
 4. ~~**`.gitignore` 补 Rust `target/`**~~ ✅ 已完成（`.gitignore:157` `/rust/target/`）。仍需遵守：**仅用 git 同步**，不要将仓库置于 iCloud/OneDrive/Dropbox；`build/`、`target/`、`.dart_tool/`、`Pods/` 等产物不得跨机同步。
+
+
+### gRPC 描述符与传输验证（#133，2026-11-13）
+
+`proto.yml` 在 Ubuntu 独立运行生成器格式检查、描述符校验测试和
+`tool/proto-generate.sh --check`，其结果由 regression gate 强制聚合。
+不增加五端构建依赖，不恢复 PR 触发或 ruleset。描述符编译使用 compile_fds，
+没有 protoc 外部二进制要求；普通 app 构建只编译签入的 prost 生成代码。
+
+Rust 测试覆盖帧阈值/压缩、截断、缺失状态头、嵌套业务码、metadata 五头、
+真实 reqwest 字节响应与读写超时重试差异。Flutter bridge 测试新增 metadata、
+分段字节、typed 字幕、损坏响应错误值与嵌套业务码，替换旧的字幕解析开关测试。
+离线 Dart/Rust 解帧 parity 不 import lib/，对照同一真实脱敏帧的载荷。
+这些能力不替代登录态、系统代理、证书与设备上的人工验证。
+
+
+本机 macOS 的 Rust 1.97 release 动态库在默认 `strip=debuginfo` 后出现
+`mis-aligned LINKEDIT string pool`，dyld 在进入任何业务测试前拒绝加载。
+同份代码用 `CARGO_PROFILE_RELEASE_STRIP=none cargo build -p bridge_flutter --release`
+可加载，故本轮真实 FFI 验证使用该临时产物。仓库 release profile 未改动；
+此记录只限定本机 dylib 验证，不推断五端 app 打包结果。工具链升级另见 #134。
+
+搜索发现的 bridge 回归（#120）经本地 HTTP 服务核对 App 请求路径、
+签名字段和登录凭据，并跨 FFI 检查推荐词及业务 `-400` 错误值。
+Rust 取数测试另用独立计算的签名快照锁定匿名、空凭据和登录参数集。
+这不能替代设备上 App 主机连通性与真实账号的人工验证。
+
+### 视频页写操作的请求面验证（#54，2026-11-13）
+
+S4 的十四条写操作在 CI 上有两层保护，分工是 ADR-013 决策六定的：
+
+- **Rust 单测**（`bili-api::video_write::tests`）钉住**构造出来的**
+  `PreparedWrite`：路径、字段名与取值、参数在查询串还是体里、幂等级别。
+- **bridge job**（`test/bridge/video_write_bridge_test.dart`，十条用例）
+  起一个本地 HTTP 桩服务端，钉住**真的发出去的**那一个——跨过 FFI、经过
+  `send_write` 补 csrf、经过 reqwest 编码之后落到服务端手上的东西：
+  方法（「不感兴趣」必须仍是 GET）、content-type（`roomEntryAction` 必须
+  是 JSON）、csrf 的位置（体 / 查询串 / 不带）、APP 签名字段是否随请求
+  发出、以及非法 BV 号与「两个 id 都给」时**一个字节都不发**。
+
+第二层是必需的：content-type 与 csrf 位置这两类错误在任何单测里都不会
+出现——单测看的是构造产物，而它们是发送时才成形的。ADR-013 补充三记过
+同一件事（写操作信封「没有载荷才是正常」也是桩服务端抓到的）。
+
+另有 `bili-protocol/tests/bvid_golden.rs` 对照 Dart 基线的 BV↔av 编码，
+期望值由 `tool/fixture-gen/bvid_fixture.dart` 产出（ADR-008 决策三）。
+
+**这些都不替代真机验证**：登录态下的 csrf、风控（gaia）拦截、以及
+APP 端接口在真实 `access_key` 下的行为，按 EPIC #67 统一留到 Phase 2。

@@ -4,7 +4,6 @@ import 'package:kilikili/common/widgets/button/icon_button.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/time_picker.dart';
-import 'package:kilikili/models/dynamics/vote_model.dart';
 import 'package:kilikili/pages/dynamics_create_vote/controller.dart';
 import 'package:kilikili/utils/date_utils.dart';
 import 'package:kilikili/utils/extension/file_ext.dart';
@@ -123,9 +122,10 @@ class _CreateVotePageState extends State<CreateVotePage> {
                         () => _onPickImg(i),
                       ),
                       initialValue: e.optDesc,
-                      onChanged: (value) => _controller
-                        ..options[i].optDesc = value
-                        ..updateCanCreate(),
+                      onChanged: (value) => _controller.updateOption(
+                        i,
+                        desc: value,
+                      ),
                       desc: '选项${i + 1}',
                       hintText: '选项内容，最多20字',
                       inputFormatters: [LengthLimitingTextInputFormatter(20)],
@@ -140,9 +140,7 @@ class _CreateVotePageState extends State<CreateVotePage> {
                   ...children,
                   if (_controller.options.length < 20)
                     FilledButton(
-                      onPressed: () => _controller
-                        ..options.add(Option(optDesc: '', imgUrl: ''))
-                        ..updateCanCreate(),
+                      onPressed: _controller.addOption,
                       style: FilledButton.styleFrom(
                         minimumSize: Size.zero,
                         padding: const EdgeInsets.only(

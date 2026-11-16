@@ -9,7 +9,6 @@ description = "应用层：UseCase、播放器意图编排、事件与状态快�
 
 [dependencies]
 bili-domain = { path = "../bili-domain" }
-tracing.workspace = true
 url.workspace = true
 
 [dev-dependencies]

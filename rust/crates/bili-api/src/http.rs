@@ -76,12 +76,7 @@ impl RequestContext {
     }
 }
 
-/// 待发送的 HTTP 请求。只支持 GET——本 crate 当前只迁移了只读接口。
-///
-/// 加 `post` 时按 ADR-013（`docs/architecture/adr/ADR-013-write-operations.md`，
-/// issue #50）决策一的形状来：`HttpPost` 带 `body: PostBody`（Form / Json
-/// 两种，不能统一）与 [`Idempotency`]，重试走 [`should_retry`]——**不要**
-/// 让它共用 `HttpGet` 的那条只读规则。
+/// 待发送的只读 GET 请求。
 #[derive(Debug, Clone)]
 pub struct HttpGet {
     pub url: String,
@@ -100,20 +95,22 @@ pub enum PostBody {
     Form(Vec<(String, String)>),
     /// `application/json`，内容是已序列化好的 JSON 文本。
     Json(String),
+    /// 原始二进制；帧内压缩与 HTTP 压缩分别处理。
+    Bytes { content_type: String, data: Vec<u8> },
 }
 
-/// 待发送的写请求。
+/// 待发送的 POST 请求（包括只读 gRPC）。
 ///
 /// 与 [`HttpGet`] 的区别只有两处：多一个 [`PostBody`]，以及必须声明
-/// [`Idempotency`]——后者决定失败后能不能重发，见 [`should_retry`]。
+/// [`RetryPolicy`]——后者决定失败后能不能重发，见 [`should_retry`]。
 #[derive(Debug, Clone)]
 pub struct HttpPost {
     pub url: String,
     pub headers: Vec<(String, String)>,
     pub body: PostBody,
     pub timeout: Duration,
-    /// 这条写操作重发安全不安全。没有默认值是故意的：漏填编译不过。
-    pub idempotency: Idempotency,
+    /// 每条请求显式声明读写语义；HTTP 方法本身不能判断 gRPC 是否只读。
+    pub retry_policy: RetryPolicy,
 }
 
 /// 传输层返回的原始响应。
@@ -123,8 +120,29 @@ pub struct HttpResponse {
     pub body: String,
 }
 
+/// 原始字节响应，保留完整响应头供协议层解释。
+#[derive(Debug, Clone)]
+pub struct HttpBytesResponse {
+    pub status: u16,
+    pub headers: Vec<(String, String)>,
+    pub body: Vec<u8>,
+}
+
 /// 传输 Port。
 pub trait HttpTransport {
+    /// 二进制 POST。旧桩件必须明确失败，不能把字节误转为文本。
+    fn post_bytes(
+        &self,
+        _request: HttpPost,
+    ) -> impl Future<Output = Result<HttpBytesResponse, DomainError>> + Send {
+        async {
+            Err(DomainError::new(
+                ErrorKind::Protocol,
+                "传输未实现二进制 POST",
+            ))
+        }
+    }
+
     /// 发送 GET 请求。
     ///
     /// 实现方只负责把字节取回来：**不要**在这里解释业务 code，也不要
@@ -138,7 +156,7 @@ pub trait HttpTransport {
     /// 发送 POST 请求。
     ///
     /// 约定与 [`Self::get`] 相同——只把字节取回来，不解释业务 code。
-    /// **但重试不同**：实现方必须按 [`HttpPost::idempotency`] 走
+    /// **但重试不同**：实现方必须按 [`HttpPost::retry_policy`] 走
     /// [`should_retry`]，不能复用 GET 那条只读规则（ADR-013 决策一）。
     fn post(
         &self,

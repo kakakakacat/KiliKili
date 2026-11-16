@@ -1,7 +1,7 @@
 import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/member.dart';
 import 'package:kilikili/models/member/tags.dart';
+import 'package:kilikili/services/rust/rust_relation.dart';
 import 'package:kilikili/utils/extension/iterable_ext.dart';
 import 'package:kilikili/utils/extension/num_ext.dart';
 import 'package:kilikili/utils/feed_back.dart';
@@ -39,9 +39,26 @@ class _GroupPanelState extends State<GroupPanel> {
   }
 
   void _queryFollowUpTags() {
-    MemberHttp.followUpTags().then((res) {
+    // Rust 回来的 `FollowTag` 字段是 final 的，而这个面板勾一下就要把人数
+    // 加一，所以转成界面侧的可变状态（理由见 `MemberTagItemModel`）。
+    RustRelation.followUpTags().then((res) {
       if (mounted) {
-        loadingState = res..dataOrNull?.removeFirstWhere((e) => e.tagid == 0);
+        loadingState = switch (res) {
+          Success(:final response) => Success(
+            response
+                .map(
+                  (e) => MemberTagItemModel(
+                    count: e.count,
+                    name: e.name,
+                    tagid: e.tagid,
+                    tip: e.tip,
+                  ),
+                )
+                .toList(),
+          ),
+          final Error e => e,
+          final Loading l => l,
+        }..dataOrNull?.removeFirstWhere((e) => e.tagid == 0);
         showDefaultBtn.value = tags.isEmpty;
         setState(() {});
       }
@@ -55,7 +72,7 @@ class _GroupPanelState extends State<GroupPanel> {
     }
     feedBack();
     // 保存
-    final res = await MemberHttp.addUsers(
+    final res = await RustRelation.addUsers(
       widget.mid.toString(),
       tags.isEmpty ? '0' : tags.join(','),
     );

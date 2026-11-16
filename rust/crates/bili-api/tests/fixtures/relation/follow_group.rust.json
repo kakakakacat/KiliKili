@@ -1,0 +1,24 @@
+{
+  "list": [
+    {
+      "attribute": 2,
+      "face": "https://example.invalid/bfs/face/a.jpg",
+      "mid": 800000301,
+      "official_verify": {
+        "desc": "示例机构认证",
+        "kind": 0
+      },
+      "sign": "这是一条签名",
+      "uname": "示例用户甲"
+    },
+    {
+      "attribute": -1,
+      "face": "https://example.invalid/bfs/face/b.jpg",
+      "mid": 0,
+      "official_verify": null,
+      "sign": "",
+      "uname": "示例用户乙"
+    }
+  ],
+  "total": null
+}

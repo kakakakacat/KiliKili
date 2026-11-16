@@ -16,6 +16,7 @@ import 'package:kilikili/rust/api/pgc.dart';
 import 'package:kilikili/rust/api/play_url.dart';
 import 'package:kilikili/rust/api/play_url_fetch.dart';
 import 'package:kilikili/rust/api/playback.dart';
+import 'package:kilikili/rust/api/relation.dart';
 import 'package:kilikili/rust/api/reply.dart';
 import 'package:kilikili/rust/api/search.dart';
 import 'package:kilikili/rust/api/search_suggest.dart';
@@ -308,6 +309,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   QrPollState dco_decode_box_autoadd_qr_poll_state(dynamic raw);
 
   @protected
+  Relation dco_decode_box_autoadd_relation(dynamic raw);
+
+  @protected
+  RelationContext dco_decode_box_autoadd_relation_context(dynamic raw);
+
+  @protected
   ReplyContext dco_decode_box_autoadd_reply_context(dynamic raw);
 
   @protected
@@ -420,6 +427,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   CoverScrimStyle dco_decode_cover_scrim_style(dynamic raw);
 
   @protected
+  CreatedTagResult dco_decode_created_tag_result(dynamic raw);
+
+  @protected
   DanmakuBucketItem dco_decode_danmaku_bucket_item(dynamic raw);
 
   @protected
@@ -496,6 +506,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FollowListResult dco_decode_follow_list_result(dynamic raw);
+
+  @protected
+  FollowTag dco_decode_follow_tag(dynamic raw);
+
+  @protected
+  FollowTagsResult dco_decode_follow_tags_result(dynamic raw);
 
   @protected
   FollowUser dco_decode_follow_user(dynamic raw);
@@ -598,6 +614,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<FilterRule> dco_decode_list_filter_rule(dynamic raw);
+
+  @protected
+  List<FollowTag> dco_decode_list_follow_tag(dynamic raw);
 
   @protected
   List<FollowUser> dco_decode_list_follow_user(dynamic raw);
@@ -1193,6 +1212,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   QrPollState? dco_decode_opt_box_autoadd_qr_poll_state(dynamic raw);
 
   @protected
+  Relation? dco_decode_opt_box_autoadd_relation(dynamic raw);
+
+  @protected
   ReplyCursor? dco_decode_opt_box_autoadd_reply_cursor(dynamic raw);
 
   @protected
@@ -1292,6 +1314,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<FeedVideoItem>? dco_decode_opt_list_feed_video_item(dynamic raw);
+
+  @protected
+  List<FollowTag>? dco_decode_opt_list_follow_tag(dynamic raw);
 
   @protected
   List<FolloweeVoteData>? dco_decode_opt_list_followee_vote_data(dynamic raw);
@@ -1531,6 +1556,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   (String, String) dco_decode_record_string_string(dynamic raw);
+
+  @protected
+  Relation dco_decode_relation(dynamic raw);
+
+  @protected
+  RelationContext dco_decode_relation_context(dynamic raw);
+
+  @protected
+  RelationResult dco_decode_relation_result(dynamic raw);
 
   @protected
   ReplyContext dco_decode_reply_context(dynamic raw);
@@ -2130,6 +2164,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  Relation sse_decode_box_autoadd_relation(SseDeserializer deserializer);
+
+  @protected
+  RelationContext sse_decode_box_autoadd_relation_context(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   ReplyContext sse_decode_box_autoadd_reply_context(
     SseDeserializer deserializer,
   );
@@ -2278,6 +2320,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   CoverScrimStyle sse_decode_cover_scrim_style(SseDeserializer deserializer);
 
   @protected
+  CreatedTagResult sse_decode_created_tag_result(SseDeserializer deserializer);
+
+  @protected
   DanmakuBucketItem sse_decode_danmaku_bucket_item(
     SseDeserializer deserializer,
   );
@@ -2370,6 +2415,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FollowListResult sse_decode_follow_list_result(SseDeserializer deserializer);
+
+  @protected
+  FollowTag sse_decode_follow_tag(SseDeserializer deserializer);
+
+  @protected
+  FollowTagsResult sse_decode_follow_tags_result(SseDeserializer deserializer);
 
   @protected
   FollowUser sse_decode_follow_user(SseDeserializer deserializer);
@@ -2494,6 +2545,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<FilterRule> sse_decode_list_filter_rule(SseDeserializer deserializer);
+
+  @protected
+  List<FollowTag> sse_decode_list_follow_tag(SseDeserializer deserializer);
 
   @protected
   List<FollowUser> sse_decode_list_follow_user(SseDeserializer deserializer);
@@ -3279,6 +3333,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  Relation? sse_decode_opt_box_autoadd_relation(SseDeserializer deserializer);
+
+  @protected
   ReplyCursor? sse_decode_opt_box_autoadd_reply_cursor(
     SseDeserializer deserializer,
   );
@@ -3418,6 +3475,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<FeedVideoItem>? sse_decode_opt_list_feed_video_item(
     SseDeserializer deserializer,
   );
+
+  @protected
+  List<FollowTag>? sse_decode_opt_list_follow_tag(SseDeserializer deserializer);
 
   @protected
   List<FolloweeVoteData>? sse_decode_opt_list_followee_vote_data(
@@ -3723,6 +3783,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   (String, String) sse_decode_record_string_string(
     SseDeserializer deserializer,
   );
+
+  @protected
+  Relation sse_decode_relation(SseDeserializer deserializer);
+
+  @protected
+  RelationContext sse_decode_relation_context(SseDeserializer deserializer);
+
+  @protected
+  RelationResult sse_decode_relation_result(SseDeserializer deserializer);
 
   @protected
   ReplyContext sse_decode_reply_context(SseDeserializer deserializer);
@@ -4500,6 +4569,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_relation(Relation self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_relation_context(
+    RelationContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_reply_context(
     ReplyContext self,
     SseSerializer serializer,
@@ -4704,6 +4782,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_created_tag_result(
+    CreatedTagResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_danmaku_bucket_item(
     DanmakuBucketItem self,
     SseSerializer serializer,
@@ -4814,6 +4898,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_follow_list_result(
     FollowListResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_follow_tag(FollowTag self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_follow_tags_result(
+    FollowTagsResult self,
     SseSerializer serializer,
   );
 
@@ -4970,6 +5063,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_filter_rule(
     List<FilterRule> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_follow_tag(
+    List<FollowTag> self,
     SseSerializer serializer,
   );
 
@@ -6000,6 +6099,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_relation(
+    Relation? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_reply_cursor(
     ReplyCursor? self,
     SseSerializer serializer,
@@ -6170,6 +6275,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_feed_video_item(
     List<FeedVideoItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_follow_tag(
+    List<FollowTag>? self,
     SseSerializer serializer,
   );
 
@@ -6560,6 +6671,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_record_string_string(
     (String, String) self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_relation(Relation self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_relation_context(
+    RelationContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_relation_result(
+    RelationResult self,
     SseSerializer serializer,
   );
 

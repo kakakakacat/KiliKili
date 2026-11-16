@@ -5,7 +5,7 @@ import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/view_sliver_safe_area.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/follow/list.dart';
+import 'package:kilikili/services/rust/rust_misc.dart' show FollowUser;
 import 'package:kilikili/pages/follow/widgets/follow_item.dart';
 import 'package:kilikili/pages/follow_type/controller.dart';
 import 'package:kilikili/utils/grid.dart';
@@ -47,7 +47,7 @@ abstract class FollowTypePageState<T extends StatefulWidget> extends State<T> {
 
   Widget _buildBody(
     ColorScheme theme,
-    LoadingState<List<FollowItemModel>?> loadingState,
+    LoadingState<List<FollowUser>?> loadingState,
   ) {
     return switch (loadingState) {
       Loading() => SliverGrid(
@@ -77,5 +77,5 @@ abstract class FollowTypePageState<T extends StatefulWidget> extends State<T> {
     };
   }
 
-  Widget buildItem(int index, FollowItemModel item) => FollowItem(item: item);
+  Widget buildItem(int index, FollowUser item) => FollowItem(item: item);
 }

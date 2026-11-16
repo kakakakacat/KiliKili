@@ -15,8 +15,6 @@ import 'package:kilikili/models/common/member/web_ss_type.dart';
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/models/member/info.dart';
 import 'package:kilikili/models/member/tags.dart';
-import 'package:kilikili/models_new/follow/data.dart';
-import 'package:kilikili/models_new/follow/list.dart';
 import 'package:kilikili/models_new/member/coin_like_arc/data.dart';
 import 'package:kilikili/models_new/member/search_archive/data.dart';
 import 'package:kilikili/models_new/member/season_web/data.dart';
@@ -506,159 +504,6 @@ abstract final class MemberHttp {
     }
   }
 
-  // 查询分组
-  static Future<LoadingState<List<MemberTagItemModel>>> followUpTags() async {
-    final res = await Request().get(Api.followUpTag);
-    if (res.data['code'] == 0) {
-      return Success(
-        (res.data['data'] as List)
-            .map((e) => MemberTagItemModel.fromJson(e))
-            .toList(),
-      );
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<void>> specialAction({
-    int? fid,
-    bool isAdd = true,
-  }) async {
-    final res = await Request().post(
-      isAdd ? Api.addSpecial : Api.delSpecial,
-      data: {
-        'fid': fid,
-        'csrf': Accounts.main.csrf,
-      },
-      options: Options(contentType: Headers.formUrlEncodedContentType),
-    );
-    if (res.data['code'] == 0) {
-      return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  // 设置分组
-  static Future<LoadingState<void>> addUsers(String fids, String tagids) async {
-    final res = await Request().post(
-      Api.addUsers,
-      queryParameters: {
-        'x-bili-device-req-json':
-            '{"platform":"web","device":"pc","spmid":"333.1387"}',
-      },
-      data: {
-        'fids': fids,
-        'tagids': tagids,
-        'csrf': Accounts.main.csrf,
-        // 'cross_domain': true
-      },
-      options: Options(contentType: Headers.formUrlEncodedContentType),
-    );
-    if (res.data['code'] == 0) {
-      return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  // 获取某分组下的up
-  static Future<LoadingState<FollowData>> followUpGroup({
-    int? mid,
-    int? tagid,
-    int? pn,
-    int ps = 20,
-    String orderType = '', // ''=>最近关注，'attention'=>最常访问
-  }) async {
-    final res = await Request().get(
-      Api.followUpGroup,
-      queryParameters: {
-        'mid': mid,
-        'tagid': tagid,
-        'pn': pn,
-        'ps': ps,
-        'order_type': orderType,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(
-        FollowData(
-          list:
-              (res.data['data'] as List?)
-                  ?.map<FollowItemModel>((e) => FollowItemModel.fromJson(e))
-                  .toList() ??
-              <FollowItemModel>[],
-        ),
-      );
-    } else {
-      return Error(errorMsg[res.data['code']] ?? res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<int>> createFollowTag(String tagName) async {
-    final res = await Request().post(
-      Api.createFollowTag,
-      queryParameters: {
-        'x-bili-device-req-json':
-            '{"platform":"web","device":"pc","spmid":"333.1387"}',
-      },
-      data: {
-        'tag': tagName,
-        'csrf': Accounts.main.csrf,
-      },
-      options: Options(contentType: Headers.formUrlEncodedContentType),
-    );
-    if (res.data['code'] == 0) {
-      return Success(res.data['data']['tagid']);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<void>> updateFollowTag(
-    Object tagid,
-    Object name,
-  ) async {
-    final res = await Request().post(
-      Api.updateFollowTag,
-      queryParameters: {
-        'x-bili-device-req-json':
-            '{"platform":"web","device":"pc","spmid":"333.1387"}',
-      },
-      data: {
-        'tagid': tagid,
-        'name': name,
-        'csrf': Accounts.main.csrf,
-      },
-      options: Options(contentType: Headers.formUrlEncodedContentType),
-    );
-    if (res.data['code'] == 0) {
-      return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<void>> delFollowTag(Object tagid) async {
-    final res = await Request().post(
-      Api.delFollowTag,
-      queryParameters: {
-        'x-bili-device-req-json':
-            '{"platform":"web","device":"pc","spmid":"333.1387"}',
-      },
-      data: {
-        'tagid': tagid,
-        'csrf': Accounts.main.csrf,
-      },
-      options: Options(contentType: Headers.formUrlEncodedContentType),
-    );
-    if (res.data['code'] == 0) {
-      return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   // 获取up置顶
   static Future<LoadingState<List<MemberTagItemModel>?>> getTopVideo() async {
     final res = await Request().get(Api.getTopVideoApi);
@@ -681,39 +526,6 @@ abstract final class MemberHttp {
     );
     if (res.data['code'] == 0) {
       return Success(res.data['data']);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  // 搜索follow
-  static Future<LoadingState<FollowData>> getfollowSearch({
-    required int mid,
-    required int ps,
-    required int pn,
-    required String name,
-  }) async {
-    final data = {
-      'vmid': mid,
-      'pn': pn,
-      'ps': ps,
-      'order': 'desc',
-      'order_type': 'attention',
-      'gaia_source': 'main_web',
-      'name': name,
-      'web_location': 333.999,
-    };
-    Map params = await WbiSign.makSign(data);
-    final res = await Request().get(
-      Api.followSearch,
-      queryParameters: {
-        ...data,
-        'w_rid': params['w_rid'],
-        'wts': params['wts'],
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(FollowData.fromJson(res.data['data']));
     } else {
       return Error(res.data['message']);
     }

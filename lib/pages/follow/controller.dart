@@ -3,6 +3,7 @@ import 'package:kilikili/http/member.dart';
 import 'package:kilikili/models/common/follow_order_type.dart';
 import 'package:kilikili/models/member/tags.dart';
 import 'package:kilikili/pages/follow/child/child_controller.dart';
+import 'package:kilikili/services/rust/rust_relation.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/storage.dart';
 import 'package:kilikili/utils/storage_key.dart';
@@ -61,11 +62,22 @@ class FollowController extends GetxController with GetTickerProviderStateMixin {
   }
 
   Future<void> queryFollowUpTags() async {
-    final res = await MemberHttp.followUpTags();
+    final res = await RustRelation.followUpTags();
     if (res case Success(:final response)) {
+      // `FollowTag` 的字段是 final 的；tab 条要就地改名与改人数，所以在这里
+      // 转成界面侧的可变状态（理由见 `MemberTagItemModel` 的类文档）。
       tabs
         ..assign(MemberTagItemModel(name: '全部关注'))
-        ..addAll(response);
+        ..addAll(
+          response.map(
+            (e) => MemberTagItemModel(
+              count: e.count,
+              name: e.name,
+              tagid: e.tagid,
+              tip: e.tip,
+            ),
+          ),
+        );
       onInitTab();
       followState.value = Success(tabs.hashCode);
     } else {
@@ -99,7 +111,7 @@ class FollowController extends GetxController with GetTickerProviderStateMixin {
   }
 
   Future<void> onUpdateTag(MemberTagItemModel item, String tagName) async {
-    final res = await MemberHttp.updateFollowTag(item.tagid!, tagName);
+    final res = await RustRelation.updateFollowTag(item.tagid!, tagName);
     if (res.isSuccess) {
       item.name = tagName;
       tabs.refresh();
@@ -110,7 +122,7 @@ class FollowController extends GetxController with GetTickerProviderStateMixin {
   }
 
   Future<void> onDelTag(int index, int tagid) async {
-    final res = await MemberHttp.delFollowTag(tagid);
+    final res = await RustRelation.delFollowTag(tagid);
     if (res.isSuccess) {
       tabs.removeAt(index);
       onInitTab();

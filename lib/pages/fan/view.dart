@@ -1,5 +1,5 @@
 import 'package:kilikili/common/widgets/dialog/dialog.dart';
-import 'package:kilikili/models_new/follow/list.dart';
+import 'package:kilikili/services/rust/rust_misc.dart' show FollowUser;
 import 'package:kilikili/pages/fan/controller.dart';
 import 'package:kilikili/pages/follow_type/view.dart';
 import 'package:kilikili/pages/follow_type/widgets/item.dart';
@@ -65,7 +65,7 @@ class _FansPageState extends FollowTypePageState<FansPage> {
       : null;
 
   @override
-  Widget buildItem(int index, FollowItemModel item) {
+  Widget buildItem(int index, FollowUser item) {
     void onRemove() => showConfirmDialog(
       context: context,
       title: Text('确定移除 ${item.uname} ？'),

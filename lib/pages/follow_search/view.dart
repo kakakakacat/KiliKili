@@ -1,5 +1,4 @@
-import 'package:kilikili/models_new/follow/data.dart';
-import 'package:kilikili/models_new/follow/list.dart';
+import 'package:kilikili/services/rust/rust_misc.dart' show FollowList, FollowUser;
 import 'package:kilikili/pages/common/search/common_search_page.dart';
 import 'package:kilikili/pages/follow/widgets/follow_item.dart';
 import 'package:kilikili/pages/follow_search/controller.dart';
@@ -23,7 +22,7 @@ class FollowSearchPage extends StatefulWidget {
 
 class _FollowSearchPageState
     extends
-        CommonSearchPageState<FollowSearchPage, FollowData, FollowItemModel> {
+        CommonSearchPageState<FollowSearchPage, FollowList, FollowUser> {
   @override
   late final FollowSearchController controller;
 
@@ -37,7 +36,7 @@ class _FollowSearchPageState
   }
 
   @override
-  Widget buildList(List<FollowItemModel> list) {
+  Widget buildList(List<FollowUser> list) {
     return SliverList.builder(
       itemCount: list.length,
       itemBuilder: ((context, index) {

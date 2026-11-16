@@ -18,15 +18,15 @@ import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/models/login/model.dart';
 import 'package:kilikili/models_new/fav/fav_detail/media.dart';
 import 'package:kilikili/models_new/later/list.dart';
-import 'package:kilikili/models_new/relation/data.dart';
 import 'package:kilikili/pages/common/multi_select/base.dart';
 import 'package:kilikili/pages/dynamics_tab/controller.dart';
 import 'package:kilikili/pages/fav_detail/controller.dart'
     show BaseFavController;
 import 'package:kilikili/pages/group_panel/view.dart';
 import 'package:kilikili/pages/login/geetest/geetest_webview_dialog.dart';
-import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/services/rust/rust_dynamic.dart';
+import 'package:kilikili/services/rust/rust_relation.dart';
+import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/extension/context_ext.dart';
 import 'package:kilikili/utils/extension/size_ext.dart';
@@ -122,7 +122,7 @@ abstract final class RequestUtils {
       ),
     );
     if (onCreate) {
-      final res = await MemberHttp.createFollowTag(tagName);
+      final res = await RustRelation.createFollowTag(tagName);
       if (res case Success(:final response)) {
         onSuccess((tagid: response, tagName: tagName));
         SmartDialog.showToast('创建成功');
@@ -137,7 +137,7 @@ abstract final class RequestUtils {
     required dynamic mid,
     required bool isFollow,
     required ValueChanged<int>? afterMod,
-    RelationData? followStatus,
+    Relation? followStatus,
   }) async {
     if (mid == null) {
       return;
@@ -157,7 +157,7 @@ abstract final class RequestUtils {
       }
     } else {
       if (followStatus?.tag == null) {
-        final res = await UserHttp.userRelation(mid);
+        final res = await RustRelation.userRelation(mid);
         if (res case Success(:final response)) {
           followStatus = response;
         } else {
@@ -168,6 +168,9 @@ abstract final class RequestUtils {
 
       if (context.mounted) {
         bool isSpecialFollowed = followStatus!.special == 1;
+        // Rust 侧的 `Relation` 是不可变的（`tag` 还是 `Int64List`）。分组
+        // 面板选完要把新分组带给下一次打开，所以这里取一份界面侧的可变副本。
+        List<int>? tags = followStatus.tag?.toList();
         String text = isSpecialFollowed ? '移除特别关注' : '加入特别关注';
         showDialog(
           context: context,
@@ -178,7 +181,7 @@ abstract final class RequestUtils {
               DialogOption(
                 onPressed: () async {
                   Get.back();
-                  final res = await MemberHttp.specialAction(
+                  final res = await RustRelation.specialAction(
                     fid: mid,
                     isAdd: !isSpecialFollowed,
                   );
@@ -217,7 +220,7 @@ abstract final class RequestUtils {
                         builder: (context, scrollController) {
                           return GroupPanel(
                             mid: mid,
-                            tags: followStatus!.tag,
+                            tags: tags,
                             scrollController: scrollController,
                           );
                         },
@@ -225,7 +228,7 @@ abstract final class RequestUtils {
                     },
                   );
                   if (result != null) {
-                    followStatus!.tag = result.toList();
+                    tags = result.toList();
                     afterMod?.call(result.contains(-10) ? -10 : 2);
                   }
                 },

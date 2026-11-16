@@ -1,6 +1,6 @@
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/models/common/image_type.dart';
-import 'package:kilikili/models_new/follow/list.dart';
+import 'package:kilikili/services/rust/rust_misc.dart' show FollowUser;
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -13,7 +13,7 @@ class FollowTypeItem extends StatelessWidget {
     this.onSecondaryTap,
   });
 
-  final FollowItemModel item;
+  final FollowUser item;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final VoidCallback? onSecondaryTap;

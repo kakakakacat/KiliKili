@@ -42,6 +42,7 @@ import 'package:kilikili/utils/num_utils.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:kilikili/utils/utils.dart';
+import 'package:kilikili/services/rust/rust_relation.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -632,7 +633,7 @@ class _MemberPageState extends State<MemberPage> {
       onShow();
       return;
     }
-    final res = await UserHttp.userRelation(_mid);
+    final res = await RustRelation.userRelation(_mid);
     if (res case Success(:final response)) {
       if (response.mtime == null) return;
       _cacheFollowTime =

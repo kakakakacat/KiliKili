@@ -47,6 +47,7 @@ pub mod nav;
 pub mod pgc;
 pub mod playurl;
 pub(crate) mod protobuf;
+pub mod relation;
 pub mod reply;
 pub mod request;
 pub mod search;

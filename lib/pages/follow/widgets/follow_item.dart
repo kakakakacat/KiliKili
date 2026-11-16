@@ -1,5 +1,5 @@
 import 'package:kilikili/common/widgets/pendant_avatar.dart';
-import 'package:kilikili/models_new/follow/list.dart';
+import 'package:kilikili/services/rust/rust_misc.dart' show FollowUser;
 import 'package:kilikili/pages/share/view.dart' show UserModel;
 import 'package:kilikili/utils/feed_back.dart';
 import 'package:kilikili/utils/request_utils.dart';
@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class FollowItem extends StatelessWidget {
-  final FollowItemModel item;
+  final FollowUser item;
   final bool isOwner;
   final ValueChanged? afterMod;
   final ValueChanged<UserModel>? onSelect;
@@ -72,7 +72,7 @@ class FollowItem extends StatelessWidget {
                 size: 45,
                 badgeSize: 14,
                 item.face,
-                officialType: item.officialVerify?.type,
+                officialType: item.officialVerify?.kind,
               ),
               const SizedBox(width: 10),
               Expanded(

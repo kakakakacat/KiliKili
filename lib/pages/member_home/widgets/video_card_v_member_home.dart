@@ -26,7 +26,7 @@ class VideoCardVMemberHome extends StatelessWidget {
         break;
 
       case 'av':
-        if (videoItem.isPgc == true) {
+        if (videoItem.isPgc) {
           if (videoItem.uri?.isNotEmpty == true) {
             PageUtils.viewPgcFromUri(videoItem.uri!);
           }
@@ -91,18 +91,18 @@ class VideoCardVMemberHome extends StatelessWidget {
             type: PBadgeType.gray,
             text: DurationUtils.formatDuration(videoItem.duration),
           ),
-        if (videoItem.badges?.isNotEmpty == true)
+        if (videoItem.badges.isNotEmpty)
           PBadge(
-            text: videoItem.badges!.map((e) => e.text ?? '').join('|'),
+            text: videoItem.badges.join('|'),
             top: 6,
             left: 6,
-            type: videoItem.badges!.first.text == '充电专属'
+            type: videoItem.badges.first == '充电专属'
                 ? PBadgeType.error
                 : PBadgeType.primary,
           )
-        else if (videoItem.isCooperation == true)
+        else if (videoItem.isCooperation)
           const PBadge(text: '合作', top: 6, left: 6)
-        else if (videoItem.isSteins == true)
+        else if (videoItem.isSteins)
           const PBadge(text: '互动', top: 6, left: 6),
       ],
     );

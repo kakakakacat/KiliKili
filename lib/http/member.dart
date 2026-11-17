@@ -7,17 +7,13 @@ import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/error_msg.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models/common/member/archive_order_type_app.dart';
 import 'package:kilikili/models/common/member/archive_order_type_web.dart';
 import 'package:kilikili/models/common/member/archive_sort_type_app.dart';
-import 'package:kilikili/models/common/member/contribute_type.dart';
 import 'package:kilikili/models/common/member/web_ss_type.dart';
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/models/member/tags.dart';
 import 'package:kilikili/models_new/member/search_archive/data.dart';
 import 'package:kilikili/models_new/member/season_web/data.dart';
-import 'package:kilikili/models_new/space/space/data.dart';
-import 'package:kilikili/models_new/space/space_archive/data.dart';
 import 'package:kilikili/models_new/space/space_article/data.dart';
 import 'package:kilikili/models_new/space/space_audio/data.dart';
 import 'package:kilikili/models_new/space/space_cheese/data.dart';
@@ -60,56 +56,6 @@ abstract final class MemberHttp {
     );
     if (res.data['code'] == 0) {
       return Success(SpaceArticleData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<SpaceArchiveData>> spaceArchive({
-    required ContributeType type,
-    required int? mid,
-    String? aid,
-    ArchiveOrderTypeApp? order,
-    ArchiveSortTypeApp? sort,
-    int? pn,
-    int? next,
-    int? seasonId,
-    int? seriesId,
-    bool? includeCursor,
-  }) async {
-    final params = {
-      'aid': ?aid,
-      'build': 8430300,
-      'version': '8.43.0',
-      'c_locale': 'zh_CN',
-      'channel': 'master',
-      'mobi_app': 'android',
-      'platform': 'android',
-      's_locale': 'zh_CN',
-      'ps': 20,
-      'pn': ?pn,
-      'next': ?next,
-      'season_id': ?seasonId,
-      'series_id': ?seriesId,
-      'qn': type == .video ? 80 : 32,
-      'order': ?order?.name,
-      'sort': ?sort?.name,
-      'include_cursor': ?includeCursor,
-      'statistics': Constants.statisticsApp,
-      'vmid': mid,
-    };
-    final res = await Request().get(
-      type.api,
-      queryParameters: params,
-      options: Options(
-        headers: {
-          'bili-http-engine': 'cronet',
-          'user-agent': Constants.userAgentApp,
-        },
-      ),
-    );
-    if (res.data['code'] == 0) {
-      return Success(SpaceArchiveData.fromJson(res.data['data']));
     } else {
       return Error(res.data['message']);
     }
@@ -198,39 +144,6 @@ abstract final class MemberHttp {
   //     return Error(res.data['message']);
   //   }
   // }
-
-  static Future<LoadingState<SpaceData>> space({
-    int? mid,
-    dynamic fromViewAid,
-  }) async {
-    final params = {
-      'build': 8430300,
-      'version': '8.43.0',
-      'c_locale': 'zh_CN',
-      'channel': 'master',
-      'mobi_app': 'android',
-      'platform': 'android',
-      's_locale': 'zh_CN',
-      'from_view_aid': ?fromViewAid,
-      'statistics': Constants.statisticsApp,
-      'vmid': mid,
-    };
-    final res = await Request().get(
-      Api.space,
-      queryParameters: params,
-      options: Options(
-        headers: {
-          'bili-http-engine': 'cronet',
-          'user-agent': Constants.userAgentApp,
-        },
-      ),
-    );
-    if (res.data['code'] == 0) {
-      return Success(SpaceData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
 
   static Future<LoadingState<SearchArchiveData>> searchArchive({
     required Object mid,

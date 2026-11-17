@@ -1,22 +1,21 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/member.dart';
 import 'package:kilikili/models/common/member/archive_order_type_app.dart';
-import 'package:kilikili/models_new/space/space_archive/data.dart';
-import 'package:kilikili/services/rust/rust_space.dart';
+import 'package:kilikili/models/common/member/contribute_type.dart';
 import 'package:kilikili/models_new/space/space_archive/item.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_space.dart' as rust;
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/extension/scroll_controller_ext.dart';
 import 'package:get/get.dart';
 
 class HorizontalMemberPageController
-    extends CommonListController<SpaceArchiveData, SpaceArchiveItem> {
+    extends CommonListController<rust.SpaceArchivePage, SpaceArchiveItem> {
   HorizontalMemberPageController({this.mid, required this.currAid});
 
   dynamic mid;
 
-  final Rx<LoadingState<MemberInfo>> userState =
-      LoadingState<MemberInfo>.loading().obs;
+  final Rx<LoadingState<rust.MemberInfo>> userState =
+      LoadingState<rust.MemberInfo>.loading().obs;
 
   /// 关注态单独拿出来。
   ///
@@ -38,7 +37,7 @@ class HorizontalMemberPageController
   }
 
   Future<void> getUserInfo() async {
-    final res = await RustSpace.memberInfo(mid: mid);
+    final res = await rust.RustSpace.memberInfo(mid: mid);
     userState.value = res;
     if (res case Success(:final response)) {
       isFollowed.value = response.isFollowed;
@@ -48,7 +47,7 @@ class HorizontalMemberPageController
   }
 
   Future<void> getMemberStat() async {
-    final res = await RustSpace.memberRelationStat(mid: mid);
+    final res = await rust.RustSpace.memberRelationStat(mid: mid);
     if (res case Success(:final response)) {
       following.value = response.following;
       follower.value = response.follower;
@@ -59,7 +58,7 @@ class HorizontalMemberPageController
     if (!Accounts.main.isLogin) {
       return;
     }
-    final res = await RustSpace.memberUpStat(mid: mid);
+    final res = await rust.RustSpace.memberUpStat(mid: mid);
     if (res case Success(:final response)) {
       likes.value = response.likes;
     }
@@ -67,8 +66,10 @@ class HorizontalMemberPageController
 
   @override
   bool customHandleResponse(bool isRefresh, Success response) {
-    SpaceArchiveData data = response.response;
-    count = data.count;
+    final rust.SpaceArchivePage data = response.response;
+    count = data.count?.toInt();
+    // Rust 的结构不可变，拼接落在这个本地列表上。
+    final items = data.items.map(SpaceArchiveItem.fromRust).toList();
     if (isRefresh) {
       if (isLoadPrevious) {
         hasPrev = data.hasPrev ?? false;
@@ -78,16 +79,16 @@ class HorizontalMemberPageController
     }
     if (isLoadPrevious) {
       if (loadingState.value case Success(:final response)) {
-        (data.item ??= <SpaceArchiveItem>[]).addAll(response!);
+        items.addAll(response!);
       }
     } else if (!isRefresh) {
       if (loadingState.value case Success(:final response)) {
-        (data.item ??= <SpaceArchiveItem>[]).insertAll(0, response!);
+        items.insertAll(0, response!);
       }
     }
-    firstAid = data.item?.firstOrNull?.param;
-    lastAid = data.item?.lastOrNull?.param;
-    loadingState.value = Success(data.item);
+    firstAid = items.firstOrNull?.param;
+    lastAid = items.lastOrNull?.param;
+    loadingState.value = Success(items);
     isLoadPrevious = false;
     page++;
     return true;
@@ -103,21 +104,17 @@ class HorizontalMemberPageController
   bool hasNext = true;
 
   @override
-  Future<LoadingState<SpaceArchiveData>> customGetData() =>
-      MemberHttp.spaceArchive(
-        type: .video,
+  Future<LoadingState<rust.SpaceArchivePage>> customGetData() =>
+      rust.RustSpace.spaceArchive(
+        kind: ContributeType.video.kind,
         mid: mid,
         aid: page == 1
             ? currAid
             : isLoadPrevious
             ? firstAid
             : lastAid,
-        order: order,
-        sort: page != 1 && isLoadPrevious ? .asc : null,
-        pn: null,
-        next: null,
-        seasonId: null,
-        seriesId: null,
+        order: order.kind,
+        sort: page != 1 && isLoadPrevious ? rust.SpaceArchiveSort.asc : null,
         includeCursor: page == 1 ? true : null,
       );
 

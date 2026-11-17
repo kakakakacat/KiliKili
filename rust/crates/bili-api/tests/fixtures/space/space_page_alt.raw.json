@@ -1,0 +1,502 @@
+{
+  "code": 0,
+  "message": "OK",
+  "ttl": 1,
+  "data": {
+    "relation": -999,
+    "guest_relation": -999,
+    "medal": 1,
+    "default_tab": "video",
+    "setting": {
+      "channel": 1,
+      "fav_video": 0,
+      "coins_video": 1,
+      "likes_video": 1,
+      "bangumi": 1,
+      "played_game": 1,
+      "my_game_public": 1,
+      "groups": 1,
+      "comic": 1,
+      "bbq": 1,
+      "dress_up": 1,
+      "disable_following": 0,
+      "live_playback": 0,
+      "close_space_medal": 1,
+      "only_show_wearing": 1,
+      "disable_show_school": 0,
+      "disable_show_nft": 0,
+      "disable_show_fans": 0,
+      "charge_video": 1,
+      "lesson_video": 1
+    },
+    "tab": {
+      "archive": true,
+      "article": false,
+      "clip": false,
+      "album": false,
+      "favorite": false,
+      "bangumi": true,
+      "coin": true,
+      "like": true,
+      "community": false,
+      "dynamic": true,
+      "audios": false,
+      "shop": false,
+      "mall": false,
+      "ugc_season": false,
+      "comic": false,
+      "cheese": false,
+      "sub_comic": true,
+      "activity": false,
+      "series": false,
+      "charging": false,
+      "opus": true,
+      "cheese_video": false,
+      "brand": false
+    },
+    "card": {
+      "mid": "100002",
+      "name": "用户01",
+      "face": "http://i2.hdslb.com/bfs/app/xxxx.png",
+      "fans": 2298864,
+      "attention": 550,
+      "sign": "喜欢的话就坚持吧",
+      "level_info": {
+        "current_level": 6,
+        "current_min": 0,
+        "current_exp": 0,
+        "next_exp": null,
+        "identity": 1,
+        "senior_inquiry": {
+          "inquiry_text": "",
+          "inquiry_url": ""
+        }
+      },
+      "pendant": {
+        "pid": 0,
+        "name": "",
+        "image": "",
+        "expire": 0,
+        "image_enhance": "",
+        "image_enhance_frame": "",
+        "n_pid": 0
+      },
+      "official_verify": {
+        "type": 0,
+        "desc": "bilibili董事长兼CEO",
+        "role": 2,
+        "title": "bilibili董事长兼CEO",
+        "icon": "https://i0.hdslb.com/bfs/activity-plat/static/20230828/e3b8ebec8e86f060b930a2c0536bb88b/72wejSxl9Z.png",
+        "splice_title": "bilibili UP主认证：bilibili董事长兼CEO"
+      },
+      "vip": {
+        "vipType": 2,
+        "vipDueDate": 2155046400000,
+        "dueRemark": "",
+        "accessStatus": 0,
+        "vipStatus": 1,
+        "vipStatusWarn": "",
+        "themeType": 0,
+        "label": {
+          "path": "",
+          "text": "十年大会员",
+          "label_theme": "ten_annual_vip",
+          "text_color": "#FFFFFF",
+          "bg_style": 1,
+          "bg_color": "#FB7299",
+          "border_color": "",
+          "image": "https://i0.hdslb.com/bfs/vip/xxxx.png",
+          "label_id": -22,
+          "label_goto": "https://big.bilibili.com/mobile/index?navhide=1&from_spmid=vipicon"
+        }
+      },
+      "silence": 0,
+      "likes": {
+        "like_num": 6328869,
+        "skr_tip": "视频、专栏、动态累计获赞"
+      },
+      "pr_info": {},
+      "relation": {
+        "status": 1
+      },
+      "space_tag": [
+        {
+          "type": "school",
+          "title": "成都信息工程大学",
+          "text_color": "#61666D",
+          "night_text_color": "#A2A7AE",
+          "background_color": "#F6F7F8",
+          "night_background_color": "#0D0D0E",
+          "uri": "bilibili://campus/detail/2217",
+          "icon": "https://i0.hdslb.com/bfs/activity-plat/static/ce06d65bc0a8d8aa2a463747ce2a4752/PDqKDoER9Q.png"
+        }
+      ]
+    },
+    "images": {
+      "imgUrl": "https://i0.hdslb.com/bfs/activity-plat/static/9bdd988aed64a23976d6d5494533a450/tDojHPi2LG.jpg",
+      "night_imgurl": "https://i0.hdslb.com/bfs/activity-plat/static/9bdd988aed64a23976d6d5494533a450/5A10HwGd3.jpg",
+      "collection_top_simple": {
+        "top": {
+          "result": null,
+          "click_guide": true,
+          "empty_guide": {
+            "title": "还未设置精选头图",
+            "sub_title": "秀出你的收藏",
+            "image": "https://i0.hdslb.com/bfs/garb/item/xxxx.png",
+            "button_text": "立即设置",
+            "button_jump_url": "https://www.bilibili.com/h5/mall/v2/spaceCollectionSetting?navhide=1",
+            "bg_asset_state": 3
+          }
+        },
+        "max": 15,
+        "preference": {
+          "collection_public": true,
+          "garb_first_gain": "2021年02月",
+          "order_type": 0
+        },
+        "collection_completed_url": "https://i0.hdslb.com/bfs/garb/item/934aaeaf5b25c2a80f2ffe3650904555c67e331a.png"
+      }
+    },
+    "live": {
+      "roomStatus": 1,
+      "roundStatus": 0,
+      "liveStatus": 0,
+      "url": "https://live.bilibili.com/3394945",
+      "title": "初来报道，关注一下吧~",
+      "cover": "https://i0.hdslb.com/bfs/live/xxxx.png",
+      "online": 0,
+      "roomid": 3394945,
+      "broadcast_type": 0,
+      "online_hidden": 0,
+      "link": "https://live.bilibili.com/3394945"
+    },
+    "archive": {
+      "episodic_button": {
+        "text": "播放全部",
+        "uri": "bilibili://music/playlist/spacepage/100002"
+      },
+      "order": [
+        {
+          "title": "最新发布",
+          "value": "pubdate"
+        },
+        {
+          "title": "最多播放",
+          "value": "click"
+        }
+      ],
+      "count": 17,
+      "item": [
+        {
+          "title": "陈睿《让好内容发生》",
+          "cover": "http://i2.hdslb.com/bfs/archive/xxxx.jpg",
+          "uri": "bilibili://video/116805561484650",
+          "param": "116805561484650",
+          "goto": "av",
+          "duration": 1024,
+          "is_steins": false,
+          "is_cooperation": true,
+          "is_pgc": false,
+          "is_pugv": false,
+          "play": 1976359,
+          "danmaku": 675,
+          "badges": [
+            {
+              "text": "合作",
+              "text_color": "#FFFFFFFF",
+              "text_color_night": "#E5E5E5",
+              "bg_color": "#FB7299",
+              "bg_color_night": "#BB5B76",
+              "border_color": "#FB7299",
+              "border_color_night": "#BB5B76",
+              "bg_style": 1
+            }
+          ],
+          "author": "用户03",
+          "bvid": "BV1Yrjo6bEk6",
+          "first_cid": 39457129623,
+          "publish_time_text": "6月27日"
+        },
+        {
+          "title": "让好内容，因你而发生 —— B站五年员工和十年员工纪念视频2026版",
+          "cover": "http://i2.hdslb.com/bfs/archive/xxxx.jpg",
+          "uri": "bilibili://video/116805494641880",
+          "param": "116805494641880",
+          "goto": "av",
+          "duration": 387,
+          "is_steins": false,
+          "is_cooperation": false,
+          "is_pgc": false,
+          "is_pugv": false,
+          "play": 411614,
+          "danmaku": 67,
+          "author": "用户01",
+          "bvid": "BV1ppjo66E8c",
+          "first_cid": 39375209982,
+          "publish_time_text": "6月25日"
+        }
+      ]
+    },
+    "series": {
+      "item": [],
+      "count": 0
+    },
+    "article": {
+      "count": 6,
+      "item": [
+        {
+          "title": "写在B站于香港二次上市之际——致广大用户的公开信",
+          "stats": {
+            "view": 19086315,
+            "favorite": 2013,
+            "like": 31411,
+            "dislike": 0,
+            "reply": 3024,
+            "share": 3004,
+            "coin": 1465,
+            "dynamic": 0
+          },
+          "origin_image_urls": [
+            "https://i0.hdslb.com/bfs/article/f36bedfaa185d97326b0fe7c943db215c7e5da99.jpg"
+          ],
+          "uri": "bilibili://article/10518733",
+          "publish_time_text": "2021年3月29日"
+        },
+        {
+          "title": "读一本好书，终身受益",
+          "stats": {
+            "view": 3158698,
+            "favorite": 5502,
+            "like": 30282,
+            "dislike": 0,
+            "reply": 1716,
+            "share": 626,
+            "coin": 1291,
+            "dynamic": 0
+          },
+          "origin_image_urls": [
+            "https://i0.hdslb.com/bfs/article/ad309ef978d43f4b93dd1947bbcd607a852b5471.jpg"
+          ],
+          "uri": "bilibili://article/4933039",
+          "publish_time_text": "2020年3月3日"
+        }
+      ],
+      "lists_count": 0,
+      "lists": []
+    },
+    "season": {
+      "count": 73,
+      "item": [
+        {
+          "title": "剑网3·沈剑心的365天",
+          "cover": "https://i0.hdslb.com/bfs/bangumi/image/xxxx.png",
+          "uri": "http://bangumi.bilibili.com/anime/73959",
+          "param": "73959",
+          "goto": "bangumi",
+          "finish": 1,
+          "index": "",
+          "mtime": 0,
+          "newest_ep_index": "35",
+          "is_started": 1,
+          "is_finish": "",
+          "newest_ep_id": "",
+          "total_count": "35",
+          "attention": ""
+        },
+        {
+          "title": "剧场版 咒术回战 0",
+          "cover": "https://i0.hdslb.com/bfs/bangumi/image/xxxx.png",
+          "uri": "http://bangumi.bilibili.com/anime/48001",
+          "param": "48001",
+          "goto": "bangumi",
+          "finish": 1,
+          "index": "",
+          "mtime": 0,
+          "newest_ep_index": "全片",
+          "is_started": 1,
+          "is_finish": "",
+          "newest_ep_id": "",
+          "total_count": "1",
+          "attention": ""
+        }
+      ]
+    },
+    "coin_archive": {
+      "count": 1,
+      "item": [
+        {
+          "title": "恭喜！当之无愧！33岁凯恩荣膺2026年度金球奖！",
+          "cover": "http://i2.hdslb.com/bfs/archive/xxxx.jpg",
+          "uri": "bilibili://video/117510087117212",
+          "param": "117510087117212",
+          "goto": "av",
+          "duration": 233,
+          "is_steins": false,
+          "is_cooperation": false,
+          "is_pgc": false,
+          "is_pugv": false,
+          "play": 625726,
+          "danmaku": 1607,
+          "author": "用户10",
+          "publish_time_text": ""
+        }
+      ]
+    },
+    "like_archive": {
+      "count": 600,
+      "item": [
+        {
+          "title": "恭喜！当之无愧！33岁凯恩荣膺2026年度金球奖！",
+          "cover": "http://i2.hdslb.com/bfs/archive/xxxx.jpg",
+          "uri": "bilibili://video/117510087117212",
+          "param": "117510087117212",
+          "goto": "av",
+          "duration": 233,
+          "is_steins": false,
+          "is_cooperation": false,
+          "is_pgc": false,
+          "is_pugv": false,
+          "play": 625726,
+          "danmaku": 1607,
+          "author": "用户10",
+          "publish_time_text": ""
+        },
+        {
+          "title": "怪不得要爸爸接(｡ì _ í｡)",
+          "cover": "http://i2.hdslb.com/bfs/archive/xxxx.jpg",
+          "uri": "bilibili://video/116521288343115",
+          "param": "116521288343115",
+          "goto": "av",
+          "duration": 47,
+          "is_steins": false,
+          "is_cooperation": false,
+          "is_pgc": false,
+          "is_pugv": false,
+          "play": 1249833,
+          "danmaku": 535,
+          "author": "用户11",
+          "publish_time_text": ""
+        }
+      ]
+    },
+    "audios": {
+      "count": 0,
+      "item": []
+    },
+    "favourite2": {
+      "count": 0,
+      "item": []
+    },
+    "comic": {
+      "count": 0,
+      "item": []
+    },
+    "ugc_season": {
+      "count": 0,
+      "item": []
+    },
+    "sub_comic": {
+      "count": 8,
+      "item": [
+        {
+          "title": "圣斗士星矢",
+          "cover": "https://i0.hdslb.com/bfs/manga-static/xxxx.png",
+          "param": "25442",
+          "uri": "https://manga.bilibili.com/m/detail/mc25442",
+          "goto": "comic",
+          "label": "全140话"
+        },
+        {
+          "title": "龙珠",
+          "cover": "https://i0.hdslb.com/bfs/manga-static/xxxx.jpg",
+          "param": "24743",
+          "uri": "https://manga.bilibili.com/m/detail/mc24743",
+          "goto": "comic",
+          "label": "全543话"
+        }
+      ]
+    },
+    "fans_dress": {
+      "count": 8,
+      "total": 7867,
+      "more_url": "bilibili://garb/collection-hall/208259?f_source=garb&from=asset.more",
+      "item": [
+        {
+          "garb_title": "大航海舰长",
+          "garb_id": 36312,
+          "image": "https://i0.hdslb.com/bfs/garb/item/xxxx.jpg",
+          "image_id": 0,
+          "title_color": "",
+          "title_bg_image": "",
+          "suit_bg_color": "",
+          "fan_bg_color": "",
+          "garb_type": 1,
+          "detail_jump_url": "https://www.bilibili.com/h5/mall/equity-…"
+        },
+        {
+          "garb_title": "2233·鎏金日",
+          "garb_id": 270,
+          "image": "https://i0.hdslb.com/bfs/baselabs/xxxx.png",
+          "image_id": 0,
+          "title_color": "",
+          "title_bg_image": "",
+          "suit_bg_color": "",
+          "fan_bg_color": "",
+          "garb_type": 2,
+          "detail_jump_url": "https://www.bilibili.com/h5/mall/equity-…"
+        }
+      ]
+    },
+    "tab2": [
+      {
+        "title": "主页",
+        "param": "home",
+        "icon": ""
+      },
+      {
+        "title": "动态",
+        "param": "dynamic",
+        "icon": ""
+      },
+      {
+        "title": "投稿",
+        "param": "contribute",
+        "items": [
+          {
+            "title": "视频",
+            "param": "video",
+            "icon": ""
+          },
+          {
+            "title": "图文",
+            "param": "opus",
+            "filter": [
+              {
+                "text": "全部图文",
+                "meta": "all",
+                "tab_name": "图文"
+              },
+              {
+                "text": "动态",
+                "meta": "dynamic",
+                "tab_name": "动态"
+              },
+              {
+                "text": "专栏",
+                "meta": "article",
+                "tab_name": "专栏"
+              }
+            ],
+            "icon": ""
+          }
+        ],
+        "icon": ""
+      },
+      {
+        "title": "追番",
+        "param": "bangumi",
+        "icon": ""
+      }
+    ]
+  }
+}

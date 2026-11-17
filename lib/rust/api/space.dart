@@ -8,7 +8,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:kilikili/rust/api/transport.dart';
 
 // These functions are ignored because they are not marked as `pub`: `flatten`, `season_series`, `split`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`
 
 /// 取别人的资料。
 ///
@@ -116,6 +116,50 @@ Future<ReportResult> reportMember({
   mid: mid,
   reason: reason,
   reasonV2: reasonV2,
+);
+
+/// 取空间主页。
+///
+/// `from_view_aid` 是从视频页点进来时带的稿件 id，服务端据此把那条稿件
+/// 排到投稿列表前面。
+Future<SpacePageResult> fetchSpacePage({
+  required SpaceContext context,
+  required PlatformInt64 mid,
+  String? fromViewAid,
+}) => RustLib.instance.api.crateApiSpaceFetchSpacePage(
+  context: context,
+  mid: mid,
+  fromViewAid: fromViewAid,
+);
+
+/// 取一页投稿。
+///
+/// 六个 tab 共用这一个函数：参数集合一样，差别只在路径与封面档位，由
+/// [`SpaceArchiveKind`] 决定。可省的参数省掉就不发，不是发空值。
+Future<SpaceArchiveResult> fetchSpaceArchive({
+  required SpaceContext context,
+  required SpaceArchiveKind kind,
+  PlatformInt64? mid,
+  String? aid,
+  SpaceArchiveOrder? order,
+  SpaceArchiveSort? sort,
+  PlatformInt64? page,
+  PlatformInt64? next,
+  PlatformInt64? seasonId,
+  PlatformInt64? seriesId,
+  bool? includeCursor,
+}) => RustLib.instance.api.crateApiSpaceFetchSpaceArchive(
+  context: context,
+  kind: kind,
+  mid: mid,
+  aid: aid,
+  order: order,
+  sort: sort,
+  page: page,
+  next: next,
+  seasonId: seasonId,
+  seriesId: seriesId,
+  includeCursor: includeCursor,
 );
 
 /// 投币/点赞列表里的一个稿件。
@@ -655,6 +699,509 @@ class ReportResult {
           errorCode == other.errorCode;
 }
 
+/// 一条投稿的观看进度。
+class SpaceArchiveHistory {
+  final PlatformInt64? progress;
+  final PlatformInt64? duration;
+
+  const SpaceArchiveHistory({
+    this.progress,
+    this.duration,
+  });
+
+  @override
+  int get hashCode => progress.hashCode ^ duration.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceArchiveHistory &&
+          runtimeType == other.runtimeType &&
+          progress == other.progress &&
+          duration == other.duration;
+}
+
+/// 投稿列表里的一条。空间主页的五个视频块与投稿页六个 tab 共用。
+///
+/// **没有作者 mid**：服务端只给 `author` 昵称。基线在这里造过一个
+/// `Owner(mid: 0)` 的假 owner，连带让长按菜单多一处类型特判，两处一起
+/// 删掉了（见 `bili_domain::space::SpaceArchiveItem`）。
+class SpaceArchiveItem {
+  final String? title;
+  final String? cover;
+  final String? bvid;
+
+  /// 首个分 P 的 cid。
+  final PlatformInt64? cid;
+
+  /// 稿件 id 或番剧 ep/season id，**字符串**：含义随 `goto` 变。
+  final String? param;
+  final String? goto;
+  final String? uri;
+
+  /// 时长，秒。服务端不给时是 `-1`。
+  final PlatformInt64 duration;
+  final PlatformInt64? play;
+  final PlatformInt64? danmaku;
+  final String? author;
+  final String? publishTimeText;
+
+  /// 角标文案。空文案的角标已经丢掉了。
+  final List<String> badges;
+  final bool? isSteins;
+  final bool? isCooperation;
+  final bool? isPgc;
+  final bool? isPugv;
+  final SpaceArchiveHistory? history;
+
+  /// 合集里这一条的更新时间，Unix 秒。有它时界面用它代替发布时间文案。
+  final PlatformInt64? seasonMtime;
+
+  /// 漫画的题材。
+  final String? styles;
+
+  /// 漫画的更新状态。
+  final String? label;
+
+  const SpaceArchiveItem({
+    this.title,
+    this.cover,
+    this.bvid,
+    this.cid,
+    this.param,
+    this.goto,
+    this.uri,
+    required this.duration,
+    this.play,
+    this.danmaku,
+    this.author,
+    this.publishTimeText,
+    required this.badges,
+    this.isSteins,
+    this.isCooperation,
+    this.isPgc,
+    this.isPugv,
+    this.history,
+    this.seasonMtime,
+    this.styles,
+    this.label,
+  });
+
+  @override
+  int get hashCode =>
+      title.hashCode ^
+      cover.hashCode ^
+      bvid.hashCode ^
+      cid.hashCode ^
+      param.hashCode ^
+      goto.hashCode ^
+      uri.hashCode ^
+      duration.hashCode ^
+      play.hashCode ^
+      danmaku.hashCode ^
+      author.hashCode ^
+      publishTimeText.hashCode ^
+      badges.hashCode ^
+      isSteins.hashCode ^
+      isCooperation.hashCode ^
+      isPgc.hashCode ^
+      isPugv.hashCode ^
+      history.hashCode ^
+      seasonMtime.hashCode ^
+      styles.hashCode ^
+      label.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceArchiveItem &&
+          runtimeType == other.runtimeType &&
+          title == other.title &&
+          cover == other.cover &&
+          bvid == other.bvid &&
+          cid == other.cid &&
+          param == other.param &&
+          goto == other.goto &&
+          uri == other.uri &&
+          duration == other.duration &&
+          play == other.play &&
+          danmaku == other.danmaku &&
+          author == other.author &&
+          publishTimeText == other.publishTimeText &&
+          badges == other.badges &&
+          isSteins == other.isSteins &&
+          isCooperation == other.isCooperation &&
+          isPgc == other.isPgc &&
+          isPugv == other.isPugv &&
+          history == other.history &&
+          seasonMtime == other.seasonMtime &&
+          styles == other.styles &&
+          label == other.label;
+}
+
+/// 投稿列表的六个 tab。与基线 `ContributeType` 一一对应。
+enum SpaceArchiveKind {
+  video,
+  charging,
+  season,
+  series,
+  bangumi,
+  comic,
+}
+
+/// 投稿视频的排序字段。
+enum SpaceArchiveOrder {
+  /// 最新发布。
+  pubdate,
+
+  /// 最多播放。
+  click,
+}
+
+/// 一页投稿。六个 tab 共用这一个形状。
+class SpaceArchivePage {
+  /// 总条数。追番那条不给，界面改用本页长度。
+  final PlatformInt64? count;
+  final List<SpaceArchiveItem> items;
+  final SpaceEpisodicButton? episodicButton;
+  final bool? hasNext;
+
+  /// 还能不能往**前**翻。从视频页跳进来定位到某一条时才有意义。
+  final bool? hasPrev;
+
+  /// 下一页的游标。`0` 表示到底了。
+  final PlatformInt64? next;
+
+  const SpaceArchivePage({
+    this.count,
+    required this.items,
+    this.episodicButton,
+    this.hasNext,
+    this.hasPrev,
+    this.next,
+  });
+
+  @override
+  int get hashCode =>
+      count.hashCode ^
+      items.hashCode ^
+      episodicButton.hashCode ^
+      hasNext.hashCode ^
+      hasPrev.hashCode ^
+      next.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceArchivePage &&
+          runtimeType == other.runtimeType &&
+          count == other.count &&
+          items == other.items &&
+          episodicButton == other.episodicButton &&
+          hasNext == other.hasNext &&
+          hasPrev == other.hasPrev &&
+          next == other.next;
+}
+
+/// 一页投稿的结果。六个 tab 共用。
+class SpaceArchiveResult {
+  final SpaceArchivePage? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const SpaceArchiveResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceArchiveResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+/// 合集 / 列表的排序方向。
+enum SpaceArchiveSort {
+  desc,
+  asc,
+}
+
+/// 主页上的一块专栏。
+class SpaceArticleBlock {
+  final PlatformInt64? count;
+  final List<SpaceArticleItem> items;
+
+  const SpaceArticleBlock({
+    this.count,
+    required this.items,
+  });
+
+  @override
+  int get hashCode => count.hashCode ^ items.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceArticleBlock &&
+          runtimeType == other.runtimeType &&
+          count == other.count &&
+          items == other.items;
+}
+
+/// 主页上的一条专栏。
+class SpaceArticleItem {
+  final String? title;
+  final String? cover;
+  final String? publishTimeText;
+  final PlatformInt64? view;
+  final PlatformInt64? reply;
+  final String? uri;
+
+  const SpaceArticleItem({
+    this.title,
+    this.cover,
+    this.publishTimeText,
+    this.view,
+    this.reply,
+    this.uri,
+  });
+
+  @override
+  int get hashCode =>
+      title.hashCode ^
+      cover.hashCode ^
+      publishTimeText.hashCode ^
+      view.hashCode ^
+      reply.hashCode ^
+      uri.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceArticleItem &&
+          runtimeType == other.runtimeType &&
+          title == other.title &&
+          cover == other.cover &&
+          publishTimeText == other.publishTimeText &&
+          view == other.view &&
+          reply == other.reply &&
+          uri == other.uri;
+}
+
+/// 主页上的一块音频。
+class SpaceAudioBlock {
+  final PlatformInt64? count;
+  final List<SpaceAudioItem> items;
+
+  const SpaceAudioBlock({
+    this.count,
+    required this.items,
+  });
+
+  @override
+  int get hashCode => count.hashCode ^ items.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceAudioBlock &&
+          runtimeType == other.runtimeType &&
+          count == other.count &&
+          items == other.items;
+}
+
+/// 主页上的一条音频。
+class SpaceAudioItem {
+  final PlatformInt64? id;
+  final PlatformInt64? uid;
+  final String? title;
+  final String? cover;
+
+  /// **Unix 秒**。音频页那条接口给的是毫秒，两边共用同一个组件。
+  final PlatformInt64? ctime;
+
+  const SpaceAudioItem({
+    this.id,
+    this.uid,
+    this.title,
+    this.cover,
+    this.ctime,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      uid.hashCode ^
+      title.hashCode ^
+      cover.hashCode ^
+      ctime.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceAudioItem &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          uid == other.uid &&
+          title == other.title &&
+          cover == other.cover &&
+          ctime == other.ctime;
+}
+
+/// 空间主页的资料卡。
+class SpaceCard {
+  /// 这条接口的 `mid` 是**字符串**，同 [`MemberCard::mid`]。
+  final String? mid;
+  final String? name;
+  final String? face;
+  final String? sign;
+  final PlatformInt64? fans;
+  final PlatformInt64? attention;
+
+  /// 累计获赞数。
+  final PlatformInt64? likeNum;
+  final PlatformInt64? level;
+
+  /// `2` 为硬核会员。
+  final PlatformInt64? levelIdentity;
+
+  /// 头像挂件图。空串已经过滤掉了。
+  final String? pendantImage;
+  final PlatformInt64? officialType;
+  final String? officialDesc;
+  final String? officialSpliceTitle;
+
+  /// `> 0` 为大会员。
+  final PlatformInt64? vipStatus;
+
+  /// `2` 是年度大会员，昵称要染色。
+  final PlatformInt64? vipType;
+  final String? vipLabelText;
+
+  /// `1` 为封禁中。
+  final PlatformInt64? silence;
+  final SpaceRelation? relation;
+  final SpaceLiveMedal? liveMedal;
+  final List<SpaceCardTag> tags;
+  final SpacePrInfo? prInfo;
+  final SpaceFollowedBy? followedBy;
+
+  const SpaceCard({
+    this.mid,
+    this.name,
+    this.face,
+    this.sign,
+    this.fans,
+    this.attention,
+    this.likeNum,
+    this.level,
+    this.levelIdentity,
+    this.pendantImage,
+    this.officialType,
+    this.officialDesc,
+    this.officialSpliceTitle,
+    this.vipStatus,
+    this.vipType,
+    this.vipLabelText,
+    this.silence,
+    this.relation,
+    this.liveMedal,
+    required this.tags,
+    this.prInfo,
+    this.followedBy,
+  });
+
+  @override
+  int get hashCode =>
+      mid.hashCode ^
+      name.hashCode ^
+      face.hashCode ^
+      sign.hashCode ^
+      fans.hashCode ^
+      attention.hashCode ^
+      likeNum.hashCode ^
+      level.hashCode ^
+      levelIdentity.hashCode ^
+      pendantImage.hashCode ^
+      officialType.hashCode ^
+      officialDesc.hashCode ^
+      officialSpliceTitle.hashCode ^
+      vipStatus.hashCode ^
+      vipType.hashCode ^
+      vipLabelText.hashCode ^
+      silence.hashCode ^
+      relation.hashCode ^
+      liveMedal.hashCode ^
+      tags.hashCode ^
+      prInfo.hashCode ^
+      followedBy.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceCard &&
+          runtimeType == other.runtimeType &&
+          mid == other.mid &&
+          name == other.name &&
+          face == other.face &&
+          sign == other.sign &&
+          fans == other.fans &&
+          attention == other.attention &&
+          likeNum == other.likeNum &&
+          level == other.level &&
+          levelIdentity == other.levelIdentity &&
+          pendantImage == other.pendantImage &&
+          officialType == other.officialType &&
+          officialDesc == other.officialDesc &&
+          officialSpliceTitle == other.officialSpliceTitle &&
+          vipStatus == other.vipStatus &&
+          vipType == other.vipType &&
+          vipLabelText == other.vipLabelText &&
+          silence == other.silence &&
+          relation == other.relation &&
+          liveMedal == other.liveMedal &&
+          tags == other.tags &&
+          prInfo == other.prInfo &&
+          followedBy == other.followedBy;
+}
+
+/// 空间页标签（常住地、实名认证）。只有这两类会被下发到这里。
+class SpaceCardTag {
+  final String? title;
+  final String? uri;
+
+  const SpaceCardTag({
+    this.title,
+    this.uri,
+  });
+
+  @override
+  int get hashCode => title.hashCode ^ uri.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceCardTag &&
+          runtimeType == other.runtimeType &&
+          title == other.title &&
+          uri == other.uri;
+}
+
 /// 这一族共用的请求上下文。
 class SpaceContext {
   /// 多数接口是 `api.bilibili.com`；举报那条传 `space.bilibili.com`。
@@ -712,6 +1259,540 @@ class SpaceContext {
           transport == other.transport &&
           mixinKey == other.mixinKey &&
           ts == other.ts;
+}
+
+/// 充电榜。
+class SpaceElec {
+  final PlatformInt64? total;
+
+  /// 这几条**没有 mid**：服务端在这里给的是空间主人的 id，不是充电者的。
+  final List<SpaceSimpleUser> list;
+
+  const SpaceElec({
+    this.total,
+    required this.list,
+  });
+
+  @override
+  int get hashCode => total.hashCode ^ list.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceElec &&
+          runtimeType == other.runtimeType &&
+          total == other.total &&
+          list == other.list;
+}
+
+/// 「播放全部 / 继续播放」按钮。
+class SpaceEpisodicButton {
+  final String? text;
+
+  /// `oid` 等参数在查询串里。
+  final String? uri;
+
+  const SpaceEpisodicButton({
+    this.text,
+    this.uri,
+  });
+
+  @override
+  int get hashCode => text.hashCode ^ uri.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceEpisodicButton &&
+          runtimeType == other.runtimeType &&
+          text == other.text &&
+          uri == other.uri;
+}
+
+/// 主页上的一块收藏夹。
+class SpaceFavBlock {
+  final PlatformInt64? count;
+  final List<SpaceFavItem> items;
+
+  const SpaceFavBlock({
+    this.count,
+    required this.items,
+  });
+
+  @override
+  int get hashCode => count.hashCode ^ items.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceFavBlock &&
+          runtimeType == other.runtimeType &&
+          count == other.count &&
+          items == other.items;
+}
+
+/// 主页上的一个收藏夹。
+class SpaceFavItem {
+  /// 路由用的是 `media_id`。
+  final PlatformInt64? mediaId;
+  final String? title;
+  final String? cover;
+
+  /// 夹子里有多少条内容。
+  final PlatformInt64? count;
+
+  /// `1` 为私密。键名与含义是反的，这是服务端的事实。
+  final PlatformInt64? isPublic;
+
+  const SpaceFavItem({
+    this.mediaId,
+    this.title,
+    this.cover,
+    this.count,
+    this.isPublic,
+  });
+
+  @override
+  int get hashCode =>
+      mediaId.hashCode ^
+      title.hashCode ^
+      cover.hashCode ^
+      count.hashCode ^
+      isPublic.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceFavItem &&
+          runtimeType == other.runtimeType &&
+          mediaId == other.mediaId &&
+          title == other.title &&
+          cover == other.cover &&
+          count == other.count &&
+          isPublic == other.isPublic;
+}
+
+/// 「你关注的人也关注了 TA」。
+class SpaceFollowedBy {
+  final List<SpaceSimpleUser> items;
+
+  const SpaceFollowedBy({
+    required this.items,
+  });
+
+  @override
+  int get hashCode => items.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceFollowedBy &&
+          runtimeType == other.runtimeType &&
+          items == other.items;
+}
+
+/// 大航海。
+class SpaceGuard {
+  /// 人数。服务端只给一句话，数字是从里面抠出来的，所以是字符串。
+  final String? count;
+  final List<SpaceSimpleUser> items;
+
+  const SpaceGuard({
+    this.count,
+    required this.items,
+  });
+
+  @override
+  int get hashCode => count.hashCode ^ items.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceGuard &&
+          runtimeType == other.runtimeType &&
+          count == other.count &&
+          items == other.items;
+}
+
+/// 空间头图与置顶合集的封面轮播。
+class SpaceImages {
+  final String? imgUrl;
+
+  /// 为空时界面回落到 [`Self::img_url`]。
+  final String? nightImgUrl;
+
+  /// 非空时整个头图位置换成这组图。
+  final List<SpaceTopImage> topImages;
+
+  const SpaceImages({
+    this.imgUrl,
+    this.nightImgUrl,
+    required this.topImages,
+  });
+
+  @override
+  int get hashCode =>
+      imgUrl.hashCode ^ nightImgUrl.hashCode ^ topImages.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceImages &&
+          runtimeType == other.runtimeType &&
+          imgUrl == other.imgUrl &&
+          nightImgUrl == other.nightImgUrl &&
+          topImages == other.topImages;
+}
+
+/// 直播间状态。
+class SpaceLive {
+  /// `1` 表示他有直播间。
+  final PlatformInt64? roomStatus;
+
+  /// `1` 表示正在直播。
+  final PlatformInt64? liveStatus;
+  final PlatformInt64? roomId;
+
+  const SpaceLive({
+    this.roomStatus,
+    this.liveStatus,
+    this.roomId,
+  });
+
+  @override
+  int get hashCode =>
+      roomStatus.hashCode ^ liveStatus.hashCode ^ roomId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceLive &&
+          runtimeType == other.runtimeType &&
+          roomStatus == other.roomStatus &&
+          liveStatus == other.liveStatus &&
+          roomId == other.roomId;
+}
+
+/// 他戴着的直播粉丝勋章。颜色是 `#RRGGBB`，解析留在宿主。
+class SpaceLiveMedal {
+  final String? name;
+  final PlatformInt64? level;
+  final String? color;
+  final String? nameColor;
+
+  const SpaceLiveMedal({
+    this.name,
+    this.level,
+    this.color,
+    this.nameColor,
+  });
+
+  @override
+  int get hashCode =>
+      name.hashCode ^ level.hashCode ^ color.hashCode ^ nameColor.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceLiveMedal &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          level == other.level &&
+          color == other.color &&
+          nameColor == other.nameColor;
+}
+
+/// 空间主页。
+class SpacePage {
+  final PlatformInt64? relation;
+  final PlatformInt64? guestRelation;
+
+  /// `1` 表示特别关注。
+  final PlatformInt64? relSpecial;
+  final PlatformInt64? medal;
+
+  /// 取值与 [`SpaceTab2::param`] 对齐。
+  final String? defaultTab;
+
+  /// 八个内容块里还有没有东西。为假时「主页」tab 整个去掉。
+  final bool hasItem;
+
+  /// 有没有合集或列表。投稿页据此多一个「全部合集/列表」tab。
+  final bool hasSeasonOrSeries;
+
+  /// **只有看自己的空间时才有**，界面据此判断是不是本人。
+  final SpaceSetting? setting;
+  final SpaceCard? card;
+  final SpaceImages? images;
+  final SpaceLive? live;
+  final SpaceElec? elec;
+  final SpaceGuard? guard;
+  final SpaceVideoBlock? archive;
+  final SpaceVideoBlock? season;
+  final SpaceVideoBlock? coinArchive;
+  final SpaceVideoBlock? likeArchive;
+  final SpaceVideoBlock? comic;
+  final SpaceArticleBlock? article;
+  final SpaceAudioBlock? audio;
+  final SpaceFavBlock? favourite;
+  final List<SpaceTab2> tab2;
+  final List<SpaceReservation> reservations;
+
+  const SpacePage({
+    this.relation,
+    this.guestRelation,
+    this.relSpecial,
+    this.medal,
+    this.defaultTab,
+    required this.hasItem,
+    required this.hasSeasonOrSeries,
+    this.setting,
+    this.card,
+    this.images,
+    this.live,
+    this.elec,
+    this.guard,
+    this.archive,
+    this.season,
+    this.coinArchive,
+    this.likeArchive,
+    this.comic,
+    this.article,
+    this.audio,
+    this.favourite,
+    required this.tab2,
+    required this.reservations,
+  });
+
+  @override
+  int get hashCode =>
+      relation.hashCode ^
+      guestRelation.hashCode ^
+      relSpecial.hashCode ^
+      medal.hashCode ^
+      defaultTab.hashCode ^
+      hasItem.hashCode ^
+      hasSeasonOrSeries.hashCode ^
+      setting.hashCode ^
+      card.hashCode ^
+      images.hashCode ^
+      live.hashCode ^
+      elec.hashCode ^
+      guard.hashCode ^
+      archive.hashCode ^
+      season.hashCode ^
+      coinArchive.hashCode ^
+      likeArchive.hashCode ^
+      comic.hashCode ^
+      article.hashCode ^
+      audio.hashCode ^
+      favourite.hashCode ^
+      tab2.hashCode ^
+      reservations.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpacePage &&
+          runtimeType == other.runtimeType &&
+          relation == other.relation &&
+          guestRelation == other.guestRelation &&
+          relSpecial == other.relSpecial &&
+          medal == other.medal &&
+          defaultTab == other.defaultTab &&
+          hasItem == other.hasItem &&
+          hasSeasonOrSeries == other.hasSeasonOrSeries &&
+          setting == other.setting &&
+          card == other.card &&
+          images == other.images &&
+          live == other.live &&
+          elec == other.elec &&
+          guard == other.guard &&
+          archive == other.archive &&
+          season == other.season &&
+          coinArchive == other.coinArchive &&
+          likeArchive == other.likeArchive &&
+          comic == other.comic &&
+          article == other.article &&
+          audio == other.audio &&
+          favourite == other.favourite &&
+          tab2 == other.tab2 &&
+          reservations == other.reservations;
+}
+
+/// 空间主页的结果。
+class SpacePageResult {
+  final SpacePage? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const SpacePageResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpacePageResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+/// 推广信息。`content` 为空时整块是 `None`，不是一个空结构。
+class SpacePrInfo {
+  final String? content;
+  final String? url;
+  final String? icon;
+  final String? iconNight;
+  final String textColor;
+  final String bgColor;
+  final String textColorNight;
+  final String bgColorNight;
+
+  const SpacePrInfo({
+    this.content,
+    this.url,
+    this.icon,
+    this.iconNight,
+    required this.textColor,
+    required this.bgColor,
+    required this.textColorNight,
+    required this.bgColorNight,
+  });
+
+  @override
+  int get hashCode =>
+      content.hashCode ^
+      url.hashCode ^
+      icon.hashCode ^
+      iconNight.hashCode ^
+      textColor.hashCode ^
+      bgColor.hashCode ^
+      textColorNight.hashCode ^
+      bgColorNight.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpacePrInfo &&
+          runtimeType == other.runtimeType &&
+          content == other.content &&
+          url == other.url &&
+          icon == other.icon &&
+          iconNight == other.iconNight &&
+          textColor == other.textColor &&
+          bgColor == other.bgColor &&
+          textColorNight == other.textColorNight &&
+          bgColorNight == other.bgColorNight;
+}
+
+/// 关注关系三元组。控制器据此拼出一个 `relation` 值。
+class SpaceRelation {
+  final PlatformInt64? status;
+  final PlatformInt64? isFollow;
+  final PlatformInt64? isFollowed;
+
+  const SpaceRelation({
+    this.status,
+    this.isFollow,
+    this.isFollowed,
+  });
+
+  @override
+  int get hashCode => status.hashCode ^ isFollow.hashCode ^ isFollowed.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceRelation &&
+          runtimeType == other.runtimeType &&
+          status == other.status &&
+          isFollow == other.isFollow &&
+          isFollowed == other.isFollowed;
+}
+
+/// 一条预约。
+class SpaceReservation {
+  final PlatformInt64? sid;
+  final String? name;
+
+  /// 已预约人数。预约/取消后界面要在这个数上加减，所以不是 `Option`。
+  final PlatformInt64 total;
+  final bool isFollow;
+  final String? descText;
+
+  /// 有值时多一个「看动态」按钮。
+  final String? dynamicId;
+  final SpaceReservationLottery? lottery;
+
+  const SpaceReservation({
+    this.sid,
+    this.name,
+    required this.total,
+    required this.isFollow,
+    this.descText,
+    this.dynamicId,
+    this.lottery,
+  });
+
+  @override
+  int get hashCode =>
+      sid.hashCode ^
+      name.hashCode ^
+      total.hashCode ^
+      isFollow.hashCode ^
+      descText.hashCode ^
+      dynamicId.hashCode ^
+      lottery.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceReservation &&
+          runtimeType == other.runtimeType &&
+          sid == other.sid &&
+          name == other.name &&
+          total == other.total &&
+          isFollow == other.isFollow &&
+          descText == other.descText &&
+          dynamicId == other.dynamicId &&
+          lottery == other.lottery;
+}
+
+/// 预约附带的抽奖。
+class SpaceReservationLottery {
+  final String? text;
+  final String? jumpUrl;
+
+  const SpaceReservationLottery({
+    this.text,
+    this.jumpUrl,
+  });
+
+  @override
+  int get hashCode => text.hashCode ^ jumpUrl.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceReservationLottery &&
+          runtimeType == other.runtimeType &&
+          text == other.text &&
+          jumpUrl == other.jumpUrl;
 }
 
 /// 一个合集或列表。
@@ -820,6 +1901,233 @@ class SpaceSeasonSeriesResult {
           errorKind == other.errorKind &&
           errorDetail == other.errorDetail &&
           errorCode == other.errorCode;
+}
+
+/// 空间隐私设置。只有看自己的空间时服务端才下发。
+class SpaceSetting {
+  final PlatformInt64? favVideo;
+  final PlatformInt64? coinsVideo;
+  final PlatformInt64? likesVideo;
+  final PlatformInt64? bangumi;
+
+  const SpaceSetting({
+    this.favVideo,
+    this.coinsVideo,
+    this.likesVideo,
+    this.bangumi,
+  });
+
+  @override
+  int get hashCode =>
+      favVideo.hashCode ^
+      coinsVideo.hashCode ^
+      likesVideo.hashCode ^
+      bangumi.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceSetting &&
+          runtimeType == other.runtimeType &&
+          favVideo == other.favVideo &&
+          coinsVideo == other.coinsVideo &&
+          likesVideo == other.likesVideo &&
+          bangumi == other.bangumi;
+}
+
+/// 一个只有昵称与头像的人。充电榜、大航海、共同关注共用。
+class SpaceSimpleUser {
+  final PlatformInt64? mid;
+  final String? name;
+  final String? face;
+
+  const SpaceSimpleUser({
+    this.mid,
+    this.name,
+    this.face,
+  });
+
+  @override
+  int get hashCode => mid.hashCode ^ name.hashCode ^ face.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceSimpleUser &&
+          runtimeType == other.runtimeType &&
+          mid == other.mid &&
+          name == other.name &&
+          face == other.face;
+}
+
+/// 空间的一级 tab。
+class SpaceTab2 {
+  final String? title;
+  final String? param;
+  final List<SpaceTab2Item> items;
+
+  const SpaceTab2({
+    this.title,
+    this.param,
+    required this.items,
+  });
+
+  @override
+  int get hashCode => title.hashCode ^ param.hashCode ^ items.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceTab2 &&
+          runtimeType == other.runtimeType &&
+          title == other.title &&
+          param == other.param &&
+          items == other.items;
+}
+
+/// 二级 tab。
+class SpaceTab2Item {
+  final String? title;
+  final String? param;
+  final List<SpaceTabFilter> filters;
+  final PlatformInt64? seasonId;
+  final PlatformInt64? seriesId;
+
+  const SpaceTab2Item({
+    this.title,
+    this.param,
+    required this.filters,
+    this.seasonId,
+    this.seriesId,
+  });
+
+  @override
+  int get hashCode =>
+      title.hashCode ^
+      param.hashCode ^
+      filters.hashCode ^
+      seasonId.hashCode ^
+      seriesId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceTab2Item &&
+          runtimeType == other.runtimeType &&
+          title == other.title &&
+          param == other.param &&
+          filters == other.filters &&
+          seasonId == other.seasonId &&
+          seriesId == other.seriesId;
+}
+
+/// 图文页的一个筛选项。
+class SpaceTabFilter {
+  final String? text;
+
+  /// 发给服务端的那个值，缺省为 `all`。
+  final String meta;
+  final String? tabName;
+
+  const SpaceTabFilter({
+    this.text,
+    required this.meta,
+    this.tabName,
+  });
+
+  @override
+  int get hashCode => text.hashCode ^ meta.hashCode ^ tabName.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceTabFilter &&
+          runtimeType == other.runtimeType &&
+          text == other.text &&
+          meta == other.meta &&
+          tabName == other.tabName;
+}
+
+/// 置顶合集的一张封面。
+class SpaceTopImage {
+  /// 列表里显示的那张。
+  final String header;
+
+  /// 点开大图时用的原图。
+  final String fullCover;
+
+  /// 纵向裁切位置，`-1.0`～`1.0`，直接喂给对齐参数。
+  final double dy;
+  final SpaceTopTitle? title;
+
+  const SpaceTopImage({
+    required this.header,
+    required this.fullCover,
+    required this.dy,
+    this.title,
+  });
+
+  @override
+  int get hashCode =>
+      header.hashCode ^ fullCover.hashCode ^ dy.hashCode ^ title.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceTopImage &&
+          runtimeType == other.runtimeType &&
+          header == other.header &&
+          fullCover == other.fullCover &&
+          dy == other.dy &&
+          title == other.title;
+}
+
+/// 置顶合集封面上的标题。
+class SpaceTopTitle {
+  final String? title;
+  final String? subTitle;
+  final List<String> subTitleColors;
+
+  const SpaceTopTitle({
+    this.title,
+    this.subTitle,
+    required this.subTitleColors,
+  });
+
+  @override
+  int get hashCode =>
+      title.hashCode ^ subTitle.hashCode ^ subTitleColors.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceTopTitle &&
+          runtimeType == other.runtimeType &&
+          title == other.title &&
+          subTitle == other.subTitle &&
+          subTitleColors == other.subTitleColors;
+}
+
+/// 主页上的一块视频（投稿 / 追番 / 投币 / 点赞 / 漫画共用）。
+class SpaceVideoBlock {
+  final PlatformInt64? count;
+  final List<SpaceArchiveItem> items;
+
+  const SpaceVideoBlock({
+    this.count,
+    required this.items,
+  });
+
+  @override
+  int get hashCode => count.hashCode ^ items.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceVideoBlock &&
+          runtimeType == other.runtimeType &&
+          count == other.count &&
+          items == other.items;
 }
 
 /// 一个充电档位。

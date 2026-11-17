@@ -1,0 +1,47 @@
+{
+  "archive": null,
+  "article": null,
+  "audio": null,
+  "card": null,
+  "coin_archive": null,
+  "comic": null,
+  "default_tab": "video",
+  "elec": null,
+  "favourite": null,
+  "guard": null,
+  "guest_relation": null,
+  "has_item": false,
+  "has_season_or_series": false,
+  "images": null,
+  "like_archive": null,
+  "live": null,
+  "medal": null,
+  "rel_special": null,
+  "relation": -999,
+  "reservations": [
+    {
+      "desc_text": "今天 18:00直播",
+      "dynamic_id": "1269000116856946693",
+      "is_follow": false,
+      "lottery": null,
+      "name": "直播预约：第一场",
+      "sid": 5867427,
+      "total": 5222
+    },
+    {
+      "desc_text": null,
+      "dynamic_id": "",
+      "is_follow": true,
+      "lottery": {
+        "jump_url": "https://www.bilibili.com/h5/lottery",
+        "text": "参与抽奖"
+      },
+      "name": "直播预约：第二场",
+      "sid": 5867428,
+      "total": 0
+    }
+  ],
+  "season": null,
+  "setting": null,
+  "tab2": []
+}

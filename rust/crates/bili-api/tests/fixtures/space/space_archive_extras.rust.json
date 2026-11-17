@@ -1,0 +1,90 @@
+{
+  "count": 3,
+  "episodic_button": {
+    "text": "继续播放",
+    "uri": "bilibili://music/playlist/spacepage/100001?desc=1&oid=100200300&page_type=1&sort_field=1"
+  },
+  "has_next": false,
+  "has_prev": true,
+  "items": [
+    {
+      "author": "用户01",
+      "badges": [
+        "充电专属",
+        "合作"
+      ],
+      "bvid": "BV1xx411c7xx",
+      "cid": 900100,
+      "cover": "https://i0.hdslb.com/bfs/archive/xxxx.jpg",
+      "danmaku": 56,
+      "duration": 612,
+      "goto": "av",
+      "history": {
+        "duration": 612,
+        "progress": 120
+      },
+      "is_cooperation": true,
+      "is_pgc": false,
+      "is_pugv": false,
+      "is_steins": false,
+      "label": null,
+      "param": "100200300",
+      "play": 1234,
+      "publish_time_text": "3月4日",
+      "season_mtime": null,
+      "styles": null,
+      "title": "充电专属的那一条",
+      "uri": "bilibili://video/100200300"
+    },
+    {
+      "author": null,
+      "badges": [],
+      "bvid": null,
+      "cid": null,
+      "cover": "https://i0.hdslb.com/bfs/archive/yyyy.jpg",
+      "danmaku": null,
+      "duration": -1,
+      "goto": "av",
+      "history": {
+        "duration": 612,
+        "progress": 612
+      },
+      "is_cooperation": null,
+      "is_pgc": null,
+      "is_pugv": null,
+      "is_steins": null,
+      "label": null,
+      "param": "100200301",
+      "play": null,
+      "publish_time_text": null,
+      "season_mtime": 1735660800,
+      "styles": null,
+      "title": "合集里的那一条",
+      "uri": null
+    },
+    {
+      "author": null,
+      "badges": [],
+      "bvid": null,
+      "cid": null,
+      "cover": "https://i0.hdslb.com/bfs/manga/zzzz.jpg",
+      "danmaku": null,
+      "duration": -1,
+      "goto": "comic",
+      "history": null,
+      "is_cooperation": null,
+      "is_pgc": null,
+      "is_pugv": null,
+      "is_steins": null,
+      "label": "已完结",
+      "param": "28888",
+      "play": null,
+      "publish_time_text": null,
+      "season_mtime": null,
+      "styles": "热血",
+      "title": "一本漫画",
+      "uri": null
+    }
+  ],
+  "next": 0
+}

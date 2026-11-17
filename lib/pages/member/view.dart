@@ -12,7 +12,7 @@ import 'package:kilikili/common/widgets/scroll_behavior.dart'
 import 'package:kilikili/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/services/rust/rust_live.dart';
-import 'package:kilikili/models_new/space/space/reservation_card_list.dart';
+import 'package:kilikili/pages/member/reserve_item.dart';
 import 'package:kilikili/pages/coin_log/controller.dart';
 import 'package:kilikili/pages/exp_log/controller.dart';
 import 'package:kilikili/pages/log_table/view.dart';
@@ -172,7 +172,7 @@ class _MemberPageState extends State<MemberPage> {
     );
   }
 
-  Widget _reserveBtn(List<ReservationCardItem> list, ColorScheme theme) {
+  Widget _reserveBtn(List<MemberReserveItem> list, ColorScheme theme) {
     return IconButton(
       tooltip: '预约',
       onPressed: () => _showReserveList(list),
@@ -184,7 +184,7 @@ class _MemberPageState extends State<MemberPage> {
     );
   }
 
-  void _showReserveList(List<ReservationCardItem> list) {
+  void _showReserveList(List<MemberReserveItem> list) {
     showModalBottomSheet(
       context: context,
       useSafeArea: true,
@@ -287,10 +287,10 @@ class _MemberPageState extends State<MemberPage> {
                             children: [
                               TextSpan(
                                 text:
-                                    '${e.descText1 == null ? '' : '${e.descText1}  '}'
+                                    '${e.descText == null ? '' : '${e.descText}  '}'
                                     '${NumUtils.numFormat(e.total)}人预约',
                               ),
-                              if (e.lotteryPrizeInfo case final lottery?) ...[
+                              if (e.lottery case final lottery?) ...[
                                 const TextSpan(text: '\n'),
                                 WidgetSpan(
                                   alignment: .middle,
@@ -451,8 +451,7 @@ class _MemberPageState extends State<MemberPage> {
                         .value
                         .dataOrNull
                         ?.card
-                        ?.vip
-                        ?.status ??
+                        ?.vipStatus ??
                     0) >
                 0)
               PopupMenuItem(

@@ -106,7 +106,7 @@ class _MemberOpusState extends State<MemberOpus>
                             (e) => ListTile(
                               dense: true,
                               onTap: () {
-                                if (e == _controller.type.value) {
+                                if (_controller.isSelected(e)) {
                                   return;
                                 }
                                 Get.back();
@@ -114,7 +114,7 @@ class _MemberOpusState extends State<MemberOpus>
                                   ..type.value = e
                                   ..onReload();
                               },
-                              tileColor: e == _controller.type.value
+                              tileColor: _controller.isSelected(e)
                                   ? ColorScheme.of(context).onInverseSurface
                                   : null,
                               title: Text(

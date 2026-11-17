@@ -22,8 +22,42 @@ export 'package:kilikili/rust/api/space.dart'
         MemberInfo,
         MemberRelationStat,
         MemberUpStat,
+        SpaceArchiveHistory,
+        SpaceArchiveItem,
+        SpaceArchiveKind,
+        SpaceArchiveOrder,
+        SpaceArchivePage,
+        SpaceArchiveSort,
+        SpaceArticleBlock,
+        SpaceArticleItem,
+        SpaceAudioBlock,
+        SpaceAudioItem,
+        SpaceCard,
+        SpaceCardTag,
+        SpaceElec,
+        SpaceEpisodicButton,
+        SpaceFavBlock,
+        SpaceFavItem,
+        SpaceFollowedBy,
+        SpaceGuard,
+        SpaceImages,
+        SpaceLive,
+        SpaceLiveMedal,
+        SpacePage,
+        SpacePrInfo,
+        SpaceRelation,
+        SpaceReservation,
+        SpaceReservationLottery,
         SpaceSeasonSeries,
         SpaceSeasonSeriesPage,
+        SpaceSetting,
+        SpaceSimpleUser,
+        SpaceTab2,
+        SpaceTab2Item,
+        SpaceTabFilter,
+        SpaceTopImage,
+        SpaceTopTitle,
+        SpaceVideoBlock,
         UpowerLevel,
         UpowerRank,
         UpowerRankItem;
@@ -288,6 +322,72 @@ abstract final class RustSpace {
       return _unwrap(result.data, result.errorDetail, result.errorCode);
     } catch (e, st) {
       return _crashed('举报', e, st);
+    }
+  }
+
+  /// 空间主页。
+  ///
+  /// [fromViewAid] 是从视频页点进来时带的稿件 id，服务端据此把那条稿件
+  /// 排到投稿列表前面。
+  static Future<LoadingState<rust_api.SpacePage>> spacePage({
+    required int mid,
+    String? fromViewAid,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await rust_api.fetchSpacePage(
+        context: await _context(
+          // 这条挂在 app 域上。
+          path: Api.space,
+          baseUrl: HttpString.appBaseUrl,
+        ),
+        mid: mid,
+        fromViewAid: fromViewAid,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('空间主页', e, st);
+    }
+  }
+
+  /// 一页投稿。六个 tab（视频 / 充电专属 / 合集 / 列表 / 追番 / 漫画）
+  /// 共用这一个方法，差别由 [kind] 决定。
+  ///
+  /// 省掉的参数**不会发出去**，不是发一个空值——这一点有 Rust 侧的测试
+  /// 钉着。
+  static Future<LoadingState<rust_api.SpaceArchivePage>> spaceArchive({
+    required rust_api.SpaceArchiveKind kind,
+    int? mid,
+    String? aid,
+    rust_api.SpaceArchiveOrder? order,
+    rust_api.SpaceArchiveSort? sort,
+    int? page,
+    int? next,
+    int? seasonId,
+    int? seriesId,
+    bool? includeCursor,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await rust_api.fetchSpaceArchive(
+        context: await _context(
+          path: Api.spaceArchive,
+          baseUrl: HttpString.appBaseUrl,
+        ),
+        kind: kind,
+        mid: mid,
+        aid: aid,
+        order: order,
+        sort: sort,
+        page: page,
+        next: next,
+        seasonId: seasonId,
+        seriesId: seriesId,
+        includeCursor: includeCursor,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('投稿列表', e, st);
     }
   }
 

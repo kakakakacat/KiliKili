@@ -4,12 +4,8 @@ import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/common/widgets/scroll_physics.dart'
     show platformAlwaysClampingPhysics;
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/space/space/data.dart';
-import 'package:kilikili/models_new/space/space/tab2.dart';
 import 'package:kilikili/models_new/space/space_archive/item.dart';
-import 'package:kilikili/models_new/space/space_article/item.dart';
-import 'package:kilikili/models_new/space/space_audio/item.dart';
-import 'package:kilikili/models_new/space/space_fav/list.dart';
+import 'package:kilikili/services/rust/rust_space.dart' as rust;
 import 'package:kilikili/pages/member/controller.dart';
 import 'package:kilikili/pages/member_article/widget/item.dart';
 import 'package:kilikili/pages/member_audio/widgets/item.dart';
@@ -90,41 +86,47 @@ class _MemberHomeState extends State<MemberHome>
     childAspectRatio: 0.75,
   );
 
-  Widget _buildBody(LoadingState<SpaceData?> loadingState) {
+  Widget _buildBody(LoadingState<rust.SpacePage?> loadingState) {
     switch (loadingState) {
       case Loading():
         return m3eLoading;
       case Success(:final response):
         if (response == null) return scrollableError;
 
-        final archives = response.archive?.item;
-        final favourites = response.favourite2?.item;
-        final coinArchives = response.coinArchive?.item;
-        final likeArchives = response.likeArchive?.item;
-        final articles = response.article?.item;
-        final audios = response.audios?.item;
-        final comics = response.comic?.item;
-        final seasons = response.season?.item;
+        final archives = response.archive?.items;
+        final favourites = response.favourite?.items;
+        final coinArchives = response.coinArchive?.items;
+        final likeArchives = response.likeArchive?.items;
+        final articles = response.article?.items;
+        final audios = response.audio?.items;
+        final comics = response.comic?.items;
+        final seasons = response.season?.items;
 
         return CustomScrollView(
           physics: platformAlwaysClampingPhysics,
           slivers: [
             if (archives != null && archives.isNotEmpty)
-              ..._buildArchive(response.archive!.count!, archives),
+              ..._buildArchive(response.archive!.count!.toInt(), archives),
             if (favourites != null && favourites.isNotEmpty)
-              ..._buildFavourite(response.favourite2!.count!, favourites),
+              ..._buildFavourite(response.favourite!.count!.toInt(), favourites),
             if (coinArchives != null && coinArchives.isNotEmpty)
-              ..._buildCoinArchive(response.coinArchive!.count!, coinArchives),
+              ..._buildCoinArchive(
+                response.coinArchive!.count!.toInt(),
+                coinArchives,
+              ),
             if (likeArchives != null && likeArchives.isNotEmpty)
-              ..._buildLikeArchive(response.likeArchive!.count!, likeArchives),
+              ..._buildLikeArchive(
+                response.likeArchive!.count!.toInt(),
+                likeArchives,
+              ),
             if (articles != null && articles.isNotEmpty)
-              ..._buildArticle(response.article!.count!, articles),
+              ..._buildArticle(response.article!.count!.toInt(), articles),
             if (audios != null && audios.isNotEmpty)
-              ..._buildAudio(response.audios!.count!, audios),
+              ..._buildAudio(response.audio!.count!.toInt(), audios),
             if (comics != null && comics.isNotEmpty)
-              ..._buildComic(response.comic!.count!, comics),
+              ..._buildComic(response.comic!.count!.toInt(), comics),
             if (seasons != null && seasons.isNotEmpty)
-              ..._buildSeason(response.season!.count!, seasons),
+              ..._buildSeason(response.season!.count!.toInt(), seasons),
             ?_buildLiveItem,
             SliverToBoxAdapter(
               child: SizedBox(
@@ -148,7 +150,7 @@ class _MemberHomeState extends State<MemberHome>
             color: colorScheme.surfaceContainerHigh,
             child: GestureDetector(
               behavior: .opaque,
-              onTap: () => PageUtils.toLiveRoom(live.roomid),
+              onTap: () => PageUtils.toLiveRoom(live.roomId?.toInt()),
               child: Padding(
                 padding: const .symmetric(vertical: 11),
                 child: Text.rich(
@@ -226,9 +228,9 @@ class _MemberHomeState extends State<MemberHome>
                     'audio',
                     'comic',
                   ].contains(param1)) {
-                    List<SpaceTab2Item> items = _ctr.tab2!
+                    final items = _ctr.tab2!
                         .firstWhere((item) => item.param == param)
-                        .items!;
+                        .items;
                     int index1 = items.indexWhere(
                       (item) => item.param == param1,
                     );
@@ -284,7 +286,7 @@ class _MemberHomeState extends State<MemberHome>
 
   Iterable<Widget> _buildArchive(
     int count,
-    List<SpaceArchiveItem> archives,
+    List<rust.SpaceArchiveItem> archives,
   ) sync* {
     yield _header(
       title: '视频',
@@ -304,6 +306,7 @@ class _MemberHomeState extends State<MemberHome>
                     ? opusGridInfo.crossAxisCount * 2
                     : opusGridInfo.crossAxisCount,
               )
+              .map(SpaceArchiveItem.fromRust)
               .map(VideoCardVMemberHome.new)
               .toList(),
         ),
@@ -313,7 +316,7 @@ class _MemberHomeState extends State<MemberHome>
 
   Iterable<Widget> _buildFavourite(
     int count,
-    List<SpaceFavItemModel> favourites,
+    List<rust.SpaceFavItem> favourites,
   ) sync* {
     yield _header(
       title: '收藏',
@@ -327,7 +330,15 @@ class _MemberHomeState extends State<MemberHome>
         childCount: favourites.length,
         builder: (context, opusGridInfo) => favourites
             .take(opusGridInfo.crossAxisCount)
-            .map(MemberFavItem.new)
+            .map(
+              (e) => MemberFavItem(
+                mediaId: e.mediaId?.toInt(),
+                title: e.title,
+                cover: e.cover,
+                count: e.count?.toInt(),
+                isPublic: e.isPublic?.toInt(),
+              ),
+            )
             .toList(),
       ),
     );
@@ -335,7 +346,7 @@ class _MemberHomeState extends State<MemberHome>
 
   Iterable<Widget> _buildCoinArchive(
     int count,
-    List<SpaceArchiveItem> coinArchives,
+    List<rust.SpaceArchiveItem> coinArchives,
   ) sync* {
     yield _header(
       title: '最近投币的视频',
@@ -351,6 +362,7 @@ class _MemberHomeState extends State<MemberHome>
           childCount: coinArchives.length,
           builder: (context, opusGridInfo) => coinArchives
               .take(opusGridInfo.crossAxisCount)
+              .map(SpaceArchiveItem.fromRust)
               .map(VideoCardVMemberHome.new)
               .toList(),
         ),
@@ -360,7 +372,7 @@ class _MemberHomeState extends State<MemberHome>
 
   Iterable<Widget> _buildLikeArchive(
     int count,
-    List<SpaceArchiveItem> likeArchives,
+    List<rust.SpaceArchiveItem> likeArchives,
   ) sync* {
     yield _header(
       title: '最近点赞的视频',
@@ -376,6 +388,7 @@ class _MemberHomeState extends State<MemberHome>
           childCount: likeArchives.length,
           builder: (context, opusGridInfo) => likeArchives
               .take(opusGridInfo.crossAxisCount)
+              .map(SpaceArchiveItem.fromRust)
               .map(VideoCardVMemberHome.new)
               .toList(),
         ),
@@ -385,7 +398,7 @@ class _MemberHomeState extends State<MemberHome>
 
   Iterable<Widget> _buildArticle(
     int count,
-    List<SpaceArticleItem> articles,
+    List<rust.SpaceArticleItem> articles,
   ) sync* {
     yield _header(
       title: '图文',
@@ -399,13 +412,25 @@ class _MemberHomeState extends State<MemberHome>
         childCount: articles.length,
         builder: (context, opusGridInfo) => articles
             .take(opusGridInfo.crossAxisCount)
-            .map(MemberArticleItem.new)
+            .map(
+              (e) => MemberArticleItem(
+                title: e.title,
+                cover: e.cover,
+                publishTimeText: e.publishTimeText,
+                view: e.view?.toInt(),
+                reply: e.reply?.toInt(),
+                uri: e.uri,
+              ),
+            )
             .toList(),
       ),
     );
   }
 
-  Iterable<Widget> _buildAudio(int count, List<SpaceAudioItem> audios) sync* {
+  Iterable<Widget> _buildAudio(
+    int count,
+    List<rust.SpaceAudioItem> audios,
+  ) sync* {
     yield _header(
       title: '音频',
       param: 'contribute',
@@ -418,13 +443,25 @@ class _MemberHomeState extends State<MemberHome>
         childCount: audios.length,
         builder: (context, opusGridInfo) => audios
             .take(opusGridInfo.crossAxisCount)
-            .map(MemberAudioItem.new)
+            // 这条接口的 `ctime` 已经是秒，不像音频列表页那条是毫秒。
+            .map(
+              (e) => MemberAudioItem(
+                id: e.id?.toInt(),
+                uid: e.uid?.toInt(),
+                title: e.title,
+                cover: e.cover,
+                ctime: e.ctime?.toInt(),
+              ),
+            )
             .toList(),
       ),
     );
   }
 
-  Iterable<Widget> _buildComic(int count, List<SpaceArchiveItem> comics) sync* {
+  Iterable<Widget> _buildComic(
+    int count,
+    List<rust.SpaceArchiveItem> comics,
+  ) sync* {
     yield _header(
       title: '漫画',
       param: 'contribute',
@@ -437,6 +474,7 @@ class _MemberHomeState extends State<MemberHome>
         childCount: comics.length,
         builder: (context, opusGridInfo) => comics
             .take(opusGridInfo.crossAxisCount)
+            .map(SpaceArchiveItem.fromRust)
             .map(MemberComicItem.new)
             .toList(),
       ),
@@ -445,7 +483,7 @@ class _MemberHomeState extends State<MemberHome>
 
   Iterable<Widget> _buildSeason(
     int count,
-    List<SpaceArchiveItem> seasons,
+    List<rust.SpaceArchiveItem> seasons,
   ) sync* {
     yield _header(
       title: '追番',
@@ -461,6 +499,7 @@ class _MemberHomeState extends State<MemberHome>
           childCount: seasons.length,
           builder: (context, opusGridInfo) => seasons
               .take(opusGridInfo.crossAxisCount)
+              .map(SpaceArchiveItem.fromRust)
               .map(PgcCardVMemberPgc.new)
               .toList(),
         ),

@@ -11,14 +11,7 @@ import 'package:kilikili/services/rust/rust_live.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/image_preview_type.dart';
 import 'package:kilikili/models/common/member/user_info_type.dart';
-import 'package:kilikili/models/model_owner.dart';
-import 'package:kilikili/models_new/space/space/card.dart';
-import 'package:kilikili/models_new/space/space/elec.dart';
-import 'package:kilikili/models_new/space/space/followings_followed_upper.dart';
-import 'package:kilikili/models_new/space/space/images.dart';
-import 'package:kilikili/models_new/space/space/live.dart';
-import 'package:kilikili/models_new/space/space/pr_info.dart';
-import 'package:kilikili/models_new/space/space/top.dart';
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/pages/fan/view.dart';
 import 'package:kilikili/pages/follow/view.dart';
 import 'package:kilikili/pages/follow_type/followed/view.dart';
@@ -70,13 +63,13 @@ class UserInfoCard extends StatelessWidget {
   final SpaceCard card;
   final SpaceImages images;
   final VoidCallback onFollow;
-  final Live? live;
+  final SpaceLive? live;
   final int? silence;
   final ValueGetter<PageController> headerControllerBuilder;
   final VoidCallback showLiveMedalWall;
-  final List<ElecItem>? charges;
+  final List<SpaceSimpleUser>? charges;
   final Object? chargeCount;
-  final List<Owner>? guards;
+  final List<SpaceSimpleUser>? guards;
   final Object? guardCount;
   final bool hasMedal;
 
@@ -102,19 +95,19 @@ class UserInfoCard extends StatelessWidget {
     VoidCallback? onTap;
     switch (type) {
       case UserInfoType.fan:
-        count = card.fans;
+        count = card.fans?.toInt();
         onTap = () => FansPage.toFansPage(
           mid: card.mid,
           name: card.name,
         );
       case UserInfoType.follow:
-        count = card.attention;
+        count = card.attention?.toInt();
         onTap = () => FollowPage.toFollowPage(
           mid: card.mid,
           name: card.name,
         );
       case UserInfoType.like:
-        count = card.likes?.likeNum;
+        count = card.likeNum?.toInt();
     }
     void onShowCount() => SmartDialog.showToast(
       '${type.title}: $count',
@@ -157,12 +150,12 @@ class UserInfoCard extends StatelessWidget {
   ) {
     return [
       _buildName(context, colorScheme),
-      if (card.officialVerify?.desc?.isNotEmpty ?? false)
+      if (card.officialDesc?.isNotEmpty ?? false)
         _buildVerify(colorScheme),
       if (card.sign?.isNotEmpty ?? false) _buildSign(),
       ?_buildChargeAndGuard(colorScheme, isPortrait),
-      if (card.followingsFollowedUpper?.items?.isNotEmpty ?? false)
-        _buildFollowedUp(colorScheme, card.followingsFollowedUpper!),
+      if (card.followedBy?.items.isNotEmpty ?? false)
+        _buildFollowedUp(colorScheme, card.followedBy!),
       _buildExtraInfo(colorScheme),
       if (silence == 1) _buildBanWidget(colorScheme, isLight),
     ];
@@ -170,12 +163,12 @@ class UserInfoCard extends StatelessWidget {
 
   Widget _buildName(BuildContext context, ColorScheme colorScheme) {
     Widget? liveMedal;
-    if (card.liveFansWearing?.detailV2 case final detailV2?) {
+    if (card.liveMedal case final medal?) {
       Color? nameColor;
       Color? backgroundColor;
       try {
-        nameColor = ColourUtils.parseColor(detailV2.medalColorName!);
-        backgroundColor = ColourUtils.parseColor(detailV2.medalColor!);
+        nameColor = ColourUtils.parseColor(medal.nameColor!);
+        backgroundColor = ColourUtils.parseColor(medal.color!);
       } catch (e, s) {
         if (kDebugMode) {
           Utils.reportError(e, s);
@@ -185,8 +178,8 @@ class UserInfoCard extends StatelessWidget {
         liveMedal = GestureDetector(
           onTap: showLiveMedalWall,
           child: MedalWidget(
-            medalName: detailV2.medalName!,
-            level: detailV2.level!,
+            medalName: medal.name!,
+            level: medal.level!.toInt(),
             backgroundColor: backgroundColor ?? colorScheme.secondaryContainer,
             nameColor: nameColor ?? colorScheme.onSecondaryContainer,
           ),
@@ -218,18 +211,18 @@ class UserInfoCard extends StatelessWidget {
                 height: 1,
                 fontSize: 17,
                 fontWeight: .bold,
-                color: (card.vip?.status ?? -1) > 0 && card.vip?.type == 2
+                color: (card.vipStatus ?? -1) > 0 && card.vipType == 2
                     ? colorScheme.vipColor
                     : null,
               ),
             ),
           ),
           BiliUtils.levelPicture(
-            card.levelInfo!.currentLevel!,
-            isSeniorMember: card.levelInfo?.identity == 2,
+            card.level!.toInt(),
+            isSeniorMember: card.levelIdentity == 2,
             height: 11,
           ),
-          if (card.vip?.status == 1)
+          if (card.vipStatus == 1)
             Container(
               padding: const .symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
@@ -237,7 +230,7 @@ class UserInfoCard extends StatelessWidget {
                 color: colorScheme.vipColor,
               ),
               child: Text(
-                card.vip?.label?.text ?? '大会员',
+                card.vipLabelText ?? '大会员',
                 strutStyle: const StrutStyle(
                   height: 1,
                   leading: 0,
@@ -277,7 +270,7 @@ class UserInfoCard extends StatelessWidget {
       child: Text.rich(
         TextSpan(
           children: [
-            if (card.officialVerify?.spliceTitle?.isNotEmpty ?? false) ...[
+            if (card.officialSpliceTitle?.isNotEmpty ?? false) ...[
               WidgetSpan(
                 alignment: .middle,
                 child: DecoratedBox(
@@ -285,7 +278,7 @@ class UserInfoCard extends StatelessWidget {
                     shape: .circle,
                     color: colorScheme.surface,
                   ),
-                  child: card.officialVerify?.type == 0
+                  child: card.officialType == 0
                       ? const Icon(
                           Icons.offline_bolt,
                           color: BiliColors.yellow,
@@ -301,7 +294,7 @@ class UserInfoCard extends StatelessWidget {
               const TextSpan(text: ' '),
             ],
             TextSpan(
-              text: card.officialVerify!.spliceTitle!,
+              text: card.officialSpliceTitle!,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: .bold,
@@ -346,7 +339,7 @@ class UserInfoCard extends StatelessWidget {
               strutStyle: strutStyle,
             ),
           ),
-          ...?card.spaceTag?.map(
+          ...card.tags.map(
             (item) {
               final hasUri = item.uri?.isNotEmpty ?? false;
               final child = Text(
@@ -366,39 +359,10 @@ class UserInfoCard extends StatelessWidget {
             },
           ),
           if (hasMedal)
-            Builder(
-              builder: (context) {
-                final medalName = card.medalName;
-                final hasMedalName = medalName != null;
-                return GestureDetector(
-                  onTap: hasMedalName
-                      ? () => Utils.copyText(medalName)
-                      : () async {
-                          // `SpaceCard.mid` 是 `String?`，而基线
-                          // `liveMedalName(Object uid)` 把它原样拼进查询
-                          // 串。Rust 侧收 int，这里显式解析：解析不出来
-                          // 就不发请求，而不是让服务端回一个业务错误码。
-                          final mid = int.tryParse(card.mid ?? '');
-                          if (mid == null) return;
-                          final res = await RustLive.medalName(uid: mid);
-                          if (res case Success(:final response)) {
-                            if (response != null) {
-                              card.medalName = response;
-                              if (context.mounted) {
-                                (context as Element).markNeedsBuild();
-                              }
-                            }
-                          } else {
-                            res.toast();
-                          }
-                        },
-                  child: Text(
-                    '粉丝勋章${hasMedalName ? ': $medalName' : ''}',
-                    style: style,
-                    strutStyle: strutStyle,
-                  ),
-                );
-              },
+            _MedalNameButton(
+              mid: card.mid,
+              style: style,
+              strutStyle: strutStyle,
             ),
         ],
       ),
@@ -563,16 +527,16 @@ class UserInfoCard extends StatelessWidget {
   );
 
   Widget _buildAvatar(ColorScheme scheme) {
-    final pendant = card.pendant?.image;
+    final pendant = card.pendantImage;
     Widget child = PendantAvatar(
       card.face,
       size: kAvatarSize,
       pendentOffset: 12,
       badgeSize: 20,
-      officialType: card.officialVerify?.type,
-      vipStatus: card.vip?.status,
+      officialType: card.officialType?.toInt(),
+      vipStatus: card.vipStatus?.toInt(),
       pendantImage: pendant,
-      roomId: live?.liveStatus == 1 ? live!.roomid : null,
+      roomId: live?.liveStatus == 1 ? live!.roomId?.toInt() : null,
       onTap: () => PageUtils.imageView(
         tag: hashCode.toString(),
         imgList: [SourceModel(url: card.face.http2https)],
@@ -599,13 +563,13 @@ class UserInfoCard extends StatelessWidget {
     bool isLight,
     double width,
   ) {
-    final imgUrls = images.collectionTopSimple?.top?.imgUrls;
+    final imgUrls = images.topImages;
     return Column(
       mainAxisSize: .min,
       crossAxisAlignment: .start,
       children: [
         HeaderLayoutWidget(
-          header: imgUrls != null && imgUrls.isNotEmpty
+          header: imgUrls.isNotEmpty
               ? _buildCollectionHeader(context, scheme, isLight, imgUrls, width)
               : _buildHeader(
                   context,
@@ -613,9 +577,9 @@ class UserInfoCard extends StatelessWidget {
                   width,
                   (isLight
                           ? images.imgUrl
-                          : images.nightImgurl.isNullOrEmpty
+                          : images.nightImgUrl.isNullOrEmpty
                           ? images.imgUrl
-                          : images.nightImgurl)
+                          : images.nightImgUrl)
                       .http2https,
                 ),
           avatar: _buildAvatar(scheme),
@@ -634,7 +598,7 @@ class UserInfoCard extends StatelessWidget {
     BuildContext context,
     ColorScheme scheme,
     bool isLight,
-    List<TopImage> imgUrls,
+    List<SpaceTopImage> imgUrls,
     double width,
   ) {
     if (imgUrls.length == 1) {
@@ -870,7 +834,7 @@ class UserInfoCard extends StatelessWidget {
 
   Widget _buildChargeItem(
     ColorScheme colorScheme,
-    List<Owner>? list,
+    List<SpaceSimpleUser>? list,
     Object? count,
     String desc,
     VoidCallback onTap,
@@ -883,7 +847,7 @@ class UserInfoCard extends StatelessWidget {
           avatars(
             gap: 10,
             colorScheme: colorScheme,
-            users: list!.take(3),
+            faces: list!.take(3).map((e) => e.face),
           ),
           const SizedBox(width: 4),
           Text.rich(
@@ -962,9 +926,9 @@ class UserInfoCard extends StatelessWidget {
 
   Widget _buildFollowedUp(
     ColorScheme colorScheme,
-    FollowingsFollowedUpper item,
+    SpaceFollowedBy item,
   ) {
-    var list = item.items!;
+    var list = item.items;
     final flag = list.length > 3;
     if (flag) list = list.sublist(0, 3);
     Widget child = Padding(
@@ -975,7 +939,7 @@ class UserInfoCard extends StatelessWidget {
           avatars(
             gap: 10,
             colorScheme: colorScheme,
-            users: list,
+            faces: list.map((e) => e.face),
           ),
           const SizedBox(width: 4),
           Flexible(
@@ -990,7 +954,7 @@ class UserInfoCard extends StatelessWidget {
             ),
           ),
           Text(
-            '${flag ? '等${item.items!.length}人' : ''}也关注了TA',
+            '${flag ? '等${item.items.length}人' : ''}也关注了TA',
             style: TextStyle(fontSize: 13, color: colorScheme.outline),
           ),
           Icon(
@@ -1066,7 +1030,7 @@ class HeaderTitle extends StatefulWidget {
     required this.pageController,
   });
 
-  final List<TopImage> images;
+  final List<SpaceTopImage> images;
   final PageController pageController;
 
   @override
@@ -1106,7 +1070,7 @@ class _HeaderTitleState extends State<HeaderTitle> {
   }
 }
 
-Widget _headerTitle(TopTitle title) {
+Widget _headerTitle(SpaceTopTitle title) {
   try {
     return Column(
       crossAxisAlignment: .end,
@@ -1123,10 +1087,8 @@ Widget _headerTitle(TopTitle title) {
             style: TextStyle(
               fontSize: 12,
               fontFamily: Assets.digitalNum,
-              color: title.subTitleColorFormat?.colors?.isNotEmpty == true
-                  ? ColourUtils.parseMedalColor(
-                      title.subTitleColorFormat!.colors!.last,
-                    )
+              color: title.subTitleColors.isNotEmpty
+                  ? ColourUtils.parseMedalColor(title.subTitleColors.last)
                   : Colors.white,
             ),
           ),
@@ -1164,4 +1126,59 @@ Widget _headerWrapper(Widget child) {
       ),
     ),
   );
+}
+
+/// 「粉丝勋章」那一行。
+///
+/// 勋章名是**点开才去取**的，取到之后只影响这一行文字。基线把它写回
+/// `SpaceCard.medalName`（那个字段根本不来自接口，就是拿模型当临时变量
+/// 用），而 Rust 给的结构不可变。改成这个小组件自己持有状态——它本来
+/// 就是界面状态，不是空间主页的事实。
+class _MedalNameButton extends StatefulWidget {
+  const _MedalNameButton({
+    required this.mid,
+    required this.style,
+    required this.strutStyle,
+  });
+
+  /// `SpaceCard.mid` 是**字符串**（服务端在这条接口上就给字符串）。
+  final String? mid;
+  final TextStyle style;
+  final StrutStyle strutStyle;
+
+  @override
+  State<_MedalNameButton> createState() => _MedalNameButtonState();
+}
+
+class _MedalNameButtonState extends State<_MedalNameButton> {
+  String? _medalName;
+
+  Future<void> _load() async {
+    // 基线 `liveMedalName(Object uid)` 把那个字符串原样拼进查询串。
+    // Rust 侧收 int，这里显式解析：解析不出来就不发请求，而不是让服务端
+    // 回一个业务错误码。
+    final mid = int.tryParse(widget.mid ?? '');
+    if (mid == null) return;
+    final res = await RustLive.medalName(uid: mid);
+    if (res case Success(:final response)) {
+      if (response != null && mounted) {
+        setState(() => _medalName = response);
+      }
+    } else {
+      res.toast();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final medalName = _medalName;
+    return GestureDetector(
+      onTap: medalName != null ? () => Utils.copyText(medalName) : _load,
+      child: Text(
+        '粉丝勋章${medalName == null ? '' : ': $medalName'}',
+        style: widget.style,
+        strutStyle: widget.strutStyle,
+      ),
+    );
+  }
 }

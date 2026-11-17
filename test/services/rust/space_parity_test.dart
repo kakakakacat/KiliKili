@@ -258,6 +258,315 @@ void main() {
     expect(snapshot['article_view'], data['article']['view'], reason: '专栏阅读');
     expect(snapshot['likes'], data['likes'], reason: '获赞');
   });
+
+  // ------------------------------------------------------------ 空间主页
+
+  test('空间主页：Rust 快照与基线逐字段一致', () {
+    for (final name in ['space_page', 'space_page_alt']) {
+      final data = read('$name.raw.json')['data'] as Map<String, dynamic>;
+      final snapshot = read('$name.rust.json') as Map<String, dynamic>;
+      final baseline = _BaselineSpaceData(data);
+
+      expect(snapshot['relation'], baseline.relation, reason: '$name relation');
+      expect(
+        snapshot['guest_relation'],
+        baseline.guestRelation,
+        reason: '$name guestRelation',
+      );
+      expect(snapshot['medal'], baseline.medal, reason: '$name medal');
+      expect(
+        snapshot['default_tab'],
+        baseline.defaultTab,
+        reason: '$name defaultTab',
+      );
+      expect(
+        snapshot['rel_special'],
+        baseline.relSpecial,
+        reason: '$name relSpecial',
+      );
+      // 基线的 `hasItem` 是 `bool?`，八块全空时它是 false。
+      expect(
+        snapshot['has_item'],
+        baseline.hasItem,
+        reason: '$name hasItem',
+      );
+
+      final card = data['card'] as Map<String, dynamic>?;
+      final snapCard = snapshot['card'] as Map<String, dynamic>?;
+      expect(snapCard == null, card == null, reason: '$name card 有无');
+      if (card != null && snapCard != null) {
+        expect(snapCard['mid'], card['mid'], reason: '$name card.mid');
+        expect(snapCard['name'], card['name'], reason: '$name card.name');
+        expect(snapCard['face'], card['face'], reason: '$name card.face');
+        expect(snapCard['sign'], card['sign'], reason: '$name card.sign');
+        expect(snapCard['fans'], card['fans'], reason: '$name card.fans');
+        expect(
+          snapCard['attention'],
+          card['attention'],
+          reason: '$name card.attention',
+        );
+        expect(
+          snapCard['like_num'],
+          card['likes']?['like_num'],
+          reason: '$name card.likes.likeNum',
+        );
+        expect(
+          snapCard['level'],
+          card['level_info']?['current_level'],
+          reason: '$name card.levelInfo.currentLevel',
+        );
+        expect(
+          snapCard['level_identity'],
+          card['level_info']?['identity'],
+          reason: '$name card.levelInfo.identity',
+        );
+        expect(
+          snapCard['official_type'],
+          card['official_verify']?['type'],
+          reason: '$name card.officialVerify.type',
+        );
+        expect(
+          snapCard['official_desc'],
+          card['official_verify']?['desc'],
+          reason: '$name card.officialVerify.desc',
+        );
+        expect(
+          snapCard['official_splice_title'],
+          card['official_verify']?['splice_title'],
+          reason: '$name card.officialVerify.spliceTitle',
+        );
+        final vip = _baselineVip(card['vip'] as Map<String, dynamic>?);
+        expect(
+          snapCard['vip_status'],
+          card['vip'] == null ? null : vip.status,
+          reason: '$name card.vip.status',
+        );
+        expect(
+          snapCard['vip_type'],
+          card['vip'] == null ? null : vip.type,
+          reason: '$name card.vip.type',
+        );
+        expect(
+          snapCard['silence'],
+          card['silence'],
+          reason: '$name card.silence',
+        );
+        // 基线 `SpaceCard.spaceTag` 只留这两类。
+        final tags = (card['space_tag'] as List?)
+            ?.where(
+              (e) => const [
+                'location',
+                'real_name',
+              ].contains(e['type']),
+            )
+            .toList();
+        expect(
+          (snapCard['tags'] as List).length,
+          tags?.length ?? 0,
+          reason: '$name card.spaceTag 过滤后条数',
+        );
+      }
+
+      final live = data['live'] as Map<String, dynamic>?;
+      final snapLive = snapshot['live'] as Map<String, dynamic>?;
+      expect(snapLive == null, live == null, reason: '$name live 有无');
+      if (live != null && snapLive != null) {
+        expect(snapLive['room_status'], live['roomStatus']);
+        expect(snapLive['live_status'], live['liveStatus']);
+        expect(snapLive['room_id'], live['roomid']);
+      }
+
+      // 基线的 `Elec.list` 映射成 `ElecItem`，只取昵称与头像（它的构造
+      // 函数压根不收 mid）。Rust 也不给 mid，理由写在 `into_domain_anonymous`。
+      final elec = data['elec'] as Map<String, dynamic>?;
+      final snapElec = snapshot['elec'] as Map<String, dynamic>?;
+      expect(snapElec == null, elec == null, reason: '$name elec 有无');
+      if (elec != null && snapElec != null) {
+        expect(snapElec['total'], elec['total'], reason: '$name elec.total');
+        final list = (elec['list'] as List?) ?? const [];
+        final snapList = snapElec['list'] as List;
+        expect(snapList.length, list.length, reason: '$name elec.list 条数');
+        for (var i = 0; i < list.length; i++) {
+          expect(snapList[i]['name'], list[i]['uname']);
+          expect(snapList[i]['face'], list[i]['avatar']);
+          expect(snapList[i]['mid'], isNull, reason: '基线的 ElecItem 没有 mid');
+        }
+      }
+
+      // 基线 `Guard` 的人数是正则从 `desc` 开头抠出来的字符串。
+      final guard = data['guard'] as Map<String, dynamic>?;
+      final snapGuard = snapshot['guard'] as Map<String, dynamic>?;
+      expect(snapGuard == null, guard == null, reason: '$name guard 有无');
+      if (guard != null && snapGuard != null) {
+        final desc = guard['desc'] as String?;
+        expect(
+          snapGuard['count'],
+          desc == null ? null : RegExp(r'^(\d+)').firstMatch(desc)?.group(1),
+          reason: '$name guard.count',
+        );
+      }
+
+      // 五个视频块共用 `SpaceArchiveItem`。
+      for (final (key, snapKey) in const [
+        ('archive', 'archive'),
+        ('season', 'season'),
+        ('coin_archive', 'coin_archive'),
+        ('like_archive', 'like_archive'),
+        ('comic', 'comic'),
+      ]) {
+        final block = data[key] as Map<String, dynamic>?;
+        final snapBlock = snapshot[snapKey] as Map<String, dynamic>?;
+        expect(snapBlock == null, block == null, reason: '$name $key 有无');
+        if (block == null || snapBlock == null) continue;
+        expect(snapBlock['count'], block['count'], reason: '$name $key.count');
+        final items = (block['item'] as List?) ?? const [];
+        final snapItems = snapBlock['items'] as List;
+        expect(snapItems.length, items.length, reason: '$name $key 条数');
+        for (var i = 0; i < items.length; i++) {
+          _expectArchiveItem(snapItems[i], items[i], '$name $key[$i]');
+        }
+      }
+    }
+  });
+
+  test('空间主页：预约那一块与基线逐字段一致', () {
+    final data = read('space_reservation.raw.json')['data'];
+    final snapshot = read('space_reservation.rust.json') as Map<String, dynamic>;
+    final items = data['reservation_card_list'] as List;
+    final snapItems = snapshot['reservations'] as List;
+    expect(snapItems.length, items.length);
+    for (var i = 0; i < items.length; i++) {
+      final e = items[i] as Map<String, dynamic>;
+      final s = snapItems[i] as Map<String, dynamic>;
+      expect(s['sid'], e['sid']);
+      expect(s['name'], e['name']);
+      // 基线：`total: json['total'] ?? 0`、`isFollow: json['is_follow'] == 1`。
+      expect(s['total'], e['total'] ?? 0);
+      expect(s['is_follow'], e['is_follow'] == 1);
+      // 基线用 `nonNullOrEmptyString`，空串按没有。
+      final desc = e['desc_text_1']?['text'] as String?;
+      expect(s['desc_text'], (desc == null || desc.isEmpty) ? null : desc);
+      expect(s['dynamic_id'], e['dynamic_id']);
+      final lottery = e['lottery_prize_info'] as Map<String, dynamic>?;
+      expect((s['lottery'] == null), lottery == null);
+      if (lottery != null) {
+        expect(s['lottery']['text'], lottery['text']);
+        expect(s['lottery']['jump_url'], lottery['jump_url']);
+      }
+    }
+  });
+
+  test('投稿列表：Rust 快照与基线逐字段一致', () {
+    for (final name in [
+      'space_archive',
+      'space_archive_extras',
+      'space_archive_empty',
+    ]) {
+      final data = read('$name.raw.json')['data'] as Map<String, dynamic>;
+      final snapshot = read('$name.rust.json') as Map<String, dynamic>;
+
+      expect(snapshot['count'], data['count'], reason: '$name count');
+      expect(snapshot['has_next'], data['has_next'], reason: '$name hasNext');
+      expect(snapshot['has_prev'], data['has_prev'], reason: '$name hasPrev');
+      expect(snapshot['next'], data['next'], reason: '$name next');
+
+      final button = data['episodic_button'] as Map<String, dynamic>?;
+      final snapButton = snapshot['episodic_button'] as Map<String, dynamic>?;
+      expect(snapButton == null, button == null, reason: '$name 按钮有无');
+      if (button != null && snapButton != null) {
+        expect(snapButton['text'], button['text']);
+        expect(snapButton['uri'], button['uri']);
+      }
+
+      final items = (data['item'] as List?) ?? const [];
+      final snapItems = snapshot['items'] as List;
+      expect(snapItems.length, items.length, reason: '$name 条数');
+      for (var i = 0; i < items.length; i++) {
+        _expectArchiveItem(snapItems[i], items[i], '$name[$i]');
+      }
+    }
+  });
+}
+
+/// 基线 `SpaceArchiveItem.fromJson` 的逐字段对照。
+///
+/// 两处**刻意与基线不同**，各自有理由，不在这里比：
+/// - `owner`：基线造 `Owner(mid: 0, name: author)` 这个假 owner，Rust 只
+///   给 `author`（见 `bili_domain::space::SpaceArchiveItem`）；
+/// - `badges`：基线保留 `text` 为空的角标再 join，Rust 把它们丢掉。
+void _expectArchiveItem(dynamic snap, dynamic raw, String where) {
+  expect(snap['title'], raw['title'], reason: '$where title');
+  expect(snap['cover'], raw['cover'], reason: '$where cover');
+  expect(snap['uri'], raw['uri'], reason: '$where uri');
+  expect(snap['param'], raw['param'], reason: '$where param');
+  expect(snap['goto'], raw['goto'], reason: '$where goto');
+  expect(snap['bvid'], raw['bvid'], reason: '$where bvid');
+  // 基线：`cid = json['first_cid']`。
+  expect(snap['cid'], raw['first_cid'], reason: '$where cid');
+  // 基线：`duration = json['duration'] ?? -1`。
+  expect(snap['duration'], raw['duration'] ?? -1, reason: '$where duration');
+  // 基线的 `PlayStat.fromJson` 读的是 `play` 与 `danmaku`。
+  expect(snap['play'], raw['play'], reason: '$where play');
+  expect(snap['danmaku'], raw['danmaku'], reason: '$where danmaku');
+  expect(snap['author'], raw['author'], reason: '$where author');
+  expect(
+    snap['publish_time_text'],
+    raw['publish_time_text'],
+    reason: '$where publishTimeText',
+  );
+  expect(snap['is_steins'], raw['is_steins'], reason: '$where isSteins');
+  expect(
+    snap['is_cooperation'],
+    raw['is_cooperation'],
+    reason: '$where isCooperation',
+  );
+  expect(snap['is_pgc'], raw['is_pgc'], reason: '$where isPgc');
+  expect(snap['is_pugv'], raw['is_pugv'], reason: '$where isPugv');
+  expect(snap['styles'], raw['styles'], reason: '$where styles');
+  expect(snap['label'], raw['label'], reason: '$where label');
+  expect(
+    snap['season_mtime'],
+    raw['season']?['mtime'],
+    reason: '$where season.mtime',
+  );
+  final history = raw['history'] as Map<String, dynamic>?;
+  expect(snap['history'] == null, history == null, reason: '$where history 有无');
+  if (history != null) {
+    expect(snap['history']['progress'], history['progress']);
+    expect(snap['history']['duration'], history['duration']);
+  }
+  // 基线保留空文案的角标，Rust 丢掉；这里只比非空的那些。
+  final badges = ((raw['badges'] as List?) ?? const [])
+      .map((e) => e['text'] as String?)
+      .where((e) => e != null && e.isNotEmpty)
+      .toList();
+  expect(snap['badges'], badges, reason: '$where badges');
+}
+
+/// 基线 `SpaceData.fromJson` 里那几个**算出来**的值的逐行转写。
+class _BaselineSpaceData {
+  _BaselineSpaceData(Map<String, dynamic> json)
+    : relation = json['relation'] as int?,
+      guestRelation = json['guest_relation'] as int?,
+      medal = json['medal'] as int?,
+      defaultTab = json['default_tab'] as String?,
+      relSpecial = (json['rel_special'] as num?)?.toInt(),
+      hasItem =
+          json['archive']?['item']?.isNotEmpty == true ||
+          json['favourite2']?['item']?.isNotEmpty == true ||
+          json['coin_archive']?['item']?.isNotEmpty == true ||
+          json['like_archive']?['item']?.isNotEmpty == true ||
+          json['article']?['item']?.isNotEmpty == true ||
+          json['audios']?['item']?.isNotEmpty == true ||
+          json['comic']?['item']?.isNotEmpty == true ||
+          json['season']?['item']?.isNotEmpty == true;
+
+  final int? relation;
+  final int? guestRelation;
+  final int? medal;
+  final String? defaultTab;
+  final int? relSpecial;
+  final bool hasItem;
 }
 
 // --------------------------------------------------------- 基线逐行转写

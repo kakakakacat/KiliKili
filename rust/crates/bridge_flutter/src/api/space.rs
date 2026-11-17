@@ -22,6 +22,7 @@ use bili_api::space;
 use bili_api::transport_reqwest::ReqwestTransport;
 use bili_domain::error::DomainError;
 use bili_domain::redact::Redacted;
+use bili_domain::space as domain;
 use bili_protocol::risk::{RiskTokens, SystemEntropy};
 
 use crate::api::init;
@@ -644,5 +645,790 @@ fn flatten<T>(
             bili_domain::error::ErrorKind::Network,
             format!("取数任务未完成: {e}"),
         )),
+    }
+}
+
+// ---------------------------------------------------------------- 空间主页
+
+/// 空间隐私设置。只有看自己的空间时服务端才下发。
+#[derive(Debug, Clone)]
+pub struct SpaceSetting {
+    pub fav_video: Option<i64>,
+    pub coins_video: Option<i64>,
+    pub likes_video: Option<i64>,
+    pub bangumi: Option<i64>,
+}
+
+/// 关注关系三元组。控制器据此拼出一个 `relation` 值。
+#[derive(Debug, Clone)]
+pub struct SpaceRelation {
+    pub status: Option<i64>,
+    pub is_follow: Option<i64>,
+    pub is_followed: Option<i64>,
+}
+
+/// 他戴着的直播粉丝勋章。颜色是 `#RRGGBB`，解析留在宿主。
+#[derive(Debug, Clone)]
+pub struct SpaceLiveMedal {
+    pub name: Option<String>,
+    pub level: Option<i64>,
+    pub color: Option<String>,
+    pub name_color: Option<String>,
+}
+
+/// 空间页标签（常住地、实名认证）。只有这两类会被下发到这里。
+#[derive(Debug, Clone)]
+pub struct SpaceCardTag {
+    pub title: Option<String>,
+    pub uri: Option<String>,
+}
+
+/// 推广信息。`content` 为空时整块是 `None`，不是一个空结构。
+#[derive(Debug, Clone)]
+pub struct SpacePrInfo {
+    pub content: Option<String>,
+    pub url: Option<String>,
+    pub icon: Option<String>,
+    pub icon_night: Option<String>,
+    pub text_color: String,
+    pub bg_color: String,
+    pub text_color_night: String,
+    pub bg_color_night: String,
+}
+
+/// 一个只有昵称与头像的人。充电榜、大航海、共同关注共用。
+#[derive(Debug, Clone)]
+pub struct SpaceSimpleUser {
+    pub mid: Option<i64>,
+    pub name: Option<String>,
+    pub face: Option<String>,
+}
+
+/// 「你关注的人也关注了 TA」。
+#[derive(Debug, Clone)]
+pub struct SpaceFollowedBy {
+    pub items: Vec<SpaceSimpleUser>,
+}
+
+/// 空间主页的资料卡。
+#[derive(Debug, Clone)]
+pub struct SpaceCard {
+    /// 这条接口的 `mid` 是**字符串**，同 [`MemberCard::mid`]。
+    pub mid: Option<String>,
+    pub name: Option<String>,
+    pub face: Option<String>,
+    pub sign: Option<String>,
+    pub fans: Option<i64>,
+    pub attention: Option<i64>,
+    /// 累计获赞数。
+    pub like_num: Option<i64>,
+    pub level: Option<i64>,
+    /// `2` 为硬核会员。
+    pub level_identity: Option<i64>,
+    /// 头像挂件图。空串已经过滤掉了。
+    pub pendant_image: Option<String>,
+    pub official_type: Option<i64>,
+    pub official_desc: Option<String>,
+    pub official_splice_title: Option<String>,
+    /// `> 0` 为大会员。
+    pub vip_status: Option<i64>,
+    /// `2` 是年度大会员，昵称要染色。
+    pub vip_type: Option<i64>,
+    pub vip_label_text: Option<String>,
+    /// `1` 为封禁中。
+    pub silence: Option<i64>,
+    pub relation: Option<SpaceRelation>,
+    pub live_medal: Option<SpaceLiveMedal>,
+    pub tags: Vec<SpaceCardTag>,
+    pub pr_info: Option<SpacePrInfo>,
+    pub followed_by: Option<SpaceFollowedBy>,
+}
+
+/// 置顶合集封面上的标题。
+#[derive(Debug, Clone)]
+pub struct SpaceTopTitle {
+    pub title: Option<String>,
+    pub sub_title: Option<String>,
+    pub sub_title_colors: Vec<String>,
+}
+
+/// 置顶合集的一张封面。
+#[derive(Debug, Clone)]
+pub struct SpaceTopImage {
+    /// 列表里显示的那张。
+    pub header: String,
+    /// 点开大图时用的原图。
+    pub full_cover: String,
+    /// 纵向裁切位置，`-1.0`～`1.0`，直接喂给对齐参数。
+    pub dy: f64,
+    pub title: Option<SpaceTopTitle>,
+}
+
+/// 空间头图与置顶合集的封面轮播。
+#[derive(Debug, Clone)]
+pub struct SpaceImages {
+    pub img_url: Option<String>,
+    /// 为空时界面回落到 [`Self::img_url`]。
+    pub night_img_url: Option<String>,
+    /// 非空时整个头图位置换成这组图。
+    pub top_images: Vec<SpaceTopImage>,
+}
+
+/// 直播间状态。
+#[derive(Debug, Clone)]
+pub struct SpaceLive {
+    /// `1` 表示他有直播间。
+    pub room_status: Option<i64>,
+    /// `1` 表示正在直播。
+    pub live_status: Option<i64>,
+    pub room_id: Option<i64>,
+}
+
+/// 充电榜。
+#[derive(Debug, Clone)]
+pub struct SpaceElec {
+    pub total: Option<i64>,
+    /// 这几条**没有 mid**：服务端在这里给的是空间主人的 id，不是充电者的。
+    pub list: Vec<SpaceSimpleUser>,
+}
+
+/// 大航海。
+#[derive(Debug, Clone)]
+pub struct SpaceGuard {
+    /// 人数。服务端只给一句话，数字是从里面抠出来的，所以是字符串。
+    pub count: Option<String>,
+    pub items: Vec<SpaceSimpleUser>,
+}
+
+/// 一条投稿的观看进度。
+#[derive(Debug, Clone)]
+pub struct SpaceArchiveHistory {
+    pub progress: Option<i64>,
+    pub duration: Option<i64>,
+}
+
+/// 投稿列表里的一条。空间主页的五个视频块与投稿页六个 tab 共用。
+///
+/// **没有作者 mid**：服务端只给 `author` 昵称。基线在这里造过一个
+/// `Owner(mid: 0)` 的假 owner，连带让长按菜单多一处类型特判，两处一起
+/// 删掉了（见 `bili_domain::space::SpaceArchiveItem`）。
+#[derive(Debug, Clone)]
+pub struct SpaceArchiveItem {
+    pub title: Option<String>,
+    pub cover: Option<String>,
+    pub bvid: Option<String>,
+    /// 首个分 P 的 cid。
+    pub cid: Option<i64>,
+    /// 稿件 id 或番剧 ep/season id，**字符串**：含义随 `goto` 变。
+    pub param: Option<String>,
+    pub goto: Option<String>,
+    pub uri: Option<String>,
+    /// 时长，秒。服务端不给时是 `-1`。
+    pub duration: i64,
+    pub play: Option<i64>,
+    pub danmaku: Option<i64>,
+    pub author: Option<String>,
+    pub publish_time_text: Option<String>,
+    /// 角标文案。空文案的角标已经丢掉了。
+    pub badges: Vec<String>,
+    pub is_steins: Option<bool>,
+    pub is_cooperation: Option<bool>,
+    pub is_pgc: Option<bool>,
+    pub is_pugv: Option<bool>,
+    pub history: Option<SpaceArchiveHistory>,
+    /// 合集里这一条的更新时间，Unix 秒。有它时界面用它代替发布时间文案。
+    pub season_mtime: Option<i64>,
+    /// 漫画的题材。
+    pub styles: Option<String>,
+    /// 漫画的更新状态。
+    pub label: Option<String>,
+}
+
+/// 主页上的一块视频（投稿 / 追番 / 投币 / 点赞 / 漫画共用）。
+#[derive(Debug, Clone)]
+pub struct SpaceVideoBlock {
+    pub count: Option<i64>,
+    pub items: Vec<SpaceArchiveItem>,
+}
+
+/// 主页上的一条专栏。
+#[derive(Debug, Clone)]
+pub struct SpaceArticleItem {
+    pub title: Option<String>,
+    pub cover: Option<String>,
+    pub publish_time_text: Option<String>,
+    pub view: Option<i64>,
+    pub reply: Option<i64>,
+    pub uri: Option<String>,
+}
+
+/// 主页上的一块专栏。
+#[derive(Debug, Clone)]
+pub struct SpaceArticleBlock {
+    pub count: Option<i64>,
+    pub items: Vec<SpaceArticleItem>,
+}
+
+/// 主页上的一条音频。
+#[derive(Debug, Clone)]
+pub struct SpaceAudioItem {
+    pub id: Option<i64>,
+    pub uid: Option<i64>,
+    pub title: Option<String>,
+    pub cover: Option<String>,
+    /// **Unix 秒**。音频页那条接口给的是毫秒，两边共用同一个组件。
+    pub ctime: Option<i64>,
+}
+
+/// 主页上的一块音频。
+#[derive(Debug, Clone)]
+pub struct SpaceAudioBlock {
+    pub count: Option<i64>,
+    pub items: Vec<SpaceAudioItem>,
+}
+
+/// 主页上的一个收藏夹。
+#[derive(Debug, Clone)]
+pub struct SpaceFavItem {
+    /// 路由用的是 `media_id`。
+    pub media_id: Option<i64>,
+    pub title: Option<String>,
+    pub cover: Option<String>,
+    /// 夹子里有多少条内容。
+    pub count: Option<i64>,
+    /// `1` 为私密。键名与含义是反的，这是服务端的事实。
+    pub is_public: Option<i64>,
+}
+
+/// 主页上的一块收藏夹。
+#[derive(Debug, Clone)]
+pub struct SpaceFavBlock {
+    pub count: Option<i64>,
+    pub items: Vec<SpaceFavItem>,
+}
+
+/// 图文页的一个筛选项。
+#[derive(Debug, Clone)]
+pub struct SpaceTabFilter {
+    pub text: Option<String>,
+    /// 发给服务端的那个值，缺省为 `all`。
+    pub meta: String,
+    pub tab_name: Option<String>,
+}
+
+/// 二级 tab。
+#[derive(Debug, Clone)]
+pub struct SpaceTab2Item {
+    pub title: Option<String>,
+    pub param: Option<String>,
+    pub filters: Vec<SpaceTabFilter>,
+    pub season_id: Option<i64>,
+    pub series_id: Option<i64>,
+}
+
+/// 空间的一级 tab。
+#[derive(Debug, Clone)]
+pub struct SpaceTab2 {
+    pub title: Option<String>,
+    pub param: Option<String>,
+    pub items: Vec<SpaceTab2Item>,
+}
+
+/// 预约附带的抽奖。
+#[derive(Debug, Clone)]
+pub struct SpaceReservationLottery {
+    pub text: Option<String>,
+    pub jump_url: Option<String>,
+}
+
+/// 一条预约。
+#[derive(Debug, Clone)]
+pub struct SpaceReservation {
+    pub sid: Option<i64>,
+    pub name: Option<String>,
+    /// 已预约人数。预约/取消后界面要在这个数上加减，所以不是 `Option`。
+    pub total: i64,
+    pub is_follow: bool,
+    pub desc_text: Option<String>,
+    /// 有值时多一个「看动态」按钮。
+    pub dynamic_id: Option<String>,
+    pub lottery: Option<SpaceReservationLottery>,
+}
+
+/// 空间主页。
+#[derive(Debug, Clone)]
+pub struct SpacePage {
+    pub relation: Option<i64>,
+    pub guest_relation: Option<i64>,
+    /// `1` 表示特别关注。
+    pub rel_special: Option<i64>,
+    pub medal: Option<i64>,
+    /// 取值与 [`SpaceTab2::param`] 对齐。
+    pub default_tab: Option<String>,
+    /// 八个内容块里还有没有东西。为假时「主页」tab 整个去掉。
+    pub has_item: bool,
+    /// 有没有合集或列表。投稿页据此多一个「全部合集/列表」tab。
+    pub has_season_or_series: bool,
+    /// **只有看自己的空间时才有**，界面据此判断是不是本人。
+    pub setting: Option<SpaceSetting>,
+    pub card: Option<SpaceCard>,
+    pub images: Option<SpaceImages>,
+    pub live: Option<SpaceLive>,
+    pub elec: Option<SpaceElec>,
+    pub guard: Option<SpaceGuard>,
+    pub archive: Option<SpaceVideoBlock>,
+    pub season: Option<SpaceVideoBlock>,
+    pub coin_archive: Option<SpaceVideoBlock>,
+    pub like_archive: Option<SpaceVideoBlock>,
+    pub comic: Option<SpaceVideoBlock>,
+    pub article: Option<SpaceArticleBlock>,
+    pub audio: Option<SpaceAudioBlock>,
+    pub favourite: Option<SpaceFavBlock>,
+    pub tab2: Vec<SpaceTab2>,
+    pub reservations: Vec<SpaceReservation>,
+}
+
+/// 「播放全部 / 继续播放」按钮。
+#[derive(Debug, Clone)]
+pub struct SpaceEpisodicButton {
+    pub text: Option<String>,
+    /// `oid` 等参数在查询串里。
+    pub uri: Option<String>,
+}
+
+/// 一页投稿。六个 tab 共用这一个形状。
+#[derive(Debug, Clone)]
+pub struct SpaceArchivePage {
+    /// 总条数。追番那条不给，界面改用本页长度。
+    pub count: Option<i64>,
+    pub items: Vec<SpaceArchiveItem>,
+    pub episodic_button: Option<SpaceEpisodicButton>,
+    pub has_next: Option<bool>,
+    /// 还能不能往**前**翻。从视频页跳进来定位到某一条时才有意义。
+    pub has_prev: Option<bool>,
+    /// 下一页的游标。`0` 表示到底了。
+    pub next: Option<i64>,
+}
+
+/// 投稿列表的六个 tab。与基线 `ContributeType` 一一对应。
+#[derive(Debug, Clone, Copy)]
+pub enum SpaceArchiveKind {
+    Video,
+    Charging,
+    Season,
+    Series,
+    Bangumi,
+    Comic,
+}
+
+/// 投稿视频的排序字段。
+#[derive(Debug, Clone, Copy)]
+pub enum SpaceArchiveOrder {
+    /// 最新发布。
+    Pubdate,
+    /// 最多播放。
+    Click,
+}
+
+/// 合集 / 列表的排序方向。
+#[derive(Debug, Clone, Copy)]
+pub enum SpaceArchiveSort {
+    Desc,
+    Asc,
+}
+
+impl From<SpaceArchiveKind> for space::SpaceArchiveKind {
+    fn from(value: SpaceArchiveKind) -> Self {
+        match value {
+            SpaceArchiveKind::Video => Self::Video,
+            SpaceArchiveKind::Charging => Self::Charging,
+            SpaceArchiveKind::Season => Self::Season,
+            SpaceArchiveKind::Series => Self::Series,
+            SpaceArchiveKind::Bangumi => Self::Bangumi,
+            SpaceArchiveKind::Comic => Self::Comic,
+        }
+    }
+}
+
+impl From<SpaceArchiveOrder> for space::SpaceArchiveOrder {
+    fn from(value: SpaceArchiveOrder) -> Self {
+        match value {
+            SpaceArchiveOrder::Pubdate => Self::Pubdate,
+            SpaceArchiveOrder::Click => Self::Click,
+        }
+    }
+}
+
+impl From<SpaceArchiveSort> for space::SpaceArchiveSort {
+    fn from(value: SpaceArchiveSort) -> Self {
+        match value {
+            SpaceArchiveSort::Desc => Self::Desc,
+            SpaceArchiveSort::Asc => Self::Asc,
+        }
+    }
+}
+
+// 下面这组 `From` 只是把领域实体逐字段搬到导出面上。导出面与领域层分开
+// 的理由见 ADR-011：导出面要保持语言中立，领域层可以随时改形状。
+impl From<domain::SpaceSimpleUser> for SpaceSimpleUser {
+    fn from(v: domain::SpaceSimpleUser) -> Self {
+        Self {
+            mid: v.mid,
+            name: v.name,
+            face: v.face,
+        }
+    }
+}
+
+impl From<domain::SpaceArchiveItem> for SpaceArchiveItem {
+    fn from(v: domain::SpaceArchiveItem) -> Self {
+        Self {
+            title: v.title,
+            cover: v.cover,
+            bvid: v.bvid,
+            cid: v.cid,
+            param: v.param,
+            goto: v.goto,
+            uri: v.uri,
+            duration: v.duration,
+            play: v.play,
+            danmaku: v.danmaku,
+            author: v.author,
+            publish_time_text: v.publish_time_text,
+            badges: v.badges,
+            is_steins: v.is_steins,
+            is_cooperation: v.is_cooperation,
+            is_pgc: v.is_pgc,
+            is_pugv: v.is_pugv,
+            history: v.history.map(|h| SpaceArchiveHistory {
+                progress: h.progress,
+                duration: h.duration,
+            }),
+            season_mtime: v.season_mtime,
+            styles: v.styles,
+            label: v.label,
+        }
+    }
+}
+
+impl From<domain::SpaceVideoBlock> for SpaceVideoBlock {
+    fn from(v: domain::SpaceVideoBlock) -> Self {
+        Self {
+            count: v.count,
+            items: v.items.into_iter().map(Into::into).collect(),
+        }
+    }
+}
+
+impl From<domain::SpaceCard> for SpaceCard {
+    fn from(v: domain::SpaceCard) -> Self {
+        Self {
+            mid: v.mid,
+            name: v.name,
+            face: v.face,
+            sign: v.sign,
+            fans: v.fans,
+            attention: v.attention,
+            like_num: v.like_num,
+            level: v.level,
+            level_identity: v.level_identity,
+            pendant_image: v.pendant_image,
+            official_type: v.official_type,
+            official_desc: v.official_desc,
+            official_splice_title: v.official_splice_title,
+            vip_status: v.vip_status,
+            vip_type: v.vip_type,
+            vip_label_text: v.vip_label_text,
+            silence: v.silence,
+            relation: v.relation.map(|r| SpaceRelation {
+                status: r.status,
+                is_follow: r.is_follow,
+                is_followed: r.is_followed,
+            }),
+            live_medal: v.live_medal.map(|m| SpaceLiveMedal {
+                name: m.name,
+                level: m.level,
+                color: m.color,
+                name_color: m.name_color,
+            }),
+            tags: v
+                .tags
+                .into_iter()
+                .map(|t| SpaceCardTag {
+                    title: t.title,
+                    uri: t.uri,
+                })
+                .collect(),
+            pr_info: v.pr_info.map(|p| SpacePrInfo {
+                content: p.content,
+                url: p.url,
+                icon: p.icon,
+                icon_night: p.icon_night,
+                text_color: p.text_color,
+                bg_color: p.bg_color,
+                text_color_night: p.text_color_night,
+                bg_color_night: p.bg_color_night,
+            }),
+            followed_by: v.followed_by.map(|f| SpaceFollowedBy {
+                items: f.items.into_iter().map(Into::into).collect(),
+            }),
+        }
+    }
+}
+
+impl From<domain::SpacePage> for SpacePage {
+    fn from(v: domain::SpacePage) -> Self {
+        Self {
+            relation: v.relation,
+            guest_relation: v.guest_relation,
+            rel_special: v.rel_special,
+            medal: v.medal,
+            default_tab: v.default_tab,
+            has_item: v.has_item,
+            has_season_or_series: v.has_season_or_series,
+            setting: v.setting.map(|s| SpaceSetting {
+                fav_video: s.fav_video,
+                coins_video: s.coins_video,
+                likes_video: s.likes_video,
+                bangumi: s.bangumi,
+            }),
+            card: v.card.map(Into::into),
+            images: v.images.map(|i| SpaceImages {
+                img_url: i.img_url,
+                night_img_url: i.night_img_url,
+                top_images: i
+                    .top_images
+                    .into_iter()
+                    .map(|t| SpaceTopImage {
+                        header: t.header,
+                        full_cover: t.full_cover,
+                        dy: t.dy,
+                        title: t.title.map(|x| SpaceTopTitle {
+                            title: x.title,
+                            sub_title: x.sub_title,
+                            sub_title_colors: x.sub_title_colors,
+                        }),
+                    })
+                    .collect(),
+            }),
+            live: v.live.map(|l| SpaceLive {
+                room_status: l.room_status,
+                live_status: l.live_status,
+                room_id: l.room_id,
+            }),
+            elec: v.elec.map(|e| SpaceElec {
+                total: e.total,
+                list: e.list.into_iter().map(Into::into).collect(),
+            }),
+            guard: v.guard.map(|g| SpaceGuard {
+                count: g.count,
+                items: g.items.into_iter().map(Into::into).collect(),
+            }),
+            archive: v.archive.map(Into::into),
+            season: v.season.map(Into::into),
+            coin_archive: v.coin_archive.map(Into::into),
+            like_archive: v.like_archive.map(Into::into),
+            comic: v.comic.map(Into::into),
+            article: v.article.map(|a| SpaceArticleBlock {
+                count: a.count,
+                items: a
+                    .items
+                    .into_iter()
+                    .map(|i| SpaceArticleItem {
+                        title: i.title,
+                        cover: i.cover,
+                        publish_time_text: i.publish_time_text,
+                        view: i.view,
+                        reply: i.reply,
+                        uri: i.uri,
+                    })
+                    .collect(),
+            }),
+            audio: v.audio.map(|a| SpaceAudioBlock {
+                count: a.count,
+                items: a
+                    .items
+                    .into_iter()
+                    .map(|i| SpaceAudioItem {
+                        id: i.id,
+                        uid: i.uid,
+                        title: i.title,
+                        cover: i.cover,
+                        ctime: i.ctime,
+                    })
+                    .collect(),
+            }),
+            favourite: v.favourite.map(|f| SpaceFavBlock {
+                count: f.count,
+                items: f
+                    .items
+                    .into_iter()
+                    .map(|i| SpaceFavItem {
+                        media_id: i.media_id,
+                        title: i.title,
+                        cover: i.cover,
+                        count: i.count,
+                        is_public: i.is_public,
+                    })
+                    .collect(),
+            }),
+            tab2: v
+                .tab2
+                .into_iter()
+                .map(|t| SpaceTab2 {
+                    title: t.title,
+                    param: t.param,
+                    items: t
+                        .items
+                        .into_iter()
+                        .map(|i| SpaceTab2Item {
+                            title: i.title,
+                            param: i.param,
+                            filters: i
+                                .filters
+                                .into_iter()
+                                .map(|f| SpaceTabFilter {
+                                    text: f.text,
+                                    meta: f.meta,
+                                    tab_name: f.tab_name,
+                                })
+                                .collect(),
+                            season_id: i.season_id,
+                            series_id: i.series_id,
+                        })
+                        .collect(),
+                })
+                .collect(),
+            reservations: v
+                .reservations
+                .into_iter()
+                .map(|r| SpaceReservation {
+                    sid: r.sid,
+                    name: r.name,
+                    total: r.total,
+                    is_follow: r.is_follow,
+                    desc_text: r.desc_text,
+                    dynamic_id: r.dynamic_id,
+                    lottery: r.lottery.map(|l| SpaceReservationLottery {
+                        text: l.text,
+                        jump_url: l.jump_url,
+                    }),
+                })
+                .collect(),
+        }
+    }
+}
+
+impl From<domain::SpaceArchivePage> for SpaceArchivePage {
+    fn from(v: domain::SpaceArchivePage) -> Self {
+        Self {
+            count: v.count,
+            items: v.items.into_iter().map(Into::into).collect(),
+            episodic_button: v.episodic_button.map(|b| SpaceEpisodicButton {
+                text: b.text,
+                uri: b.uri,
+            }),
+            has_next: v.has_next,
+            has_prev: v.has_prev,
+            next: v.next,
+        }
+    }
+}
+
+result_type!(
+    /// 空间主页的结果。
+    SpacePageResult,
+    SpacePage
+);
+result_type!(
+    /// 一页投稿的结果。六个 tab 共用。
+    SpaceArchiveResult,
+    SpaceArchivePage
+);
+
+/// 取空间主页。
+///
+/// `from_view_aid` 是从视频页点进来时带的稿件 id，服务端据此把那条稿件
+/// 排到投稿列表前面。
+pub async fn fetch_space_page(
+    context: SpaceContext,
+    mid: i64,
+    from_view_aid: Option<String>,
+) -> SpacePageResult {
+    let (ctx, transport, _, _) = context.split();
+    let joined = init::runtime()
+        .spawn(async move {
+            space::fetch_space_page(&transport, &ctx, mid, from_view_aid.as_deref()).await
+        })
+        .await;
+
+    match flatten(joined) {
+        Ok(page) => SpacePageResult {
+            data: Some(page.into()),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => SpacePageResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+
+/// 取一页投稿。
+///
+/// 六个 tab 共用这一个函数：参数集合一样，差别只在路径与封面档位，由
+/// [`SpaceArchiveKind`] 决定。可省的参数省掉就不发，不是发空值。
+#[allow(clippy::too_many_arguments)]
+pub async fn fetch_space_archive(
+    context: SpaceContext,
+    kind: SpaceArchiveKind,
+    mid: Option<i64>,
+    aid: Option<String>,
+    order: Option<SpaceArchiveOrder>,
+    sort: Option<SpaceArchiveSort>,
+    page: Option<i64>,
+    next: Option<i64>,
+    season_id: Option<i64>,
+    series_id: Option<i64>,
+    include_cursor: Option<bool>,
+) -> SpaceArchiveResult {
+    let (ctx, transport, _, _) = context.split();
+    let joined = init::runtime()
+        .spawn(async move {
+            space::fetch_space_archive(
+                &transport,
+                &ctx,
+                kind.into(),
+                mid,
+                aid.as_deref(),
+                order.map(Into::into),
+                sort.map(Into::into),
+                page,
+                next,
+                season_id,
+                series_id,
+                include_cursor,
+            )
+            .await
+        })
+        .await;
+
+    match flatten(joined) {
+        Ok(page) => SpaceArchiveResult {
+            data: Some(page.into()),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => SpaceArchiveResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
     }
 }

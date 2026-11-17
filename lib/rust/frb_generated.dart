@@ -99,7 +99,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 1179218850;
+  int get rustContentHash => -614606968;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -713,6 +713,26 @@ abstract class RustLibApi extends BaseApi {
     required SponsorBlockContext context,
     required String bvid,
     required PlatformInt64 cid,
+  });
+
+  Future<SpaceArchiveResult> crateApiSpaceFetchSpaceArchive({
+    required SpaceContext context,
+    required SpaceArchiveKind kind,
+    PlatformInt64? mid,
+    String? aid,
+    SpaceArchiveOrder? order,
+    SpaceArchiveSort? sort,
+    PlatformInt64? page,
+    PlatformInt64? next,
+    PlatformInt64? seasonId,
+    PlatformInt64? seriesId,
+    bool? includeCursor,
+  });
+
+  Future<SpacePageResult> crateApiSpaceFetchSpacePage({
+    required SpaceContext context,
+    required PlatformInt64 mid,
+    String? fromViewAid,
   });
 
   Future<PrivacyResult> crateApiUserFetchSpaceSetting({
@@ -4953,6 +4973,120 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<SpaceArchiveResult> crateApiSpaceFetchSpaceArchive({
+    required SpaceContext context,
+    required SpaceArchiveKind kind,
+    PlatformInt64? mid,
+    String? aid,
+    SpaceArchiveOrder? order,
+    SpaceArchiveSort? sort,
+    PlatformInt64? page,
+    PlatformInt64? next,
+    PlatformInt64? seasonId,
+    PlatformInt64? seriesId,
+    bool? includeCursor,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_space_context(context, serializer);
+          sse_encode_space_archive_kind(kind, serializer);
+          sse_encode_opt_box_autoadd_i_64(mid, serializer);
+          sse_encode_opt_String(aid, serializer);
+          sse_encode_opt_box_autoadd_space_archive_order(order, serializer);
+          sse_encode_opt_box_autoadd_space_archive_sort(sort, serializer);
+          sse_encode_opt_box_autoadd_i_64(page, serializer);
+          sse_encode_opt_box_autoadd_i_64(next, serializer);
+          sse_encode_opt_box_autoadd_i_64(seasonId, serializer);
+          sse_encode_opt_box_autoadd_i_64(seriesId, serializer);
+          sse_encode_opt_box_autoadd_bool(includeCursor, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 103,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_space_archive_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiSpaceFetchSpaceArchiveConstMeta,
+        argValues: [
+          context,
+          kind,
+          mid,
+          aid,
+          order,
+          sort,
+          page,
+          next,
+          seasonId,
+          seriesId,
+          includeCursor,
+        ],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSpaceFetchSpaceArchiveConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_space_archive",
+        argNames: [
+          "context",
+          "kind",
+          "mid",
+          "aid",
+          "order",
+          "sort",
+          "page",
+          "next",
+          "seasonId",
+          "seriesId",
+          "includeCursor",
+        ],
+      );
+
+  @override
+  Future<SpacePageResult> crateApiSpaceFetchSpacePage({
+    required SpaceContext context,
+    required PlatformInt64 mid,
+    String? fromViewAid,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_space_context(context, serializer);
+          sse_encode_i_64(mid, serializer);
+          sse_encode_opt_String(fromViewAid, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 104,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_space_page_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiSpaceFetchSpacePageConstMeta,
+        argValues: [context, mid, fromViewAid],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSpaceFetchSpacePageConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_space_page",
+        argNames: ["context", "mid", "fromViewAid"],
+      );
+
+  @override
   Future<PrivacyResult> crateApiUserFetchSpaceSetting({
     required UserContext context,
     required PlatformInt64 mid,
@@ -4966,7 +5100,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 103,
+            funcId: 105,
             port: port_,
           );
         },
@@ -4999,7 +5133,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 104,
+            funcId: 106,
             port: port_,
           );
         },
@@ -5036,7 +5170,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 105,
+            funcId: 107,
             port: port_,
           );
         },
@@ -5075,7 +5209,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 106,
+            funcId: 108,
             port: port_,
           );
         },
@@ -5115,7 +5249,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 107,
+            funcId: 109,
             port: port_,
           );
         },
@@ -5148,7 +5282,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 108,
+            funcId: 110,
             port: port_,
           );
         },
@@ -5188,7 +5322,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 109,
+            funcId: 111,
             port: port_,
           );
         },
@@ -5221,7 +5355,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 110,
+            funcId: 112,
             port: port_,
           );
         },
@@ -5267,7 +5401,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 111,
+            funcId: 113,
             port: port_,
           );
         },
@@ -5322,7 +5456,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 112,
+            funcId: 114,
             port: port_,
           );
         },
@@ -5359,7 +5493,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 113,
+            funcId: 115,
             port: port_,
           );
         },
@@ -5393,7 +5527,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 114,
+            funcId: 116,
             port: port_,
           );
         },
@@ -5424,7 +5558,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 115,
+            funcId: 117,
           )!;
         },
         codec: SseCodec(
@@ -5472,7 +5606,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 116,
+            funcId: 118,
             port: port_,
           );
         },
@@ -5529,7 +5663,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 117,
+            funcId: 119,
             port: port_,
           );
         },
@@ -5560,7 +5694,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 118,
+            funcId: 120,
             port: port_,
           );
         },
@@ -5596,7 +5730,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 119,
+            funcId: 121,
             port: port_,
           );
         },
@@ -5635,7 +5769,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 120,
+            funcId: 122,
             port: port_,
           );
         },
@@ -5676,7 +5810,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 121,
+            funcId: 123,
             port: port_,
           );
         },
@@ -5710,7 +5844,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 122,
+            funcId: 124,
             port: port_,
           );
         },
@@ -5744,7 +5878,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 123,
+            funcId: 125,
             port: port_,
           );
         },
@@ -5777,7 +5911,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 124,
+            funcId: 126,
             port: port_,
           );
         },
@@ -5809,7 +5943,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 125,
+            funcId: 127,
             port: port_,
           );
         },
@@ -5842,7 +5976,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 126,
+            funcId: 128,
             port: port_,
           );
         },
@@ -5876,7 +6010,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 127,
+            funcId: 129,
             port: port_,
           );
         },
@@ -5916,7 +6050,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 128,
+            funcId: 130,
             port: port_,
           );
         },
@@ -5951,7 +6085,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 129,
+            funcId: 131,
             port: port_,
           );
         },
@@ -5993,7 +6127,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 130,
+            funcId: 132,
             port: port_,
           );
         },
@@ -6037,7 +6171,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 131,
+            funcId: 133,
             port: port_,
           );
         },
@@ -6076,7 +6210,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 132,
+            funcId: 134,
             port: port_,
           );
         },
@@ -6111,7 +6245,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 133,
+            funcId: 135,
           )!;
         },
         codec: SseCodec(
@@ -6149,7 +6283,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 134,
+            funcId: 136,
             port: port_,
           );
         },
@@ -6184,7 +6318,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 135,
+            funcId: 137,
           )!;
         },
         codec: SseCodec(
@@ -6218,7 +6352,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 136,
+            funcId: 138,
           )!;
         },
         codec: SseCodec(
@@ -6250,7 +6384,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 137,
+            funcId: 139,
             port: port_,
           );
         },
@@ -6281,7 +6415,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 138,
+            funcId: 140,
           )!;
         },
         codec: SseCodec(
@@ -6313,7 +6447,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 139,
+            funcId: 141,
             port: port_,
           );
         },
@@ -6348,7 +6482,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 140,
+            funcId: 142,
             port: port_,
           );
         },
@@ -6383,7 +6517,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 141,
+            funcId: 143,
             port: port_,
           );
         },
@@ -6417,7 +6551,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 142,
+            funcId: 144,
           )!;
         },
         codec: SseCodec(
@@ -6451,7 +6585,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 143,
+            funcId: 145,
             port: port_,
           );
         },
@@ -6487,7 +6621,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 144,
+            funcId: 146,
             port: port_,
           );
         },
@@ -6523,7 +6657,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 145,
+            funcId: 147,
             port: port_,
           );
         },
@@ -6560,7 +6694,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 146,
+            funcId: 148,
             port: port_,
           );
         },
@@ -6600,7 +6734,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 147,
+            funcId: 149,
             port: port_,
           );
         },
@@ -6640,7 +6774,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 148,
+            funcId: 150,
             port: port_,
           );
         },
@@ -6674,7 +6808,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 149,
+            funcId: 151,
             port: port_,
           );
         },
@@ -6711,7 +6845,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 150,
+            funcId: 152,
             port: port_,
           );
         },
@@ -6750,7 +6884,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 151,
+            funcId: 153,
           )!;
         },
         codec: SseCodec(
@@ -6779,7 +6913,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 152,
+            funcId: 154,
           )!;
         },
         codec: SseCodec(
@@ -6817,7 +6951,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 153,
+            funcId: 155,
             port: port_,
           );
         },
@@ -6858,7 +6992,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 154,
+            funcId: 156,
             port: port_,
           );
         },
@@ -6897,7 +7031,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 155,
+            funcId: 157,
             port: port_,
           );
         },
@@ -6935,7 +7069,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 156,
+            funcId: 158,
             port: port_,
           );
         },
@@ -6969,7 +7103,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 157,
+            funcId: 159,
             port: port_,
           );
         },
@@ -7003,7 +7137,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 158,
+            funcId: 160,
             port: port_,
           );
         },
@@ -7040,7 +7174,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 159,
+            funcId: 161,
             port: port_,
           );
         },
@@ -7074,7 +7208,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 160,
+            funcId: 162,
             port: port_,
           );
         },
@@ -7108,7 +7242,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 161,
+            funcId: 163,
             port: port_,
           );
         },
@@ -7143,7 +7277,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 162,
+            funcId: 164,
             port: port_,
           );
         },
@@ -7177,7 +7311,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 163,
+            funcId: 165,
             port: port_,
           );
         },
@@ -7215,7 +7349,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 164,
+            funcId: 166,
             port: port_,
           );
         },
@@ -7252,7 +7386,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 165,
+            funcId: 167,
             port: port_,
           );
         },
@@ -7287,7 +7421,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 166,
+            funcId: 168,
             port: port_,
           );
         },
@@ -7321,7 +7455,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 167,
+            funcId: 169,
             port: port_,
           );
         },
@@ -7355,7 +7489,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 168,
+            funcId: 170,
           )!;
         },
         codec: SseCodec(
@@ -7395,7 +7529,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 169,
+            funcId: 171,
           )!;
         },
         codec: SseCodec(
@@ -7437,7 +7571,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 170,
+            funcId: 172,
           )!;
         },
         codec: SseCodec(
@@ -7471,7 +7605,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 171,
+            funcId: 173,
             port: port_,
           );
         },
@@ -7507,7 +7641,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 172,
+            funcId: 174,
             port: port_,
           );
         },
@@ -7541,7 +7675,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 173,
+            funcId: 175,
             port: port_,
           );
         },
@@ -7578,7 +7712,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 174,
+            funcId: 176,
             port: port_,
           );
         },
@@ -7609,7 +7743,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 175,
+            funcId: 177,
           )!;
         },
         codec: SseCodec(
@@ -7645,7 +7779,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 176,
+            funcId: 178,
             port: port_,
           );
         },
@@ -7680,7 +7814,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 177,
+            funcId: 179,
             port: port_,
           );
         },
@@ -7714,7 +7848,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 178,
+            funcId: 180,
             port: port_,
           );
         },
@@ -7750,7 +7884,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 179,
+            funcId: 181,
             port: port_,
           );
         },
@@ -7786,7 +7920,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 180,
+            funcId: 182,
             port: port_,
           );
         },
@@ -7820,7 +7954,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 181,
+            funcId: 183,
             port: port_,
           );
         },
@@ -7857,7 +7991,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 182,
+            funcId: 184,
             port: port_,
           );
         },
@@ -7898,7 +8032,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 183,
+            funcId: 185,
             port: port_,
           );
         },
@@ -7935,7 +8069,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 184,
+            funcId: 186,
             port: port_,
           );
         },
@@ -7971,7 +8105,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 185,
+            funcId: 187,
           )!;
         },
         codec: SseCodec(
@@ -8005,7 +8139,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 186,
+            funcId: 188,
             port: port_,
           );
         },
@@ -8039,7 +8173,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 187,
+            funcId: 189,
             port: port_,
           );
         },
@@ -8073,7 +8207,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 188,
+            funcId: 190,
             port: port_,
           );
         },
@@ -8107,7 +8241,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 189,
+            funcId: 191,
             port: port_,
           );
         },
@@ -8950,9 +9084,129 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SpaceArchiveHistory dco_decode_box_autoadd_space_archive_history(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_archive_history(raw);
+  }
+
+  @protected
+  SpaceArchiveOrder dco_decode_box_autoadd_space_archive_order(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_archive_order(raw);
+  }
+
+  @protected
+  SpaceArchivePage dco_decode_box_autoadd_space_archive_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_archive_page(raw);
+  }
+
+  @protected
+  SpaceArchiveSort dco_decode_box_autoadd_space_archive_sort(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_archive_sort(raw);
+  }
+
+  @protected
+  SpaceArticleBlock dco_decode_box_autoadd_space_article_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_article_block(raw);
+  }
+
+  @protected
+  SpaceAudioBlock dco_decode_box_autoadd_space_audio_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_audio_block(raw);
+  }
+
+  @protected
+  SpaceCard dco_decode_box_autoadd_space_card(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_card(raw);
+  }
+
+  @protected
   SpaceContext dco_decode_box_autoadd_space_context(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_space_context(raw);
+  }
+
+  @protected
+  SpaceElec dco_decode_box_autoadd_space_elec(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_elec(raw);
+  }
+
+  @protected
+  SpaceEpisodicButton dco_decode_box_autoadd_space_episodic_button(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_episodic_button(raw);
+  }
+
+  @protected
+  SpaceFavBlock dco_decode_box_autoadd_space_fav_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_fav_block(raw);
+  }
+
+  @protected
+  SpaceFollowedBy dco_decode_box_autoadd_space_followed_by(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_followed_by(raw);
+  }
+
+  @protected
+  SpaceGuard dco_decode_box_autoadd_space_guard(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_guard(raw);
+  }
+
+  @protected
+  SpaceImages dco_decode_box_autoadd_space_images(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_images(raw);
+  }
+
+  @protected
+  SpaceLive dco_decode_box_autoadd_space_live(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_live(raw);
+  }
+
+  @protected
+  SpaceLiveMedal dco_decode_box_autoadd_space_live_medal(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_live_medal(raw);
+  }
+
+  @protected
+  SpacePage dco_decode_box_autoadd_space_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_page(raw);
+  }
+
+  @protected
+  SpacePrInfo dco_decode_box_autoadd_space_pr_info(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_pr_info(raw);
+  }
+
+  @protected
+  SpaceRelation dco_decode_box_autoadd_space_relation(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_relation(raw);
+  }
+
+  @protected
+  SpaceReservationLottery dco_decode_box_autoadd_space_reservation_lottery(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_reservation_lottery(raw);
   }
 
   @protected
@@ -8961,6 +9215,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_space_season_series_page(raw);
+  }
+
+  @protected
+  SpaceSetting dco_decode_box_autoadd_space_setting(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_setting(raw);
+  }
+
+  @protected
+  SpaceTopTitle dco_decode_box_autoadd_space_top_title(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_top_title(raw);
+  }
+
+  @protected
+  SpaceVideoBlock dco_decode_box_autoadd_space_video_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_video_block(raw);
   }
 
   @protected
@@ -10676,9 +10948,75 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<SpaceArchiveItem> dco_decode_list_space_archive_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_space_archive_item).toList();
+  }
+
+  @protected
+  List<SpaceArticleItem> dco_decode_list_space_article_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_space_article_item).toList();
+  }
+
+  @protected
+  List<SpaceAudioItem> dco_decode_list_space_audio_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_space_audio_item).toList();
+  }
+
+  @protected
+  List<SpaceCardTag> dco_decode_list_space_card_tag(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_space_card_tag).toList();
+  }
+
+  @protected
+  List<SpaceFavItem> dco_decode_list_space_fav_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_space_fav_item).toList();
+  }
+
+  @protected
+  List<SpaceReservation> dco_decode_list_space_reservation(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_space_reservation).toList();
+  }
+
+  @protected
   List<SpaceSeasonSeries> dco_decode_list_space_season_series(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_space_season_series).toList();
+  }
+
+  @protected
+  List<SpaceSimpleUser> dco_decode_list_space_simple_user(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_space_simple_user).toList();
+  }
+
+  @protected
+  List<SpaceTab2> dco_decode_list_space_tab_2(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_space_tab_2).toList();
+  }
+
+  @protected
+  List<SpaceTab2Item> dco_decode_list_space_tab_2_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_space_tab_2_item).toList();
+  }
+
+  @protected
+  List<SpaceTabFilter> dco_decode_list_space_tab_filter(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_space_tab_filter).toList();
+  }
+
+  @protected
+  List<SpaceTopImage> dco_decode_list_space_top_image(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_space_top_image).toList();
   }
 
   @protected
@@ -12537,6 +12875,136 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SpaceArchiveHistory? dco_decode_opt_box_autoadd_space_archive_history(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null
+        ? null
+        : dco_decode_box_autoadd_space_archive_history(raw);
+  }
+
+  @protected
+  SpaceArchiveOrder? dco_decode_opt_box_autoadd_space_archive_order(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_archive_order(raw);
+  }
+
+  @protected
+  SpaceArchivePage? dco_decode_opt_box_autoadd_space_archive_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_archive_page(raw);
+  }
+
+  @protected
+  SpaceArchiveSort? dco_decode_opt_box_autoadd_space_archive_sort(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_archive_sort(raw);
+  }
+
+  @protected
+  SpaceArticleBlock? dco_decode_opt_box_autoadd_space_article_block(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_article_block(raw);
+  }
+
+  @protected
+  SpaceAudioBlock? dco_decode_opt_box_autoadd_space_audio_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_audio_block(raw);
+  }
+
+  @protected
+  SpaceCard? dco_decode_opt_box_autoadd_space_card(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_card(raw);
+  }
+
+  @protected
+  SpaceElec? dco_decode_opt_box_autoadd_space_elec(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_elec(raw);
+  }
+
+  @protected
+  SpaceEpisodicButton? dco_decode_opt_box_autoadd_space_episodic_button(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null
+        ? null
+        : dco_decode_box_autoadd_space_episodic_button(raw);
+  }
+
+  @protected
+  SpaceFavBlock? dco_decode_opt_box_autoadd_space_fav_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_fav_block(raw);
+  }
+
+  @protected
+  SpaceFollowedBy? dco_decode_opt_box_autoadd_space_followed_by(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_followed_by(raw);
+  }
+
+  @protected
+  SpaceGuard? dco_decode_opt_box_autoadd_space_guard(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_guard(raw);
+  }
+
+  @protected
+  SpaceImages? dco_decode_opt_box_autoadd_space_images(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_images(raw);
+  }
+
+  @protected
+  SpaceLive? dco_decode_opt_box_autoadd_space_live(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_live(raw);
+  }
+
+  @protected
+  SpaceLiveMedal? dco_decode_opt_box_autoadd_space_live_medal(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_live_medal(raw);
+  }
+
+  @protected
+  SpacePage? dco_decode_opt_box_autoadd_space_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_page(raw);
+  }
+
+  @protected
+  SpacePrInfo? dco_decode_opt_box_autoadd_space_pr_info(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_pr_info(raw);
+  }
+
+  @protected
+  SpaceRelation? dco_decode_opt_box_autoadd_space_relation(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_relation(raw);
+  }
+
+  @protected
+  SpaceReservationLottery? dco_decode_opt_box_autoadd_space_reservation_lottery(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null
+        ? null
+        : dco_decode_box_autoadd_space_reservation_lottery(raw);
+  }
+
+  @protected
   SpaceSeasonSeriesPage? dco_decode_opt_box_autoadd_space_season_series_page(
     dynamic raw,
   ) {
@@ -12544,6 +13012,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     return raw == null
         ? null
         : dco_decode_box_autoadd_space_season_series_page(raw);
+  }
+
+  @protected
+  SpaceSetting? dco_decode_opt_box_autoadd_space_setting(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_setting(raw);
+  }
+
+  @protected
+  SpaceTopTitle? dco_decode_opt_box_autoadd_space_top_title(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_top_title(raw);
+  }
+
+  @protected
+  SpaceVideoBlock? dco_decode_opt_box_autoadd_space_video_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_video_block(raw);
   }
 
   @protected
@@ -14542,6 +15028,196 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SpaceArchiveHistory dco_decode_space_archive_history(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return SpaceArchiveHistory(
+      progress: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      duration: dco_decode_opt_box_autoadd_i_64(arr[1]),
+    );
+  }
+
+  @protected
+  SpaceArchiveItem dco_decode_space_archive_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 21)
+      throw Exception('unexpected arr length: expect 21 but see ${arr.length}');
+    return SpaceArchiveItem(
+      title: dco_decode_opt_String(arr[0]),
+      cover: dco_decode_opt_String(arr[1]),
+      bvid: dco_decode_opt_String(arr[2]),
+      cid: dco_decode_opt_box_autoadd_i_64(arr[3]),
+      param: dco_decode_opt_String(arr[4]),
+      goto: dco_decode_opt_String(arr[5]),
+      uri: dco_decode_opt_String(arr[6]),
+      duration: dco_decode_i_64(arr[7]),
+      play: dco_decode_opt_box_autoadd_i_64(arr[8]),
+      danmaku: dco_decode_opt_box_autoadd_i_64(arr[9]),
+      author: dco_decode_opt_String(arr[10]),
+      publishTimeText: dco_decode_opt_String(arr[11]),
+      badges: dco_decode_list_String(arr[12]),
+      isSteins: dco_decode_opt_box_autoadd_bool(arr[13]),
+      isCooperation: dco_decode_opt_box_autoadd_bool(arr[14]),
+      isPgc: dco_decode_opt_box_autoadd_bool(arr[15]),
+      isPugv: dco_decode_opt_box_autoadd_bool(arr[16]),
+      history: dco_decode_opt_box_autoadd_space_archive_history(arr[17]),
+      seasonMtime: dco_decode_opt_box_autoadd_i_64(arr[18]),
+      styles: dco_decode_opt_String(arr[19]),
+      label: dco_decode_opt_String(arr[20]),
+    );
+  }
+
+  @protected
+  SpaceArchiveKind dco_decode_space_archive_kind(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return SpaceArchiveKind.values[raw as int];
+  }
+
+  @protected
+  SpaceArchiveOrder dco_decode_space_archive_order(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return SpaceArchiveOrder.values[raw as int];
+  }
+
+  @protected
+  SpaceArchivePage dco_decode_space_archive_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return SpaceArchivePage(
+      count: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      items: dco_decode_list_space_archive_item(arr[1]),
+      episodicButton: dco_decode_opt_box_autoadd_space_episodic_button(arr[2]),
+      hasNext: dco_decode_opt_box_autoadd_bool(arr[3]),
+      hasPrev: dco_decode_opt_box_autoadd_bool(arr[4]),
+      next: dco_decode_opt_box_autoadd_i_64(arr[5]),
+    );
+  }
+
+  @protected
+  SpaceArchiveResult dco_decode_space_archive_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return SpaceArchiveResult(
+      data: dco_decode_opt_box_autoadd_space_archive_page(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  SpaceArchiveSort dco_decode_space_archive_sort(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return SpaceArchiveSort.values[raw as int];
+  }
+
+  @protected
+  SpaceArticleBlock dco_decode_space_article_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return SpaceArticleBlock(
+      count: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      items: dco_decode_list_space_article_item(arr[1]),
+    );
+  }
+
+  @protected
+  SpaceArticleItem dco_decode_space_article_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return SpaceArticleItem(
+      title: dco_decode_opt_String(arr[0]),
+      cover: dco_decode_opt_String(arr[1]),
+      publishTimeText: dco_decode_opt_String(arr[2]),
+      view: dco_decode_opt_box_autoadd_i_64(arr[3]),
+      reply: dco_decode_opt_box_autoadd_i_64(arr[4]),
+      uri: dco_decode_opt_String(arr[5]),
+    );
+  }
+
+  @protected
+  SpaceAudioBlock dco_decode_space_audio_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return SpaceAudioBlock(
+      count: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      items: dco_decode_list_space_audio_item(arr[1]),
+    );
+  }
+
+  @protected
+  SpaceAudioItem dco_decode_space_audio_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return SpaceAudioItem(
+      id: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      uid: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      title: dco_decode_opt_String(arr[2]),
+      cover: dco_decode_opt_String(arr[3]),
+      ctime: dco_decode_opt_box_autoadd_i_64(arr[4]),
+    );
+  }
+
+  @protected
+  SpaceCard dco_decode_space_card(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 22)
+      throw Exception('unexpected arr length: expect 22 but see ${arr.length}');
+    return SpaceCard(
+      mid: dco_decode_opt_String(arr[0]),
+      name: dco_decode_opt_String(arr[1]),
+      face: dco_decode_opt_String(arr[2]),
+      sign: dco_decode_opt_String(arr[3]),
+      fans: dco_decode_opt_box_autoadd_i_64(arr[4]),
+      attention: dco_decode_opt_box_autoadd_i_64(arr[5]),
+      likeNum: dco_decode_opt_box_autoadd_i_64(arr[6]),
+      level: dco_decode_opt_box_autoadd_i_64(arr[7]),
+      levelIdentity: dco_decode_opt_box_autoadd_i_64(arr[8]),
+      pendantImage: dco_decode_opt_String(arr[9]),
+      officialType: dco_decode_opt_box_autoadd_i_64(arr[10]),
+      officialDesc: dco_decode_opt_String(arr[11]),
+      officialSpliceTitle: dco_decode_opt_String(arr[12]),
+      vipStatus: dco_decode_opt_box_autoadd_i_64(arr[13]),
+      vipType: dco_decode_opt_box_autoadd_i_64(arr[14]),
+      vipLabelText: dco_decode_opt_String(arr[15]),
+      silence: dco_decode_opt_box_autoadd_i_64(arr[16]),
+      relation: dco_decode_opt_box_autoadd_space_relation(arr[17]),
+      liveMedal: dco_decode_opt_box_autoadd_space_live_medal(arr[18]),
+      tags: dco_decode_list_space_card_tag(arr[19]),
+      prInfo: dco_decode_opt_box_autoadd_space_pr_info(arr[20]),
+      followedBy: dco_decode_opt_box_autoadd_space_followed_by(arr[21]),
+    );
+  }
+
+  @protected
+  SpaceCardTag dco_decode_space_card_tag(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return SpaceCardTag(
+      title: dco_decode_opt_String(arr[0]),
+      uri: dco_decode_opt_String(arr[1]),
+    );
+  }
+
+  @protected
   SpaceContext dco_decode_space_context(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -14556,6 +15232,227 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       transport: dco_decode_transport_settings(arr[5]),
       mixinKey: dco_decode_String(arr[6]),
       ts: dco_decode_i_64(arr[7]),
+    );
+  }
+
+  @protected
+  SpaceElec dco_decode_space_elec(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return SpaceElec(
+      total: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      list: dco_decode_list_space_simple_user(arr[1]),
+    );
+  }
+
+  @protected
+  SpaceEpisodicButton dco_decode_space_episodic_button(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return SpaceEpisodicButton(
+      text: dco_decode_opt_String(arr[0]),
+      uri: dco_decode_opt_String(arr[1]),
+    );
+  }
+
+  @protected
+  SpaceFavBlock dco_decode_space_fav_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return SpaceFavBlock(
+      count: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      items: dco_decode_list_space_fav_item(arr[1]),
+    );
+  }
+
+  @protected
+  SpaceFavItem dco_decode_space_fav_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return SpaceFavItem(
+      mediaId: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      title: dco_decode_opt_String(arr[1]),
+      cover: dco_decode_opt_String(arr[2]),
+      count: dco_decode_opt_box_autoadd_i_64(arr[3]),
+      isPublic: dco_decode_opt_box_autoadd_i_64(arr[4]),
+    );
+  }
+
+  @protected
+  SpaceFollowedBy dco_decode_space_followed_by(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 1)
+      throw Exception('unexpected arr length: expect 1 but see ${arr.length}');
+    return SpaceFollowedBy(
+      items: dco_decode_list_space_simple_user(arr[0]),
+    );
+  }
+
+  @protected
+  SpaceGuard dco_decode_space_guard(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return SpaceGuard(
+      count: dco_decode_opt_String(arr[0]),
+      items: dco_decode_list_space_simple_user(arr[1]),
+    );
+  }
+
+  @protected
+  SpaceImages dco_decode_space_images(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return SpaceImages(
+      imgUrl: dco_decode_opt_String(arr[0]),
+      nightImgUrl: dco_decode_opt_String(arr[1]),
+      topImages: dco_decode_list_space_top_image(arr[2]),
+    );
+  }
+
+  @protected
+  SpaceLive dco_decode_space_live(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return SpaceLive(
+      roomStatus: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      liveStatus: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      roomId: dco_decode_opt_box_autoadd_i_64(arr[2]),
+    );
+  }
+
+  @protected
+  SpaceLiveMedal dco_decode_space_live_medal(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return SpaceLiveMedal(
+      name: dco_decode_opt_String(arr[0]),
+      level: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      color: dco_decode_opt_String(arr[2]),
+      nameColor: dco_decode_opt_String(arr[3]),
+    );
+  }
+
+  @protected
+  SpacePage dco_decode_space_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 23)
+      throw Exception('unexpected arr length: expect 23 but see ${arr.length}');
+    return SpacePage(
+      relation: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      guestRelation: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      relSpecial: dco_decode_opt_box_autoadd_i_64(arr[2]),
+      medal: dco_decode_opt_box_autoadd_i_64(arr[3]),
+      defaultTab: dco_decode_opt_String(arr[4]),
+      hasItem: dco_decode_bool(arr[5]),
+      hasSeasonOrSeries: dco_decode_bool(arr[6]),
+      setting: dco_decode_opt_box_autoadd_space_setting(arr[7]),
+      card: dco_decode_opt_box_autoadd_space_card(arr[8]),
+      images: dco_decode_opt_box_autoadd_space_images(arr[9]),
+      live: dco_decode_opt_box_autoadd_space_live(arr[10]),
+      elec: dco_decode_opt_box_autoadd_space_elec(arr[11]),
+      guard: dco_decode_opt_box_autoadd_space_guard(arr[12]),
+      archive: dco_decode_opt_box_autoadd_space_video_block(arr[13]),
+      season: dco_decode_opt_box_autoadd_space_video_block(arr[14]),
+      coinArchive: dco_decode_opt_box_autoadd_space_video_block(arr[15]),
+      likeArchive: dco_decode_opt_box_autoadd_space_video_block(arr[16]),
+      comic: dco_decode_opt_box_autoadd_space_video_block(arr[17]),
+      article: dco_decode_opt_box_autoadd_space_article_block(arr[18]),
+      audio: dco_decode_opt_box_autoadd_space_audio_block(arr[19]),
+      favourite: dco_decode_opt_box_autoadd_space_fav_block(arr[20]),
+      tab2: dco_decode_list_space_tab_2(arr[21]),
+      reservations: dco_decode_list_space_reservation(arr[22]),
+    );
+  }
+
+  @protected
+  SpacePageResult dco_decode_space_page_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return SpacePageResult(
+      data: dco_decode_opt_box_autoadd_space_page(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  SpacePrInfo dco_decode_space_pr_info(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 8)
+      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
+    return SpacePrInfo(
+      content: dco_decode_opt_String(arr[0]),
+      url: dco_decode_opt_String(arr[1]),
+      icon: dco_decode_opt_String(arr[2]),
+      iconNight: dco_decode_opt_String(arr[3]),
+      textColor: dco_decode_String(arr[4]),
+      bgColor: dco_decode_String(arr[5]),
+      textColorNight: dco_decode_String(arr[6]),
+      bgColorNight: dco_decode_String(arr[7]),
+    );
+  }
+
+  @protected
+  SpaceRelation dco_decode_space_relation(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return SpaceRelation(
+      status: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      isFollow: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      isFollowed: dco_decode_opt_box_autoadd_i_64(arr[2]),
+    );
+  }
+
+  @protected
+  SpaceReservation dco_decode_space_reservation(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    return SpaceReservation(
+      sid: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      name: dco_decode_opt_String(arr[1]),
+      total: dco_decode_i_64(arr[2]),
+      isFollow: dco_decode_bool(arr[3]),
+      descText: dco_decode_opt_String(arr[4]),
+      dynamicId: dco_decode_opt_String(arr[5]),
+      lottery: dco_decode_opt_box_autoadd_space_reservation_lottery(arr[6]),
+    );
+  }
+
+  @protected
+  SpaceReservationLottery dco_decode_space_reservation_lottery(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return SpaceReservationLottery(
+      text: dco_decode_opt_String(arr[0]),
+      jumpUrl: dco_decode_opt_String(arr[1]),
     );
   }
 
@@ -14599,6 +15496,113 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       errorKind: dco_decode_opt_String(arr[1]),
       errorDetail: dco_decode_opt_String(arr[2]),
       errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  SpaceSetting dco_decode_space_setting(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return SpaceSetting(
+      favVideo: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      coinsVideo: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      likesVideo: dco_decode_opt_box_autoadd_i_64(arr[2]),
+      bangumi: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  SpaceSimpleUser dco_decode_space_simple_user(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return SpaceSimpleUser(
+      mid: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      name: dco_decode_opt_String(arr[1]),
+      face: dco_decode_opt_String(arr[2]),
+    );
+  }
+
+  @protected
+  SpaceTab2 dco_decode_space_tab_2(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return SpaceTab2(
+      title: dco_decode_opt_String(arr[0]),
+      param: dco_decode_opt_String(arr[1]),
+      items: dco_decode_list_space_tab_2_item(arr[2]),
+    );
+  }
+
+  @protected
+  SpaceTab2Item dco_decode_space_tab_2_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return SpaceTab2Item(
+      title: dco_decode_opt_String(arr[0]),
+      param: dco_decode_opt_String(arr[1]),
+      filters: dco_decode_list_space_tab_filter(arr[2]),
+      seasonId: dco_decode_opt_box_autoadd_i_64(arr[3]),
+      seriesId: dco_decode_opt_box_autoadd_i_64(arr[4]),
+    );
+  }
+
+  @protected
+  SpaceTabFilter dco_decode_space_tab_filter(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return SpaceTabFilter(
+      text: dco_decode_opt_String(arr[0]),
+      meta: dco_decode_String(arr[1]),
+      tabName: dco_decode_opt_String(arr[2]),
+    );
+  }
+
+  @protected
+  SpaceTopImage dco_decode_space_top_image(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return SpaceTopImage(
+      header: dco_decode_String(arr[0]),
+      fullCover: dco_decode_String(arr[1]),
+      dy: dco_decode_f_64(arr[2]),
+      title: dco_decode_opt_box_autoadd_space_top_title(arr[3]),
+    );
+  }
+
+  @protected
+  SpaceTopTitle dco_decode_space_top_title(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return SpaceTopTitle(
+      title: dco_decode_opt_String(arr[0]),
+      subTitle: dco_decode_opt_String(arr[1]),
+      subTitleColors: dco_decode_list_String(arr[2]),
+    );
+  }
+
+  @protected
+  SpaceVideoBlock dco_decode_space_video_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return SpaceVideoBlock(
+      count: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      items: dco_decode_list_space_archive_item(arr[1]),
     );
   }
 
@@ -16275,6 +17279,60 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SpaceArchiveHistory sse_decode_box_autoadd_space_archive_history(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_archive_history(deserializer));
+  }
+
+  @protected
+  SpaceArchiveOrder sse_decode_box_autoadd_space_archive_order(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_archive_order(deserializer));
+  }
+
+  @protected
+  SpaceArchivePage sse_decode_box_autoadd_space_archive_page(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_archive_page(deserializer));
+  }
+
+  @protected
+  SpaceArchiveSort sse_decode_box_autoadd_space_archive_sort(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_archive_sort(deserializer));
+  }
+
+  @protected
+  SpaceArticleBlock sse_decode_box_autoadd_space_article_block(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_article_block(deserializer));
+  }
+
+  @protected
+  SpaceAudioBlock sse_decode_box_autoadd_space_audio_block(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_audio_block(deserializer));
+  }
+
+  @protected
+  SpaceCard sse_decode_box_autoadd_space_card(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_card(deserializer));
+  }
+
+  @protected
   SpaceContext sse_decode_box_autoadd_space_context(
     SseDeserializer deserializer,
   ) {
@@ -16283,11 +17341,123 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SpaceElec sse_decode_box_autoadd_space_elec(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_elec(deserializer));
+  }
+
+  @protected
+  SpaceEpisodicButton sse_decode_box_autoadd_space_episodic_button(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_episodic_button(deserializer));
+  }
+
+  @protected
+  SpaceFavBlock sse_decode_box_autoadd_space_fav_block(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_fav_block(deserializer));
+  }
+
+  @protected
+  SpaceFollowedBy sse_decode_box_autoadd_space_followed_by(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_followed_by(deserializer));
+  }
+
+  @protected
+  SpaceGuard sse_decode_box_autoadd_space_guard(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_guard(deserializer));
+  }
+
+  @protected
+  SpaceImages sse_decode_box_autoadd_space_images(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_images(deserializer));
+  }
+
+  @protected
+  SpaceLive sse_decode_box_autoadd_space_live(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_live(deserializer));
+  }
+
+  @protected
+  SpaceLiveMedal sse_decode_box_autoadd_space_live_medal(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_live_medal(deserializer));
+  }
+
+  @protected
+  SpacePage sse_decode_box_autoadd_space_page(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_page(deserializer));
+  }
+
+  @protected
+  SpacePrInfo sse_decode_box_autoadd_space_pr_info(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_pr_info(deserializer));
+  }
+
+  @protected
+  SpaceRelation sse_decode_box_autoadd_space_relation(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_relation(deserializer));
+  }
+
+  @protected
+  SpaceReservationLottery sse_decode_box_autoadd_space_reservation_lottery(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_reservation_lottery(deserializer));
+  }
+
+  @protected
   SpaceSeasonSeriesPage sse_decode_box_autoadd_space_season_series_page(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_space_season_series_page(deserializer));
+  }
+
+  @protected
+  SpaceSetting sse_decode_box_autoadd_space_setting(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_setting(deserializer));
+  }
+
+  @protected
+  SpaceTopTitle sse_decode_box_autoadd_space_top_title(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_top_title(deserializer));
+  }
+
+  @protected
+  SpaceVideoBlock sse_decode_box_autoadd_space_video_block(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_video_block(deserializer));
   }
 
   @protected
@@ -18730,6 +19900,90 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<SpaceArchiveItem> sse_decode_list_space_archive_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SpaceArchiveItem>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_space_archive_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SpaceArticleItem> sse_decode_list_space_article_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SpaceArticleItem>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_space_article_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SpaceAudioItem> sse_decode_list_space_audio_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SpaceAudioItem>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_space_audio_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SpaceCardTag> sse_decode_list_space_card_tag(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SpaceCardTag>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_space_card_tag(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SpaceFavItem> sse_decode_list_space_fav_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SpaceFavItem>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_space_fav_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SpaceReservation> sse_decode_list_space_reservation(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SpaceReservation>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_space_reservation(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<SpaceSeasonSeries> sse_decode_list_space_season_series(
     SseDeserializer deserializer,
   ) {
@@ -18739,6 +19993,74 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <SpaceSeasonSeries>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_space_season_series(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SpaceSimpleUser> sse_decode_list_space_simple_user(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SpaceSimpleUser>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_space_simple_user(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SpaceTab2> sse_decode_list_space_tab_2(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SpaceTab2>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_space_tab_2(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SpaceTab2Item> sse_decode_list_space_tab_2_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SpaceTab2Item>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_space_tab_2_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SpaceTabFilter> sse_decode_list_space_tab_filter(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SpaceTabFilter>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_space_tab_filter(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SpaceTopImage> sse_decode_list_space_top_image(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SpaceTopImage>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_space_top_image(deserializer));
     }
     return ans_;
   }
@@ -21328,6 +22650,253 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SpaceArchiveHistory? sse_decode_opt_box_autoadd_space_archive_history(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_archive_history(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceArchiveOrder? sse_decode_opt_box_autoadd_space_archive_order(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_archive_order(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceArchivePage? sse_decode_opt_box_autoadd_space_archive_page(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_archive_page(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceArchiveSort? sse_decode_opt_box_autoadd_space_archive_sort(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_archive_sort(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceArticleBlock? sse_decode_opt_box_autoadd_space_article_block(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_article_block(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceAudioBlock? sse_decode_opt_box_autoadd_space_audio_block(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_audio_block(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceCard? sse_decode_opt_box_autoadd_space_card(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_card(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceElec? sse_decode_opt_box_autoadd_space_elec(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_elec(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceEpisodicButton? sse_decode_opt_box_autoadd_space_episodic_button(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_episodic_button(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceFavBlock? sse_decode_opt_box_autoadd_space_fav_block(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_fav_block(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceFollowedBy? sse_decode_opt_box_autoadd_space_followed_by(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_followed_by(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceGuard? sse_decode_opt_box_autoadd_space_guard(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_guard(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceImages? sse_decode_opt_box_autoadd_space_images(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_images(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceLive? sse_decode_opt_box_autoadd_space_live(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_live(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceLiveMedal? sse_decode_opt_box_autoadd_space_live_medal(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_live_medal(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpacePage? sse_decode_opt_box_autoadd_space_page(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_page(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpacePrInfo? sse_decode_opt_box_autoadd_space_pr_info(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_pr_info(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceRelation? sse_decode_opt_box_autoadd_space_relation(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_relation(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceReservationLottery? sse_decode_opt_box_autoadd_space_reservation_lottery(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_reservation_lottery(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   SpaceSeasonSeriesPage? sse_decode_opt_box_autoadd_space_season_series_page(
     SseDeserializer deserializer,
   ) {
@@ -21335,6 +22904,45 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_box_autoadd_space_season_series_page(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceSetting? sse_decode_opt_box_autoadd_space_setting(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_setting(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceTopTitle? sse_decode_opt_box_autoadd_space_top_title(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_top_title(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceVideoBlock? sse_decode_opt_box_autoadd_space_video_block(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_video_block(deserializer));
     } else {
       return null;
     }
@@ -23972,6 +25580,245 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SpaceArchiveHistory sse_decode_space_archive_history(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_progress = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_duration = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SpaceArchiveHistory(progress: var_progress, duration: var_duration);
+  }
+
+  @protected
+  SpaceArchiveItem sse_decode_space_archive_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_cover = sse_decode_opt_String(deserializer);
+    var var_bvid = sse_decode_opt_String(deserializer);
+    var var_cid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_param = sse_decode_opt_String(deserializer);
+    var var_goto = sse_decode_opt_String(deserializer);
+    var var_uri = sse_decode_opt_String(deserializer);
+    var var_duration = sse_decode_i_64(deserializer);
+    var var_play = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_danmaku = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_author = sse_decode_opt_String(deserializer);
+    var var_publishTimeText = sse_decode_opt_String(deserializer);
+    var var_badges = sse_decode_list_String(deserializer);
+    var var_isSteins = sse_decode_opt_box_autoadd_bool(deserializer);
+    var var_isCooperation = sse_decode_opt_box_autoadd_bool(deserializer);
+    var var_isPgc = sse_decode_opt_box_autoadd_bool(deserializer);
+    var var_isPugv = sse_decode_opt_box_autoadd_bool(deserializer);
+    var var_history = sse_decode_opt_box_autoadd_space_archive_history(
+      deserializer,
+    );
+    var var_seasonMtime = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_styles = sse_decode_opt_String(deserializer);
+    var var_label = sse_decode_opt_String(deserializer);
+    return SpaceArchiveItem(
+      title: var_title,
+      cover: var_cover,
+      bvid: var_bvid,
+      cid: var_cid,
+      param: var_param,
+      goto: var_goto,
+      uri: var_uri,
+      duration: var_duration,
+      play: var_play,
+      danmaku: var_danmaku,
+      author: var_author,
+      publishTimeText: var_publishTimeText,
+      badges: var_badges,
+      isSteins: var_isSteins,
+      isCooperation: var_isCooperation,
+      isPgc: var_isPgc,
+      isPugv: var_isPugv,
+      history: var_history,
+      seasonMtime: var_seasonMtime,
+      styles: var_styles,
+      label: var_label,
+    );
+  }
+
+  @protected
+  SpaceArchiveKind sse_decode_space_archive_kind(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return SpaceArchiveKind.values[inner];
+  }
+
+  @protected
+  SpaceArchiveOrder sse_decode_space_archive_order(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return SpaceArchiveOrder.values[inner];
+  }
+
+  @protected
+  SpaceArchivePage sse_decode_space_archive_page(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_count = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_items = sse_decode_list_space_archive_item(deserializer);
+    var var_episodicButton = sse_decode_opt_box_autoadd_space_episodic_button(
+      deserializer,
+    );
+    var var_hasNext = sse_decode_opt_box_autoadd_bool(deserializer);
+    var var_hasPrev = sse_decode_opt_box_autoadd_bool(deserializer);
+    var var_next = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SpaceArchivePage(
+      count: var_count,
+      items: var_items,
+      episodicButton: var_episodicButton,
+      hasNext: var_hasNext,
+      hasPrev: var_hasPrev,
+      next: var_next,
+    );
+  }
+
+  @protected
+  SpaceArchiveResult sse_decode_space_archive_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_space_archive_page(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SpaceArchiveResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  SpaceArchiveSort sse_decode_space_archive_sort(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return SpaceArchiveSort.values[inner];
+  }
+
+  @protected
+  SpaceArticleBlock sse_decode_space_article_block(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_count = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_items = sse_decode_list_space_article_item(deserializer);
+    return SpaceArticleBlock(count: var_count, items: var_items);
+  }
+
+  @protected
+  SpaceArticleItem sse_decode_space_article_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_cover = sse_decode_opt_String(deserializer);
+    var var_publishTimeText = sse_decode_opt_String(deserializer);
+    var var_view = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_reply = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_uri = sse_decode_opt_String(deserializer);
+    return SpaceArticleItem(
+      title: var_title,
+      cover: var_cover,
+      publishTimeText: var_publishTimeText,
+      view: var_view,
+      reply: var_reply,
+      uri: var_uri,
+    );
+  }
+
+  @protected
+  SpaceAudioBlock sse_decode_space_audio_block(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_count = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_items = sse_decode_list_space_audio_item(deserializer);
+    return SpaceAudioBlock(count: var_count, items: var_items);
+  }
+
+  @protected
+  SpaceAudioItem sse_decode_space_audio_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_uid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_cover = sse_decode_opt_String(deserializer);
+    var var_ctime = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SpaceAudioItem(
+      id: var_id,
+      uid: var_uid,
+      title: var_title,
+      cover: var_cover,
+      ctime: var_ctime,
+    );
+  }
+
+  @protected
+  SpaceCard sse_decode_space_card(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_mid = sse_decode_opt_String(deserializer);
+    var var_name = sse_decode_opt_String(deserializer);
+    var var_face = sse_decode_opt_String(deserializer);
+    var var_sign = sse_decode_opt_String(deserializer);
+    var var_fans = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_attention = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_likeNum = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_level = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_levelIdentity = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_pendantImage = sse_decode_opt_String(deserializer);
+    var var_officialType = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_officialDesc = sse_decode_opt_String(deserializer);
+    var var_officialSpliceTitle = sse_decode_opt_String(deserializer);
+    var var_vipStatus = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_vipType = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_vipLabelText = sse_decode_opt_String(deserializer);
+    var var_silence = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_relation = sse_decode_opt_box_autoadd_space_relation(deserializer);
+    var var_liveMedal = sse_decode_opt_box_autoadd_space_live_medal(
+      deserializer,
+    );
+    var var_tags = sse_decode_list_space_card_tag(deserializer);
+    var var_prInfo = sse_decode_opt_box_autoadd_space_pr_info(deserializer);
+    var var_followedBy = sse_decode_opt_box_autoadd_space_followed_by(
+      deserializer,
+    );
+    return SpaceCard(
+      mid: var_mid,
+      name: var_name,
+      face: var_face,
+      sign: var_sign,
+      fans: var_fans,
+      attention: var_attention,
+      likeNum: var_likeNum,
+      level: var_level,
+      levelIdentity: var_levelIdentity,
+      pendantImage: var_pendantImage,
+      officialType: var_officialType,
+      officialDesc: var_officialDesc,
+      officialSpliceTitle: var_officialSpliceTitle,
+      vipStatus: var_vipStatus,
+      vipType: var_vipType,
+      vipLabelText: var_vipLabelText,
+      silence: var_silence,
+      relation: var_relation,
+      liveMedal: var_liveMedal,
+      tags: var_tags,
+      prInfo: var_prInfo,
+      followedBy: var_followedBy,
+    );
+  }
+
+  @protected
+  SpaceCardTag sse_decode_space_card_tag(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_uri = sse_decode_opt_String(deserializer);
+    return SpaceCardTag(title: var_title, uri: var_uri);
+  }
+
+  @protected
   SpaceContext sse_decode_space_context(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_baseUrl = sse_decode_String(deserializer);
@@ -23992,6 +25839,252 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       mixinKey: var_mixinKey,
       ts: var_ts,
     );
+  }
+
+  @protected
+  SpaceElec sse_decode_space_elec(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_total = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_list = sse_decode_list_space_simple_user(deserializer);
+    return SpaceElec(total: var_total, list: var_list);
+  }
+
+  @protected
+  SpaceEpisodicButton sse_decode_space_episodic_button(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_text = sse_decode_opt_String(deserializer);
+    var var_uri = sse_decode_opt_String(deserializer);
+    return SpaceEpisodicButton(text: var_text, uri: var_uri);
+  }
+
+  @protected
+  SpaceFavBlock sse_decode_space_fav_block(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_count = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_items = sse_decode_list_space_fav_item(deserializer);
+    return SpaceFavBlock(count: var_count, items: var_items);
+  }
+
+  @protected
+  SpaceFavItem sse_decode_space_fav_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_mediaId = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_cover = sse_decode_opt_String(deserializer);
+    var var_count = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_isPublic = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SpaceFavItem(
+      mediaId: var_mediaId,
+      title: var_title,
+      cover: var_cover,
+      count: var_count,
+      isPublic: var_isPublic,
+    );
+  }
+
+  @protected
+  SpaceFollowedBy sse_decode_space_followed_by(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_items = sse_decode_list_space_simple_user(deserializer);
+    return SpaceFollowedBy(items: var_items);
+  }
+
+  @protected
+  SpaceGuard sse_decode_space_guard(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_count = sse_decode_opt_String(deserializer);
+    var var_items = sse_decode_list_space_simple_user(deserializer);
+    return SpaceGuard(count: var_count, items: var_items);
+  }
+
+  @protected
+  SpaceImages sse_decode_space_images(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_imgUrl = sse_decode_opt_String(deserializer);
+    var var_nightImgUrl = sse_decode_opt_String(deserializer);
+    var var_topImages = sse_decode_list_space_top_image(deserializer);
+    return SpaceImages(
+      imgUrl: var_imgUrl,
+      nightImgUrl: var_nightImgUrl,
+      topImages: var_topImages,
+    );
+  }
+
+  @protected
+  SpaceLive sse_decode_space_live(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_roomStatus = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_liveStatus = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_roomId = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SpaceLive(
+      roomStatus: var_roomStatus,
+      liveStatus: var_liveStatus,
+      roomId: var_roomId,
+    );
+  }
+
+  @protected
+  SpaceLiveMedal sse_decode_space_live_medal(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_opt_String(deserializer);
+    var var_level = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_color = sse_decode_opt_String(deserializer);
+    var var_nameColor = sse_decode_opt_String(deserializer);
+    return SpaceLiveMedal(
+      name: var_name,
+      level: var_level,
+      color: var_color,
+      nameColor: var_nameColor,
+    );
+  }
+
+  @protected
+  SpacePage sse_decode_space_page(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_relation = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_guestRelation = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_relSpecial = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_medal = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_defaultTab = sse_decode_opt_String(deserializer);
+    var var_hasItem = sse_decode_bool(deserializer);
+    var var_hasSeasonOrSeries = sse_decode_bool(deserializer);
+    var var_setting = sse_decode_opt_box_autoadd_space_setting(deserializer);
+    var var_card = sse_decode_opt_box_autoadd_space_card(deserializer);
+    var var_images = sse_decode_opt_box_autoadd_space_images(deserializer);
+    var var_live = sse_decode_opt_box_autoadd_space_live(deserializer);
+    var var_elec = sse_decode_opt_box_autoadd_space_elec(deserializer);
+    var var_guard = sse_decode_opt_box_autoadd_space_guard(deserializer);
+    var var_archive = sse_decode_opt_box_autoadd_space_video_block(
+      deserializer,
+    );
+    var var_season = sse_decode_opt_box_autoadd_space_video_block(deserializer);
+    var var_coinArchive = sse_decode_opt_box_autoadd_space_video_block(
+      deserializer,
+    );
+    var var_likeArchive = sse_decode_opt_box_autoadd_space_video_block(
+      deserializer,
+    );
+    var var_comic = sse_decode_opt_box_autoadd_space_video_block(deserializer);
+    var var_article = sse_decode_opt_box_autoadd_space_article_block(
+      deserializer,
+    );
+    var var_audio = sse_decode_opt_box_autoadd_space_audio_block(deserializer);
+    var var_favourite = sse_decode_opt_box_autoadd_space_fav_block(
+      deserializer,
+    );
+    var var_tab2 = sse_decode_list_space_tab_2(deserializer);
+    var var_reservations = sse_decode_list_space_reservation(deserializer);
+    return SpacePage(
+      relation: var_relation,
+      guestRelation: var_guestRelation,
+      relSpecial: var_relSpecial,
+      medal: var_medal,
+      defaultTab: var_defaultTab,
+      hasItem: var_hasItem,
+      hasSeasonOrSeries: var_hasSeasonOrSeries,
+      setting: var_setting,
+      card: var_card,
+      images: var_images,
+      live: var_live,
+      elec: var_elec,
+      guard: var_guard,
+      archive: var_archive,
+      season: var_season,
+      coinArchive: var_coinArchive,
+      likeArchive: var_likeArchive,
+      comic: var_comic,
+      article: var_article,
+      audio: var_audio,
+      favourite: var_favourite,
+      tab2: var_tab2,
+      reservations: var_reservations,
+    );
+  }
+
+  @protected
+  SpacePageResult sse_decode_space_page_result(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_space_page(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SpacePageResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  SpacePrInfo sse_decode_space_pr_info(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_content = sse_decode_opt_String(deserializer);
+    var var_url = sse_decode_opt_String(deserializer);
+    var var_icon = sse_decode_opt_String(deserializer);
+    var var_iconNight = sse_decode_opt_String(deserializer);
+    var var_textColor = sse_decode_String(deserializer);
+    var var_bgColor = sse_decode_String(deserializer);
+    var var_textColorNight = sse_decode_String(deserializer);
+    var var_bgColorNight = sse_decode_String(deserializer);
+    return SpacePrInfo(
+      content: var_content,
+      url: var_url,
+      icon: var_icon,
+      iconNight: var_iconNight,
+      textColor: var_textColor,
+      bgColor: var_bgColor,
+      textColorNight: var_textColorNight,
+      bgColorNight: var_bgColorNight,
+    );
+  }
+
+  @protected
+  SpaceRelation sse_decode_space_relation(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_status = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_isFollow = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_isFollowed = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SpaceRelation(
+      status: var_status,
+      isFollow: var_isFollow,
+      isFollowed: var_isFollowed,
+    );
+  }
+
+  @protected
+  SpaceReservation sse_decode_space_reservation(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_sid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_name = sse_decode_opt_String(deserializer);
+    var var_total = sse_decode_i_64(deserializer);
+    var var_isFollow = sse_decode_bool(deserializer);
+    var var_descText = sse_decode_opt_String(deserializer);
+    var var_dynamicId = sse_decode_opt_String(deserializer);
+    var var_lottery = sse_decode_opt_box_autoadd_space_reservation_lottery(
+      deserializer,
+    );
+    return SpaceReservation(
+      sid: var_sid,
+      name: var_name,
+      total: var_total,
+      isFollow: var_isFollow,
+      descText: var_descText,
+      dynamicId: var_dynamicId,
+      lottery: var_lottery,
+    );
+  }
+
+  @protected
+  SpaceReservationLottery sse_decode_space_reservation_lottery(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_text = sse_decode_opt_String(deserializer);
+    var var_jumpUrl = sse_decode_opt_String(deserializer);
+    return SpaceReservationLottery(text: var_text, jumpUrl: var_jumpUrl);
   }
 
   @protected
@@ -24047,6 +26140,101 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       errorDetail: var_errorDetail,
       errorCode: var_errorCode,
     );
+  }
+
+  @protected
+  SpaceSetting sse_decode_space_setting(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_favVideo = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_coinsVideo = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_likesVideo = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_bangumi = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SpaceSetting(
+      favVideo: var_favVideo,
+      coinsVideo: var_coinsVideo,
+      likesVideo: var_likesVideo,
+      bangumi: var_bangumi,
+    );
+  }
+
+  @protected
+  SpaceSimpleUser sse_decode_space_simple_user(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_mid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_name = sse_decode_opt_String(deserializer);
+    var var_face = sse_decode_opt_String(deserializer);
+    return SpaceSimpleUser(mid: var_mid, name: var_name, face: var_face);
+  }
+
+  @protected
+  SpaceTab2 sse_decode_space_tab_2(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_param = sse_decode_opt_String(deserializer);
+    var var_items = sse_decode_list_space_tab_2_item(deserializer);
+    return SpaceTab2(title: var_title, param: var_param, items: var_items);
+  }
+
+  @protected
+  SpaceTab2Item sse_decode_space_tab_2_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_param = sse_decode_opt_String(deserializer);
+    var var_filters = sse_decode_list_space_tab_filter(deserializer);
+    var var_seasonId = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_seriesId = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SpaceTab2Item(
+      title: var_title,
+      param: var_param,
+      filters: var_filters,
+      seasonId: var_seasonId,
+      seriesId: var_seriesId,
+    );
+  }
+
+  @protected
+  SpaceTabFilter sse_decode_space_tab_filter(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_text = sse_decode_opt_String(deserializer);
+    var var_meta = sse_decode_String(deserializer);
+    var var_tabName = sse_decode_opt_String(deserializer);
+    return SpaceTabFilter(text: var_text, meta: var_meta, tabName: var_tabName);
+  }
+
+  @protected
+  SpaceTopImage sse_decode_space_top_image(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_header = sse_decode_String(deserializer);
+    var var_fullCover = sse_decode_String(deserializer);
+    var var_dy = sse_decode_f_64(deserializer);
+    var var_title = sse_decode_opt_box_autoadd_space_top_title(deserializer);
+    return SpaceTopImage(
+      header: var_header,
+      fullCover: var_fullCover,
+      dy: var_dy,
+      title: var_title,
+    );
+  }
+
+  @protected
+  SpaceTopTitle sse_decode_space_top_title(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_subTitle = sse_decode_opt_String(deserializer);
+    var var_subTitleColors = sse_decode_list_String(deserializer);
+    return SpaceTopTitle(
+      title: var_title,
+      subTitle: var_subTitle,
+      subTitleColors: var_subTitleColors,
+    );
+  }
+
+  @protected
+  SpaceVideoBlock sse_decode_space_video_block(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_count = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_items = sse_decode_list_space_archive_item(deserializer);
+    return SpaceVideoBlock(count: var_count, items: var_items);
   }
 
   @protected
@@ -25930,6 +28118,69 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_space_archive_history(
+    SpaceArchiveHistory self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_archive_history(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_archive_order(
+    SpaceArchiveOrder self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_archive_order(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_archive_page(
+    SpaceArchivePage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_archive_page(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_archive_sort(
+    SpaceArchiveSort self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_archive_sort(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_article_block(
+    SpaceArticleBlock self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_article_block(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_audio_block(
+    SpaceAudioBlock self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_audio_block(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_card(
+    SpaceCard self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_card(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_space_context(
     SpaceContext self,
     SseSerializer serializer,
@@ -25939,12 +28190,147 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_space_elec(
+    SpaceElec self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_elec(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_episodic_button(
+    SpaceEpisodicButton self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_episodic_button(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_fav_block(
+    SpaceFavBlock self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_fav_block(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_followed_by(
+    SpaceFollowedBy self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_followed_by(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_guard(
+    SpaceGuard self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_guard(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_images(
+    SpaceImages self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_images(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_live(
+    SpaceLive self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_live(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_live_medal(
+    SpaceLiveMedal self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_live_medal(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_page(
+    SpacePage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_page(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_pr_info(
+    SpacePrInfo self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_pr_info(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_relation(
+    SpaceRelation self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_relation(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_reservation_lottery(
+    SpaceReservationLottery self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_reservation_lottery(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_space_season_series_page(
     SpaceSeasonSeriesPage self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_space_season_series_page(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_setting(
+    SpaceSetting self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_setting(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_top_title(
+    SpaceTopTitle self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_top_title(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_video_block(
+    SpaceVideoBlock self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_video_block(self, serializer);
   }
 
   @protected
@@ -27931,6 +30317,78 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_space_archive_item(
+    List<SpaceArchiveItem> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_space_archive_item(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_space_article_item(
+    List<SpaceArticleItem> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_space_article_item(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_space_audio_item(
+    List<SpaceAudioItem> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_space_audio_item(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_space_card_tag(
+    List<SpaceCardTag> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_space_card_tag(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_space_fav_item(
+    List<SpaceFavItem> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_space_fav_item(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_space_reservation(
+    List<SpaceReservation> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_space_reservation(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_space_season_series(
     List<SpaceSeasonSeries> self,
     SseSerializer serializer,
@@ -27939,6 +30397,66 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_space_season_series(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_space_simple_user(
+    List<SpaceSimpleUser> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_space_simple_user(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_space_tab_2(
+    List<SpaceTab2> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_space_tab_2(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_space_tab_2_item(
+    List<SpaceTab2Item> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_space_tab_2_item(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_space_tab_filter(
+    List<SpaceTabFilter> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_space_tab_filter(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_space_top_image(
+    List<SpaceTopImage> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_space_top_image(item, serializer);
     }
   }
 
@@ -30123,6 +32641,253 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_space_archive_history(
+    SpaceArchiveHistory? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_archive_history(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_archive_order(
+    SpaceArchiveOrder? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_archive_order(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_archive_page(
+    SpaceArchivePage? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_archive_page(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_archive_sort(
+    SpaceArchiveSort? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_archive_sort(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_article_block(
+    SpaceArticleBlock? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_article_block(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_audio_block(
+    SpaceAudioBlock? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_audio_block(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_card(
+    SpaceCard? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_card(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_elec(
+    SpaceElec? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_elec(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_episodic_button(
+    SpaceEpisodicButton? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_episodic_button(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_fav_block(
+    SpaceFavBlock? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_fav_block(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_followed_by(
+    SpaceFollowedBy? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_followed_by(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_guard(
+    SpaceGuard? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_guard(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_images(
+    SpaceImages? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_images(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_live(
+    SpaceLive? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_live(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_live_medal(
+    SpaceLiveMedal? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_live_medal(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_page(
+    SpacePage? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_page(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_pr_info(
+    SpacePrInfo? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_pr_info(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_relation(
+    SpaceRelation? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_relation(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_reservation_lottery(
+    SpaceReservationLottery? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_reservation_lottery(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_box_autoadd_space_season_series_page(
     SpaceSeasonSeriesPage? self,
     SseSerializer serializer,
@@ -30132,6 +32897,45 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_box_autoadd_space_season_series_page(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_setting(
+    SpaceSetting? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_setting(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_top_title(
+    SpaceTopTitle? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_top_title(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_video_block(
+    SpaceVideoBlock? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_video_block(self, serializer);
     }
   }
 
@@ -32161,6 +34965,182 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_space_archive_history(
+    SpaceArchiveHistory self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.progress, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.duration, serializer);
+  }
+
+  @protected
+  void sse_encode_space_archive_item(
+    SpaceArchiveItem self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_String(self.cover, serializer);
+    sse_encode_opt_String(self.bvid, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.cid, serializer);
+    sse_encode_opt_String(self.param, serializer);
+    sse_encode_opt_String(self.goto, serializer);
+    sse_encode_opt_String(self.uri, serializer);
+    sse_encode_i_64(self.duration, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.play, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.danmaku, serializer);
+    sse_encode_opt_String(self.author, serializer);
+    sse_encode_opt_String(self.publishTimeText, serializer);
+    sse_encode_list_String(self.badges, serializer);
+    sse_encode_opt_box_autoadd_bool(self.isSteins, serializer);
+    sse_encode_opt_box_autoadd_bool(self.isCooperation, serializer);
+    sse_encode_opt_box_autoadd_bool(self.isPgc, serializer);
+    sse_encode_opt_box_autoadd_bool(self.isPugv, serializer);
+    sse_encode_opt_box_autoadd_space_archive_history(self.history, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.seasonMtime, serializer);
+    sse_encode_opt_String(self.styles, serializer);
+    sse_encode_opt_String(self.label, serializer);
+  }
+
+  @protected
+  void sse_encode_space_archive_kind(
+    SpaceArchiveKind self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_space_archive_order(
+    SpaceArchiveOrder self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_space_archive_page(
+    SpaceArchivePage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.count, serializer);
+    sse_encode_list_space_archive_item(self.items, serializer);
+    sse_encode_opt_box_autoadd_space_episodic_button(
+      self.episodicButton,
+      serializer,
+    );
+    sse_encode_opt_box_autoadd_bool(self.hasNext, serializer);
+    sse_encode_opt_box_autoadd_bool(self.hasPrev, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.next, serializer);
+  }
+
+  @protected
+  void sse_encode_space_archive_result(
+    SpaceArchiveResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_space_archive_page(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_space_archive_sort(
+    SpaceArchiveSort self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_space_article_block(
+    SpaceArticleBlock self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.count, serializer);
+    sse_encode_list_space_article_item(self.items, serializer);
+  }
+
+  @protected
+  void sse_encode_space_article_item(
+    SpaceArticleItem self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_String(self.cover, serializer);
+    sse_encode_opt_String(self.publishTimeText, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.view, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.reply, serializer);
+    sse_encode_opt_String(self.uri, serializer);
+  }
+
+  @protected
+  void sse_encode_space_audio_block(
+    SpaceAudioBlock self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.count, serializer);
+    sse_encode_list_space_audio_item(self.items, serializer);
+  }
+
+  @protected
+  void sse_encode_space_audio_item(
+    SpaceAudioItem self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.id, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.uid, serializer);
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_String(self.cover, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.ctime, serializer);
+  }
+
+  @protected
+  void sse_encode_space_card(SpaceCard self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.mid, serializer);
+    sse_encode_opt_String(self.name, serializer);
+    sse_encode_opt_String(self.face, serializer);
+    sse_encode_opt_String(self.sign, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.fans, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.attention, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.likeNum, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.level, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.levelIdentity, serializer);
+    sse_encode_opt_String(self.pendantImage, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.officialType, serializer);
+    sse_encode_opt_String(self.officialDesc, serializer);
+    sse_encode_opt_String(self.officialSpliceTitle, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.vipStatus, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.vipType, serializer);
+    sse_encode_opt_String(self.vipLabelText, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.silence, serializer);
+    sse_encode_opt_box_autoadd_space_relation(self.relation, serializer);
+    sse_encode_opt_box_autoadd_space_live_medal(self.liveMedal, serializer);
+    sse_encode_list_space_card_tag(self.tags, serializer);
+    sse_encode_opt_box_autoadd_space_pr_info(self.prInfo, serializer);
+    sse_encode_opt_box_autoadd_space_followed_by(self.followedBy, serializer);
+  }
+
+  @protected
+  void sse_encode_space_card_tag(SpaceCardTag self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_String(self.uri, serializer);
+  }
+
+  @protected
   void sse_encode_space_context(SpaceContext self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.baseUrl, serializer);
@@ -32171,6 +35151,176 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_transport_settings(self.transport, serializer);
     sse_encode_String(self.mixinKey, serializer);
     sse_encode_i_64(self.ts, serializer);
+  }
+
+  @protected
+  void sse_encode_space_elec(SpaceElec self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.total, serializer);
+    sse_encode_list_space_simple_user(self.list, serializer);
+  }
+
+  @protected
+  void sse_encode_space_episodic_button(
+    SpaceEpisodicButton self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.text, serializer);
+    sse_encode_opt_String(self.uri, serializer);
+  }
+
+  @protected
+  void sse_encode_space_fav_block(
+    SpaceFavBlock self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.count, serializer);
+    sse_encode_list_space_fav_item(self.items, serializer);
+  }
+
+  @protected
+  void sse_encode_space_fav_item(SpaceFavItem self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.mediaId, serializer);
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_String(self.cover, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.count, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.isPublic, serializer);
+  }
+
+  @protected
+  void sse_encode_space_followed_by(
+    SpaceFollowedBy self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_space_simple_user(self.items, serializer);
+  }
+
+  @protected
+  void sse_encode_space_guard(SpaceGuard self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.count, serializer);
+    sse_encode_list_space_simple_user(self.items, serializer);
+  }
+
+  @protected
+  void sse_encode_space_images(SpaceImages self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.imgUrl, serializer);
+    sse_encode_opt_String(self.nightImgUrl, serializer);
+    sse_encode_list_space_top_image(self.topImages, serializer);
+  }
+
+  @protected
+  void sse_encode_space_live(SpaceLive self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.roomStatus, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.liveStatus, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.roomId, serializer);
+  }
+
+  @protected
+  void sse_encode_space_live_medal(
+    SpaceLiveMedal self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.name, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.level, serializer);
+    sse_encode_opt_String(self.color, serializer);
+    sse_encode_opt_String(self.nameColor, serializer);
+  }
+
+  @protected
+  void sse_encode_space_page(SpacePage self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.relation, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.guestRelation, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.relSpecial, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.medal, serializer);
+    sse_encode_opt_String(self.defaultTab, serializer);
+    sse_encode_bool(self.hasItem, serializer);
+    sse_encode_bool(self.hasSeasonOrSeries, serializer);
+    sse_encode_opt_box_autoadd_space_setting(self.setting, serializer);
+    sse_encode_opt_box_autoadd_space_card(self.card, serializer);
+    sse_encode_opt_box_autoadd_space_images(self.images, serializer);
+    sse_encode_opt_box_autoadd_space_live(self.live, serializer);
+    sse_encode_opt_box_autoadd_space_elec(self.elec, serializer);
+    sse_encode_opt_box_autoadd_space_guard(self.guard, serializer);
+    sse_encode_opt_box_autoadd_space_video_block(self.archive, serializer);
+    sse_encode_opt_box_autoadd_space_video_block(self.season, serializer);
+    sse_encode_opt_box_autoadd_space_video_block(self.coinArchive, serializer);
+    sse_encode_opt_box_autoadd_space_video_block(self.likeArchive, serializer);
+    sse_encode_opt_box_autoadd_space_video_block(self.comic, serializer);
+    sse_encode_opt_box_autoadd_space_article_block(self.article, serializer);
+    sse_encode_opt_box_autoadd_space_audio_block(self.audio, serializer);
+    sse_encode_opt_box_autoadd_space_fav_block(self.favourite, serializer);
+    sse_encode_list_space_tab_2(self.tab2, serializer);
+    sse_encode_list_space_reservation(self.reservations, serializer);
+  }
+
+  @protected
+  void sse_encode_space_page_result(
+    SpacePageResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_space_page(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_space_pr_info(SpacePrInfo self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.content, serializer);
+    sse_encode_opt_String(self.url, serializer);
+    sse_encode_opt_String(self.icon, serializer);
+    sse_encode_opt_String(self.iconNight, serializer);
+    sse_encode_String(self.textColor, serializer);
+    sse_encode_String(self.bgColor, serializer);
+    sse_encode_String(self.textColorNight, serializer);
+    sse_encode_String(self.bgColorNight, serializer);
+  }
+
+  @protected
+  void sse_encode_space_relation(SpaceRelation self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.status, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.isFollow, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.isFollowed, serializer);
+  }
+
+  @protected
+  void sse_encode_space_reservation(
+    SpaceReservation self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.sid, serializer);
+    sse_encode_opt_String(self.name, serializer);
+    sse_encode_i_64(self.total, serializer);
+    sse_encode_bool(self.isFollow, serializer);
+    sse_encode_opt_String(self.descText, serializer);
+    sse_encode_opt_String(self.dynamicId, serializer);
+    sse_encode_opt_box_autoadd_space_reservation_lottery(
+      self.lottery,
+      serializer,
+    );
+  }
+
+  @protected
+  void sse_encode_space_reservation_lottery(
+    SpaceReservationLottery self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.text, serializer);
+    sse_encode_opt_String(self.jumpUrl, serializer);
   }
 
   @protected
@@ -32208,6 +35358,91 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_opt_String(self.errorKind, serializer);
     sse_encode_opt_String(self.errorDetail, serializer);
     sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_space_setting(SpaceSetting self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.favVideo, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.coinsVideo, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.likesVideo, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.bangumi, serializer);
+  }
+
+  @protected
+  void sse_encode_space_simple_user(
+    SpaceSimpleUser self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.mid, serializer);
+    sse_encode_opt_String(self.name, serializer);
+    sse_encode_opt_String(self.face, serializer);
+  }
+
+  @protected
+  void sse_encode_space_tab_2(SpaceTab2 self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_String(self.param, serializer);
+    sse_encode_list_space_tab_2_item(self.items, serializer);
+  }
+
+  @protected
+  void sse_encode_space_tab_2_item(
+    SpaceTab2Item self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_String(self.param, serializer);
+    sse_encode_list_space_tab_filter(self.filters, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.seasonId, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.seriesId, serializer);
+  }
+
+  @protected
+  void sse_encode_space_tab_filter(
+    SpaceTabFilter self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.text, serializer);
+    sse_encode_String(self.meta, serializer);
+    sse_encode_opt_String(self.tabName, serializer);
+  }
+
+  @protected
+  void sse_encode_space_top_image(
+    SpaceTopImage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.header, serializer);
+    sse_encode_String(self.fullCover, serializer);
+    sse_encode_f_64(self.dy, serializer);
+    sse_encode_opt_box_autoadd_space_top_title(self.title, serializer);
+  }
+
+  @protected
+  void sse_encode_space_top_title(
+    SpaceTopTitle self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_String(self.subTitle, serializer);
+    sse_encode_list_String(self.subTitleColors, serializer);
+  }
+
+  @protected
+  void sse_encode_space_video_block(
+    SpaceVideoBlock self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.count, serializer);
+    sse_encode_list_space_archive_item(self.items, serializer);
   }
 
   @protected

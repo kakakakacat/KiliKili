@@ -206,3 +206,304 @@ fn a_guard_entry_with_only_a_uid_still_parses() {
     assert_eq!(page.items[2].uid, Some(300_000_203));
     assert_eq!(page.items[2].username, None, "基线这里会抛");
 }
+
+// ---------------------------------------------------------------- 空间主页
+//
+// 下面这几份与上面不同：**取自真实响应再脱敏**（mid、昵称、CDN 文件名、
+// 查询串都换过）。空间主页是全仓库最宽的一个响应，手工构造写不出那些
+// 真实的怪形状——`images.collection_top_simple` 里静态封面走 `item.image`、
+// 动态封面走 `item.animation`，两者只有一个有值，就是抓下来才发现的。
+//
+// fixture 里**刻意留着大量没有消费者的键**（`tab` 那 23 个布尔开关、
+// `card` 的 `nameplate` / `honours`、`images` 的 `card_extra` / `extra`…），
+// 由快照证明它们被忽略。
+//
+// `space_archive_extras` 与 `space_archive_empty` 是**手工构造**的：角标、
+// 观看进度、合集更新时间、漫画题材这几支要特定的 UP 才出得来，抓不到。
+// 它们只证明映射一致，不证明我们对协议的理解正确。
+
+#[test]
+fn the_space_page_matches_the_frozen_snapshot() {
+    check("space_page.raw.json", "space_page.rust.json", |raw| {
+        value(&bili_api::space::parse_space_page(raw).expect("样本应解析成功"))
+    });
+}
+
+#[test]
+fn the_alternate_space_page_matches_the_frozen_snapshot() {
+    check(
+        "space_page_alt.raw.json",
+        "space_page_alt.rust.json",
+        |raw| value(&bili_api::space::parse_space_page(raw).expect("样本应解析成功")),
+    );
+}
+
+#[test]
+fn the_reservations_match_the_frozen_snapshot() {
+    check(
+        "space_reservation.raw.json",
+        "space_reservation.rust.json",
+        |raw| value(&bili_api::space::parse_space_page(raw).expect("样本应解析成功")),
+    );
+}
+
+#[test]
+fn the_space_archive_matches_the_frozen_snapshot() {
+    check("space_archive.raw.json", "space_archive.rust.json", |raw| {
+        value(&bili_api::space::parse_space_archive(raw).expect("样本应解析成功"))
+    });
+}
+
+#[test]
+fn the_space_archive_extras_match_the_frozen_snapshot() {
+    check(
+        "space_archive_extras.raw.json",
+        "space_archive_extras.rust.json",
+        |raw| value(&bili_api::space::parse_space_archive(raw).expect("样本应解析成功")),
+    );
+}
+
+#[test]
+fn an_empty_space_archive_matches_the_frozen_snapshot() {
+    check(
+        "space_archive_empty.raw.json",
+        "space_archive_empty.rust.json",
+        |raw| value(&bili_api::space::parse_space_archive(raw).expect("样本应解析成功")),
+    );
+}
+
+/// 置顶合集的封面有两种形态：静态的在 `item.image`、动态的在
+/// `item.animation`，服务端只给其中一个。两种都要算出裁切位置。
+#[test]
+fn both_static_and_animated_collection_covers_yield_a_crop_offset() {
+    let raw = fs::read_to_string(fixture("space_page.raw.json")).expect("raw fixture 可读");
+    let page = bili_api::space::parse_space_page(&raw).expect("样本应解析成功");
+    let images = page.images.expect("样本带 images");
+    assert_eq!(images.top_images.len(), 2);
+    // 动态封面：location = 0-29-1079-1079，height = 1863。
+    let animated = &images.top_images[0];
+    assert!(
+        (animated.dy - ((29.0 + 1079.0) / 1863.0 - 1.0)).abs() < 1e-9,
+        "动态封面也要算 dy，实际 {}",
+        animated.dy
+    );
+    assert_eq!(
+        animated.header, animated.full_cover,
+        "没有 default_image 时回落到 cover"
+    );
+    // 静态封面：有 default_image，列表里显示它，点开看的还是 cover。
+    let still = &images.top_images[1];
+    assert_ne!(still.header, still.full_cover);
+}
+
+/// 空间页标签只认 `location` 与 `real_name` 两类。
+#[test]
+fn only_the_two_known_space_tags_survive() {
+    let raw = r#"{"code":0,"data":{"card":{"space_tag":[
+        {"type":"location","title":"IP属地：上海"},
+        {"type":"school","title":"某某大学"},
+        {"type":"real_name","title":"已实名"}
+    ]}}}"#;
+    let page = bili_api::space::parse_space_page(raw).expect("应解析成功");
+    let tags = page.card.expect("有 card").tags;
+    assert_eq!(tags.len(), 2);
+    assert_eq!(tags[0].title.as_deref(), Some("IP属地：上海"));
+    assert_eq!(tags[1].title.as_deref(), Some("已实名"));
+}
+
+/// `pr_info` 在没有推广时是个空对象，不该变成一个字段全空的结构。
+#[test]
+fn an_empty_pr_info_block_is_treated_as_absent() {
+    let raw = r#"{"code":0,"data":{"card":{"pr_info":{}}}}"#;
+    let page = bili_api::space::parse_space_page(raw).expect("应解析成功");
+    assert!(page.card.expect("有 card").pr_info.is_none());
+}
+
+/// 推广信息的四个颜色有默认值，服务端不给时用基线那几个字面量。
+#[test]
+fn the_pr_info_colors_fall_back_to_the_baseline_literals() {
+    let raw = r#"{"code":0,"data":{"card":{"pr_info":{"content":"广告"}}}}"#;
+    let page = bili_api::space::parse_space_page(raw).expect("应解析成功");
+    let pr = page.card.expect("有 card").pr_info.expect("有 pr_info");
+    assert_eq!(pr.text_color, "#999999");
+    assert_eq!(pr.bg_color, "#e7e7e7");
+    assert_eq!(pr.text_color_night, "#727272");
+    assert_eq!(pr.bg_color_night, "#2A2A2A");
+}
+
+/// 「主页」tab 要不要显示取决于八个块里还有没有东西，这个判断在 Rust 算。
+#[test]
+fn has_item_counts_all_eight_blocks() {
+    let empty = r#"{"code":0,"data":{"archive":{"count":0,"item":[]},"article":{"count":0}}}"#;
+    assert!(
+        !bili_api::space::parse_space_page(empty)
+            .expect("应解析成功")
+            .has_item
+    );
+
+    // 只有收藏夹有东西，照样算「有」。
+    let only_fav =
+        r#"{"code":0,"data":{"archive":{"item":[]},"favourite2":{"item":[{"title":"甲"}]}}}"#;
+    assert!(
+        bili_api::space::parse_space_page(only_fav)
+            .expect("应解析成功")
+            .has_item
+    );
+}
+
+/// 合集与列表任一非空，投稿页就要多一个「全部合集/列表」tab。
+#[test]
+fn has_season_or_series_follows_the_baseline_rule() {
+    let none = r#"{"code":0,"data":{"ugc_season":{"count":0},"series":{"item":[]}}}"#;
+    assert!(
+        !bili_api::space::parse_space_page(none)
+            .expect("应解析成功")
+            .has_season_or_series
+    );
+
+    let by_series = r#"{"code":0,"data":{"ugc_season":{"count":0},"series":{"item":[{}]}}}"#;
+    assert!(
+        bili_api::space::parse_space_page(by_series)
+            .expect("应解析成功")
+            .has_season_or_series
+    );
+
+    let by_season = r#"{"code":0,"data":{"ugc_season":{"count":3}}}"#;
+    assert!(
+        bili_api::space::parse_space_page(by_season)
+            .expect("应解析成功")
+            .has_season_or_series
+    );
+}
+
+/// 大航海人数要从「2人加入大航海」里抠出来。
+#[test]
+fn the_guard_count_is_dug_out_of_the_sentence() {
+    let raw = r#"{"code":0,"data":{"guard":{"desc":"12人加入大航海","item":[]}}}"#;
+    let guard = bili_api::space::parse_space_page(raw)
+        .expect("应解析成功")
+        .guard
+        .expect("有 guard");
+    assert_eq!(guard.count.as_deref(), Some("12"));
+
+    let no_digits = r#"{"code":0,"data":{"guard":{"desc":"还没有人加入大航海"}}}"#;
+    assert!(
+        bili_api::space::parse_space_page(no_digits)
+            .expect("应解析成功")
+            .guard
+            .expect("有 guard")
+            .count
+            .is_none()
+    );
+}
+
+/// 六个 tab 共用一个请求构造函数，差别只在路径与封面档位。
+#[test]
+fn the_six_contribute_tabs_only_differ_in_path_and_quality() {
+    use bili_api::space::{SpaceArchiveKind, space_archive_request};
+
+    let video = space_archive_request(
+        SpaceArchiveKind::Video,
+        Some(1),
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    );
+    let comic = space_archive_request(
+        SpaceArchiveKind::Comic,
+        Some(1),
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    );
+    assert_ne!(video.path, comic.path);
+    assert!(video.query_string().contains("qn=80"));
+    assert!(comic.query_string().contains("qn=32"));
+}
+
+/// 可省的参数**省掉就不出现**，不是发一个空值。
+#[test]
+fn the_optional_archive_params_are_dropped_rather_than_sent_empty() {
+    use bili_api::space::{SpaceArchiveKind, SpaceArchiveOrder, space_archive_request};
+
+    let bare = space_archive_request(
+        SpaceArchiveKind::Video,
+        Some(1),
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    .query_string();
+    for key in [
+        "aid=",
+        "pn=",
+        "next=",
+        "season_id=",
+        "series_id=",
+        "order=",
+        "sort=",
+        "include_cursor=",
+    ] {
+        assert!(!bare.contains(key), "{key} 不该出现 — {bare}");
+    }
+
+    let full = space_archive_request(
+        SpaceArchiveKind::Video,
+        Some(1),
+        Some("12345"),
+        Some(SpaceArchiveOrder::Click),
+        None,
+        Some(2),
+        None,
+        None,
+        None,
+        Some(true),
+    )
+    .query_string();
+    assert!(full.contains("aid=12345"));
+    assert!(full.contains("order=click"));
+    assert!(full.contains("include_cursor=true"));
+}
+
+/// 空间主页的请求面照抄基线：同样的固定参数、同样的顺序。
+#[test]
+fn the_space_request_keeps_the_baseline_param_order() {
+    use bili_api::space::space_request;
+
+    let req = space_request(1, Some("123"));
+    let keys: Vec<&str> = req.query.iter().map(|(k, _)| k.as_str()).collect();
+    assert_eq!(
+        keys,
+        [
+            "build",
+            "version",
+            "c_locale",
+            "channel",
+            "mobi_app",
+            "platform",
+            "s_locale",
+            "from_view_aid",
+            "statistics",
+            "vmid",
+        ]
+    );
+
+    // 没有 from_view_aid 时整条参数不出现，不是发一个空值。
+    let bare = space_request(1, None).query_string();
+    assert!(!bare.contains("from_view_aid"), "{bare}");
+}

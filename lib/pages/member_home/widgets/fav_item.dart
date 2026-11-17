@@ -1,22 +1,41 @@
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/models_new/space/space_fav/list.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:kilikili/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
+/// 空间主页上的一个收藏夹。
+///
+/// 收的是几个标量而不是某个取数模型：这一块的数据来自 Rust 的
+/// `SpacePage`，而收藏夹列表页那条接口还在 Dart 模型上，两边共用这个
+/// 组件。参数化之后它谁都不认识，哪边先迁都不用动它。
 class MemberFavItem extends StatelessWidget {
-  const MemberFavItem(this.item, {super.key});
+  const MemberFavItem({
+    super.key,
+    required this.mediaId,
+    required this.title,
+    required this.cover,
+    required this.count,
+    required this.isPublic,
+  });
 
-  final SpaceFavItemModel item;
+  final int? mediaId;
+  final String? title;
+  final String? cover;
+
+  /// 夹子里有多少条内容。
+  final int? count;
+
+  /// `1` 为私密。键名与含义是反的，这是服务端的事实。
+  final int? isPublic;
 
   @override
   Widget build(BuildContext context) {
     void onLongPress() => imageSaveDialog(
-      title: item.title,
-      cover: item.cover,
+      title: title,
+      cover: cover,
     );
     return Material(
       type: MaterialType.transparency,
@@ -25,8 +44,8 @@ class MemberFavItem extends StatelessWidget {
           Get.toNamed(
             '/favDetail',
             parameters: {
-              'mediaId': item.mediaId.toString(),
-              'heroTag': Utils.makeHeroTag(item.mediaId),
+              'mediaId': mediaId.toString(),
+              'heroTag': Utils.makeHeroTag(mediaId),
             },
           );
         },
@@ -41,7 +60,7 @@ class MemberFavItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               NetworkImgLayer(
-                src: item.cover,
+                src: cover,
                 width: 160,
                 height: 100,
               ),
@@ -52,13 +71,13 @@ class MemberFavItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item.title!,
+                      title!,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const Spacer(),
                     Text(
-                      '${item.count}个内容 · ${item.isPublic == 1 ? '私密' : '公开'}',
+                      '$count个内容 · ${isPublic == 1 ? '私密' : '公开'}',
                       style: TextStyle(
                         fontSize: 12,
                         color: Theme.of(context).colorScheme.outline,

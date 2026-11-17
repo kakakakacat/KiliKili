@@ -1,0 +1,78 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "episodic_button": {
+      "text": "播放全部",
+      "uri": "bilibili://music/playlist/spacepage/100001"
+    },
+    "order": [
+      {
+        "title": "最新发布",
+        "value": "pubdate"
+      },
+      {
+        "title": "最多播放",
+        "value": "click"
+      }
+    ],
+    "count": 941,
+    "item": [
+      {
+        "title": "为什么是最后一期？影视飓风1800万粉丝Q&A！",
+        "cover": "http://i2.hdslb.com/bfs/archive/xxxx.jpg",
+        "uri": "bilibili://video/117602311476853",
+        "param": "117602311476853",
+        "goto": "av",
+        "length": "",
+        "duration": 1140,
+        "is_steins": false,
+        "is_cooperation": false,
+        "is_pgc": false,
+        "is_pugv": false,
+        "play": 6464950,
+        "danmaku": 89126,
+        "author": "用户01",
+        "bvid": "BV1kZWX62ENY",
+        "first_cid": 43538251892,
+        "cursor_attr": {
+          "is_last_watched_arc": false,
+          "rank": 0
+        },
+        "publish_time_text": "11月12日"
+      },
+      {
+        "title": "真的需要摸吗？MacBook Pro PROLED XDR上手",
+        "cover": "http://i1.hdslb.com/bfs/archive/xxxx.jpg",
+        "uri": "bilibili://video/117563807766583",
+        "param": "117563807766583",
+        "goto": "av",
+        "length": "",
+        "duration": 899,
+        "is_steins": false,
+        "is_cooperation": false,
+        "is_pgc": false,
+        "is_pugv": false,
+        "play": 3959008,
+        "danmaku": 6625,
+        "author": "用户01",
+        "bvid": "BV1NS4t6oEXQ",
+        "first_cid": 43354425958,
+        "cursor_attr": {
+          "is_last_watched_arc": false,
+          "rank": 1
+        },
+        "publish_time_text": "11月5日"
+      }
+    ],
+    "last_watched_locator": {
+      "display_threshold": 10,
+      "insert_ranking": 6,
+      "text": "定位至上次观看"
+    },
+    "has_next": true,
+    "has_prev": false,
+    "next_cursor": "117081244701768"
+  }
+}

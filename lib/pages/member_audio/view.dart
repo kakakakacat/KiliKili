@@ -113,7 +113,20 @@ class _MemberAudioState extends State<MemberAudio>
                       if (index == response.length - 1) {
                         _controller.onLoadMore();
                       }
-                      return MemberAudioItem(response[index]);
+                      final item = response[index];
+                      // 这条接口的 `ctime` 是毫秒（空间主页那条是秒），
+                      // 转换留在调用点，见 `MemberAudioItem.ctime`。
+                      return MemberAudioItem(
+                        id: item.id,
+                        uid: item.uid,
+                        title: item.title,
+                        cover: item.cover,
+                        ctime: item.statistic != null
+                            ? item.ctime! ~/ 1000
+                            : item.ctime,
+                        play: item.statistic?.play,
+                        comment: item.statistic?.comment,
+                      );
                     },
                     itemCount: response.length,
                   ),

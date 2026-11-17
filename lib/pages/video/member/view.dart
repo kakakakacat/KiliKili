@@ -22,7 +22,8 @@ import 'package:kilikili/pages/member_video/widgets/video_card_h_member_video.da
 import 'package:kilikili/pages/video/controller.dart';
 import 'package:kilikili/pages/video/introduction/ugc/controller.dart';
 import 'package:kilikili/pages/video/member/controller.dart';
-import 'package:kilikili/services/rust/rust_space.dart';
+import 'package:kilikili/services/rust/rust_space.dart'
+    show MemberInfo;
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/grid.dart';
 import 'package:kilikili/utils/bili_utils.dart';

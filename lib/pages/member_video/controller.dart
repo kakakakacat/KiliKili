@@ -2,26 +2,23 @@ import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart'
     show RefreshIndicatorState;
 import 'package:kilikili/common/widgets/scroll_physics.dart' show ReloadMixin;
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/member.dart';
 import 'package:kilikili/http/search.dart';
 import 'package:kilikili/models/common/member/archive_order_type_app.dart';
 import 'package:kilikili/models/common/member/archive_sort_type_app.dart';
 import 'package:kilikili/models/common/member/contribute_type.dart';
 import 'package:kilikili/models/common/video/source_type.dart';
-import 'package:kilikili/models_new/space/space_archive/data.dart';
-import 'package:kilikili/models_new/space/space_archive/episodic_button.dart';
 import 'package:kilikili/models_new/space/space_archive/item.dart';
+import 'package:kilikili/services/rust/rust_space.dart' as rust;
 import 'package:kilikili/pages/common/common_list_controller.dart';
 import 'package:kilikili/pages/member/controller.dart';
 import 'package:kilikili/utils/extension/dimension_ext.dart';
-import 'package:kilikili/utils/extension/iterable_ext.dart';
 import 'package:kilikili/utils/id_utils.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:flutter/widgets.dart' show GlobalKey;
 import 'package:get/get.dart';
 
 class MemberVideoCtr
-    extends CommonListController<SpaceArchiveData, SpaceArchiveItem>
+    extends CommonListController<rust.SpaceArchivePage, SpaceArchiveItem>
     with ReloadMixin {
   MemberVideoCtr({
     required this.heroTag,
@@ -43,7 +40,7 @@ class MemberVideoCtr
   late ArchiveSortTypeApp sort = .desc;
   int? count;
   int? next;
-  EpisodicButton? episodicButton;
+  rust.SpaceEpisodicButton? episodicButton;
   final String? username;
   final String? title;
 
@@ -101,11 +98,13 @@ class MemberVideoCtr
   @override
   bool customHandleResponse(
     bool isRefresh,
-    Success<SpaceArchiveData> response,
+    Success<rust.SpaceArchivePage> response,
   ) {
     final data = response.response;
     episodicButton = data.episodicButton;
-    next = data.next;
+    next = data.next?.toInt();
+    // Rust 的结构不可变，拼接落在这个本地列表上。
+    final items = data.items.map(SpaceArchiveItem.fromRust).toList();
     if (page == 0 || isLoadPrevious) {
       hasPrev = data.hasPrev;
       if (isLoadPrevious && hasPrev != true) {
@@ -113,46 +112,44 @@ class MemberVideoCtr
       }
     }
     if (page == 0 || !isLoadPrevious) {
-      if ((isVideo ? data.hasNext == false : data.next == 0) ||
-          data.item.isNullOrEmpty) {
+      if ((isVideo ? data.hasNext == false : next == 0) || items.isEmpty) {
         isEnd = true;
       }
     }
-    count = type == .season ? data.item?.length : data.count;
+    count = type == .season ? items.length : data.count?.toInt();
     if (page != 0) {
       if (loadingState.value case Success(:final response)) {
-        data.item ??= <SpaceArchiveItem>[];
         if (isLoadPrevious) {
-          data.item!.addAll(response!);
+          items.addAll(response!);
         } else {
-          data.item!.insertAll(0, response!);
+          items.insertAll(0, response!);
         }
       }
     }
-    firstAid = data.item?.firstOrNull?.param;
-    lastAid = data.item?.lastOrNull?.param;
+    firstAid = items.firstOrNull?.param;
+    lastAid = items.lastOrNull?.param;
     isLoadPrevious = false;
-    loadingState.value = Success(data.item);
+    loadingState.value = Success(items);
     return true;
   }
 
   @override
-  Future<LoadingState<SpaceArchiveData>> customGetData() =>
-      MemberHttp.spaceArchive(
-        type: type,
+  Future<LoadingState<rust.SpaceArchivePage>> customGetData() =>
+      rust.RustSpace.spaceArchive(
+        kind: type.kind,
         mid: mid,
         aid: isVideo
             ? isLoadPrevious
                   ? firstAid
                   : lastAid
             : null,
-        order: isVideo ? order : null,
+        order: isVideo ? order.kind : null,
         sort: isVideo
             ? isLoadPrevious
-                  ? .asc
+                  ? rust.SpaceArchiveSort.asc
                   : null
-            : sort,
-        pn: type == .charging ? page : null,
+            : sort.kind,
+        page: type == .charging ? page : null,
         next: next,
         seasonId: seasonId,
         seriesId: seriesId,

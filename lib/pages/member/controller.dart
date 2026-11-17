@@ -1,16 +1,10 @@
 import 'dart:math';
 
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/member.dart';
 import 'package:kilikili/models/common/member/tab_type.dart';
-import 'package:kilikili/models/model_owner.dart';
-import 'package:kilikili/models_new/space/space/data.dart';
-import 'package:kilikili/models_new/space/space/elec.dart';
-import 'package:kilikili/models_new/space/space/live.dart';
-import 'package:kilikili/models_new/space/space/reservation_card_list.dart';
-import 'package:kilikili/models_new/space/space/setting.dart';
-import 'package:kilikili/models_new/space/space/tab2.dart';
 import 'package:kilikili/pages/common/common_data_controller.dart';
+import 'package:kilikili/pages/member/reserve_item.dart';
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/extension/nested_scroll_ext.dart';
@@ -24,7 +18,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
-class MemberController extends CommonDataController<SpaceData, SpaceData?>
+class MemberController extends CommonDataController<SpacePage, SpacePage?>
     with GetTickerProviderStateMixin {
   MemberController({required this.mid});
   int mid;
@@ -33,7 +27,7 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
 
   late final account = Accounts.main;
 
-  Live? live;
+  SpaceLive? live;
   int? silence;
 
   int? isFollowed; // 被关注
@@ -51,16 +45,17 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
 
   bool? hasSeasonOrSeries;
 
-  List<ElecItem>? charges;
+  List<SpaceSimpleUser>? charges;
   int? chargeCount;
   bool get hasCharge => chargeCount != null && chargeCount! > 0;
 
   int? medal;
-  List<Owner>? guards;
-  Object? guardCount;
+  List<SpaceSimpleUser>? guards;
+  /// 人数是从「2人加入大航海」里抠出来的，所以是字符串。
+  String? guardCount;
   bool get hasGuard => guards?.isNotEmpty ?? false;
 
-  List<ReservationCardItem>? reserves;
+  List<MemberReserveItem>? reserves;
 
   final fromViewAid = Get.parameters['from_view_aid'];
 
@@ -73,28 +68,28 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
   }
 
   @override
-  bool customHandleResponse(bool isRefresh, Success<SpaceData> response) {
+  bool customHandleResponse(bool isRefresh, Success<SpacePage> response) {
     final data = response.response;
     final card = data.card;
     username = card?.name ?? '';
     userAvatar = card?.face;
 
-    isFollowed = card?.relation?.isFollowed;
+    isFollowed = card?.relation?.isFollowed?.toInt();
 
     // charge
     final elec = data.elec;
     charges = elec?.list;
-    chargeCount = elec?.total;
+    chargeCount = elec?.total?.toInt();
     // guard
     final guard = data.guard;
-    guards = guard?.item;
+    guards = guard?.items;
     guardCount = guard?.count;
     // medal
-    medal = data.medal;
+    medal = data.medal?.toInt();
 
-    reserves = data.reservationCardList;
+    reserves = data.reservations.map(MemberReserveItem.new).toList();
 
-    switch (data.relation) {
+    switch (data.relation?.toInt()) {
       case -1:
         relation.value = 128;
       case -999:
@@ -105,19 +100,16 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
         relation.value = card?.relation?.isFollow == 1
             ? data.relSpecial == 1
                   ? -10
-                  : card?.relation?.status ?? 2
-            : data.relation ?? 0;
+                  : card?.relation?.status?.toInt() ?? 2
+            : data.relation?.toInt() ?? 0;
     }
-    tab2 = data.tab2;
+    tab2 = data.tab2.toList();
     live = data.live;
-    silence = card?.silence;
-    if ((data.ugcSeason?.count != null && data.ugcSeason?.count != 0) ||
-        data.series?.item?.isNotEmpty == true) {
-      hasSeasonOrSeries = true;
-    }
-    tab2?.retainWhere((item) => MemberTabType.contains(item.param!));
-    if (tab2?.isNotEmpty == true) {
-      if (data.hasItem != true && tab2!.first.param == 'home') {
+    silence = card?.silence?.toInt();
+    hasSeasonOrSeries = data.hasSeasonOrSeries;
+    tab2!.retainWhere((item) => MemberTabType.contains(item.param!));
+    if (tab2!.isNotEmpty) {
+      if (!data.hasItem && tab2!.first.param == 'home') {
         // remove empty home tab
         tab2!.removeAt(0);
       }
@@ -130,11 +122,14 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
           });
         }
         if (initialIndex == -1) {
-          if (data.defaultTab == 'video') {
-            data.defaultTab = 'contribute';
-          }
+          // 服务端的 `video` 与 tab2 里的 `contribute` 是同一个 tab。
+          // 基线在这里就地改写 `data.defaultTab`；Rust 的结构不可变，
+          // 改写落到这个局部变量上。
+          final defaultTab = data.defaultTab == 'video'
+              ? 'contribute'
+              : data.defaultTab;
           initialIndex = tab2!.indexWhere((item) {
-            return item.param == data.defaultTab;
+            return item.param == defaultTab;
           });
         }
         tabs = tab2!
@@ -165,15 +160,17 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
 
   @override
   bool handleError(String? errMsg) {
+    // 取不到空间信息时的兜底 tab。FRB 的列表字段是非空的，所以这里的
+    // `items` 要显式给空表，不能像基线那样省掉。
     tab2 = const [
-      SpaceTab2(title: '动态', param: 'dynamic'),
+      SpaceTab2(title: '动态', param: 'dynamic', items: []),
       SpaceTab2(
         title: '投稿',
         param: 'contribute',
-        items: [SpaceTab2Item(title: '视频', param: 'video')],
+        items: [SpaceTab2Item(title: '视频', param: 'video', filters: [])],
       ),
-      SpaceTab2(title: '收藏', param: 'favorite'),
-      SpaceTab2(title: '追番', param: 'bangumi'),
+      SpaceTab2(title: '收藏', param: 'favorite', items: []),
+      SpaceTab2(title: '追番', param: 'bangumi', items: []),
     ];
     tabs = tab2!.map((item) => Tab(text: item.title)).toList();
     tabController?.dispose();
@@ -187,7 +184,7 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
   }
 
   @override
-  Future<LoadingState<SpaceData>> customGetData() => MemberHttp.space(
+  Future<LoadingState<SpacePage>> customGetData() => RustSpace.spacePage(
     mid: mid,
     fromViewAid: fromViewAid,
   );

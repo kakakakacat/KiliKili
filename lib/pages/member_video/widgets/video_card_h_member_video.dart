@@ -32,8 +32,8 @@ class VideoCardHMemberVideo extends StatelessWidget {
       tap();
       return;
     }
-    final isPgc = videoItem.isPgc == true;
-    final isPugv = videoItem.isPugv == true;
+    final isPgc = videoItem.isPgc;
+    final isPugv = videoItem.isPugv;
     if ((isPgc || isPugv) && videoItem.uri?.isNotEmpty == true) {
       if (PageUtils.viewPgcFromUri(videoItem.uri!, isPgc: isPgc)) return;
     }
@@ -55,15 +55,14 @@ class VideoCardHMemberVideo extends StatelessWidget {
     final isCurr =
         fromViewAid == videoItem.param ||
         (videoItem.bvid != null && videoItem.bvid == bvid);
-    final history = videoItem.history;
-    final progress = history?.progress;
-    final duration = history?.duration;
+    final progress = videoItem.historyProgress;
+    final duration = videoItem.historyDuration;
     final hasProgress = progress != null && duration != null && duration > 0;
-    final badge = videoItem.badges?.isNotEmpty == true
-        ? videoItem.badges!.map((item) => item.text).join('|')
+    final badge = videoItem.badges.isNotEmpty
+        ? videoItem.badges.join('|')
         : null;
-    final date = videoItem.season != null
-        ? DateFormatUtils.dateFormat(videoItem.season!.mtime)
+    final date = videoItem.seasonMtime != null
+        ? DateFormatUtils.dateFormat(videoItem.seasonMtime)
         : videoItem.publishTimeText ?? '';
     void onLongPress() => imageSaveDialog(
       title: videoItem.title,
@@ -98,7 +97,7 @@ class VideoCardHMemberVideo extends StatelessWidget {
               text: badge,
               top: 54,
               right: 6,
-              type: videoItem.badges!.first.text == '充电专属'
+              type: videoItem.badges.first == '充电专属'
                   ? PBadgeType.error
                   : PBadgeType.primary,
             ),

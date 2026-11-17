@@ -1,0 +1,64 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "relation": -999,
+    "default_tab": "video",
+    "reservation_card_list": [
+      {
+        "sid": 5867427,
+        "name": "直播预约：第一场",
+        "total": 5222,
+        "stime": 1794298896,
+        "etime": 1794911700,
+        "state": 100,
+        "type": 2,
+        "up_mid": 100003,
+        "live_plan_start_time": 1794909600,
+        "desc_text_1": {
+          "text": "今天 18:00直播"
+        },
+        "desc_text_2": "5222人预约",
+        "show_text_2": true,
+        "attached_badge_text": "",
+        "dynamic_id": "1269000116856946693",
+        "is_dynamic_valid": true,
+        "reserve_act_extra": {},
+        "can_update_live_time": 1,
+        "can_update_ptime": -1,
+        "end_update_ptime": 604800,
+        "reserve_callback_time": 0
+      },
+      {
+        "sid": 5867428,
+        "name": "直播预约：第二场",
+        "total": 0,
+        "stime": 1794298896,
+        "etime": 1794911700,
+        "state": 100,
+        "type": 2,
+        "up_mid": 100003,
+        "live_plan_start_time": 1794909600,
+        "desc_text_1": {
+          "text": ""
+        },
+        "desc_text_2": "5222人预约",
+        "show_text_2": true,
+        "attached_badge_text": "",
+        "dynamic_id": "",
+        "is_dynamic_valid": true,
+        "reserve_act_extra": {},
+        "can_update_live_time": 1,
+        "can_update_ptime": -1,
+        "end_update_ptime": 604800,
+        "reserve_callback_time": 0,
+        "is_follow": 1,
+        "lottery_prize_info": {
+          "text": "参与抽奖",
+          "jump_url": "https://www.bilibili.com/h5/lottery"
+        }
+      }
+    ]
+  }
+}

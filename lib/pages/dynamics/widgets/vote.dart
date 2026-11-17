@@ -7,7 +7,6 @@ import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/badge_type.dart';
 import 'package:kilikili/models/common/image_preview_type.dart';
-import 'package:kilikili/models/model_owner.dart';
 import 'package:kilikili/rust/api/dynamic.dart' as rust;
 import 'package:kilikili/services/rust/rust_dynamic.dart';
 import 'package:kilikili/pages/dynamics/widgets/vote_decoration.dart';
@@ -217,12 +216,7 @@ class _VotePanelState extends State<VotePanel> {
                   children: [
                     avatars(
                       colorScheme: theme.colorScheme,
-                      users: list
-                          .take(3)
-                          .map(
-                            (e) =>
-                                Owner(mid: e.uid, name: e.name, face: e.face),
-                          ),
+                      faces: list.take(3).map((e) => e.face),
                     ),
                     Icon(
                       size: 18,

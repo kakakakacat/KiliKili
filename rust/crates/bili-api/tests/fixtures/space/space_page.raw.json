@@ -1,0 +1,674 @@
+{
+  "code": 0,
+  "message": "OK",
+  "ttl": 1,
+  "data": {
+    "relation": -999,
+    "guest_relation": -999,
+    "medal": 1,
+    "default_tab": "video",
+    "setting": {
+      "channel": 1,
+      "fav_video": 0,
+      "coins_video": 0,
+      "likes_video": 0,
+      "bangumi": 0,
+      "played_game": 0,
+      "my_game_public": 1,
+      "groups": 0,
+      "comic": 0,
+      "bbq": 1,
+      "dress_up": 0,
+      "disable_following": 1,
+      "live_playback": 0,
+      "close_space_medal": 0,
+      "only_show_wearing": 0,
+      "disable_show_school": 0,
+      "disable_show_nft": 0,
+      "disable_show_fans": 1,
+      "charge_video": 1,
+      "lesson_video": 1
+    },
+    "tab": {
+      "archive": true,
+      "article": false,
+      "clip": false,
+      "album": false,
+      "favorite": false,
+      "bangumi": false,
+      "coin": false,
+      "like": false,
+      "community": false,
+      "dynamic": true,
+      "audios": true,
+      "shop": false,
+      "mall": true,
+      "ugc_season": true,
+      "comic": false,
+      "cheese": true,
+      "sub_comic": false,
+      "activity": false,
+      "series": true,
+      "charging": false,
+      "opus": true,
+      "cheese_video": true,
+      "brand": false
+    },
+    "card": {
+      "mid": "100001",
+      "name": "用户01",
+      "face": "https://i0.hdslb.com/bfs/face/xxxx.jpg",
+      "fans": 19098077,
+      "attention": 688,
+      "sign": "无限进步！｜商务合作请联系邮箱：bd@ysjf.com（邮件中麻烦备注公司、咨询内容）｜店铺名：影视飓风",
+      "level_info": {
+        "current_level": 6,
+        "current_min": 0,
+        "current_exp": 0,
+        "next_exp": null,
+        "identity": 1,
+        "senior_inquiry": {
+          "inquiry_text": "",
+          "inquiry_url": ""
+        }
+      },
+      "pendant": {
+        "pid": 0,
+        "name": "",
+        "image": "",
+        "expire": 0,
+        "image_enhance": "",
+        "image_enhance_frame": "",
+        "n_pid": 0
+      },
+      "official_verify": {
+        "type": 0,
+        "desc": "2025百大UP主、2023年度最高人气奖UP主、课堂优质讲师",
+        "role": 7,
+        "title": "2025百大UP主、2023年度最高人气奖UP主、课堂优质讲师",
+        "icon": "https://i0.hdslb.com/bfs/activity-plat/static/20230828/e3b8ebec8e86f060b930a2c0536bb88b/72wejSxl9Z.png",
+        "splice_title": "bilibili UP主认证：2025百大UP主、2023年度最高人气奖UP主、课堂优质讲师"
+      },
+      "vip": {
+        "vipType": 2,
+        "vipDueDate": 2134915200000,
+        "dueRemark": "",
+        "accessStatus": 0,
+        "vipStatus": 1,
+        "vipStatusWarn": "",
+        "themeType": 0,
+        "label": {
+          "path": "",
+          "text": "十年大会员",
+          "label_theme": "ten_annual_vip",
+          "text_color": "#FFFFFF",
+          "bg_style": 1,
+          "bg_color": "#FB7299",
+          "border_color": "",
+          "image": "https://i0.hdslb.com/bfs/vip/xxxx.png",
+          "label_id": -22,
+          "label_goto": "https://big.bilibili.com/mobile/index?navhide=1&from_spmid=vipicon"
+        }
+      },
+      "silence": 0,
+      "likes": {
+        "like_num": 132360822,
+        "skr_tip": "视频、专栏、动态累计获赞"
+      },
+      "pr_info": {},
+      "relation": {
+        "status": 1
+      },
+      "live_fans_wearing": {
+        "level": 18,
+        "medal_name": "飓风",
+        "medal_color_start": 13081892,
+        "medal_color_end": 13081892,
+        "medal_color_border": 13081892,
+        "medal_jump_url": "https://live.bilibili.com/p/html/live-fansmedal-wall/index.html",
+        "detail_v2": {
+          "uid": 100001,
+          "medal_color_end": "#FFF8EBF0",
+          "level": 18,
+          "guard_level": 0,
+          "first_icon": "",
+          "second_icon": "",
+          "medal_color_level": "#FFD9A0B6",
+          "medal_color_name": "#FFAB6890",
+          "medal_level_bg_color": 0,
+          "medal_name": "飓风",
+          "medal_id": 33012,
+          "medal_color": "#FFF8EBF0",
+          "medal_color_border": "#FFF8EBF0"
+        }
+      },
+      "space_tag": []
+    },
+    "images": {
+      "imgUrl": "https://i0.hdslb.com/bfs/activity-plat/static/9bdd988aed64a23976d6d5494533a450/tDojHPi2LG.jpg",
+      "night_imgurl": "https://i0.hdslb.com/bfs/activity-plat/static/9bdd988aed64a23976d6d5494533a450/5A10HwGd3.jpg",
+      "collection_top_simple": {
+        "top": {
+          "result": [
+            {
+              "biz_type": 2,
+              "biz_id": 111278,
+              "item_id": "1767686291002",
+              "item": {
+                "item_type": 2,
+                "item_id": "1767686291002",
+                "image": null,
+                "animation": {
+                  "width": 1242,
+                  "height": 1863,
+                  "location": "0-29-1079-1079"
+                },
+                "music_album": null,
+                "extra": {
+                  "show_in_collection": true,
+                  "show_in_space": true,
+                  "unusable_reason": "",
+                  "space_expire_time": 0
+                },
+                "garb_extra": null,
+                "card_extra": {
+                  "card_id": 0,
+                  "card_id_string": "",
+                  "card_number": 0,
+                  "card_number_count": 0,
+                  "card_scarcity": 0,
+                  "card_color_format": null,
+                  "meta_info": null,
+                  "anchor_lottery_id": 111280
+                },
+                "additional_animation": {
+                  "is_silence": false,
+                  "animation_video_urls": [
+                    "https://upos-sz-mirrorhw.bilivideo.com/p…",
+                    "https://upos-sz-mirrorhw.bilivideo.com/p…"
+                  ],
+                  "animation_backup_image": "https://i0.hdslb.com/bfs/garb/open/73c83…",
+                  "animation_first_frame": "https://i0.hdslb.com/bfs/garb/open/73c83…",
+                  "width": 0,
+                  "height": 0,
+                  "duration": 6,
+                  "loop_mode": "",
+                  "trial_duration": 0,
+                  "show_subtitles": false,
+                  "subtitle_url": "",
+                  "show_progress_bar": false,
+                  "scaling_factor": 0,
+                  "location": "0-29-1079-1079",
+                  "compressed_w_h": "1079-1618"
+                },
+                "cover": "https://i0.hdslb.com/bfs/garb/open/xxxx.png",
+                "item_sub_type": 0,
+                "render_type": 0
+              },
+              "title": {
+                "title": "2025UP100收藏集",
+                "sub_title": "",
+                "sub_title_color_format": null
+              },
+              "extra": {
+                "owned": 8,
+                "total": 8,
+                "detail_jump_url": "https://www.bilibili.com/h5/mall/digital…",
+                "duration": 5000,
+                "sort": 0,
+                "collection_completed": true,
+                "fetch_time": 0,
+                "benefit_jump_url": "",
+                "hidden": false,
+                "item_count": 8,
+                "click_guide": true
+              },
+              "cover": "https://i0.hdslb.com/bfs/garb/open/cover0.png",
+              "digital_extra": {
+                "region_type": 0,
+                "region_icon": "",
+                "region_title": "2025UP100收藏集",
+                "entrance_jump_url": "",
+                "region_subtitle": ""
+              },
+              "scaling_factor": 0
+            },
+            {
+              "biz_type": 2,
+              "biz_id": 111278,
+              "item_id": "1767686291003",
+              "item": {
+                "item_type": 1,
+                "item_id": "1767686291003",
+                "image": {
+                  "default_image": "https://i0.hdslb.com/bfs/garb/open/thumb1.png",
+                  "long_image": "https://i0.hdslb.com/bfs/garb/open/c5dbb86f743307912e5eea9add7e51f5900ed07f.png",
+                  "shape_type": 0,
+                  "gyroscope": null,
+                  "width": 1242,
+                  "height": 1863,
+                  "scaling_factor": 0,
+                  "location": "0-0-1242-1242"
+                },
+                "animation": null,
+                "music_album": null,
+                "extra": {
+                  "show_in_collection": true,
+                  "show_in_space": true,
+                  "unusable_reason": "",
+                  "space_expire_time": 0
+                },
+                "garb_extra": null,
+                "card_extra": {
+                  "card_id": 0,
+                  "card_id_string": "",
+                  "card_number": 0,
+                  "card_number_count": 0,
+                  "card_scarcity": 0,
+                  "card_color_format": null,
+                  "meta_info": null,
+                  "anchor_lottery_id": 111280
+                },
+                "additional_animation": null,
+                "cover": "https://i0.hdslb.com/bfs/garb/open/xxxx.png",
+                "item_sub_type": 0,
+                "render_type": 0
+              },
+              "title": {
+                "title": "2025UP100收藏集",
+                "sub_title": "",
+                "sub_title_color_format": null
+              },
+              "extra": {
+                "owned": 8,
+                "total": 8,
+                "detail_jump_url": "https://www.bilibili.com/h5/mall/digital…",
+                "duration": 2500,
+                "sort": 0,
+                "collection_completed": true,
+                "fetch_time": 0,
+                "benefit_jump_url": "",
+                "hidden": false,
+                "item_count": 8,
+                "click_guide": true
+              },
+              "cover": "https://i0.hdslb.com/bfs/garb/open/cover1.png",
+              "digital_extra": {
+                "region_type": 0,
+                "region_icon": "",
+                "region_title": "2025UP100收藏集",
+                "entrance_jump_url": "",
+                "region_subtitle": ""
+              },
+              "scaling_factor": 0
+            }
+          ],
+          "click_guide": true,
+          "empty_guide": null
+        },
+        "max": 15,
+        "preference": {
+          "collection_public": true,
+          "garb_first_gain": "2021年09月",
+          "order_type": 0
+        },
+        "collection_completed_url": "https://i0.hdslb.com/bfs/garb/item/934aaeaf5b25c2a80f2ffe3650904555c67e331a.png"
+      }
+    },
+    "live": {
+      "roomStatus": 1,
+      "roundStatus": 0,
+      "liveStatus": 0,
+      "url": "https://live.bilibili.com/173551",
+      "title": "和影视飓风一起看苹果发布会",
+      "cover": "https://i0.hdslb.com/bfs/live/new_room_cover/xxxx.jpg",
+      "online": 0,
+      "roomid": 173551,
+      "broadcast_type": 0,
+      "online_hidden": 0,
+      "link": "https://live.bilibili.com/173551"
+    },
+    "elec": {
+      "total": 28283,
+      "list": [
+        {
+          "pay_mid": 1213241720,
+          "rank": 1,
+          "trend_type": 0,
+          "message": "",
+          "mid": 100001,
+          "vip_info": null,
+          "uname": "用户03",
+          "avatar": "https://i2.hdslb.com/bfs/face/xxxx.jpg"
+        },
+        {
+          "pay_mid": 489190068,
+          "rank": 2,
+          "trend_type": 0,
+          "message": "",
+          "mid": 100001,
+          "vip_info": null,
+          "uname": "用户04",
+          "avatar": "https://i0.hdslb.com/bfs/face/xxxx.jpg"
+        }
+      ]
+    },
+    "archive": {
+      "episodic_button": {
+        "text": "播放全部",
+        "uri": "bilibili://music/playlist/spacepage/100001"
+      },
+      "order": [
+        {
+          "title": "最新发布",
+          "value": "pubdate"
+        },
+        {
+          "title": "最多播放",
+          "value": "click"
+        }
+      ],
+      "count": 938,
+      "item": [
+        {
+          "title": "为什么是最后一期？影视飓风1800万粉丝Q&A！",
+          "cover": "http://i2.hdslb.com/bfs/archive/xxxx.jpg",
+          "uri": "bilibili://video/117602311476853",
+          "param": "117602311476853",
+          "goto": "av",
+          "duration": 1140,
+          "is_steins": false,
+          "is_cooperation": false,
+          "is_pgc": false,
+          "is_pugv": false,
+          "play": 6464950,
+          "danmaku": 89126,
+          "author": "用户01",
+          "bvid": "BV1kZWX62ENY",
+          "first_cid": 43538251892,
+          "publish_time_text": "11月12日"
+        },
+        {
+          "title": "真的需要摸吗？MacBook Pro PROLED XDR上手",
+          "cover": "http://i1.hdslb.com/bfs/archive/xxxx.jpg",
+          "uri": "bilibili://video/117563807766583",
+          "param": "117563807766583",
+          "goto": "av",
+          "duration": 899,
+          "is_steins": false,
+          "is_cooperation": false,
+          "is_pgc": false,
+          "is_pugv": false,
+          "play": 3959008,
+          "danmaku": 6625,
+          "author": "用户01",
+          "bvid": "BV1NS4t6oEXQ",
+          "first_cid": 43354425958,
+          "publish_time_text": "11月5日"
+        }
+      ]
+    },
+    "series": {
+      "item": [
+        {
+          "series_id": 60780,
+          "name": "用户05"
+        },
+        {
+          "series_id": 640,
+          "name": "用户06"
+        }
+      ],
+      "count": 8
+    },
+    "article": {
+      "count": 126,
+      "item": [
+        {
+          "title": "一个月38元值吗？Apple Creator Studio软件上手体验",
+          "stats": {
+            "view": 1935645,
+            "favorite": 496,
+            "like": 9788,
+            "dislike": 0,
+            "reply": 392,
+            "share": 1,
+            "coin": 72,
+            "dynamic": 0
+          },
+          "origin_image_urls": [
+            "https://i0.hdslb.com/bfs/new_dyn/f72cdc00492d273a2852bdc6e2c1f99a946974.png"
+          ],
+          "uri": "bilibili://article/45123193",
+          "publish_time_text": "1月30日"
+        },
+        {
+          "title": "关于近期场记板内容涉嫌洗稿抄袭的申明",
+          "stats": {
+            "view": 1948852,
+            "favorite": 614,
+            "like": 20170,
+            "dislike": 0,
+            "reply": 1711,
+            "share": 260,
+            "coin": 678,
+            "dynamic": 0
+          },
+          "origin_image_urls": [
+            "https://i0.hdslb.com/bfs/article/banner/…"
+          ],
+          "uri": "bilibili://article/17059775",
+          "publish_time_text": "2022年6月12日"
+        }
+      ],
+      "lists_count": 5,
+      "lists": [
+        {
+          "id": 89188,
+          "mid": 100001,
+          "name": "用户09",
+          "image_url": "https://i0.hdslb.com/bfs/article/96d2b3d2a72e6497a011c885ab9245c51507ce18.png",
+          "update_time": 1587643765,
+          "ctime": 1557394005,
+          "publish_time": 1587643765,
+          "summary": "",
+          "words": 90013,
+          "read": 36678816,
+          "articles_count": 85,
+          "update_time_text": "2020年4月23日"
+        },
+        {
+          "id": 99476,
+          "mid": 100001,
+          "name": "用户10",
+          "image_url": "https://i0.hdslb.com/bfs/article/96d2b3d2a72e6497a011c885ab9245c51507ce18.png",
+          "update_time": 1577271716,
+          "ctime": 1560585889,
+          "publish_time": 1577282400,
+          "summary": "",
+          "words": 6327,
+          "read": 1870943,
+          "articles_count": 4,
+          "update_time_text": "2019年12月25日"
+        }
+      ]
+    },
+    "season": {
+      "count": 0,
+      "item": []
+    },
+    "coin_archive": {
+      "count": 0,
+      "item": []
+    },
+    "like_archive": {
+      "count": 0,
+      "item": []
+    },
+    "audios": {
+      "count": 4,
+      "item": [
+        {
+          "id": 2506133,
+          "aid": 0,
+          "uid": 100001,
+          "title": "【无限进步Podcast】电影特效离普通人有多远？",
+          "cover": "http://i0.hdslb.com/bfs/music/xxxx.jpg",
+          "author": "用户01",
+          "schema": "bilibili://music/detail/2506133",
+          "duration": 3337,
+          "play": 79960,
+          "reply": 101,
+          "isOff": 0,
+          "authType": 0,
+          "ctime": 1629455591,
+          "view_content": "8万",
+          "icon_type": 0
+        },
+        {
+          "id": 2389757,
+          "aid": 0,
+          "uid": 100001,
+          "title": "【无限进步Podcast】什么是一台好的视频拍摄机？",
+          "cover": "http://i0.hdslb.com/bfs/music/xxxx.jpg",
+          "author": "用户01",
+          "schema": "bilibili://music/detail/2389757",
+          "duration": 2840,
+          "play": 60598,
+          "reply": 153,
+          "isOff": 0,
+          "authType": 0,
+          "ctime": 1624873987,
+          "view_content": "6.1万",
+          "icon_type": 0
+        }
+      ]
+    },
+    "favourite2": {
+      "count": 0,
+      "item": []
+    },
+    "comic": {
+      "count": 0,
+      "item": []
+    },
+    "ugc_season": {
+      "count": 24,
+      "item": [
+        {
+          "season_id": 2046621,
+          "title": "样片日记",
+          "cover": "https://archive.biliimg.com/bfs/archive/xxxx.jpg",
+          "param": "2046621",
+          "uri": "bilibili://video/238588630",
+          "goto": "av",
+          "duration": 0,
+          "play": 99118000,
+          "danmaku": 426667,
+          "count": 26,
+          "mtime": 1785488487,
+          "is_pay": false,
+          "is_no_space": false
+        },
+        {
+          "season_id": 7039840,
+          "title": "百万支票",
+          "cover": "https://archive.biliimg.com/bfs/archive/xxxx.jpg",
+          "param": "7039840",
+          "uri": "bilibili://video/114629422355559",
+          "goto": "av",
+          "duration": 0,
+          "play": 41725285,
+          "danmaku": 212727,
+          "count": 5,
+          "mtime": 1792400400,
+          "is_pay": false,
+          "is_no_space": false
+        }
+      ]
+    },
+    "guard": {
+      "uri": "https://live.bilibili.com/p/html/live-app-guard-info/index.html",
+      "desc": "2人加入大航海",
+      "high_light": "大航海",
+      "item": [
+        {
+          "mid": 38818555,
+          "face": "https://i1.hdslb.com/bfs/baselabs/xxxx.png"
+        },
+        {
+          "mid": 10764389,
+          "face": "http://i0.hdslb.com/bfs/baselabs/xxxx.png"
+        }
+      ],
+      "button_msg": "Ta的大航海"
+    },
+    "tab2": [
+      {
+        "title": "主页",
+        "param": "home",
+        "icon": ""
+      },
+      {
+        "title": "动态",
+        "param": "dynamic",
+        "icon": ""
+      },
+      {
+        "title": "投稿",
+        "param": "contribute",
+        "items": [
+          {
+            "title": "视频",
+            "param": "video",
+            "icon": ""
+          },
+          {
+            "title": "图文",
+            "param": "opus",
+            "filter": [
+              {
+                "text": "全部图文",
+                "meta": "all",
+                "tab_name": "图文"
+              },
+              {
+                "text": "动态",
+                "meta": "dynamic",
+                "tab_name": "动态"
+              },
+              {
+                "text": "专栏",
+                "meta": "article",
+                "tab_name": "专栏"
+              }
+            ],
+            "icon": ""
+          },
+          {
+            "title": "音频",
+            "param": "audio",
+            "icon": ""
+          },
+          {
+            "title": "样片日记",
+            "param": "season_video",
+            "season_id": 2046621,
+            "icon": "https://i0.hdslb.com/bfs/activity-plat/static/2be2c5f696186bad80d4b452e4af2a76/3ZWkRHCgPP.png"
+          }
+        ],
+        "icon": ""
+      },
+      {
+        "title": "小店",
+        "param": "shop",
+        "icon": ""
+      },
+      {
+        "title": "课堂",
+        "param": "cheese",
+        "icon": ""
+      }
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "items": [
+    {
+      "aid": 100200300,
+      "badge": null,
+      "bvid": "BV1xx411c7xx",
+      "cover": "https://i0.hdslb.com/bfs/archive/cover0.jpg",
+      "danmaku": null,
+      "desc": null,
+      "duration": 1492,
+      "owner_mid": 946974,
+      "owner_name": null,
+      "progress": null,
+      "pubdate": 1792584000,
+      "redirect_url": null,
+      "season_id": null,
+      "title": "折1万次，会坏吗？深度评测",
+      "view": 13485620
+    },
+    {
+      "aid": 100200301,
+      "badge": null,
+      "bvid": "BV1yy411c7yy",
+      "cover": "https://i0.hdslb.com/bfs/archive/cover1.jpg",
+      "danmaku": null,
+      "desc": null,
+      "duration": 336,
+      "owner_mid": 946974,
+      "owner_name": null,
+      "progress": null,
+      "pubdate": 1789639200,
+      "redirect_url": null,
+      "season_id": null,
+      "title": "一台相机的十年",
+      "view": 2225403
+    }
+  ],
+  "total": 116
+}

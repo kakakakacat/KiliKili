@@ -17,6 +17,7 @@ const ROOTS: &[&str] = &[
     ".bilibili.metadata.network.Network",
     ".bilibili.community.service.dm.v1.DmSegMobileReq",
     ".bilibili.community.service.dm.v1.DmViewReq",
+    ".bilibili.app.interfaces.v1.SearchArchiveReq",
 ];
 
 fn expected_package(name: &str) -> Result<String, String> {

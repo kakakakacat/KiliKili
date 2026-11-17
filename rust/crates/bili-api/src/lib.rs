@@ -38,6 +38,7 @@ pub mod follow;
 pub mod grpc;
 pub mod grpc_danmaku;
 pub mod grpc_metadata;
+pub mod grpc_space;
 pub mod history;
 pub mod http;
 pub mod live;

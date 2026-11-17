@@ -1,11 +1,11 @@
 import 'package:kilikili/common/widgets/self_sized_horizontal_list.dart';
 import 'package:kilikili/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:kilikili/models/common/member/archive_order_type_web.dart';
-import 'package:kilikili/models_new/member/search_archive/data.dart';
-import 'package:kilikili/models_new/member/search_archive/vlist.dart';
 import 'package:kilikili/pages/member_video_web/archive/controller.dart';
 import 'package:kilikili/pages/member_video_web/base/view.dart';
 import 'package:kilikili/pages/search/widgets/search_text.dart';
+import 'package:kilikili/services/rust/rust_space.dart' as rust;
+import 'package:kilikili/services/rust/space_web_compat.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -16,7 +16,7 @@ class MemberVideoWeb extends StatefulWidget {
   State<MemberVideoWeb> createState() => _MemberVideoWebState();
 
   static Future<void>? toMemberVideoWeb({
-    required Object mid,
+    required int mid,
     required String name,
   }) {
     return Get.toNamed(
@@ -33,8 +33,8 @@ class _MemberVideoWebState
     extends
         BaseVideoWebState<
           MemberVideoWeb,
-          SearchArchiveData,
-          VListItemModel,
+          rust.SpaceArchiveSearchPage,
+          SpaceWebVideoModel,
           ArchiveOrderTypeWeb
         > {
   @override
@@ -61,7 +61,7 @@ class _MemberVideoWebState
             final item = tags[index];
             final isCurr = controller.specialType != null
                 ? item.specialType == controller.specialType
-                : item.tid == controller.tid;
+                : item.tid?.toInt() == controller.tid;
             return SearchText(
               padding: const .symmetric(horizontal: 8, vertical: 4),
               text: '${item.name!} ${item.count}',
@@ -70,7 +70,7 @@ class _MemberVideoWebState
               onTap: (_) {
                 if (isCurr) return;
                 controller
-                  ..tid = item.tid ?? 0
+                  ..tid = item.tid?.toInt() ?? 0
                   ..specialType = item.specialType
                   ..onReload();
               },

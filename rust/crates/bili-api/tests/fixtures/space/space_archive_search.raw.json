@@ -1,0 +1,81 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "list": {
+      "tlist": {
+        "188": { "tid": 188, "count": 310, "name": "科技" },
+        "196": { "tid": 196, "count": 7, "name": "课堂" }
+      },
+      "slist": [
+        { "special_type": "charging", "count": 12, "name": "充电专属" }
+      ],
+      "vlist": [
+        {
+          "comment": 1234,
+          "typeid": 188,
+          "play": 13485620,
+          "pic": "https://i0.hdslb.com/bfs/archive/cover0.jpg",
+          "subtitle": "",
+          "description": "一条描述",
+          "copyright": "1",
+          "title": "折1万次，会坏吗？深度评测",
+          "review": 0,
+          "author": "用户01",
+          "mid": 100001,
+          "created": 1792584000,
+          "length": "24:52",
+          "video_review": 12345,
+          "aid": 100200300,
+          "bvid": "BV1xx411c7xx",
+          "hide_click": false,
+          "is_pay": 0,
+          "is_union_video": 1,
+          "is_steins_gate": 0,
+          "is_live_playback": 0,
+          "is_lesson_video": 0,
+          "is_lesson_finished": 0,
+          "lesson_update_info": "",
+          "jump_url": "",
+          "playback_position": 50,
+          "season_id": 2046621,
+          "attribute": 0
+        },
+        {
+          "play": 1000,
+          "pic": "https://i0.hdslb.com/bfs/archive/cover1.jpg",
+          "title": "一门课",
+          "author": "用户01",
+          "mid": 100001,
+          "created": 1792000000,
+          "length": "10:00",
+          "video_review": 2,
+          "aid": 100200301,
+          "bvid": "BV1yy411c7yy",
+          "is_lesson_video": 1,
+          "jump_url": "https://www.bilibili.com/cheese/play/ep1",
+          "playback_position": 100
+        },
+        {
+          "play": 42,
+          "pic": "https://i0.hdslb.com/bfs/archive/cover2.jpg",
+          "title": "充电专属的那一条",
+          "author": "用户01",
+          "mid": 100001,
+          "created": 1791000000,
+          "length": "1:02:03",
+          "aid": 100200302,
+          "bvid": "BV1zz411c7zz",
+          "is_charging_arc": true,
+          "is_union_video": 1
+        }
+      ]
+    },
+    "page": { "pn": 1, "ps": 30, "count": 329 },
+    "episodic_button": { "text": "播放全部", "uri": "//www.bilibili.com/medialist/play/100001" },
+    "is_risk": false,
+    "gaia_res_type": 0,
+    "gaia_data": null
+  }
+}

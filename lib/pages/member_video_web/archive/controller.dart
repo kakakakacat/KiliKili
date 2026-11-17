@@ -1,17 +1,15 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/member.dart';
 import 'package:kilikili/models/common/member/archive_order_type_web.dart';
-import 'package:kilikili/models_new/member/search_archive/data.dart';
-import 'package:kilikili/models_new/member/search_archive/slist.dart';
-import 'package:kilikili/models_new/member/search_archive/vlist.dart';
 import 'package:kilikili/pages/member_video_web/base/controller.dart';
+import 'package:kilikili/services/rust/rust_space.dart' as rust;
+import 'package:kilikili/services/rust/space_web_compat.dart';
 import 'package:get/get.dart';
 
 class MemberVideoWebCtr
     extends
         BaseVideoWebCtr<
-          SearchArchiveData,
-          VListItemModel,
+          rust.SpaceArchiveSearchPage,
+          SpaceWebVideoModel,
           ArchiveOrderTypeWeb
         > {
   int? _totalCount;
@@ -20,43 +18,46 @@ class MemberVideoWebCtr
 
   int tid = 0;
   String? specialType;
-  List<ListTag>? tags;
+  List<rust.SpaceArchiveTag>? tags;
 
   @override
-  List<VListItemModel>? getDataList(SearchArchiveData response) {
-    return response.list?.vlist;
+  List<SpaceWebVideoModel>? getDataList(rust.SpaceArchiveSearchPage response) {
+    return response.items.map(SpaceWebVideoModel.fromRust).toList();
   }
 
   @override
   bool customHandleResponse(
     bool isRefresh,
-    Success<SearchArchiveData> response,
+    Success<rust.SpaceArchiveSearchPage> response,
   ) {
     if (isRefresh) {
       final data = response.response;
-      if (data.page?.count case final count?) {
+      if (data.count?.toInt() case final count?) {
         if (tid == 0 && specialType == null) {
           _totalCount = count;
         }
         this.count = count;
         totalPage = (count / ps).ceil();
       }
-      final tags = data.list?.tags;
-      if (tags?.isNotEmpty ?? false) {
-        this.tags = tags!
-          ..insert(0, ListTag(tid: 0, name: '全部类型', count: _totalCount));
+      if (data.tags.isNotEmpty) {
+        // 「全部类型」是本地拼的一条，服务端不下发：它代表「不带筛选
+        // 参数」这个状态，总数只有未筛选那次请求才知道。
+        tags = [
+          rust.SpaceArchiveTag(tid: 0, name: '全部类型', count: _totalCount),
+          ...data.tags,
+        ];
       }
     }
     return false;
   }
 
   @override
-  Future<LoadingState<SearchArchiveData>> customGetData() =>
-      MemberHttp.searchArchive(
+  Future<LoadingState<rust.SpaceArchiveSearchPage>> customGetData() =>
+      rust.RustSpace.archiveSearch(
         mid: mid,
-        ps: ps,
-        pn: page,
-        order: order.value,
+        pageSize: ps,
+        page: page,
+        order: order.value.kind,
         tid: tid,
         specialType: specialType,
       );

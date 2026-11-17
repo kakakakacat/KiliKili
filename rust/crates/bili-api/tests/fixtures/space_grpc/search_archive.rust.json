@@ -1,0 +1,73 @@
+{
+  "items": [
+    {
+      "aid": 100200300,
+      "author_name": "用户01",
+      "cover": "https://i0.hdslb.com/bfs/archive/aaaa.jpg",
+      "danmaku": 12345,
+      "duration": 1492,
+      "first_cid": 900100,
+      "is_pugv": false,
+      "is_vertical": false,
+      "pubdate": 1792584000,
+      "redirect_url": null,
+      "title_spans": [
+        {
+          "is_em": false,
+          "text": "折 "
+        },
+        {
+          "is_em": true,
+          "text": "1 万次"
+        },
+        {
+          "is_em": false,
+          "text": "，会坏吗？&深度评测"
+        }
+      ],
+      "uri": "bilibili://video/100200300",
+      "view": 13485620
+    },
+    {
+      "aid": 100200301,
+      "author_name": "用户01",
+      "cover": "https://i0.hdslb.com/bfs/archive/bbbb.jpg",
+      "danmaku": 2,
+      "duration": 600,
+      "first_cid": 900101,
+      "is_pugv": true,
+      "is_vertical": true,
+      "pubdate": 1792000000,
+      "redirect_url": "https://www.bilibili.com/cheese/play/ep1",
+      "title_spans": [
+        {
+          "is_em": false,
+          "text": "一门课"
+        }
+      ],
+      "uri": "bilibili://pgc/season/12345",
+      "view": 1000
+    },
+    {
+      "aid": 100200302,
+      "author_name": null,
+      "cover": null,
+      "danmaku": null,
+      "duration": null,
+      "first_cid": null,
+      "is_pugv": false,
+      "is_vertical": true,
+      "pubdate": null,
+      "redirect_url": null,
+      "title_spans": [
+        {
+          "is_em": false,
+          "text": "竖屏但转过一次"
+        }
+      ],
+      "uri": null,
+      "view": null
+    }
+  ],
+  "total": 3
+}

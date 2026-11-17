@@ -1,0 +1,67 @@
+{
+  "code": 0,
+  "message": "OK",
+  "ttl": 1,
+  "data": {
+    "archives": [
+      {
+        "aid": 100200300,
+        "bvid": "BV1xx411c7xx",
+        "ctime": 1704871671,
+        "duration": 974,
+        "enable_vt": false,
+        "interactive_video": false,
+        "pic": "https://i0.hdslb.com/bfs/archive/cover0.jpg",
+        "playback_position": 0,
+        "pubdate": 1704877200,
+        "stat": {
+          "view": 3295398,
+          "vt": 0,
+          "danmaku": 15308
+        },
+        "state": 0,
+        "title": "零下26度的新疆，跟着去拍样片！",
+        "ugc_pay": 0,
+        "vt_display": "",
+        "is_lesson_video": 0
+      },
+      {
+        "aid": 100200301,
+        "bvid": "BV1yy411c7yy",
+        "ctime": 1707297294,
+        "duration": 1059,
+        "enable_vt": false,
+        "interactive_video": false,
+        "pic": "https://i0.hdslb.com/bfs/archive/cover1.jpg",
+        "playback_position": 0,
+        "pubdate": 1707297293,
+        "stat": {
+          "view": 2284822,
+          "vt": 0,
+          "danmaku": 10862
+        },
+        "state": 0,
+        "title": "凌晨五点的工地",
+        "ugc_pay": 0,
+        "vt_display": "",
+        "is_lesson_video": 0
+      }
+    ],
+    "meta": {
+      "category": 0,
+      "cover": "https://archive.biliimg.com/bfs/archive/cover0.jpg",
+      "description": "",
+      "mid": 100001,
+      "name": "合集·样片日记",
+      "ptime": 1785488487,
+      "season_id": 2046621,
+      "total": 26,
+      "title": "样片日记"
+    },
+    "page": {
+      "page_num": 1,
+      "page_size": 30,
+      "total": 26
+    }
+  }
+}

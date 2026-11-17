@@ -675,3 +675,132 @@ pub struct SpaceArchiveHistory {
     /// 其中一个。
     pub duration: Option<i64>,
 }
+
+// ================================================= 网页端的投稿搜索与合集
+
+/// 投稿搜索与合集/列表里的一条视频。
+///
+/// 三条接口（`/x/space/wbi/arc/search`、`/x/polymer/web-space/
+/// seasons_archives_list`、`/x/series/archives`）给的是同一类条目，只是
+/// 各自少给几个字段，所以共用这一个类型。
+///
+/// ## 作者
+///
+/// 投稿搜索给 `mid` + `author`；合集与列表**两个都不给**（基线在那里
+/// 读的 `upMid` 在当前响应里根本不存在，`name` 更是写死的空串）。两边
+/// 都如实留 `None`，由界面决定空的时候显示什么。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct SpaceWebVideo {
+    pub aid: Option<i64>,
+    pub bvid: Option<String>,
+    pub cover: Option<String>,
+    pub title: Option<String>,
+    pub desc: Option<String>,
+    /// 发布时间，Unix 秒。
+    pub pubdate: Option<i64>,
+    /// 时长，秒。
+    ///
+    /// 投稿搜索给的是 `"12:34"` 这种**字符串**，合集与列表给的是整数。
+    /// 换算在 Rust 做：那是对服务端约定的解读，不是排版。
+    pub duration: Option<i64>,
+    pub view: Option<i64>,
+    pub danmaku: Option<i64>,
+    pub owner_mid: Option<i64>,
+    pub owner_name: Option<String>,
+    pub season_id: Option<i64>,
+    /// 番剧/课堂的跳转地址，有值时点进去不是普通视频页。
+    pub redirect_url: Option<String>,
+    pub badge: Option<SpaceWebBadge>,
+    /// 看到哪儿了，秒；`-1` 表示看完了。
+    ///
+    /// 服务端给的是**百分比**（`playback_position`），换算与「100% 记成
+    /// -1」这个约定都照抄基线，一起放这里。
+    pub progress: Option<i64>,
+}
+
+/// 投稿搜索里那三种互斥的角标。
+///
+/// **只给类别，不给文案**（ADR-011 决策二）：「课堂」「充电专属」「合作」
+/// 这三个词是界面措辞，留在宿主。基线是在模型构造函数里直接写死中文。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub enum SpaceWebBadge {
+    /// 课堂（付费课程）。界面另外还要把它当 pugv 处理。
+    Lesson,
+    /// 充电专属。
+    Charging,
+    /// 联合投稿。
+    Union,
+}
+
+/// 投稿搜索的一个分类标签。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct SpaceArchiveTag {
+    pub tid: Option<i64>,
+    pub count: Option<i64>,
+    pub name: Option<String>,
+    /// 形如 `charging`。有值时筛选发的是它而不是 `tid`。
+    pub special_type: Option<String>,
+}
+
+/// 一页投稿搜索（`/x/space/wbi/arc/search` 的 `data`）。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct SpaceArchiveSearchPage {
+    /// 符合条件的总条数。
+    pub count: Option<i64>,
+    /// 分类标签。
+    ///
+    /// 服务端把它们分在**两个地方**：`slist`（专题，如充电专属）与
+    /// `tlist`（分区）。基线只从 `tlist` 里挑 `196`（课堂）一条，其余分区
+    /// 全丢——合并成一条列表的规则下沉到这里。
+    pub tags: Vec<SpaceArchiveTag>,
+    pub items: Vec<SpaceWebVideo>,
+}
+
+/// 一页合集或列表（`seasons_archives_list` / `series/archives` 的 `data`）。
+///
+/// 两条接口的参数名不同（`page_num`/`page_size` 与 `pn`/`ps`）、分页块的
+/// 键名也不同（`page.total` 两边倒是一致），但条目形状一样，所以共用这个
+/// 返回类型。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct SpaceSeasonWebPage {
+    pub total: Option<i64>,
+    pub items: Vec<SpaceWebVideo>,
+}
+
+// ------------------------------------------------------- gRPC 投稿搜索
+
+/// gRPC 投稿搜索里的一条（`bilibili.app.interfaces.v1.Arc`）。
+///
+/// 与 [`SpaceWebVideo`] 是**两条不同的接口**：这条是 app 端的 gRPC 搜索，
+/// 字段来自 `bilibili.app.archive.v1.Arc`，还带 `<em>` 高亮标记。不要合并。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct SpaceSearchArchiveItem {
+    pub aid: Option<i64>,
+    /// 标题按 `<em>` 拆成的段。拆分与实体解码在 Rust（同搜索页，
+    /// 见 [`crate::search::TitleSpan`]）。
+    pub title_spans: Vec<crate::search::TitleSpan>,
+    pub cover: Option<String>,
+    /// 发布时间，Unix 秒。
+    pub pubdate: Option<i64>,
+    /// 时长，秒。
+    pub duration: Option<i64>,
+    pub first_cid: Option<i64>,
+    pub view: Option<i64>,
+    pub danmaku: Option<i64>,
+    pub author_name: Option<String>,
+    /// 竖屏稿件。由 `dimension` 的宽高与旋转算出来——**这段判断下沉到
+    /// Rust**，基线写在 Dart 的一个 extension 里。
+    pub is_vertical: bool,
+    /// 有值时点进去是番剧页，不是普通视频页。
+    pub redirect_url: Option<String>,
+    /// 课堂稿件的跳转地址。
+    pub uri: Option<String>,
+    pub is_pugv: bool,
+}
+
+/// 一页 gRPC 投稿搜索。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct SpaceSearchArchivePage {
+    pub total: Option<i64>,
+    pub items: Vec<SpaceSearchArchiveItem>,
+}

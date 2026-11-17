@@ -2,47 +2,44 @@ import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/custom_icon.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
-import 'package:kilikili/grpc/bilibili/app/interfaces/v1.pb.dart' show Arc;
 import 'package:kilikili/services/rust/rust_history.dart';
+import 'package:kilikili/services/rust/rust_space.dart' as rust;
 import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/utils/date_utils.dart';
 import 'package:kilikili/utils/duration_utils.dart';
-import 'package:kilikili/utils/em.dart';
-import 'package:kilikili/utils/extension/dimension_ext.dart';
 import 'package:kilikili/utils/id_utils.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:kilikili/utils/utils.dart';
-import 'package:fixnum/fixnum.dart' show Int64;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
 class SearchArchiveGrpc extends StatelessWidget {
   const SearchArchiveGrpc({super.key, required this.item});
 
-  final Arc item;
+  final rust.SpaceSearchArchiveItem item;
 
   @override
   Widget build(BuildContext context) {
-    final arc = item.archive;
-    final bvid = IdUtils.av2bv(arc.aid.toInt());
-    final regTitle = Em.regTitle(arc.title);
-    final title = regTitle.map((e) => e.text).join();
-    final date = DateFormatUtils.dateFormat(arc.pubdate.toInt());
+    final bvid = IdUtils.av2bv(item.aid?.toInt() ?? 0);
+    // 高亮分段与实体解码都在 Rust 做好了（同搜索页），这里只拼回纯文本。
+    final titleSpans = item.titleSpans;
+    final title = titleSpans.map((e) => e.text).join();
+    final date = DateFormatUtils.dateFormat(item.pubdate?.toInt());
     void onLongPress() =>
-        imageSaveDialog(bvid: bvid, title: title, cover: arc.pic);
+        imageSaveDialog(bvid: bvid, title: title, cover: item.cover);
     void open() {
       if (item.isPugv) {
-        PageUtils.viewPgcFromUri(item.uri, isPgc: false);
-      } else if (arc.hasRedirectUrl()) {
-        PageUtils.viewPgcFromUri(arc.redirectUrl);
+        PageUtils.viewPgcFromUri(item.uri ?? '', isPgc: false);
+      } else if (item.redirectUrl case final url?) {
+        PageUtils.viewPgcFromUri(url);
       } else {
         PageUtils.toVideoPage(
           bvid: bvid,
-          cid: arc.firstCid.toInt(),
-          cover: arc.pic,
+          cid: item.firstCid?.toInt() ?? 0,
+          cover: item.cover,
           title: title,
-          isVertical: arc.dimension.isVertical,
+          isVertical: item.isVertical,
         );
       }
     }
@@ -50,9 +47,9 @@ class SearchArchiveGrpc extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       child: CoverScrimCard(
-        cover: arc.pic,
+        cover: item.cover,
         title: title,
-        upName: arc.author.name,
+        upName: item.authorName,
         onTap: open,
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
@@ -60,7 +57,7 @@ class SearchArchiveGrpc extends StatelessWidget {
           TextSpan(
             style: TextStyle(color: colors.title, height: 1.32),
             children: [
-              for (final part in regTitle)
+              for (final part in titleSpans)
                 TextSpan(
                   text: part.text,
                   style: part.isEm
@@ -76,11 +73,11 @@ class SearchArchiveGrpc extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
         ),
         topStats: [
-          (StatType.play, arc.stat.view),
-          (StatType.danmaku, arc.stat.danmaku),
+          (StatType.play, item.view?.toInt()),
+          (StatType.danmaku, item.danmaku?.toInt()),
         ],
-        topDuration: arc.duration > Int64.ZERO
-            ? DurationUtils.formatDuration(arc.duration.toInt())
+        topDuration: (item.duration?.toInt() ?? 0) > 0
+            ? DurationUtils.formatDuration(item.duration!.toInt())
             : null,
         coverOverlays: [
           if (item.isPugv) const PBadge(text: '课堂', top: 54, right: 6),

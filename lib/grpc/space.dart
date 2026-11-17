@@ -1,6 +1,4 @@
 import 'package:kilikili/grpc/bilibili/app/dynamic/v2.pb.dart';
-import 'package:kilikili/grpc/bilibili/app/interfaces/v1.pb.dart'
-    show SearchArchiveReply, SearchArchiveReq;
 import 'package:kilikili/grpc/bilibili/pagination.pb.dart';
 import 'package:kilikili/grpc/grpc_req.dart';
 import 'package:kilikili/grpc/url.dart';
@@ -21,24 +19,6 @@ abstract final class SpaceGrpc {
         filterType: filterType,
       ),
       OpusSpaceFlowResp.fromBuffer,
-    );
-  }
-
-  static Future<LoadingState<SearchArchiveReply>> searchArchive({
-    required String keyword,
-    required Int64 mid,
-    required int pn,
-    required Int64 ps,
-  }) {
-    return GrpcReq.request(
-      GrpcUrl.searchArchive,
-      SearchArchiveReq(
-        keyword: keyword,
-        mid: mid,
-        pn: Int64(pn),
-        ps: ps,
-      ),
-      SearchArchiveReply.fromBuffer,
     );
   }
 }

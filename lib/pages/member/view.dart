@@ -675,7 +675,7 @@ class _MemberPageState extends State<MemberPage> {
       final ctr = Get.find<MemberContributeCtr>(tag: _heroTag);
       final item = ctr.items?[ctr.tabController?.index ?? 0];
       if (item != null) {
-        final id = item.seasonId ?? item.seriesId;
+        final id = (item.seasonId ?? item.seriesId)?.toInt();
         if (id != null) {
           MemberSSWeb.toMemberSSWeb(
             type: item.seasonId != null ? .season : .series,

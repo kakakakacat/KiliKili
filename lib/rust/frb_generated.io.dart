@@ -422,6 +422,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SpaceArchivePage dco_decode_box_autoadd_space_archive_page(dynamic raw);
 
   @protected
+  SpaceArchiveSearchPage dco_decode_box_autoadd_space_archive_search_page(
+    dynamic raw,
+  );
+
+  @protected
   SpaceArchiveSort dco_decode_box_autoadd_space_archive_sort(dynamic raw);
 
   @protected
@@ -475,9 +480,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SpaceSearchArchivePage dco_decode_box_autoadd_space_search_archive_page(
+    dynamic raw,
+  );
+
+  @protected
   SpaceSeasonSeriesPage dco_decode_box_autoadd_space_season_series_page(
     dynamic raw,
   );
+
+  @protected
+  SpaceSeasonWebPage dco_decode_box_autoadd_space_season_web_page(dynamic raw);
 
   @protected
   SpaceSetting dco_decode_box_autoadd_space_setting(dynamic raw);
@@ -487,6 +500,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceVideoBlock dco_decode_box_autoadd_space_video_block(dynamic raw);
+
+  @protected
+  SpaceWebBadge dco_decode_box_autoadd_space_web_badge(dynamic raw);
 
   @protected
   SponsorBlockContext dco_decode_box_autoadd_sponsor_block_context(dynamic raw);
@@ -1025,6 +1041,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<SpaceArchiveItem> dco_decode_list_space_archive_item(dynamic raw);
 
   @protected
+  List<SpaceArchiveTag> dco_decode_list_space_archive_tag(dynamic raw);
+
+  @protected
   List<SpaceArticleItem> dco_decode_list_space_article_item(dynamic raw);
 
   @protected
@@ -1038,6 +1057,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SpaceReservation> dco_decode_list_space_reservation(dynamic raw);
+
+  @protected
+  List<SpaceSearchArchiveItem> dco_decode_list_space_search_archive_item(
+    dynamic raw,
+  );
 
   @protected
   List<SpaceSeasonSeries> dco_decode_list_space_season_series(dynamic raw);
@@ -1056,6 +1080,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SpaceTopImage> dco_decode_list_space_top_image(dynamic raw);
+
+  @protected
+  List<SpaceWebVideo> dco_decode_list_space_web_video(dynamic raw);
 
   @protected
   List<SubItem> dco_decode_list_sub_item(dynamic raw);
@@ -1627,6 +1654,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SpaceArchivePage? dco_decode_opt_box_autoadd_space_archive_page(dynamic raw);
 
   @protected
+  SpaceArchiveSearchPage? dco_decode_opt_box_autoadd_space_archive_search_page(
+    dynamic raw,
+  );
+
+  @protected
   SpaceArchiveSort? dco_decode_opt_box_autoadd_space_archive_sort(dynamic raw);
 
   @protected
@@ -1681,7 +1713,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SpaceSearchArchivePage? dco_decode_opt_box_autoadd_space_search_archive_page(
+    dynamic raw,
+  );
+
+  @protected
   SpaceSeasonSeriesPage? dco_decode_opt_box_autoadd_space_season_series_page(
+    dynamic raw,
+  );
+
+  @protected
+  SpaceSeasonWebPage? dco_decode_opt_box_autoadd_space_season_web_page(
     dynamic raw,
   );
 
@@ -1693,6 +1735,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceVideoBlock? dco_decode_opt_box_autoadd_space_video_block(dynamic raw);
+
+  @protected
+  SpaceWebBadge? dco_decode_opt_box_autoadd_space_web_badge(dynamic raw);
 
   @protected
   SponsorUserInfo? dco_decode_opt_box_autoadd_sponsor_user_info(dynamic raw);
@@ -2200,7 +2245,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SpaceArchiveResult dco_decode_space_archive_result(dynamic raw);
 
   @protected
+  SpaceArchiveSearchOrder dco_decode_space_archive_search_order(dynamic raw);
+
+  @protected
+  SpaceArchiveSearchPage dco_decode_space_archive_search_page(dynamic raw);
+
+  @protected
+  SpaceArchiveSearchResult dco_decode_space_archive_search_result(dynamic raw);
+
+  @protected
   SpaceArchiveSort dco_decode_space_archive_sort(dynamic raw);
+
+  @protected
+  SpaceArchiveTag dco_decode_space_archive_tag(dynamic raw);
 
   @protected
   SpaceArticleBlock dco_decode_space_article_block(dynamic raw);
@@ -2269,6 +2326,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SpaceReservationLottery dco_decode_space_reservation_lottery(dynamic raw);
 
   @protected
+  SpaceSearchArchiveItem dco_decode_space_search_archive_item(dynamic raw);
+
+  @protected
+  SpaceSearchArchivePage dco_decode_space_search_archive_page(dynamic raw);
+
+  @protected
+  SpaceSearchArchiveResult dco_decode_space_search_archive_result(dynamic raw);
+
+  @protected
   SpaceSeasonSeries dco_decode_space_season_series(dynamic raw);
 
   @protected
@@ -2276,6 +2342,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceSeasonSeriesResult dco_decode_space_season_series_result(dynamic raw);
+
+  @protected
+  SpaceSeasonWebKind dco_decode_space_season_web_kind(dynamic raw);
+
+  @protected
+  SpaceSeasonWebPage dco_decode_space_season_web_page(dynamic raw);
+
+  @protected
+  SpaceSeasonWebResult dco_decode_space_season_web_result(dynamic raw);
 
   @protected
   SpaceSetting dco_decode_space_setting(dynamic raw);
@@ -2300,6 +2375,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceVideoBlock dco_decode_space_video_block(dynamic raw);
+
+  @protected
+  SpaceWebBadge dco_decode_space_web_badge(dynamic raw);
+
+  @protected
+  SpaceWebVideo dco_decode_space_web_video(dynamic raw);
 
   @protected
   SponsorBlockContext dco_decode_sponsor_block_context(dynamic raw);
@@ -2948,6 +3029,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SpaceArchiveSearchPage sse_decode_box_autoadd_space_archive_search_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SpaceArchiveSort sse_decode_box_autoadd_space_archive_sort(
     SseDeserializer deserializer,
   );
@@ -3021,7 +3107,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SpaceSearchArchivePage sse_decode_box_autoadd_space_search_archive_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SpaceSeasonSeriesPage sse_decode_box_autoadd_space_season_series_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSeasonWebPage sse_decode_box_autoadd_space_season_web_page(
     SseDeserializer deserializer,
   );
 
@@ -3037,6 +3133,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceVideoBlock sse_decode_box_autoadd_space_video_block(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceWebBadge sse_decode_box_autoadd_space_web_badge(
     SseDeserializer deserializer,
   );
 
@@ -3723,6 +3824,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<SpaceArchiveTag> sse_decode_list_space_archive_tag(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<SpaceArticleItem> sse_decode_list_space_article_item(
     SseDeserializer deserializer,
   );
@@ -3744,6 +3850,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SpaceReservation> sse_decode_list_space_reservation(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceSearchArchiveItem> sse_decode_list_space_search_archive_item(
     SseDeserializer deserializer,
   );
 
@@ -3772,6 +3883,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SpaceTopImage> sse_decode_list_space_top_image(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceWebVideo> sse_decode_list_space_web_video(
     SseDeserializer deserializer,
   );
 
@@ -4519,6 +4635,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SpaceArchiveSearchPage? sse_decode_opt_box_autoadd_space_archive_search_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SpaceArchiveSort? sse_decode_opt_box_autoadd_space_archive_sort(
     SseDeserializer deserializer,
   );
@@ -4599,7 +4720,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SpaceSearchArchivePage? sse_decode_opt_box_autoadd_space_search_archive_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SpaceSeasonSeriesPage? sse_decode_opt_box_autoadd_space_season_series_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSeasonWebPage? sse_decode_opt_box_autoadd_space_season_web_page(
     SseDeserializer deserializer,
   );
 
@@ -4615,6 +4746,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceVideoBlock? sse_decode_opt_box_autoadd_space_video_block(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceWebBadge? sse_decode_opt_box_autoadd_space_web_badge(
     SseDeserializer deserializer,
   );
 
@@ -5256,7 +5392,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SpaceArchiveSearchOrder sse_decode_space_archive_search_order(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArchiveSearchPage sse_decode_space_archive_search_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArchiveSearchResult sse_decode_space_archive_search_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SpaceArchiveSort sse_decode_space_archive_sort(SseDeserializer deserializer);
+
+  @protected
+  SpaceArchiveTag sse_decode_space_archive_tag(SseDeserializer deserializer);
 
   @protected
   SpaceArticleBlock sse_decode_space_article_block(
@@ -5331,6 +5485,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SpaceSearchArchiveItem sse_decode_space_search_archive_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSearchArchivePage sse_decode_space_search_archive_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSearchArchiveResult sse_decode_space_search_archive_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SpaceSeasonSeries sse_decode_space_season_series(
     SseDeserializer deserializer,
   );
@@ -5342,6 +5511,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceSeasonSeriesResult sse_decode_space_season_series_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSeasonWebKind sse_decode_space_season_web_kind(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSeasonWebPage sse_decode_space_season_web_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSeasonWebResult sse_decode_space_season_web_result(
     SseDeserializer deserializer,
   );
 
@@ -5368,6 +5552,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceVideoBlock sse_decode_space_video_block(SseDeserializer deserializer);
+
+  @protected
+  SpaceWebBadge sse_decode_space_web_badge(SseDeserializer deserializer);
+
+  @protected
+  SpaceWebVideo sse_decode_space_web_video(SseDeserializer deserializer);
 
   @protected
   SponsorBlockContext sse_decode_sponsor_block_context(
@@ -6227,6 +6417,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_space_archive_search_page(
+    SpaceArchiveSearchPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_space_archive_sort(
     SpaceArchiveSort self,
     SseSerializer serializer,
@@ -6329,8 +6525,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_space_search_archive_page(
+    SpaceSearchArchivePage self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_space_season_series_page(
     SpaceSeasonSeriesPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_season_web_page(
+    SpaceSeasonWebPage self,
     SseSerializer serializer,
   );
 
@@ -6349,6 +6557,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_space_video_block(
     SpaceVideoBlock self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_web_badge(
+    SpaceWebBadge self,
     SseSerializer serializer,
   );
 
@@ -7253,6 +7467,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_space_archive_tag(
+    List<SpaceArchiveTag> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_space_article_item(
     List<SpaceArticleItem> self,
     SseSerializer serializer,
@@ -7279,6 +7499,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_space_reservation(
     List<SpaceReservation> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_search_archive_item(
+    List<SpaceSearchArchiveItem> self,
     SseSerializer serializer,
   );
 
@@ -7315,6 +7541,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_space_top_image(
     List<SpaceTopImage> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_web_video(
+    List<SpaceWebVideo> self,
     SseSerializer serializer,
   );
 
@@ -8276,6 +8508,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_space_archive_search_page(
+    SpaceArchiveSearchPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_space_archive_sort(
     SpaceArchiveSort? self,
     SseSerializer serializer,
@@ -8372,8 +8610,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_space_search_archive_page(
+    SpaceSearchArchivePage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_space_season_series_page(
     SpaceSeasonSeriesPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_season_web_page(
+    SpaceSeasonWebPage? self,
     SseSerializer serializer,
   );
 
@@ -8392,6 +8642,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_space_video_block(
     SpaceVideoBlock? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_web_badge(
+    SpaceWebBadge? self,
     SseSerializer serializer,
   );
 
@@ -9227,8 +9483,32 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_space_archive_search_order(
+    SpaceArchiveSearchOrder self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_archive_search_page(
+    SpaceArchiveSearchPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_archive_search_result(
+    SpaceArchiveSearchResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_space_archive_sort(
     SpaceArchiveSort self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_archive_tag(
+    SpaceArchiveTag self,
     SseSerializer serializer,
   );
 
@@ -9329,6 +9609,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_space_search_archive_item(
+    SpaceSearchArchiveItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_search_archive_page(
+    SpaceSearchArchivePage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_search_archive_result(
+    SpaceSearchArchiveResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_space_season_series(
     SpaceSeasonSeries self,
     SseSerializer serializer,
@@ -9343,6 +9641,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_space_season_series_result(
     SpaceSeasonSeriesResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_season_web_kind(
+    SpaceSeasonWebKind self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_season_web_page(
+    SpaceSeasonWebPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_season_web_result(
+    SpaceSeasonWebResult self,
     SseSerializer serializer,
   );
 
@@ -9381,6 +9697,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     SpaceVideoBlock self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_space_web_badge(SpaceWebBadge self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_web_video(SpaceWebVideo self, SseSerializer serializer);
 
   @protected
   void sse_encode_sponsor_block_context(

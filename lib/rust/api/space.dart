@@ -4,11 +4,13 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import 'package:kilikili/rust/frb_generated.dart';
+import 'package:kilikili/rust/api/grpc.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'package:kilikili/rust/api/search.dart';
 import 'package:kilikili/rust/api/transport.dart';
 
 // These functions are ignored because they are not marked as `pub`: `flatten`, `season_series`, `split`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`
 
 /// 取别人的资料。
 ///
@@ -160,6 +162,69 @@ Future<SpaceArchiveResult> fetchSpaceArchive({
   seasonId: seasonId,
   seriesId: seriesId,
   includeCursor: includeCursor,
+);
+
+/// 取一页投稿搜索（网页端）。
+///
+/// 风控 token 现生成，同 [`fetch_member_info`]。
+Future<SpaceArchiveSearchResult> fetchSpaceArchiveSearch({
+  required SpaceContext context,
+  required PlatformInt64 mid,
+  required PlatformInt64 tid,
+  required PlatformInt64 page,
+  required PlatformInt64 pageSize,
+  String? keyword,
+  String? specialType,
+  required SpaceArchiveSearchOrder order,
+}) => RustLib.instance.api.crateApiSpaceFetchSpaceArchiveSearch(
+  context: context,
+  mid: mid,
+  tid: tid,
+  page: page,
+  pageSize: pageSize,
+  keyword: keyword,
+  specialType: specialType,
+  order: order,
+);
+
+/// 取一页合集或列表（网页端）。
+///
+/// [`ascending`] 对两条接口的含义一致（正序），但发出去的参数名与形态
+/// 不同，由 Rust 按 [`kind`] 分开拼。
+Future<SpaceSeasonWebResult> fetchSpaceSeasonWeb({
+  required SpaceContext context,
+  required SpaceSeasonWebKind kind,
+  required PlatformInt64 mid,
+  required PlatformInt64 id,
+  required PlatformInt64 page,
+  required PlatformInt64 pageSize,
+  required bool ascending,
+}) => RustLib.instance.api.crateApiSpaceFetchSpaceSeasonWeb(
+  context: context,
+  kind: kind,
+  mid: mid,
+  id: id,
+  page: page,
+  pageSize: pageSize,
+  ascending: ascending,
+);
+
+/// 取一页 gRPC 投稿搜索。
+///
+/// 走 gRPC 网关，所以上下文是 [`GrpcContext`] 而不是 [`SpaceContext`]：
+/// 这条不带 cookie，身份走 metadata 头（同弹幕那几条）。
+Future<SpaceSearchArchiveResult> fetchSpaceSearchArchive({
+  required GrpcContext context,
+  required PlatformInt64 mid,
+  required String keyword,
+  required PlatformInt64 page,
+  required PlatformInt64 pageSize,
+}) => RustLib.instance.api.crateApiSpaceFetchSpaceSearchArchive(
+  context: context,
+  mid: mid,
+  keyword: keyword,
+  page: page,
+  pageSize: pageSize,
 );
 
 /// 投币/点赞列表里的一个稿件。
@@ -935,10 +1000,112 @@ class SpaceArchiveResult {
           errorCode == other.errorCode;
 }
 
+/// 投稿搜索的排序字段。
+enum SpaceArchiveSearchOrder {
+  /// 最新发布。
+  pubdate,
+
+  /// 最多播放。
+  click,
+
+  /// 最多收藏。
+  stow,
+}
+
+/// 一页投稿搜索。
+class SpaceArchiveSearchPage {
+  final PlatformInt64? count;
+
+  /// 专题（`slist`）加上课堂分区那一条，其余分区已经丢掉。
+  final List<SpaceArchiveTag> tags;
+  final List<SpaceWebVideo> items;
+
+  const SpaceArchiveSearchPage({
+    this.count,
+    required this.tags,
+    required this.items,
+  });
+
+  @override
+  int get hashCode => count.hashCode ^ tags.hashCode ^ items.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceArchiveSearchPage &&
+          runtimeType == other.runtimeType &&
+          count == other.count &&
+          tags == other.tags &&
+          items == other.items;
+}
+
+/// 一页投稿搜索的结果。
+class SpaceArchiveSearchResult {
+  final SpaceArchiveSearchPage? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const SpaceArchiveSearchResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceArchiveSearchResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
 /// 合集 / 列表的排序方向。
 enum SpaceArchiveSort {
   desc,
   asc,
+}
+
+/// 投稿搜索的一个分类标签。
+class SpaceArchiveTag {
+  final PlatformInt64? tid;
+  final PlatformInt64? count;
+  final String? name;
+
+  /// 形如 `charging`。有值时筛选发的是它而不是 `tid`。
+  final String? specialType;
+
+  const SpaceArchiveTag({
+    this.tid,
+    this.count,
+    this.name,
+    this.specialType,
+  });
+
+  @override
+  int get hashCode =>
+      tid.hashCode ^ count.hashCode ^ name.hashCode ^ specialType.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceArchiveTag &&
+          runtimeType == other.runtimeType &&
+          tid == other.tid &&
+          count == other.count &&
+          name == other.name &&
+          specialType == other.specialType;
 }
 
 /// 主页上的一块专栏。
@@ -1795,6 +1962,143 @@ class SpaceReservationLottery {
           jumpUrl == other.jumpUrl;
 }
 
+/// gRPC 投稿搜索里的一条。
+///
+/// 与 [`SpaceWebVideo`] 是**两条不同的接口**：这条是 app 端的 gRPC 搜索，
+/// 字段来自 `bilibili.app.archive.v1.Arc`，还带 `<em>` 高亮标记。
+class SpaceSearchArchiveItem {
+  final PlatformInt64? aid;
+
+  /// 标题按 `<em>` 拆好的段，实体也解过了。Dart 不再跑一遍正则。
+  final List<TitleSpan> titleSpans;
+  final String? cover;
+
+  /// Unix 秒。
+  final PlatformInt64? pubdate;
+
+  /// 秒。
+  final PlatformInt64? duration;
+  final PlatformInt64? firstCid;
+  final PlatformInt64? view;
+  final PlatformInt64? danmaku;
+  final String? authorName;
+
+  /// 竖屏稿件。由 `dimension` 的宽高与旋转算出来。
+  final bool isVertical;
+
+  /// 有值时点进去是番剧页，不是普通视频页。
+  final String? redirectUrl;
+
+  /// 课堂稿件的跳转地址。
+  final String? uri;
+  final bool isPugv;
+
+  const SpaceSearchArchiveItem({
+    this.aid,
+    required this.titleSpans,
+    this.cover,
+    this.pubdate,
+    this.duration,
+    this.firstCid,
+    this.view,
+    this.danmaku,
+    this.authorName,
+    required this.isVertical,
+    this.redirectUrl,
+    this.uri,
+    required this.isPugv,
+  });
+
+  @override
+  int get hashCode =>
+      aid.hashCode ^
+      titleSpans.hashCode ^
+      cover.hashCode ^
+      pubdate.hashCode ^
+      duration.hashCode ^
+      firstCid.hashCode ^
+      view.hashCode ^
+      danmaku.hashCode ^
+      authorName.hashCode ^
+      isVertical.hashCode ^
+      redirectUrl.hashCode ^
+      uri.hashCode ^
+      isPugv.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceSearchArchiveItem &&
+          runtimeType == other.runtimeType &&
+          aid == other.aid &&
+          titleSpans == other.titleSpans &&
+          cover == other.cover &&
+          pubdate == other.pubdate &&
+          duration == other.duration &&
+          firstCid == other.firstCid &&
+          view == other.view &&
+          danmaku == other.danmaku &&
+          authorName == other.authorName &&
+          isVertical == other.isVertical &&
+          redirectUrl == other.redirectUrl &&
+          uri == other.uri &&
+          isPugv == other.isPugv;
+}
+
+/// 一页 gRPC 投稿搜索。
+class SpaceSearchArchivePage {
+  final PlatformInt64? total;
+  final List<SpaceSearchArchiveItem> items;
+
+  const SpaceSearchArchivePage({
+    this.total,
+    required this.items,
+  });
+
+  @override
+  int get hashCode => total.hashCode ^ items.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceSearchArchivePage &&
+          runtimeType == other.runtimeType &&
+          total == other.total &&
+          items == other.items;
+}
+
+/// 一页 gRPC 投稿搜索的结果。
+class SpaceSearchArchiveResult {
+  final SpaceSearchArchivePage? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const SpaceSearchArchiveResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceSearchArchiveResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
 /// 一个合集或列表。
 ///
 /// 基线的 `SpaceSsModel` 只有一个 `meta`，这里摊平——多一层只为复刻服务端
@@ -1896,6 +2200,66 @@ class SpaceSeasonSeriesResult {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is SpaceSeasonSeriesResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+/// 合集与列表是两条接口。
+enum SpaceSeasonWebKind {
+  season,
+  series,
+}
+
+/// 一页合集或列表。
+class SpaceSeasonWebPage {
+  final PlatformInt64? total;
+  final List<SpaceWebVideo> items;
+
+  const SpaceSeasonWebPage({
+    this.total,
+    required this.items,
+  });
+
+  @override
+  int get hashCode => total.hashCode ^ items.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceSeasonWebPage &&
+          runtimeType == other.runtimeType &&
+          total == other.total &&
+          items == other.items;
+}
+
+/// 一页合集或列表的结果。
+class SpaceSeasonWebResult {
+  final SpaceSeasonWebPage? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const SpaceSeasonWebResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceSeasonWebResult &&
           runtimeType == other.runtimeType &&
           data == other.data &&
           errorKind == other.errorKind &&
@@ -2128,6 +2492,101 @@ class SpaceVideoBlock {
           runtimeType == other.runtimeType &&
           count == other.count &&
           items == other.items;
+}
+
+/// 投稿搜索里那三种互斥的角标。
+///
+/// **只给类别，不给文案**：「课堂」「充电专属」「合作」这三个词是界面
+/// 措辞，留在宿主（ADR-011 决策二）。
+enum SpaceWebBadge {
+  /// 课堂（付费课程）。界面另外还要把它当 pugv 处理。
+  lesson,
+  charging,
+  union,
+}
+
+/// 投稿搜索与合集/列表里的一条视频。三条接口共用。
+class SpaceWebVideo {
+  final PlatformInt64? aid;
+  final String? bvid;
+  final String? cover;
+  final String? title;
+  final String? desc;
+
+  /// Unix 秒。
+  final PlatformInt64? pubdate;
+
+  /// 秒。投稿搜索给的是 `"12:34"` 这种字符串，换算在 Rust 做。
+  final PlatformInt64? duration;
+  final PlatformInt64? view;
+  final PlatformInt64? danmaku;
+
+  /// 合集与列表**不给作者**，两个字段都是空的。
+  final PlatformInt64? ownerMid;
+  final String? ownerName;
+  final PlatformInt64? seasonId;
+  final String? redirectUrl;
+  final SpaceWebBadge? badge;
+
+  /// 看到哪儿了，秒；`-1` 表示看完了。服务端给的是百分比。
+  final PlatformInt64? progress;
+
+  const SpaceWebVideo({
+    this.aid,
+    this.bvid,
+    this.cover,
+    this.title,
+    this.desc,
+    this.pubdate,
+    this.duration,
+    this.view,
+    this.danmaku,
+    this.ownerMid,
+    this.ownerName,
+    this.seasonId,
+    this.redirectUrl,
+    this.badge,
+    this.progress,
+  });
+
+  @override
+  int get hashCode =>
+      aid.hashCode ^
+      bvid.hashCode ^
+      cover.hashCode ^
+      title.hashCode ^
+      desc.hashCode ^
+      pubdate.hashCode ^
+      duration.hashCode ^
+      view.hashCode ^
+      danmaku.hashCode ^
+      ownerMid.hashCode ^
+      ownerName.hashCode ^
+      seasonId.hashCode ^
+      redirectUrl.hashCode ^
+      badge.hashCode ^
+      progress.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceWebVideo &&
+          runtimeType == other.runtimeType &&
+          aid == other.aid &&
+          bvid == other.bvid &&
+          cover == other.cover &&
+          title == other.title &&
+          desc == other.desc &&
+          pubdate == other.pubdate &&
+          duration == other.duration &&
+          view == other.view &&
+          danmaku == other.danmaku &&
+          ownerMid == other.ownerMid &&
+          ownerName == other.ownerName &&
+          seasonId == other.seasonId &&
+          redirectUrl == other.redirectUrl &&
+          badge == other.badge &&
+          progress == other.progress;
 }
 
 /// 一个充电档位。

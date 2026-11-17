@@ -507,3 +507,166 @@ fn the_space_request_keeps_the_baseline_param_order() {
     let bare = space_request(1, None).query_string();
     assert!(!bare.contains("from_view_aid"), "{bare}");
 }
+
+// ------------------------------------------- 网页端的投稿搜索与合集
+//
+// `space_season_web` / `space_series_web` 取自真实响应再脱敏。
+// `space_archive_search` 是**手工构造**的：那条接口的匿名请求一律
+// `-352 风控校验失败`，要浏览器指纹才过得去，抓不到。它按基线
+// `VListItemModel.fromJson` 读的每个键逐一写成，只证明映射一致，不证明
+// 我们对协议的理解正确；真机确认按 #67 留到 Phase 2。
+
+#[test]
+fn the_archive_search_matches_the_frozen_snapshot() {
+    check(
+        "space_archive_search.raw.json",
+        "space_archive_search.rust.json",
+        |raw| value(&bili_api::space::parse_space_archive_search(raw).expect("样本应解析成功")),
+    );
+}
+
+#[test]
+fn the_season_web_page_matches_the_frozen_snapshot() {
+    check(
+        "space_season_web.raw.json",
+        "space_season_web.rust.json",
+        |raw| value(&bili_api::space::parse_space_season_web(raw).expect("样本应解析成功")),
+    );
+}
+
+#[test]
+fn the_series_web_page_matches_the_frozen_snapshot() {
+    check(
+        "space_series_web.raw.json",
+        "space_series_web.rust.json",
+        |raw| value(&bili_api::space::parse_space_season_web(raw).expect("样本应解析成功")),
+    );
+}
+
+/// 标签来自两个地方：`slist`（专题）与 `tlist`（分区）。分区里只认课堂。
+#[test]
+fn only_the_lesson_category_joins_the_tag_row() {
+    let raw =
+        fs::read_to_string(fixture("space_archive_search.raw.json")).expect("raw fixture 可读");
+    let page = bili_api::space::parse_space_archive_search(&raw).expect("样本应解析成功");
+    assert_eq!(page.tags.len(), 2, "一条专题 + 一条课堂分区");
+    assert_eq!(page.tags[0].special_type.as_deref(), Some("charging"));
+    assert_eq!(page.tags[1].tid, Some(196));
+    assert!(
+        page.tags.iter().all(|t| t.tid != Some(188)),
+        "科技分区不该进标签条"
+    );
+}
+
+/// 看完了记成 -1，没看完按百分比折算；时长来自那个 `"24:52"` 字符串。
+#[test]
+fn the_playback_position_becomes_seconds_or_minus_one() {
+    let raw =
+        fs::read_to_string(fixture("space_archive_search.raw.json")).expect("raw fixture 可读");
+    let page = bili_api::space::parse_space_archive_search(&raw).expect("样本应解析成功");
+    // 24:52 = 1492 秒，50% → 746。
+    assert_eq!(page.items[0].duration, Some(1492));
+    assert_eq!(page.items[0].progress, Some(746));
+    // 100% → -1，界面据此写「已看完」。
+    assert_eq!(page.items[1].progress, Some(-1));
+    // 服务端没给 playback_position 时整条不存在。
+    assert_eq!(page.items[2].progress, None);
+    // 1:02:03 = 3723 秒。
+    assert_eq!(page.items[2].duration, Some(3723));
+}
+
+/// 三种角标互斥，顺序照抄基线：课堂 > 充电专属 > 合作。
+#[test]
+fn the_three_badges_are_mutually_exclusive_in_the_baseline_order() {
+    use bili_domain::space::SpaceWebBadge;
+
+    let raw =
+        fs::read_to_string(fixture("space_archive_search.raw.json")).expect("raw fixture 可读");
+    let page = bili_api::space::parse_space_archive_search(&raw).expect("样本应解析成功");
+    // 第一条同时是 is_union_video，但没有前两个标志，所以是「合作」。
+    assert_eq!(page.items[0].badge, Some(SpaceWebBadge::Union));
+    // 第二条是课堂。
+    assert_eq!(page.items[1].badge, Some(SpaceWebBadge::Lesson));
+    // 第三条同时有充电专属与合作，充电专属优先。
+    assert_eq!(page.items[2].badge, Some(SpaceWebBadge::Charging));
+}
+
+/// 合集与列表是两条接口，参数名都不一样，不合并成一份。
+#[test]
+fn seasons_and_series_send_different_param_names() {
+    use bili_api::space::{SpaceSeasonWebKind, space_season_web_request};
+
+    let season = space_season_web_request(SpaceSeasonWebKind::Season, 1, 2, 1, 30, false);
+    let series = space_season_web_request(SpaceSeasonWebKind::Series, 1, 2, 1, 30, false);
+    assert_ne!(season.path, series.path);
+
+    let season = season.query_string();
+    assert!(season.contains("season_id=2"), "{season}");
+    assert!(season.contains("page_num=1"), "{season}");
+    assert!(season.contains("sort_reverse=false"), "{season}");
+
+    let series = series.query_string();
+    assert!(series.contains("series_id=2"), "{series}");
+    assert!(series.contains("pn=1"), "{series}");
+    assert!(series.contains("sort=desc"), "{series}");
+}
+
+// ----------------------------------------------------- gRPC 投稿搜索
+
+/// gRPC 投稿搜索的解析结果。
+///
+/// 字节由基线的编码器写出（`tool/fixture-gen/space_search_archive_fixture.dart`），
+/// 所以这条 golden 证明的是「两端对同一串字节的理解一致」。
+#[test]
+fn the_grpc_search_archive_matches_the_frozen_snapshot() {
+    let raw = fs::read(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures/space_grpc/search_archive.raw.pb"),
+    )
+    .expect("raw fixture 可读");
+    let got = value(&bili_api::grpc_space::parse_search_archive(&raw).expect("样本应解析成功"));
+
+    let snapshot_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/space_grpc/search_archive.rust.json");
+    if std::env::var_os("UPDATE_GOLDEN").is_some() {
+        let pretty = serde_json::to_string_pretty(&got).expect("可序列化");
+        fs::write(&snapshot_path, format!("{pretty}\n")).expect("快照可写");
+        return;
+    }
+    let expected: serde_json::Value = serde_json::from_str(
+        &fs::read_to_string(&snapshot_path).expect("缺少快照，用 UPDATE_GOLDEN=1 重新生成"),
+    )
+    .expect("快照必须是合法 JSON");
+    assert_eq!(got, expected, "gRPC 投稿搜索的解析结果与冻结快照不一致");
+}
+
+/// 竖屏判定：转过一次的稿件宽高要反过来看。
+#[test]
+fn a_rotated_archive_counts_as_vertical() {
+    let raw = fs::read(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures/space_grpc/search_archive.raw.pb"),
+    )
+    .expect("raw fixture 可读");
+    let page = bili_api::grpc_space::parse_search_archive(&raw).expect("样本应解析成功");
+    assert!(!page.items[0].is_vertical, "1920x1080 不转 → 横屏");
+    assert!(page.items[1].is_vertical, "1080x1920 → 竖屏");
+    assert!(page.items[2].is_vertical, "1920x1080 转过一次 → 竖屏");
+}
+
+/// 标题的 `<em>` 高亮在 Rust 拆好，实体也解掉，Dart 不再跑一遍正则。
+#[test]
+fn the_grpc_title_is_split_and_decoded_in_rust() {
+    let raw = fs::read(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures/space_grpc/search_archive.raw.pb"),
+    )
+    .expect("raw fixture 可读");
+    let page = bili_api::grpc_space::parse_search_archive(&raw).expect("样本应解析成功");
+    let spans = &page.items[0].title_spans;
+    assert!(spans.iter().any(|s| s.is_em && s.text == "1 万次"));
+    assert!(
+        spans.iter().any(|s| !s.is_em && s.text.contains('&')),
+        "`&amp;` 要解成 `&`：{spans:?}"
+    );
+}

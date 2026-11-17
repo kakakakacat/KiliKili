@@ -1,19 +1,10 @@
-import 'dart:io';
-
 import 'package:kilikili/common/constants.dart';
 import 'package:kilikili/http/api.dart';
 import 'package:kilikili/http/browser_ua.dart';
-import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/error_msg.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models/common/member/archive_order_type_web.dart';
-import 'package:kilikili/models/common/member/archive_sort_type_app.dart';
-import 'package:kilikili/models/common/member/web_ss_type.dart';
 import 'package:kilikili/models/dynamics/result.dart';
-import 'package:kilikili/models/member/tags.dart';
-import 'package:kilikili/models_new/member/search_archive/data.dart';
-import 'package:kilikili/models_new/member/season_web/data.dart';
 import 'package:kilikili/models_new/space/space_article/data.dart';
 import 'package:kilikili/models_new/space/space_audio/data.dart';
 import 'package:kilikili/models_new/space/space_cheese/data.dart';
@@ -24,7 +15,6 @@ import 'package:kilikili/utils/app_sign.dart';
 import 'package:kilikili/utils/utils.dart';
 import 'package:kilikili/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 abstract final class MemberHttp {
   static Future<LoadingState<SpaceArticleData>> spaceArticle({
@@ -144,94 +134,6 @@ abstract final class MemberHttp {
   //     return Error(res.data['message']);
   //   }
   // }
-
-  static Future<LoadingState<SearchArchiveData>> searchArchive({
-    required Object mid,
-    int tid = 0, // e.g. pugv: 196
-    int ps = 30,
-    required int pn,
-    String? keyword,
-    String? specialType, // e.g. 'charging'
-    ArchiveOrderTypeWeb order = .pubdate,
-  }) async {
-    String dmImgStr = Utils.base64EncodeRandomString(16, 64);
-    String dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
-    final params = await WbiSign.makSign({
-      'mid': mid,
-      'ps': ps,
-      'tid': tid,
-      'pn': pn,
-      'keyword': ?keyword,
-      'special_type': ?specialType,
-      'order': order.name,
-      'platform': 'web',
-      'web_location': 333.1387,
-      'order_avoided': true,
-      'dm_img_list': '[]',
-      'dm_img_str': dmImgStr,
-      'dm_cover_img_str': dmCoverImgStr,
-      'dm_img_inter': '{"ds":[],"wh":[0,0,0],"of":[0,0,0]}',
-    });
-    final res = await Request().get(
-      Api.searchArchive,
-      queryParameters: params,
-      options: Options(
-        headers: {
-          HttpHeaders.userAgentHeader: BrowserUa.pc,
-          HttpHeaders.refererHeader: '${HttpString.spaceBaseUrl}/$mid',
-          'origin': HttpString.spaceBaseUrl,
-        },
-      ),
-    );
-    if (res.data['code'] == 0) {
-      return Success(SearchArchiveData.fromJson(res.data['data']));
-    } else {
-      return Error(errorMsg[res.data['code']] ?? res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<SeasonWebData>> seasonSeriesWeb({
-    required WebSsType type,
-    required Object mid,
-    required Object id,
-    int ps = 30,
-    required int pn,
-    ArchiveSortTypeApp sort = .desc,
-  }) async {
-    final res = await Request().get(
-      type.api,
-      queryParameters: switch (type) {
-        .season => {
-          'mid': mid,
-          'season_id': id,
-          'sort_reverse': sort == .asc,
-          'page_size': ps,
-          'page_num': pn,
-          'web_location': 333.1387,
-        },
-        .series => {
-          'mid': mid,
-          'series_id': id,
-          'sort': sort.name,
-          'ps': ps,
-          'pn': pn,
-          'web_location': 333.1387,
-        },
-      },
-      options: Options(
-        headers: {
-          HttpHeaders.userAgentHeader: BrowserUa.pc,
-          HttpHeaders.refererHeader: '${HttpString.spaceBaseUrl}/$mid',
-          'origin': HttpString.spaceBaseUrl,
-        },
-      ),
-    );
-    if (res.data['code'] == 0) {
-      return Success(SeasonWebData.fromJson(res.data['data']));
-    } else {
-      return Error(errorMsg[res.data['code']] ?? res.data['message']);
-    }
-  }
 
   // 用户动态
   @pragma('vm:notify-debugger-on-exception')

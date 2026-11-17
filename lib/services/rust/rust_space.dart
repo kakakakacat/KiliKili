@@ -4,6 +4,7 @@ import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/account_type.dart';
 import 'package:kilikili/rust/api/space.dart' as rust_api;
+import 'package:kilikili/services/rust/rust_grpc.dart';
 import 'package:kilikili/services/rust/rust_request.dart';
 import 'package:kilikili/services/rust/rust_transport.dart';
 import 'package:kilikili/services/rust_core.dart';
@@ -27,7 +28,10 @@ export 'package:kilikili/rust/api/space.dart'
         SpaceArchiveKind,
         SpaceArchiveOrder,
         SpaceArchivePage,
+        SpaceArchiveSearchOrder,
+        SpaceArchiveSearchPage,
         SpaceArchiveSort,
+        SpaceArchiveTag,
         SpaceArticleBlock,
         SpaceArticleItem,
         SpaceAudioBlock,
@@ -48,8 +52,12 @@ export 'package:kilikili/rust/api/space.dart'
         SpaceRelation,
         SpaceReservation,
         SpaceReservationLottery,
+        SpaceSearchArchiveItem,
+        SpaceSearchArchivePage,
         SpaceSeasonSeries,
         SpaceSeasonSeriesPage,
+        SpaceSeasonWebKind,
+        SpaceSeasonWebPage,
         SpaceSetting,
         SpaceSimpleUser,
         SpaceTab2,
@@ -58,6 +66,8 @@ export 'package:kilikili/rust/api/space.dart'
         SpaceTopImage,
         SpaceTopTitle,
         SpaceVideoBlock,
+        SpaceWebBadge,
+        SpaceWebVideo,
         UpowerLevel,
         UpowerRank,
         UpowerRankItem;
@@ -77,7 +87,14 @@ export 'package:kilikili/rust/api/space.dart'
 ///
 /// ## 账号
 ///
-/// 这一族在 `ApiType.apiTypeSet` 里都没有登记，与基线拦截器一样走 `main`。
+/// 多数接口在 `ApiType.apiTypeSet` 里**没有登记**，与基线拦截器一样走
+/// `main`。两个例外必须照抄，否则换成另一个账号发出去，服务端给的是
+/// 另一份结果：
+///
+/// - 投稿搜索（`Api.searchArchive`）登记在 `recommend` 下——注释写着
+///   「不同账号搜索结果可能不一样」；
+/// - 合集 / 列表（`Api.seasonArchives` / `Api.seriesArchives`）登记在
+///   `heartbeat` 下。
 abstract final class RustSpace {
   /// 与基线 `BaseOptions` 一致的超时（`lib/http/init.dart`）。
   static const int _timeoutMs = 10000;
@@ -108,8 +125,9 @@ abstract final class RustSpace {
     String mixinKey = '',
     List<(String, String)>? headers,
     bool write = false,
+    AccountType accountType = AccountType.main,
   }) async {
-    final acc = Accounts.get(AccountType.main);
+    final acc = Accounts.get(accountType);
     return rust_api.SpaceContext(
       baseUrl: baseUrl ?? HttpString.apiBaseUrl,
       cookie: await RustRequest.cookieFor(acc, path),
@@ -388,6 +406,108 @@ abstract final class RustSpace {
       return _unwrap(result.data, result.errorDetail, result.errorCode);
     } catch (e, st) {
       return _crashed('投稿列表', e, st);
+    }
+  }
+
+  /// 一页投稿搜索（网页端）。WBI 签名 + 浏览器 UA。
+  ///
+  /// [specialType]（如 `charging`）与 [tid] 二选一：标签条上点到专题时发
+  /// 前者，点到分区时发后者。
+  static Future<LoadingState<rust_api.SpaceArchiveSearchPage>> archiveSearch({
+    required int mid,
+    int tid = 0,
+    required int page,
+    int pageSize = 30,
+    String? keyword,
+    String? specialType,
+    rust_api.SpaceArchiveSearchOrder order =
+        rust_api.SpaceArchiveSearchOrder.pubdate,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    final mixinKey = await _mixinKey();
+    if (mixinKey == null) return const Error('WBI 签名密钥获取失败');
+    try {
+      final result = await rust_api.fetchSpaceArchiveSearch(
+        context: await _context(
+          path: Api.searchArchive,
+          mixinKey: mixinKey,
+          // 这条登记在 `recommend` 下，不是 `main`。
+          accountType: AccountType.recommend,
+          headers: _spaceHeaders(Accounts.get(AccountType.recommend), mid),
+        ),
+        mid: mid,
+        tid: tid,
+        page: page,
+        pageSize: pageSize,
+        keyword: keyword,
+        specialType: specialType,
+        order: order,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('投稿搜索', e, st);
+    }
+  }
+
+  /// 一页合集或列表（网页端）。
+  ///
+  /// 两条接口的参数名不同，由 Rust 按 [kind] 分开拼；这里只表达「正序还是
+  /// 倒序」。
+  static Future<LoadingState<rust_api.SpaceSeasonWebPage>> seasonWeb({
+    required rust_api.SpaceSeasonWebKind kind,
+    required int mid,
+    required int id,
+    required int page,
+    int pageSize = 30,
+    bool ascending = false,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await rust_api.fetchSpaceSeasonWeb(
+        context: await _context(
+          path: kind == rust_api.SpaceSeasonWebKind.season
+              ? Api.seasonArchives
+              : Api.seriesArchives,
+          // 这两条登记在 `heartbeat` 下，不是 `main`。
+          accountType: AccountType.heartbeat,
+          headers: _spaceHeaders(Accounts.get(AccountType.heartbeat), mid),
+        ),
+        kind: kind,
+        mid: mid,
+        id: id,
+        page: page,
+        pageSize: pageSize,
+        ascending: ascending,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('合集视频', e, st);
+    }
+  }
+
+  /// 一页 gRPC 投稿搜索。
+  ///
+  /// 这条走 gRPC 网关，上下文与弹幕那几条共用（`RustGrpc.context()`）：
+  /// 不带 cookie，身份在 metadata 头里。
+  static Future<LoadingState<rust_api.SpaceSearchArchivePage>>
+  searchArchiveGrpc({
+    required int mid,
+    required String keyword,
+    required int page,
+    int pageSize = 20,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await rust_api.fetchSpaceSearchArchive(
+        context: RustGrpc.context(),
+        mid: mid,
+        keyword: keyword,
+        page: page,
+        pageSize: pageSize,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('投稿搜索', e, st);
     }
   }
 

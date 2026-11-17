@@ -17,6 +17,7 @@
 
 use std::time::Duration;
 
+use bili_api::grpc_space;
 use bili_api::http::RequestContext;
 use bili_api::space;
 use bili_api::transport_reqwest::ReqwestTransport;
@@ -25,7 +26,11 @@ use bili_domain::redact::Redacted;
 use bili_domain::space as domain;
 use bili_protocol::risk::{RiskTokens, SystemEntropy};
 
+use crate::api::grpc::GrpcContext;
 use crate::api::init;
+// 标题高亮的分段与搜索页是同一个类型：同一个概念在导出面上只应有一个
+// Dart 类，拆成两份只会让调用点多一次转换。
+use crate::api::search::TitleSpan;
 use crate::api::transport::TransportSettings;
 
 /// 别人的资料。
@@ -1425,6 +1430,368 @@ pub async fn fetch_space_archive(
             error_code: None,
         },
         Err(e) => SpaceArchiveResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+
+// --------------------------------------- 网页端的投稿搜索与合集 / 列表
+
+/// 投稿搜索里那三种互斥的角标。
+///
+/// **只给类别，不给文案**：「课堂」「充电专属」「合作」这三个词是界面
+/// 措辞，留在宿主（ADR-011 决策二）。
+#[derive(Debug, Clone, Copy)]
+pub enum SpaceWebBadge {
+    /// 课堂（付费课程）。界面另外还要把它当 pugv 处理。
+    Lesson,
+    Charging,
+    Union,
+}
+
+/// 投稿搜索与合集/列表里的一条视频。三条接口共用。
+#[derive(Debug, Clone)]
+pub struct SpaceWebVideo {
+    pub aid: Option<i64>,
+    pub bvid: Option<String>,
+    pub cover: Option<String>,
+    pub title: Option<String>,
+    pub desc: Option<String>,
+    /// Unix 秒。
+    pub pubdate: Option<i64>,
+    /// 秒。投稿搜索给的是 `"12:34"` 这种字符串，换算在 Rust 做。
+    pub duration: Option<i64>,
+    pub view: Option<i64>,
+    pub danmaku: Option<i64>,
+    /// 合集与列表**不给作者**，两个字段都是空的。
+    pub owner_mid: Option<i64>,
+    pub owner_name: Option<String>,
+    pub season_id: Option<i64>,
+    pub redirect_url: Option<String>,
+    pub badge: Option<SpaceWebBadge>,
+    /// 看到哪儿了，秒；`-1` 表示看完了。服务端给的是百分比。
+    pub progress: Option<i64>,
+}
+
+/// 投稿搜索的一个分类标签。
+#[derive(Debug, Clone)]
+pub struct SpaceArchiveTag {
+    pub tid: Option<i64>,
+    pub count: Option<i64>,
+    pub name: Option<String>,
+    /// 形如 `charging`。有值时筛选发的是它而不是 `tid`。
+    pub special_type: Option<String>,
+}
+
+/// 一页投稿搜索。
+#[derive(Debug, Clone)]
+pub struct SpaceArchiveSearchPage {
+    pub count: Option<i64>,
+    /// 专题（`slist`）加上课堂分区那一条，其余分区已经丢掉。
+    pub tags: Vec<SpaceArchiveTag>,
+    pub items: Vec<SpaceWebVideo>,
+}
+
+/// 一页合集或列表。
+#[derive(Debug, Clone)]
+pub struct SpaceSeasonWebPage {
+    pub total: Option<i64>,
+    pub items: Vec<SpaceWebVideo>,
+}
+
+/// 投稿搜索的排序字段。
+#[derive(Debug, Clone, Copy)]
+pub enum SpaceArchiveSearchOrder {
+    /// 最新发布。
+    Pubdate,
+    /// 最多播放。
+    Click,
+    /// 最多收藏。
+    Stow,
+}
+
+/// 合集与列表是两条接口。
+#[derive(Debug, Clone, Copy)]
+pub enum SpaceSeasonWebKind {
+    Season,
+    Series,
+}
+
+impl From<SpaceArchiveSearchOrder> for space::SpaceArchiveSearchOrder {
+    fn from(value: SpaceArchiveSearchOrder) -> Self {
+        match value {
+            SpaceArchiveSearchOrder::Pubdate => Self::Pubdate,
+            SpaceArchiveSearchOrder::Click => Self::Click,
+            SpaceArchiveSearchOrder::Stow => Self::Stow,
+        }
+    }
+}
+
+impl From<SpaceSeasonWebKind> for space::SpaceSeasonWebKind {
+    fn from(value: SpaceSeasonWebKind) -> Self {
+        match value {
+            SpaceSeasonWebKind::Season => Self::Season,
+            SpaceSeasonWebKind::Series => Self::Series,
+        }
+    }
+}
+
+impl From<domain::SpaceWebBadge> for SpaceWebBadge {
+    fn from(value: domain::SpaceWebBadge) -> Self {
+        match value {
+            domain::SpaceWebBadge::Lesson => Self::Lesson,
+            domain::SpaceWebBadge::Charging => Self::Charging,
+            domain::SpaceWebBadge::Union => Self::Union,
+        }
+    }
+}
+
+impl From<domain::SpaceWebVideo> for SpaceWebVideo {
+    fn from(v: domain::SpaceWebVideo) -> Self {
+        Self {
+            aid: v.aid,
+            bvid: v.bvid,
+            cover: v.cover,
+            title: v.title,
+            desc: v.desc,
+            pubdate: v.pubdate,
+            duration: v.duration,
+            view: v.view,
+            danmaku: v.danmaku,
+            owner_mid: v.owner_mid,
+            owner_name: v.owner_name,
+            season_id: v.season_id,
+            redirect_url: v.redirect_url,
+            badge: v.badge.map(Into::into),
+            progress: v.progress,
+        }
+    }
+}
+
+result_type!(
+    /// 一页投稿搜索的结果。
+    SpaceArchiveSearchResult,
+    SpaceArchiveSearchPage
+);
+result_type!(
+    /// 一页合集或列表的结果。
+    SpaceSeasonWebResult,
+    SpaceSeasonWebPage
+);
+
+/// 取一页投稿搜索（网页端）。
+///
+/// 风控 token 现生成，同 [`fetch_member_info`]。
+#[allow(clippy::too_many_arguments)]
+pub async fn fetch_space_archive_search(
+    context: SpaceContext,
+    mid: i64,
+    tid: i64,
+    page: i64,
+    page_size: i64,
+    keyword: Option<String>,
+    special_type: Option<String>,
+    order: SpaceArchiveSearchOrder,
+) -> SpaceArchiveSearchResult {
+    let (ctx, transport, mixin_key, ts) = context.split();
+    let tokens = RiskTokens::generate(&mut SystemEntropy);
+    let joined = init::runtime()
+        .spawn(async move {
+            space::fetch_space_archive_search(
+                &transport,
+                &ctx,
+                mid,
+                tid,
+                page,
+                page_size,
+                keyword.as_deref(),
+                special_type.as_deref(),
+                order.into(),
+                &tokens,
+                &mixin_key,
+                ts,
+            )
+            .await
+        })
+        .await;
+
+    match flatten(joined) {
+        Ok(p) => SpaceArchiveSearchResult {
+            data: Some(SpaceArchiveSearchPage {
+                count: p.count,
+                tags: p
+                    .tags
+                    .into_iter()
+                    .map(|t| SpaceArchiveTag {
+                        tid: t.tid,
+                        count: t.count,
+                        name: t.name,
+                        special_type: t.special_type,
+                    })
+                    .collect(),
+                items: p.items.into_iter().map(Into::into).collect(),
+            }),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => SpaceArchiveSearchResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+
+/// 取一页合集或列表（网页端）。
+///
+/// [`ascending`] 对两条接口的含义一致（正序），但发出去的参数名与形态
+/// 不同，由 Rust 按 [`kind`] 分开拼。
+pub async fn fetch_space_season_web(
+    context: SpaceContext,
+    kind: SpaceSeasonWebKind,
+    mid: i64,
+    id: i64,
+    page: i64,
+    page_size: i64,
+    ascending: bool,
+) -> SpaceSeasonWebResult {
+    let (ctx, transport, _, _) = context.split();
+    let joined = init::runtime()
+        .spawn(async move {
+            space::fetch_space_season_web(
+                &transport,
+                &ctx,
+                kind.into(),
+                mid,
+                id,
+                page,
+                page_size,
+                ascending,
+            )
+            .await
+        })
+        .await;
+
+    match flatten(joined) {
+        Ok(p) => SpaceSeasonWebResult {
+            data: Some(SpaceSeasonWebPage {
+                total: p.total,
+                items: p.items.into_iter().map(Into::into).collect(),
+            }),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => SpaceSeasonWebResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+
+// ------------------------------------------------------- gRPC 投稿搜索
+
+/// gRPC 投稿搜索里的一条。
+///
+/// 与 [`SpaceWebVideo`] 是**两条不同的接口**：这条是 app 端的 gRPC 搜索，
+/// 字段来自 `bilibili.app.archive.v1.Arc`，还带 `<em>` 高亮标记。
+#[derive(Debug, Clone)]
+pub struct SpaceSearchArchiveItem {
+    pub aid: Option<i64>,
+    /// 标题按 `<em>` 拆好的段，实体也解过了。Dart 不再跑一遍正则。
+    pub title_spans: Vec<TitleSpan>,
+    pub cover: Option<String>,
+    /// Unix 秒。
+    pub pubdate: Option<i64>,
+    /// 秒。
+    pub duration: Option<i64>,
+    pub first_cid: Option<i64>,
+    pub view: Option<i64>,
+    pub danmaku: Option<i64>,
+    pub author_name: Option<String>,
+    /// 竖屏稿件。由 `dimension` 的宽高与旋转算出来。
+    pub is_vertical: bool,
+    /// 有值时点进去是番剧页，不是普通视频页。
+    pub redirect_url: Option<String>,
+    /// 课堂稿件的跳转地址。
+    pub uri: Option<String>,
+    pub is_pugv: bool,
+}
+
+/// 一页 gRPC 投稿搜索。
+#[derive(Debug, Clone)]
+pub struct SpaceSearchArchivePage {
+    pub total: Option<i64>,
+    pub items: Vec<SpaceSearchArchiveItem>,
+}
+
+result_type!(
+    /// 一页 gRPC 投稿搜索的结果。
+    SpaceSearchArchiveResult,
+    SpaceSearchArchivePage
+);
+
+/// 取一页 gRPC 投稿搜索。
+///
+/// 走 gRPC 网关，所以上下文是 [`GrpcContext`] 而不是 [`SpaceContext`]：
+/// 这条不带 cookie，身份走 metadata 头（同弹幕那几条）。
+pub async fn fetch_space_search_archive(
+    context: GrpcContext,
+    mid: i64,
+    keyword: String,
+    page: i64,
+    page_size: i64,
+) -> SpaceSearchArchiveResult {
+    let (ctx, transport) = context.split();
+    let joined = init::runtime()
+        .spawn(async move {
+            grpc_space::fetch_search_archive(&transport, &ctx, mid, &keyword, page, page_size).await
+        })
+        .await;
+
+    match flatten(joined) {
+        Ok(p) => SpaceSearchArchiveResult {
+            data: Some(SpaceSearchArchivePage {
+                total: p.total,
+                items: p
+                    .items
+                    .into_iter()
+                    .map(|i| SpaceSearchArchiveItem {
+                        aid: i.aid,
+                        title_spans: i
+                            .title_spans
+                            .into_iter()
+                            .map(|s| TitleSpan {
+                                is_em: s.is_em,
+                                text: s.text,
+                            })
+                            .collect(),
+                        cover: i.cover,
+                        pubdate: i.pubdate,
+                        duration: i.duration,
+                        first_cid: i.first_cid,
+                        view: i.view,
+                        danmaku: i.danmaku,
+                        author_name: i.author_name,
+                        is_vertical: i.is_vertical,
+                        redirect_url: i.redirect_url,
+                        uri: i.uri,
+                        is_pugv: i.is_pugv,
+                    })
+                    .collect(),
+            }),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => SpaceSearchArchiveResult {
             data: None,
             error_kind: Some(e.kind().to_string()),
             error_detail: Some(e.detail().to_owned()),

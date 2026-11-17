@@ -1,18 +1,22 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/member.dart';
 import 'package:kilikili/models/common/member/archive_sort_type_app.dart';
 import 'package:kilikili/models/common/member/web_ss_type.dart';
-import 'package:kilikili/models_new/member/season_web/archive.dart';
-import 'package:kilikili/models_new/member/season_web/data.dart';
 import 'package:kilikili/pages/member_video_web/base/controller.dart';
+import 'package:kilikili/services/rust/rust_space.dart' as rust;
+import 'package:kilikili/services/rust/space_web_compat.dart';
 import 'package:get/get.dart';
 
 class MemberSSWebCtr
-    extends BaseVideoWebCtr<SeasonWebData, SeasonArchive, ArchiveSortTypeApp> {
+    extends
+        BaseVideoWebCtr<
+          rust.SpaceSeasonWebPage,
+          SpaceWebVideoModel,
+          ArchiveSortTypeApp
+        > {
   @override
   final Rx<ArchiveSortTypeApp> order = Rx(.desc);
   late final WebSsType _type;
-  late final Object _id;
+  late final int _id;
 
   @override
   void onInit() {
@@ -23,18 +27,17 @@ class MemberSSWebCtr
   }
 
   @override
-  List<SeasonArchive>? getDataList(SeasonWebData response) {
-    return response.archives;
+  List<SpaceWebVideoModel>? getDataList(rust.SpaceSeasonWebPage response) {
+    return response.items.map(SpaceWebVideoModel.fromRust).toList();
   }
 
   @override
   bool customHandleResponse(
     bool isRefresh,
-    Success<SeasonWebData> response,
+    Success<rust.SpaceSeasonWebPage> response,
   ) {
     if (isRefresh) {
-      final data = response.response;
-      if (data.page?.total case final total?) {
+      if (response.response.total?.toInt() case final total?) {
         count = total;
         totalPage = (total / ps).ceil();
       }
@@ -43,13 +46,13 @@ class MemberSSWebCtr
   }
 
   @override
-  Future<LoadingState<SeasonWebData>> customGetData() =>
-      MemberHttp.seasonSeriesWeb(
-        type: _type,
+  Future<LoadingState<rust.SpaceSeasonWebPage>> customGetData() =>
+      rust.RustSpace.seasonWeb(
+        kind: _type.kind,
         mid: mid,
         id: _id,
-        ps: ps,
-        pn: page,
-        sort: order.value,
+        page: page,
+        pageSize: ps,
+        ascending: order.value == ArchiveSortTypeApp.asc,
       );
 }

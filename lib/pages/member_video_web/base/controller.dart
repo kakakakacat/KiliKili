@@ -7,7 +7,7 @@ const int ps = 30;
 
 abstract class BaseVideoWebCtr<R, T, V> extends CommonListController<R, T>
     with ReloadMixin {
-  final Object mid = Get.arguments['mid'];
+  final int mid = Get.arguments['mid'];
 
   int? totalPage;
   int? count;

@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kilikili/grpc/bilibili/app/interfaces/v1.pb.dart'
+    show SearchArchiveReply;
+import 'package:kilikili/utils/em.dart';
 
 /// 用户空间那一族的**一次性基线对照**（S6 #56，机制见 ADR-011 决策五）。
 ///
@@ -486,6 +489,232 @@ void main() {
       }
     }
   });
+
+  // --------------------------------------- 网页端的投稿搜索与合集/列表
+
+  test('投稿搜索：Rust 快照与基线逐字段一致', () {
+    final data = read('space_archive_search.raw.json')['data'];
+    final snapshot = read('space_archive_search.rust.json');
+
+    expect(snapshot['count'], data['page']['count'], reason: 'page.count');
+
+    // 基线 `SearchArchiveList.fromJson`：先 slist，再从 tlist 里挑 196。
+    final tags = [
+      ...((data['list']['slist'] as List?) ?? const []),
+      if (data['list']['tlist']?['196'] case final lesson?) lesson,
+    ];
+    final snapTags = snapshot['tags'] as List;
+    expect(snapTags.length, tags.length, reason: '标签条数');
+    for (var i = 0; i < tags.length; i++) {
+      expect(snapTags[i]['tid'], tags[i]['tid']);
+      expect(snapTags[i]['count'], tags[i]['count']);
+      expect(snapTags[i]['name'], tags[i]['name']);
+      expect(snapTags[i]['special_type'], tags[i]['special_type']);
+    }
+
+    final vlist = data['list']['vlist'] as List;
+    final snapItems = snapshot['items'] as List;
+    expect(snapItems.length, vlist.length);
+    for (var i = 0; i < vlist.length; i++) {
+      final baseline = _BaselineVListItem(vlist[i] as Map<String, dynamic>);
+      final s = snapItems[i] as Map<String, dynamic>;
+      expect(s['aid'], baseline.aid, reason: 'vlist[$i] aid');
+      expect(s['bvid'], baseline.bvid, reason: 'vlist[$i] bvid');
+      expect(s['cover'], baseline.cover, reason: 'vlist[$i] cover');
+      expect(s['title'], baseline.title, reason: 'vlist[$i] title');
+      expect(s['desc'], baseline.desc, reason: 'vlist[$i] desc');
+      expect(s['pubdate'], baseline.pubdate, reason: 'vlist[$i] pubdate');
+      expect(s['duration'], baseline.duration, reason: 'vlist[$i] duration');
+      expect(s['view'], baseline.view, reason: 'vlist[$i] play');
+      expect(s['danmaku'], baseline.danmu, reason: 'vlist[$i] video_review');
+      expect(s['owner_mid'], baseline.ownerMid, reason: 'vlist[$i] mid');
+      expect(s['owner_name'], baseline.ownerName, reason: 'vlist[$i] author');
+      expect(s['season_id'], baseline.seasonId, reason: 'vlist[$i] season_id');
+      expect(
+        s['redirect_url'],
+        baseline.redirectUrl,
+        reason: 'vlist[$i] jump_url',
+      );
+      expect(s['progress'], baseline.progress, reason: 'vlist[$i] progress');
+      // 基线在模型里直接写死中文；Rust 只给类别，文案在
+      // `space_web_compat.dart`。这里比的是「类别对不对」。
+      expect(
+        switch (s['badge']) {
+          'Lesson' => '课堂',
+          'Charging' => '充电专属',
+          'Union' => '合作',
+          _ => null,
+        },
+        baseline.badge,
+        reason: 'vlist[$i] badge',
+      );
+    }
+  });
+
+  test('合集与列表：Rust 快照与基线逐字段一致', () {
+    for (final name in ['space_season_web', 'space_series_web']) {
+      final data = read('$name.raw.json')['data'] as Map<String, dynamic>;
+      final snapshot = read('$name.rust.json') as Map<String, dynamic>;
+      expect(snapshot['total'], data['page']['total'], reason: '$name total');
+
+      final archives = data['archives'] as List;
+      final snapItems = snapshot['items'] as List;
+      expect(snapItems.length, archives.length, reason: '$name 条数');
+      for (var i = 0; i < archives.length; i++) {
+        final e = archives[i] as Map<String, dynamic>;
+        final s = snapItems[i] as Map<String, dynamic>;
+        // 基线 `SeasonArchive.fromJson` 的逐行转写。
+        expect(s['aid'], e['aid'], reason: '$name[$i] aid');
+        expect(s['bvid'], e['bvid'], reason: '$name[$i] bvid');
+        expect(s['cover'], e['pic'], reason: '$name[$i] pic');
+        expect(s['title'], e['title'], reason: '$name[$i] title');
+        expect(s['pubdate'], e['pubdate'], reason: '$name[$i] pubdate');
+        expect(s['duration'], e['duration'], reason: '$name[$i] duration');
+        expect(s['view'], e['stat']?['view'], reason: '$name[$i] stat.view');
+        expect(
+          s['danmaku'],
+          e['stat']?['danmaku'],
+          reason: '$name[$i] stat.danmaku',
+        );
+        // 基线读的是 `upMid`，当前响应里没有这个键，所以两边都是空的。
+        expect(s['owner_mid'], e['upMid'], reason: '$name[$i] upMid');
+      }
+    }
+  });
+
+  // ------------------------------------------------- gRPC 投稿搜索
+
+  test('gRPC 投稿搜索：Rust 快照与基线的 protobuf 解码逐字段一致', () {
+    const dir = 'rust/crates/bili-api/tests/fixtures/space_grpc';
+    final reply = SearchArchiveReply.fromBuffer(
+      File('$dir/search_archive.raw.pb').readAsBytesSync(),
+    );
+    final snapshot =
+        jsonDecode(File('$dir/search_archive.rust.json').readAsStringSync())
+            as Map<String, dynamic>;
+
+    expect(snapshot['total'], reply.total.toInt(), reason: 'total');
+    final snapItems = snapshot['items'] as List;
+    expect(snapItems.length, reply.archives.length, reason: '条数');
+    for (var i = 0; i < reply.archives.length; i++) {
+      final item = reply.archives[i];
+      final arc = item.archive;
+      final s = snapItems[i] as Map<String, dynamic>;
+      expect(s['aid'], arc.hasAid() ? arc.aid.toInt() : null, reason: '[$i] aid');
+      expect(s['cover'], arc.hasPic() ? arc.pic : null, reason: '[$i] pic');
+      expect(
+        s['pubdate'],
+        arc.hasPubdate() ? arc.pubdate.toInt() : null,
+        reason: '[$i] pubdate',
+      );
+      expect(
+        s['duration'],
+        arc.hasDuration() ? arc.duration.toInt() : null,
+        reason: '[$i] duration',
+      );
+      expect(
+        s['first_cid'],
+        arc.hasFirstCid() ? arc.firstCid.toInt() : null,
+        reason: '[$i] firstCid',
+      );
+      expect(
+        s['view'],
+        arc.hasStat() && arc.stat.hasView() ? arc.stat.view : null,
+        reason: '[$i] stat.view',
+      );
+      expect(
+        s['danmaku'],
+        arc.hasStat() && arc.stat.hasDanmaku() ? arc.stat.danmaku : null,
+        reason: '[$i] stat.danmaku',
+      );
+      expect(
+        s['author_name'],
+        arc.hasAuthor() && arc.author.hasName() ? arc.author.name : null,
+        reason: '[$i] author.name',
+      );
+      expect(s['is_pugv'], item.isPugv, reason: '[$i] isPugv');
+      // 基线判的是 `hasRedirectUrl()`，而空串与未设置在 wire 上是一回事。
+      expect(
+        s['redirect_url'],
+        arc.redirectUrl.isEmpty ? null : arc.redirectUrl,
+        reason: '[$i] redirectUrl',
+      );
+      expect(s['uri'], item.uri.isEmpty ? null : item.uri, reason: '[$i] uri');
+      // 基线 `DimensionExt.isVertical` 的逐行转写。
+      final d = arc.dimension;
+      expect(
+        s['is_vertical'],
+        d.rotate.toInt() == 1 ? d.width > d.height : d.height > d.width,
+        reason: '[$i] isVertical',
+      );
+      // 基线 `Em.regTitle` 的结果：Rust 的分段与它一致。
+      expect(
+        (s['title_spans'] as List)
+            .map((e) => (isEm: e['is_em'] as bool, text: e['text'] as String))
+            .toList(),
+        Em.regTitle(arc.title),
+        reason: '[$i] titleSpans',
+      );
+    }
+  });
+}
+
+/// 基线 `VListItemModel.fromJson` 的逐行转写。
+class _BaselineVListItem {
+  _BaselineVListItem(Map<String, dynamic> json)
+    : cover = json['pic'],
+      desc = json['description'],
+      title = json['title'],
+      pubdate = json['created'],
+      duration = json['length'] == null
+          ? 0
+          : _parseDuration(json['length'] as String),
+      aid = json['aid'],
+      bvid = json['bvid'],
+      view = json['play'],
+      danmu = json['video_review'],
+      ownerMid = json['mid'],
+      ownerName = json['author'],
+      seasonId = json['season_id'],
+      redirectUrl = json['jump_url'] {
+    if (json['is_lesson_video'] == 1) {
+      badge = '课堂';
+    } else if (json['is_charging_arc'] == true) {
+      badge = '充电专属';
+    } else if (json['is_union_video'] == 1) {
+      badge = '合作';
+    }
+    final position = json['playback_position'] as num?;
+    if (position != null) {
+      progress = position == 100 ? -1 : ((position / 100) * duration).round();
+    }
+  }
+
+  final String? cover;
+  final String? desc;
+  final String? title;
+  final int? pubdate;
+  final int duration;
+  final int? aid;
+  final String? bvid;
+  final int? view;
+  final int? danmu;
+  final int? ownerMid;
+  final String? ownerName;
+  final int? seasonId;
+  final String? redirectUrl;
+  String? badge;
+  int? progress;
+}
+
+/// 基线 `DurationUtils.parseDuration` 的逐行转写：`"1:02:03"` → 秒。
+int _parseDuration(String value) {
+  final parts = value.split(':').map(int.parse).toList();
+  var seconds = 0;
+  for (final part in parts) {
+    seconds = seconds * 60 + part;
+  }
+  return seconds;
 }
 
 /// 基线 `SpaceArchiveItem.fromJson` 的逐字段对照。

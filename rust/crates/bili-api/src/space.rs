@@ -18,12 +18,13 @@ use bili_domain::error::DomainError;
 use bili_domain::space::{
     CoinLikeArcItem, CoinLikeArcPage, GuardItem, MemberCard, MemberGuardPage, MemberInfo,
     MemberRelationStat, MemberUpStat, SpaceArchiveHistory, SpaceArchiveItem, SpaceArchivePage,
-    SpaceArticleBlock, SpaceArticleItem, SpaceAudioBlock, SpaceAudioItem, SpaceCard, SpaceCardTag,
-    SpaceElec, SpaceEpisodicButton, SpaceFavBlock, SpaceFavItem, SpaceFollowedBy, SpaceGuard,
-    SpaceImages, SpaceLive, SpaceLiveMedal, SpacePage, SpacePrInfo, SpaceRelation,
-    SpaceReservation, SpaceReservationLottery, SpaceSeasonSeries, SpaceSeasonSeriesPage,
-    SpaceSetting, SpaceSimpleUser, SpaceTab2, SpaceTab2Item, SpaceTabFilter, SpaceTopImage,
-    SpaceTopTitle, SpaceVideoBlock, UpowerLevel, UpowerRank, UpowerRankItem,
+    SpaceArchiveSearchPage, SpaceArchiveTag, SpaceArticleBlock, SpaceArticleItem, SpaceAudioBlock,
+    SpaceAudioItem, SpaceCard, SpaceCardTag, SpaceElec, SpaceEpisodicButton, SpaceFavBlock,
+    SpaceFavItem, SpaceFollowedBy, SpaceGuard, SpaceImages, SpaceLive, SpaceLiveMedal, SpacePage,
+    SpacePrInfo, SpaceRelation, SpaceReservation, SpaceReservationLottery, SpaceSeasonSeries,
+    SpaceSeasonSeriesPage, SpaceSeasonWebPage, SpaceSetting, SpaceSimpleUser, SpaceTab2,
+    SpaceTab2Item, SpaceTabFilter, SpaceTopImage, SpaceTopTitle, SpaceVideoBlock, SpaceWebBadge,
+    SpaceWebVideo, UpowerLevel, UpowerRank, UpowerRankItem,
 };
 use bili_protocol::risk::RiskTokens;
 use serde::Deserialize;
@@ -67,11 +68,25 @@ pub mod path {
     pub const SPACE_BANGUMI: &str = "/x/v2/space/bangumi";
     /// 漫画。
     pub const SPACE_COMIC: &str = "/x/v2/space/comic";
+
+    /// 空间内的投稿搜索（网页端）。WBI 签名。
+    pub const SEARCH_ARCHIVE: &str = "/x/space/wbi/arc/search";
+    /// 合集里的视频（网页端）。
+    pub const SEASON_ARCHIVES: &str = "/x/polymer/web-space/seasons_archives_list";
+    /// 列表里的视频（网页端）。
+    pub const SERIES_ARCHIVES: &str = "/x/series/archives";
 }
 
 /// `web_location`：空间页的页面来源标记，服务端据此分流风控策略。
 /// 与别处的 `333.1387`（空间内各 tab）不是一回事，不要合并。
 const WEB_LOCATION_SPACE: &str = "1550101";
+
+/// `web_location`：空间内各 tab 的页面来源标记。与 [`WEB_LOCATION_SPACE`]
+/// 不是一回事。
+const WEB_LOCATION_SPACE_TAB: &str = "333.1387";
+
+/// 课堂分区号。基线只把分区表里的这一条当成标签，其余分区全丢。
+const LESSON_TID: &str = "196";
 
 // ------------------------------------------------------------------ 资料卡
 
@@ -1534,6 +1549,405 @@ pub async fn fetch_space_archive<T: HttpTransport>(
     );
     let body = crate::client::send(transport, ctx, &req).await?;
     parse_space_archive(&body)
+}
+
+// --------------------------------------------- 网页端的投稿搜索与合集
+
+/// 投稿搜索的排序字段。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SpaceArchiveSearchOrder {
+    /// 最新发布。
+    Pubdate,
+    /// 最多播放。
+    Click,
+    /// 最多收藏。
+    Stow,
+}
+
+impl SpaceArchiveSearchOrder {
+    #[must_use]
+    pub const fn as_param(self) -> &'static str {
+        match self {
+            Self::Pubdate => "pubdate",
+            Self::Click => "click",
+            Self::Stow => "stow",
+        }
+    }
+}
+
+/// 合集与列表是两条接口，参数名也不一样。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SpaceSeasonWebKind {
+    Season,
+    Series,
+}
+
+/// 投稿搜索的请求。WBI 签名 + 浏览器 UA。
+///
+/// `order_avoided=true` 与那串 `dm_*` 是基线写死的风控参数，照抄。
+#[must_use]
+#[allow(clippy::too_many_arguments)]
+pub fn space_archive_search_request(
+    mid: i64,
+    tid: i64,
+    page: i64,
+    page_size: i64,
+    keyword: Option<&str>,
+    special_type: Option<&str>,
+    order: SpaceArchiveSearchOrder,
+    tokens: &RiskTokens,
+    mixin_key: &str,
+    wts: i64,
+) -> PreparedRequest {
+    let mut query = vec![
+        ("mid".to_owned(), mid.to_string()),
+        ("ps".to_owned(), page_size.to_string()),
+        ("tid".to_owned(), tid.to_string()),
+        ("pn".to_owned(), page.to_string()),
+    ];
+    if let Some(keyword) = keyword {
+        query.push(("keyword".to_owned(), keyword.to_owned()));
+    }
+    if let Some(special_type) = special_type {
+        query.push(("special_type".to_owned(), special_type.to_owned()));
+    }
+    query.extend([
+        ("order".to_owned(), order.as_param().to_owned()),
+        ("platform".to_owned(), "web".to_owned()),
+        ("web_location".to_owned(), WEB_LOCATION_SPACE_TAB.to_owned()),
+        ("order_avoided".to_owned(), "true".to_owned()),
+        (
+            "dm_img_list".to_owned(),
+            bili_protocol::risk::DM_IMG_LIST.to_owned(),
+        ),
+        ("dm_img_str".to_owned(), tokens.dm_img_str.clone()),
+        (
+            "dm_cover_img_str".to_owned(),
+            tokens.dm_cover_img_str.clone(),
+        ),
+        (
+            "dm_img_inter".to_owned(),
+            bili_protocol::risk::DM_IMG_INTER.to_owned(),
+        ),
+        ("wts".to_owned(), wts.to_string()),
+    ]);
+    query.sort_by(|a, b| a.0.cmp(&b.0));
+    let w_rid = bili_protocol::wbi::sign(&query, mixin_key);
+    query.push(("w_rid".to_owned(), w_rid));
+    PreparedRequest {
+        path: path::SEARCH_ARCHIVE,
+        query,
+    }
+}
+
+/// 合集 / 列表的请求。
+///
+/// 两条接口的参数名不同（`page_num`/`page_size` 与 `pn`/`ps`），排序的
+/// 表达方式也不同（一个是布尔 `sort_reverse`、一个是字符串 `sort`），
+/// 所以这里按 [`SpaceSeasonWebKind`] 分两支，不强行合并。
+#[must_use]
+pub fn space_season_web_request(
+    kind: SpaceSeasonWebKind,
+    mid: i64,
+    id: i64,
+    page: i64,
+    page_size: i64,
+    ascending: bool,
+) -> PreparedRequest {
+    let query = match kind {
+        SpaceSeasonWebKind::Season => vec![
+            ("mid".to_owned(), mid.to_string()),
+            ("season_id".to_owned(), id.to_string()),
+            ("sort_reverse".to_owned(), ascending.to_string()),
+            ("page_size".to_owned(), page_size.to_string()),
+            ("page_num".to_owned(), page.to_string()),
+            ("web_location".to_owned(), WEB_LOCATION_SPACE_TAB.to_owned()),
+        ],
+        SpaceSeasonWebKind::Series => vec![
+            ("mid".to_owned(), mid.to_string()),
+            ("series_id".to_owned(), id.to_string()),
+            (
+                "sort".to_owned(),
+                if ascending { "asc" } else { "desc" }.to_owned(),
+            ),
+            ("ps".to_owned(), page_size.to_string()),
+            ("pn".to_owned(), page.to_string()),
+            ("web_location".to_owned(), WEB_LOCATION_SPACE_TAB.to_owned()),
+        ],
+    };
+    PreparedRequest {
+        path: match kind {
+            SpaceSeasonWebKind::Season => path::SEASON_ARCHIVES,
+            SpaceSeasonWebKind::Series => path::SERIES_ARCHIVES,
+        },
+        query,
+    }
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct ArchiveSearchDto {
+    list: Option<ArchiveSearchListDto>,
+    page: Option<ArchiveSearchPageDto>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct ArchiveSearchPageDto {
+    count: Option<i64>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct ArchiveSearchListDto {
+    vlist: Option<Vec<VlistItemDto>>,
+    slist: Option<Vec<SpaceArchiveTagDto>>,
+    tlist: Option<std::collections::BTreeMap<String, SpaceArchiveTagDto>>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SpaceArchiveTagDto {
+    tid: Option<i64>,
+    count: Option<i64>,
+    name: Option<String>,
+    special_type: Option<String>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct VlistItemDto {
+    aid: Option<i64>,
+    bvid: Option<String>,
+    pic: Option<String>,
+    title: Option<String>,
+    description: Option<String>,
+    created: Option<i64>,
+    /// `"12:34"` 这种字符串。
+    length: Option<String>,
+    play: Option<i64>,
+    video_review: Option<i64>,
+    mid: Option<i64>,
+    author: Option<String>,
+    season_id: Option<i64>,
+    jump_url: Option<String>,
+    is_lesson_video: Option<i64>,
+    is_charging_arc: Option<bool>,
+    is_union_video: Option<i64>,
+    /// 百分比。
+    playback_position: Option<f64>,
+}
+
+/// 看到哪儿了。
+///
+/// 服务端给的是百分比，基线把 100% 记成 `-1`（界面据此显示「已看完」而
+/// 不是一条满格进度条），其余按时长折算并四舍五入。照抄。
+fn web_progress(position: Option<f64>, duration: Option<i64>) -> Option<i64> {
+    let position = position?;
+    if (position - 100.0).abs() < f64::EPSILON {
+        return Some(-1);
+    }
+    #[allow(clippy::cast_precision_loss, clippy::cast_possible_truncation)]
+    Some((position / 100.0 * duration.unwrap_or(0) as f64).round() as i64)
+}
+
+fn vlist_item(dto: VlistItemDto) -> SpaceWebVideo {
+    let duration = dto
+        .length
+        .as_deref()
+        .map(crate::search_text::parse_duration_secs);
+    SpaceWebVideo {
+        aid: dto.aid,
+        bvid: dto.bvid,
+        cover: dto.pic,
+        title: dto.title,
+        desc: dto.description,
+        pubdate: dto.created,
+        duration,
+        view: dto.play,
+        danmaku: dto.video_review,
+        owner_mid: dto.mid,
+        owner_name: dto.author,
+        season_id: dto.season_id,
+        redirect_url: dto.jump_url,
+        // 三支互斥，顺序照抄基线：课堂 > 充电专属 > 合作。
+        badge: if dto.is_lesson_video == Some(1) {
+            Some(SpaceWebBadge::Lesson)
+        } else if dto.is_charging_arc == Some(true) {
+            Some(SpaceWebBadge::Charging)
+        } else if dto.is_union_video == Some(1) {
+            Some(SpaceWebBadge::Union)
+        } else {
+            None
+        },
+        progress: web_progress(dto.playback_position, duration),
+    }
+}
+
+/// 解析一页投稿搜索。
+///
+/// # Errors
+/// 信封失败沿用统一分类。
+pub fn parse_space_archive_search(body: &str) -> Result<SpaceArchiveSearchPage, DomainError> {
+    let dto: ArchiveSearchDto = crate::envelope::unwrap_envelope(body)?;
+    let list = dto.list.unwrap_or_default();
+    let mut tags: Vec<SpaceArchiveTag> = list
+        .slist
+        .unwrap_or_default()
+        .into_iter()
+        .map(|t| SpaceArchiveTag {
+            tid: t.tid,
+            count: t.count,
+            name: t.name,
+            special_type: t.special_type,
+        })
+        .collect();
+    // 基线只从分区表里挑课堂那一条（`196`），其余分区不进标签条。
+    if let Some(lesson) = list.tlist.unwrap_or_default().remove(LESSON_TID) {
+        tags.push(SpaceArchiveTag {
+            tid: lesson.tid,
+            count: lesson.count,
+            name: lesson.name,
+            special_type: lesson.special_type,
+        });
+    }
+    Ok(SpaceArchiveSearchPage {
+        count: dto.page.and_then(|p| p.count),
+        tags,
+        items: list
+            .vlist
+            .unwrap_or_default()
+            .into_iter()
+            .map(vlist_item)
+            .collect(),
+    })
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SeasonWebDto {
+    archives: Option<Vec<SeasonWebArchiveDto>>,
+    page: Option<SeasonWebPageDto>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SeasonWebPageDto {
+    total: Option<i64>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SeasonWebArchiveDto {
+    aid: Option<i64>,
+    bvid: Option<String>,
+    pic: Option<String>,
+    title: Option<String>,
+    pubdate: Option<i64>,
+    duration: Option<i64>,
+    stat: Option<SeasonWebStatDto>,
+    /// 基线读的就是这个键名（驼峰），而当前响应里**根本没有它**。
+    /// 照抄：真有一天服务端补上，这里不用再改。
+    #[serde(rename = "upMid")]
+    up_mid: Option<i64>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SeasonWebStatDto {
+    view: Option<i64>,
+    danmaku: Option<i64>,
+}
+
+/// 解析一页合集或列表。
+///
+/// # Errors
+/// 信封失败沿用统一分类。
+pub fn parse_space_season_web(body: &str) -> Result<SpaceSeasonWebPage, DomainError> {
+    let dto: SeasonWebDto = crate::envelope::unwrap_envelope(body)?;
+    Ok(SpaceSeasonWebPage {
+        total: dto.page.and_then(|p| p.total),
+        items: dto
+            .archives
+            .unwrap_or_default()
+            .into_iter()
+            .map(|a| {
+                let stat = a.stat.unwrap_or_default();
+                SpaceWebVideo {
+                    aid: a.aid,
+                    bvid: a.bvid,
+                    cover: a.pic,
+                    title: a.title,
+                    desc: None,
+                    pubdate: a.pubdate,
+                    duration: a.duration,
+                    view: stat.view,
+                    danmaku: stat.danmaku,
+                    owner_mid: a.up_mid,
+                    owner_name: None,
+                    season_id: None,
+                    redirect_url: None,
+                    badge: None,
+                    progress: None,
+                }
+            })
+            .collect(),
+    })
+}
+
+/// 取一页投稿搜索。
+///
+/// # Errors
+/// 同 [`fetch_member_info`]。
+#[allow(clippy::too_many_arguments)]
+pub async fn fetch_space_archive_search<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    mid: i64,
+    tid: i64,
+    page: i64,
+    page_size: i64,
+    keyword: Option<&str>,
+    special_type: Option<&str>,
+    order: SpaceArchiveSearchOrder,
+    tokens: &RiskTokens,
+    mixin_key: &str,
+    wts: i64,
+) -> Result<SpaceArchiveSearchPage, DomainError> {
+    let req = space_archive_search_request(
+        mid,
+        tid,
+        page,
+        page_size,
+        keyword,
+        special_type,
+        order,
+        tokens,
+        mixin_key,
+        wts,
+    );
+    let body = crate::client::send(transport, ctx, &req).await?;
+    parse_space_archive_search(&body)
+}
+
+/// 取一页合集或列表。
+///
+/// # Errors
+/// 同 [`fetch_member_info`]。
+#[allow(clippy::too_many_arguments)]
+pub async fn fetch_space_season_web<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    kind: SpaceSeasonWebKind,
+    mid: i64,
+    id: i64,
+    page: i64,
+    page_size: i64,
+    ascending: bool,
+) -> Result<SpaceSeasonWebPage, DomainError> {
+    let req = space_season_web_request(kind, mid, id, page, page_size, ascending);
+    let body = crate::client::send(transport, ctx, &req).await?;
+    parse_space_season_web(&body)
 }
 
 #[cfg(test)]

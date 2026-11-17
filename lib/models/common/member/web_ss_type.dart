@@ -1,10 +1,15 @@
-import 'package:kilikili/http/api.dart';
+import 'package:kilikili/services/rust/rust_space.dart' as rust;
 
+/// 网页端的「合集」与「列表」。
+///
+/// **只剩路由用途**：两条接口的路径与参数名已经随 S6 #56 下沉到 Rust
+/// （`bili_api::space::SpaceSeasonWebKind`）。
 enum WebSsType {
-  season(Api.seasonArchives),
-  series(Api.seriesArchives),
-  ;
+  season,
+  series;
 
-  final String api;
-  const WebSsType(this.api);
+  rust.SpaceSeasonWebKind get kind => switch (this) {
+    season => rust.SpaceSeasonWebKind.season,
+    series => rust.SpaceSeasonWebKind.series,
+  };
 }

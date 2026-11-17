@@ -1,0 +1,37 @@
+{
+  "has_next_page": false,
+  "items": [
+    {
+      "below_labels": [
+        "预售",
+        "包邮"
+      ],
+      "benefits": [
+        "省2元",
+        "34",
+        "true"
+      ],
+      "card_url": "https://example.invalid/product/100",
+      "cover": "https://example.invalid/shop.jpg",
+      "item_source_name": "脱敏店铺",
+      "net_price": "9.9起",
+      "price_prefix": "会员价",
+      "price_symbol": "¥",
+      "title": "脱敏商品"
+    },
+    {
+      "below_labels": [],
+      "benefits": [],
+      "card_url": null,
+      "cover": null,
+      "item_source_name": null,
+      "net_price": null,
+      "price_prefix": null,
+      "price_symbol": null,
+      "title": null
+    }
+  ],
+  "more_url": "https://example.invalid/more?q=a+b",
+  "show_more_desc": "查看更多",
+  "show_more_tab": true
+}

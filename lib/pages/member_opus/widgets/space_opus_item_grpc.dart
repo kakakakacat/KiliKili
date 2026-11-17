@@ -1,11 +1,10 @@
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/stat/stat.dart';
-import 'package:kilikili/grpc/bilibili/app/dynamic/v2.pb.dart'
-    show OpusFlowItem;
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/utils/page_utils.dart';
-import 'package:flutter/foundation.dart' show clampDouble;
+
 import 'package:material_ui/material_ui.dart';
 
 class SpaceOpusItemGrpc extends StatelessWidget {
@@ -14,15 +13,13 @@ class SpaceOpusItemGrpc extends StatelessWidget {
     required this.item,
   });
 
-  final OpusFlowItem item;
+  final SpaceOpusFlowItem item;
 
   @override
   Widget build(BuildContext context) {
-    final flowItemOpus = item.flowItemOpus;
-    final hasPic = flowItemOpus.hasCoverPic();
-    final coverPic = hasPic ? flowItemOpus.coverPic : null;
-    final hasExtend = item.hasExtend();
-    final extend = hasExtend ? item.extend : null;
+    final hasPic = item.cover != null;
+    final coverPic = item.cover;
+    final hasExtend = item.content != null;
     return Card(
       shape: const RoundedRectangleBorder(borderRadius: Style.borderRadius6),
       child: InkWell(
@@ -36,20 +33,8 @@ class SpaceOpusItemGrpc extends StatelessWidget {
                 children: [
                   LayoutBuilder(
                     builder: (context, constraints) {
-                      final double height;
-                      final bool isLongPic;
-                      if (coverPic!.hasWidth() && coverPic.hasHeight()) {
-                        final ratio = clampDouble(
-                          coverPic.height.toInt() / coverPic.width.toInt(),
-                          0.68,
-                          2.7,
-                        );
-                        isLongPic = ratio >= Style.imgMaxRatio;
-                        height = constraints.maxWidth * ratio;
-                      } else {
-                        isLongPic = false;
-                        height = constraints.maxWidth;
-                      }
+                      final height = constraints.maxWidth * coverPic!.ratio;
+                      final isLongPic = coverPic.isLongPic;
                       return NetworkImgLayer(
                         width: constraints.maxWidth,
                         height: height,
@@ -75,7 +60,7 @@ class SpaceOpusItemGrpc extends StatelessWidget {
                       ),
                       child: StatWidget(
                         type: StatType.like,
-                        value: flowItemOpus.bottomLeftText2.text,
+                        value: item.likeText ?? '',
                         color: Colors.white,
                       ),
                     ),
@@ -89,7 +74,7 @@ class SpaceOpusItemGrpc extends StatelessWidget {
                   vertical: 10,
                 ),
                 child: Text(
-                  extend!.origDesc.map((e) => e.text).join(),
+                  item.content!,
                   maxLines: hasPic ? 4 : 6,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -99,7 +84,7 @@ class SpaceOpusItemGrpc extends StatelessWidget {
                 padding: const EdgeInsets.only(left: 8, bottom: 8, right: 8),
                 child: StatWidget(
                   type: StatType.like,
-                  value: flowItemOpus.bottomLeftText2.text,
+                  value: item.likeText ?? '',
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),

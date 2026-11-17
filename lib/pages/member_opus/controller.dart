@@ -1,8 +1,6 @@
-import 'package:kilikili/grpc/bilibili/app/dynamic/v2.pb.dart'
-    show OpusSpaceFlowResp, OpusFlowItem, SectionOpusCollection;
-import 'package:kilikili/grpc/space.dart';
-import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/services/rust/rust_space.dart';
+
+import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
 import 'package:kilikili/pages/member/controller.dart';
 import 'package:collection/collection.dart';
@@ -10,7 +8,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:get/get.dart';
 
 class MemberOpusController
-    extends CommonListController<OpusSpaceFlowResp, OpusFlowItem> {
+    extends CommonListController<SpaceOpusFlowPage, SpaceOpusFlowItem> {
   MemberOpusController({
     required this.heroTag,
     required this.mid,
@@ -20,6 +18,7 @@ class MemberOpusController
   final int mid;
 
   String? next;
+
   /// 当前选中的筛选项。服务端不下发筛选条时就用这个兜底。
   ///
   /// **比较一律只看 `meta`**（见 [isSelected]）：基线给
@@ -34,7 +33,7 @@ class MemberOpusController
 
   bool isSelected(SpaceTabFilter filter) => filter.meta == type.value.meta;
   List<SpaceTabFilter>? filter;
-  SectionOpusCollection? collection;
+  SpaceOpusCollectionSection? collection;
 
   @override
   void onInit() {
@@ -55,34 +54,33 @@ class MemberOpusController
   }
 
   @override
-  List<OpusFlowItem>? getDataList(OpusSpaceFlowResp response) {
-    final next = response.nextPage.next;
-    if (next.isNotEmpty) {
+  List<SpaceOpusFlowItem>? getDataList(SpaceOpusFlowPage response) {
+    final next = response.next;
+    if (next != null) {
       this.next = next;
     } else {
       isEnd = true;
     }
-    return response.itemList;
+    return response.items;
   }
 
   @override
   bool customHandleResponse(
     bool isRefresh,
-    Success<OpusSpaceFlowResp> response,
+    Success<SpaceOpusFlowPage> response,
   ) {
-    if (isRefresh && response.response.hasHostUpOpusCollection()) {
-      collection = response.response.hostUpOpusCollection;
+    if (isRefresh && response.response.collection != null) {
+      collection = response.response.collection;
     }
     return super.customHandleResponse(isRefresh, response);
   }
 
   @override
-  Future<LoadingState<OpusSpaceFlowResp>> customGetData() =>
-      SpaceGrpc.opusSpaceFlow(
-        hostMid: mid,
-        next: next,
-        filterType: type.value.meta,
-      );
+  Future<LoadingState<SpaceOpusFlowPage>> customGetData() => RustSpace.opusFlow(
+    hostMid: mid,
+    next: next,
+    filterType: type.value.meta,
+  );
 
   void onCollapseCollection() {
     try {

@@ -1,10 +1,11 @@
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/space/space_audio/item.dart';
+
 import 'package:kilikili/pages/member_audio/controller.dart';
 import 'package:kilikili/pages/member_audio/widgets/item.dart';
 import 'package:kilikili/utils/grid.dart';
@@ -121,11 +122,9 @@ class _MemberAudioState extends State<MemberAudio>
                         uid: item.uid,
                         title: item.title,
                         cover: item.cover,
-                        ctime: item.statistic != null
-                            ? item.ctime! ~/ 1000
-                            : item.ctime,
-                        play: item.statistic?.play,
-                        comment: item.statistic?.comment,
+                        ctime: item.ctime,
+                        play: item.play,
+                        comment: item.comment,
                       );
                     },
                     itemCount: response.length,

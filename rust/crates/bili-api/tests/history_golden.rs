@@ -1,8 +1,8 @@
 //! 观看历史 / 稍后再看 / 播放列表的 golden 快照（S7 / issue #57）。
 //!
-//! 对照机制同 ADR-011 决策五：本测试冻结 Rust 的解析结果，
-//! `test/services/rust/history_parity_test.dart` 用迁移前那几个 `fromJson`
-//! 的逐行转写解析同一份 raw，与快照逐字段比对。
+//! 对照机制同 ADR-011 决策五：本测试冻结 Rust 的解析结果。
+//! 迁移时已用不 import lib/ 的一次性 Dart parity 逐字段比对同一份 raw；
+//! 对照通过后按 AGENTS.md 与被替换模型一起删除，长期保留本测试与快照。
 //!
 //! ## fixture 全部是手工构造的
 //!

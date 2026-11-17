@@ -14,7 +14,10 @@
 //! 的 `BuilderInfo`，不是猜的。
 
 use bili_domain::error::DomainError;
-use bili_domain::space::{SpaceSearchArchiveItem, SpaceSearchArchivePage};
+use bili_domain::space::{
+    SpaceOpusCollectionItem, SpaceOpusCollectionSection, SpaceOpusCover, SpaceOpusFlowItem,
+    SpaceOpusFlowPage, SpaceSearchArchiveItem, SpaceSearchArchivePage,
+};
 use bili_grpc::bilibili::app::interfaces::v1::SearchArchiveReq;
 use prost::Message;
 
@@ -232,6 +235,346 @@ pub async fn fetch_search_archive<T: HttpTransport>(
     )
     .await?;
     parse_search_archive(&bytes)
+}
+
+// ------------------------------------------------------------ 空间图文流
+
+/// gRPC 方法路径。照抄基线 `lib/grpc/url.dart`。
+///
+/// 服务名是 `Opus` 而不是 `Dynamic`：图文流与动态流在同一个 proto 包
+/// （`bilibili.app.dynamic.v2`）下，但挂在两个服务上。
+pub const OPUS_SPACE_FLOW: &str = "/bilibili.app.dynamic.v2.Opus/OpusSpaceFlow";
+
+/// `bilibili.pagination.Pagination`。
+///
+/// 手写而不是走 `tool/proto-generate.sh`：请求侧只有两个标量，为它把
+/// 整棵 `OpusSpaceFlowReq` 的描述符拖进生成器，等于让 `bili-grpc` 背上
+/// 一堆没人用的类型（同 [`crate::dynamic`] 里 `LikeListReq` 的做法）。
+#[derive(Clone, PartialEq, Message)]
+struct Pagination {
+    #[prost(int32, optional, tag = "1")]
+    page_size: Option<i32>,
+    #[prost(string, optional, tag = "2")]
+    next: Option<String>,
+}
+
+/// `bilibili.app.dynamic.v2.OpusSpaceFlowReq`。
+///
+/// `local_time`（字段 2）基线不设，这里也不设——它是客户端时区偏移，
+/// 与这一页取什么无关。
+#[derive(Clone, PartialEq, Message)]
+struct OpusSpaceFlowReq {
+    #[prost(int64, optional, tag = "1")]
+    host_mid: Option<i64>,
+    #[prost(message, optional, tag = "3")]
+    pagination: Option<Pagination>,
+    #[prost(string, optional, tag = "4")]
+    filter_type: Option<String>,
+}
+
+/// 图文流的请求体。
+///
+/// `next` 为空表示第一页：基线传的是 `null`，而 protobuf 的空串与未设置
+/// 在 wire 上是一回事，所以空串与 `None` 等价，不必在调用点分两种写法。
+#[must_use]
+pub fn opus_space_flow_request(
+    host_mid: i64,
+    next: Option<&str>,
+    filter_type: &str,
+    page_size: i64,
+) -> Vec<u8> {
+    OpusSpaceFlowReq {
+        host_mid: Some(host_mid),
+        pagination: Some(Pagination {
+            page_size: Some(i32::try_from(page_size).unwrap_or(i32::MAX)),
+            next: next.filter(|s| !s.is_empty()).map(ToOwned::to_owned),
+        }),
+        filter_type: Some(filter_type.to_owned()),
+    }
+    .encode_to_vec()
+}
+
+/// 封面宽高比的夹取范围。照抄基线（图文卡片与 `Cover.ratio` 是同一组
+/// 常数）：瀑布流里一张过长或过扁的图会把整列撑坏。
+const COVER_RATIO_MIN: f64 = 0.68;
+const COVER_RATIO_MAX: f64 = 2.7;
+
+/// `bilibili.app.dynamic.v2.MdlDynDrawItem` 的 `src`(1)、`width`(2)、
+/// `height`(3)。
+fn parse_cover(bytes: &[u8]) -> Result<SpaceOpusCover, DomainError> {
+    let mut reader = Reader::new(bytes);
+    let mut src = Some(String::new());
+    let (mut width, mut height) = (None, None);
+    while !reader.is_empty() {
+        let tag = reader.read_tag()?;
+        match (tag.field, tag.wire) {
+            (1, WireType::LengthDelimited) => src = Some(reader.read_string()?),
+            (2, WireType::Varint) => width = Some(reader.read_int64()?),
+            (3, WireType::Varint) => height = Some(reader.read_int64()?),
+            _ => reader.skip(tag.wire)?,
+        }
+    }
+    // Dart clampDouble 把 NaN 与正无穷夹到上限；零宽也保留相同语义。
+    #[allow(clippy::cast_precision_loss)]
+    let ratio = match (width, height) {
+        (Some(w), Some(h)) => {
+            let ratio = h as f64 / w as f64;
+            if ratio.is_nan() {
+                COVER_RATIO_MAX
+            } else {
+                ratio.clamp(COVER_RATIO_MIN, COVER_RATIO_MAX)
+            }
+        }
+        _ => 1.0,
+    };
+    Ok(SpaceOpusCover {
+        src,
+        ratio,
+        is_long_pic: ratio >= 2.6,
+    })
+}
+
+/// `bilibili.app.dynamic.v2.CoverIconWithText` 的 `text`(2)。
+fn parse_icon_text(bytes: &[u8]) -> Result<Option<String>, DomainError> {
+    let mut reader = Reader::new(bytes);
+    let mut text = Some(String::new());
+    while !reader.is_empty() {
+        let tag = reader.read_tag()?;
+        match (tag.field, tag.wire) {
+            (2, WireType::LengthDelimited) => text = Some(reader.read_string()?),
+            _ => reader.skip(tag.wire)?,
+        }
+    }
+    Ok(text)
+}
+
+/// 把一串「只有 `text`(1) 的小消息」拼成一段文字。
+///
+/// `Description`（正文段）与 `TextWithPriority`（标题段）在这一点上形状
+/// 相同，服务端按段下发、客户端直接相连，没有分隔符。
+fn parse_text_segment(bytes: &[u8]) -> Result<Option<String>, DomainError> {
+    let mut reader = Reader::new(bytes);
+    let mut text = Some(String::new());
+    while !reader.is_empty() {
+        let tag = reader.read_tag()?;
+        match (tag.field, tag.wire) {
+            (1, WireType::LengthDelimited) => text = Some(reader.read_string()?),
+            _ => reader.skip(tag.wire)?,
+        }
+    }
+    Ok(text)
+}
+
+/// `bilibili.app.dynamic.v2.Extend` 的 `orig_desc`(6)：正文摘要。
+fn parse_extend_content(bytes: &[u8]) -> Result<Option<String>, DomainError> {
+    let mut reader = Reader::new(bytes);
+    let mut parts: Vec<String> = Vec::new();
+    while !reader.is_empty() {
+        let tag = reader.read_tag()?;
+        match (tag.field, tag.wire) {
+            (6, WireType::LengthDelimited) => {
+                if let Some(text) = parse_text_segment(reader.read_bytes()?)? {
+                    parts.push(text);
+                }
+            }
+            _ => reader.skip(tag.wire)?,
+        }
+    }
+    // 一段都没有与「有 extend 但正文为空」是两回事：基线判的是
+    // `hasExtend()`，没有 extend 时那块 Text 整个不渲染。
+    Ok(Some(parts.concat()))
+}
+
+/// `bilibili.app.dynamic.v2.FlowItemOpus`：封面(1) 与左下角点赞文案(4)。
+fn parse_flow_item_opus(
+    bytes: &[u8],
+) -> Result<(Option<SpaceOpusCover>, Option<String>), DomainError> {
+    let mut reader = Reader::new(bytes);
+    let (mut cover, mut like_text) = (None, Some(String::new()));
+    while !reader.is_empty() {
+        let tag = reader.read_tag()?;
+        match (tag.field, tag.wire) {
+            (1, WireType::LengthDelimited) => cover = Some(parse_cover(reader.read_bytes()?)?),
+            (4, WireType::LengthDelimited) => like_text = parse_icon_text(reader.read_bytes()?)?,
+            _ => reader.skip(tag.wire)?,
+        }
+    }
+    Ok((cover, like_text))
+}
+
+/// `bilibili.app.dynamic.v2.OpusFlowItem`。
+fn parse_flow_item(bytes: &[u8]) -> Result<SpaceOpusFlowItem, DomainError> {
+    let mut reader = Reader::new(bytes);
+    let mut item = SpaceOpusFlowItem {
+        oid: Some(0),
+        like_text: Some(String::new()),
+        ..Default::default()
+    };
+    while !reader.is_empty() {
+        let tag = reader.read_tag()?;
+        match (tag.field, tag.wire) {
+            (2, WireType::Varint) => item.oid = Some(reader.read_int64()?),
+            (3, WireType::LengthDelimited) => {
+                item.content = parse_extend_content(reader.read_bytes()?)?;
+            }
+            (4, WireType::LengthDelimited) => {
+                let (cover, like_text) = parse_flow_item_opus(reader.read_bytes()?)?;
+                item.cover = cover;
+                item.like_text = like_text;
+            }
+            _ => reader.skip(tag.wire)?,
+        }
+    }
+    Ok(item)
+}
+
+/// `bilibili.app.dynamic.v2.OpusCollection` 的 `collection_id`(1) 与
+/// `title`(2)（`OneLineText`，里面是 `texts`(1) 一串 `TextWithPriority`）。
+fn parse_collection_info(bytes: &[u8]) -> Result<(Option<i64>, Option<String>), DomainError> {
+    let mut reader = Reader::new(bytes);
+    let (mut id, mut title) = (Some(0), Some(String::new()));
+    while !reader.is_empty() {
+        let tag = reader.read_tag()?;
+        match (tag.field, tag.wire) {
+            (1, WireType::Varint) => id = Some(reader.read_int64()?),
+            (2, WireType::LengthDelimited) => {
+                let mut inner = Reader::new(reader.read_bytes()?);
+                let mut parts: Vec<String> = Vec::new();
+                while !inner.is_empty() {
+                    let tag = inner.read_tag()?;
+                    match (tag.field, tag.wire) {
+                        (1, WireType::LengthDelimited) => {
+                            if let Some(text) = parse_text_segment(inner.read_bytes()?)? {
+                                parts.push(text);
+                            }
+                        }
+                        _ => inner.skip(tag.wire)?,
+                    }
+                }
+                title = Some(parts.concat());
+            }
+            _ => reader.skip(tag.wire)?,
+        }
+    }
+    Ok((id, title))
+}
+
+/// `bilibili.app.dynamic.v2.OpusCollectionWithCover`。
+fn parse_collection_item(bytes: &[u8]) -> Result<SpaceOpusCollectionItem, DomainError> {
+    let mut reader = Reader::new(bytes);
+    let mut item = SpaceOpusCollectionItem {
+        collection_id: Some(0),
+        title: Some(String::new()),
+        cover: Some(String::new()),
+        cover_bottom_text: Some(String::new()),
+        sub_title: Some(String::new()),
+    };
+    while !reader.is_empty() {
+        let tag = reader.read_tag()?;
+        match (tag.field, tag.wire) {
+            (1, WireType::LengthDelimited) => {
+                let (id, title) = parse_collection_info(reader.read_bytes()?)?;
+                item.collection_id = id;
+                item.title = title;
+            }
+            (2, WireType::LengthDelimited) => item.cover = Some(reader.read_string()?),
+            (3, WireType::LengthDelimited) => {
+                item.cover_bottom_text = parse_icon_text(reader.read_bytes()?)?;
+            }
+            (4, WireType::LengthDelimited) => item.sub_title = Some(reader.read_string()?),
+            _ => reader.skip(tag.wire)?,
+        }
+    }
+    Ok(item)
+}
+
+/// `bilibili.app.dynamic.v2.SectionOpusCollection`。`expand` 的字段号是
+/// **100**，不是接着 2 往下排——服务端自己的约定。
+fn parse_collection_section(bytes: &[u8]) -> Result<SpaceOpusCollectionSection, DomainError> {
+    let mut reader = Reader::new(bytes);
+    let mut section = SpaceOpusCollectionSection {
+        title: Some(String::new()),
+        ..Default::default()
+    };
+    while !reader.is_empty() {
+        let tag = reader.read_tag()?;
+        match (tag.field, tag.wire) {
+            (1, WireType::LengthDelimited) => section.title = Some(reader.read_string()?),
+            (2, WireType::LengthDelimited) => {
+                section
+                    .items
+                    .push(parse_collection_item(reader.read_bytes()?)?);
+            }
+            (100, WireType::Varint) => section.expand = reader.read_varint()? != 0,
+            _ => reader.skip(tag.wire)?,
+        }
+    }
+    Ok(section)
+}
+
+/// `bilibili.pagination.PaginationReply` 的 `next`(1)。
+fn parse_pagination_next(bytes: &[u8]) -> Result<Option<String>, DomainError> {
+    let mut reader = Reader::new(bytes);
+    let mut next = None;
+    while !reader.is_empty() {
+        let tag = reader.read_tag()?;
+        match (tag.field, tag.wire) {
+            (1, WireType::LengthDelimited) => next = Some(reader.read_string()?),
+            _ => reader.skip(tag.wire)?,
+        }
+    }
+    // 空串按没有：基线判的是 `next.isNotEmpty`，没有下一页时就到底了。
+    Ok(next.filter(|s| !s.is_empty()))
+}
+
+/// 解析一页图文流（`OpusSpaceFlowResp`）。
+///
+/// `host_up_note_nav_bar`(4) 不读：基线也没有它的消费者。
+///
+/// # Errors
+/// 字段类型与协议不符时按协议错误返回。
+pub fn parse_opus_space_flow(bytes: &[u8]) -> Result<SpaceOpusFlowPage, DomainError> {
+    let mut reader = Reader::new(bytes);
+    let mut page = SpaceOpusFlowPage::default();
+    while !reader.is_empty() {
+        let tag = reader.read_tag()?;
+        match (tag.field, tag.wire) {
+            (1, WireType::LengthDelimited) => {
+                page.items.push(parse_flow_item(reader.read_bytes()?)?)
+            }
+            (2, WireType::LengthDelimited) => {
+                page.next = parse_pagination_next(reader.read_bytes()?)?
+            }
+            (3, WireType::LengthDelimited) => {
+                page.collection = Some(parse_collection_section(reader.read_bytes()?)?);
+            }
+            _ => reader.skip(tag.wire)?,
+        }
+    }
+    Ok(page)
+}
+
+/// 取一页图文流。
+///
+/// # Errors
+/// 传输、网关状态、解析三类失败。
+pub async fn fetch_opus_space_flow<T: HttpTransport>(
+    transport: &T,
+    context: &RequestContext,
+    host_mid: i64,
+    next: Option<&str>,
+    filter_type: &str,
+    page_size: i64,
+) -> Result<SpaceOpusFlowPage, DomainError> {
+    let bytes = crate::grpc::unary(
+        transport,
+        context,
+        OPUS_SPACE_FLOW,
+        &opus_space_flow_request(host_mid, next, filter_type, page_size),
+        RetryPolicy::Read,
+    )
+    .await?;
+    parse_opus_space_flow(&bytes)
 }
 
 #[cfg(test)]

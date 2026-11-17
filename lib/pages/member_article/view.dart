@@ -1,7 +1,8 @@
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/space/space_article/item.dart';
+
 import 'package:kilikili/pages/member_article/controller.dart';
 import 'package:kilikili/pages/member_article/widget/item.dart';
 import 'package:kilikili/utils/grid.dart';
@@ -73,10 +74,10 @@ class _MemberArticleState extends State<MemberArticle>
                   final item = response[index];
                   return MemberArticleItem(
                     title: item.title,
-                    cover: item.originImageUrls?.firstOrNull,
+                    cover: item.cover,
                     publishTimeText: item.publishTimeText,
-                    view: item.stats?.view,
-                    reply: item.stats?.reply,
+                    view: item.view,
+                    reply: item.reply,
                     uri: item.uri,
                   );
                 },

@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:kilikili/grpc/bilibili/app/archive/v1.pb.dart' as archive;
 import 'package:kilikili/grpc/bilibili/app/interfaces/v1.pb.dart'
     show Arc, SearchArchiveReply;
 import 'package:fixnum/fixnum.dart';
+import 'package:kilikili/utils/em.dart';
 
 /// 空间内 gRPC 投稿搜索的 golden fixture 生成器（S6 #56）。
 ///
@@ -45,7 +47,49 @@ void main() {
     final reply = _replyFromSpec(spec);
     final stem = source.path.replaceFirst('.source.json', '');
     File('$stem.raw.pb').writeAsBytesSync(reply.writeToBuffer());
+    // 用基线解码器冻结独立判据，让 parity 本身不必 import lib/。
+    final bytes = File('$stem.raw.pb').readAsBytesSync();
+    final decoded = SearchArchiveReply.fromBuffer(bytes);
+    final baseline = {
+      'wire_sha256': sha256.convert(bytes).toString(),
+      'data': {
+        'total': decoded.total.toInt(),
+        'items': [
+          for (final item in decoded.archives) _baselineItem(item),
+        ],
+      },
+    };
+    File('$stem.dart.json').writeAsStringSync(
+      '${const JsonEncoder.withIndent('  ').convert(baseline)}\n',
+    );
   }
+}
+
+Map<String, dynamic> _baselineItem(Arc item) {
+  final arc = item.archive;
+  final d = arc.dimension;
+  return {
+    'aid': arc.hasAid() ? arc.aid.toInt() : null,
+    'cover': arc.hasPic() ? arc.pic : null,
+    'pubdate': arc.hasPubdate() ? arc.pubdate.toInt() : null,
+    'duration': arc.hasDuration() ? arc.duration.toInt() : null,
+    'first_cid': arc.hasFirstCid() ? arc.firstCid.toInt() : null,
+    'view': arc.hasStat() && arc.stat.hasView() ? arc.stat.view : null,
+    'danmaku': arc.hasStat() && arc.stat.hasDanmaku() ? arc.stat.danmaku : null,
+    'author_name': arc.hasAuthor() && arc.author.hasName()
+        ? arc.author.name
+        : null,
+    'is_pugv': item.isPugv,
+    'redirect_url': arc.redirectUrl.isEmpty ? null : arc.redirectUrl,
+    'uri': item.uri.isEmpty ? null : item.uri,
+    'is_vertical': d.rotate.toInt() == 1
+        ? d.width > d.height
+        : d.height > d.width,
+    'title_spans': [
+      for (final span in Em.regTitle(arc.title))
+        {'is_em': span.isEm, 'text': span.text},
+    ],
+  };
 }
 
 SearchArchiveReply _replyFromSpec(Map<String, dynamic> spec) {

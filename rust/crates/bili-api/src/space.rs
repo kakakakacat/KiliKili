@@ -18,11 +18,12 @@ use bili_domain::error::DomainError;
 use bili_domain::space::{
     CoinLikeArcItem, CoinLikeArcPage, GuardItem, MemberCard, MemberGuardPage, MemberInfo,
     MemberRelationStat, MemberUpStat, SpaceArchiveHistory, SpaceArchiveItem, SpaceArchivePage,
-    SpaceArchiveSearchPage, SpaceArchiveTag, SpaceArticleBlock, SpaceArticleItem, SpaceAudioBlock,
-    SpaceAudioItem, SpaceCard, SpaceCardTag, SpaceElec, SpaceEpisodicButton, SpaceFavBlock,
-    SpaceFavItem, SpaceFollowedBy, SpaceGuard, SpaceImages, SpaceLive, SpaceLiveMedal, SpacePage,
-    SpacePrInfo, SpaceRelation, SpaceReservation, SpaceReservationLottery, SpaceSeasonSeries,
-    SpaceSeasonSeriesPage, SpaceSeasonWebPage, SpaceSetting, SpaceSimpleUser, SpaceTab2,
+    SpaceArchiveSearchPage, SpaceArchiveTag, SpaceArticleBlock, SpaceArticleItem, SpaceArticlePage,
+    SpaceAudioBlock, SpaceAudioItem, SpaceAudioPage, SpaceCard, SpaceCardTag, SpaceCheeseItem,
+    SpaceCheesePage, SpaceElec, SpaceEpisodicButton, SpaceFavBlock, SpaceFavItem, SpaceFollowedBy,
+    SpaceGuard, SpaceImages, SpaceLive, SpaceLiveMedal, SpacePage, SpacePrInfo, SpaceRelation,
+    SpaceReservation, SpaceReservationLottery, SpaceSeasonSeries, SpaceSeasonSeriesPage,
+    SpaceSeasonWebPage, SpaceSetting, SpaceShopItem, SpaceShopPage, SpaceSimpleUser, SpaceTab2,
     SpaceTab2Item, SpaceTabFilter, SpaceTopImage, SpaceTopTitle, SpaceVideoBlock, SpaceWebBadge,
     SpaceWebVideo, UpowerLevel, UpowerRank, UpowerRankItem,
 };
@@ -30,7 +31,7 @@ use bili_protocol::risk::RiskTokens;
 use serde::Deserialize;
 
 use crate::http::{HttpTransport, Idempotency, RequestContext};
-use crate::request::{PreparedRequest, PreparedWrite};
+use crate::request::{CsrfIn, PreparedRequest, PreparedWrite, WriteBody};
 
 /// 接口路径。与基线 `lib/http/api.dart` 保持一致。
 pub mod path {
@@ -69,6 +70,15 @@ pub mod path {
     /// 漫画。
     pub const SPACE_COMIC: &str = "/x/v2/space/comic";
 
+    /// 专栏列表。**挂在 `app.bilibili.com` 上**，base_url 由调用方给。
+    pub const SPACE_ARTICLE: &str = "/x/v2/space/article";
+    /// 音频列表。
+    pub const SPACE_AUDIO: &str = "/audio/music-service/web/song/upper";
+    /// 课堂列表。
+    pub const SPACE_CHEESE: &str = "/pugv/app/web/season/page";
+    /// 会员购小店。**挂在 `mall.bilibili.com` 上**，base_url 由调用方给。
+    pub const SPACE_SHOP: &str = "/community-hub/small_shop/feed/tab/item";
+
     /// 空间内的投稿搜索（网页端）。WBI 签名。
     pub const SEARCH_ARCHIVE: &str = "/x/space/wbi/arc/search";
     /// 合集里的视频（网页端）。
@@ -87,6 +97,9 @@ const WEB_LOCATION_SPACE_TAB: &str = "333.1387";
 
 /// 课堂分区号。基线只把分区表里的这一条当成标签，其余分区全丢。
 const LESSON_TID: &str = "196";
+
+/// 会员购自己的版本号。与 app 域那组常量不是一套，不要合并。
+const MALL_M_VERSION: &str = "309";
 
 // ------------------------------------------------------------------ 资料卡
 
@@ -881,6 +894,20 @@ struct SpaceArticleStatsDto {
     reply: Option<i64>,
 }
 
+/// 专栏条目的映射。主页那一块与专栏列表页共用：同一个界面组件，
+/// 服务端给的也是同一组键。
+fn article_item(a: SpaceArticleItemDto) -> SpaceArticleItem {
+    SpaceArticleItem {
+        title: a.title,
+        // 基线留了整个 `origin_image_urls`，但组件只读第一张。
+        cover: a.origin_image_urls.and_then(|urls| urls.into_iter().next()),
+        publish_time_text: a.publish_time_text,
+        view: a.stats.as_ref().and_then(|s| s.view),
+        reply: a.stats.and_then(|s| s.reply),
+        uri: a.uri,
+    }
+}
+
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
 struct SpaceAudioBlockDto {
@@ -1143,14 +1170,7 @@ pub fn parse_space_page(body: &str) -> Result<SpacePage, DomainError> {
             .item
             .unwrap_or_default()
             .into_iter()
-            .map(|a| SpaceArticleItem {
-                title: a.title,
-                cover: a.origin_image_urls.and_then(|urls| urls.into_iter().next()),
-                publish_time_text: a.publish_time_text,
-                view: a.stats.as_ref().and_then(|s| s.view),
-                reply: a.stats.and_then(|s| s.reply),
-                uri: a.uri,
-            })
+            .map(article_item)
             .collect(),
     });
     let audio = dto.audios.map(|b| SpaceAudioBlock {
@@ -1164,7 +1184,10 @@ pub fn parse_space_page(body: &str) -> Result<SpacePage, DomainError> {
                 uid: a.uid,
                 title: a.title,
                 cover: a.cover,
+                // 主页这一块给的是秒，不除 1000；也不给播放与评论数。
                 ctime: a.ctime,
+                play: None,
+                comment: None,
             })
             .collect(),
     });
@@ -1948,6 +1971,471 @@ pub async fn fetch_space_season_web<T: HttpTransport>(
     let req = space_season_web_request(kind, mid, id, page, page_size, ascending);
     let body = crate::client::send(transport, ctx, &req).await?;
     parse_space_season_web(&body)
+}
+
+// ------------------------------------------------- 专栏 / 音频 / 课堂 / 会员购
+
+/// 专栏列表一页的请求。**挂在 app 域**，base_url 由调用方给。
+///
+/// 参数顺序照抄基线（`MemberHttp.spaceArticle`）。这条没有签名，顺序本不
+/// 影响结果，但两边一致时抓包对照是逐行的。
+///
+/// 这条还要 `bili-http-engine: cronet` 与 app 端 UA 两个头，由 Dart 补——
+/// 理由见本模块开头那段「请求头不在这里」。
+#[must_use]
+pub fn space_article_request(mid: i64, page: i64, page_size: i64) -> PreparedRequest {
+    PreparedRequest {
+        path: path::SPACE_ARTICLE,
+        query: vec![
+            ("build".to_owned(), app_fixed::BUILD.to_owned()),
+            ("channel".to_owned(), app_fixed::CHANNEL.to_owned()),
+            ("version".to_owned(), app_fixed::VERSION.to_owned()),
+            ("c_locale".to_owned(), app_fixed::LOCALE.to_owned()),
+            ("mobi_app".to_owned(), app_fixed::MOBI_APP.to_owned()),
+            ("platform".to_owned(), app_fixed::PLATFORM.to_owned()),
+            ("pn".to_owned(), page.to_string()),
+            ("ps".to_owned(), page_size.to_string()),
+            ("s_locale".to_owned(), app_fixed::LOCALE.to_owned()),
+            ("statistics".to_owned(), app_fixed::STATISTICS.to_owned()),
+            ("vmid".to_owned(), mid.to_string()),
+        ],
+    }
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SpaceArticlePageDto {
+    count: Option<i64>,
+    item: Option<Vec<SpaceArticleItemDto>>,
+    lists_count: Option<i64>,
+}
+
+/// 解析一页专栏列表。
+///
+/// # Errors
+/// 信封失败沿用统一分类。`item` 缺失按空列表处理。
+pub fn parse_space_article(body: &str) -> Result<SpaceArticlePage, DomainError> {
+    let dto: SpaceArticlePageDto = crate::envelope::unwrap_envelope(body)?;
+    Ok(SpaceArticlePage {
+        count: dto.count,
+        lists_count: dto.lists_count,
+        items: dto
+            .item
+            .unwrap_or_default()
+            .into_iter()
+            .map(article_item)
+            .collect(),
+    })
+}
+
+/// 取一页专栏列表。
+///
+/// # Errors
+/// 同 [`fetch_member_info`]。
+pub async fn fetch_space_article<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    mid: i64,
+    page: i64,
+    page_size: i64,
+) -> Result<SpaceArticlePage, DomainError> {
+    let req = space_article_request(mid, page, page_size);
+    let body = crate::client::send(transport, ctx, &req).await?;
+    parse_space_article(&body)
+}
+
+/// 音频列表一页的请求。
+///
+/// `order=1` 是基线写死的「按发布时间倒序」。
+#[must_use]
+pub fn space_audio_request(mid: i64, page: i64, page_size: i64) -> PreparedRequest {
+    PreparedRequest {
+        path: path::SPACE_AUDIO,
+        query: vec![
+            ("pn".to_owned(), page.to_string()),
+            ("ps".to_owned(), page_size.to_string()),
+            ("order".to_owned(), "1".to_owned()),
+            ("uid".to_owned(), mid.to_string()),
+            ("web_location".to_owned(), WEB_LOCATION_SPACE_TAB.to_owned()),
+        ],
+    }
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SpaceAudioPageDto {
+    #[serde(rename = "totalSize")]
+    total_size: Option<i64>,
+    /// 条目藏在 `data.data` 里，不是 `data.item`。
+    data: Option<Vec<SpaceAudioListItemDto>>,
+}
+
+/// 音频列表页的条目。与主页那一块的 [`SpaceAudioItemDto`] 是两条接口，
+/// 键名相同但多一个 `statistic`，`ctime` 的单位也不同。
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SpaceAudioListItemDto {
+    id: Option<i64>,
+    uid: Option<i64>,
+    title: Option<String>,
+    cover: Option<String>,
+    ctime: Option<i64>,
+    statistic: Option<SpaceAudioStatisticDto>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SpaceAudioStatisticDto {
+    play: Option<i64>,
+    comment: Option<i64>,
+}
+
+/// 解析一页音频列表。
+///
+/// # Errors
+/// 信封失败沿用统一分类。
+///
+/// `ctime` **按毫秒处理**：基线在界面里按「这一条有没有 `statistic` 块」
+/// 决定除不除 1000（`lib/pages/member_audio/view.dart`）。那个判断照抄到
+/// 这里——它是对服务端两条接口单位不一致的补救，不是排版；带 `statistic`
+/// 的是列表页这条，给的是毫秒。
+pub fn parse_space_audio(body: &str) -> Result<SpaceAudioPage, DomainError> {
+    let dto: SpaceAudioPageDto = crate::envelope::unwrap_envelope(body)?;
+    Ok(SpaceAudioPage {
+        total_size: dto.total_size,
+        items: dto
+            .data
+            .unwrap_or_default()
+            .into_iter()
+            .map(|a| {
+                let stat = a.statistic;
+                SpaceAudioItem {
+                    id: a.id,
+                    uid: a.uid,
+                    title: a.title,
+                    cover: a.cover,
+                    ctime: match (a.ctime, stat.is_some()) {
+                        (Some(ms), true) => Some(ms / 1000),
+                        (ctime, _) => ctime,
+                    },
+                    play: stat.as_ref().and_then(|s| s.play),
+                    comment: stat.and_then(|s| s.comment),
+                }
+            })
+            .collect(),
+    })
+}
+
+/// 取一页音频列表。
+///
+/// # Errors
+/// 同 [`fetch_member_info`]。
+pub async fn fetch_space_audio<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    mid: i64,
+    page: i64,
+    page_size: i64,
+) -> Result<SpaceAudioPage, DomainError> {
+    let req = space_audio_request(mid, page, page_size);
+    let body = crate::client::send(transport, ctx, &req).await?;
+    parse_space_audio(&body)
+}
+
+/// 课堂列表一页的请求。
+#[must_use]
+pub fn space_cheese_request(mid: i64, page: i64, page_size: i64) -> PreparedRequest {
+    PreparedRequest {
+        path: path::SPACE_CHEESE,
+        query: vec![
+            ("pn".to_owned(), page.to_string()),
+            ("ps".to_owned(), page_size.to_string()),
+            ("mid".to_owned(), mid.to_string()),
+            ("web_location".to_owned(), WEB_LOCATION_SPACE_TAB.to_owned()),
+        ],
+    }
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SpaceCheesePageDto {
+    items: Option<Vec<SpaceCheeseItemDto>>,
+    page: Option<SpaceCheesePageInfoDto>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SpaceCheesePageInfoDto {
+    next: Option<bool>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SpaceCheeseItemDto {
+    cover: Option<String>,
+    marks: Option<Vec<String>>,
+    season_id: Option<i64>,
+    status: Option<String>,
+    title: Option<String>,
+    /// 服务端给的是字符串形态的 Unix 秒。
+    ctime: Option<String>,
+}
+
+/// 解析一页课堂列表。
+///
+/// # Errors
+/// 信封失败沿用统一分类。
+pub fn parse_space_cheese(body: &str) -> Result<SpaceCheesePage, DomainError> {
+    let dto: SpaceCheesePageDto = crate::envelope::unwrap_envelope(body)?;
+    Ok(SpaceCheesePage {
+        has_next: dto.page.and_then(|p| p.next),
+        items: dto
+            .items
+            .unwrap_or_default()
+            .into_iter()
+            .map(|c| SpaceCheeseItem {
+                cover: c.cover,
+                marks: c.marks.unwrap_or_default(),
+                season_id: c.season_id,
+                status: c.status,
+                title: c.title,
+                // 解不出来按没有，同基线界面里的 `int.tryParse`。
+                ctime: c.ctime.and_then(|t| t.trim().parse().ok()),
+            })
+            .collect(),
+    })
+}
+
+/// 取一页课堂列表。
+///
+/// # Errors
+/// 同 [`fetch_member_info`]。
+pub async fn fetch_space_cheese<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    mid: i64,
+    page: i64,
+    page_size: i64,
+) -> Result<SpaceCheesePage, DomainError> {
+    let req = space_cheese_request(mid, page, page_size);
+    let body = crate::client::send(transport, ctx, &req).await?;
+    parse_space_cheese(&body)
+}
+
+/// 会员购小店一页的请求。**挂在 `mall.bilibili.com` 上**，而且是 POST。
+///
+/// 三件事与这一族的其它接口都不同，都是基线的事实：
+///
+/// 1. **POST**，但它是只读的——分页游标在体里（`searchAfter`），不是查询串；
+/// 2. **APP 签名**，鉴权靠 `access_key` 而不是 cookie，所以 [`CsrfIn::None`]；
+/// 3. `mVersion` / `mallVersion` 是会员购自己的版本号，与 app 域那组常量
+///    不是一套，不要合并。
+///
+/// 未登录时 `access_key` 整条不发（基线的 `?Accounts.main.accessKey`）——
+/// 发一个空值会参与签名，换来的是另一个 `sign`。
+///
+/// 定级 [`Idempotency::Idempotent`]：它只是取一页列表，重发没有副作用。
+#[must_use]
+pub fn space_shop_request(
+    mid: i64,
+    page_size: i64,
+    access_key: Option<&str>,
+    appkey: &str,
+    appsec: &str,
+    ts: i64,
+) -> PreparedWrite {
+    let mut params = Vec::new();
+    if let Some(key) = access_key {
+        params.push(("access_key".to_owned(), key.to_owned()));
+    }
+    params.push(("actionKey".to_owned(), "appkey".to_owned()));
+    params.push(("build".to_owned(), app_fixed::BUILD.to_owned()));
+    params.push(("mVersion".to_owned(), MALL_M_VERSION.to_owned()));
+    params.push(("mallVersion".to_owned(), app_fixed::BUILD.to_owned()));
+    params.push(("statistics".to_owned(), app_fixed::STATISTICS.to_owned()));
+
+    // `from` 与 `msource` 是同一个值：服务端用它区分「从谁的小店 tab 进来」。
+    let source = format!("cps_productTab_{mid}");
+    PreparedWrite {
+        path: path::SPACE_SHOP,
+        query: bili_protocol::app_sign::sign(&params, appkey, appsec, ts),
+        body: WriteBody::Json(serde_json::json!({
+            "from": source,
+            "searchAfter": 0,
+            "msource": source,
+            "pageSize": page_size,
+            // 基线发的是字符串，照抄。
+            "upMid": mid.to_string(),
+        })),
+        csrf: CsrfIn::None,
+        idempotency: Idempotency::Idempotent,
+    }
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SpaceShopPageDto {
+    data: Option<Vec<SpaceShopItemDto>>,
+    #[serde(rename = "showMoreTab")]
+    show_more_tab: Option<bool>,
+    #[serde(rename = "clickUrl")]
+    click_url: Option<String>,
+    #[serde(rename = "showMoreDesc")]
+    show_more_desc: Option<String>,
+    #[serde(rename = "haveNextPage")]
+    have_next_page: Option<bool>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SpaceShopItemDto {
+    cover: Option<SpaceShopCoverDto>,
+    title: Option<String>,
+    #[serde(rename = "cardUrl")]
+    card_url: Option<String>,
+    #[serde(rename = "belowLabels")]
+    below_labels: Option<Vec<SpaceShopLabelDto>>,
+    #[serde(rename = "netPrice")]
+    net_price: Option<SpaceShopPriceDto>,
+    #[serde(rename = "benefitInfos")]
+    benefit_infos: Option<Vec<SpaceShopBenefitDto>>,
+    #[serde(rename = "itemSourceName")]
+    item_source_name: Option<String>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SpaceShopCoverDto {
+    url: Option<String>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SpaceShopLabelDto {
+    title: Option<String>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SpaceShopPriceDto {
+    #[serde(rename = "netPrice")]
+    net_price: Option<String>,
+    #[serde(rename = "priceSymbol")]
+    price_symbol: Option<String>,
+    #[serde(rename = "pricePrefix")]
+    price_prefix: Option<String>,
+}
+
+/// 优惠信息。`suffix` 在基线里是 `dynamic`——服务端给过字符串也给过
+/// `null`，所以收成 [`serde_json::Value`] 再按标量渲染。
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SpaceShopBenefitDto {
+    prefix: Option<String>,
+    amount: Option<String>,
+    suffix: Option<serde_json::Value>,
+}
+
+/// 把 `suffix` 这种「可能是任何标量」的值渲染成字符串。
+///
+/// 基线是 Dart 的字符串插值 `'${e.suffix ?? ''}'`：字符串原样，数字按
+/// 它的字面量，`null` 按空串。这里复刻那三种，对象与数组按空串——基线
+/// 插值会得到 `{a: 1}` 这种 Dart 内部写法，复刻它没有意义。
+fn scalar_text(value: Option<&serde_json::Value>) -> String {
+    match value {
+        Some(serde_json::Value::String(s)) => s.clone(),
+        Some(serde_json::Value::Number(n)) => n.to_string(),
+        Some(serde_json::Value::Bool(b)) => b.to_string(),
+        _ => String::new(),
+    }
+}
+
+/// 按表单编码解查询参数，与基线 Uri.queryParameters 的加号与片段语义一致。
+fn query_param(url: &str, key: &str) -> Option<String> {
+    let before_fragment = url.split('#').next()?;
+    let query = before_fragment.split_once('?')?.1;
+    fn decode(value: &str) -> String {
+        percent_encoding::percent_decode_str(&value.replace('+', " "))
+            .decode_utf8_lossy()
+            .into_owned()
+    }
+    query.split('&').find_map(|pair| {
+        let (k, v) = pair.split_once('=').unwrap_or((pair, ""));
+        (decode(k) == key).then(|| decode(v))
+    })
+}
+
+/// 解析一页会员购小店。
+///
+/// # Errors
+/// 信封失败沿用统一分类。
+pub fn parse_space_shop(body: &str) -> Result<SpaceShopPage, DomainError> {
+    let dto: SpaceShopPageDto = crate::envelope::unwrap_envelope(body)?;
+    Ok(SpaceShopPage {
+        show_more_tab: dto.show_more_tab,
+        show_more_desc: dto.show_more_desc,
+        // 基线在界面里 `Uri.parse(clickUrl).queryParameters['url']`。
+        more_url: dto.click_url.as_deref().and_then(|u| query_param(u, "url")),
+        has_next_page: dto.have_next_page,
+        items: dto
+            .data
+            .unwrap_or_default()
+            .into_iter()
+            .map(|i| {
+                let price = i.net_price.unwrap_or_default();
+                SpaceShopItem {
+                    cover: i.cover.and_then(|c| c.url),
+                    title: i.title,
+                    card_url: i.card_url,
+                    // 缺标题的标签不显示：刻意不复刻旧 Widget 把 null 插值
+                    // 成字面量 "null"，这不是服务端可展示的文案。
+                    below_labels: i
+                        .below_labels
+                        .unwrap_or_default()
+                        .into_iter()
+                        .filter_map(|l| l.title)
+                        .collect(),
+                    price_prefix: price.price_prefix,
+                    price_symbol: price.price_symbol,
+                    net_price: price.net_price,
+                    benefits: i
+                        .benefit_infos
+                        .unwrap_or_default()
+                        .into_iter()
+                        .map(|b| {
+                            format!(
+                                "{}{}{}",
+                                b.prefix.unwrap_or_default(),
+                                b.amount.unwrap_or_default(),
+                                scalar_text(b.suffix.as_ref()),
+                            )
+                        })
+                        .collect(),
+                    item_source_name: i.item_source_name,
+                }
+            })
+            .collect(),
+    })
+}
+
+/// 取一页会员购小店。
+///
+/// # Errors
+/// 传输、状态码、信封三类失败，见各自的文档。
+#[allow(clippy::too_many_arguments)]
+pub async fn fetch_space_shop<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    mid: i64,
+    page_size: i64,
+    access_key: Option<&str>,
+    appkey: &str,
+    appsec: &str,
+    ts: i64,
+) -> Result<SpaceShopPage, DomainError> {
+    let req = space_shop_request(mid, page_size, access_key, appkey, appsec, ts);
+    let body = crate::client::send_write(transport, ctx, &req).await?;
+    parse_space_shop(&body)
 }
 
 #[cfg(test)]

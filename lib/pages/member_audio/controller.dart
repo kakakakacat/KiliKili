@@ -1,14 +1,13 @@
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/grpc/bilibili/app/listener/v1.pbenum.dart'
     show PlaylistSource;
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/member.dart';
-import 'package:kilikili/models_new/space/space_audio/data.dart';
-import 'package:kilikili/models_new/space/space_audio/item.dart';
+
 import 'package:kilikili/pages/audio/view.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
 
 class MemberAudioController
-    extends CommonListController<SpaceAudioData, SpaceAudioItem> {
+    extends CommonListController<SpaceAudioPage, SpaceAudioItem> {
   MemberAudioController(this.mid);
 
   final int mid;
@@ -22,19 +21,19 @@ class MemberAudioController
 
   @override
   void checkIsEnd(int length) {
-    if (totalSize != null && length >= totalSize!) {
+    if (spaceAudioIsEnd(loadedCount: length, totalCount: totalSize)) {
       isEnd = true;
     }
   }
 
   @override
-  List<SpaceAudioItem>? getDataList(SpaceAudioData response) {
+  List<SpaceAudioItem>? getDataList(SpaceAudioPage response) {
     totalSize = response.totalSize;
     return response.items;
   }
 
   @override
-  Future<LoadingState<SpaceAudioData>> customGetData() => MemberHttp.spaceAudio(
+  Future<LoadingState<SpaceAudioPage>> customGetData() => RustSpace.audio(
     page: page,
     mid: mid,
   );

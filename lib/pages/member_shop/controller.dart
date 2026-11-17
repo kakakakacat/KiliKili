@@ -1,11 +1,10 @@
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/member.dart';
-import 'package:kilikili/models_new/space/space_shop/data.dart';
-import 'package:kilikili/models_new/space/space_shop/item.dart';
+
 import 'package:kilikili/pages/common/common_list_controller.dart';
 
 class MemberShopController
-    extends CommonListController<SpaceShopData, SpaceShopItem> {
+    extends CommonListController<SpaceShopPage, SpaceShopItem> {
   MemberShopController(this.mid);
 
   final int mid;
@@ -21,15 +20,15 @@ class MemberShopController
   String? showMoreDesc;
 
   @override
-  List<SpaceShopItem>? getDataList(SpaceShopData response) {
-    isEnd = response.haveNextPage == false;
+  List<SpaceShopItem>? getDataList(SpaceShopPage response) {
+    isEnd = response.hasNextPage == false;
     showMoreTab = response.showMoreTab;
-    clickUrl = response.clickUrl;
+    clickUrl = response.moreUrl;
     showMoreDesc = response.showMoreDesc;
-    return response.data;
+    return response.items;
   }
 
   @override
-  Future<LoadingState<SpaceShopData>> customGetData() =>
-      MemberHttp.spaceShop(mid: mid);
+  Future<LoadingState<SpaceShopPage>> customGetData() =>
+      RustSpace.shop(mid: mid);
 }

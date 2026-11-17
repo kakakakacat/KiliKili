@@ -1,0 +1,14 @@
+{
+  "success": true,
+  "data": {
+    "data": [],
+    "showMoreTab": false,
+    "clickUrl": "bilibili://mall/web?url=https%3A%2F%2Fexample.invalid%2Fshop%3Fmid%3D100",
+    "showMoreDesc": "逛逛更多商品",
+    "haveNextPage": true,
+    "nextSearchAfter": 0
+  },
+  "header": null,
+  "code": 0,
+  "message": "success"
+}

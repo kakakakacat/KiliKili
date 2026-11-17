@@ -1,3 +1,4 @@
+import 'package:kilikili/common/constants.dart';
 import 'package:kilikili/http/api.dart';
 import 'package:kilikili/http/browser_ua.dart';
 import 'package:kilikili/http/constants.dart';
@@ -32,6 +33,19 @@ export 'package:kilikili/rust/api/space.dart'
         SpaceArchiveSearchPage,
         SpaceArchiveSort,
         SpaceArchiveTag,
+        spaceArticleIsEnd,
+        spaceAudioIsEnd,
+        SpaceArticlePage,
+        SpaceAudioPage,
+        SpaceCheesePage,
+        SpaceCheeseItem,
+        SpaceShopPage,
+        SpaceShopItem,
+        SpaceOpusFlowPage,
+        SpaceOpusFlowItem,
+        SpaceOpusCover,
+        SpaceOpusCollectionItem,
+        SpaceOpusCollectionSection,
         SpaceArticleBlock,
         SpaceArticleItem,
         SpaceAudioBlock,
@@ -76,11 +90,11 @@ export 'package:kilikili/rust/api/space.dart'
 /// 计数、播放与获赞总数、用户名片、举报，以及合集与列表、投币/点赞过的
 /// 稿件、大航海名单、充电排行。
 ///
-/// ## 三个不同的域
+/// ## 五个不同的域
 ///
-/// 这一族横跨四个主机：多数在 `api.bilibili.com`，举报在
+/// 这一族横跨五个主机：多数在 `api.bilibili.com`，举报在
 /// `space.bilibili.com`，投币/点赞列表在 `app.bilibili.com`，大航海名单在
-/// `live.bilibili.com`。base_url 由各方法按条传。
+/// `live.bilibili.com`，会员购小店在 `mall.bilibili.com`。base_url 由各方法按条传。
 ///
 /// 基线对应的 `MemberHttp` 函数随本次迁移逐族删除，按 ADR-011 决策四
 /// 不留降级开关。
@@ -110,10 +124,12 @@ abstract final class RustSpace {
   /// referer 带上具体 mid：服务端把它当「从谁的空间页点进来的」，
   /// 换成空间站根路径与基线不是同一个请求。
   static List<(String, String)> _spaceHeaders(Account account, int mid) => [
-    ...RustRequest.headersFor(account),
+    ...RustRequest.headersFor(
+      account,
+      referer: '${HttpString.spaceBaseUrl}/$mid/dynamic',
+      userAgent: BrowserUa.pc,
+    ),
     ('origin', HttpString.spaceBaseUrl),
-    ('referer', '${HttpString.spaceBaseUrl}/$mid/dynamic'),
-    ('user-agent', BrowserUa.pc),
   ];
 
   /// [write] 为 true 时才带 csrf（ADR-013 决策四）。
@@ -508,6 +524,112 @@ abstract final class RustSpace {
       return _unwrap(result.data, result.errorDetail, result.errorCode);
     } catch (e, st) {
       return _crashed('投稿搜索', e, st);
+    }
+  }
+
+  static Future<LoadingState<rust_api.SpaceArticlePage>> article({
+    required int mid,
+    required int page,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final r = await rust_api.fetchSpaceArticle(
+        context: await _context(
+          path: Api.spaceArticle,
+          baseUrl: HttpString.appBaseUrl,
+          headers: [
+            ...RustRequest.headersFor(
+              Accounts.main,
+              userAgent: Constants.userAgentApp,
+            ),
+            ('bili-http-engine', 'cronet'),
+          ],
+        ),
+        mid: mid,
+        page: page,
+        pageSize: 10,
+      );
+      return _unwrap(r.data, r.errorDetail, r.errorCode);
+    } catch (e, st) {
+      return _crashed('Article', e, st);
+    }
+  }
+
+  static Future<LoadingState<rust_api.SpaceAudioPage>> audio({
+    required int mid,
+    required int page,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final r = await rust_api.fetchSpaceAudio(
+        context: await _context(path: Api.spaceAudio),
+        mid: mid,
+        page: page,
+        pageSize: 20,
+      );
+      return _unwrap(r.data, r.errorDetail, r.errorCode);
+    } catch (e, st) {
+      return _crashed('Audio', e, st);
+    }
+  }
+
+  static Future<LoadingState<rust_api.SpaceCheesePage>> cheese({
+    required int mid,
+    required int page,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final r = await rust_api.fetchSpaceCheese(
+        context: await _context(path: Api.spaceCheese),
+        mid: mid,
+        page: page,
+        pageSize: 30,
+      );
+      return _unwrap(r.data, r.errorDetail, r.errorCode);
+    } catch (e, st) {
+      return _crashed('Cheese', e, st);
+    }
+  }
+
+  static Future<LoadingState<rust_api.SpaceShopPage>> shop({
+    required int mid,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final r = await rust_api.fetchSpaceShop(
+        context: await _context(
+          path: Api.spaceShop,
+          baseUrl: HttpString.mallBaseUrl,
+        ),
+        mid: mid,
+        pageSize: 8,
+        accessKey: Accounts.main.accessKey,
+        appkey: Constants.appKey,
+        appsec: Constants.appSec,
+      );
+      return _unwrap(r.data, r.errorDetail, r.errorCode);
+    } catch (e, st) {
+      return _crashed('会员购', e, st);
+    }
+  }
+
+  static Future<LoadingState<rust_api.SpaceOpusFlowPage>> opusFlow({
+    required int hostMid,
+    String? next,
+    required String filterType,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final r = await rust_api.fetchSpaceOpusFlow(
+        context: RustGrpc.context(),
+        hostMid: hostMid,
+        next: next,
+        filterType: filterType,
+        pageSize: 20,
+      );
+      return _unwrap(r.data, r.errorDetail, r.errorCode);
+    } catch (e, st) {
+      return _crashed('图文', e, st);
     }
   }
 

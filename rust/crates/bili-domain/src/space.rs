@@ -462,8 +462,7 @@ pub struct SpaceVideoBlock {
 
 /// 主页上的一块专栏。
 ///
-/// 条目类型沿用 [`crate::space::SpaceArticleItem`]：专栏那条独立接口
-/// （`/x/v2/space/article`）还没迁，它与这里产出的是同一个界面组件。
+/// 与专栏列表复用 [`crate::space::SpaceArticleItem`]，两条路径输出同一组卡片字段。
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
 pub struct SpaceArticleBlock {
     pub count: Option<i64>,
@@ -472,8 +471,7 @@ pub struct SpaceArticleBlock {
 
 /// 主页上的一条专栏。
 ///
-/// 只有主页那个组件读到的五个字段。专栏页自己那条接口给的字段多得多，
-/// 迁它的时候再说（见 issue #56 的批次 5）。
+/// 只保留主页与专栏列表共用卡片实际消费的字段。
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
 pub struct SpaceArticleItem {
     pub title: Option<String>,
@@ -493,7 +491,10 @@ pub struct SpaceAudioBlock {
     pub items: Vec<SpaceAudioItem>,
 }
 
-/// 主页上的一条音频。
+/// 一条音频。空间主页那一块与音频列表页共用。
+///
+/// 两条接口喂的是同一个界面组件，所以用同一个实体：主页那块不给播放与
+/// 评论数，列表页给，两个字段因此可空。
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
 pub struct SpaceAudioItem {
     /// 音频 id（`sid`），播放页要它。
@@ -502,12 +503,25 @@ pub struct SpaceAudioItem {
     pub uid: Option<i64>,
     pub title: Option<String>,
     pub cover: Option<String>,
-    /// 发布时间，**Unix 秒**。
+    /// 发布时间，**一律 Unix 秒**。
     ///
-    /// 音频页那条接口给的是毫秒，两边的组件是同一个，所以它按「有没有
-    /// `statistic` 块」来决定除不除 1000。这里不碰那个判断——单位是服务端
-    /// 的事实，统一成一种反而要改另一条还没迁的路径。
+    /// 音频列表页那条接口给的是毫秒，主页那块给的是秒。基线靠「这一条有
+    /// 没有 `statistic` 块」来决定除不除 1000（`lib/pages/member_audio/
+    /// view.dart`），判断散在界面里。现在两个生产者都在 Rust，换算与那条
+    /// 约定一起放到解析处，界面只拿秒。
     pub ctime: Option<i64>,
+    /// 播放数。主页那一块服务端不给，此时界面整行不显示。
+    pub play: Option<i64>,
+    /// 评论数。同 [`Self::play`]。
+    pub comment: Option<i64>,
+}
+
+/// 一页音频列表（`/audio/music-service/web/song/upper` 的 `data`）。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct SpaceAudioPage {
+    /// 这个人一共有多少首。界面用它判断到底没到底。
+    pub total_size: Option<i64>,
+    pub items: Vec<SpaceAudioItem>,
 }
 
 /// 主页上的一块收藏夹。
@@ -803,4 +817,186 @@ pub struct SpaceSearchArchiveItem {
 pub struct SpaceSearchArchivePage {
     pub total: Option<i64>,
     pub items: Vec<SpaceSearchArchiveItem>,
+}
+
+// ------------------------------------------------- 专栏 / 课堂 / 会员购
+
+/// 一页专栏列表（`/x/v2/space/article` 的 `data`）。
+///
+/// 条目用的是 [`SpaceArticleItem`]——空间主页那一块与这一页喂的是同一个
+/// 界面组件，字段也是同一组。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct SpaceArticlePage {
+    /// 这个人一共有多少篇。界面用它判断到底没到底。
+    pub count: Option<i64>,
+    /// 文集数量。服务端给了，界面暂时没用上，留着是因为它与 `count` 并列
+    /// 出现、含义不同，丢掉之后下一个人会以为没有这个数。
+    pub lists_count: Option<i64>,
+    pub items: Vec<SpaceArticleItem>,
+}
+
+/// 一门课堂（`/pugv/app/web/season/page` 的一条）。
+///
+/// 收藏的课堂（`FavHttp.favPugv`）响应形状相同，那条还没迁，迁它的时候
+/// 复用这个类型即可。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct SpaceCheeseItem {
+    pub cover: Option<String>,
+    /// 角标文案，服务端下发，界面用 `|` 连起来。
+    pub marks: Vec<String>,
+    /// 课堂 id，点进去要它。
+    pub season_id: Option<i64>,
+    /// 形如「已更新至第 3 讲」。
+    pub status: Option<String>,
+    pub title: Option<String>,
+    /// 收藏时间，Unix 秒。
+    ///
+    /// 服务端给的是**字符串**，基线在界面里 `int.tryParse`。解析挪到这儿：
+    /// 「这串字符其实是个时间戳」是对服务端约定的解读，不是排版。解不出来
+    /// 按没有处理，与基线的 `tryParse` 一致。
+    pub ctime: Option<i64>,
+}
+
+/// 一页课堂列表。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct SpaceCheesePage {
+    /// 还有没有下一页。服务端给的是 `page.next`。
+    pub has_next: Option<bool>,
+    pub items: Vec<SpaceCheeseItem>,
+}
+
+/// 会员购小店里的一件商品。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct SpaceShopItem {
+    pub cover: Option<String>,
+    pub title: Option<String>,
+    /// 点开后跳的网页地址。
+    pub card_url: Option<String>,
+    /// 商品下面那排小标签的文案。界面用 `|` 连起来显示。
+    pub below_labels: Vec<String>,
+    /// 价格前缀（如「会员价」）。
+    pub price_prefix: Option<String>,
+    /// 货币符号。服务端下发，不在客户端写死。
+    pub price_symbol: Option<String>,
+    /// 价格本身。服务端给的就是字符串，不转数字——它可能是「99.9 起」
+    /// 这种形态，转一道只会多一个出错点。
+    pub net_price: Option<String>,
+    /// 优惠信息。每条由服务端的 `prefix` + `amount` + `suffix` 拼成，
+    /// **拼接在这里做**：三段之间没有分隔符是服务端的约定，不是排版选择。
+    pub benefits: Vec<String>,
+    /// 来源店铺名。界面会加「来自」前缀。
+    pub item_source_name: Option<String>,
+}
+
+/// 一页会员购小店。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct SpaceShopPage {
+    pub items: Vec<SpaceShopItem>,
+    /// 要不要显示「查看更多」。
+    pub show_more_tab: Option<bool>,
+    /// 「查看更多」按钮的文案。服务端下发。
+    pub show_more_desc: Option<String>,
+    /// 「查看更多」真正要打开的网页地址。
+    ///
+    /// 服务端给的 `clickUrl` 是一个把目标地址塞在 `url` 查询参数里的跳转
+    /// 链接，基线在界面里 `Uri.parse(...).queryParameters['url']`。拆解挪到
+    /// 这儿：那是对服务端约定的解读。拆不出来时为空，界面据此不跳转。
+    pub more_url: Option<String>,
+    /// 还有没有下一页。
+    pub has_next_page: Option<bool>,
+}
+
+// ------------------------------------------------------------ 图文（gRPC）
+
+/// 图文流里的一张封面。
+#[derive(Debug, Clone, PartialEq, Default, Serialize)]
+pub struct SpaceOpusCover {
+    /// 长图顶对齐阈值，沿用基线 2.6。
+    pub is_long_pic: bool,
+    pub src: Option<String>,
+    /// 高宽比，已按 `0.68..=2.7` 夹过。
+    ///
+    /// 夹取范围照抄基线（`lib/models_new/space/space_opus/cover.dart` 与
+    /// 图文卡片组件里是同一组常数）：瀑布流里一张过长或过扁的图会把整列
+    /// 撑坏。这是「协议没规定、但两端必须一致」的决定，所以在 Rust。
+    /// 服务端没给宽高时为 `1.0`，同基线。
+    pub ratio: f64,
+}
+
+/// 图文流里的一条。
+#[derive(Debug, Clone, PartialEq, Default, Serialize)]
+pub struct SpaceOpusFlowItem {
+    /// 图文 id，点进去要它。
+    pub oid: Option<i64>,
+    /// 正文摘要。服务端按段下发，拼接在这里做。
+    pub content: Option<String>,
+    pub cover: Option<SpaceOpusCover>,
+    /// 点赞数的**文案**（如 `1.2万`）。服务端直接给字符串，不是数字。
+    pub like_text: Option<String>,
+}
+
+/// 文集里的一本。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct SpaceOpusCollectionItem {
+    /// 文集 id，点进去要它。
+    pub collection_id: Option<i64>,
+    /// 标题。服务端按段下发，拼接在这里做。
+    pub title: Option<String>,
+    pub cover: Option<String>,
+    /// 封面左下角那行字（如「共 12 篇」）。
+    pub cover_bottom_text: Option<String>,
+    /// 标题下面那行小字。
+    pub sub_title: Option<String>,
+}
+
+/// 图文页顶上的文集区块。只有刷新那一次服务端会给。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct SpaceOpusCollectionSection {
+    pub title: Option<String>,
+    pub items: Vec<SpaceOpusCollectionItem>,
+    /// 服务端建议的初始展开状态。
+    ///
+    /// 之后的展开/收起是界面状态，**不回写到这里**：FRB 结构不可变，
+    /// 基线那种 `collection.expand = !collection.expand` 的写法要挪到
+    /// 控制器上。
+    pub expand: bool,
+}
+
+/// 一页图文流（`OpusSpaceFlowResp`）。
+#[derive(Debug, Clone, PartialEq, Default, Serialize)]
+pub struct SpaceOpusFlowPage {
+    pub items: Vec<SpaceOpusFlowItem>,
+    /// 下一页的游标。空串按没有——proto3 的空串与未设置在 wire 上就是
+    /// 一回事，基线判的也是 `isNotEmpty`。
+    pub next: Option<String>,
+    /// 文集区块。
+    pub collection: Option<SpaceOpusCollectionSection>,
+}
+
+/// 专栏未知总数沿用基线 -1 哨兵：非负已加载数会结束分页。
+#[must_use]
+pub fn space_article_is_end(loaded_count: i64, total_count: Option<i64>) -> bool {
+    loaded_count >= total_count.unwrap_or(-1)
+}
+
+/// 音频未知总数时继续分页，与专栏的哨兵语义不同。
+#[must_use]
+pub fn space_audio_is_end(loaded_count: i64, total_count: Option<i64>) -> bool {
+    total_count.is_some_and(|total| loaded_count >= total)
+}
+
+#[cfg(test)]
+mod tab_pagination_tests {
+    use super::{space_article_is_end, space_audio_is_end};
+    #[test]
+    fn missing_total_preserves_each_endpoint_policy() {
+        assert!(space_article_is_end(0, None));
+        assert!(!space_audio_is_end(0, None));
+        for check in [space_article_is_end, space_audio_is_end] {
+            assert!(!check(9, Some(10)));
+            assert!(check(10, Some(10)));
+            assert!(check(11, Some(10)));
+            assert!(check(0, Some(0)));
+        }
+    }
 }

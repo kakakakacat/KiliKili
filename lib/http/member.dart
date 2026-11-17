@@ -5,93 +5,11 @@ import 'package:kilikili/http/error_msg.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/dynamics/result.dart';
-import 'package:kilikili/models_new/space/space_article/data.dart';
-import 'package:kilikili/models_new/space/space_audio/data.dart';
-import 'package:kilikili/models_new/space/space_cheese/data.dart';
-import 'package:kilikili/models_new/space/space_opus/data.dart';
-import 'package:kilikili/models_new/space/space_shop/data.dart';
-import 'package:kilikili/utils/accounts.dart';
-import 'package:kilikili/utils/app_sign.dart';
 import 'package:kilikili/utils/utils.dart';
 import 'package:kilikili/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 
 abstract final class MemberHttp {
-  static Future<LoadingState<SpaceArticleData>> spaceArticle({
-    required int mid,
-    required int page,
-  }) async {
-    final params = {
-      'build': 8430300,
-      'channel': 'master',
-      'version': '8.43.0',
-      'c_locale': 'zh_CN',
-      'mobi_app': 'android',
-      'platform': 'android',
-      'pn': page,
-      'ps': 10,
-      's_locale': 'zh_CN',
-      'statistics': Constants.statisticsApp,
-      'vmid': mid,
-    };
-    final res = await Request().get(
-      Api.spaceArticle,
-      queryParameters: params,
-      options: Options(
-        headers: {
-          'bili-http-engine': 'cronet',
-          'user-agent': Constants.userAgentApp,
-        },
-      ),
-    );
-    if (res.data['code'] == 0) {
-      return Success(SpaceArticleData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<SpaceAudioData>> spaceAudio({
-    required int page,
-    required mid,
-  }) async {
-    final res = await Request().get(
-      Api.spaceAudio,
-      queryParameters: {
-        'pn': page,
-        'ps': 20,
-        'order': 1,
-        'uid': mid,
-        'web_location': 333.1387,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(SpaceAudioData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<SpaceCheeseData>> spaceCheese({
-    required int page,
-    required mid,
-  }) async {
-    final res = await Request().get(
-      Api.spaceCheese,
-      queryParameters: {
-        'pn': page,
-        'ps': 30,
-        'mid': mid,
-        'web_location': 333.1387,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(SpaceCheeseData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   // static Future<LoadingState> spaceStory({
   //   required Object mid,
   //   required Object aid,
@@ -202,59 +120,6 @@ abstract final class MemberHttp {
     );
     if (res.data['code'] == 0) {
       return Success(DynamicsDataModel.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<SpaceOpusData>> spaceOpus({
-    required int hostMid,
-    required int page,
-    String offset = '',
-    String type = 'all',
-  }) async {
-    final res = await Request().get(
-      Api.spaceOpus,
-      queryParameters: await WbiSign.makSign({
-        'host_mid': hostMid,
-        'page': page,
-        'offset': offset,
-        'type': type,
-        'web_location': 333.1387,
-      }),
-    );
-    if (res.data['code'] == 0) {
-      return Success(SpaceOpusData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<SpaceShopData>> spaceShop({
-    required int mid,
-  }) async {
-    final params = {
-      'access_key': ?Accounts.main.accessKey,
-      'actionKey': 'appkey',
-      'build': 8430300,
-      'mVersion': 309,
-      'mallVersion': 8430300,
-      'statistics': Constants.statisticsApp,
-    };
-    AppSign.appSign(params);
-    final res = await Request().post(
-      Api.spaceShop,
-      queryParameters: params,
-      data: {
-        "from": "cps_productTab_$mid",
-        "searchAfter": 0,
-        "msource": "cps_productTab_$mid",
-        "pageSize": 8,
-        "upMid": mid.toString(),
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(SpaceShopData.fromJson(res.data['data']));
     } else {
       return Error(res.data['message']);
     }

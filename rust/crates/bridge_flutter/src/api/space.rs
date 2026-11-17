@@ -877,6 +877,8 @@ pub struct SpaceArticleBlock {
 /// 主页上的一条音频。
 #[derive(Debug, Clone)]
 pub struct SpaceAudioItem {
+    pub play: Option<i64>,
+    pub comment: Option<i64>,
     pub id: Option<i64>,
     pub uid: Option<i64>,
     pub title: Option<String>,
@@ -1255,6 +1257,8 @@ impl From<domain::SpacePage> for SpacePage {
                     .items
                     .into_iter()
                     .map(|i| SpaceAudioItem {
+                        play: i.play,
+                        comment: i.comment,
                         id: i.id,
                         uid: i.uid,
                         title: i.title,
@@ -1798,4 +1802,445 @@ pub async fn fetch_space_search_archive(
             error_code: e.code(),
         },
     }
+}
+
+// 批次 5：列表实体与宿主无关，导出只保留数据。
+#[derive(Debug, Clone)]
+pub struct SpaceArticlePage {
+    /// 这个人一共有多少篇。界面用它判断到底没到底。
+    pub count: Option<i64>,
+    /// 文集数量。服务端给了，界面暂时没用上，留着是因为它与 `count` 并列
+    /// 出现、含义不同，丢掉之后下一个人会以为没有这个数。
+    pub lists_count: Option<i64>,
+    pub items: Vec<SpaceArticleItem>,
+}
+#[derive(Debug, Clone)]
+pub struct SpaceAudioPage {
+    /// 这个人一共有多少首。界面用它判断到底没到底。
+    pub total_size: Option<i64>,
+    pub items: Vec<SpaceAudioItem>,
+}
+#[derive(Debug, Clone)]
+pub struct SpaceCheeseItem {
+    pub cover: Option<String>,
+    /// 角标文案，服务端下发，界面用 `|` 连起来。
+    pub marks: Vec<String>,
+    /// 课堂 id，点进去要它。
+    pub season_id: Option<i64>,
+    /// 形如「已更新至第 3 讲」。
+    pub status: Option<String>,
+    pub title: Option<String>,
+    /// 收藏时间，Unix 秒。
+    ///
+    /// 服务端给的是**字符串**，基线在界面里 `int.tryParse`。解析挪到这儿：
+    /// 「这串字符其实是个时间戳」是对服务端约定的解读，不是排版。解不出来
+    /// 按没有处理，与基线的 `tryParse` 一致。
+    pub ctime: Option<i64>,
+}
+#[derive(Debug, Clone)]
+pub struct SpaceCheesePage {
+    /// 还有没有下一页。服务端给的是 `page.next`。
+    pub has_next: Option<bool>,
+    pub items: Vec<SpaceCheeseItem>,
+}
+#[derive(Debug, Clone)]
+pub struct SpaceShopItem {
+    pub cover: Option<String>,
+    pub title: Option<String>,
+    /// 点开后跳的网页地址。
+    pub card_url: Option<String>,
+    /// 商品下面那排小标签的文案。界面用 `|` 连起来显示。
+    pub below_labels: Vec<String>,
+    /// 价格前缀（如「会员价」）。
+    pub price_prefix: Option<String>,
+    /// 货币符号。服务端下发，不在客户端写死。
+    pub price_symbol: Option<String>,
+    /// 价格本身。服务端给的就是字符串，不转数字——它可能是「99.9 起」
+    /// 这种形态，转一道只会多一个出错点。
+    pub net_price: Option<String>,
+    /// 优惠信息。每条由服务端的 `prefix` + `amount` + `suffix` 拼成，
+    /// **拼接在这里做**：三段之间没有分隔符是服务端的约定，不是排版选择。
+    pub benefits: Vec<String>,
+    /// 来源店铺名。界面会加「来自」前缀。
+    pub item_source_name: Option<String>,
+}
+#[derive(Debug, Clone)]
+pub struct SpaceShopPage {
+    pub items: Vec<SpaceShopItem>,
+    /// 要不要显示「查看更多」。
+    pub show_more_tab: Option<bool>,
+    /// 「查看更多」按钮的文案。服务端下发。
+    pub show_more_desc: Option<String>,
+    /// 「查看更多」真正要打开的网页地址。
+    ///
+    /// 服务端给的 `clickUrl` 是一个把目标地址塞在 `url` 查询参数里的跳转
+    /// 链接，基线在界面里 `Uri.parse(...).queryParameters['url']`。拆解挪到
+    /// 这儿：那是对服务端约定的解读。拆不出来时为空，界面据此不跳转。
+    pub more_url: Option<String>,
+    /// 还有没有下一页。
+    pub has_next_page: Option<bool>,
+}
+#[derive(Debug, Clone)]
+pub struct SpaceOpusCover {
+    /// 长图顶对齐阈值，沿用基线 2.6。
+    pub is_long_pic: bool,
+    pub src: Option<String>,
+    /// 高宽比，已按 `0.68..=2.7` 夹过。
+    ///
+    /// 夹取范围照抄基线（`lib/models_new/space/space_opus/cover.dart` 与
+    /// 图文卡片组件里是同一组常数）：瀑布流里一张过长或过扁的图会把整列
+    /// 撑坏。这是「协议没规定、但两端必须一致」的决定，所以在 Rust。
+    /// 服务端没给宽高时为 `1.0`，同基线。
+    pub ratio: f64,
+}
+#[derive(Debug, Clone)]
+pub struct SpaceOpusFlowItem {
+    /// 图文 id，点进去要它。
+    pub oid: Option<i64>,
+    /// 正文摘要。服务端按段下发，拼接在这里做。
+    pub content: Option<String>,
+    pub cover: Option<SpaceOpusCover>,
+    /// 点赞数的**文案**（如 `1.2万`）。服务端直接给字符串，不是数字。
+    pub like_text: Option<String>,
+}
+#[derive(Debug, Clone)]
+pub struct SpaceOpusCollectionItem {
+    /// 文集 id，点进去要它。
+    pub collection_id: Option<i64>,
+    /// 标题。服务端按段下发，拼接在这里做。
+    pub title: Option<String>,
+    pub cover: Option<String>,
+    /// 封面左下角那行字（如「共 12 篇」）。
+    pub cover_bottom_text: Option<String>,
+    /// 标题下面那行小字。
+    pub sub_title: Option<String>,
+}
+#[derive(Debug, Clone)]
+pub struct SpaceOpusCollectionSection {
+    pub title: Option<String>,
+    pub items: Vec<SpaceOpusCollectionItem>,
+    /// 服务端建议的初始展开状态。
+    ///
+    /// 之后的展开/收起是界面状态，**不回写到这里**：FRB 结构不可变，
+    /// 基线那种 `collection.expand = !collection.expand` 的写法要挪到
+    /// 控制器上。
+    pub expand: bool,
+}
+#[derive(Debug, Clone)]
+pub struct SpaceOpusFlowPage {
+    pub items: Vec<SpaceOpusFlowItem>,
+    /// 下一页的游标。空串按没有——proto3 的空串与未设置在 wire 上就是
+    /// 一回事，基线判的也是 `isNotEmpty`。
+    pub next: Option<String>,
+    /// 文集区块。
+    pub collection: Option<SpaceOpusCollectionSection>,
+}
+impl From<domain::SpaceArticlePage> for SpaceArticlePage {
+    fn from(i: domain::SpaceArticlePage) -> Self {
+        Self {
+            count: i.count,
+            lists_count: i.lists_count,
+            items: i.items.into_iter().map(Into::into).collect(),
+        }
+    }
+}
+impl From<domain::SpaceAudioPage> for SpaceAudioPage {
+    fn from(i: domain::SpaceAudioPage) -> Self {
+        Self {
+            total_size: i.total_size,
+            items: i.items.into_iter().map(Into::into).collect(),
+        }
+    }
+}
+impl From<domain::SpaceCheeseItem> for SpaceCheeseItem {
+    fn from(i: domain::SpaceCheeseItem) -> Self {
+        Self {
+            cover: i.cover,
+            marks: i.marks,
+            season_id: i.season_id,
+            status: i.status,
+            title: i.title,
+            ctime: i.ctime,
+        }
+    }
+}
+impl From<domain::SpaceCheesePage> for SpaceCheesePage {
+    fn from(i: domain::SpaceCheesePage) -> Self {
+        Self {
+            has_next: i.has_next,
+            items: i.items.into_iter().map(Into::into).collect(),
+        }
+    }
+}
+impl From<domain::SpaceShopItem> for SpaceShopItem {
+    fn from(i: domain::SpaceShopItem) -> Self {
+        Self {
+            cover: i.cover,
+            title: i.title,
+            card_url: i.card_url,
+            below_labels: i.below_labels,
+            price_prefix: i.price_prefix,
+            price_symbol: i.price_symbol,
+            net_price: i.net_price,
+            benefits: i.benefits,
+            item_source_name: i.item_source_name,
+        }
+    }
+}
+impl From<domain::SpaceShopPage> for SpaceShopPage {
+    fn from(i: domain::SpaceShopPage) -> Self {
+        Self {
+            items: i.items.into_iter().map(Into::into).collect(),
+            show_more_tab: i.show_more_tab,
+            show_more_desc: i.show_more_desc,
+            more_url: i.more_url,
+            has_next_page: i.has_next_page,
+        }
+    }
+}
+impl From<domain::SpaceOpusCover> for SpaceOpusCover {
+    fn from(i: domain::SpaceOpusCover) -> Self {
+        Self {
+            is_long_pic: i.is_long_pic,
+            src: i.src,
+            ratio: i.ratio,
+        }
+    }
+}
+impl From<domain::SpaceOpusFlowItem> for SpaceOpusFlowItem {
+    fn from(i: domain::SpaceOpusFlowItem) -> Self {
+        Self {
+            oid: i.oid,
+            content: i.content,
+            cover: i.cover.map(Into::into),
+            like_text: i.like_text,
+        }
+    }
+}
+impl From<domain::SpaceOpusCollectionItem> for SpaceOpusCollectionItem {
+    fn from(i: domain::SpaceOpusCollectionItem) -> Self {
+        Self {
+            collection_id: i.collection_id,
+            title: i.title,
+            cover: i.cover,
+            cover_bottom_text: i.cover_bottom_text,
+            sub_title: i.sub_title,
+        }
+    }
+}
+impl From<domain::SpaceOpusCollectionSection> for SpaceOpusCollectionSection {
+    fn from(i: domain::SpaceOpusCollectionSection) -> Self {
+        Self {
+            title: i.title,
+            items: i.items.into_iter().map(Into::into).collect(),
+            expand: i.expand,
+        }
+    }
+}
+impl From<domain::SpaceOpusFlowPage> for SpaceOpusFlowPage {
+    fn from(i: domain::SpaceOpusFlowPage) -> Self {
+        Self {
+            items: i.items.into_iter().map(Into::into).collect(),
+            next: i.next,
+            collection: i.collection.map(Into::into),
+        }
+    }
+}
+impl From<domain::SpaceArticleItem> for SpaceArticleItem {
+    fn from(i: domain::SpaceArticleItem) -> Self {
+        Self {
+            title: i.title,
+            cover: i.cover,
+            publish_time_text: i.publish_time_text,
+            view: i.view,
+            reply: i.reply,
+            uri: i.uri,
+        }
+    }
+}
+impl From<domain::SpaceAudioItem> for SpaceAudioItem {
+    fn from(i: domain::SpaceAudioItem) -> Self {
+        Self {
+            id: i.id,
+            uid: i.uid,
+            title: i.title,
+            cover: i.cover,
+            ctime: i.ctime,
+            play: i.play,
+            comment: i.comment,
+        }
+    }
+}
+result_type!(SpaceArticleResult, SpaceArticlePage);
+result_type!(SpaceAudioResult, SpaceAudioPage);
+result_type!(SpaceCheeseResult, SpaceCheesePage);
+result_type!(SpaceShopResult, SpaceShopPage);
+result_type!(SpaceOpusFlowResult, SpaceOpusFlowPage);
+pub async fn fetch_space_article(
+    context: SpaceContext,
+    mid: i64,
+    page: i64,
+    page_size: i64,
+) -> SpaceArticleResult {
+    let (ctx, transport, _, _) = context.split();
+    let joined = init::runtime()
+        .spawn(
+            async move { space::fetch_space_article(&transport, &ctx, mid, page, page_size).await },
+        )
+        .await;
+    match flatten(joined) {
+        Ok(p) => SpaceArticleResult {
+            data: Some(p.into()),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => SpaceArticleResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+pub async fn fetch_space_audio(
+    context: SpaceContext,
+    mid: i64,
+    page: i64,
+    page_size: i64,
+) -> SpaceAudioResult {
+    let (ctx, transport, _, _) = context.split();
+    let joined = init::runtime()
+        .spawn(
+            async move { space::fetch_space_audio(&transport, &ctx, mid, page, page_size).await },
+        )
+        .await;
+    match flatten(joined) {
+        Ok(p) => SpaceAudioResult {
+            data: Some(p.into()),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => SpaceAudioResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+pub async fn fetch_space_cheese(
+    context: SpaceContext,
+    mid: i64,
+    page: i64,
+    page_size: i64,
+) -> SpaceCheeseResult {
+    let (ctx, transport, _, _) = context.split();
+    let joined = init::runtime()
+        .spawn(
+            async move { space::fetch_space_cheese(&transport, &ctx, mid, page, page_size).await },
+        )
+        .await;
+    match flatten(joined) {
+        Ok(p) => SpaceCheeseResult {
+            data: Some(p.into()),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => SpaceCheeseResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+pub async fn fetch_space_shop(
+    context: SpaceContext,
+    mid: i64,
+    page_size: i64,
+    access_key: Option<String>,
+    appkey: String,
+    appsec: String,
+) -> SpaceShopResult {
+    let (ctx, transport, _, ts) = context.split();
+    let joined = init::runtime()
+        .spawn(async move {
+            space::fetch_space_shop(
+                &transport,
+                &ctx,
+                mid,
+                page_size,
+                access_key.as_deref(),
+                &appkey,
+                &appsec,
+                ts,
+            )
+            .await
+        })
+        .await;
+    match flatten(joined) {
+        Ok(p) => SpaceShopResult {
+            data: Some(p.into()),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => SpaceShopResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+pub async fn fetch_space_opus_flow(
+    context: GrpcContext,
+    host_mid: i64,
+    next: Option<String>,
+    filter_type: String,
+    page_size: i64,
+) -> SpaceOpusFlowResult {
+    let (ctx, transport) = context.split();
+    let joined = init::runtime()
+        .spawn(async move {
+            grpc_space::fetch_opus_space_flow(
+                &transport,
+                &ctx,
+                host_mid,
+                next.as_deref(),
+                &filter_type,
+                page_size,
+            )
+            .await
+        })
+        .await;
+    match flatten(joined) {
+        Ok(p) => SpaceOpusFlowResult {
+            data: Some(p.into()),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => SpaceOpusFlowResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+
+/// 分页边界由 Rust 决定，宿主替换后保留相同语义。
+#[flutter_rust_bridge::frb(sync)]
+pub fn space_article_is_end(loaded_count: i64, total_count: Option<i64>) -> bool {
+    domain::space_article_is_end(loaded_count, total_count)
+}
+
+/// 音频未知总数不结束，不能复用专栏的未知值哨兵。
+#[flutter_rust_bridge::frb(sync)]
+pub fn space_audio_is_end(loaded_count: i64, total_count: Option<i64>) -> bool {
+    domain::space_audio_is_end(loaded_count, total_count)
 }

@@ -433,10 +433,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SpaceArticleBlock dco_decode_box_autoadd_space_article_block(dynamic raw);
 
   @protected
+  SpaceArticlePage dco_decode_box_autoadd_space_article_page(dynamic raw);
+
+  @protected
   SpaceAudioBlock dco_decode_box_autoadd_space_audio_block(dynamic raw);
 
   @protected
+  SpaceAudioPage dco_decode_box_autoadd_space_audio_page(dynamic raw);
+
+  @protected
   SpaceCard dco_decode_box_autoadd_space_card(dynamic raw);
+
+  @protected
+  SpaceCheesePage dco_decode_box_autoadd_space_cheese_page(dynamic raw);
 
   @protected
   SpaceContext dco_decode_box_autoadd_space_context(dynamic raw);
@@ -464,6 +473,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceLiveMedal dco_decode_box_autoadd_space_live_medal(dynamic raw);
+
+  @protected
+  SpaceOpusCollectionSection
+  dco_decode_box_autoadd_space_opus_collection_section(dynamic raw);
+
+  @protected
+  SpaceOpusCover dco_decode_box_autoadd_space_opus_cover(dynamic raw);
+
+  @protected
+  SpaceOpusFlowPage dco_decode_box_autoadd_space_opus_flow_page(dynamic raw);
 
   @protected
   SpacePage dco_decode_box_autoadd_space_page(dynamic raw);
@@ -494,6 +513,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceSetting dco_decode_box_autoadd_space_setting(dynamic raw);
+
+  @protected
+  SpaceShopPage dco_decode_box_autoadd_space_shop_page(dynamic raw);
 
   @protected
   SpaceTopTitle dco_decode_box_autoadd_space_top_title(dynamic raw);
@@ -1053,7 +1075,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<SpaceCardTag> dco_decode_list_space_card_tag(dynamic raw);
 
   @protected
+  List<SpaceCheeseItem> dco_decode_list_space_cheese_item(dynamic raw);
+
+  @protected
   List<SpaceFavItem> dco_decode_list_space_fav_item(dynamic raw);
+
+  @protected
+  List<SpaceOpusCollectionItem> dco_decode_list_space_opus_collection_item(
+    dynamic raw,
+  );
+
+  @protected
+  List<SpaceOpusFlowItem> dco_decode_list_space_opus_flow_item(dynamic raw);
 
   @protected
   List<SpaceReservation> dco_decode_list_space_reservation(dynamic raw);
@@ -1065,6 +1098,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SpaceSeasonSeries> dco_decode_list_space_season_series(dynamic raw);
+
+  @protected
+  List<SpaceShopItem> dco_decode_list_space_shop_item(dynamic raw);
 
   @protected
   List<SpaceSimpleUser> dco_decode_list_space_simple_user(dynamic raw);
@@ -1667,10 +1703,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SpaceArticlePage? dco_decode_opt_box_autoadd_space_article_page(dynamic raw);
+
+  @protected
   SpaceAudioBlock? dco_decode_opt_box_autoadd_space_audio_block(dynamic raw);
 
   @protected
+  SpaceAudioPage? dco_decode_opt_box_autoadd_space_audio_page(dynamic raw);
+
+  @protected
   SpaceCard? dco_decode_opt_box_autoadd_space_card(dynamic raw);
+
+  @protected
+  SpaceCheesePage? dco_decode_opt_box_autoadd_space_cheese_page(dynamic raw);
 
   @protected
   SpaceElec? dco_decode_opt_box_autoadd_space_elec(dynamic raw);
@@ -1697,6 +1742,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceLiveMedal? dco_decode_opt_box_autoadd_space_live_medal(dynamic raw);
+
+  @protected
+  SpaceOpusCollectionSection?
+  dco_decode_opt_box_autoadd_space_opus_collection_section(dynamic raw);
+
+  @protected
+  SpaceOpusCover? dco_decode_opt_box_autoadd_space_opus_cover(dynamic raw);
+
+  @protected
+  SpaceOpusFlowPage? dco_decode_opt_box_autoadd_space_opus_flow_page(
+    dynamic raw,
+  );
 
   @protected
   SpacePage? dco_decode_opt_box_autoadd_space_page(dynamic raw);
@@ -1729,6 +1786,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceSetting? dco_decode_opt_box_autoadd_space_setting(dynamic raw);
+
+  @protected
+  SpaceShopPage? dco_decode_opt_box_autoadd_space_shop_page(dynamic raw);
 
   @protected
   SpaceTopTitle? dco_decode_opt_box_autoadd_space_top_title(dynamic raw);
@@ -2266,16 +2326,37 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SpaceArticleItem dco_decode_space_article_item(dynamic raw);
 
   @protected
+  SpaceArticlePage dco_decode_space_article_page(dynamic raw);
+
+  @protected
+  SpaceArticleResult dco_decode_space_article_result(dynamic raw);
+
+  @protected
   SpaceAudioBlock dco_decode_space_audio_block(dynamic raw);
 
   @protected
   SpaceAudioItem dco_decode_space_audio_item(dynamic raw);
 
   @protected
+  SpaceAudioPage dco_decode_space_audio_page(dynamic raw);
+
+  @protected
+  SpaceAudioResult dco_decode_space_audio_result(dynamic raw);
+
+  @protected
   SpaceCard dco_decode_space_card(dynamic raw);
 
   @protected
   SpaceCardTag dco_decode_space_card_tag(dynamic raw);
+
+  @protected
+  SpaceCheeseItem dco_decode_space_cheese_item(dynamic raw);
+
+  @protected
+  SpaceCheesePage dco_decode_space_cheese_page(dynamic raw);
+
+  @protected
+  SpaceCheeseResult dco_decode_space_cheese_result(dynamic raw);
 
   @protected
   SpaceContext dco_decode_space_context(dynamic raw);
@@ -2306,6 +2387,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceLiveMedal dco_decode_space_live_medal(dynamic raw);
+
+  @protected
+  SpaceOpusCollectionItem dco_decode_space_opus_collection_item(dynamic raw);
+
+  @protected
+  SpaceOpusCollectionSection dco_decode_space_opus_collection_section(
+    dynamic raw,
+  );
+
+  @protected
+  SpaceOpusCover dco_decode_space_opus_cover(dynamic raw);
+
+  @protected
+  SpaceOpusFlowItem dco_decode_space_opus_flow_item(dynamic raw);
+
+  @protected
+  SpaceOpusFlowPage dco_decode_space_opus_flow_page(dynamic raw);
+
+  @protected
+  SpaceOpusFlowResult dco_decode_space_opus_flow_result(dynamic raw);
 
   @protected
   SpacePage dco_decode_space_page(dynamic raw);
@@ -2354,6 +2455,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceSetting dco_decode_space_setting(dynamic raw);
+
+  @protected
+  SpaceShopItem dco_decode_space_shop_item(dynamic raw);
+
+  @protected
+  SpaceShopPage dco_decode_space_shop_page(dynamic raw);
+
+  @protected
+  SpaceShopResult dco_decode_space_shop_result(dynamic raw);
 
   @protected
   SpaceSimpleUser dco_decode_space_simple_user(dynamic raw);
@@ -3044,12 +3154,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SpaceArticlePage sse_decode_box_autoadd_space_article_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SpaceAudioBlock sse_decode_box_autoadd_space_audio_block(
     SseDeserializer deserializer,
   );
 
   @protected
+  SpaceAudioPage sse_decode_box_autoadd_space_audio_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SpaceCard sse_decode_box_autoadd_space_card(SseDeserializer deserializer);
+
+  @protected
+  SpaceCheesePage sse_decode_box_autoadd_space_cheese_page(
+    SseDeserializer deserializer,
+  );
 
   @protected
   SpaceContext sse_decode_box_autoadd_space_context(
@@ -3089,6 +3214,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SpaceOpusCollectionSection
+  sse_decode_box_autoadd_space_opus_collection_section(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceOpusCover sse_decode_box_autoadd_space_opus_cover(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceOpusFlowPage sse_decode_box_autoadd_space_opus_flow_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SpacePage sse_decode_box_autoadd_space_page(SseDeserializer deserializer);
 
   @protected
@@ -3123,6 +3264,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceSetting sse_decode_box_autoadd_space_setting(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceShopPage sse_decode_box_autoadd_space_shop_page(
     SseDeserializer deserializer,
   );
 
@@ -3844,7 +3990,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<SpaceCheeseItem> sse_decode_list_space_cheese_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<SpaceFavItem> sse_decode_list_space_fav_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceOpusCollectionItem> sse_decode_list_space_opus_collection_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceOpusFlowItem> sse_decode_list_space_opus_flow_item(
     SseDeserializer deserializer,
   );
 
@@ -3860,6 +4021,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SpaceSeasonSeries> sse_decode_list_space_season_series(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceShopItem> sse_decode_list_space_shop_item(
     SseDeserializer deserializer,
   );
 
@@ -4650,12 +4816,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SpaceArticlePage? sse_decode_opt_box_autoadd_space_article_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SpaceAudioBlock? sse_decode_opt_box_autoadd_space_audio_block(
     SseDeserializer deserializer,
   );
 
   @protected
+  SpaceAudioPage? sse_decode_opt_box_autoadd_space_audio_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SpaceCard? sse_decode_opt_box_autoadd_space_card(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceCheesePage? sse_decode_opt_box_autoadd_space_cheese_page(
     SseDeserializer deserializer,
   );
 
@@ -4700,6 +4881,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SpaceOpusCollectionSection?
+  sse_decode_opt_box_autoadd_space_opus_collection_section(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceOpusCover? sse_decode_opt_box_autoadd_space_opus_cover(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceOpusFlowPage? sse_decode_opt_box_autoadd_space_opus_flow_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SpacePage? sse_decode_opt_box_autoadd_space_page(
     SseDeserializer deserializer,
   );
@@ -4736,6 +4933,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceSetting? sse_decode_opt_box_autoadd_space_setting(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceShopPage? sse_decode_opt_box_autoadd_space_shop_page(
     SseDeserializer deserializer,
   );
 
@@ -5421,16 +5623,41 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SpaceArticleItem sse_decode_space_article_item(SseDeserializer deserializer);
 
   @protected
+  SpaceArticlePage sse_decode_space_article_page(SseDeserializer deserializer);
+
+  @protected
+  SpaceArticleResult sse_decode_space_article_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SpaceAudioBlock sse_decode_space_audio_block(SseDeserializer deserializer);
 
   @protected
   SpaceAudioItem sse_decode_space_audio_item(SseDeserializer deserializer);
 
   @protected
+  SpaceAudioPage sse_decode_space_audio_page(SseDeserializer deserializer);
+
+  @protected
+  SpaceAudioResult sse_decode_space_audio_result(SseDeserializer deserializer);
+
+  @protected
   SpaceCard sse_decode_space_card(SseDeserializer deserializer);
 
   @protected
   SpaceCardTag sse_decode_space_card_tag(SseDeserializer deserializer);
+
+  @protected
+  SpaceCheeseItem sse_decode_space_cheese_item(SseDeserializer deserializer);
+
+  @protected
+  SpaceCheesePage sse_decode_space_cheese_page(SseDeserializer deserializer);
+
+  @protected
+  SpaceCheeseResult sse_decode_space_cheese_result(
+    SseDeserializer deserializer,
+  );
 
   @protected
   SpaceContext sse_decode_space_context(SseDeserializer deserializer);
@@ -5463,6 +5690,34 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceLiveMedal sse_decode_space_live_medal(SseDeserializer deserializer);
+
+  @protected
+  SpaceOpusCollectionItem sse_decode_space_opus_collection_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceOpusCollectionSection sse_decode_space_opus_collection_section(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceOpusCover sse_decode_space_opus_cover(SseDeserializer deserializer);
+
+  @protected
+  SpaceOpusFlowItem sse_decode_space_opus_flow_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceOpusFlowPage sse_decode_space_opus_flow_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceOpusFlowResult sse_decode_space_opus_flow_result(
+    SseDeserializer deserializer,
+  );
 
   @protected
   SpacePage sse_decode_space_page(SseDeserializer deserializer);
@@ -5531,6 +5786,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceSetting sse_decode_space_setting(SseDeserializer deserializer);
+
+  @protected
+  SpaceShopItem sse_decode_space_shop_item(SseDeserializer deserializer);
+
+  @protected
+  SpaceShopPage sse_decode_space_shop_page(SseDeserializer deserializer);
+
+  @protected
+  SpaceShopResult sse_decode_space_shop_result(SseDeserializer deserializer);
 
   @protected
   SpaceSimpleUser sse_decode_space_simple_user(SseDeserializer deserializer);
@@ -6435,14 +6699,32 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_space_article_page(
+    SpaceArticlePage self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_space_audio_block(
     SpaceAudioBlock self,
     SseSerializer serializer,
   );
 
   @protected
+  void sse_encode_box_autoadd_space_audio_page(
+    SpaceAudioPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_space_card(
     SpaceCard self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_cheese_page(
+    SpaceCheesePage self,
     SseSerializer serializer,
   );
 
@@ -6501,6 +6783,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_space_opus_collection_section(
+    SpaceOpusCollectionSection self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_opus_cover(
+    SpaceOpusCover self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_opus_flow_page(
+    SpaceOpusFlowPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_space_page(
     SpacePage self,
     SseSerializer serializer,
@@ -6545,6 +6845,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_space_setting(
     SpaceSetting self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_shop_page(
+    SpaceShopPage self,
     SseSerializer serializer,
   );
 
@@ -7491,8 +7797,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_space_cheese_item(
+    List<SpaceCheeseItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_space_fav_item(
     List<SpaceFavItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_opus_collection_item(
+    List<SpaceOpusCollectionItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_opus_flow_item(
+    List<SpaceOpusFlowItem> self,
     SseSerializer serializer,
   );
 
@@ -7511,6 +7835,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_space_season_series(
     List<SpaceSeasonSeries> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_shop_item(
+    List<SpaceShopItem> self,
     SseSerializer serializer,
   );
 
@@ -8526,14 +8856,32 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_space_article_page(
+    SpaceArticlePage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_space_audio_block(
     SpaceAudioBlock? self,
     SseSerializer serializer,
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_space_audio_page(
+    SpaceAudioPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_space_card(
     SpaceCard? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_cheese_page(
+    SpaceCheesePage? self,
     SseSerializer serializer,
   );
 
@@ -8586,6 +8934,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_space_opus_collection_section(
+    SpaceOpusCollectionSection? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_opus_cover(
+    SpaceOpusCover? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_opus_flow_page(
+    SpaceOpusFlowPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_space_page(
     SpacePage? self,
     SseSerializer serializer,
@@ -8630,6 +8996,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_space_setting(
     SpaceSetting? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_shop_page(
+    SpaceShopPage? self,
     SseSerializer serializer,
   );
 
@@ -9525,6 +9897,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_space_article_page(
+    SpaceArticlePage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_article_result(
+    SpaceArticleResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_space_audio_block(
     SpaceAudioBlock self,
     SseSerializer serializer,
@@ -9537,10 +9921,40 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_space_audio_page(
+    SpaceAudioPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_audio_result(
+    SpaceAudioResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_space_card(SpaceCard self, SseSerializer serializer);
 
   @protected
   void sse_encode_space_card_tag(SpaceCardTag self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_cheese_item(
+    SpaceCheeseItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_cheese_page(
+    SpaceCheesePage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_cheese_result(
+    SpaceCheeseResult self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_space_context(SpaceContext self, SseSerializer serializer);
@@ -9578,6 +9992,42 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_space_live_medal(
     SpaceLiveMedal self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_opus_collection_item(
+    SpaceOpusCollectionItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_opus_collection_section(
+    SpaceOpusCollectionSection self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_opus_cover(
+    SpaceOpusCover self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_opus_flow_item(
+    SpaceOpusFlowItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_opus_flow_page(
+    SpaceOpusFlowPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_opus_flow_result(
+    SpaceOpusFlowResult self,
     SseSerializer serializer,
   );
 
@@ -9664,6 +10114,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_space_setting(SpaceSetting self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_shop_item(SpaceShopItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_shop_page(SpaceShopPage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_shop_result(
+    SpaceShopResult self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_space_simple_user(

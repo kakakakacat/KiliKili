@@ -10,7 +10,7 @@ import 'package:kilikili/rust/api/search.dart';
 import 'package:kilikili/rust/api/transport.dart';
 
 // These functions are ignored because they are not marked as `pub`: `flatten`, `season_series`, `split`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`
 
 /// 取别人的资料。
 ///
@@ -225,6 +225,90 @@ Future<SpaceSearchArchiveResult> fetchSpaceSearchArchive({
   keyword: keyword,
   page: page,
   pageSize: pageSize,
+);
+
+Future<SpaceArticleResult> fetchSpaceArticle({
+  required SpaceContext context,
+  required PlatformInt64 mid,
+  required PlatformInt64 page,
+  required PlatformInt64 pageSize,
+}) => RustLib.instance.api.crateApiSpaceFetchSpaceArticle(
+  context: context,
+  mid: mid,
+  page: page,
+  pageSize: pageSize,
+);
+
+Future<SpaceAudioResult> fetchSpaceAudio({
+  required SpaceContext context,
+  required PlatformInt64 mid,
+  required PlatformInt64 page,
+  required PlatformInt64 pageSize,
+}) => RustLib.instance.api.crateApiSpaceFetchSpaceAudio(
+  context: context,
+  mid: mid,
+  page: page,
+  pageSize: pageSize,
+);
+
+Future<SpaceCheeseResult> fetchSpaceCheese({
+  required SpaceContext context,
+  required PlatformInt64 mid,
+  required PlatformInt64 page,
+  required PlatformInt64 pageSize,
+}) => RustLib.instance.api.crateApiSpaceFetchSpaceCheese(
+  context: context,
+  mid: mid,
+  page: page,
+  pageSize: pageSize,
+);
+
+Future<SpaceShopResult> fetchSpaceShop({
+  required SpaceContext context,
+  required PlatformInt64 mid,
+  required PlatformInt64 pageSize,
+  String? accessKey,
+  required String appkey,
+  required String appsec,
+}) => RustLib.instance.api.crateApiSpaceFetchSpaceShop(
+  context: context,
+  mid: mid,
+  pageSize: pageSize,
+  accessKey: accessKey,
+  appkey: appkey,
+  appsec: appsec,
+);
+
+Future<SpaceOpusFlowResult> fetchSpaceOpusFlow({
+  required GrpcContext context,
+  required PlatformInt64 hostMid,
+  String? next,
+  required String filterType,
+  required PlatformInt64 pageSize,
+}) => RustLib.instance.api.crateApiSpaceFetchSpaceOpusFlow(
+  context: context,
+  hostMid: hostMid,
+  next: next,
+  filterType: filterType,
+  pageSize: pageSize,
+);
+
+/// 分页边界由 Rust 决定，宿主替换后保留相同语义。
+bool spaceArticleIsEnd({
+  required PlatformInt64 loadedCount,
+  PlatformInt64? totalCount,
+}) => RustLib.instance.api.crateApiSpaceSpaceArticleIsEnd(
+  loadedCount: loadedCount,
+  totalCount: totalCount,
+);
+
+/// 音频未知总数不结束，不能复用专栏的未知值哨兵。
+bool spaceAudioIsEnd({
+  required PlatformInt64 loadedCount,
+  PlatformInt64? totalCount,
+}) => RustLib.instance.api.crateApiSpaceSpaceAudioIsEnd(
+  loadedCount: loadedCount,
+  totalCount: totalCount,
 );
 
 /// 投币/点赞列表里的一个稿件。
@@ -1170,6 +1254,65 @@ class SpaceArticleItem {
           uri == other.uri;
 }
 
+class SpaceArticlePage {
+  /// 这个人一共有多少篇。界面用它判断到底没到底。
+  final PlatformInt64? count;
+
+  /// 文集数量。服务端给了，界面暂时没用上，留着是因为它与 `count` 并列
+  /// 出现、含义不同，丢掉之后下一个人会以为没有这个数。
+  final PlatformInt64? listsCount;
+  final List<SpaceArticleItem> items;
+
+  const SpaceArticlePage({
+    this.count,
+    this.listsCount,
+    required this.items,
+  });
+
+  @override
+  int get hashCode => count.hashCode ^ listsCount.hashCode ^ items.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceArticlePage &&
+          runtimeType == other.runtimeType &&
+          count == other.count &&
+          listsCount == other.listsCount &&
+          items == other.items;
+}
+
+class SpaceArticleResult {
+  final SpaceArticlePage? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const SpaceArticleResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceArticleResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
 /// 主页上的一块音频。
 class SpaceAudioBlock {
   final PlatformInt64? count;
@@ -1194,6 +1337,8 @@ class SpaceAudioBlock {
 
 /// 主页上的一条音频。
 class SpaceAudioItem {
+  final PlatformInt64? play;
+  final PlatformInt64? comment;
   final PlatformInt64? id;
   final PlatformInt64? uid;
   final String? title;
@@ -1203,6 +1348,8 @@ class SpaceAudioItem {
   final PlatformInt64? ctime;
 
   const SpaceAudioItem({
+    this.play,
+    this.comment,
     this.id,
     this.uid,
     this.title,
@@ -1212,6 +1359,8 @@ class SpaceAudioItem {
 
   @override
   int get hashCode =>
+      play.hashCode ^
+      comment.hashCode ^
       id.hashCode ^
       uid.hashCode ^
       title.hashCode ^
@@ -1223,11 +1372,66 @@ class SpaceAudioItem {
       identical(this, other) ||
       other is SpaceAudioItem &&
           runtimeType == other.runtimeType &&
+          play == other.play &&
+          comment == other.comment &&
           id == other.id &&
           uid == other.uid &&
           title == other.title &&
           cover == other.cover &&
           ctime == other.ctime;
+}
+
+class SpaceAudioPage {
+  /// 这个人一共有多少首。界面用它判断到底没到底。
+  final PlatformInt64? totalSize;
+  final List<SpaceAudioItem> items;
+
+  const SpaceAudioPage({
+    this.totalSize,
+    required this.items,
+  });
+
+  @override
+  int get hashCode => totalSize.hashCode ^ items.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceAudioPage &&
+          runtimeType == other.runtimeType &&
+          totalSize == other.totalSize &&
+          items == other.items;
+}
+
+class SpaceAudioResult {
+  final SpaceAudioPage? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const SpaceAudioResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceAudioResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
 }
 
 /// 空间主页的资料卡。
@@ -1367,6 +1571,110 @@ class SpaceCardTag {
           runtimeType == other.runtimeType &&
           title == other.title &&
           uri == other.uri;
+}
+
+class SpaceCheeseItem {
+  final String? cover;
+
+  /// 角标文案，服务端下发，界面用 `|` 连起来。
+  final List<String> marks;
+
+  /// 课堂 id，点进去要它。
+  final PlatformInt64? seasonId;
+
+  /// 形如「已更新至第 3 讲」。
+  final String? status;
+  final String? title;
+
+  /// 收藏时间，Unix 秒。
+  ///
+  /// 服务端给的是**字符串**，基线在界面里 `int.tryParse`。解析挪到这儿：
+  /// 「这串字符其实是个时间戳」是对服务端约定的解读，不是排版。解不出来
+  /// 按没有处理，与基线的 `tryParse` 一致。
+  final PlatformInt64? ctime;
+
+  const SpaceCheeseItem({
+    this.cover,
+    required this.marks,
+    this.seasonId,
+    this.status,
+    this.title,
+    this.ctime,
+  });
+
+  @override
+  int get hashCode =>
+      cover.hashCode ^
+      marks.hashCode ^
+      seasonId.hashCode ^
+      status.hashCode ^
+      title.hashCode ^
+      ctime.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceCheeseItem &&
+          runtimeType == other.runtimeType &&
+          cover == other.cover &&
+          marks == other.marks &&
+          seasonId == other.seasonId &&
+          status == other.status &&
+          title == other.title &&
+          ctime == other.ctime;
+}
+
+class SpaceCheesePage {
+  /// 还有没有下一页。服务端给的是 `page.next`。
+  final bool? hasNext;
+  final List<SpaceCheeseItem> items;
+
+  const SpaceCheesePage({
+    this.hasNext,
+    required this.items,
+  });
+
+  @override
+  int get hashCode => hasNext.hashCode ^ items.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceCheesePage &&
+          runtimeType == other.runtimeType &&
+          hasNext == other.hasNext &&
+          items == other.items;
+}
+
+class SpaceCheeseResult {
+  final SpaceCheesePage? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const SpaceCheeseResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceCheeseResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
 }
 
 /// 这一族共用的请求上下文。
@@ -1667,6 +1975,203 @@ class SpaceLiveMedal {
           level == other.level &&
           color == other.color &&
           nameColor == other.nameColor;
+}
+
+class SpaceOpusCollectionItem {
+  /// 文集 id，点进去要它。
+  final PlatformInt64? collectionId;
+
+  /// 标题。服务端按段下发，拼接在这里做。
+  final String? title;
+  final String? cover;
+
+  /// 封面左下角那行字（如「共 12 篇」）。
+  final String? coverBottomText;
+
+  /// 标题下面那行小字。
+  final String? subTitle;
+
+  const SpaceOpusCollectionItem({
+    this.collectionId,
+    this.title,
+    this.cover,
+    this.coverBottomText,
+    this.subTitle,
+  });
+
+  @override
+  int get hashCode =>
+      collectionId.hashCode ^
+      title.hashCode ^
+      cover.hashCode ^
+      coverBottomText.hashCode ^
+      subTitle.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceOpusCollectionItem &&
+          runtimeType == other.runtimeType &&
+          collectionId == other.collectionId &&
+          title == other.title &&
+          cover == other.cover &&
+          coverBottomText == other.coverBottomText &&
+          subTitle == other.subTitle;
+}
+
+class SpaceOpusCollectionSection {
+  final String? title;
+  final List<SpaceOpusCollectionItem> items;
+
+  /// 服务端建议的初始展开状态。
+  ///
+  /// 之后的展开/收起是界面状态，**不回写到这里**：FRB 结构不可变，
+  /// 基线那种 `collection.expand = !collection.expand` 的写法要挪到
+  /// 控制器上。
+  final bool expand;
+
+  const SpaceOpusCollectionSection({
+    this.title,
+    required this.items,
+    required this.expand,
+  });
+
+  @override
+  int get hashCode => title.hashCode ^ items.hashCode ^ expand.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceOpusCollectionSection &&
+          runtimeType == other.runtimeType &&
+          title == other.title &&
+          items == other.items &&
+          expand == other.expand;
+}
+
+class SpaceOpusCover {
+  /// 长图顶对齐阈值，沿用基线 2.6。
+  final bool isLongPic;
+  final String? src;
+
+  /// 高宽比，已按 `0.68..=2.7` 夹过。
+  ///
+  /// 夹取范围照抄基线（`lib/models_new/space/space_opus/cover.dart` 与
+  /// 图文卡片组件里是同一组常数）：瀑布流里一张过长或过扁的图会把整列
+  /// 撑坏。这是「协议没规定、但两端必须一致」的决定，所以在 Rust。
+  /// 服务端没给宽高时为 `1.0`，同基线。
+  final double ratio;
+
+  const SpaceOpusCover({
+    required this.isLongPic,
+    this.src,
+    required this.ratio,
+  });
+
+  @override
+  int get hashCode => isLongPic.hashCode ^ src.hashCode ^ ratio.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceOpusCover &&
+          runtimeType == other.runtimeType &&
+          isLongPic == other.isLongPic &&
+          src == other.src &&
+          ratio == other.ratio;
+}
+
+class SpaceOpusFlowItem {
+  /// 图文 id，点进去要它。
+  final PlatformInt64? oid;
+
+  /// 正文摘要。服务端按段下发，拼接在这里做。
+  final String? content;
+  final SpaceOpusCover? cover;
+
+  /// 点赞数的**文案**（如 `1.2万`）。服务端直接给字符串，不是数字。
+  final String? likeText;
+
+  const SpaceOpusFlowItem({
+    this.oid,
+    this.content,
+    this.cover,
+    this.likeText,
+  });
+
+  @override
+  int get hashCode =>
+      oid.hashCode ^ content.hashCode ^ cover.hashCode ^ likeText.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceOpusFlowItem &&
+          runtimeType == other.runtimeType &&
+          oid == other.oid &&
+          content == other.content &&
+          cover == other.cover &&
+          likeText == other.likeText;
+}
+
+class SpaceOpusFlowPage {
+  final List<SpaceOpusFlowItem> items;
+
+  /// 下一页的游标。空串按没有——proto3 的空串与未设置在 wire 上就是
+  /// 一回事，基线判的也是 `isNotEmpty`。
+  final String? next;
+
+  /// 文集区块。
+  final SpaceOpusCollectionSection? collection;
+
+  const SpaceOpusFlowPage({
+    required this.items,
+    this.next,
+    this.collection,
+  });
+
+  @override
+  int get hashCode => items.hashCode ^ next.hashCode ^ collection.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceOpusFlowPage &&
+          runtimeType == other.runtimeType &&
+          items == other.items &&
+          next == other.next &&
+          collection == other.collection;
+}
+
+class SpaceOpusFlowResult {
+  final SpaceOpusFlowPage? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const SpaceOpusFlowResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceOpusFlowResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
 }
 
 /// 空间主页。
@@ -2297,6 +2802,151 @@ class SpaceSetting {
           coinsVideo == other.coinsVideo &&
           likesVideo == other.likesVideo &&
           bangumi == other.bangumi;
+}
+
+class SpaceShopItem {
+  final String? cover;
+  final String? title;
+
+  /// 点开后跳的网页地址。
+  final String? cardUrl;
+
+  /// 商品下面那排小标签的文案。界面用 `|` 连起来显示。
+  final List<String> belowLabels;
+
+  /// 价格前缀（如「会员价」）。
+  final String? pricePrefix;
+
+  /// 货币符号。服务端下发，不在客户端写死。
+  final String? priceSymbol;
+
+  /// 价格本身。服务端给的就是字符串，不转数字——它可能是「99.9 起」
+  /// 这种形态，转一道只会多一个出错点。
+  final String? netPrice;
+
+  /// 优惠信息。每条由服务端的 `prefix` + `amount` + `suffix` 拼成，
+  /// **拼接在这里做**：三段之间没有分隔符是服务端的约定，不是排版选择。
+  final List<String> benefits;
+
+  /// 来源店铺名。界面会加「来自」前缀。
+  final String? itemSourceName;
+
+  const SpaceShopItem({
+    this.cover,
+    this.title,
+    this.cardUrl,
+    required this.belowLabels,
+    this.pricePrefix,
+    this.priceSymbol,
+    this.netPrice,
+    required this.benefits,
+    this.itemSourceName,
+  });
+
+  @override
+  int get hashCode =>
+      cover.hashCode ^
+      title.hashCode ^
+      cardUrl.hashCode ^
+      belowLabels.hashCode ^
+      pricePrefix.hashCode ^
+      priceSymbol.hashCode ^
+      netPrice.hashCode ^
+      benefits.hashCode ^
+      itemSourceName.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceShopItem &&
+          runtimeType == other.runtimeType &&
+          cover == other.cover &&
+          title == other.title &&
+          cardUrl == other.cardUrl &&
+          belowLabels == other.belowLabels &&
+          pricePrefix == other.pricePrefix &&
+          priceSymbol == other.priceSymbol &&
+          netPrice == other.netPrice &&
+          benefits == other.benefits &&
+          itemSourceName == other.itemSourceName;
+}
+
+class SpaceShopPage {
+  final List<SpaceShopItem> items;
+
+  /// 要不要显示「查看更多」。
+  final bool? showMoreTab;
+
+  /// 「查看更多」按钮的文案。服务端下发。
+  final String? showMoreDesc;
+
+  /// 「查看更多」真正要打开的网页地址。
+  ///
+  /// 服务端给的 `clickUrl` 是一个把目标地址塞在 `url` 查询参数里的跳转
+  /// 链接，基线在界面里 `Uri.parse(...).queryParameters['url']`。拆解挪到
+  /// 这儿：那是对服务端约定的解读。拆不出来时为空，界面据此不跳转。
+  final String? moreUrl;
+
+  /// 还有没有下一页。
+  final bool? hasNextPage;
+
+  const SpaceShopPage({
+    required this.items,
+    this.showMoreTab,
+    this.showMoreDesc,
+    this.moreUrl,
+    this.hasNextPage,
+  });
+
+  @override
+  int get hashCode =>
+      items.hashCode ^
+      showMoreTab.hashCode ^
+      showMoreDesc.hashCode ^
+      moreUrl.hashCode ^
+      hasNextPage.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceShopPage &&
+          runtimeType == other.runtimeType &&
+          items == other.items &&
+          showMoreTab == other.showMoreTab &&
+          showMoreDesc == other.showMoreDesc &&
+          moreUrl == other.moreUrl &&
+          hasNextPage == other.hasNextPage;
+}
+
+class SpaceShopResult {
+  final SpaceShopPage? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const SpaceShopResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceShopResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
 }
 
 /// 一个只有昵称与头像的人。充电榜、大航海、共同关注共用。

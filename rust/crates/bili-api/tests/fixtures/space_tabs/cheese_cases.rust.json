@@ -1,0 +1,32 @@
+{
+  "has_next": true,
+  "items": [
+    {
+      "cover": "https://example.invalid/course.jpg",
+      "ctime": 1700000000,
+      "marks": [
+        "标签一",
+        "标签二"
+      ],
+      "season_id": 100,
+      "status": "已更新3讲",
+      "title": "脱敏课堂"
+    },
+    {
+      "cover": null,
+      "ctime": null,
+      "marks": [],
+      "season_id": null,
+      "status": null,
+      "title": null
+    },
+    {
+      "cover": null,
+      "ctime": 123,
+      "marks": [],
+      "season_id": null,
+      "status": null,
+      "title": null
+    }
+  ]
+}

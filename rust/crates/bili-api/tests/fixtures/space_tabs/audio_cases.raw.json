@@ -1,0 +1,28 @@
+{
+  "code": 0,
+  "data": {
+    "totalSize": 3,
+    "data": [
+      {
+        "id": 100,
+        "uid": 200,
+        "title": "脱敏音频",
+        "cover": "https://example.invalid/audio.jpg",
+        "ctime": 1700000000123,
+        "statistic": {
+          "play": 123,
+          "comment": 4
+        }
+      },
+      {
+        "id": 101,
+        "ctime": 1700000000
+      },
+      {
+        "id": 102,
+        "ctime": -1999,
+        "statistic": {}
+      }
+    ]
+  }
+}

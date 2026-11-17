@@ -1582,6 +1582,80 @@ mod tests {
         }
     }
 
+    /// 一把 1024 位的公钥，与 `/x/passport-login/web/key` 当前下发的同样
+    /// 长度、同样形状（SPKI、base64 以 `MIGf` 开头）。本地生成的，不是
+    /// 线上那把——这里验的是长度与格式能不能走通整条链路。
+    const WEB_KEY_1024: &str = r#"{"code":0,"data":{"hash":"salt-","key":"-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDkaUc5IwwPGT1fVNsjN5wyUFQr\nMjjbYq1GoUnRMJydqCA3EBPWJmFvqxxJJTDceyA4pvmPQbEcgw7fGlx8kw8+lI0W\nu8E6hZi148hvWXGmoaLAoJDBFWf0WQXS8Kr2h26cKCIWbMbsp4neqJGa5eHeWhQ/\nLIgsbG8EiDbt8qLjeQIDAQAB\n-----END PUBLIC KEY-----\n"}}"#;
+
+    /// 短信登录成功的最小响应：身份信息两半都在。
+    const SMS_LOGIN_OK: &str = r#"{"code":0,"data":{"token_info":{"access_token":"at","refresh_token":"rt","expires_in":100},"cookie_info":{"cookies":[{"name":"SESSDATA","value":"v"}]}}}"#;
+
+    struct FixedEntropy;
+
+    impl bili_protocol::risk::Entropy for FixedEntropy {
+        fn next_below(&mut self, _bound: u32) -> u32 {
+            0
+        }
+    }
+
+    /// issue #161 的回归：短信登录要先取公钥给 `dt` 加密，而服务端发的是
+    /// **1024 位**公钥。#156 曾把可接受的最小模数定成 2048 位，于是这条
+    /// 链路在取到真实公钥之后一律倒在「登录公钥无法解析」上，密码登录同理。
+    ///
+    /// 这个用例从公钥接口一路跑到登录接口，长度判断错了就过不去——
+    /// `login_crypto` 那边只验单个函数，拦不住「阈值与线上不符」这类错。
+    #[test]
+    fn sms_login_works_with_the_1024_bit_key_the_server_actually_sends() {
+        let transport = ScriptedTransport::new(&[
+            (path::WEB_KEY, &[WEB_KEY_1024]),
+            (path::LOGIN_BY_SMS, &[SMS_LOGIN_OK]),
+        ]);
+        let input = SmsLoginInput {
+            cid: "86".to_owned(),
+            tel: "13800000000".to_owned(),
+            code: "123456".to_owned(),
+            captcha_key: "ck".to_owned(),
+        };
+        let tokens = block_on(login_by_sms(
+            &transport,
+            &ctx("https://passport.example.invalid"),
+            &env(),
+            &mut FixedEntropy,
+            &input,
+        ))
+        .expect("1024 位公钥必须走得通");
+
+        assert_eq!(tokens.expires_in, 100);
+        assert_eq!(
+            transport.paths(),
+            vec![path::WEB_KEY.to_owned(), path::LOGIN_BY_SMS.to_owned()],
+            "先取公钥再登录，顺序与基线一致"
+        );
+    }
+
+    /// 密码登录与短信登录共用同一次公钥解析，一并钉住。
+    #[test]
+    fn password_login_works_with_the_1024_bit_key_too() {
+        let transport = ScriptedTransport::new(&[
+            (path::WEB_KEY, &[WEB_KEY_1024]),
+            (path::LOGIN_BY_PASSWORD, &[SMS_LOGIN_OK]),
+        ]);
+        let got = block_on(login_by_password(
+            &transport,
+            &ctx("https://passport.example.invalid"),
+            &env(),
+            &mut FixedEntropy,
+            "user",
+            "hunter2",
+            &CaptchaSolution::default(),
+        ))
+        .expect("1024 位公钥必须走得通");
+        assert!(
+            matches!(got, PasswordLogin::Authenticated(_)),
+            "两半身份信息都在，应判成功"
+        );
+    }
+
     fn env() -> LoginEnv {
         LoginEnv {
             appkey: "dfca71928277209b".to_owned(),

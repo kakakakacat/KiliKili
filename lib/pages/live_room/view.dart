@@ -16,7 +16,7 @@ import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/scroll_physics.dart'
     show tabBarScrollPhysics;
 import 'package:kilikili/models/common/live/live_contribution_rank_type.dart';
-import 'package:kilikili/models_new/live/live_superchat/item.dart';
+import 'package:kilikili/pages/live_room/superchat/super_chat_state.dart';
 import 'package:kilikili/pages/danmaku/danmaku_model.dart';
 import 'package:kilikili/pages/live_room/contribution_rank/controller.dart';
 import 'package:kilikili/pages/live_room/contribution_rank/view.dart';
@@ -330,7 +330,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
               right: 0,
               child: TextButton(
                 onPressed: () {
-                  final item = SuperChatItem.random;
+                  final item = LiveSuperChatState.random;
                   _liveRoomController
                     ..fsSC.value = item
                     ..addDm(item);
@@ -360,12 +360,16 @@ class _LiveRoomPageState extends State<LiveRoomPage>
               }
               try {
                 Widget child = ExtraHitTestStack(
-                  key: ValueKey(item.id),
+                  key: ValueKey(item.data.id),
                   clipBehavior: Clip.none,
                   children: [
                     SuperChatCard(
                       item: item,
-                      onRemove: () => _liveRoomController.fsSC.value = null,
+                      onRemove: () {
+                        if (identical(_liveRoomController.fsSC.value, item)) {
+                          _liveRoomController.fsSC.value = null;
+                        }
+                      },
                       onReport: () => _liveRoomController.reportSC(item),
                     ),
                     Positioned(

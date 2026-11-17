@@ -222,15 +222,21 @@ void main() {
   }, skip: bridgeSkip);
 }
 
-/// 测试用 1024 位 RSA 公钥（SPKI PEM，JSON 里换行写成 \n）。
+/// 测试用 2048 位 RSA 公钥（SPKI PEM，JSON 里换行写成 \n）。
 ///
 /// 与任何线上密钥无关：生成于本测试，私钥随手丢弃——这里只需要"能加密"。
+///
+/// 必须是 2048 位：`parse_public_key` 自 issue #156 起拒绝更短的模数，
+/// 原先那把 1024 位的会在"公钥无法解析"下失败。
 const String _testPublicKeyJson =
     '-----BEGIN PUBLIC KEY-----\\n'
-    'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCucnGJO5zo6S/YFCsJ2qvvUKXt\\n'
-    'mTxqAQ1cbzmoce/MQWJVfAK9BM0gBpxlaxwoERVw6IhwQw/s0CoLU3jE+reyeCrr\\n'
-    'LYCYwoeUYsxs8pp6SbA6MNh+nxqE6Ccb/9zpW/n0vl/tkUwrElnCyV9LJy52M8/z\\n'
-    '2R7ZWiO6IbkUUDM9wwIDAQAB\\n'
+    'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuLA4LxGL6tJOSDBgRh2p\\n'
+    'UdYjs9amP4EiFBeKAxtyEDhahePDUoj085KG3FhIE+3hIUTBARhyrDzyMH37q470\\n'
+    'IqkrPtud4TMD1uWHymTIwZeDOajqFr0a/ws56sJB5fgRQQUBBhRz1hrY3e9qUgcq\\n'
+    'YRFejYZl3/3bCpmp5uIGGvR1anlrfcRKUbHqRtXgykX4PCffAH4nsE+uX+eqhNVN\\n'
+    'TWB5ADtjJCkzNf55zALa0SpkuPGzWzHoZYgEqQxzCcI08TifEU203iAVO5bp3GOS\\n'
+    's7uFUUrs+k0p1Jpc6LtUWdwZA15GWtbtRht7kD/CNfVrUmliJWnp1wnqpzqwlCKB\\n'
+    'PwIDAQAB\\n'
     '-----END PUBLIC KEY-----';
 
 class _SeenRequest {

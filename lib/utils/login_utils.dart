@@ -9,7 +9,6 @@ import 'package:kilikili/utils/accounts/account.dart';
 import 'package:kilikili/utils/linux_cookie_manager.dart';
 import 'package:kilikili/utils/request_utils.dart';
 import 'package:kilikili/utils/storage.dart';
-import 'package:kilikili/utils/storage_pref.dart';
 import 'package:kilikili/utils/utils.dart';
 import 'package:kilikili/services/rust/rust_user.dart';
 import 'package:collection/collection.dart';

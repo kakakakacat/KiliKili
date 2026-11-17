@@ -1,8 +1,10 @@
+import 'package:kilikili/utils/global_data.dart';
+
 import 'dart:async' show Timer;
 
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/selection_text.dart';
-import 'package:kilikili/models_new/live/live_superchat/item.dart';
+import 'package:kilikili/pages/live_room/superchat/super_chat_state.dart';
 import 'package:kilikili/pages/member/widget/medal_widget.dart';
 import 'package:kilikili/utils/app_scheme.dart';
 import 'package:kilikili/utils/color_utils.dart';
@@ -30,7 +32,7 @@ class SuperChatCard extends StatefulWidget {
     this.onReport,
   });
 
-  final SuperChatItem item;
+  final LiveSuperChatState item;
   final VoidCallback? onRemove;
   final bool persistentSC;
   final VoidCallback? onReport;
@@ -41,6 +43,7 @@ class SuperChatCard extends StatefulWidget {
 
 class _SuperChatCardState extends State<SuperChatCard> {
   Timer? _timer;
+  final _removal = LiveSuperChatRemoval();
   RxInt? _remains;
 
   @override
@@ -52,7 +55,7 @@ class _SuperChatCardState extends State<SuperChatCard> {
         return;
       }
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      final offset = widget.item.endTime - now;
+      final offset = widget.item.displayEndTime - now;
       if (offset > 0) {
         _remains = offset.obs;
         _startTimer();
@@ -64,11 +67,13 @@ class _SuperChatCardState extends State<SuperChatCard> {
 
   void _remove() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Timer(const Duration(seconds: 1), _onRemove);
+      if (!mounted) return;
+      _removal.schedule(_onRemove);
     });
   }
 
   void _onRemove() {
+    if (!mounted) return;
     widget
       ..item.expired = true
       ..onRemove?.call();
@@ -95,11 +100,12 @@ class _SuperChatCardState extends State<SuperChatCard> {
 
   @override
   void dispose() {
+    _removal.dispose();
     _cancelTimer();
     super.dispose();
   }
 
-  void _showMenu(Offset offset, SuperChatItem item) {
+  void _showMenu(Offset offset, LiveSuperChatState item) {
     final flag = _timer != null;
     if (flag) {
       _cancelTimer();
@@ -110,15 +116,47 @@ class _SuperChatCardState extends State<SuperChatCard> {
       items: [
         PopupMenuItem(
           height: 38,
-          onTap: () => Get.toNamed('/member?mid=${item.uid}'),
+          onTap: () => Get.toNamed('/member?mid=${item.data.uid}'),
           child: Text(
-            '访问: ${item.userInfo.uname}',
+            '访问: ${item.data.userInfo.uname}',
             style: const TextStyle(fontSize: 13),
           ),
         ),
         PopupMenuItem(
           height: 38,
-          onTap: () => Utils.copyText(Utils.jsonEncoder.convert(item.toJson())),
+          onTap: () => Utils.copyText(
+            Utils.jsonEncoder.convert({
+              'id': item.data.id,
+              'uid': item.data.uid,
+              'message': item.data.message,
+              'price': item.data.price,
+              'room_id': item.data.roomId,
+              'background_image': item.data.backgroundImage,
+              'background_color': item.data.backgroundColor,
+              'background_bottom_color': item.data.backgroundBottomColor,
+              'background_price_color': item.data.backgroundPriceColor,
+              'message_font_color': item.data.messageFontColor,
+              'start_time': item.data.startTime,
+              'end_time': item.data.endTime,
+              'token': item.data.token,
+              'ts': item.data.ts,
+              'user_info': {
+                'face': item.data.userInfo.face,
+                'face_frame': item.data.userInfo.faceFrame,
+                'uname': item.data.userInfo.uname,
+                'name_color': item.data.userInfo.nameColor,
+              },
+              if (item.data.medal case final medal?)
+                'medal': {
+                  'name': medal.name,
+                  'level': medal.level,
+                  'id': medal.id,
+                  'ruid': medal.ruid,
+                  'color_start': medal.colorStart,
+                  'color_text': medal.colorText,
+                },
+            }),
+          ),
           child: const Text(
             '复制 SC 信息',
             style: TextStyle(fontSize: 13),
@@ -158,22 +196,22 @@ class _SuperChatCardState extends State<SuperChatCard> {
 }
 
 Widget _build({
-  required SuperChatItem item,
-  Function(Offset, SuperChatItem)? showMenu,
+  required LiveSuperChatState item,
+  Function(Offset, LiveSuperChatState)? showMenu,
   RxInt? remains,
 }) {
-  final bottomColor = ColourUtils.parseColor(item.backgroundBottomColor);
+  final bottomColor = ColourUtils.parseColor(item.data.backgroundBottomColor);
   final border = BorderSide(color: bottomColor);
 
   Widget name = Text(
-    item.userInfo.uname,
+    item.data.userInfo.uname,
     maxLines: 1,
     overflow: .ellipsis,
     style: TextStyle(
-      color: ColourUtils.parseColor(item.userInfo.nameColor),
+      color: ColourUtils.parseColor(item.data.userInfo.nameColor),
     ),
   );
-  if (item.medalInfo case final medal?) {
+  if ((GlobalData().showMedal ? item.data.medal : null) case final medal?) {
     try {
       name = Row(
         spacing: 5,
@@ -192,7 +230,10 @@ Widget _build({
     }
   }
 
-  Widget price = Text("￥${item.price}", style: TextStyle(color: bottomColor));
+  Widget price = Text(
+    "￥${item.data.price}",
+    style: TextStyle(color: bottomColor),
+  );
   Widget? remains_;
   if (remains != null) {
     remains_ = Obx(
@@ -209,7 +250,7 @@ Widget _build({
         price,
         Text(
           DateFormatUtils.format(
-            item.startSime,
+            item.data.startTime,
             format: DateFormatUtils.longFormatDs,
           ),
           style: TextStyle(color: bottomColor, fontSize: 13.5),
@@ -221,14 +262,14 @@ Widget _build({
   Widget top = Container(
     decoration: BoxDecoration(
       borderRadius: const .vertical(top: .circular(8)),
-      color: ColourUtils.parseColor(item.backgroundColor),
+      color: ColourUtils.parseColor(item.data.backgroundColor),
       border: Border(top: border, left: border, right: border),
-      image: item.backgroundImage == null
+      image: item.data.backgroundImage == null
           ? null
           : DecorationImage(
               alignment: .topRight,
               image: CachedNetworkImageProvider(
-                ImageUtils.safeThumbnailUrl(item.backgroundImage),
+                ImageUtils.safeThumbnailUrl(item.data.backgroundImage),
               ),
             ),
     ),
@@ -236,7 +277,7 @@ Widget _build({
     child: Row(
       spacing: 12,
       children: [
-        _avatar(item.userInfo.face, item.userInfo.faceFrame),
+        _avatar(item.data.userInfo.face, item.data.userInfo.faceFrame),
         Expanded(
           child: Column(
             mainAxisSize: .min,
@@ -252,7 +293,7 @@ Widget _build({
   final Widget msg;
 
   final style = TextStyle(
-    color: ColourUtils.parseColor(item.messageFontColor),
+    color: ColourUtils.parseColor(item.data.messageFontColor),
     // decoration: widget.persistentSC && item.deleted
     //     ? .lineThrough
     //     : null,
@@ -278,13 +319,13 @@ Widget _build({
         ),
       ),
       child: SelectionText(
-        item.message,
+        item.data.message,
         contextMenuBuilder: scMenuBuilder,
         style: style,
       ),
     );
   } else {
-    msg = Text(item.message, style: style);
+    msg = Text(item.data.message, style: style);
   }
 
   return Column(
@@ -337,7 +378,7 @@ Widget _avatar(String face, String? faceFrame) {
   return avatar;
 }
 
-Future<void> _screenShot(BuildContext context, SuperChatItem item) async {
+Future<void> _screenShot(BuildContext context, LiveSuperChatState item) async {
   final image = await Screenshot.screenshot(
     context,
     Material(
@@ -351,7 +392,7 @@ Future<void> _screenShot(BuildContext context, SuperChatItem item) async {
   final bytes = await image.toByteData(format: .png);
   image.dispose();
   final picName =
-      'Bili_SuperChat_${item.roomid}_${item.userInfo.uname}_￥${item.price}_${item.id}';
+      'Bili_SuperChat_${item.data.roomId}_${item.data.userInfo.uname}_￥${item.data.price}_${item.data.id}';
   ImageUtils.saveByteImg(
     bytes: bytes!.buffer.asUint8List(),
     fileName: picName,

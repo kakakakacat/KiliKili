@@ -1,0 +1,318 @@
+{
+  "danmaku": {
+    "color": 9920249,
+    "ct": "AFFF4206",
+    "dm_type": 0,
+    "emotes": [
+      {
+        "emote": {
+          "emoticon_unique": "emoji_278",
+          "height": 20.0,
+          "is_official": false,
+          "url": "https://example.invalid/asset.png",
+          "width": 20.0
+        },
+        "key": "[热]"
+      }
+    ],
+    "id": "fixture-id_str",
+    "medal": {
+      "color_start": "#9660E5CC",
+      "color_text": "#FFFFFFFF",
+      "id": 1001,
+      "level": 29,
+      "name": "示例用户",
+      "ruid": 1001
+    },
+    "mid": 1001,
+    "mode": 0,
+    "name": "示例用户",
+    "reply": null,
+    "segments": [
+      {
+        "text": "白花300块",
+        "emote_index": null
+      },
+      {
+        "text": "[热]",
+        "emote_index": 0
+      }
+    ],
+    "text": "白花300块[热]",
+    "ts": 1723979200,
+    "uemote": null
+  },
+  "prefetch": [
+    {
+      "color": 16777215,
+      "ct": "18434F3D",
+      "dm_type": 0,
+      "emotes": [],
+      "id": "fixture-id_str",
+      "medal": {
+        "color_start": "#4775EFCC",
+        "color_text": "#FFFFFFFF",
+        "id": 1001,
+        "level": 27,
+        "name": "示例用户",
+        "ruid": 1001
+      },
+      "mid": 1001,
+      "mode": 1,
+      "name": "示例用户",
+      "reply": null,
+      "segments": [
+        {
+          "text": "‫",
+          "emote_index": null
+        }
+      ],
+      "text": "‫",
+      "ts": 1723669506,
+      "uemote": null
+    },
+    {
+      "color": 16777215,
+      "ct": "F65D229F",
+      "dm_type": 0,
+      "emotes": [],
+      "id": "fixture-id_str",
+      "medal": {
+        "color_start": "#4775EFCC",
+        "color_text": "#FFFFFFFF",
+        "id": 1001,
+        "level": 27,
+        "name": "示例用户",
+        "ruid": 1001
+      },
+      "mid": 1001,
+      "mode": 1,
+      "name": "示例用户",
+      "reply": null,
+      "segments": [
+        {
+          "text": "‫",
+          "emote_index": null
+        }
+      ],
+      "text": "‫",
+      "ts": 1723755906,
+      "uemote": null
+    },
+    {
+      "color": 16777215,
+      "ct": "1B75FB",
+      "dm_type": 0,
+      "emotes": [],
+      "id": "fixture-id_str",
+      "medal": null,
+      "mid": 1001,
+      "mode": 1,
+      "name": "示例用户",
+      "reply": null,
+      "segments": [
+        {
+          "text": "好帅",
+          "emote_index": null
+        }
+      ],
+      "text": "好帅",
+      "ts": 1723818808,
+      "uemote": null
+    },
+    {
+      "color": 16777215,
+      "ct": "D6ABF2E7",
+      "dm_type": 0,
+      "emotes": [],
+      "id": "fixture-id_str",
+      "medal": null,
+      "mid": 1001,
+      "mode": 1,
+      "name": "示例用户",
+      "reply": null,
+      "segments": [
+        {
+          "text": "好帅",
+          "emote_index": null
+        }
+      ],
+      "text": "好帅",
+      "ts": 1723818916,
+      "uemote": null
+    },
+    {
+      "color": 16777215,
+      "ct": "1B6978C1",
+      "dm_type": 0,
+      "emotes": [],
+      "id": "fixture-id_str",
+      "medal": null,
+      "mid": 1001,
+      "mode": 1,
+      "name": "示例用户",
+      "reply": null,
+      "segments": [
+        {
+          "text": "好帅",
+          "emote_index": null
+        }
+      ],
+      "text": "好帅",
+      "ts": 1723819011,
+      "uemote": null
+    },
+    {
+      "color": 16777215,
+      "ct": "143613AF",
+      "dm_type": 0,
+      "emotes": [],
+      "id": "fixture-id_str",
+      "medal": null,
+      "mid": 1001,
+      "mode": 1,
+      "name": "示例用户",
+      "reply": null,
+      "segments": [
+        {
+          "text": "好帅",
+          "emote_index": null
+        }
+      ],
+      "text": "好帅",
+      "ts": 1723819141,
+      "uemote": null
+    },
+    {
+      "color": 16777215,
+      "ct": "3917D4D7",
+      "dm_type": 0,
+      "emotes": [],
+      "id": "fixture-id_str",
+      "medal": null,
+      "mid": 1001,
+      "mode": 1,
+      "name": "示例用户",
+      "reply": null,
+      "segments": [
+        {
+          "text": "赚麻了 哈哈",
+          "emote_index": null
+        }
+      ],
+      "text": "赚麻了 哈哈",
+      "ts": 1723827649,
+      "uemote": null
+    },
+    {
+      "color": 16777215,
+      "ct": "8B947ABC",
+      "dm_type": 0,
+      "emotes": [],
+      "id": "fixture-id_str",
+      "medal": {
+        "color_start": "#4775EFCC",
+        "color_text": "#FFFFFFFF",
+        "id": 1001,
+        "level": 27,
+        "name": "示例用户",
+        "ruid": 1001
+      },
+      "mid": 1001,
+      "mode": 1,
+      "name": "示例用户",
+      "reply": null,
+      "segments": [
+        {
+          "text": "‫",
+          "emote_index": null
+        }
+      ],
+      "text": "‫",
+      "ts": 1723842307,
+      "uemote": null
+    },
+    {
+      "color": 16777215,
+      "ct": "9BD05026",
+      "dm_type": 0,
+      "emotes": [],
+      "id": "fixture-id_str",
+      "medal": null,
+      "mid": 1001,
+      "mode": 1,
+      "name": "示例用户",
+      "reply": null,
+      "segments": [
+        {
+          "text": "下播啦~ 感谢大家的陪伴~ 下次见哦~",
+          "emote_index": null
+        }
+      ],
+      "text": "下播啦~ 感谢大家的陪伴~ 下次见哦~",
+      "ts": 1723910856,
+      "uemote": null
+    },
+    {
+      "color": 16777215,
+      "ct": "8A379FF4",
+      "dm_type": 0,
+      "emotes": [],
+      "id": "fixture-id_str",
+      "medal": {
+        "color_start": "#4775EFCC",
+        "color_text": "#FFFFFFFF",
+        "id": 1001,
+        "level": 27,
+        "name": "示例用户",
+        "ruid": 1001
+      },
+      "mid": 1001,
+      "mode": 1,
+      "name": "示例用户",
+      "reply": null,
+      "segments": [
+        {
+          "text": "‫",
+          "emote_index": null
+        }
+      ],
+      "text": "‫",
+      "ts": 1723928705,
+      "uemote": null
+    }
+  ],
+  "super_chat": {
+    "background_bottom_color": "#2A60B2",
+    "background_color": "#EDF5FF",
+    "background_image": "https://example.invalid/asset.png",
+    "background_price_color": "#7497CD",
+    "end_time": 1677069095,
+    "id": 1001,
+    "medal": null,
+    "message": "猪播完美预测自己第一个死，这就是鹅鸭杀高玩吗",
+    "message_font_color": "#A3F6FF",
+    "price": 30,
+    "room_id": 42,
+    "start_time": 1677069035,
+    "token": "fixture-token",
+    "ts": 1677069035,
+    "uid": 1001,
+    "user_info": {
+      "face": "https://example.invalid/asset.png",
+      "face_frame": "https://example.invalid/asset.png",
+      "name_color": "#00D1F1",
+      "uname": "示例用户"
+    }
+  },
+  "token": {
+    "servers": [
+      "wss://broadcast.example.invalid:2245/sub",
+      "wss://broadcast.example.invalid:2245/sub",
+      "wss://broadcast.example.invalid:2245/sub",
+      "wss://broadcast.example.invalid:2245/sub",
+      "wss://broadcast.example.invalid:2245/sub"
+    ],
+    "token": "fixture-token"
+  }
+}

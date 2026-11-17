@@ -16,6 +16,17 @@
 //!
 //! 明文密码只作为 [`login_by_password`] 的参数出现，不进任何结构体，
 //! 因此不会被 FRB 生成的 `Debug`/日志打到。
+//!
+//! ## `Redacted` 的保证到此为止
+//!
+//! 本模块的 `LoginTokensData`、`QrPollState`、`PasswordLoginState` 等导出
+//! 结构里装的是**明文**凭据，并且为了 FRB 派生了 `Debug`。这是设计使然，
+//! 不是疏漏：跨 FFI 只能给明文。但也因此，领域层那层"打印即 `<redacted>`"
+//! 的保护在这条边之后就没有了。
+//!
+//! **这些类型不得进入任何日志宏**——`tracing::debug!(?state)`、
+//! `dbg!`、`println!` 一概不行。写下这条是为了让将来某次"顺手加条日志"
+//! 能被认出是回归，而不是被当成新功能（issue #156）。
 
 use std::fmt;
 use std::sync::OnceLock;

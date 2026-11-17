@@ -368,12 +368,12 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (item.cooperators?.isNotEmpty == true) ...[
+        if (item.cooperators.isNotEmpty) ...[
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               spacing: 25,
-              children: item.cooperators!.map((e) {
+              children: item.cooperators.map((e) {
                 return upInfo(e.mid!, e.avatar!, e.nickName!, role: e.role);
               }).toList(),
             ),

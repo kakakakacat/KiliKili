@@ -6,7 +6,6 @@ import 'package:kilikili/http/search.dart';
 import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/models_new/video/video_detail/dimension.dart';
 import 'package:kilikili/services/rust/rust_history.dart';
-import 'package:kilikili/pages/common/multi_select/id_based.dart';
 import 'package:kilikili/pages/later/controller.dart';
 import 'package:kilikili/utils/duration_utils.dart';
 import 'package:kilikili/utils/page_utils.dart';
@@ -150,7 +149,9 @@ class VideoCardHLater extends StatelessWidget {
                 progress: progress == -1 ? 1 : progress / duration,
               ),
             ),
-          Positioned.fill(child: selectMask(colorScheme, ctr.isChecked(videoItem))),
+          Positioned.fill(
+            child: selectMask(colorScheme, ctr.isChecked(videoItem)),
+          ),
         ],
         metaBuilder: isPgc && videoItem.subtitle?.isNotEmpty == true
             ? (context, colors) => [

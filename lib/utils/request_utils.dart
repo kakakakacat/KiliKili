@@ -11,7 +11,6 @@ import 'package:kilikili/grpc/im.dart';
 import 'package:kilikili/http/dynamics.dart';
 import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/http/validate.dart';
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/models/login/model.dart';

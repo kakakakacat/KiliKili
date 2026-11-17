@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:kilikili/services/rust/rust_user.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:get/get.dart';
 

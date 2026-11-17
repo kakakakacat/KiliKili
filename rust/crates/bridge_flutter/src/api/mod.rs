@@ -7,6 +7,7 @@ pub mod grpc;
 pub mod history;
 pub mod init;
 pub mod live;
+pub mod live_danmaku;
 pub mod login;
 pub mod media_select;
 pub mod misc;

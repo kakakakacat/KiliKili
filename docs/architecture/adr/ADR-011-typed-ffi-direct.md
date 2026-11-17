@@ -474,6 +474,9 @@ S6 #56 与 S7 #57），**但借不成**：
 `test/services/rust/follow_parity_test.dart` 是转写的那种，寿命仍按补充二
 （随 S6/S7 删掉 `lib/models_new/follow/` 的那个 PR 一起删）。
 
+S6/S7（#56、#57）迁完其余生产者后，上述模型、`follow_compat.dart`
+与这份一次性 parity 一起删除；冻结的 Rust fixture 与 golden 保留。
+
 `sponsor_block_parity_test.dart` 之所以能直接 import，是因为
 `SegmentItemModel` 的闭包是纯数据——这是运气，不是通例。
 
@@ -536,3 +539,20 @@ Rust 自己转。
 只要它**有一个消费者已经在 Rust 这边**，且算错的代价不对称（写操作、
 取流这类），就该先搬过去，两份实现靠 golden 拴住。等所有消费者迁完是
 更干净，但那是把风险留在风险最大的那条路径上。
+
+## S6/S7（#56、#57）的宿主边界补充
+
+登录用户资料的缓存由 Rust 序列化成 JSON，Hive 只负责存取字符串。
+旧 `userInfo` 盒保存的是已删除适配器的二进制帧，不能用新类型打开；
+改用 `userInfoJson` 并删除旧盒，升级后首次资料显示等待 nav 返回。
+这是经确认的一次性缓存失效，不涉及登录凭据、设置或观看进度的清除。
+
+历史与稍后再看的选中态由控制器按 id 保存，条目直接消费不可变 FRB 类型。
+原 `MultiSelectData` 多态层还有其他切片的消费者，暂不整体替换；最后一个
+消费者迁移时删除旧多选层。`SpaceArchiveItem`、`SpaceWebVideoModel` 同样
+仅保留无 `fromJson` 的视图适配，服务于共享的视频卡片基类，随该宿主基类
+一起删除。它们不承担响应解析或业务算法。
+
+专栏与音频的共用卡片接收标量，避免为了复用 Widget 把 Rust 结构还原成
+旧响应模型。动态列表与动态搜索依赖的共享动态模型由 #150 处理；不在空间
+切片中保留另一份取数实现。

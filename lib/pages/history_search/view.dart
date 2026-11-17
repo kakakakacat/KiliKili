@@ -1,5 +1,4 @@
-import 'package:kilikili/models_new/history/data.dart';
-import 'package:kilikili/models_new/history/list.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/pages/common/search/common_search_page.dart';
 import 'package:kilikili/pages/history/widgets/item.dart';
 import 'package:kilikili/pages/history_search/controller.dart';
@@ -17,7 +16,7 @@ class HistorySearchPage extends StatefulWidget {
 
 class _HistorySearchPageState
     extends
-        CommonSearchPageState<HistorySearchPage, HistoryData, HistoryItemModel>
+        CommonSearchPageState<HistorySearchPage, HistoryPage, HistoryItem>
     with GridMixin {
   @override
   final HistorySearchController controller = Get.put(
@@ -26,7 +25,7 @@ class _HistorySearchPageState
   );
 
   @override
-  Widget buildList(List<HistoryItemModel> list) {
+  Widget buildList(List<HistoryItem> list) {
     return SliverGrid.builder(
       gridDelegate: coverGridDelegate,
       itemBuilder: (context, index) {
@@ -34,7 +33,7 @@ class _HistorySearchPageState
           controller.onLoadMore();
         }
         final item = list[index];
-        return HistoryItem(
+        return HistoryItemCard(
           item: item,
           ctr: controller,
           onDelete: (kid, business) =>

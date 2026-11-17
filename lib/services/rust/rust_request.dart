@@ -12,13 +12,17 @@ import 'package:kilikili/utils/accounts/api_type.dart';
 /// 一遍的话，账号头一旦变化就会只改一处。
 abstract final class RustRequest {
   /// 账号头 + 拦截器会补上的那几条。
-  static List<(String, String)> headersFor(Account account) => [
+  static List<(String, String)> headersFor(
+    Account account, {
+    String referer = HttpString.baseUrl,
+    String userAgent = 'Dart/3.6 (dart:io)',
+  }) => [
     ...account.headers.entries.map((e) => (e.key, e.value)),
     // 拦截器对未显式设置 referer 的请求补这一条
     // （lib/utils/accounts/account_manager/account_mgr.dart）。
-    ('referer', HttpString.baseUrl),
+    ('referer', referer),
     // 基线 BaseOptions 里带的两条。Http2Adapter 不会自动补 UA。
-    ('user-agent', 'Dart/3.6 (dart:io)'),
+    ('user-agent', userAgent),
     ('accept-encoding', 'br,gzip'),
   ];
 

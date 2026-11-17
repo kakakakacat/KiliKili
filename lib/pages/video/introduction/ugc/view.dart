@@ -21,7 +21,7 @@ import 'package:kilikili/models_new/video/video_detail/desc_v2.dart';
 import 'package:kilikili/models_new/video/video_detail/episode.dart';
 import 'package:kilikili/models_new/video/video_detail/staff.dart';
 import 'package:kilikili/models_new/video/video_detail/stat.dart';
-import 'package:kilikili/models_new/video/video_tag/data.dart';
+import 'package:kilikili/services/rust/rust_user.dart' show VideoTag;
 import 'package:kilikili/pages/mine/controller.dart';
 import 'package:kilikili/pages/search/widgets/search_text.dart';
 import 'package:kilikili/pages/video/controller.dart';
@@ -448,7 +448,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
   Widget followButton(BuildContext context) {
     return Obx(
       () {
-        int attr = introController.followStatus.value.attribute ?? 0;
+        int attr = introController.followAttr.value ?? 0;
         return TextButton(
           onPressed: () => introController.actionRelationMod(context),
           style: TextButton.styleFrom(
@@ -911,40 +911,40 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     onSecondaryTap:
         PlatformUtils.isDesktop && introController.horizontalMemberPage
         ? () => Get.toNamed(
-            '/member?mid=${introController.userStat.value.card?.mid}&from_view_aid=${videoDetailCtr.aid}',
+            '/member?mid=${introController.userStat.value?.mid}&from_view_aid=${videoDetailCtr.aid}',
           )
         : null,
     child: Obx(
       () {
         final userStat = introController.userStat.value;
-        final isVip = (userStat.card?.vip?.status ?? 0) > 0;
+        final isVip = (userStat?.vipStatus ?? 0) > 0;
         return Row(
           spacing: 10,
           mainAxisSize: .min,
           children: [
             PendantAvatar(
-              userStat.card?.face,
+              userStat?.face,
               size: 35,
               badgeSize: 14,
-              vipStatus: userStat.card?.vip?.status,
-              officialType: userStat.card?.official?.type,
+              vipStatus: userStat?.vipStatus,
+              officialType: userStat?.officialType,
             ),
             Column(
               crossAxisAlignment: .start,
               children: [
                 Text(
-                  userStat.card?.name ?? "",
+                  userStat?.name ?? "",
                   maxLines: 1,
                   overflow: .ellipsis,
                   style: TextStyle(
                     fontSize: 13,
-                    color: isVip && userStat.card?.vip?.type == 2
+                    color: isVip && userStat?.vipType == 2
                         ? colorScheme.vipColor
                         : null,
                   ),
                 ),
                 Text(
-                  '${NumUtils.numFormat(userStat.follower)}粉丝    ${'${NumUtils.numFormat(userStat.archiveCount)}视频'}',
+                  '${NumUtils.numFormat(userStat?.follower)}粉丝    ${'${NumUtils.numFormat(userStat?.archiveCount)}视频'}',
                   style: TextStyle(fontSize: 12, color: colorScheme.outline),
                 ),
               ],
@@ -1025,7 +1025,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     ),
   );
 
-  Widget _buildTags(List<VideoTagItem> tags) {
+  Widget _buildTags(List<VideoTag> tags) {
     return Padding(
       padding: const .only(top: 8),
       child: Wrap(

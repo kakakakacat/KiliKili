@@ -238,7 +238,10 @@ class DynamicPanel extends StatelessWidget {
         spacing: 5,
         mainAxisAlignment: .center,
         children: [
-          avatars(colorScheme: theme.colorScheme, users: users),
+          avatars(
+            colorScheme: theme.colorScheme,
+            faces: users.map((e) => e.face),
+          ),
           child,
         ],
       );

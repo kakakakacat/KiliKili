@@ -1,0 +1,27 @@
+{
+  "code": 0,
+  "data": {
+    "count": 1,
+    "lists_count": 0,
+    "item": [
+      {
+        "title": "脱敏专栏",
+        "stats": {
+          "view": 242794,
+          "favorite": 282,
+          "like": 3099,
+          "dislike": 3,
+          "reply": 241,
+          "share": 2,
+          "coin": 64,
+          "dynamic": 0
+        },
+        "origin_image_urls": [
+          "https://example.invalid/article.jpg"
+        ],
+        "uri": "bilibili://article/100",
+        "publish_time_text": "11月2日"
+      }
+    ]
+  }
+}

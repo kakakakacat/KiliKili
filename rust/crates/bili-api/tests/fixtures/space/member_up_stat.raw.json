@@ -1,0 +1,10 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "archive": { "view": 9876543 },
+    "article": { "view": 2345 },
+    "likes": 654321
+  }
+}

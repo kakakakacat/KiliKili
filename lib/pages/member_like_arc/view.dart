@@ -5,7 +5,7 @@ import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/member/coin_like_arc/item.dart';
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/pages/member_coin_arc/widgets/item.dart';
 import 'package:kilikili/pages/member_like_arc/controller.dart';
 import 'package:kilikili/utils/accounts.dart';

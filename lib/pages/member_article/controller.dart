@@ -1,18 +1,17 @@
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/member.dart';
-import 'package:kilikili/models_new/space/space_article/data.dart';
-import 'package:kilikili/models_new/space/space_article/item.dart';
+
 import 'package:kilikili/pages/common/common_list_controller.dart';
 
 class MemberArticleCtr
-    extends CommonListController<SpaceArticleData, SpaceArticleItem> {
+    extends CommonListController<SpaceArticlePage, SpaceArticleItem> {
   MemberArticleCtr({
     required this.mid,
   });
 
   final int mid;
 
-  int count = -1;
+  int? count;
 
   @override
   void onInit() {
@@ -21,19 +20,19 @@ class MemberArticleCtr
   }
 
   @override
-  List<SpaceArticleItem>? getDataList(SpaceArticleData response) {
-    count = response.count ?? -1;
-    return response.item;
+  List<SpaceArticleItem>? getDataList(SpaceArticlePage response) {
+    count = response.count;
+    return response.items;
   }
 
   @override
   void checkIsEnd(int length) {
-    if (length >= count) {
+    if (spaceArticleIsEnd(loadedCount: length, totalCount: count)) {
       isEnd = true;
     }
   }
 
   @override
-  Future<LoadingState<SpaceArticleData>> customGetData() =>
-      MemberHttp.spaceArticle(mid: mid, page: page);
+  Future<LoadingState<SpaceArticlePage>> customGetData() =>
+      RustSpace.article(mid: mid, page: page);
 }

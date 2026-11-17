@@ -1,0 +1,25 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "has_more": 1,
+    "info": { "page": 1, "now": 1762000000 },
+    "guard_top_list": [
+      {
+        "uid": 300000201,
+        "username": "示例总督",
+        "face": "//i1.example.test/bfs/face/wwwwwwww.jpg",
+        "guard_level": 1,
+        "medal_info": { "medal_name": "示例粉丝牌", "medal_level": 25 }
+      },
+      {
+        "uid": 300000202,
+        "username": "示例舰长",
+        "face": "//i1.example.test/bfs/face/xxxxxxxx.jpg",
+        "guard_level": 3
+      },
+      { "uid": 300000203 }
+    ]
+  }
+}

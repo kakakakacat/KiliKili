@@ -1,12 +1,11 @@
-import 'package:kilikili/http/member.dart';
-import 'package:kilikili/models_new/follow/data.dart';
-import 'package:kilikili/models_new/follow/list.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_space.dart';
+import 'package:kilikili/services/rust/rust_misc.dart' show FollowList, FollowUser;
 import 'package:kilikili/utils/accounts.dart';
 import 'package:get/get.dart';
 
 abstract class FollowTypeController
-    extends CommonListController<FollowData, FollowItemModel> {
+    extends CommonListController<FollowList, FollowUser> {
   late final int mid;
   late final RxnString name;
 
@@ -31,12 +30,12 @@ abstract class FollowTypeController
   }
 
   Future<void> queryUserName() async {
-    final res = await MemberHttp.memberCardInfo(mid: mid);
-    name.value = res.dataOrNull?.card?.name;
+    final res = await RustSpace.memberCard(mid: mid);
+    name.value = res.dataOrNull?.name;
   }
 
   @override
-  List<FollowItemModel>? getDataList(FollowData response) {
+  List<FollowUser>? getDataList(FollowList response) {
     total.value = response.total ?? 0;
     return response.list;
   }

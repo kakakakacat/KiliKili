@@ -1,0 +1,10 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": [
+    { "tag_id": 100001, "tag_name": "示例标签", "tag_type": "old_channel", "music_id": "" },
+    { "tag_id": 100002, "tag_name": "发现示例曲", "tag_type": "bgm", "music_id": "MA000000000000" },
+    { "tag_id": 100003, "tag_name": "示例话题", "tag_type": "topic", "music_id": "" }
+  ]
+}

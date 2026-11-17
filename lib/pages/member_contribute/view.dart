@@ -1,7 +1,7 @@
 import 'package:kilikili/common/widgets/hit_test.dart';
 import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/models/common/member/contribute_type.dart';
-import 'package:kilikili/models_new/space/space/tab2.dart';
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/pages/member_article/view.dart';
 import 'package:kilikili/pages/member_audio/view.dart';
 import 'package:kilikili/pages/member_comic/view.dart';
@@ -138,14 +138,14 @@ class _MemberContributeState extends State<MemberContribute>
         type: ContributeType.season,
         heroTag: widget.heroTag,
         mid: widget.mid,
-        seasonId: item.seasonId,
+        seasonId: item.seasonId?.toInt(),
         title: item.title,
       ),
       'series' => MemberVideo(
         type: ContributeType.series,
         heroTag: widget.heroTag,
         mid: widget.mid,
-        seriesId: item.seriesId,
+        seriesId: item.seriesId?.toInt(),
         title: item.title,
       ),
       'ugcSeason' => SeasonSeriesPage(

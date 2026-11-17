@@ -142,6 +142,37 @@ pub fn unwrap_envelope<T: serde::de::DeserializeOwned>(body: &str) -> Result<T, 
         .ok_or_else(|| DomainError::new(ErrorKind::Protocol, "code 为 0 但 data 缺失"))
 }
 
+/// 解开信封，但允许 `code == 0` 且 `data` 为 `null`。
+///
+/// [`unwrap_envelope`] 把「成功却没有数据」当成协议变更的信号，对绝大多数
+/// 接口是对的。少数接口**正常就会**给 `null`：关注分组清单（一个组都没建）、
+/// 某个分组下的人（组是空的）——基线对这两条写的正是 `data as List?` 加一个
+/// 空列表兜底，把它们判成协议错误会让「空列表」变成一句红色报错。
+///
+/// 返回 `Ok(None)` 表示「请求成功，服务端明确说没有」。调用方自己决定那
+/// 是不是空列表——**不要**在这里替它 `unwrap_or_default`，有的接口的 `null`
+/// 和 `[]` 含义并不相同。
+///
+/// # Errors
+/// 前两类与 [`unwrap_envelope`] 相同；第三类不再是错误。
+pub fn unwrap_envelope_nullable<T: serde::de::DeserializeOwned>(
+    body: &str,
+) -> Result<Option<T>, DomainError> {
+    let env: RawEnvelope<T> = serde_json::from_str(body).map_err(|e| {
+        DomainError::new(ErrorKind::Protocol, format!("响应不是预期的信封结构: {e}"))
+    })?;
+
+    if env.code != 0 {
+        return Err(RemoteFailure {
+            code: env.code,
+            message: env.message,
+        }
+        .into_domain_error());
+    }
+
+    Ok(env.data)
+}
+
 /// 解开载荷在 `result` 里的信封。语义与 [`unwrap_envelope`] 完全一致，
 /// 只是键名不同。
 ///

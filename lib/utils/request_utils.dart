@@ -11,22 +11,21 @@ import 'package:kilikili/grpc/im.dart';
 import 'package:kilikili/http/dynamics.dart';
 import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/member.dart';
-import 'package:kilikili/http/user.dart';
 import 'package:kilikili/http/validate.dart';
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/models/login/model.dart';
 import 'package:kilikili/models_new/fav/fav_detail/media.dart';
-import 'package:kilikili/models_new/later/list.dart';
-import 'package:kilikili/models_new/relation/data.dart';
+import 'package:kilikili/pages/common/multi_select/id_based.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/pages/common/multi_select/base.dart';
 import 'package:kilikili/pages/dynamics_tab/controller.dart';
 import 'package:kilikili/pages/fav_detail/controller.dart'
     show BaseFavController;
 import 'package:kilikili/pages/group_panel/view.dart';
 import 'package:kilikili/pages/login/geetest/geetest_webview_dialog.dart';
-import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/services/rust/rust_dynamic.dart';
+import 'package:kilikili/services/rust/rust_relation.dart';
+import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/extension/context_ext.dart';
 import 'package:kilikili/utils/extension/size_ext.dart';
@@ -39,6 +38,7 @@ import 'package:kilikili/utils/storage_key.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:kilikili/utils/theme_utils.dart';
 import 'package:kilikili/utils/utils.dart';
+import 'package:kilikili/services/rust/rust_user.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -51,7 +51,7 @@ abstract final class RequestUtils {
     if (!account.isLogin) {
       return;
     }
-    final res = await UserHttp.historyStatus(account: account);
+    final res = await RustHistory.historyStatus(account: account);
     if (res case Success(:final response)) {
       GStorage.localCache.put(LocalCacheKey.historyPause, response);
     }
@@ -122,7 +122,7 @@ abstract final class RequestUtils {
       ),
     );
     if (onCreate) {
-      final res = await MemberHttp.createFollowTag(tagName);
+      final res = await RustRelation.createFollowTag(tagName);
       if (res case Success(:final response)) {
         onSuccess((tagid: response, tagName: tagName));
         SmartDialog.showToast('创建成功');
@@ -137,7 +137,7 @@ abstract final class RequestUtils {
     required dynamic mid,
     required bool isFollow,
     required ValueChanged<int>? afterMod,
-    RelationData? followStatus,
+    Relation? followStatus,
   }) async {
     if (mid == null) {
       return;
@@ -157,7 +157,7 @@ abstract final class RequestUtils {
       }
     } else {
       if (followStatus?.tag == null) {
-        final res = await UserHttp.userRelation(mid);
+        final res = await RustRelation.userRelation(mid);
         if (res case Success(:final response)) {
           followStatus = response;
         } else {
@@ -168,6 +168,9 @@ abstract final class RequestUtils {
 
       if (context.mounted) {
         bool isSpecialFollowed = followStatus!.special == 1;
+        // Rust 侧的 `Relation` 是不可变的（`tag` 还是 `Int64List`）。分组
+        // 面板选完要把新分组带给下一次打开，所以这里取一份界面侧的可变副本。
+        List<int>? tags = followStatus.tag?.toList();
         String text = isSpecialFollowed ? '移除特别关注' : '加入特别关注';
         showDialog(
           context: context,
@@ -178,7 +181,7 @@ abstract final class RequestUtils {
               DialogOption(
                 onPressed: () async {
                   Get.back();
-                  final res = await MemberHttp.specialAction(
+                  final res = await RustRelation.specialAction(
                     fid: mid,
                     isAdd: !isSpecialFollowed,
                   );
@@ -217,7 +220,7 @@ abstract final class RequestUtils {
                         builder: (context, scrollController) {
                           return GroupPanel(
                             mid: mid,
-                            tags: followStatus!.tag,
+                            tags: tags,
                             scrollController: scrollController,
                           );
                         },
@@ -225,7 +228,7 @@ abstract final class RequestUtils {
                     },
                   );
                   if (result != null) {
-                    followStatus!.tag = result.toList();
+                    tags = result.toList();
                     afterMod?.call(result.contains(-10) ? -10 : 2);
                   }
                 },
@@ -433,6 +436,97 @@ abstract final class RequestUtils {
     }
   }
 
+  /// 把选中的稍后再看复制/移动进某个收藏夹（S7 #57）。
+  ///
+  /// 与下面那个泛型版本**几乎一样**，分开是因为稍后再看的列表项已经是
+  /// Rust 的不可变结构、选中态按 id 记，而泛型那版依赖
+  /// `MultiSelectData.checked` 与对象相等。收藏夹那片迁到 Rust 之后两者
+  /// 应当合并，届时删掉泛型那版——**别在这期间给它加第三个分支**。
+  static void onCopyOrMoveLater({
+    required BuildContext context,
+    required bool isCopy,
+    required IdMultiSelectMixin<LaterPage, LaterItem, int> ctr,
+    required dynamic mid,
+  }) {
+    FavHttp.allFavFolders(mid).then((res) {
+      if (!context.mounted) return;
+      if (res case Success(:final response)) {
+        final list = response.list;
+        if (list == null || list.isEmpty) return;
+        int? checkedId;
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text('${isCopy ? '复制' : '移动'}到'),
+              contentPadding: const EdgeInsets.only(top: 5),
+              content: SingleChildScrollView(
+                child: RadioGroup(
+                  onChanged: (value) {
+                    checkedId = value;
+                    (context as Element).markNeedsBuild();
+                  },
+                  groupValue: checkedId,
+                  child: Column(
+                    children: list.map((item) {
+                      return RadioListTile<int>(
+                        dense: true,
+                        title: Text(item.title),
+                        value: item.id,
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: Get.back,
+                  child: Text(
+                    '取消',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    if (checkedId == null) return;
+                    final removed = ctr.allChecked.map(ctr.idOf).toSet();
+                    SmartDialog.showLoading();
+                    FavHttp.copyOrMoveFav(
+                      isCopy: isCopy,
+                      isFav: false,
+                      srcMediaId: null,
+                      tarMediaId: checkedId,
+                      resources: removed.join(','),
+                      mid: isCopy ? mid : null,
+                    ).then((res) {
+                      if (res.isSuccess) {
+                        ctr.handleSelect(checked: false);
+                        if (!isCopy) {
+                          ctr.afterDeleteIds(removed);
+                        }
+                        SmartDialog.dismiss();
+                        SmartDialog.showToast('${isCopy ? '复制' : '移动'}成功');
+                        Get.back();
+                      } else {
+                        SmartDialog.dismiss();
+                        res.toast();
+                      }
+                    });
+                  },
+                  child: const Text('确认'),
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        res.toast();
+      }
+    });
+  }
+
   static void onCopyOrMove<T extends MultiSelectData>({
     required BuildContext context,
     required bool isCopy,
@@ -496,7 +590,6 @@ abstract final class RequestUtils {
                         resources: removeList
                             .map(
                               (e) => switch (e) {
-                                LaterItemModel _ => e.aid,
                                 FavDetailItemModel _ => '${e.id}:${e.type}',
                                 _ => throw UnsupportedError(e.toString()),
                               },
@@ -607,7 +700,11 @@ abstract final class RequestUtils {
   }
 
   static Future<void> showUserRealName(String mid) async {
-    final res = await UserHttp.getUserRealName(mid);
+    // 基线这里收的是字符串 mid（路由参数直给）。Rust 侧的签名是 i64——
+    // 协议上它就是个数字，让类型在边界处收紧，解析不出来就不发请求。
+    final id = int.tryParse(mid);
+    if (id == null) return;
+    final res = await RustUser.getUserRealName(id);
     if (res case Success(:final response)) {
       final show = !response.name.isNullOrEmpty;
       showDialog(

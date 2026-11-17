@@ -1,0 +1,53 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "count": 3,
+    "episodic_button": {
+      "text": "继续播放",
+      "uri": "bilibili://music/playlist/spacepage/100001?desc=1&oid=100200300&page_type=1&sort_field=1"
+    },
+    "has_next": false,
+    "has_prev": true,
+    "next": 0,
+    "item": [
+      {
+        "title": "充电专属的那一条",
+        "cover": "https://i0.hdslb.com/bfs/archive/xxxx.jpg",
+        "uri": "bilibili://video/100200300",
+        "param": "100200300",
+        "goto": "av",
+        "bvid": "BV1xx411c7xx",
+        "first_cid": 900100,
+        "duration": 612,
+        "play": 1234,
+        "danmaku": 56,
+        "author": "用户01",
+        "publish_time_text": "3月4日",
+        "badges": [{ "text": "充电专属" }, { "text": "" }, { "text": "合作" }],
+        "is_steins": false,
+        "is_cooperation": true,
+        "is_pgc": false,
+        "is_pugv": false,
+        "history": { "progress": 120, "duration": 612 }
+      },
+      {
+        "title": "合集里的那一条",
+        "cover": "https://i0.hdslb.com/bfs/archive/yyyy.jpg",
+        "param": "100200301",
+        "goto": "av",
+        "season": { "mtime": 1735660800 },
+        "history": { "progress": 612, "duration": 612 }
+      },
+      {
+        "title": "一本漫画",
+        "cover": "https://i0.hdslb.com/bfs/manga/zzzz.jpg",
+        "param": "28888",
+        "goto": "comic",
+        "styles": "热血",
+        "label": "已完结"
+      }
+    ]
+  }
+}

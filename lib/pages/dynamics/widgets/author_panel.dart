@@ -8,7 +8,7 @@ import 'package:kilikili/common/widgets/pendant_avatar.dart';
 import 'package:kilikili/common/widgets/translucent_row.dart';
 import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/user.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/pages/dynamics/controller.dart';
 import 'package:kilikili/pages/save_panel/view.dart';
@@ -27,6 +27,7 @@ import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/request_utils.dart';
 import 'package:kilikili/utils/share_utils.dart';
 import 'package:kilikili/utils/storage_pref.dart';
+import 'package:kilikili/services/rust/rust_user.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -299,7 +300,7 @@ class AuthorPanel extends StatelessWidget {
                 ListTile(
                   onTap: () {
                     Get.back();
-                    UserHttp.toViewLater(bvid: bvid);
+                    RustHistory.toViewLater(bvid: bvid);
                   },
                   minLeadingWidth: 0,
                   leading: const Icon(Icons.watch_later_outlined, size: 19),
@@ -639,7 +640,7 @@ class AuthorPanel extends StatelessWidget {
                             reSrc: 11,
                           );
                         }
-                        return UserHttp.dynamicReport(
+                        return RustUser.dynamicReport(
                           mid: moduleAuthor.mid!,
                           dynId: item.idStr,
                           reasonType: reasonType,

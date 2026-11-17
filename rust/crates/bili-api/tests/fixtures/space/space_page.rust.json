@@ -1,0 +1,297 @@
+{
+  "archive": {
+    "count": 938,
+    "items": [
+      {
+        "author": "用户01",
+        "badges": [],
+        "bvid": "BV1kZWX62ENY",
+        "cid": 43538251892,
+        "cover": "http://i2.hdslb.com/bfs/archive/xxxx.jpg",
+        "danmaku": 89126,
+        "duration": 1140,
+        "goto": "av",
+        "history": null,
+        "is_cooperation": false,
+        "is_pgc": false,
+        "is_pugv": false,
+        "is_steins": false,
+        "label": null,
+        "param": "117602311476853",
+        "play": 6464950,
+        "publish_time_text": "11月12日",
+        "season_mtime": null,
+        "styles": null,
+        "title": "为什么是最后一期？影视飓风1800万粉丝Q&A！",
+        "uri": "bilibili://video/117602311476853"
+      },
+      {
+        "author": "用户01",
+        "badges": [],
+        "bvid": "BV1NS4t6oEXQ",
+        "cid": 43354425958,
+        "cover": "http://i1.hdslb.com/bfs/archive/xxxx.jpg",
+        "danmaku": 6625,
+        "duration": 899,
+        "goto": "av",
+        "history": null,
+        "is_cooperation": false,
+        "is_pgc": false,
+        "is_pugv": false,
+        "is_steins": false,
+        "label": null,
+        "param": "117563807766583",
+        "play": 3959008,
+        "publish_time_text": "11月5日",
+        "season_mtime": null,
+        "styles": null,
+        "title": "真的需要摸吗？MacBook Pro PROLED XDR上手",
+        "uri": "bilibili://video/117563807766583"
+      }
+    ]
+  },
+  "article": {
+    "count": 126,
+    "items": [
+      {
+        "cover": "https://i0.hdslb.com/bfs/new_dyn/f72cdc00492d273a2852bdc6e2c1f99a946974.png",
+        "publish_time_text": "1月30日",
+        "reply": 392,
+        "title": "一个月38元值吗？Apple Creator Studio软件上手体验",
+        "uri": "bilibili://article/45123193",
+        "view": 1935645
+      },
+      {
+        "cover": "https://i0.hdslb.com/bfs/article/banner/…",
+        "publish_time_text": "2022年6月12日",
+        "reply": 1711,
+        "title": "关于近期场记板内容涉嫌洗稿抄袭的申明",
+        "uri": "bilibili://article/17059775",
+        "view": 1948852
+      }
+    ]
+  },
+  "audio": {
+    "count": 4,
+    "items": [
+      {
+        "comment": null,
+        "cover": "http://i0.hdslb.com/bfs/music/xxxx.jpg",
+        "ctime": 1629455591,
+        "id": 2506133,
+        "play": null,
+        "title": "【无限进步Podcast】电影特效离普通人有多远？",
+        "uid": 100001
+      },
+      {
+        "comment": null,
+        "cover": "http://i0.hdslb.com/bfs/music/xxxx.jpg",
+        "ctime": 1624873987,
+        "id": 2389757,
+        "play": null,
+        "title": "【无限进步Podcast】什么是一台好的视频拍摄机？",
+        "uid": 100001
+      }
+    ]
+  },
+  "card": {
+    "attention": 688,
+    "face": "https://i0.hdslb.com/bfs/face/xxxx.jpg",
+    "fans": 19098077,
+    "followed_by": null,
+    "level": 6,
+    "level_identity": 1,
+    "like_num": 132360822,
+    "live_medal": {
+      "color": "#FFF8EBF0",
+      "level": 18,
+      "name": "飓风",
+      "name_color": "#FFAB6890"
+    },
+    "mid": "100001",
+    "name": "用户01",
+    "official_desc": "2025百大UP主、2023年度最高人气奖UP主、课堂优质讲师",
+    "official_splice_title": "bilibili UP主认证：2025百大UP主、2023年度最高人气奖UP主、课堂优质讲师",
+    "official_type": 0,
+    "pendant_image": null,
+    "pr_info": null,
+    "relation": {
+      "is_follow": null,
+      "is_followed": null,
+      "status": 1
+    },
+    "sign": "无限进步！｜商务合作请联系邮箱：bd@ysjf.com（邮件中麻烦备注公司、咨询内容）｜店铺名：影视飓风",
+    "silence": 0,
+    "tags": [],
+    "vip_label_text": "十年大会员",
+    "vip_status": 1,
+    "vip_type": 2
+  },
+  "coin_archive": {
+    "count": 0,
+    "items": []
+  },
+  "comic": {
+    "count": 0,
+    "items": []
+  },
+  "default_tab": "video",
+  "elec": {
+    "list": [
+      {
+        "face": "https://i2.hdslb.com/bfs/face/xxxx.jpg",
+        "mid": null,
+        "name": "用户03"
+      },
+      {
+        "face": "https://i0.hdslb.com/bfs/face/xxxx.jpg",
+        "mid": null,
+        "name": "用户04"
+      }
+    ],
+    "total": 28283
+  },
+  "favourite": {
+    "count": 0,
+    "items": []
+  },
+  "guard": {
+    "count": "2",
+    "items": [
+      {
+        "face": "https://i1.hdslb.com/bfs/baselabs/xxxx.png",
+        "mid": 38818555,
+        "name": null
+      },
+      {
+        "face": "http://i0.hdslb.com/bfs/baselabs/xxxx.png",
+        "mid": 10764389,
+        "name": null
+      }
+    ]
+  },
+  "guest_relation": -999,
+  "has_item": true,
+  "has_season_or_series": true,
+  "images": {
+    "img_url": "https://i0.hdslb.com/bfs/activity-plat/static/9bdd988aed64a23976d6d5494533a450/tDojHPi2LG.jpg",
+    "night_img_url": "https://i0.hdslb.com/bfs/activity-plat/static/9bdd988aed64a23976d6d5494533a450/5A10HwGd3.jpg",
+    "top_images": [
+      {
+        "dy": -0.4052603327965647,
+        "full_cover": "https://i0.hdslb.com/bfs/garb/open/cover0.png",
+        "header": "https://i0.hdslb.com/bfs/garb/open/cover0.png",
+        "title": {
+          "sub_title": "",
+          "sub_title_colors": [],
+          "title": "2025UP100收藏集"
+        }
+      },
+      {
+        "dy": -0.33333333333333337,
+        "full_cover": "https://i0.hdslb.com/bfs/garb/open/cover1.png",
+        "header": "https://i0.hdslb.com/bfs/garb/open/thumb1.png",
+        "title": {
+          "sub_title": "",
+          "sub_title_colors": [],
+          "title": "2025UP100收藏集"
+        }
+      }
+    ]
+  },
+  "like_archive": {
+    "count": 0,
+    "items": []
+  },
+  "live": {
+    "live_status": 0,
+    "room_id": 173551,
+    "room_status": 1
+  },
+  "medal": 1,
+  "rel_special": null,
+  "relation": -999,
+  "reservations": [],
+  "season": {
+    "count": 0,
+    "items": []
+  },
+  "setting": {
+    "bangumi": 0,
+    "coins_video": 0,
+    "fav_video": 0,
+    "likes_video": 0
+  },
+  "tab2": [
+    {
+      "items": [],
+      "param": "home",
+      "title": "主页"
+    },
+    {
+      "items": [],
+      "param": "dynamic",
+      "title": "动态"
+    },
+    {
+      "items": [
+        {
+          "filters": [],
+          "param": "video",
+          "season_id": null,
+          "series_id": null,
+          "title": "视频"
+        },
+        {
+          "filters": [
+            {
+              "meta": "all",
+              "tab_name": "图文",
+              "text": "全部图文"
+            },
+            {
+              "meta": "dynamic",
+              "tab_name": "动态",
+              "text": "动态"
+            },
+            {
+              "meta": "article",
+              "tab_name": "专栏",
+              "text": "专栏"
+            }
+          ],
+          "param": "opus",
+          "season_id": null,
+          "series_id": null,
+          "title": "图文"
+        },
+        {
+          "filters": [],
+          "param": "audio",
+          "season_id": null,
+          "series_id": null,
+          "title": "音频"
+        },
+        {
+          "filters": [],
+          "param": "season_video",
+          "season_id": 2046621,
+          "series_id": null,
+          "title": "样片日记"
+        }
+      ],
+      "param": "contribute",
+      "title": "投稿"
+    },
+    {
+      "items": [],
+      "param": "shop",
+      "title": "小店"
+    },
+    {
+      "items": [],
+      "param": "cheese",
+      "title": "课堂"
+    }
+  ]
+}

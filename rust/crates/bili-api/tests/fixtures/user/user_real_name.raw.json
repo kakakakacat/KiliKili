@@ -1,0 +1,9 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "name": "示*名",
+    "reject_page": { "title": "未通过", "text": "示例说明文案" }
+  }
+}

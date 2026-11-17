@@ -8,13 +8,10 @@ import 'package:kilikili/http/api.dart';
 import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/member.dart';
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/http/search.dart';
-import 'package:kilikili/http/user.dart';
 import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/common/video/source_type.dart';
-import 'package:kilikili/models_new/member_card_info/data.dart';
-import 'package:kilikili/models_new/relation/data.dart';
 import 'package:kilikili/services/rust/rust_video_page.dart';
 import 'package:kilikili/models_new/video/video_detail/data.dart';
 import 'package:kilikili/models_new/video/video_detail/dimension.dart';
@@ -43,6 +40,7 @@ import 'package:kilikili/utils/request_utils.dart';
 import 'package:kilikili/utils/share_utils.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:kilikili/utils/utils.dart';
+import 'package:kilikili/services/rust/rust_relation.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -53,9 +51,15 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   final RxBool status = true.obs;
 
   // up主粉丝数
-  final Rx<MemberCardInfoData> userStat = MemberCardInfoData().obs;
-  // 关注状态 默认未关注
-  late final Rx<RelationData> followStatus = Rx(RelationData());
+  final Rxn<MemberCard> userStat = Rxn<MemberCard>();
+  // 服务端给的关注关系。Rust 侧的 `Relation` 是不可变的，界面要的「乐观
+  // 改一下再等接口确认」因此拆到 [followAttr]——把可变性塞回导出结构是
+  // 让宿主的习惯泄进 Rust（ADR-011 / AGENTS.md §2）。
+  final Rxn<Relation> followStatus = Rxn();
+
+  /// 关注按钮当前显示的关系位。来源有两处：[queryFollowStatus] 拉回来的
+  /// 真值，和关注/取关之后的乐观更新。
+  final RxnInt followAttr = RxnInt();
   late final RxMap staffRelations = {}.obs;
 
   // 是否点踩
@@ -205,7 +209,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       if (mid == null) {
         return;
       }
-      final res = await MemberHttp.memberCardInfo(mid: mid);
+      final res = await RustSpace.memberCard(mid: mid);
       if (res case Success(:final response)) {
         userStat.value = response;
       }
@@ -458,10 +462,11 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
     if (videoDetail.owner == null || videoDetail.staff?.isNotEmpty == true) {
       return;
     }
-    final res = await UserHttp.userRelation(videoDetail.owner!.mid!);
+    final res = await RustRelation.userRelation(videoDetail.owner!.mid!);
     if (res case Success(:final response)) {
-      if (response.special == 1) response.attribute = -10;
       followStatus.value = response;
+      // -10 是界面自己的一档（「特别关注」），不是服务端的关系位。
+      followAttr.value = response.special == 1 ? -10 : response.attribute;
     }
   }
 
@@ -479,7 +484,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
     if (mid == null) {
       return;
     }
-    int attr = followStatus.value.attribute ?? 0;
+    int attr = followAttr.value ?? 0;
     if (attr == 128) {
       final res = await RustVideoWrite.relationMod(
         mid: mid,
@@ -487,9 +492,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
         reSrc: 11,
       );
       if (res.isSuccess) {
-        followStatus
-          ..value.attribute = 0
-          ..refresh();
+        followAttr.value = 0;
       }
       return;
     } else {
@@ -499,9 +502,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
         isFollow: attr != 0,
         followStatus: followStatus.value,
         afterMod: (attribute) {
-          followStatus
-            ..value.attribute = attribute
-            ..refresh();
+          followAttr.value = attribute;
           Timer(const Duration(milliseconds: 500), queryFollowStatus);
         },
       );

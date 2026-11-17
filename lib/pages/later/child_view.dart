@@ -3,7 +3,8 @@ import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/later_view_type.dart';
 import 'package:kilikili/models/common/video/source_type.dart';
-import 'package:kilikili/models_new/later/list.dart';
+import 'package:kilikili/models_new/video/video_detail/dimension.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/pages/later/base_controller.dart';
 import 'package:kilikili/pages/later/controller.dart';
 import 'package:kilikili/pages/later/widgets/video_card_h_later.dart';
@@ -62,7 +63,7 @@ class _LaterViewChildPageState extends State<LaterViewChildPage>
     );
   }
 
-  Widget _buildBody(LoadingState<List<LaterItemModel>?> loadingState) {
+  Widget _buildBody(LoadingState<List<LaterItem>?> loadingState) {
     return switch (loadingState) {
       Loading() => coverGridSkeleton,
       Success(:final response) =>
@@ -83,7 +84,14 @@ class _LaterViewChildPageState extends State<LaterViewChildPage>
                       cid: cid,
                       cover: videoItem.pic,
                       title: videoItem.title,
-                      dimension: videoItem.dimension,
+                      // Rust 给的宽高已按 rotate 摆正。
+                      dimension:
+                          videoItem.width == null || videoItem.height == null
+                          ? null
+                          : Dimension(
+                              width: videoItem.width,
+                              height: videoItem.height,
+                            ),
                       extraArguments: _baseCtr.isPlayAll.value
                           ? {
                               'oid': videoItem.aid,

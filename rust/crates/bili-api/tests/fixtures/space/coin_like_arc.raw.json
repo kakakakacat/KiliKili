@@ -1,0 +1,35 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "count": 2,
+    "item": [
+      {
+        "title": "示例投币稿件",
+        "cover": "//i0.example.test/bfs/archive/uuuuuuuu.jpg",
+        "uri": "bilibili://video/100000031",
+        "param": "100000031",
+        "goto": "av",
+        "duration": 360,
+        "is_steins": false,
+        "is_cooperation": true,
+        "is_pgc": false,
+        "play": 4321,
+        "danmaku": 21,
+        "ctime": 1762000000,
+        "author": "示例up主己"
+      },
+      {
+        "title": "示例番剧单集",
+        "cover": "//i0.example.test/bfs/archive/vvvvvvvv.jpg",
+        "uri": "bilibili://pgc/season/ep600011",
+        "param": "600011",
+        "duration": 1440,
+        "is_pgc": true,
+        "play": 98765,
+        "ctime": 1761500000
+      }
+    ]
+  }
+}

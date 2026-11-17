@@ -19,7 +19,7 @@ import 'package:kilikili/common/widgets/sliver/video_header.dart';
 import 'package:kilikili/common/widgets/svg/play_icon.dart';
 import 'package:kilikili/models/common/episode_panel_type.dart';
 import 'package:kilikili/models/common/pgc_episode_type.dart';
-import 'package:kilikili/models_new/video/video_tag/data.dart';
+import 'package:kilikili/services/rust/rust_user.dart' show VideoTag;
 import 'package:kilikili/pages/common/common_intro_controller.dart';
 import 'package:kilikili/pages/danmaku/view.dart';
 import 'package:kilikili/pages/episode_panel/view.dart';
@@ -1849,7 +1849,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   void showIntroDetail(
     PgcSeasonDetail videoDetail,
-    List<VideoTagItem>? videoTags,
+    List<VideoTag>? videoTags,
   ) {
     videoDetailController.childKey.currentState?.showBottomSheet(
       constraints: const BoxConstraints(),
@@ -1963,6 +1963,11 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   }
 
   void onShowMemberPage(int? mid) {
+    // 没有 mid 就没有可看的主页。基线把 null 一路传到取数处换一个业务
+    // 错误码，那只是把「点了没反应」变成「点了弹个错」。
+    if (mid == null) {
+      return;
+    }
     videoDetailController.childKey.currentState?.showBottomSheet(
       constraints: const BoxConstraints(),
       dragHeight: 100,

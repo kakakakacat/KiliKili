@@ -1,7 +1,8 @@
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/space/space_cheese/item.dart';
+
 import 'package:kilikili/pages/member_cheese/controller.dart';
 import 'package:kilikili/pages/member_cheese/widgets/item.dart';
 import 'package:kilikili/utils/grid.dart';
@@ -70,7 +71,14 @@ class _MemberCheeseState extends State<MemberCheese>
                   if (index == response.length - 1) {
                     _controller.onLoadMore();
                   }
-                  return MemberCheeseItem(item: response[index]);
+                  return MemberCheeseItem(
+                    cover: response[index].cover,
+                    title: response[index].title,
+                    marks: response[index].marks,
+                    seasonId: response[index].seasonId,
+                    status: response[index].status,
+                    ctime: response[index].ctime,
+                  );
                 },
                 itemCount: response.length,
               )

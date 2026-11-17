@@ -63,7 +63,12 @@ class _FavCheesePageState extends State<FavCheesePage>
                   }
                   final item = response[index];
                   return MemberCheeseItem(
-                    item: item,
+                    cover: item.cover,
+                    title: item.title,
+                    marks: item.marks,
+                    seasonId: item.seasonId,
+                    status: item.status,
+                    ctime: int.tryParse(item.ctime ?? ''),
                     onRemove: () => showConfirmDialog(
                       context: context,
                       title: const Text('确定取消收藏该课堂？'),

@@ -155,24 +155,42 @@ struct OfficialVerifyDto {
 pub fn parse_follow_list(body: &str) -> Result<FollowList, DomainError> {
     let dto: FollowListDto = crate::envelope::unwrap_envelope(body)?;
     Ok(FollowList {
-        list: dto
-            .list
-            .unwrap_or_default()
-            .into_iter()
-            .map(|i| FollowUser {
-                mid: i.mid.unwrap_or(0),
-                attribute: i.attribute,
-                uname: i.uname,
-                face: i.face,
-                sign: i.sign,
-                official_verify: i.official_verify.map(|v| OfficialVerify {
-                    kind: v.kind,
-                    desc: v.desc,
-                }),
-            })
-            .collect(),
+        list: dto.list.unwrap_or_default().into_iter().map(user).collect(),
         total: dto.total,
     })
+}
+
+/// 解析**裸数组**形态的一页关注。
+///
+/// 分组列表（`/x/relation/tag`，见 [`crate::relation`]）的 `data` 直接就是
+/// 用户数组，没有外面那层 `{list, total}`。两种形态的元素完全一样，所以
+/// 共用 [`user`] 这个映射，只是入口不同——给它造一个假的 `total` 再走
+/// [`parse_follow_list`]，会让「这条接口不给总数」这个事实消失。
+///
+/// # Errors
+/// 同 [`parse_follow_list`]。`data` 为 `null` 时按空列表处理：基线
+/// `MemberHttp.followUpGroup` 对 `data as List?` 为空就填空列表。
+pub fn parse_follow_user_array(body: &str) -> Result<FollowList, DomainError> {
+    let dto: Option<Vec<FollowUserDto>> = crate::envelope::unwrap_envelope_nullable(body)?;
+    Ok(FollowList {
+        list: dto.unwrap_or_default().into_iter().map(user).collect(),
+        total: None,
+    })
+}
+
+/// 一条用户 DTO 到实体。两种响应形态共用。
+fn user(i: FollowUserDto) -> FollowUser {
+    FollowUser {
+        mid: i.mid.unwrap_or(0),
+        attribute: i.attribute,
+        uname: i.uname,
+        face: i.face,
+        sign: i.sign,
+        official_verify: i.official_verify.map(|v| OfficialVerify {
+            kind: v.kind,
+            desc: v.desc,
+        }),
+    }
 }
 
 // ------------------------------------------------------------ 写：分组排序

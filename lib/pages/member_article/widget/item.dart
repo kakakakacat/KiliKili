@@ -3,30 +3,43 @@ import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/stat/stat.dart';
 import 'package:kilikili/models/common/stat_type.dart';
-import 'package:kilikili/models_new/space/space_article/item.dart';
 import 'package:kilikili/utils/app_scheme.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
+/// 一条专栏。
+///
+/// 收的是几个标量而不是某个取数模型：空间主页那一块已经来自 Rust，
+/// 专栏列表页那条接口还在 Dart 模型上，两边共用这个组件。
 class MemberArticleItem extends StatelessWidget {
-  const MemberArticleItem(this.item, {super.key});
+  const MemberArticleItem({
+    super.key,
+    required this.title,
+    required this.cover,
+    required this.publishTimeText,
+    required this.view,
+    required this.reply,
+    required this.uri,
+  });
 
-  final SpaceArticleItem item;
+  final String? title;
+  final String? cover;
+  final String? publishTimeText;
+  final int? view;
+  final int? reply;
+  final String? uri;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final outline = theme.colorScheme.outline;
-    void onLongPress() => imageSaveDialog(
-      title: item.title,
-      cover: item.originImageUrls?.firstOrNull,
-    );
+    void onLongPress() => imageSaveDialog(title: title, cover: cover);
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
         onTap: () {
-          if (item.uri?.isNotEmpty == true) {
-            PiliScheme.routePushFromUrl(item.uri!);
+          if (uri?.isNotEmpty == true) {
+            PiliScheme.routePushFromUrl(uri!);
           }
         },
         onLongPress: onLongPress,
@@ -39,14 +52,14 @@ class MemberArticleItem extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (item.originImageUrls?.firstOrNull?.isNotEmpty == true) ...[
+              if (cover?.isNotEmpty == true) ...[
                 AspectRatio(
                   aspectRatio: Style.aspectRatio,
                   child: LayoutBuilder(
                     builder:
                         (BuildContext context, BoxConstraints boxConstraints) {
                           return NetworkImgLayer(
-                            src: item.originImageUrls!.first,
+                            src: cover!,
                             width: boxConstraints.maxWidth,
                             height: boxConstraints.maxHeight,
                           );
@@ -60,10 +73,10 @@ class MemberArticleItem extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (item.title?.isNotEmpty == true) ...[
+                    if (title?.isNotEmpty == true) ...[
                       Expanded(
                         child: Text(
-                          item.title!,
+                          title!,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -75,7 +88,7 @@ class MemberArticleItem extends StatelessWidget {
                       ),
                     ],
                     Text(
-                      '${item.publishTimeText}',
+                      '$publishTimeText',
                       style: TextStyle(
                         fontSize: 12,
                         height: 1,
@@ -88,12 +101,12 @@ class MemberArticleItem extends StatelessWidget {
                       children: [
                         StatWidget(
                           type: StatType.view,
-                          value: item.stats?.view,
+                          value: view,
                           color: outline,
                         ),
                         StatWidget(
                           type: StatType.reply,
-                          value: item.stats?.reply,
+                          value: reply,
                           color: outline,
                         ),
                       ],

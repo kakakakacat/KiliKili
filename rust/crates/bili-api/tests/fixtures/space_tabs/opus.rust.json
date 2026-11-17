@@ -1,0 +1,104 @@
+{
+  "collection": {
+    "expand": true,
+    "items": [
+      {
+        "collection_id": 0,
+        "cover": "",
+        "cover_bottom_text": "",
+        "sub_title": "",
+        "title": ""
+      },
+      {
+        "collection_id": 0,
+        "cover": "",
+        "cover_bottom_text": "",
+        "sub_title": "",
+        "title": ""
+      },
+      {
+        "collection_id": 200,
+        "cover": "https://example.invalid/collection.jpg",
+        "cover_bottom_text": "共12篇",
+        "sub_title": "副标题",
+        "title": "文集标题"
+      }
+    ],
+    "title": "文集"
+  },
+  "items": [
+    {
+      "content": "第一段第二段",
+      "cover": {
+        "is_long_pic": true,
+        "ratio": 2.7,
+        "src": "https://example.invalid/long.jpg"
+      },
+      "like_text": "1.2万",
+      "oid": 100
+    },
+    {
+      "content": "",
+      "cover": {
+        "is_long_pic": false,
+        "ratio": 0.68,
+        "src": "https://example.invalid/wide.jpg"
+      },
+      "like_text": "1.2万",
+      "oid": 101
+    },
+    {
+      "content": null,
+      "cover": {
+        "is_long_pic": true,
+        "ratio": 2.7,
+        "src": "https://example.invalid/zero.jpg"
+      },
+      "like_text": "1.2万",
+      "oid": 102
+    },
+    {
+      "content": null,
+      "cover": {
+        "is_long_pic": true,
+        "ratio": 2.7,
+        "src": "https://example.invalid/nan.jpg"
+      },
+      "like_text": "1.2万",
+      "oid": 103
+    },
+    {
+      "content": null,
+      "cover": {
+        "is_long_pic": false,
+        "ratio": 0.68,
+        "src": "https://example.invalid/height-zero.jpg"
+      },
+      "like_text": "1.2万",
+      "oid": 104
+    },
+    {
+      "content": null,
+      "cover": {
+        "is_long_pic": false,
+        "ratio": 1.0,
+        "src": "https://example.invalid/unknown.jpg"
+      },
+      "like_text": "1.2万",
+      "oid": 105
+    },
+    {
+      "content": null,
+      "cover": null,
+      "like_text": "1.2万",
+      "oid": 106
+    },
+    {
+      "content": null,
+      "cover": null,
+      "like_text": "",
+      "oid": 0
+    }
+  ],
+  "next": "next-cursor"
+}

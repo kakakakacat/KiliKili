@@ -1,0 +1,64 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "count": 3,
+    "list": [
+      {
+        "aid": 100000011,
+        "bvid": "BV1bb4y1b1b1",
+        "pic": "//i0.example.test/bfs/archive/eeeeeeee.jpg",
+        "title": "示例普通稿件",
+        "pubdate": 1761000000,
+        "duration": 732,
+        "redirect_url": "",
+        "rights": { "bp": 0, "elec": 0, "is_cooperation": 1 },
+        "owner": {
+          "mid": 300000011,
+          "name": "示例up主丙",
+          "face": "//i1.example.test/bfs/face/ffffffff.jpg"
+        },
+        "stat": { "view": 12345, "danmaku": 67, "reply": 8 },
+        "cid": 200000011,
+        "progress": 90,
+        "dimension": { "width": 1920, "height": 1080, "rotate": 0 }
+      },
+      {
+        "aid": 100000012,
+        "bvid": "BV1cc4y1c1c1",
+        "pic": "//i0.example.test/bfs/archive/gggggggg.jpg",
+        "title": "示例番剧名 第1话 示例分集名",
+        "pubdate": 1760000000,
+        "duration": 1440,
+        "redirect_url": "https://www.example.test/bangumi/play/ep600001",
+        "owner": { "mid": 300000012, "name": "示例番剧出品方" },
+        "stat": { "view": 98765, "danmaku": 432 },
+        "bangumi": {
+          "ep_id": 600001,
+          "season": { "season_id": 70001, "title": "示例番剧名" }
+        },
+        "cid": 200000012,
+        "progress": -1,
+        "is_pgc": true,
+        "pgc_label": "会员",
+        "dimension": { "width": 1080, "height": 1920, "rotate": 1 }
+      },
+      {
+        "aid": 100000013,
+        "bvid": "BV1dd4y1d1d1",
+        "pic": "//i0.example.test/bfs/archive/hhhhhhhh.jpg",
+        "title": "示例充电专属稿件",
+        "pubdate": 1759000000,
+        "duration": 300,
+        "owner": { "mid": 300000013, "name": "示例up主丁" },
+        "stat": { "view": 321 },
+        "cid": 200000013,
+        "progress": 0,
+        "is_pugv": true,
+        "pgc_label": "",
+        "charging_pay": { "level": 2, "pay_type": 1 }
+      }
+    ]
+  }
+}

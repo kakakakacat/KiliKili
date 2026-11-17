@@ -1,15 +1,15 @@
 import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/user.dart';
-import 'package:kilikili/models_new/sub/sub/data.dart';
 import 'package:kilikili/models_new/sub/sub/list.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_user.dart' show RustUser, SubList;
+import 'package:kilikili/services/rust/sub_compat.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
-class SubController extends CommonListController<SubData, SubItemModel> {
+class SubController extends CommonListController<SubList, SubItemModel> {
   late final account = Accounts.main;
 
   @override
@@ -66,15 +66,17 @@ class SubController extends CommonListController<SubData, SubItemModel> {
   }
 
   @override
-  List<SubItemModel>? getDataList(SubData response) {
+  List<SubItemModel>? getDataList(SubList response) {
     if (response.hasMore == false) {
       isEnd = true;
     }
-    return response.list;
+    // 还原成 `SubItemModel`：合集详情页那条接口还在 Dart，两边喂同一批
+    // 界面，见 `lib/services/rust/sub_compat.dart`。
+    return response.list.map((e) => e.toItemModel()).toList();
   }
 
   @override
-  Future<LoadingState<SubData>> customGetData() => UserHttp.userSubFolder(
+  Future<LoadingState<SubList>> customGetData() => RustUser.userSubFolder(
     pn: page,
     ps: 20,
     mid: account.mid,

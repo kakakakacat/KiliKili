@@ -1,0 +1,27 @@
+{
+  "code": 0,
+  "data": {
+    "page": {
+      "next": true
+    },
+    "items": [
+      {
+        "cover": "https://example.invalid/course.jpg",
+        "marks": [
+          "标签一",
+          "标签二"
+        ],
+        "season_id": 100,
+        "status": "已更新3讲",
+        "title": "脱敏课堂",
+        "ctime": "1700000000"
+      },
+      {
+        "ctime": "bad"
+      },
+      {
+        "ctime": " +123 "
+      }
+    ]
+  }
+}

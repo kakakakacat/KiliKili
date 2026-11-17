@@ -1,7 +1,7 @@
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/models_new/later/list.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/pages/later/widgets/video_card_h_later.dart'
-    show onPushLater;
+    show laterLabel, laterProgressIndicator, onPushLater;
 import 'package:material_ui/material_ui.dart';
 
 class MineLaterItem extends StatelessWidget {
@@ -11,7 +11,7 @@ class MineLaterItem extends StatelessWidget {
     required this.onPop,
   });
 
-  final LaterItemModel item;
+  final LaterItem item;
   final VoidCallback onPop;
 
   @override
@@ -30,8 +30,8 @@ class MineLaterItem extends StatelessWidget {
                 width: 180,
                 height: 110,
               ),
-              ?item.label,
-              ...item.progressIndicator(ColorScheme.of(context)),
+              ?laterLabel(item),
+              ...laterProgressIndicator(item, ColorScheme.of(context)),
             ],
           ),
           const SizedBox(height: 8),

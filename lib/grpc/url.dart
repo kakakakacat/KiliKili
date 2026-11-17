@@ -60,8 +60,4 @@ abstract final class GrpcUrl {
   static const audioThumbUp = '$audio/ThumbUp';
   static const audioTripleLike = '$audio/TripleLike';
   static const audioCoinAdd = '$audio/CoinAdd';
-
-  // space
-  static const space = '/bilibili.app.interface.v1.Space';
-  static const searchArchive = '$space/SearchArchive';
 }

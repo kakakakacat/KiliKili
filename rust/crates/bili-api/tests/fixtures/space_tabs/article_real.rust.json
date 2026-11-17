@@ -1,0 +1,14 @@
+{
+  "count": 1,
+  "items": [
+    {
+      "cover": "https://example.invalid/article.jpg",
+      "publish_time_text": "11月2日",
+      "reply": 241,
+      "title": "脱敏专栏",
+      "uri": "bilibili://article/100",
+      "view": 242794
+    }
+  ],
+  "lists_count": 0
+}

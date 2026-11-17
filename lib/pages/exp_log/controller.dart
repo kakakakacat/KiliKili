@@ -1,17 +1,13 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/user.dart';
-import 'package:kilikili/models_new/coin_log/data.dart';
-import 'package:kilikili/models_new/coin_log/list.dart';
 import 'package:kilikili/pages/log_table/controller.dart';
+import 'package:kilikili/services/rust/rust_user.dart';
 
-class ExpLogController extends LogController<CoinLogData, CoinLogItem> {
+class ExpLogController extends LogController<List<CoinLogItem>, CoinLogItem> {
   @override
-  List<CoinLogItem>? getDataList(CoinLogData response) {
-    return response.list;
-  }
+  List<CoinLogItem>? getDataList(List<CoinLogItem> response) => response;
 
   @override
-  Future<LoadingState<CoinLogData>> customGetData() => UserHttp.expLog();
+  Future<LoadingState<List<CoinLogItem>>> customGetData() => RustUser.expLog();
 
   @override
   List<(int, String)> getFlexAndText(CoinLogItem item) {

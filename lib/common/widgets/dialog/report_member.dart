@@ -1,5 +1,5 @@
 import 'package:kilikili/common/widgets/button/icon_button.dart';
-import 'package:kilikili/http/member.dart';
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/utils/extension/theme_ext.dart';
 import 'package:kilikili/utils/theme_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -14,7 +14,7 @@ const _reasonV2 = ['色情低俗', '不实信息', '违禁', '人身攻击', '�
 Future<void> showMemberReportDialog(
   BuildContext context, {
   required Object? name,
-  required Object mid,
+  required int mid,
 }) {
   final Set<int> reason = {};
   int? reasonV2;
@@ -174,10 +174,17 @@ Future<void> showMemberReportDialog(
                 SmartDialog.showToast('至少选择一项作为举报内容');
               } else {
                 Get.back();
-                MemberHttp.reportMember(
-                  mid,
+                // 提示语留在宿主：Rust 只回「受理没受理」。
+                // 请求失败与「发到了但没受理」是两回事，但对用户是同一句
+                // 「举报失败」——基线也只有这两句。
+                RustSpace.reportMember(
+                  mid: mid,
                   reason: reason.join(','),
                   reasonV2: reasonV2 != null ? reasonV2! + 1 : null,
+                ).then(
+                  (res) => SmartDialog.showToast(
+                    res.dataOrNull == true ? '举报成功' : '举报失败',
+                  ),
                 );
               }
             },

@@ -1,0 +1,36 @@
+{
+  "list": [
+    {
+      "aid": 100000021,
+      "badge": "",
+      "bvid": "BV1ee4y1e1e1",
+      "cover": "//i0.example.test/bfs/archive/iiiiiiii.jpg",
+      "danmaku": 20,
+      "duration": 480,
+      "first_page_cid": 200000021,
+      "intro": "示例简介一",
+      "kind": 2,
+      "play": 5000,
+      "title": "示例列表稿件一",
+      "upper_face": "//i1.example.test/bfs/face/jjjjjjjj.jpg",
+      "upper_mid": 300000021,
+      "upper_name": "示例up主戊"
+    },
+    {
+      "aid": 100000022,
+      "badge": "会员",
+      "bvid": "BV1ff4y1f1f1",
+      "cover": "//i0.example.test/bfs/archive/kkkkkkkk.jpg",
+      "danmaku": null,
+      "duration": 1200,
+      "first_page_cid": null,
+      "intro": null,
+      "kind": 24,
+      "play": 88,
+      "title": "示例列表稿件二",
+      "upper_face": null,
+      "upper_mid": 300000022,
+      "upper_name": "示例出品方"
+    }
+  ]
+}

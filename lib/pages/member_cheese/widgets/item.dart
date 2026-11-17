@@ -1,41 +1,50 @@
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
-import 'package:kilikili/models_new/space/space_cheese/item.dart';
 import 'package:kilikili/utils/date_utils.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
 class MemberCheeseItem extends StatelessWidget {
-  const MemberCheeseItem({super.key, required this.item, this.onRemove});
+  const MemberCheeseItem({
+    super.key,
+    this.cover,
+    this.title,
+    this.marks,
+    this.seasonId,
+    this.status,
+    this.ctime,
+    this.onRemove,
+  });
 
-  final SpaceCheeseItem item;
+  final String? cover, title, status;
+  final List<String>? marks;
+  final int? seasonId, ctime;
   final VoidCallback? onRemove;
 
   @override
   Widget build(BuildContext context) {
-    final ctime = int.tryParse(item.ctime ?? '');
-    void onLongPress() => imageSaveDialog(title: item.title, cover: item.cover);
+    void onLongPress() => imageSaveDialog(title: title, cover: cover);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       child: CoverScrimCard(
-        cover: item.cover,
-        title: item.title ?? '',
-        onTap: () => PageUtils.viewPugv(seasonId: item.seasonId),
+        cover: cover,
+        title: title ?? '',
+        onTap: () => PageUtils.viewPugv(seasonId: seasonId),
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         coverOverlays: [
-          if (item.marks?.isNotEmpty == true)
-            PBadge(text: item.marks!.join('|'), top: 6, right: 6),
+          if (marks?.isNotEmpty == true)
+            PBadge(text: marks!.join('|'), top: 6, right: 6),
         ],
-        metaBuilder: item.status == null && ctime == null
+        metaBuilder: status == null && ctime == null
             ? null
             : (context, colors) => [
-                if (item.status?.isNotEmpty == true)
+                if (status?.isNotEmpty == true)
                   Flexible(
                     child: Text(
-                      item.status!,
+                      status!,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 11, color: colors.subtitle),

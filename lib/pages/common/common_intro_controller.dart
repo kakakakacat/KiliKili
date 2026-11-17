@@ -2,13 +2,12 @@ import 'dart:async' show FutureOr, Timer;
 
 import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/user.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/models/common/video/source_type.dart';
 import 'package:kilikili/models_new/fav/fav_folder/data.dart';
 import 'package:kilikili/models_new/video/video_detail/data.dart';
 import 'package:kilikili/models_new/video/video_detail/episode.dart';
 import 'package:kilikili/models_new/video/video_detail/stat_detail.dart';
-import 'package:kilikili/models_new/video/video_tag/data.dart';
 import 'package:kilikili/pages/video/controller.dart';
 import 'package:kilikili/pages/video/introduction/ugc/widgets/triple_mixin.dart';
 import 'package:kilikili/services/rust/rust_video_page.dart';
@@ -19,6 +18,7 @@ import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/storage.dart';
 import 'package:kilikili/utils/storage_key.dart';
 import 'package:kilikili/utils/storage_pref.dart';
+import 'package:kilikili/services/rust/rust_user.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -37,7 +37,7 @@ abstract class CommonIntroController extends GetxController
   // 是否稍后再看
   late final RxBool hasLater;
 
-  final Rx<List<VideoTagItem>?> videoTags = Rx<List<VideoTagItem>?>(null);
+  final Rx<List<VideoTag>?> videoTags = Rx<List<VideoTag>?>(null);
 
   bool isProcessing = false;
   Future<void> handleAction(FutureOr Function() action) async {
@@ -148,14 +148,14 @@ abstract class CommonIntroController extends GetxController
   }
 
   Future<void> queryVideoTags() async {
-    final result = await UserHttp.videoTags(bvid: bvid, cid: cid.value);
+    final result = await RustUser.videoTags(bvid: bvid, cid: cid.value);
     videoTags.value = result.dataOrNull;
   }
 
   Future<void> viewLater() async {
     final res = await (hasLater.value
-        ? UserHttp.toViewDel(aids: aid)
-        : UserHttp.toViewLater(bvid: bvid));
+        ? RustHistory.toViewDel(aids: '$aid')
+        : RustHistory.toViewLater(bvid: bvid));
     if (res.isSuccess) hasLater.toggle();
   }
 }

@@ -8,7 +8,7 @@ import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/scroll_physics.dart'
     show tabBarScrollPhysics;
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/history/list.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/pages/history/base_controller.dart';
 import 'package:kilikili/pages/history/controller.dart';
 import 'package:kilikili/pages/history/widgets/item.dart';
@@ -17,16 +17,20 @@ import 'package:kilikili/utils/grid.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
-class HistoryPage extends StatefulWidget {
-  const HistoryPage({super.key, this.type});
+/// 一个业务分页签的列表。
+///
+/// 类名带 `Tab` 是为了给 Rust 的 `HistoryPage`（一页历史的响应）让出名字
+/// ——协议里的东西叫什么，导出面就叫什么。
+class HistoryTabPage extends StatefulWidget {
+  const HistoryTabPage({super.key, this.type});
 
   final String? type;
 
   @override
-  State<HistoryPage> createState() => _HistoryPageState();
+  State<HistoryTabPage> createState() => _HistoryPageState();
 }
 
-class _HistoryPageState extends State<HistoryPage>
+class _HistoryPageState extends State<HistoryTabPage>
     with AutomaticKeepAliveClientMixin, GridMixin {
   late final HistoryController _historyController;
 
@@ -44,7 +48,7 @@ class _HistoryPageState extends State<HistoryPage>
       index ??= _historyController.tabController!.index;
       if (index != 0) {
         return Get.find<HistoryController>(
-          tag: _historyController.tabs[index - 1].type,
+          tag: _historyController.tabs[index - 1].kind,
         );
       }
     } catch (_) {}
@@ -141,7 +145,7 @@ class _HistoryPageState extends State<HistoryPage>
                         children: [
                           KeepAliveWrapper(child: child),
                           ...tabs.map(
-                            (item) => HistoryPage(type: item.type),
+                            (item) => HistoryTabPage(type: item.kind),
                           ),
                         ],
                       ),
@@ -183,7 +187,7 @@ class _HistoryPageState extends State<HistoryPage>
                   for (final item in _historyController.tabs) {
                     try {
                       Get.find<HistoryController>(
-                        tag: item.type,
+                        tag: item.kind,
                       ).loadingState.value = const Success(
                         null,
                       );
@@ -204,7 +208,7 @@ class _HistoryPageState extends State<HistoryPage>
     ],
   );
 
-  Widget _buildBody(LoadingState<List<HistoryItemModel>?> loadingState) {
+  Widget _buildBody(LoadingState<List<HistoryItem>?> loadingState) {
     return switch (loadingState) {
       Loading() => coverGridSkeleton,
       Success(:final response) =>
@@ -216,7 +220,7 @@ class _HistoryPageState extends State<HistoryPage>
                     _historyController.onLoadMore();
                   }
                   final item = response[index];
-                  return HistoryItem(
+                  return HistoryItemCard(
                     item: item,
                     ctr: _historyController,
                     onDelete: (kid, business) =>

@@ -1,8 +1,7 @@
 import 'package:kilikili/common/widgets/custom_icon.dart';
-import 'package:kilikili/http/user.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/models/home/rcmd/result.dart';
 import 'package:kilikili/models/model_video.dart';
-import 'package:kilikili/models_new/space/space_archive/item.dart';
 import 'package:kilikili/pages/mine/controller.dart';
 import 'package:kilikili/pages/search/widgets/search_text.dart';
 import 'package:kilikili/pages/video/ai_conclusion/view.dart';
@@ -67,7 +66,7 @@ class VideoPopupMenu extends StatelessWidget {
                     _VideoCustomAction(
                       '稍后再看',
                       const Icon(MdiIcons.clockTimeEightOutline, size: 16),
-                      () => UserHttp.toViewLater(bvid: videoItem.bvid),
+                      () => RustHistory.toViewLater(bvid: videoItem.bvid),
                     ),
                   if (videoItem.cid != null && Pref.enableAi)
                     _VideoCustomAction(
@@ -98,7 +97,12 @@ class VideoPopupMenu extends StatelessWidget {
                       },
                     ),
                 ],
-                if (videoItem is! SpaceArchiveItem) ...[
+                // 作者 mid 不是每种列表都有：空间投稿那一族服务端只给
+                // 昵称。基线在这里判的是 `videoItem is! SpaceArchiveItem`
+                // ——那是因为它给那种条目造了个 `mid: 0` 的假 owner。现在
+                // 假 owner 没了，判据换成「有没有真的 mid」，对以后任何
+                // 缺作者 id 的列表同样成立。
+                if (videoItem.owner.mid != null) ...[
                   _VideoCustomAction(
                     '访问：${videoItem.owner.name}',
                     const Icon(MdiIcons.accountCircleOutline, size: 16),

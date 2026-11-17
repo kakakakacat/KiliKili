@@ -90,7 +90,7 @@ class Routes {
     // 稍后再看
     GetPage(name: '/later', page: () => const LaterPage()),
     // 历史记录
-    GetPage(name: '/history', page: () => const HistoryPage()),
+    GetPage(name: '/history', page: () => const HistoryTabPage()),
     // 搜索页面
     GetPage(name: '/search', page: () => const SearchPage()),
     // 搜索结果

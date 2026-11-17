@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:kilikili/models_new/space/space/tab2.dart';
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/pages/member/controller.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -25,13 +25,21 @@ class MemberContributeCtr extends GetxController
     SpaceTab2 contribute = _ctr.tab2!.firstWhere(
       (item) => item.param == 'contribute',
     );
+    // FRB 的列表字段是非空的，但它是解析时现造的那一份，往里 add 不会
+    // 影响别的持有者。
     final items = contribute.items;
-    if (items != null && items.isNotEmpty) {
+    if (items.isNotEmpty) {
       this.items = items;
-      if (contribute.items!.length > 1) {
+      if (items.length > 1) {
         // show if exist
         if (_ctr.hasSeasonOrSeries == true) {
-          items.add(const SpaceTab2Item(param: 'ugcSeason', title: '全部合集/列表'));
+          items.add(
+            const SpaceTab2Item(
+              param: 'ugcSeason',
+              title: '全部合集/列表',
+              filters: [],
+            ),
+          );
         }
         tabs = items.map((item) => Tab(text: item.title)).toList();
         tabController = TabController(

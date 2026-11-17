@@ -1,0 +1,33 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "card": {
+      "mid": "300000101",
+      "name": "示例up主甲",
+      "approve": false,
+      "sex": "保密",
+      "face": "//i1.example.test/bfs/face/aaaaaaaa.jpg",
+      "DisplayRank": "0",
+      "regtime": 0,
+      "spacesta": 0,
+      "fans": 123456,
+      "friend": 42,
+      "attention": 42,
+      "sign": "这是示例签名",
+      "Official": { "role": 1, "title": "示例认证头衔", "desc": "", "type": 0 },
+      "official_verify": { "type": 0, "desc": "示例认证头衔" },
+      "vip": {
+        "vipType": 2,
+        "vipStatus": 1,
+        "label": { "text": "年度大会员" }
+      }
+    },
+    "following": false,
+    "archive_count": 321,
+    "article_count": 5,
+    "follower": 123456,
+    "like_num": 654321
+  }
+}

@@ -138,3 +138,12 @@ WebView 路径现在也检查 `gettype.php`，只发送 `gt`，与页面获取�
 
 fixture 里的 token 一律是 `fake-*` 字面量，快照只记形状不记值——登录响应
 就是凭据本身，详见 `rust/crates/bili-api/tests/login_golden.rs` 的模块文档。
+
+## 2026-11-17：用户与空间请求迁入 Rust（#56、#57）
+
+关注分组、用户资料、历史/稍后再看与空间各列表的请求构造改由 Rust 负责，
+沿用既有 WBI / APP 签名和参数集，不调整签名算法或协议版本。空间专栏保留
+App 主机及 `bili-http-engine` / UA；小店保留 mall 主机、APP 签名查询串、
+JSON 请求体及不带 csrf 的形状。小店虽用 POST，操作仍是幂等只读。
+空间 gRPC 投稿搜索与图文流保持原服务方法和分页字段；未设置的可选参数
+保持省略。请求形状由 Rust 单测约束，真实账号与网关行为仍需 Phase 2 验证。

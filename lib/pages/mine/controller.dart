@@ -1,20 +1,12 @@
 import 'package:kilikili/common/widgets/custom_icon.dart';
 import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/user.dart';
 import 'package:kilikili/models/common/account_type.dart';
 import 'package:kilikili/models/common/later_view_type.dart';
 import 'package:kilikili/models/common/mine_tab_type.dart';
 import 'package:kilikili/models/common/theme/theme_type.dart';
-import 'package:kilikili/models/user/info.dart';
-import 'package:kilikili/models/user/stat.dart';
 import 'package:kilikili/models_new/fav/fav_folder/data.dart';
 import 'package:kilikili/models_new/fav/fav_folder/list.dart';
-import 'package:kilikili/models_new/history/data.dart';
-import 'package:kilikili/models_new/history/list.dart';
-import 'package:kilikili/models_new/later/data.dart';
-import 'package:kilikili/models_new/later/list.dart';
-import 'package:kilikili/models_new/sub/sub/data.dart';
 import 'package:kilikili/models_new/sub/sub/list.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
 import 'package:kilikili/services/account_service.dart';
@@ -25,6 +17,9 @@ import 'package:kilikili/utils/storage.dart';
 import 'package:kilikili/utils/storage_key.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:kilikili/utils/theme_utils.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
+import 'package:kilikili/services/rust/rust_user.dart';
+import 'package:kilikili/services/rust/sub_compat.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -35,7 +30,7 @@ class MineController extends GetxController with AccountMixin {
   AccountService accountService = Get.find<AccountService>();
 
   // 用户信息 头像、昵称、lv
-  final Rx<UserInfoData> userInfo = UserInfoData().obs;
+  final Rx<UserInfo> userInfo = const UserInfo().obs;
   // 用户状态 动态、关注、粉丝
   final Rx<UserStat> userStat = const UserStat().obs;
 
@@ -115,9 +110,16 @@ class MineController extends GetxController with AccountMixin {
   void onInit() {
     super.onInit();
     _initTabs();
-    final userInfoCache = Pref.userInfoCache;
-    if (userInfoCache != null) {
-      userInfo.value = userInfoCache;
+    // 有缓存就先拿它填首屏，没有就空着——它只决定「先显示什么」。
+    if (Pref.userInfoCache case final cached?) {
+      userInfo.value = cached;
+    }
+    // **是否取数由登录态决定，不由缓存有没有决定**（issue #161）。
+    //
+    // 原来这两行在 `cache != null` 里面：缓存一旦为空（换存储格式、手工
+    // 清理），nav 就再也不会发，缓存也就再也填不回来，这一页永久停在
+    // 未登录——而 `onRefresh` 在未登录时直接返回，下拉也救不回来。
+    if (isLogin) {
       queryUserInfo();
       tabCtr().forEach((ctr) => ctr.queryData());
     }
@@ -126,13 +128,11 @@ class MineController extends GetxController with AccountMixin {
   bool get isLogin => accountService.isLogin.value;
 
   Future<void> queryUserInfo() async {
-    final res = await UserHttp.userInfo();
+    final res = await RustUser.userInfo();
     if (res case Success(:final response)) {
       if (response.isLogin == true) {
         userInfo.value = response;
-        if (response != Pref.userInfoCache) {
-          GStorage.userInfo.put('userInfoCache', response);
-        }
+        _cacheUserInfo(response);
         accountService
           ..face.value = response.face!
           ..isLogin.value = true;
@@ -153,8 +153,17 @@ class MineController extends GetxController with AccountMixin {
 
   void _onLogoutMain() => Accounts.deleteAll({Accounts.main});
 
+  /// 把登录信息写进本地缓存。序列化失败就不写——缓存写不成不是错误，
+  /// 下次启动多发一次 nav 请求而已。
+  static void _cacheUserInfo(UserInfo info) {
+    final json = RustUser.cacheUserInfo(info);
+    if (json != null) {
+      GStorage.userInfo.put('userInfoCache', json);
+    }
+  }
+
   Future<void> queryUserStatOwner() async {
-    final res = await UserHttp.userStatOwner();
+    final res = await RustUser.userStatOwner();
     if (res case Success(:final response)) {
       userStat.value = response;
     }
@@ -315,7 +324,7 @@ class MineController extends GetxController with AccountMixin {
     if (isLogin) {
       onRefresh();
     } else {
-      userInfo.value = UserInfoData();
+      userInfo.value = const UserInfo();
       userStat.value = const UserStat();
       tabCtr().forEach(
         (ctr) => ctr.loadingState.value = LoadingState.loading(),
@@ -363,14 +372,14 @@ class FavCtr extends CommonListController<FavFolderData, FavFolderInfo>
   );
 }
 
-class HistoryCtr extends CommonListController<HistoryData, HistoryItemModel>
+class HistoryCtr extends CommonListController<HistoryPage, HistoryItem>
     with MineRefreshMixin {
   int? viewAt;
   int? max;
 
   @override
-  List<HistoryItemModel>? getDataList(HistoryData response) {
-    final last = response.list?.lastOrNull;
+  List<HistoryItem>? getDataList(HistoryPage response) {
+    final last = response.list.lastOrNull;
     if (last == null) {
       isEnd = true;
       max = viewAt = null;
@@ -383,7 +392,7 @@ class HistoryCtr extends CommonListController<HistoryData, HistoryItemModel>
   }
 
   @override
-  Future<LoadingState<HistoryData>> customGetData() => UserHttp.historyList(
+  Future<LoadingState<HistoryPage>> customGetData() => RustHistory.historyList(
     type: 'all',
     viewAt: viewAt,
     max: max,
@@ -399,33 +408,34 @@ class HistoryCtr extends CommonListController<HistoryData, HistoryItemModel>
   }
 }
 
-class LaterCtr extends CommonListController<LaterData, LaterItemModel>
+class LaterCtr extends CommonListController<LaterPage, LaterItem>
     with MineRefreshMixin {
   @override
-  List<LaterItemModel>? getDataList(LaterData response) {
+  List<LaterItem>? getDataList(LaterPage response) {
     count = response.count;
     return response.list;
   }
 
   @override
-  Future<LoadingState<LaterData>> customGetData() => UserHttp.seeYouLater(
+  Future<LoadingState<LaterPage>> customGetData() => RustHistory.seeYouLater(
     page: page,
     ps: _ps,
     viewed: LaterViewType.all.type,
   );
 }
 
-class SubCtr extends CommonListController<SubData, SubItemModel>
+class SubCtr extends CommonListController<SubList, SubItemModel>
     with MineRefreshMixin {
   @override
-  List<SubItemModel>? getDataList(SubData response) {
+  List<SubItemModel>? getDataList(SubList response) {
     count = response.count;
     if (response.hasMore == false) isEnd = true;
-    return response.list;
+    // 见 `lib/services/rust/sub_compat.dart`：合集详情页那条接口还在 Dart。
+    return response.list.map((e) => e.toItemModel()).toList();
   }
 
   @override
-  Future<LoadingState<SubData>> customGetData() => UserHttp.userSubFolder(
+  Future<LoadingState<SubList>> customGetData() => RustUser.userSubFolder(
     pn: page,
     ps: _ps,
     mid: Accounts.main.mid,

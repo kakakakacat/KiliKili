@@ -11,9 +11,8 @@ import 'package:kilikili/common/widgets/scroll_behavior.dart'
     show NoOverscrollIndicator;
 import 'package:kilikili/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/user.dart';
 import 'package:kilikili/services/rust/rust_live.dart';
-import 'package:kilikili/models_new/space/space/reservation_card_list.dart';
+import 'package:kilikili/pages/member/reserve_item.dart';
 import 'package:kilikili/pages/coin_log/controller.dart';
 import 'package:kilikili/pages/exp_log/controller.dart';
 import 'package:kilikili/pages/log_table/view.dart';
@@ -42,6 +41,8 @@ import 'package:kilikili/utils/num_utils.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:kilikili/utils/utils.dart';
+import 'package:kilikili/services/rust/rust_relation.dart';
+import 'package:kilikili/services/rust/rust_user.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -171,7 +172,7 @@ class _MemberPageState extends State<MemberPage> {
     );
   }
 
-  Widget _reserveBtn(List<ReservationCardItem> list, ColorScheme theme) {
+  Widget _reserveBtn(List<MemberReserveItem> list, ColorScheme theme) {
     return IconButton(
       tooltip: '预约',
       onPressed: () => _showReserveList(list),
@@ -183,7 +184,7 @@ class _MemberPageState extends State<MemberPage> {
     );
   }
 
-  void _showReserveList(List<ReservationCardItem> list) {
+  void _showReserveList(List<MemberReserveItem> list) {
     showModalBottomSheet(
       context: context,
       useSafeArea: true,
@@ -221,7 +222,7 @@ class _MemberPageState extends State<MemberPage> {
                     Widget trailing = FilledButton.tonal(
                       onPressed: () async {
                         final isFollow = e.isFollow;
-                        final res = await UserHttp.spaceReserve(
+                        final res = await RustUser.spaceReserve(
                           sid: e.sid!,
                           isFollow: isFollow,
                         );
@@ -286,10 +287,10 @@ class _MemberPageState extends State<MemberPage> {
                             children: [
                               TextSpan(
                                 text:
-                                    '${e.descText1 == null ? '' : '${e.descText1}  '}'
+                                    '${e.descText == null ? '' : '${e.descText}  '}'
                                     '${NumUtils.numFormat(e.total)}人预约',
                               ),
-                              if (e.lotteryPrizeInfo case final lottery?) ...[
+                              if (e.lottery case final lottery?) ...[
                                 const TextSpan(text: '\n'),
                                 WidgetSpan(
                                   alignment: .middle,
@@ -450,8 +451,7 @@ class _MemberPageState extends State<MemberPage> {
                         .value
                         .dataOrNull
                         ?.card
-                        ?.vip
-                        ?.status ??
+                        ?.vipStatus ??
                     0) >
                 0)
               PopupMenuItem(
@@ -632,7 +632,7 @@ class _MemberPageState extends State<MemberPage> {
       onShow();
       return;
     }
-    final res = await UserHttp.userRelation(_mid);
+    final res = await RustRelation.userRelation(_mid);
     if (res case Success(:final response)) {
       if (response.mtime == null) return;
       _cacheFollowTime =
@@ -675,7 +675,7 @@ class _MemberPageState extends State<MemberPage> {
       final ctr = Get.find<MemberContributeCtr>(tag: _heroTag);
       final item = ctr.items?[ctr.tabController?.index ?? 0];
       if (item != null) {
-        final id = item.seasonId ?? item.seriesId;
+        final id = (item.seasonId ?? item.seriesId)?.toInt();
         if (id != null) {
           MemberSSWeb.toMemberSSWeb(
             type: item.seasonId != null ? .season : .series,

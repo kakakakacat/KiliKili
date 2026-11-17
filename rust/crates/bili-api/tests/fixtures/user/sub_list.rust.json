@@ -1,0 +1,50 @@
+{
+  "count": 2,
+  "has_more": false,
+  "list": [
+    {
+      "attr": 0,
+      "collect_count": 8,
+      "cover": "https://example.invalid/bfs/archive/f1.jpg",
+      "cover_type": 2,
+      "ctime": 1700000401,
+      "fav_state": 1,
+      "fid": 9001,
+      "id": 900001,
+      "intro": "示例简介",
+      "kind": 11,
+      "media_count": 37,
+      "mid": 800000601,
+      "mtime": 1700000402,
+      "play_count": 1024,
+      "state": 0,
+      "title": "示例收藏夹",
+      "upper_face": "https://example.invalid/bfs/face/x.jpg",
+      "upper_mid": 800000601,
+      "upper_name": "示例作者",
+      "view_count": 0
+    },
+    {
+      "attr": null,
+      "collect_count": null,
+      "cover": "https://example.invalid/bfs/archive/f2.jpg",
+      "cover_type": null,
+      "ctime": null,
+      "fav_state": null,
+      "fid": null,
+      "id": 900002,
+      "intro": null,
+      "kind": 21,
+      "media_count": 5,
+      "mid": null,
+      "mtime": null,
+      "play_count": null,
+      "state": 1,
+      "title": "示例合集",
+      "upper_face": null,
+      "upper_mid": null,
+      "upper_name": null,
+      "view_count": null
+    }
+  ]
+}

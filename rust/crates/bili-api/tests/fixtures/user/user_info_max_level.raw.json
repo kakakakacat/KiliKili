@@ -1,0 +1,21 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "isLogin": true,
+    "face": "https://example.invalid/bfs/face/v.jpg",
+    "level_info": {
+      "current_level": 6,
+      "current_min": 28800,
+      "current_exp": 31000,
+      "next_exp": "--"
+    },
+    "mid": 800000502,
+    "money": 0,
+    "uname": "满级用户",
+    "vipStatus": 0,
+    "vipType": 0,
+    "is_senior_member": 0
+  }
+}

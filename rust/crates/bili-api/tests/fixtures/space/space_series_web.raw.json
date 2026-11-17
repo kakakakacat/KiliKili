@@ -1,0 +1,54 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "page": {
+      "num": 1,
+      "size": 30,
+      "total": 116
+    },
+    "archives": [
+      {
+        "aid": 100200300,
+        "title": "折1万次，会坏吗？深度评测",
+        "pubdate": 1792584000,
+        "ctime": 1792577675,
+        "state": 0,
+        "pic": "https://i0.hdslb.com/bfs/archive/cover0.jpg",
+        "duration": 1492,
+        "stat": {
+          "view": 13485620
+        },
+        "bvid": "BV1xx411c7xx",
+        "ugc_pay": 0,
+        "interactive_video": false,
+        "enable_vt": 0,
+        "vt_display": "",
+        "playback_position": 0,
+        "desc": "一条描述",
+        "upMid": 946974
+      },
+      {
+        "aid": 100200301,
+        "title": "一台相机的十年",
+        "pubdate": 1789639200,
+        "ctime": 1789636846,
+        "state": 0,
+        "pic": "https://i0.hdslb.com/bfs/archive/cover1.jpg",
+        "duration": 336,
+        "stat": {
+          "view": 2225403
+        },
+        "bvid": "BV1yy411c7yy",
+        "ugc_pay": 0,
+        "interactive_video": false,
+        "enable_vt": 0,
+        "vt_display": "",
+        "playback_position": 0,
+        "desc": "一条描述",
+        "upMid": 946974
+      }
+    ]
+  }
+}

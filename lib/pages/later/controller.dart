@@ -1,15 +1,13 @@
 import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/user.dart';
 import 'package:kilikili/models/common/later_view_type.dart';
+import 'package:kilikili/models_new/video/video_detail/dimension.dart';
 import 'package:kilikili/models/common/video/source_type.dart';
-import 'package:kilikili/models_new/later/data.dart';
-import 'package:kilikili/models_new/later/list.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart'
     show CommonListController;
-import 'package:kilikili/pages/common/multi_select/base.dart';
-import 'package:kilikili/pages/common/multi_select/multi_select_controller.dart';
+import 'package:kilikili/pages/common/multi_select/id_based.dart';
 import 'package:kilikili/pages/later/base_controller.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/extension/scroll_controller_ext.dart';
 import 'package:kilikili/utils/page_utils.dart';
@@ -19,9 +17,8 @@ import 'package:material_ui/material_ui.dart';
 
 mixin BaseLaterController
     on
-        CommonListController<LaterData, LaterItemModel>,
-        CommonMultiSelectMixin<LaterItemModel>,
-        DeleteItemMixin<LaterData, LaterItemModel> {
+        CommonListController<LaterPage, LaterItem>,
+        IdMultiSelectMixin<LaterPage, LaterItem, int> {
   ValueChanged<int>? updateCount;
 
   @override
@@ -31,14 +28,12 @@ mixin BaseLaterController
       title: const Text('提示'),
       content: const Text('确认删除所选稍后再看吗？'),
       onConfirm: () async {
-        final removeList = allChecked.toSet();
+        final removed = allChecked.map(idOf).toSet();
         SmartDialog.showLoading(msg: '请求中');
-        final res = await UserHttp.toViewDel(
-          aids: removeList.map((item) => item.aid).join(','),
-        );
+        final res = await RustHistory.toViewDel(aids: removed.join(','));
         if (res.isSuccess) {
-          updateCount?.call(removeList.length);
-          afterDelete(removeList);
+          updateCount?.call(removed.length);
+          afterDeleteIds(removed);
         }
         SmartDialog.dismiss();
       },
@@ -63,7 +58,7 @@ mixin BaseLaterController
           TextButton(
             onPressed: () async {
               Get.back();
-              final res = await UserHttp.toViewDel(aids: aid);
+              final res = await RustHistory.toViewDel(aids: '$aid');
               if (res.isSuccess) {
                 loadingState
                   ..value.data!.removeAt(index)
@@ -79,8 +74,10 @@ mixin BaseLaterController
   }
 }
 
-class LaterController extends MultiSelectController<LaterData, LaterItemModel>
-    with BaseLaterController {
+class LaterController extends CommonListController<LaterPage, LaterItem>
+    with
+        IdMultiSelectMixin<LaterPage, LaterItem, int>,
+        BaseLaterController {
   LaterController(this.laterViewType);
   final LaterViewType laterViewType;
 
@@ -96,8 +93,12 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
   @override
   RxInt get rxCount => baseCtr.checkedCount;
 
+  /// 稍后再看的条目在同一个列表里按 aid 唯一，删除接口认的也是 aid。
   @override
-  Future<LoadingState<LaterData>> customGetData() => UserHttp.seeYouLater(
+  int idOf(LaterItem item) => item.aid ?? 0;
+
+  @override
+  Future<LoadingState<LaterPage>> customGetData() => RustHistory.seeYouLater(
     page: page,
     viewed: laterViewType.type,
     asc: asc.value,
@@ -110,7 +111,7 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
   }
 
   @override
-  List<LaterItemModel>? getDataList(response) {
+  List<LaterItem>? getDataList(LaterPage response) {
     baseCtr.counts[laterViewType.index] = response.count ?? 0;
     return response.list;
   }
@@ -134,7 +135,7 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
       title: const Text('确认'),
       content: Text(content),
       onConfirm: () async {
-        final res = await UserHttp.toViewClear(cleanType);
+        final res = await RustHistory.toViewClear(cleanType);
         if (res.isSuccess) {
           onReload();
           final restTypes = List<LaterViewType>.from(LaterViewType.values)
@@ -157,7 +158,7 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
     if (loadingState.value case Success(:final response)) {
       if (response == null || response.isEmpty) return;
 
-      for (LaterItemModel item in response) {
+      for (LaterItem item in response) {
         if (item.cid == null || item.pgcLabel?.isNotEmpty == true) {
           continue;
         } else {
@@ -166,7 +167,10 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
             cid: item.cid!,
             cover: item.pic,
             title: item.title,
-            dimension: item.dimension,
+            // Rust 给的宽高已按 rotate 摆正，这里只是装进宿主的容器。
+            dimension: item.width == null || item.height == null
+                ? null
+                : Dimension(width: item.width, height: item.height),
             extraArguments: {
               'sourceType': SourceType.watchLater,
               'count': baseCtr.counts[LaterViewType.all.index],

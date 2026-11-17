@@ -1,10 +1,11 @@
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/common/skeleton/space_opus.dart';
 import 'package:kilikili/common/sliver_single_child_delegate.dart';
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/space/space_shop/item.dart';
+
 import 'package:kilikili/pages/member_shop/controller.dart';
 import 'package:kilikili/pages/member_shop/widgets/item.dart';
 import 'package:kilikili/utils/grid.dart';
@@ -106,15 +107,10 @@ class _MemberShopState extends State<MemberShop>
                     child: FilledButton.tonal(
                       onPressed: () {
                         if (_controller.clickUrl case final clickUrl?) {
-                          final url = Uri.parse(
-                            clickUrl,
-                          ).queryParameters['url'];
-                          if (url case final url?) {
-                            Get.toNamed(
-                              '/webview',
-                              parameters: {'url': url},
-                            );
-                          }
+                          Get.toNamed(
+                            '/webview',
+                            parameters: {'url': clickUrl},
+                          );
                         }
                       },
                       style: FilledButton.styleFrom(

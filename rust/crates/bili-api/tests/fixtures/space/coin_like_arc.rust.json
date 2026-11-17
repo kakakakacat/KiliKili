@@ -1,0 +1,31 @@
+{
+  "count": 2,
+  "items": [
+    {
+      "cover": "//i0.example.test/bfs/archive/uuuuuuuu.jpg",
+      "ctime": 1762000000,
+      "danmaku": 21,
+      "duration": 360,
+      "is_cooperation": true,
+      "is_pgc": false,
+      "is_steins": false,
+      "param": "100000031",
+      "play": 4321,
+      "title": "示例投币稿件",
+      "uri": "bilibili://video/100000031"
+    },
+    {
+      "cover": "//i0.example.test/bfs/archive/vvvvvvvv.jpg",
+      "ctime": 1761500000,
+      "danmaku": null,
+      "duration": 1440,
+      "is_cooperation": null,
+      "is_pgc": true,
+      "is_steins": null,
+      "param": "600011",
+      "play": 98765,
+      "title": "示例番剧单集",
+      "uri": "bilibili://pgc/season/ep600011"
+    }
+  ]
+}

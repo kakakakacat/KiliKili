@@ -14,7 +14,6 @@ import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/image_preview_type.dart';
 import 'package:kilikili/models/common/image_type.dart';
 import 'package:kilikili/models/common/member/user_info_type.dart';
-import 'package:kilikili/models/member/info.dart';
 import 'package:kilikili/models_new/space/space_archive/item.dart';
 import 'package:kilikili/models_new/video/video_detail/episode.dart';
 import 'package:kilikili/pages/fan/view.dart';
@@ -23,6 +22,8 @@ import 'package:kilikili/pages/member_video/widgets/video_card_h_member_video.da
 import 'package:kilikili/pages/video/controller.dart';
 import 'package:kilikili/pages/video/introduction/ugc/controller.dart';
 import 'package:kilikili/pages/video/member/controller.dart';
+import 'package:kilikili/services/rust/rust_space.dart'
+    show MemberInfo;
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/grid.dart';
 import 'package:kilikili/utils/bili_utils.dart';
@@ -43,7 +44,7 @@ class HorizontalMemberPage extends StatefulWidget {
     required this.ugcIntroController,
   });
 
-  final dynamic mid;
+  final int mid;
   final VideoDetailController videoDetailController;
   final UgcIntroController ugcIntroController;
 
@@ -161,7 +162,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
         controller: _controller.scrollController,
         errMsg: errMsg,
         onReload: () {
-          _controller.userState.value = LoadingState<MemberInfoModel>.loading();
+          _controller.userState.value = LoadingState<MemberInfo>.loading();
           _controller.getUserInfo();
         },
       ),
@@ -269,7 +270,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
     };
   }
 
-  Widget _buildUserInfo(MemberInfoModel memberInfoModel) {
+  Widget _buildUserInfo(MemberInfo memberInfoModel) {
     return Padding(
       padding: const .only(left: 16, top: 10, right: 16, bottom: 3),
       child: Row(
@@ -282,7 +283,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
     );
   }
 
-  Column _buildInfo(MemberInfoModel memberInfoModel) => Column(
+  Column _buildInfo(MemberInfo memberInfoModel) => Column(
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -296,8 +297,8 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color:
-                    (memberInfoModel.vip?.status ?? -1) > 0 &&
-                        memberInfoModel.vip?.type == 2
+                    (memberInfoModel.vipStatus ?? -1) > 0 &&
+                        memberInfoModel.vipType == 2
                     ? colorScheme.vipColor
                     : null,
               ),
@@ -305,7 +306,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
           ),
           const SizedBox(width: 8),
           BiliUtils.levelPicture(
-            memberInfoModel.level!,
+            memberInfoModel.level ?? 0,
             isSeniorMember: memberInfoModel.isSeniorMember == 1,
             height: 11,
           ),
@@ -318,7 +319,6 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
               .map(
                 (e) => _buildChildInfo(
                   type: e,
-                  userStat: _controller.userStat,
                   memberInfoModel: memberInfoModel,
                 ),
               )
@@ -344,10 +344,10 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
           Expanded(
             child: FilledButton.tonal(
               style: FilledButton.styleFrom(
-                backgroundColor: memberInfoModel.isFollowed == true
+                backgroundColor: _controller.isFollowed.value == true
                     ? colorScheme.onInverseSurface
                     : null,
-                foregroundColor: memberInfoModel.isFollowed == true
+                foregroundColor: _controller.isFollowed.value == true
                     ? colorScheme.outline
                     : null,
                 padding: EdgeInsets.zero,
@@ -365,19 +365,16 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
                   RequestUtils.actionRelationMod(
                     context: context,
                     mid: widget.mid,
-                    isFollow: memberInfoModel.isFollowed ?? false,
-                    afterMod: (attribute) {
-                      _controller
-                        ..userState.value.data.isFollowed = attribute != 0
-                        ..userState.refresh();
-                    },
+                    isFollow: _controller.isFollowed.value ?? false,
+                    afterMod: (attribute) =>
+                        _controller.isFollowed.value = attribute != 0,
                   );
                 }
               },
               child: Text(
                 widget.mid == account.mid
                     ? '编辑资料'
-                    : memberInfoModel.isFollowed == true
+                    : _controller.isFollowed.value == true
                     ? '已关注'
                     : '关注',
                 maxLines: 1,
@@ -407,30 +404,28 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
 
   Widget _buildChildInfo({
     required UserInfoType type,
-    required Map userStat,
-    required MemberInfoModel memberInfoModel,
+    required MemberInfo memberInfoModel,
   }) {
     dynamic num;
     VoidCallback? onTap;
     switch (type) {
       case UserInfoType.fan:
-        num = userStat['follower'] != null
-            ? NumUtils.numFormat(userStat['follower'])
-            : '';
+        final follower = _controller.follower.value;
+        num = follower != null ? NumUtils.numFormat(follower) : '';
         onTap = () => FansPage.toFansPage(
           mid: widget.mid,
           name: memberInfoModel.name,
         );
       case UserInfoType.follow:
-        num = userStat['following'] ?? '';
+        // 关注数不过 `numFormat`：对方设了隐私时服务端给 -1，基线原样显示。
+        num = _controller.following.value ?? '';
         onTap = () => FollowPage.toFollowPage(
           mid: widget.mid,
           name: memberInfoModel.name,
         );
       case UserInfoType.like:
-        num = userStat['likes'] != null
-            ? NumUtils.numFormat(userStat['likes'])
-            : '';
+        final likes = _controller.likes.value;
+        num = likes != null ? NumUtils.numFormat(likes) : '';
     }
     return GestureDetector(
       onTap: onTap,

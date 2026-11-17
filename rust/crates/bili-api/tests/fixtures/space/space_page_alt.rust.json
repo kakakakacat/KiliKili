@@ -1,0 +1,325 @@
+{
+  "archive": {
+    "count": 17,
+    "items": [
+      {
+        "author": "用户03",
+        "badges": [
+          "合作"
+        ],
+        "bvid": "BV1Yrjo6bEk6",
+        "cid": 39457129623,
+        "cover": "http://i2.hdslb.com/bfs/archive/xxxx.jpg",
+        "danmaku": 675,
+        "duration": 1024,
+        "goto": "av",
+        "history": null,
+        "is_cooperation": true,
+        "is_pgc": false,
+        "is_pugv": false,
+        "is_steins": false,
+        "label": null,
+        "param": "116805561484650",
+        "play": 1976359,
+        "publish_time_text": "6月27日",
+        "season_mtime": null,
+        "styles": null,
+        "title": "陈睿《让好内容发生》",
+        "uri": "bilibili://video/116805561484650"
+      },
+      {
+        "author": "用户01",
+        "badges": [],
+        "bvid": "BV1ppjo66E8c",
+        "cid": 39375209982,
+        "cover": "http://i2.hdslb.com/bfs/archive/xxxx.jpg",
+        "danmaku": 67,
+        "duration": 387,
+        "goto": "av",
+        "history": null,
+        "is_cooperation": false,
+        "is_pgc": false,
+        "is_pugv": false,
+        "is_steins": false,
+        "label": null,
+        "param": "116805494641880",
+        "play": 411614,
+        "publish_time_text": "6月25日",
+        "season_mtime": null,
+        "styles": null,
+        "title": "让好内容，因你而发生 —— B站五年员工和十年员工纪念视频2026版",
+        "uri": "bilibili://video/116805494641880"
+      }
+    ]
+  },
+  "article": {
+    "count": 6,
+    "items": [
+      {
+        "cover": "https://i0.hdslb.com/bfs/article/f36bedfaa185d97326b0fe7c943db215c7e5da99.jpg",
+        "publish_time_text": "2021年3月29日",
+        "reply": 3024,
+        "title": "写在B站于香港二次上市之际——致广大用户的公开信",
+        "uri": "bilibili://article/10518733",
+        "view": 19086315
+      },
+      {
+        "cover": "https://i0.hdslb.com/bfs/article/ad309ef978d43f4b93dd1947bbcd607a852b5471.jpg",
+        "publish_time_text": "2020年3月3日",
+        "reply": 1716,
+        "title": "读一本好书，终身受益",
+        "uri": "bilibili://article/4933039",
+        "view": 3158698
+      }
+    ]
+  },
+  "audio": {
+    "count": 0,
+    "items": []
+  },
+  "card": {
+    "attention": 550,
+    "face": "http://i2.hdslb.com/bfs/app/xxxx.png",
+    "fans": 2298864,
+    "followed_by": null,
+    "level": 6,
+    "level_identity": 1,
+    "like_num": 6328869,
+    "live_medal": null,
+    "mid": "100002",
+    "name": "用户01",
+    "official_desc": "bilibili董事长兼CEO",
+    "official_splice_title": "bilibili UP主认证：bilibili董事长兼CEO",
+    "official_type": 0,
+    "pendant_image": null,
+    "pr_info": null,
+    "relation": {
+      "is_follow": null,
+      "is_followed": null,
+      "status": 1
+    },
+    "sign": "喜欢的话就坚持吧",
+    "silence": 0,
+    "tags": [],
+    "vip_label_text": "十年大会员",
+    "vip_status": 1,
+    "vip_type": 2
+  },
+  "coin_archive": {
+    "count": 1,
+    "items": [
+      {
+        "author": "用户10",
+        "badges": [],
+        "bvid": null,
+        "cid": null,
+        "cover": "http://i2.hdslb.com/bfs/archive/xxxx.jpg",
+        "danmaku": 1607,
+        "duration": 233,
+        "goto": "av",
+        "history": null,
+        "is_cooperation": false,
+        "is_pgc": false,
+        "is_pugv": false,
+        "is_steins": false,
+        "label": null,
+        "param": "117510087117212",
+        "play": 625726,
+        "publish_time_text": "",
+        "season_mtime": null,
+        "styles": null,
+        "title": "恭喜！当之无愧！33岁凯恩荣膺2026年度金球奖！",
+        "uri": "bilibili://video/117510087117212"
+      }
+    ]
+  },
+  "comic": {
+    "count": 0,
+    "items": []
+  },
+  "default_tab": "video",
+  "elec": null,
+  "favourite": {
+    "count": 0,
+    "items": []
+  },
+  "guard": null,
+  "guest_relation": -999,
+  "has_item": true,
+  "has_season_or_series": false,
+  "images": {
+    "img_url": "https://i0.hdslb.com/bfs/activity-plat/static/9bdd988aed64a23976d6d5494533a450/tDojHPi2LG.jpg",
+    "night_img_url": "https://i0.hdslb.com/bfs/activity-plat/static/9bdd988aed64a23976d6d5494533a450/5A10HwGd3.jpg",
+    "top_images": []
+  },
+  "like_archive": {
+    "count": 600,
+    "items": [
+      {
+        "author": "用户10",
+        "badges": [],
+        "bvid": null,
+        "cid": null,
+        "cover": "http://i2.hdslb.com/bfs/archive/xxxx.jpg",
+        "danmaku": 1607,
+        "duration": 233,
+        "goto": "av",
+        "history": null,
+        "is_cooperation": false,
+        "is_pgc": false,
+        "is_pugv": false,
+        "is_steins": false,
+        "label": null,
+        "param": "117510087117212",
+        "play": 625726,
+        "publish_time_text": "",
+        "season_mtime": null,
+        "styles": null,
+        "title": "恭喜！当之无愧！33岁凯恩荣膺2026年度金球奖！",
+        "uri": "bilibili://video/117510087117212"
+      },
+      {
+        "author": "用户11",
+        "badges": [],
+        "bvid": null,
+        "cid": null,
+        "cover": "http://i2.hdslb.com/bfs/archive/xxxx.jpg",
+        "danmaku": 535,
+        "duration": 47,
+        "goto": "av",
+        "history": null,
+        "is_cooperation": false,
+        "is_pgc": false,
+        "is_pugv": false,
+        "is_steins": false,
+        "label": null,
+        "param": "116521288343115",
+        "play": 1249833,
+        "publish_time_text": "",
+        "season_mtime": null,
+        "styles": null,
+        "title": "怪不得要爸爸接(｡ì _ í｡)",
+        "uri": "bilibili://video/116521288343115"
+      }
+    ]
+  },
+  "live": {
+    "live_status": 0,
+    "room_id": 3394945,
+    "room_status": 1
+  },
+  "medal": 1,
+  "rel_special": null,
+  "relation": -999,
+  "reservations": [],
+  "season": {
+    "count": 73,
+    "items": [
+      {
+        "author": null,
+        "badges": [],
+        "bvid": null,
+        "cid": null,
+        "cover": "https://i0.hdslb.com/bfs/bangumi/image/xxxx.png",
+        "danmaku": null,
+        "duration": -1,
+        "goto": "bangumi",
+        "history": null,
+        "is_cooperation": null,
+        "is_pgc": null,
+        "is_pugv": null,
+        "is_steins": null,
+        "label": null,
+        "param": "73959",
+        "play": null,
+        "publish_time_text": null,
+        "season_mtime": null,
+        "styles": null,
+        "title": "剑网3·沈剑心的365天",
+        "uri": "http://bangumi.bilibili.com/anime/73959"
+      },
+      {
+        "author": null,
+        "badges": [],
+        "bvid": null,
+        "cid": null,
+        "cover": "https://i0.hdslb.com/bfs/bangumi/image/xxxx.png",
+        "danmaku": null,
+        "duration": -1,
+        "goto": "bangumi",
+        "history": null,
+        "is_cooperation": null,
+        "is_pgc": null,
+        "is_pugv": null,
+        "is_steins": null,
+        "label": null,
+        "param": "48001",
+        "play": null,
+        "publish_time_text": null,
+        "season_mtime": null,
+        "styles": null,
+        "title": "剧场版 咒术回战 0",
+        "uri": "http://bangumi.bilibili.com/anime/48001"
+      }
+    ]
+  },
+  "setting": {
+    "bangumi": 1,
+    "coins_video": 1,
+    "fav_video": 0,
+    "likes_video": 1
+  },
+  "tab2": [
+    {
+      "items": [],
+      "param": "home",
+      "title": "主页"
+    },
+    {
+      "items": [],
+      "param": "dynamic",
+      "title": "动态"
+    },
+    {
+      "items": [
+        {
+          "filters": [],
+          "param": "video",
+          "season_id": null,
+          "series_id": null,
+          "title": "视频"
+        },
+        {
+          "filters": [
+            {
+              "meta": "all",
+              "tab_name": "图文",
+              "text": "全部图文"
+            },
+            {
+              "meta": "dynamic",
+              "tab_name": "动态",
+              "text": "动态"
+            },
+            {
+              "meta": "article",
+              "tab_name": "专栏",
+              "text": "专栏"
+            }
+          ],
+          "param": "opus",
+          "season_id": null,
+          "series_id": null,
+          "title": "图文"
+        }
+      ],
+      "param": "contribute",
+      "title": "投稿"
+    },
+    {
+      "items": [],
+      "param": "bangumi",
+      "title": "追番"
+    }
+  ]
+}

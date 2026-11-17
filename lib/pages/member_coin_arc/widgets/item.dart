@@ -4,7 +4,7 @@ import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/widgets/video_card/video_card_v.dart';
 import 'package:kilikili/http/search.dart';
 import 'package:kilikili/models/common/stat_type.dart';
-import 'package:kilikili/models_new/member/coin_like_arc/item.dart';
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/utils/date_utils.dart';
 import 'package:kilikili/utils/duration_utils.dart';
 import 'package:kilikili/utils/page_utils.dart';

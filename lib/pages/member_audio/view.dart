@@ -1,10 +1,11 @@
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/space/space_audio/item.dart';
+
 import 'package:kilikili/pages/member_audio/controller.dart';
 import 'package:kilikili/pages/member_audio/widgets/item.dart';
 import 'package:kilikili/utils/grid.dart';
@@ -113,7 +114,18 @@ class _MemberAudioState extends State<MemberAudio>
                       if (index == response.length - 1) {
                         _controller.onLoadMore();
                       }
-                      return MemberAudioItem(response[index]);
+                      final item = response[index];
+                      // 这条接口的 `ctime` 是毫秒（空间主页那条是秒），
+                      // 转换留在调用点，见 `MemberAudioItem.ctime`。
+                      return MemberAudioItem(
+                        id: item.id,
+                        uid: item.uid,
+                        title: item.title,
+                        cover: item.cover,
+                        ctime: item.ctime,
+                        play: item.play,
+                        comment: item.comment,
+                      );
                     },
                     itemCount: response.length,
                   ),

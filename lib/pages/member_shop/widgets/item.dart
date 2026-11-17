@@ -1,7 +1,8 @@
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/models/common/badge_type.dart';
-import 'package:kilikili/models_new/space/space_shop/item.dart';
+
 import 'package:kilikili/utils/extension/theme_ext.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -17,7 +18,7 @@ class MemberShopItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final belowLabels = item.belowLabels?.map((e) => e.title).join('|');
+    final belowLabels = item.belowLabels.join('|');
     return Card(
       shape: const RoundedRectangleBorder(borderRadius: .all(.circular(6))),
       child: InkWell(
@@ -33,7 +34,7 @@ class MemberShopItem extends StatelessWidget {
             LayoutBuilder(
               builder: (context, constraints) => NetworkImgLayer(
                 borderRadius: const .vertical(top: .circular(6)),
-                src: item.cover?.url,
+                src: item.cover,
                 width: constraints.maxWidth,
                 height: constraints.maxWidth,
               ),
@@ -48,7 +49,7 @@ class MemberShopItem extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (belowLabels?.isNotEmpty == true)
+                  if (belowLabels.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2),
                       child: PBadge(
@@ -71,14 +72,13 @@ class MemberShopItem extends StatelessWidget {
                           style: TextStyle(color: colorScheme.vipColor),
                           TextSpan(
                             children: [
-                              if (netPrice.pricePrefix?.isNotEmpty == true)
+                              if (item.pricePrefix?.isNotEmpty == true)
                                 TextSpan(
-                                  text: '${netPrice.pricePrefix} ',
+                                  text: '${item.pricePrefix} ',
                                   style: const TextStyle(fontSize: 11),
                                 ),
                               TextSpan(
-                                text:
-                                    '${netPrice.priceSymbol}${netPrice.netPrice}',
+                                text: '${item.priceSymbol}$netPrice',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -86,14 +86,9 @@ class MemberShopItem extends StatelessWidget {
                             ],
                           ),
                         ),
-                      if (item.benefitInfos?.isNotEmpty == true)
+                      if (item.benefits.isNotEmpty)
                         Text(
-                          item.benefitInfos!
-                              .map(
-                                (e) =>
-                                    '${e.prefix ?? ''}${e.amount ?? ''}${e.suffix ?? ''}',
-                              )
-                              .join('|'),
+                          item.benefits.join('|'),
                           style: TextStyle(
                             fontSize: 11,
                             color: colorScheme.outline,

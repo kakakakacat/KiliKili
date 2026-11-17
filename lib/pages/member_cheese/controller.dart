@@ -1,11 +1,10 @@
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/member.dart';
-import 'package:kilikili/models_new/space/space_cheese/data.dart';
-import 'package:kilikili/models_new/space/space_cheese/item.dart';
+
 import 'package:kilikili/pages/common/common_list_controller.dart';
 
 class MemberCheeseController
-    extends CommonListController<SpaceCheeseData, SpaceCheeseItem> {
+    extends CommonListController<SpaceCheesePage, SpaceCheeseItem> {
   MemberCheeseController(this.mid);
 
   final int mid;
@@ -17,15 +16,14 @@ class MemberCheeseController
   }
 
   @override
-  List<SpaceCheeseItem>? getDataList(SpaceCheeseData response) {
-    isEnd = response.page?.next == false;
+  List<SpaceCheeseItem>? getDataList(SpaceCheesePage response) {
+    isEnd = response.hasNext == false;
     return response.items;
   }
 
   @override
-  Future<LoadingState<SpaceCheeseData>> customGetData() =>
-      MemberHttp.spaceCheese(
-        page: page,
-        mid: mid,
-      );
+  Future<LoadingState<SpaceCheesePage>> customGetData() => RustSpace.cheese(
+    page: page,
+    mid: mid,
+  );
 }

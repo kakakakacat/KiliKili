@@ -381,3 +381,21 @@ Widget 测试，覆盖六位自动提交、粘贴过滤、重复提交保护、�
 焦点，以及 240px 窄屏、手机、平板、横屏和键盘避让。该组 Widget 测试需使用
 构建准备后的 material_ui/Flutter SDK；不将弹窗外壳测试视为真实 WebView 内部
 验证码布局或真实短信登录的端到端验证。
+
+### 用户与空间切片的离线验证（#56、#57）
+
+`relation_golden`、`user_golden`、`history_golden`、`space_golden` 与
+`space_tabs_golden` 冻结
+关注分组、账号资料、观看历史及用户空间的 Rust 解析结果；一次性 Dart
+parity 已用迁移前的解析规则逐字段核对，通过后随旧模型删除。私有账号分支使用构造样本，只能证明
+映射一致，不能代替真实账号与请求网关验证。资料缓存另有 Rust JSON
+序列化往返与损坏缓存测试，不证明 Hive 升级过程。
+
+投稿搜索的 protobuf 样本由基线 Dart 编码器生成；基线解码结果另存
+`search_archive.dart.json`，同时记录原始字节的 SHA-256；图文流按同样方式保存 `opus.dart.json`。一次性 parity 未
+导入 `lib/`，通过原始样本哈希与两端冻结结果完成对照，避免把 Widget 或本地
+存储依赖带入测试。测试已随模型删除；更新字节时仍须重跑 fixture 生成器
+并复核基线结果。
+
+本次不改变 CI 触发与门禁，也不增加真机验证结论；升级缓存、账号选择与
+空间各入口按 QA 矩阵 M16、M23、M24 留到 Phase 2。

@@ -1,0 +1,32 @@
+{
+  "items": [
+    {
+      "comment": 4,
+      "cover": "https://example.invalid/audio.jpg",
+      "ctime": 1700000000,
+      "id": 100,
+      "play": 123,
+      "title": "脱敏音频",
+      "uid": 200
+    },
+    {
+      "comment": null,
+      "cover": null,
+      "ctime": 1700000000,
+      "id": 101,
+      "play": null,
+      "title": null,
+      "uid": null
+    },
+    {
+      "comment": null,
+      "cover": null,
+      "ctime": -1,
+      "id": 102,
+      "play": null,
+      "title": null,
+      "uid": null
+    }
+  ],
+  "total_size": 3
+}

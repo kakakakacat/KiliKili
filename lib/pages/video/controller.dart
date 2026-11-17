@@ -15,7 +15,8 @@ import 'package:kilikili/http/browser_ua.dart';
 import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/user.dart';
+import 'package:kilikili/services/rust/media_list_compat.dart';
+import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/common/account_type.dart';
 import 'package:kilikili/models/common/sponsor_block/action_type.dart';
@@ -455,7 +456,7 @@ class VideoDetailController extends GetxController
     if (!isReverse && count != null && mediaList.length >= count) {
       return;
     }
-    final res = await UserHttp.getMediaList(
+    final res = await RustHistory.getMediaList(
       type: args['mediaType'] ?? sourceType.mediaType,
       bizId: args['mediaId'] ?? -1,
       ps: 20,
@@ -483,9 +484,12 @@ class VideoDetailController extends GetxController
           : false,
     );
     if (res case Success(:final response)) {
-      if (response.mediaList.isNotEmpty) {
+      // 还原成 `MediaListItemModel`：播放器的分集机器按 `BaseEpisodeItem`
+      // 写，分集那几片还在 Dart，见 `lib/services/rust/media_list_compat.dart`。
+      final items = response.list.map((e) => e.toItemModel()).toList();
+      if (items.isNotEmpty) {
         if (isReverse) {
-          mediaList.value = response.mediaList;
+          mediaList.value = items;
           for (final item in mediaList) {
             if (item.cid != null) {
               try {
@@ -495,9 +499,9 @@ class VideoDetailController extends GetxController
             }
           }
         } else if (isLoadPrevious) {
-          mediaList.insertAll(0, response.mediaList);
+          mediaList.insertAll(0, items);
         } else {
-          mediaList.addAll(response.mediaList);
+          mediaList.addAll(items);
         }
       }
     } else {
@@ -531,7 +535,7 @@ class VideoDetailController extends GetxController
                 (sourceType == SourceType.fav && args['isOwner'] == true)
             ? (item, index) async {
                 if (sourceType == SourceType.watchLater) {
-                  final res = await UserHttp.toViewDel(aids: item.aid!);
+                  final res = await RustHistory.toViewDel(aids: '${item.aid}');
                   if (res.isSuccess) {
                     mediaList.removeAt(index);
                   }

@@ -1,0 +1,58 @@
+{
+  "count": 941,
+  "episodic_button": {
+    "text": "播放全部",
+    "uri": "bilibili://music/playlist/spacepage/100001"
+  },
+  "has_next": true,
+  "has_prev": false,
+  "items": [
+    {
+      "author": "用户01",
+      "badges": [],
+      "bvid": "BV1kZWX62ENY",
+      "cid": 43538251892,
+      "cover": "http://i2.hdslb.com/bfs/archive/xxxx.jpg",
+      "danmaku": 89126,
+      "duration": 1140,
+      "goto": "av",
+      "history": null,
+      "is_cooperation": false,
+      "is_pgc": false,
+      "is_pugv": false,
+      "is_steins": false,
+      "label": null,
+      "param": "117602311476853",
+      "play": 6464950,
+      "publish_time_text": "11月12日",
+      "season_mtime": null,
+      "styles": null,
+      "title": "为什么是最后一期？影视飓风1800万粉丝Q&A！",
+      "uri": "bilibili://video/117602311476853"
+    },
+    {
+      "author": "用户01",
+      "badges": [],
+      "bvid": "BV1NS4t6oEXQ",
+      "cid": 43354425958,
+      "cover": "http://i1.hdslb.com/bfs/archive/xxxx.jpg",
+      "danmaku": 6625,
+      "duration": 899,
+      "goto": "av",
+      "history": null,
+      "is_cooperation": false,
+      "is_pgc": false,
+      "is_pugv": false,
+      "is_steins": false,
+      "label": null,
+      "param": "117563807766583",
+      "play": 3959008,
+      "publish_time_text": "11月5日",
+      "season_mtime": null,
+      "styles": null,
+      "title": "真的需要摸吗？MacBook Pro PROLED XDR上手",
+      "uri": "bilibili://video/117563807766583"
+    }
+  ],
+  "next": null
+}

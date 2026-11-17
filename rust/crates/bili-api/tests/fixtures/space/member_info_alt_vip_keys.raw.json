@@ -1,0 +1,14 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "mid": 300000102,
+    "name": "示例up主乙",
+    "face": "//i1.example.test/bfs/face/dddddddd.jpg",
+    "level": 4,
+    "vip": { "vipType": 1, "vipStatus": 1 },
+    "is_followed": false,
+    "is_senior_member": 0
+  }
+}

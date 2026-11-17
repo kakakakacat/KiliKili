@@ -644,7 +644,7 @@ fn music_detail(d: domain_music::MusicDetail) -> MusicDetail {
 }
 
 /// 领域实体 → 导出结构。关注与粉丝两条路径共用。
-fn follow_list_result(
+pub(crate) fn follow_list_result(
     result: Result<bili_domain::user_list::FollowList, DomainError>,
 ) -> FollowListResult {
     match result {

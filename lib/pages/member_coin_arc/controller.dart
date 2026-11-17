@@ -1,13 +1,11 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/member.dart';
-import 'package:kilikili/models_new/member/coin_like_arc/data.dart';
-import 'package:kilikili/models_new/member/coin_like_arc/item.dart';
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
 
 class MemberCoinArcController
-    extends CommonListController<CoinLikeArcData, CoinLikeArcItem> {
-  final dynamic mid;
-  MemberCoinArcController({this.mid});
+    extends CommonListController<CoinLikeArcPage, CoinLikeArcItem> {
+  final int mid;
+  MemberCoinArcController({required this.mid});
 
   @override
   void onInit() {
@@ -16,11 +14,11 @@ class MemberCoinArcController
   }
 
   @override
-  List<CoinLikeArcItem>? getDataList(CoinLikeArcData response) {
-    return response.item;
+  List<CoinLikeArcItem>? getDataList(CoinLikeArcPage response) {
+    return response.items;
   }
 
   @override
-  Future<LoadingState<CoinLikeArcData>> customGetData() =>
-      MemberHttp.coinArc(mid: mid, page: page);
+  Future<LoadingState<CoinLikeArcPage>> customGetData() =>
+      RustSpace.coinLikeArc(coin: true, mid: mid, page: page);
 }

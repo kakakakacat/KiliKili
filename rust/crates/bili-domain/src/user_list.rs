@@ -65,3 +65,38 @@ pub struct OfficialVerify {
     pub kind: Option<i64>,
     pub desc: Option<String>,
 }
+
+/// 一个关注分组。
+///
+/// 对应基线 `MemberTagItemModel`（`lib/models/member/tags.dart`）。基线那个
+/// 类同时被「关注分组」与「up 主置顶稿件」两处复用，字段是两边的并集；
+/// 这里只保留分组这一侧，置顶稿件迁过来时自己起一个实体——两条接口共用
+/// 一个「字段各取一半」的结构，正是基线里最容易看错的地方。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct FollowTag {
+    pub tagid: Option<i64>,
+    pub name: Option<String>,
+    /// 组内人数。
+    pub count: Option<i64>,
+    /// 服务端给的说明文案（如「特别关注」的提示）。
+    pub tip: Option<String>,
+}
+
+/// 当前登录账号与某个人的关系。
+///
+/// 对应基线 `RelationData`（`lib/models_new/relation/data.dart`）。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct Relation {
+    /// 关系位掩码。基线用它判是否已关注、是否互关。
+    pub attribute: Option<i64>,
+    /// 关注时间，Unix 秒。
+    pub mtime: Option<i64>,
+    /// 这个人被放进了哪几个分组。
+    ///
+    /// **`None` 与空列表在这条接口上含义不同**：服务端对「没有分组」给的是
+    /// `null`，对「在默认分组」给的是 `[0]`，基线的分组选择弹窗据此决定
+    /// 默认勾选哪一项。所以这里不做 `unwrap_or_default` 归一。
+    pub tag: Option<Vec<i64>>,
+    /// 是否特别关注，`1` 为是。
+    pub special: Option<i64>,
+}

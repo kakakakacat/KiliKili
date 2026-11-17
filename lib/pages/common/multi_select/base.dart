@@ -6,13 +6,31 @@ mixin MultiSelectData {
   bool checked = false;
 }
 
-abstract interface class MultiSelectBase<T extends MultiSelectData> {
+/// 顶部多选条（`MultiSelectAppBarWidget`）需要的那几样，**与列表项类型
+/// 无关**。抽出来是为了让两套多选实现都能喂同一个 widget：
+/// 本文件这套按 `MultiSelectData.checked` 记选中态，
+/// `id_based.dart` 那套按 id 记（S7 #57 起，列表项来自 Rust、不可变）。
+abstract interface class MultiSelectBar {
   RxBool get enableMultiSelect;
 
   int get checkedCount;
 
-  void onSelect(T item);
   void handleSelect({bool checked = false, bool disableSelect = true});
+  void onRemove();
+}
+
+abstract interface class MultiSelectBase<T extends MultiSelectData>
+    implements MultiSelectBar {
+  @override
+  RxBool get enableMultiSelect;
+
+  @override
+  int get checkedCount;
+
+  void onSelect(T item);
+  @override
+  void handleSelect({bool checked = false, bool disableSelect = true});
+  @override
   void onRemove();
 }
 

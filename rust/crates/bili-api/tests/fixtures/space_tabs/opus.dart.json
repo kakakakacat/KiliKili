@@ -1,0 +1,107 @@
+{
+  "wire_sha256": "5312d65ccc3eb50943af4a559d63db93fe8358dde63cfdc3edb56b5500c7e8ff",
+  "data": {
+    "next": "next-cursor",
+    "items": [
+      {
+        "oid": 100,
+        "content": "第一段第二段",
+        "cover": {
+          "src": "https://example.invalid/long.jpg",
+          "ratio": 2.7,
+          "is_long_pic": true
+        },
+        "like_text": "1.2万"
+      },
+      {
+        "oid": 101,
+        "content": "",
+        "cover": {
+          "src": "https://example.invalid/wide.jpg",
+          "ratio": 0.68,
+          "is_long_pic": false
+        },
+        "like_text": "1.2万"
+      },
+      {
+        "oid": 102,
+        "content": null,
+        "cover": {
+          "src": "https://example.invalid/zero.jpg",
+          "ratio": 2.7,
+          "is_long_pic": true
+        },
+        "like_text": "1.2万"
+      },
+      {
+        "oid": 103,
+        "content": null,
+        "cover": {
+          "src": "https://example.invalid/nan.jpg",
+          "ratio": 2.7,
+          "is_long_pic": true
+        },
+        "like_text": "1.2万"
+      },
+      {
+        "oid": 104,
+        "content": null,
+        "cover": {
+          "src": "https://example.invalid/height-zero.jpg",
+          "ratio": 0.68,
+          "is_long_pic": false
+        },
+        "like_text": "1.2万"
+      },
+      {
+        "oid": 105,
+        "content": null,
+        "cover": {
+          "src": "https://example.invalid/unknown.jpg",
+          "ratio": 1.0,
+          "is_long_pic": false
+        },
+        "like_text": "1.2万"
+      },
+      {
+        "oid": 106,
+        "content": null,
+        "cover": null,
+        "like_text": "1.2万"
+      },
+      {
+        "oid": 0,
+        "content": null,
+        "cover": null,
+        "like_text": ""
+      }
+    ],
+    "collection": {
+      "title": "文集",
+      "expand": true,
+      "items": [
+        {
+          "collection_id": 0,
+          "title": "",
+          "cover": "",
+          "cover_bottom_text": "",
+          "sub_title": ""
+        },
+        {
+          "collection_id": 0,
+          "title": "",
+          "cover": "",
+          "cover_bottom_text": "",
+          "sub_title": ""
+        },
+        {
+          "collection_id": 200,
+          "title": "文集标题",
+          "cover": "https://example.invalid/collection.jpg",
+          "cover_bottom_text": "共12篇",
+          "sub_title": "副标题"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "face": "https://example.invalid/bfs/face/v.jpg",
+  "is_login": true,
+  "is_senior_member": 0,
+  "level_info": {
+    "current_exp": 31000,
+    "current_level": 6,
+    "current_min": 28800,
+    "next_exp": 31000
+  },
+  "mid": 800000502,
+  "money": 0.0,
+  "uname": "满级用户",
+  "vip_status": 0,
+  "vip_type": 0
+}

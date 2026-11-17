@@ -4,8 +4,7 @@ import 'package:kilikili/common/widgets/scroll_physics.dart';
 import 'package:kilikili/common/widgets/view_safe_area.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/member/contribute_type.dart';
-import 'package:kilikili/models_new/space/space_season_series/season.dart'
-    show SpaceSsModel;
+import 'package:kilikili/services/rust/rust_space.dart' show SpaceSeasonSeries;
 import 'package:kilikili/pages/member_season_series/controller.dart';
 import 'package:kilikili/pages/member_season_series/widget/season_series_card.dart';
 import 'package:kilikili/pages/member_video/view.dart';
@@ -61,7 +60,7 @@ class _SeasonSeriesPageState extends State<SeasonSeriesPage>
     );
   }
 
-  Widget _buildBody(LoadingState<List<SpaceSsModel>?> loadingState) {
+  Widget _buildBody(LoadingState<List<SpaceSeasonSeries>?> loadingState) {
     return switch (loadingState) {
       Loading() => coverGridSkeleton,
       Success(:final response) =>
@@ -72,17 +71,16 @@ class _SeasonSeriesPageState extends State<SeasonSeriesPage>
                   if (index == response.length - 1) {
                     _controller.onLoadMore();
                   }
-                  SpaceSsModel item = response[index];
+                  SpaceSeasonSeries item = response[index];
                   return SeasonSeriesCard(
                     item: item,
                     onTap: () {
-                      bool isSeason = item.meta!.seasonId != null;
-                      dynamic id = isSeason
-                          ? item.meta!.seasonId
-                          : item.meta!.seriesId;
+                      // 合集与列表跳转到的是不同页面，区分靠哪个 id 有值。
+                      final isSeason = item.seasonId != null;
+                      final id = isSeason ? item.seasonId : item.seriesId;
                       Get.to(
                         SimpleScaffold(
-                          appBar: AppBar(title: Text(item.meta!.name!)),
+                          appBar: AppBar(title: Text(item.name ?? '')),
                           body: ViewSafeArea(
                             child: MemberVideo(
                               type: isSeason
@@ -92,7 +90,7 @@ class _SeasonSeriesPageState extends State<SeasonSeriesPage>
                               mid: widget.mid,
                               seasonId: isSeason ? id : null,
                               seriesId: isSeason ? null : id,
-                              title: item.meta!.name,
+                              title: item.name,
                             ),
                           ),
                         ),

@@ -1,0 +1,47 @@
+{
+  "code": 0,
+  "data": {
+    "data": [
+      {
+        "cover": {
+          "url": "https://example.invalid/shop.jpg"
+        },
+        "title": "脱敏商品",
+        "cardUrl": "https://example.invalid/product/100",
+        "belowLabels": [
+          {
+            "title": "预售"
+          },
+          {
+            "title": "包邮"
+          }
+        ],
+        "netPrice": {
+          "pricePrefix": "会员价",
+          "priceSymbol": "¥",
+          "netPrice": "9.9起"
+        },
+        "benefitInfos": [
+          {
+            "prefix": "省",
+            "amount": "2",
+            "suffix": "元"
+          },
+          {
+            "amount": "3",
+            "suffix": 4
+          },
+          {
+            "suffix": true
+          }
+        ],
+        "itemSourceName": "脱敏店铺"
+      },
+      {}
+    ],
+    "showMoreTab": true,
+    "clickUrl": "https://example.invalid/redirect?url=https%3A%2F%2Fexample.invalid%2Fmore%3Fq%3Da%2Bb",
+    "showMoreDesc": "查看更多",
+    "haveNextPage": false
+  }
+}

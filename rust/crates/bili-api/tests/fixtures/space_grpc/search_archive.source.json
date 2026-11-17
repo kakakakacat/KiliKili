@@ -1,0 +1,58 @@
+{
+  "total": 3,
+  "archives": [
+    {
+      "uri": "bilibili://video/100200300",
+      "view_content": "12.3万观看",
+      "icon_type": 1,
+      "cover_icon": "https://i0.hdslb.com/bfs/archive/icon.png",
+      "is_fold": false,
+      "is_pugv": false,
+      "publish_time_text": "3月4日",
+      "badges": ["合作"],
+      "is_oneself": false,
+      "archive": {
+        "aid": 100200300,
+        "videos": 1,
+        "type_id": 188,
+        "type_name": "数码",
+        "pic": "https://i0.hdslb.com/bfs/archive/aaaa.jpg",
+        "title": "折 <em class=\"keyword\">1 万次</em>，会坏吗？&amp;深度评测",
+        "pubdate": 1792584000,
+        "ctime": 1792577675,
+        "desc": "一条描述",
+        "duration": 1492,
+        "redirect_url": "",
+        "first_cid": 900100,
+        "author": { "mid": 100001, "name": "用户01", "face": "https://i0.hdslb.com/bfs/face/aaaa.jpg" },
+        "stat": { "aid": 100200300, "view": 13485620, "danmaku": 12345, "reply": 678 },
+        "dimension": { "width": 1920, "height": 1080, "rotate": 0 }
+      }
+    },
+    {
+      "uri": "bilibili://pgc/season/12345",
+      "is_pugv": true,
+      "archive": {
+        "aid": 100200301,
+        "pic": "https://i0.hdslb.com/bfs/archive/bbbb.jpg",
+        "title": "一门课",
+        "pubdate": 1792000000,
+        "duration": 600,
+        "redirect_url": "https://www.bilibili.com/cheese/play/ep1",
+        "first_cid": 900101,
+        "author": { "mid": 100001, "name": "用户01" },
+        "stat": { "view": 1000, "danmaku": 2 },
+        "dimension": { "width": 1080, "height": 1920, "rotate": 0 }
+      }
+    },
+    {
+      "uri": "",
+      "is_pugv": false,
+      "archive": {
+        "aid": 100200302,
+        "title": "竖屏但转过一次",
+        "dimension": { "width": 1920, "height": 1080, "rotate": 1 }
+      }
+    }
+  ]
+}

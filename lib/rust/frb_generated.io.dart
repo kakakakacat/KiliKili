@@ -7,6 +7,7 @@ import 'package:kilikili/rust/api/cover_scrim.dart';
 import 'package:kilikili/rust/api/danmaku.dart';
 import 'package:kilikili/rust/api/dynamic.dart';
 import 'package:kilikili/rust/api/grpc.dart';
+import 'package:kilikili/rust/api/history.dart';
 import 'package:kilikili/rust/api/init.dart';
 import 'package:kilikili/rust/api/live.dart';
 import 'package:kilikili/rust/api/live_danmaku.dart';
@@ -17,12 +18,15 @@ import 'package:kilikili/rust/api/pgc.dart';
 import 'package:kilikili/rust/api/play_url.dart';
 import 'package:kilikili/rust/api/play_url_fetch.dart';
 import 'package:kilikili/rust/api/playback.dart';
+import 'package:kilikili/rust/api/relation.dart';
 import 'package:kilikili/rust/api/reply.dart';
 import 'package:kilikili/rust/api/search.dart';
 import 'package:kilikili/rust/api/search_suggest.dart';
+import 'package:kilikili/rust/api/space.dart';
 import 'package:kilikili/rust/api/sponsor_block.dart';
 import 'package:kilikili/rust/api/subtitle.dart';
 import 'package:kilikili/rust/api/transport.dart';
+import 'package:kilikili/rust/api/user.dart';
 import 'package:kilikili/rust/api/video_detail.dart';
 import 'package:kilikili/rust/api/video_detail_fetch.dart';
 import 'package:kilikili/rust/api/video_feed.dart';
@@ -109,6 +113,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   CaptchaSolutionData dco_decode_box_autoadd_captcha_solution_data(dynamic raw);
 
   @protected
+  CoinLikeArcPage dco_decode_box_autoadd_coin_like_arc_page(dynamic raw);
+
+  @protected
   DanmakuEngineOptions dco_decode_box_autoadd_danmaku_engine_options(
     dynamic raw,
   );
@@ -144,7 +151,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   GrpcIdentity dco_decode_box_autoadd_grpc_identity(dynamic raw);
 
   @protected
+  HistoryContext dco_decode_box_autoadd_history_context(dynamic raw);
+
+  @protected
   HistoryNode dco_decode_box_autoadd_history_node(dynamic raw);
+
+  @protected
+  HistoryPage dco_decode_box_autoadd_history_page(dynamic raw);
 
   @protected
   HotSongHeat dco_decode_box_autoadd_hot_song_heat(dynamic raw);
@@ -160,6 +173,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LanguageOptions dco_decode_box_autoadd_language_options(dynamic raw);
+
+  @protected
+  LaterPage dco_decode_box_autoadd_later_page(dynamic raw);
+
+  @protected
+  LevelInfo dco_decode_box_autoadd_level_info(dynamic raw);
 
   @protected
   LikeListPage dco_decode_box_autoadd_like_list_page(dynamic raw);
@@ -249,10 +268,31 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MatchTeam dco_decode_box_autoadd_match_team(dynamic raw);
 
   @protected
+  MediaList dco_decode_box_autoadd_media_list(dynamic raw);
+
+  @protected
+  MediaListParams dco_decode_box_autoadd_media_list_params(dynamic raw);
+
+  @protected
   MediaScore dco_decode_box_autoadd_media_score(dynamic raw);
 
   @protected
   MediaStream dco_decode_box_autoadd_media_stream(dynamic raw);
+
+  @protected
+  MemberCard dco_decode_box_autoadd_member_card(dynamic raw);
+
+  @protected
+  MemberGuardPage dco_decode_box_autoadd_member_guard_page(dynamic raw);
+
+  @protected
+  MemberInfo dco_decode_box_autoadd_member_info(dynamic raw);
+
+  @protected
+  MemberRelationStat dco_decode_box_autoadd_member_relation_stat(dynamic raw);
+
+  @protected
+  MemberUpStat dco_decode_box_autoadd_member_up_stat(dynamic raw);
 
   @protected
   MiscContext dco_decode_box_autoadd_misc_context(dynamic raw);
@@ -333,6 +373,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   QrPollState dco_decode_box_autoadd_qr_poll_state(dynamic raw);
 
   @protected
+  RejectPage dco_decode_box_autoadd_reject_page(dynamic raw);
+
+  @protected
+  Relation dco_decode_box_autoadd_relation(dynamic raw);
+
+  @protected
+  RelationContext dco_decode_box_autoadd_relation_context(dynamic raw);
+
+  @protected
   ReplyContext dco_decode_box_autoadd_reply_context(dynamic raw);
 
   @protected
@@ -389,10 +438,127 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SmsSendState dco_decode_box_autoadd_sms_send_state(dynamic raw);
 
   @protected
+  SpaceArchiveHistory dco_decode_box_autoadd_space_archive_history(dynamic raw);
+
+  @protected
+  SpaceArchiveOrder dco_decode_box_autoadd_space_archive_order(dynamic raw);
+
+  @protected
+  SpaceArchivePage dco_decode_box_autoadd_space_archive_page(dynamic raw);
+
+  @protected
+  SpaceArchiveSearchPage dco_decode_box_autoadd_space_archive_search_page(
+    dynamic raw,
+  );
+
+  @protected
+  SpaceArchiveSort dco_decode_box_autoadd_space_archive_sort(dynamic raw);
+
+  @protected
+  SpaceArticleBlock dco_decode_box_autoadd_space_article_block(dynamic raw);
+
+  @protected
+  SpaceArticlePage dco_decode_box_autoadd_space_article_page(dynamic raw);
+
+  @protected
+  SpaceAudioBlock dco_decode_box_autoadd_space_audio_block(dynamic raw);
+
+  @protected
+  SpaceAudioPage dco_decode_box_autoadd_space_audio_page(dynamic raw);
+
+  @protected
+  SpaceCard dco_decode_box_autoadd_space_card(dynamic raw);
+
+  @protected
+  SpaceCheesePage dco_decode_box_autoadd_space_cheese_page(dynamic raw);
+
+  @protected
+  SpaceContext dco_decode_box_autoadd_space_context(dynamic raw);
+
+  @protected
+  SpaceElec dco_decode_box_autoadd_space_elec(dynamic raw);
+
+  @protected
+  SpaceEpisodicButton dco_decode_box_autoadd_space_episodic_button(dynamic raw);
+
+  @protected
+  SpaceFavBlock dco_decode_box_autoadd_space_fav_block(dynamic raw);
+
+  @protected
+  SpaceFollowedBy dco_decode_box_autoadd_space_followed_by(dynamic raw);
+
+  @protected
+  SpaceGuard dco_decode_box_autoadd_space_guard(dynamic raw);
+
+  @protected
+  SpaceImages dco_decode_box_autoadd_space_images(dynamic raw);
+
+  @protected
+  SpaceLive dco_decode_box_autoadd_space_live(dynamic raw);
+
+  @protected
+  SpaceLiveMedal dco_decode_box_autoadd_space_live_medal(dynamic raw);
+
+  @protected
+  SpaceOpusCollectionSection
+  dco_decode_box_autoadd_space_opus_collection_section(dynamic raw);
+
+  @protected
+  SpaceOpusCover dco_decode_box_autoadd_space_opus_cover(dynamic raw);
+
+  @protected
+  SpaceOpusFlowPage dco_decode_box_autoadd_space_opus_flow_page(dynamic raw);
+
+  @protected
+  SpacePage dco_decode_box_autoadd_space_page(dynamic raw);
+
+  @protected
+  SpacePrInfo dco_decode_box_autoadd_space_pr_info(dynamic raw);
+
+  @protected
+  SpaceRelation dco_decode_box_autoadd_space_relation(dynamic raw);
+
+  @protected
+  SpaceReservationLottery dco_decode_box_autoadd_space_reservation_lottery(
+    dynamic raw,
+  );
+
+  @protected
+  SpaceSearchArchivePage dco_decode_box_autoadd_space_search_archive_page(
+    dynamic raw,
+  );
+
+  @protected
+  SpaceSeasonSeriesPage dco_decode_box_autoadd_space_season_series_page(
+    dynamic raw,
+  );
+
+  @protected
+  SpaceSeasonWebPage dco_decode_box_autoadd_space_season_web_page(dynamic raw);
+
+  @protected
+  SpaceSetting dco_decode_box_autoadd_space_setting(dynamic raw);
+
+  @protected
+  SpaceShopPage dco_decode_box_autoadd_space_shop_page(dynamic raw);
+
+  @protected
+  SpaceTopTitle dco_decode_box_autoadd_space_top_title(dynamic raw);
+
+  @protected
+  SpaceVideoBlock dco_decode_box_autoadd_space_video_block(dynamic raw);
+
+  @protected
+  SpaceWebBadge dco_decode_box_autoadd_space_web_badge(dynamic raw);
+
+  @protected
   SponsorBlockContext dco_decode_box_autoadd_sponsor_block_context(dynamic raw);
 
   @protected
   SponsorUserInfo dco_decode_box_autoadd_sponsor_user_info(dynamic raw);
+
+  @protected
+  SubList dco_decode_box_autoadd_sub_list(dynamic raw);
 
   @protected
   TransportSettings dco_decode_box_autoadd_transport_settings(dynamic raw);
@@ -402,6 +568,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int dco_decode_box_autoadd_u_32(dynamic raw);
+
+  @protected
+  UpowerRank dco_decode_box_autoadd_upower_rank(dynamic raw);
+
+  @protected
+  UserContext dco_decode_box_autoadd_user_context(dynamic raw);
+
+  @protected
+  UserInfo dco_decode_box_autoadd_user_info(dynamic raw);
+
+  @protected
+  UserRealName dco_decode_box_autoadd_user_real_name(dynamic raw);
+
+  @protected
+  UserStat dco_decode_box_autoadd_user_stat(dynamic raw);
 
   @protected
   VideoPageContext dco_decode_box_autoadd_video_page_context(dynamic raw);
@@ -442,7 +623,28 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ClipInfo dco_decode_clip_info(dynamic raw);
 
   @protected
+  CoinLikeArcItem dco_decode_coin_like_arc_item(dynamic raw);
+
+  @protected
+  CoinLikeArcPage dco_decode_coin_like_arc_page(dynamic raw);
+
+  @protected
+  CoinLikeArcResult dco_decode_coin_like_arc_result(dynamic raw);
+
+  @protected
+  CoinLogItem dco_decode_coin_log_item(dynamic raw);
+
+  @protected
+  CoinLogResult dco_decode_coin_log_result(dynamic raw);
+
+  @protected
+  CoinResult dco_decode_coin_result(dynamic raw);
+
+  @protected
   CoverScrimStyle dco_decode_cover_scrim_style(dynamic raw);
+
+  @protected
+  CreatedTagResult dco_decode_created_tag_result(dynamic raw);
 
   @protected
   DanmakuBucketItem dco_decode_danmaku_bucket_item(dynamic raw);
@@ -523,6 +725,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   FollowListResult dco_decode_follow_list_result(dynamic raw);
 
   @protected
+  FollowTag dco_decode_follow_tag(dynamic raw);
+
+  @protected
+  FollowTagsResult dco_decode_follow_tags_result(dynamic raw);
+
+  @protected
   FollowUser dco_decode_follow_user(dynamic raw);
 
   @protected
@@ -550,7 +758,31 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   GrpcSubtitlesResult dco_decode_grpc_subtitles_result(dynamic raw);
 
   @protected
+  GuardItem dco_decode_guard_item(dynamic raw);
+
+  @protected
+  HistoryContext dco_decode_history_context(dynamic raw);
+
+  @protected
+  HistoryItem dco_decode_history_item(dynamic raw);
+
+  @protected
   HistoryNode dco_decode_history_node(dynamic raw);
+
+  @protected
+  HistoryPage dco_decode_history_page(dynamic raw);
+
+  @protected
+  HistoryPageResult dco_decode_history_page_result(dynamic raw);
+
+  @protected
+  HistoryRef dco_decode_history_ref(dynamic raw);
+
+  @protected
+  HistoryStatusResult dco_decode_history_status_result(dynamic raw);
+
+  @protected
+  HistoryTab dco_decode_history_tab(dynamic raw);
 
   @protected
   HotSongHeat dco_decode_hot_song_heat(dynamic raw);
@@ -572,6 +804,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LanguageOptions dco_decode_language_options(dynamic raw);
+
+  @protected
+  LaterItem dco_decode_later_item(dynamic raw);
+
+  @protected
+  LaterPage dco_decode_later_page(dynamic raw);
+
+  @protected
+  LaterPageResult dco_decode_later_page_result(dynamic raw);
+
+  @protected
+  LevelInfo dco_decode_level_info(dynamic raw);
 
   @protected
   LikeListPage dco_decode_like_list_page(dynamic raw);
@@ -607,6 +851,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<ClipInfo> dco_decode_list_clip_info(dynamic raw);
 
   @protected
+  List<CoinLikeArcItem> dco_decode_list_coin_like_arc_item(dynamic raw);
+
+  @protected
+  List<CoinLogItem> dco_decode_list_coin_log_item(dynamic raw);
+
+  @protected
   List<DanmakuBucketItem> dco_decode_list_danmaku_bucket_item(dynamic raw);
 
   @protected
@@ -628,6 +878,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<FilterRule> dco_decode_list_filter_rule(dynamic raw);
 
   @protected
+  List<FollowTag> dco_decode_list_follow_tag(dynamic raw);
+
+  @protected
   List<FollowUser> dco_decode_list_follow_user(dynamic raw);
 
   @protected
@@ -642,7 +895,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<GrpcSubtitle> dco_decode_list_grpc_subtitle(dynamic raw);
 
   @protected
+  List<GuardItem> dco_decode_list_guard_item(dynamic raw);
+
+  @protected
+  List<HistoryItem> dco_decode_list_history_item(dynamic raw);
+
+  @protected
+  List<HistoryTab> dco_decode_list_history_tab(dynamic raw);
+
+  @protected
   List<LanguageItem> dco_decode_list_language_item(dynamic raw);
+
+  @protected
+  List<LaterItem> dco_decode_list_later_item(dynamic raw);
 
   @protected
   List<LiveArea> dco_decode_list_live_area(dynamic raw);
@@ -730,7 +995,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<LoginDeviceData> dco_decode_list_login_device_data(dynamic raw);
 
   @protected
+  List<LoginLogItem> dco_decode_list_login_log_item(dynamic raw);
+
+  @protected
   List<MatchContest> dco_decode_list_match_contest(dynamic raw);
+
+  @protected
+  List<MediaListItem> dco_decode_list_media_list_item(dynamic raw);
 
   @protected
   List<MediaStream> dco_decode_list_media_stream(dynamic raw);
@@ -798,6 +1069,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
+  List<PrivacySetting> dco_decode_list_privacy_setting(dynamic raw);
+
+  @protected
   List<(String, String)> dco_decode_list_record_string_string(dynamic raw);
 
   @protected
@@ -834,6 +1108,70 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<SongHeat> dco_decode_list_song_heat(dynamic raw);
 
   @protected
+  List<SpaceArchiveItem> dco_decode_list_space_archive_item(dynamic raw);
+
+  @protected
+  List<SpaceArchiveTag> dco_decode_list_space_archive_tag(dynamic raw);
+
+  @protected
+  List<SpaceArticleItem> dco_decode_list_space_article_item(dynamic raw);
+
+  @protected
+  List<SpaceAudioItem> dco_decode_list_space_audio_item(dynamic raw);
+
+  @protected
+  List<SpaceCardTag> dco_decode_list_space_card_tag(dynamic raw);
+
+  @protected
+  List<SpaceCheeseItem> dco_decode_list_space_cheese_item(dynamic raw);
+
+  @protected
+  List<SpaceFavItem> dco_decode_list_space_fav_item(dynamic raw);
+
+  @protected
+  List<SpaceOpusCollectionItem> dco_decode_list_space_opus_collection_item(
+    dynamic raw,
+  );
+
+  @protected
+  List<SpaceOpusFlowItem> dco_decode_list_space_opus_flow_item(dynamic raw);
+
+  @protected
+  List<SpaceReservation> dco_decode_list_space_reservation(dynamic raw);
+
+  @protected
+  List<SpaceSearchArchiveItem> dco_decode_list_space_search_archive_item(
+    dynamic raw,
+  );
+
+  @protected
+  List<SpaceSeasonSeries> dco_decode_list_space_season_series(dynamic raw);
+
+  @protected
+  List<SpaceShopItem> dco_decode_list_space_shop_item(dynamic raw);
+
+  @protected
+  List<SpaceSimpleUser> dco_decode_list_space_simple_user(dynamic raw);
+
+  @protected
+  List<SpaceTab2> dco_decode_list_space_tab_2(dynamic raw);
+
+  @protected
+  List<SpaceTab2Item> dco_decode_list_space_tab_2_item(dynamic raw);
+
+  @protected
+  List<SpaceTabFilter> dco_decode_list_space_tab_filter(dynamic raw);
+
+  @protected
+  List<SpaceTopImage> dco_decode_list_space_top_image(dynamic raw);
+
+  @protected
+  List<SpaceWebVideo> dco_decode_list_space_web_video(dynamic raw);
+
+  @protected
+  List<SubItem> dco_decode_list_sub_item(dynamic raw);
+
+  @protected
   List<TimelineDay> dco_decode_list_timeline_day(dynamic raw);
 
   @protected
@@ -843,7 +1181,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<TitleSpan> dco_decode_list_title_span(dynamic raw);
 
   @protected
+  List<UpowerLevel> dco_decode_list_upower_level(dynamic raw);
+
+  @protected
+  List<UpowerRankItem> dco_decode_list_upower_rank_item(dynamic raw);
+
+  @protected
   List<VideoCandidateInput> dco_decode_list_video_candidate_input(dynamic raw);
+
+  @protected
+  List<VideoTag> dco_decode_list_video_tag(dynamic raw);
 
   @protected
   List<ViewPoint> dco_decode_list_view_point(dynamic raw);
@@ -1063,6 +1410,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LoginDevicesResult dco_decode_login_devices_result(dynamic raw);
 
   @protected
+  LoginLogItem dco_decode_login_log_item(dynamic raw);
+
+  @protected
+  LoginLogResult dco_decode_login_log_result(dynamic raw);
+
+  @protected
   LoginTokensData dco_decode_login_tokens_data(dynamic raw);
 
   @protected
@@ -1087,10 +1440,52 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MatchTeam dco_decode_match_team(dynamic raw);
 
   @protected
+  MediaList dco_decode_media_list(dynamic raw);
+
+  @protected
+  MediaListItem dco_decode_media_list_item(dynamic raw);
+
+  @protected
+  MediaListParams dco_decode_media_list_params(dynamic raw);
+
+  @protected
+  MediaListResult dco_decode_media_list_result(dynamic raw);
+
+  @protected
   MediaScore dco_decode_media_score(dynamic raw);
 
   @protected
   MediaStream dco_decode_media_stream(dynamic raw);
+
+  @protected
+  MemberCard dco_decode_member_card(dynamic raw);
+
+  @protected
+  MemberCardResult dco_decode_member_card_result(dynamic raw);
+
+  @protected
+  MemberGuardPage dco_decode_member_guard_page(dynamic raw);
+
+  @protected
+  MemberGuardResult dco_decode_member_guard_result(dynamic raw);
+
+  @protected
+  MemberInfo dco_decode_member_info(dynamic raw);
+
+  @protected
+  MemberInfoResult dco_decode_member_info_result(dynamic raw);
+
+  @protected
+  MemberRelationStat dco_decode_member_relation_stat(dynamic raw);
+
+  @protected
+  MemberRelationStatResult dco_decode_member_relation_stat_result(dynamic raw);
+
+  @protected
+  MemberUpStat dco_decode_member_up_stat(dynamic raw);
+
+  @protected
+  MemberUpStatResult dco_decode_member_up_stat_result(dynamic raw);
 
   @protected
   MiscContext dco_decode_misc_context(dynamic raw);
@@ -1140,6 +1535,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  CoinLikeArcPage? dco_decode_opt_box_autoadd_coin_like_arc_page(dynamic raw);
+
+  @protected
   DanmakuFilter? dco_decode_opt_box_autoadd_danmaku_filter(dynamic raw);
 
   @protected
@@ -1161,6 +1559,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   HistoryNode? dco_decode_opt_box_autoadd_history_node(dynamic raw);
 
   @protected
+  HistoryPage? dco_decode_opt_box_autoadd_history_page(dynamic raw);
+
+  @protected
   HotSongHeat? dco_decode_opt_box_autoadd_hot_song_heat(dynamic raw);
 
   @protected
@@ -1174,6 +1575,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LanguageOptions? dco_decode_opt_box_autoadd_language_options(dynamic raw);
+
+  @protected
+  LaterPage? dco_decode_opt_box_autoadd_later_page(dynamic raw);
+
+  @protected
+  LevelInfo? dco_decode_opt_box_autoadd_level_info(dynamic raw);
 
   @protected
   LikeListPage? dco_decode_opt_box_autoadd_like_list_page(dynamic raw);
@@ -1251,7 +1658,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MatchTeam? dco_decode_opt_box_autoadd_match_team(dynamic raw);
 
   @protected
+  MediaList? dco_decode_opt_box_autoadd_media_list(dynamic raw);
+
+  @protected
   MediaScore? dco_decode_opt_box_autoadd_media_score(dynamic raw);
+
+  @protected
+  MemberCard? dco_decode_opt_box_autoadd_member_card(dynamic raw);
+
+  @protected
+  MemberGuardPage? dco_decode_opt_box_autoadd_member_guard_page(dynamic raw);
+
+  @protected
+  MemberInfo? dco_decode_opt_box_autoadd_member_info(dynamic raw);
+
+  @protected
+  MemberRelationStat? dco_decode_opt_box_autoadd_member_relation_stat(
+    dynamic raw,
+  );
+
+  @protected
+  MemberUpStat? dco_decode_opt_box_autoadd_member_up_stat(dynamic raw);
 
   @protected
   MusicComment? dco_decode_opt_box_autoadd_music_comment(dynamic raw);
@@ -1326,6 +1753,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   QrPollState? dco_decode_opt_box_autoadd_qr_poll_state(dynamic raw);
 
   @protected
+  RejectPage? dco_decode_opt_box_autoadd_reject_page(dynamic raw);
+
+  @protected
+  Relation? dco_decode_opt_box_autoadd_relation(dynamic raw);
+
+  @protected
   ReplyCursor? dco_decode_opt_box_autoadd_reply_cursor(dynamic raw);
 
   @protected
@@ -1377,13 +1810,151 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SmsSendState? dco_decode_opt_box_autoadd_sms_send_state(dynamic raw);
 
   @protected
+  SpaceArchiveHistory? dco_decode_opt_box_autoadd_space_archive_history(
+    dynamic raw,
+  );
+
+  @protected
+  SpaceArchiveOrder? dco_decode_opt_box_autoadd_space_archive_order(
+    dynamic raw,
+  );
+
+  @protected
+  SpaceArchivePage? dco_decode_opt_box_autoadd_space_archive_page(dynamic raw);
+
+  @protected
+  SpaceArchiveSearchPage? dco_decode_opt_box_autoadd_space_archive_search_page(
+    dynamic raw,
+  );
+
+  @protected
+  SpaceArchiveSort? dco_decode_opt_box_autoadd_space_archive_sort(dynamic raw);
+
+  @protected
+  SpaceArticleBlock? dco_decode_opt_box_autoadd_space_article_block(
+    dynamic raw,
+  );
+
+  @protected
+  SpaceArticlePage? dco_decode_opt_box_autoadd_space_article_page(dynamic raw);
+
+  @protected
+  SpaceAudioBlock? dco_decode_opt_box_autoadd_space_audio_block(dynamic raw);
+
+  @protected
+  SpaceAudioPage? dco_decode_opt_box_autoadd_space_audio_page(dynamic raw);
+
+  @protected
+  SpaceCard? dco_decode_opt_box_autoadd_space_card(dynamic raw);
+
+  @protected
+  SpaceCheesePage? dco_decode_opt_box_autoadd_space_cheese_page(dynamic raw);
+
+  @protected
+  SpaceElec? dco_decode_opt_box_autoadd_space_elec(dynamic raw);
+
+  @protected
+  SpaceEpisodicButton? dco_decode_opt_box_autoadd_space_episodic_button(
+    dynamic raw,
+  );
+
+  @protected
+  SpaceFavBlock? dco_decode_opt_box_autoadd_space_fav_block(dynamic raw);
+
+  @protected
+  SpaceFollowedBy? dco_decode_opt_box_autoadd_space_followed_by(dynamic raw);
+
+  @protected
+  SpaceGuard? dco_decode_opt_box_autoadd_space_guard(dynamic raw);
+
+  @protected
+  SpaceImages? dco_decode_opt_box_autoadd_space_images(dynamic raw);
+
+  @protected
+  SpaceLive? dco_decode_opt_box_autoadd_space_live(dynamic raw);
+
+  @protected
+  SpaceLiveMedal? dco_decode_opt_box_autoadd_space_live_medal(dynamic raw);
+
+  @protected
+  SpaceOpusCollectionSection?
+  dco_decode_opt_box_autoadd_space_opus_collection_section(dynamic raw);
+
+  @protected
+  SpaceOpusCover? dco_decode_opt_box_autoadd_space_opus_cover(dynamic raw);
+
+  @protected
+  SpaceOpusFlowPage? dco_decode_opt_box_autoadd_space_opus_flow_page(
+    dynamic raw,
+  );
+
+  @protected
+  SpacePage? dco_decode_opt_box_autoadd_space_page(dynamic raw);
+
+  @protected
+  SpacePrInfo? dco_decode_opt_box_autoadd_space_pr_info(dynamic raw);
+
+  @protected
+  SpaceRelation? dco_decode_opt_box_autoadd_space_relation(dynamic raw);
+
+  @protected
+  SpaceReservationLottery? dco_decode_opt_box_autoadd_space_reservation_lottery(
+    dynamic raw,
+  );
+
+  @protected
+  SpaceSearchArchivePage? dco_decode_opt_box_autoadd_space_search_archive_page(
+    dynamic raw,
+  );
+
+  @protected
+  SpaceSeasonSeriesPage? dco_decode_opt_box_autoadd_space_season_series_page(
+    dynamic raw,
+  );
+
+  @protected
+  SpaceSeasonWebPage? dco_decode_opt_box_autoadd_space_season_web_page(
+    dynamic raw,
+  );
+
+  @protected
+  SpaceSetting? dco_decode_opt_box_autoadd_space_setting(dynamic raw);
+
+  @protected
+  SpaceShopPage? dco_decode_opt_box_autoadd_space_shop_page(dynamic raw);
+
+  @protected
+  SpaceTopTitle? dco_decode_opt_box_autoadd_space_top_title(dynamic raw);
+
+  @protected
+  SpaceVideoBlock? dco_decode_opt_box_autoadd_space_video_block(dynamic raw);
+
+  @protected
+  SpaceWebBadge? dco_decode_opt_box_autoadd_space_web_badge(dynamic raw);
+
+  @protected
   SponsorUserInfo? dco_decode_opt_box_autoadd_sponsor_user_info(dynamic raw);
+
+  @protected
+  SubList? dco_decode_opt_box_autoadd_sub_list(dynamic raw);
 
   @protected
   int? dco_decode_opt_box_autoadd_u_16(dynamic raw);
 
   @protected
   int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
+
+  @protected
+  UpowerRank? dco_decode_opt_box_autoadd_upower_rank(dynamic raw);
+
+  @protected
+  UserInfo? dco_decode_opt_box_autoadd_user_info(dynamic raw);
+
+  @protected
+  UserRealName? dco_decode_opt_box_autoadd_user_real_name(dynamic raw);
+
+  @protected
+  UserStat? dco_decode_opt_box_autoadd_user_stat(dynamic raw);
 
   @protected
   VideoSelectionOutput? dco_decode_opt_box_autoadd_video_selection_output(
@@ -1415,6 +1986,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<ClipInfo>? dco_decode_opt_list_clip_info(dynamic raw);
 
   @protected
+  List<CoinLogItem>? dco_decode_opt_list_coin_log_item(dynamic raw);
+
+  @protected
   List<DanmakuBucketItem>? dco_decode_opt_list_danmaku_bucket_item(dynamic raw);
 
   @protected
@@ -1425,6 +1999,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<FeedVideoItem>? dco_decode_opt_list_feed_video_item(dynamic raw);
+
+  @protected
+  List<FollowTag>? dco_decode_opt_list_follow_tag(dynamic raw);
 
   @protected
   List<FolloweeVoteData>? dco_decode_opt_list_followee_vote_data(dynamic raw);
@@ -1460,6 +2037,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<LoginDeviceData>? dco_decode_opt_list_login_device_data(dynamic raw);
 
   @protected
+  List<LoginLogItem>? dco_decode_opt_list_login_log_item(dynamic raw);
+
+  @protected
   List<MediaStream>? dco_decode_opt_list_media_stream(dynamic raw);
 
   @protected
@@ -1489,6 +2069,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List? dco_decode_opt_list_prim_u_8_strict(dynamic raw);
 
   @protected
+  List<PrivacySetting>? dco_decode_opt_list_privacy_setting(dynamic raw);
+
+  @protected
   List<SearchArticleItem>? dco_decode_opt_list_search_article_item(dynamic raw);
 
   @protected
@@ -1513,6 +2096,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<TimelineDay>? dco_decode_opt_list_timeline_day(dynamic raw);
+
+  @protected
+  List<VideoTag>? dco_decode_opt_list_video_tag(dynamic raw);
 
   @protected
   List<ViewPoint>? dco_decode_opt_list_view_point(dynamic raw);
@@ -1656,6 +2242,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PopularSeriesOneResult dco_decode_popular_series_one_result(dynamic raw);
 
   @protected
+  PrivacyResult dco_decode_privacy_result(dynamic raw);
+
+  @protected
+  PrivacySetting dco_decode_privacy_setting(dynamic raw);
+
+  @protected
   QrCodeData dco_decode_qr_code_data(dynamic raw);
 
   @protected
@@ -1672,6 +2264,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   (String, String) dco_decode_record_string_string(dynamic raw);
+
+  @protected
+  RejectPage dco_decode_reject_page(dynamic raw);
+
+  @protected
+  Relation dco_decode_relation(dynamic raw);
+
+  @protected
+  RelationContext dco_decode_relation_context(dynamic raw);
+
+  @protected
+  RelationResult dco_decode_relation_result(dynamic raw);
 
   @protected
   ReplyContext dco_decode_reply_context(dynamic raw);
@@ -1705,6 +2309,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ReplyReplyListResult dco_decode_reply_reply_list_result(dynamic raw);
+
+  @protected
+  ReportResult dco_decode_report_result(dynamic raw);
 
   @protected
   ReserveActionData dco_decode_reserve_action_data(dynamic raw);
@@ -1821,6 +2428,212 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SongHeat dco_decode_song_heat(dynamic raw);
 
   @protected
+  SpaceArchiveHistory dco_decode_space_archive_history(dynamic raw);
+
+  @protected
+  SpaceArchiveItem dco_decode_space_archive_item(dynamic raw);
+
+  @protected
+  SpaceArchiveKind dco_decode_space_archive_kind(dynamic raw);
+
+  @protected
+  SpaceArchiveOrder dco_decode_space_archive_order(dynamic raw);
+
+  @protected
+  SpaceArchivePage dco_decode_space_archive_page(dynamic raw);
+
+  @protected
+  SpaceArchiveResult dco_decode_space_archive_result(dynamic raw);
+
+  @protected
+  SpaceArchiveSearchOrder dco_decode_space_archive_search_order(dynamic raw);
+
+  @protected
+  SpaceArchiveSearchPage dco_decode_space_archive_search_page(dynamic raw);
+
+  @protected
+  SpaceArchiveSearchResult dco_decode_space_archive_search_result(dynamic raw);
+
+  @protected
+  SpaceArchiveSort dco_decode_space_archive_sort(dynamic raw);
+
+  @protected
+  SpaceArchiveTag dco_decode_space_archive_tag(dynamic raw);
+
+  @protected
+  SpaceArticleBlock dco_decode_space_article_block(dynamic raw);
+
+  @protected
+  SpaceArticleItem dco_decode_space_article_item(dynamic raw);
+
+  @protected
+  SpaceArticlePage dco_decode_space_article_page(dynamic raw);
+
+  @protected
+  SpaceArticleResult dco_decode_space_article_result(dynamic raw);
+
+  @protected
+  SpaceAudioBlock dco_decode_space_audio_block(dynamic raw);
+
+  @protected
+  SpaceAudioItem dco_decode_space_audio_item(dynamic raw);
+
+  @protected
+  SpaceAudioPage dco_decode_space_audio_page(dynamic raw);
+
+  @protected
+  SpaceAudioResult dco_decode_space_audio_result(dynamic raw);
+
+  @protected
+  SpaceCard dco_decode_space_card(dynamic raw);
+
+  @protected
+  SpaceCardTag dco_decode_space_card_tag(dynamic raw);
+
+  @protected
+  SpaceCheeseItem dco_decode_space_cheese_item(dynamic raw);
+
+  @protected
+  SpaceCheesePage dco_decode_space_cheese_page(dynamic raw);
+
+  @protected
+  SpaceCheeseResult dco_decode_space_cheese_result(dynamic raw);
+
+  @protected
+  SpaceContext dco_decode_space_context(dynamic raw);
+
+  @protected
+  SpaceElec dco_decode_space_elec(dynamic raw);
+
+  @protected
+  SpaceEpisodicButton dco_decode_space_episodic_button(dynamic raw);
+
+  @protected
+  SpaceFavBlock dco_decode_space_fav_block(dynamic raw);
+
+  @protected
+  SpaceFavItem dco_decode_space_fav_item(dynamic raw);
+
+  @protected
+  SpaceFollowedBy dco_decode_space_followed_by(dynamic raw);
+
+  @protected
+  SpaceGuard dco_decode_space_guard(dynamic raw);
+
+  @protected
+  SpaceImages dco_decode_space_images(dynamic raw);
+
+  @protected
+  SpaceLive dco_decode_space_live(dynamic raw);
+
+  @protected
+  SpaceLiveMedal dco_decode_space_live_medal(dynamic raw);
+
+  @protected
+  SpaceOpusCollectionItem dco_decode_space_opus_collection_item(dynamic raw);
+
+  @protected
+  SpaceOpusCollectionSection dco_decode_space_opus_collection_section(
+    dynamic raw,
+  );
+
+  @protected
+  SpaceOpusCover dco_decode_space_opus_cover(dynamic raw);
+
+  @protected
+  SpaceOpusFlowItem dco_decode_space_opus_flow_item(dynamic raw);
+
+  @protected
+  SpaceOpusFlowPage dco_decode_space_opus_flow_page(dynamic raw);
+
+  @protected
+  SpaceOpusFlowResult dco_decode_space_opus_flow_result(dynamic raw);
+
+  @protected
+  SpacePage dco_decode_space_page(dynamic raw);
+
+  @protected
+  SpacePageResult dco_decode_space_page_result(dynamic raw);
+
+  @protected
+  SpacePrInfo dco_decode_space_pr_info(dynamic raw);
+
+  @protected
+  SpaceRelation dco_decode_space_relation(dynamic raw);
+
+  @protected
+  SpaceReservation dco_decode_space_reservation(dynamic raw);
+
+  @protected
+  SpaceReservationLottery dco_decode_space_reservation_lottery(dynamic raw);
+
+  @protected
+  SpaceSearchArchiveItem dco_decode_space_search_archive_item(dynamic raw);
+
+  @protected
+  SpaceSearchArchivePage dco_decode_space_search_archive_page(dynamic raw);
+
+  @protected
+  SpaceSearchArchiveResult dco_decode_space_search_archive_result(dynamic raw);
+
+  @protected
+  SpaceSeasonSeries dco_decode_space_season_series(dynamic raw);
+
+  @protected
+  SpaceSeasonSeriesPage dco_decode_space_season_series_page(dynamic raw);
+
+  @protected
+  SpaceSeasonSeriesResult dco_decode_space_season_series_result(dynamic raw);
+
+  @protected
+  SpaceSeasonWebKind dco_decode_space_season_web_kind(dynamic raw);
+
+  @protected
+  SpaceSeasonWebPage dco_decode_space_season_web_page(dynamic raw);
+
+  @protected
+  SpaceSeasonWebResult dco_decode_space_season_web_result(dynamic raw);
+
+  @protected
+  SpaceSetting dco_decode_space_setting(dynamic raw);
+
+  @protected
+  SpaceShopItem dco_decode_space_shop_item(dynamic raw);
+
+  @protected
+  SpaceShopPage dco_decode_space_shop_page(dynamic raw);
+
+  @protected
+  SpaceShopResult dco_decode_space_shop_result(dynamic raw);
+
+  @protected
+  SpaceSimpleUser dco_decode_space_simple_user(dynamic raw);
+
+  @protected
+  SpaceTab2 dco_decode_space_tab_2(dynamic raw);
+
+  @protected
+  SpaceTab2Item dco_decode_space_tab_2_item(dynamic raw);
+
+  @protected
+  SpaceTabFilter dco_decode_space_tab_filter(dynamic raw);
+
+  @protected
+  SpaceTopImage dco_decode_space_top_image(dynamic raw);
+
+  @protected
+  SpaceTopTitle dco_decode_space_top_title(dynamic raw);
+
+  @protected
+  SpaceVideoBlock dco_decode_space_video_block(dynamic raw);
+
+  @protected
+  SpaceWebBadge dco_decode_space_web_badge(dynamic raw);
+
+  @protected
+  SpaceWebVideo dco_decode_space_web_video(dynamic raw);
+
+  @protected
   SponsorBlockContext dco_decode_sponsor_block_context(dynamic raw);
 
   @protected
@@ -1834,6 +2647,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SponsorUserInfoResult dco_decode_sponsor_user_info_result(dynamic raw);
+
+  @protected
+  SubItem dco_decode_sub_item(dynamic raw);
+
+  @protected
+  SubList dco_decode_sub_list(dynamic raw);
+
+  @protected
+  SubListResult dco_decode_sub_list_result(dynamic raw);
 
   @protected
   SubtitleConvert dco_decode_subtitle_convert(dynamic raw);
@@ -1872,6 +2694,39 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void dco_decode_unit(dynamic raw);
 
   @protected
+  UpowerLevel dco_decode_upower_level(dynamic raw);
+
+  @protected
+  UpowerRank dco_decode_upower_rank(dynamic raw);
+
+  @protected
+  UpowerRankItem dco_decode_upower_rank_item(dynamic raw);
+
+  @protected
+  UpowerRankResult dco_decode_upower_rank_result(dynamic raw);
+
+  @protected
+  UserContext dco_decode_user_context(dynamic raw);
+
+  @protected
+  UserInfo dco_decode_user_info(dynamic raw);
+
+  @protected
+  UserInfoResult dco_decode_user_info_result(dynamic raw);
+
+  @protected
+  UserRealName dco_decode_user_real_name(dynamic raw);
+
+  @protected
+  UserRealNameResult dco_decode_user_real_name_result(dynamic raw);
+
+  @protected
+  UserStat dco_decode_user_stat(dynamic raw);
+
+  @protected
+  UserStatResult dco_decode_user_stat_result(dynamic raw);
+
+  @protected
   VideoCandidateInput dco_decode_video_candidate_input(dynamic raw);
 
   @protected
@@ -1897,6 +2752,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   VideoShotResult dco_decode_video_shot_result(dynamic raw);
+
+  @protected
+  VideoTag dco_decode_video_tag(dynamic raw);
+
+  @protected
+  VideoTagsResult dco_decode_video_tags_result(dynamic raw);
 
   @protected
   VideoWriteContext dco_decode_video_write_context(dynamic raw);
@@ -1997,6 +2858,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  CoinLikeArcPage sse_decode_box_autoadd_coin_like_arc_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   DanmakuEngineOptions sse_decode_box_autoadd_danmaku_engine_options(
     SseDeserializer deserializer,
   );
@@ -2038,7 +2904,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  HistoryContext sse_decode_box_autoadd_history_context(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   HistoryNode sse_decode_box_autoadd_history_node(SseDeserializer deserializer);
+
+  @protected
+  HistoryPage sse_decode_box_autoadd_history_page(SseDeserializer deserializer);
 
   @protected
   HotSongHeat sse_decode_box_autoadd_hot_song_heat(
@@ -2058,6 +2932,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LanguageOptions sse_decode_box_autoadd_language_options(
     SseDeserializer deserializer,
   );
+
+  @protected
+  LaterPage sse_decode_box_autoadd_later_page(SseDeserializer deserializer);
+
+  @protected
+  LevelInfo sse_decode_box_autoadd_level_info(SseDeserializer deserializer);
 
   @protected
   LikeListPage sse_decode_box_autoadd_like_list_page(
@@ -2193,10 +3073,39 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MatchTeam sse_decode_box_autoadd_match_team(SseDeserializer deserializer);
 
   @protected
+  MediaList sse_decode_box_autoadd_media_list(SseDeserializer deserializer);
+
+  @protected
+  MediaListParams sse_decode_box_autoadd_media_list_params(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   MediaScore sse_decode_box_autoadd_media_score(SseDeserializer deserializer);
 
   @protected
   MediaStream sse_decode_box_autoadd_media_stream(SseDeserializer deserializer);
+
+  @protected
+  MemberCard sse_decode_box_autoadd_member_card(SseDeserializer deserializer);
+
+  @protected
+  MemberGuardPage sse_decode_box_autoadd_member_guard_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MemberInfo sse_decode_box_autoadd_member_info(SseDeserializer deserializer);
+
+  @protected
+  MemberRelationStat sse_decode_box_autoadd_member_relation_stat(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MemberUpStat sse_decode_box_autoadd_member_up_stat(
+    SseDeserializer deserializer,
+  );
 
   @protected
   MiscContext sse_decode_box_autoadd_misc_context(SseDeserializer deserializer);
@@ -2311,6 +3220,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  RejectPage sse_decode_box_autoadd_reject_page(SseDeserializer deserializer);
+
+  @protected
+  Relation sse_decode_box_autoadd_relation(SseDeserializer deserializer);
+
+  @protected
+  RelationContext sse_decode_box_autoadd_relation_context(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   ReplyContext sse_decode_box_autoadd_reply_context(
     SseDeserializer deserializer,
   );
@@ -2385,6 +3305,170 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SpaceArchiveHistory sse_decode_box_autoadd_space_archive_history(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArchiveOrder sse_decode_box_autoadd_space_archive_order(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArchivePage sse_decode_box_autoadd_space_archive_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArchiveSearchPage sse_decode_box_autoadd_space_archive_search_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArchiveSort sse_decode_box_autoadd_space_archive_sort(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArticleBlock sse_decode_box_autoadd_space_article_block(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArticlePage sse_decode_box_autoadd_space_article_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceAudioBlock sse_decode_box_autoadd_space_audio_block(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceAudioPage sse_decode_box_autoadd_space_audio_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceCard sse_decode_box_autoadd_space_card(SseDeserializer deserializer);
+
+  @protected
+  SpaceCheesePage sse_decode_box_autoadd_space_cheese_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceContext sse_decode_box_autoadd_space_context(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceElec sse_decode_box_autoadd_space_elec(SseDeserializer deserializer);
+
+  @protected
+  SpaceEpisodicButton sse_decode_box_autoadd_space_episodic_button(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceFavBlock sse_decode_box_autoadd_space_fav_block(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceFollowedBy sse_decode_box_autoadd_space_followed_by(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceGuard sse_decode_box_autoadd_space_guard(SseDeserializer deserializer);
+
+  @protected
+  SpaceImages sse_decode_box_autoadd_space_images(SseDeserializer deserializer);
+
+  @protected
+  SpaceLive sse_decode_box_autoadd_space_live(SseDeserializer deserializer);
+
+  @protected
+  SpaceLiveMedal sse_decode_box_autoadd_space_live_medal(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceOpusCollectionSection
+  sse_decode_box_autoadd_space_opus_collection_section(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceOpusCover sse_decode_box_autoadd_space_opus_cover(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceOpusFlowPage sse_decode_box_autoadd_space_opus_flow_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpacePage sse_decode_box_autoadd_space_page(SseDeserializer deserializer);
+
+  @protected
+  SpacePrInfo sse_decode_box_autoadd_space_pr_info(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceRelation sse_decode_box_autoadd_space_relation(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceReservationLottery sse_decode_box_autoadd_space_reservation_lottery(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSearchArchivePage sse_decode_box_autoadd_space_search_archive_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSeasonSeriesPage sse_decode_box_autoadd_space_season_series_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSeasonWebPage sse_decode_box_autoadd_space_season_web_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSetting sse_decode_box_autoadd_space_setting(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceShopPage sse_decode_box_autoadd_space_shop_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceTopTitle sse_decode_box_autoadd_space_top_title(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceVideoBlock sse_decode_box_autoadd_space_video_block(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceWebBadge sse_decode_box_autoadd_space_web_badge(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SponsorBlockContext sse_decode_box_autoadd_sponsor_block_context(
     SseDeserializer deserializer,
   );
@@ -2393,6 +3477,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SponsorUserInfo sse_decode_box_autoadd_sponsor_user_info(
     SseDeserializer deserializer,
   );
+
+  @protected
+  SubList sse_decode_box_autoadd_sub_list(SseDeserializer deserializer);
 
   @protected
   TransportSettings sse_decode_box_autoadd_transport_settings(
@@ -2404,6 +3491,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
+
+  @protected
+  UpowerRank sse_decode_box_autoadd_upower_rank(SseDeserializer deserializer);
+
+  @protected
+  UserContext sse_decode_box_autoadd_user_context(SseDeserializer deserializer);
+
+  @protected
+  UserInfo sse_decode_box_autoadd_user_info(SseDeserializer deserializer);
+
+  @protected
+  UserRealName sse_decode_box_autoadd_user_real_name(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  UserStat sse_decode_box_autoadd_user_stat(SseDeserializer deserializer);
 
   @protected
   VideoPageContext sse_decode_box_autoadd_video_page_context(
@@ -2456,7 +3560,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ClipInfo sse_decode_clip_info(SseDeserializer deserializer);
 
   @protected
+  CoinLikeArcItem sse_decode_coin_like_arc_item(SseDeserializer deserializer);
+
+  @protected
+  CoinLikeArcPage sse_decode_coin_like_arc_page(SseDeserializer deserializer);
+
+  @protected
+  CoinLikeArcResult sse_decode_coin_like_arc_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  CoinLogItem sse_decode_coin_log_item(SseDeserializer deserializer);
+
+  @protected
+  CoinLogResult sse_decode_coin_log_result(SseDeserializer deserializer);
+
+  @protected
+  CoinResult sse_decode_coin_result(SseDeserializer deserializer);
+
+  @protected
   CoverScrimStyle sse_decode_cover_scrim_style(SseDeserializer deserializer);
+
+  @protected
+  CreatedTagResult sse_decode_created_tag_result(SseDeserializer deserializer);
 
   @protected
   DanmakuBucketItem sse_decode_danmaku_bucket_item(
@@ -2553,6 +3680,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   FollowListResult sse_decode_follow_list_result(SseDeserializer deserializer);
 
   @protected
+  FollowTag sse_decode_follow_tag(SseDeserializer deserializer);
+
+  @protected
+  FollowTagsResult sse_decode_follow_tags_result(SseDeserializer deserializer);
+
+  @protected
   FollowUser sse_decode_follow_user(SseDeserializer deserializer);
 
   @protected
@@ -2586,7 +3719,35 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  GuardItem sse_decode_guard_item(SseDeserializer deserializer);
+
+  @protected
+  HistoryContext sse_decode_history_context(SseDeserializer deserializer);
+
+  @protected
+  HistoryItem sse_decode_history_item(SseDeserializer deserializer);
+
+  @protected
   HistoryNode sse_decode_history_node(SseDeserializer deserializer);
+
+  @protected
+  HistoryPage sse_decode_history_page(SseDeserializer deserializer);
+
+  @protected
+  HistoryPageResult sse_decode_history_page_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  HistoryRef sse_decode_history_ref(SseDeserializer deserializer);
+
+  @protected
+  HistoryStatusResult sse_decode_history_status_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  HistoryTab sse_decode_history_tab(SseDeserializer deserializer);
 
   @protected
   HotSongHeat sse_decode_hot_song_heat(SseDeserializer deserializer);
@@ -2608,6 +3769,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LanguageOptions sse_decode_language_options(SseDeserializer deserializer);
+
+  @protected
+  LaterItem sse_decode_later_item(SseDeserializer deserializer);
+
+  @protected
+  LaterPage sse_decode_later_page(SseDeserializer deserializer);
+
+  @protected
+  LaterPageResult sse_decode_later_page_result(SseDeserializer deserializer);
+
+  @protected
+  LevelInfo sse_decode_level_info(SseDeserializer deserializer);
 
   @protected
   LikeListPage sse_decode_like_list_page(SseDeserializer deserializer);
@@ -2651,6 +3824,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<ClipInfo> sse_decode_list_clip_info(SseDeserializer deserializer);
 
   @protected
+  List<CoinLikeArcItem> sse_decode_list_coin_like_arc_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<CoinLogItem> sse_decode_list_coin_log_item(SseDeserializer deserializer);
+
+  @protected
   List<DanmakuBucketItem> sse_decode_list_danmaku_bucket_item(
     SseDeserializer deserializer,
   );
@@ -2680,6 +3861,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<FilterRule> sse_decode_list_filter_rule(SseDeserializer deserializer);
 
   @protected
+  List<FollowTag> sse_decode_list_follow_tag(SseDeserializer deserializer);
+
+  @protected
   List<FollowUser> sse_decode_list_follow_user(SseDeserializer deserializer);
 
   @protected
@@ -2698,9 +3882,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<GuardItem> sse_decode_list_guard_item(SseDeserializer deserializer);
+
+  @protected
+  List<HistoryItem> sse_decode_list_history_item(SseDeserializer deserializer);
+
+  @protected
+  List<HistoryTab> sse_decode_list_history_tab(SseDeserializer deserializer);
+
+  @protected
   List<LanguageItem> sse_decode_list_language_item(
     SseDeserializer deserializer,
   );
+
+  @protected
+  List<LaterItem> sse_decode_list_later_item(SseDeserializer deserializer);
 
   @protected
   List<LiveArea> sse_decode_list_live_area(SseDeserializer deserializer);
@@ -2824,7 +4020,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<LoginLogItem> sse_decode_list_login_log_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<MatchContest> sse_decode_list_match_contest(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<MediaListItem> sse_decode_list_media_list_item(
     SseDeserializer deserializer,
   );
 
@@ -2912,6 +4118,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
   @protected
+  List<PrivacySetting> sse_decode_list_privacy_setting(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<(String, String)> sse_decode_list_record_string_string(
     SseDeserializer deserializer,
   );
@@ -2966,6 +4177,102 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<SongHeat> sse_decode_list_song_heat(SseDeserializer deserializer);
 
   @protected
+  List<SpaceArchiveItem> sse_decode_list_space_archive_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceArchiveTag> sse_decode_list_space_archive_tag(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceArticleItem> sse_decode_list_space_article_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceAudioItem> sse_decode_list_space_audio_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceCardTag> sse_decode_list_space_card_tag(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceCheeseItem> sse_decode_list_space_cheese_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceFavItem> sse_decode_list_space_fav_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceOpusCollectionItem> sse_decode_list_space_opus_collection_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceOpusFlowItem> sse_decode_list_space_opus_flow_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceReservation> sse_decode_list_space_reservation(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceSearchArchiveItem> sse_decode_list_space_search_archive_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceSeasonSeries> sse_decode_list_space_season_series(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceShopItem> sse_decode_list_space_shop_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceSimpleUser> sse_decode_list_space_simple_user(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceTab2> sse_decode_list_space_tab_2(SseDeserializer deserializer);
+
+  @protected
+  List<SpaceTab2Item> sse_decode_list_space_tab_2_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceTabFilter> sse_decode_list_space_tab_filter(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceTopImage> sse_decode_list_space_top_image(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceWebVideo> sse_decode_list_space_web_video(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SubItem> sse_decode_list_sub_item(SseDeserializer deserializer);
+
+  @protected
   List<TimelineDay> sse_decode_list_timeline_day(SseDeserializer deserializer);
 
   @protected
@@ -2977,9 +4284,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<TitleSpan> sse_decode_list_title_span(SseDeserializer deserializer);
 
   @protected
+  List<UpowerLevel> sse_decode_list_upower_level(SseDeserializer deserializer);
+
+  @protected
+  List<UpowerRankItem> sse_decode_list_upower_rank_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<VideoCandidateInput> sse_decode_list_video_candidate_input(
     SseDeserializer deserializer,
   );
+
+  @protected
+  List<VideoTag> sse_decode_list_video_tag(SseDeserializer deserializer);
 
   @protected
   List<ViewPoint> sse_decode_list_view_point(SseDeserializer deserializer);
@@ -3247,6 +4565,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  LoginLogItem sse_decode_login_log_item(SseDeserializer deserializer);
+
+  @protected
+  LoginLogResult sse_decode_login_log_result(SseDeserializer deserializer);
+
+  @protected
   LoginTokensData sse_decode_login_tokens_data(SseDeserializer deserializer);
 
   @protected
@@ -3273,10 +4597,60 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MatchTeam sse_decode_match_team(SseDeserializer deserializer);
 
   @protected
+  MediaList sse_decode_media_list(SseDeserializer deserializer);
+
+  @protected
+  MediaListItem sse_decode_media_list_item(SseDeserializer deserializer);
+
+  @protected
+  MediaListParams sse_decode_media_list_params(SseDeserializer deserializer);
+
+  @protected
+  MediaListResult sse_decode_media_list_result(SseDeserializer deserializer);
+
+  @protected
   MediaScore sse_decode_media_score(SseDeserializer deserializer);
 
   @protected
   MediaStream sse_decode_media_stream(SseDeserializer deserializer);
+
+  @protected
+  MemberCard sse_decode_member_card(SseDeserializer deserializer);
+
+  @protected
+  MemberCardResult sse_decode_member_card_result(SseDeserializer deserializer);
+
+  @protected
+  MemberGuardPage sse_decode_member_guard_page(SseDeserializer deserializer);
+
+  @protected
+  MemberGuardResult sse_decode_member_guard_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MemberInfo sse_decode_member_info(SseDeserializer deserializer);
+
+  @protected
+  MemberInfoResult sse_decode_member_info_result(SseDeserializer deserializer);
+
+  @protected
+  MemberRelationStat sse_decode_member_relation_stat(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MemberRelationStatResult sse_decode_member_relation_stat_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MemberUpStat sse_decode_member_up_stat(SseDeserializer deserializer);
+
+  @protected
+  MemberUpStatResult sse_decode_member_up_stat_result(
+    SseDeserializer deserializer,
+  );
 
   @protected
   MiscContext sse_decode_misc_context(SseDeserializer deserializer);
@@ -3332,6 +4706,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  CoinLikeArcPage? sse_decode_opt_box_autoadd_coin_like_arc_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   DanmakuFilter? sse_decode_opt_box_autoadd_danmaku_filter(
     SseDeserializer deserializer,
   );
@@ -3363,6 +4742,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  HistoryPage? sse_decode_opt_box_autoadd_history_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   HotSongHeat? sse_decode_opt_box_autoadd_hot_song_heat(
     SseDeserializer deserializer,
   );
@@ -3380,6 +4764,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LanguageOptions? sse_decode_opt_box_autoadd_language_options(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LaterPage? sse_decode_opt_box_autoadd_later_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LevelInfo? sse_decode_opt_box_autoadd_level_info(
     SseDeserializer deserializer,
   );
 
@@ -3499,7 +4893,37 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  MediaList? sse_decode_opt_box_autoadd_media_list(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   MediaScore? sse_decode_opt_box_autoadd_media_score(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MemberCard? sse_decode_opt_box_autoadd_member_card(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MemberGuardPage? sse_decode_opt_box_autoadd_member_guard_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MemberInfo? sse_decode_opt_box_autoadd_member_info(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MemberRelationStat? sse_decode_opt_box_autoadd_member_relation_stat(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MemberUpStat? sse_decode_opt_box_autoadd_member_up_stat(
     SseDeserializer deserializer,
   );
 
@@ -3608,6 +5032,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  RejectPage? sse_decode_opt_box_autoadd_reject_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  Relation? sse_decode_opt_box_autoadd_relation(SseDeserializer deserializer);
+
+  @protected
   ReplyCursor? sse_decode_opt_box_autoadd_reply_cursor(
     SseDeserializer deserializer,
   );
@@ -3683,15 +5115,205 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SpaceArchiveHistory? sse_decode_opt_box_autoadd_space_archive_history(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArchiveOrder? sse_decode_opt_box_autoadd_space_archive_order(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArchivePage? sse_decode_opt_box_autoadd_space_archive_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArchiveSearchPage? sse_decode_opt_box_autoadd_space_archive_search_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArchiveSort? sse_decode_opt_box_autoadd_space_archive_sort(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArticleBlock? sse_decode_opt_box_autoadd_space_article_block(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArticlePage? sse_decode_opt_box_autoadd_space_article_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceAudioBlock? sse_decode_opt_box_autoadd_space_audio_block(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceAudioPage? sse_decode_opt_box_autoadd_space_audio_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceCard? sse_decode_opt_box_autoadd_space_card(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceCheesePage? sse_decode_opt_box_autoadd_space_cheese_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceElec? sse_decode_opt_box_autoadd_space_elec(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceEpisodicButton? sse_decode_opt_box_autoadd_space_episodic_button(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceFavBlock? sse_decode_opt_box_autoadd_space_fav_block(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceFollowedBy? sse_decode_opt_box_autoadd_space_followed_by(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceGuard? sse_decode_opt_box_autoadd_space_guard(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceImages? sse_decode_opt_box_autoadd_space_images(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceLive? sse_decode_opt_box_autoadd_space_live(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceLiveMedal? sse_decode_opt_box_autoadd_space_live_medal(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceOpusCollectionSection?
+  sse_decode_opt_box_autoadd_space_opus_collection_section(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceOpusCover? sse_decode_opt_box_autoadd_space_opus_cover(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceOpusFlowPage? sse_decode_opt_box_autoadd_space_opus_flow_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpacePage? sse_decode_opt_box_autoadd_space_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpacePrInfo? sse_decode_opt_box_autoadd_space_pr_info(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceRelation? sse_decode_opt_box_autoadd_space_relation(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceReservationLottery? sse_decode_opt_box_autoadd_space_reservation_lottery(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSearchArchivePage? sse_decode_opt_box_autoadd_space_search_archive_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSeasonSeriesPage? sse_decode_opt_box_autoadd_space_season_series_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSeasonWebPage? sse_decode_opt_box_autoadd_space_season_web_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSetting? sse_decode_opt_box_autoadd_space_setting(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceShopPage? sse_decode_opt_box_autoadd_space_shop_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceTopTitle? sse_decode_opt_box_autoadd_space_top_title(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceVideoBlock? sse_decode_opt_box_autoadd_space_video_block(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceWebBadge? sse_decode_opt_box_autoadd_space_web_badge(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SponsorUserInfo? sse_decode_opt_box_autoadd_sponsor_user_info(
     SseDeserializer deserializer,
   );
+
+  @protected
+  SubList? sse_decode_opt_box_autoadd_sub_list(SseDeserializer deserializer);
 
   @protected
   int? sse_decode_opt_box_autoadd_u_16(SseDeserializer deserializer);
 
   @protected
   int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
+
+  @protected
+  UpowerRank? sse_decode_opt_box_autoadd_upower_rank(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  UserInfo? sse_decode_opt_box_autoadd_user_info(SseDeserializer deserializer);
+
+  @protected
+  UserRealName? sse_decode_opt_box_autoadd_user_real_name(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  UserStat? sse_decode_opt_box_autoadd_user_stat(SseDeserializer deserializer);
 
   @protected
   VideoSelectionOutput? sse_decode_opt_box_autoadd_video_selection_output(
@@ -3731,6 +5353,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<ClipInfo>? sse_decode_opt_list_clip_info(SseDeserializer deserializer);
 
   @protected
+  List<CoinLogItem>? sse_decode_opt_list_coin_log_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<DanmakuBucketItem>? sse_decode_opt_list_danmaku_bucket_item(
     SseDeserializer deserializer,
   );
@@ -3747,6 +5374,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<FeedVideoItem>? sse_decode_opt_list_feed_video_item(
     SseDeserializer deserializer,
   );
+
+  @protected
+  List<FollowTag>? sse_decode_opt_list_follow_tag(SseDeserializer deserializer);
 
   @protected
   List<FolloweeVoteData>? sse_decode_opt_list_followee_vote_data(
@@ -3796,6 +5426,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<LoginLogItem>? sse_decode_opt_list_login_log_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<MediaStream>? sse_decode_opt_list_media_stream(
     SseDeserializer deserializer,
   );
@@ -3831,6 +5466,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Uint8List? sse_decode_opt_list_prim_u_8_strict(SseDeserializer deserializer);
+
+  @protected
+  List<PrivacySetting>? sse_decode_opt_list_privacy_setting(
+    SseDeserializer deserializer,
+  );
 
   @protected
   List<SearchArticleItem>? sse_decode_opt_list_search_article_item(
@@ -3871,6 +5511,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<TimelineDay>? sse_decode_opt_list_timeline_day(
     SseDeserializer deserializer,
   );
+
+  @protected
+  List<VideoTag>? sse_decode_opt_list_video_tag(SseDeserializer deserializer);
 
   @protected
   List<ViewPoint>? sse_decode_opt_list_view_point(SseDeserializer deserializer);
@@ -4044,6 +5687,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  PrivacyResult sse_decode_privacy_result(SseDeserializer deserializer);
+
+  @protected
+  PrivacySetting sse_decode_privacy_setting(SseDeserializer deserializer);
+
+  @protected
   QrCodeData sse_decode_qr_code_data(SseDeserializer deserializer);
 
   @protected
@@ -4062,6 +5711,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   (String, String) sse_decode_record_string_string(
     SseDeserializer deserializer,
   );
+
+  @protected
+  RejectPage sse_decode_reject_page(SseDeserializer deserializer);
+
+  @protected
+  Relation sse_decode_relation(SseDeserializer deserializer);
+
+  @protected
+  RelationContext sse_decode_relation_context(SseDeserializer deserializer);
+
+  @protected
+  RelationResult sse_decode_relation_result(SseDeserializer deserializer);
 
   @protected
   ReplyContext sse_decode_reply_context(SseDeserializer deserializer);
@@ -4099,6 +5760,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReplyReplyListResult sse_decode_reply_reply_list_result(
     SseDeserializer deserializer,
   );
+
+  @protected
+  ReportResult sse_decode_report_result(SseDeserializer deserializer);
 
   @protected
   ReserveActionData sse_decode_reserve_action_data(
@@ -4245,6 +5909,260 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SongHeat sse_decode_song_heat(SseDeserializer deserializer);
 
   @protected
+  SpaceArchiveHistory sse_decode_space_archive_history(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArchiveItem sse_decode_space_archive_item(SseDeserializer deserializer);
+
+  @protected
+  SpaceArchiveKind sse_decode_space_archive_kind(SseDeserializer deserializer);
+
+  @protected
+  SpaceArchiveOrder sse_decode_space_archive_order(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArchivePage sse_decode_space_archive_page(SseDeserializer deserializer);
+
+  @protected
+  SpaceArchiveResult sse_decode_space_archive_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArchiveSearchOrder sse_decode_space_archive_search_order(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArchiveSearchPage sse_decode_space_archive_search_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArchiveSearchResult sse_decode_space_archive_search_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArchiveSort sse_decode_space_archive_sort(SseDeserializer deserializer);
+
+  @protected
+  SpaceArchiveTag sse_decode_space_archive_tag(SseDeserializer deserializer);
+
+  @protected
+  SpaceArticleBlock sse_decode_space_article_block(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceArticleItem sse_decode_space_article_item(SseDeserializer deserializer);
+
+  @protected
+  SpaceArticlePage sse_decode_space_article_page(SseDeserializer deserializer);
+
+  @protected
+  SpaceArticleResult sse_decode_space_article_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceAudioBlock sse_decode_space_audio_block(SseDeserializer deserializer);
+
+  @protected
+  SpaceAudioItem sse_decode_space_audio_item(SseDeserializer deserializer);
+
+  @protected
+  SpaceAudioPage sse_decode_space_audio_page(SseDeserializer deserializer);
+
+  @protected
+  SpaceAudioResult sse_decode_space_audio_result(SseDeserializer deserializer);
+
+  @protected
+  SpaceCard sse_decode_space_card(SseDeserializer deserializer);
+
+  @protected
+  SpaceCardTag sse_decode_space_card_tag(SseDeserializer deserializer);
+
+  @protected
+  SpaceCheeseItem sse_decode_space_cheese_item(SseDeserializer deserializer);
+
+  @protected
+  SpaceCheesePage sse_decode_space_cheese_page(SseDeserializer deserializer);
+
+  @protected
+  SpaceCheeseResult sse_decode_space_cheese_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceContext sse_decode_space_context(SseDeserializer deserializer);
+
+  @protected
+  SpaceElec sse_decode_space_elec(SseDeserializer deserializer);
+
+  @protected
+  SpaceEpisodicButton sse_decode_space_episodic_button(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceFavBlock sse_decode_space_fav_block(SseDeserializer deserializer);
+
+  @protected
+  SpaceFavItem sse_decode_space_fav_item(SseDeserializer deserializer);
+
+  @protected
+  SpaceFollowedBy sse_decode_space_followed_by(SseDeserializer deserializer);
+
+  @protected
+  SpaceGuard sse_decode_space_guard(SseDeserializer deserializer);
+
+  @protected
+  SpaceImages sse_decode_space_images(SseDeserializer deserializer);
+
+  @protected
+  SpaceLive sse_decode_space_live(SseDeserializer deserializer);
+
+  @protected
+  SpaceLiveMedal sse_decode_space_live_medal(SseDeserializer deserializer);
+
+  @protected
+  SpaceOpusCollectionItem sse_decode_space_opus_collection_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceOpusCollectionSection sse_decode_space_opus_collection_section(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceOpusCover sse_decode_space_opus_cover(SseDeserializer deserializer);
+
+  @protected
+  SpaceOpusFlowItem sse_decode_space_opus_flow_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceOpusFlowPage sse_decode_space_opus_flow_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceOpusFlowResult sse_decode_space_opus_flow_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpacePage sse_decode_space_page(SseDeserializer deserializer);
+
+  @protected
+  SpacePageResult sse_decode_space_page_result(SseDeserializer deserializer);
+
+  @protected
+  SpacePrInfo sse_decode_space_pr_info(SseDeserializer deserializer);
+
+  @protected
+  SpaceRelation sse_decode_space_relation(SseDeserializer deserializer);
+
+  @protected
+  SpaceReservation sse_decode_space_reservation(SseDeserializer deserializer);
+
+  @protected
+  SpaceReservationLottery sse_decode_space_reservation_lottery(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSearchArchiveItem sse_decode_space_search_archive_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSearchArchivePage sse_decode_space_search_archive_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSearchArchiveResult sse_decode_space_search_archive_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSeasonSeries sse_decode_space_season_series(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSeasonSeriesPage sse_decode_space_season_series_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSeasonSeriesResult sse_decode_space_season_series_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSeasonWebKind sse_decode_space_season_web_kind(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSeasonWebPage sse_decode_space_season_web_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSeasonWebResult sse_decode_space_season_web_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSetting sse_decode_space_setting(SseDeserializer deserializer);
+
+  @protected
+  SpaceShopItem sse_decode_space_shop_item(SseDeserializer deserializer);
+
+  @protected
+  SpaceShopPage sse_decode_space_shop_page(SseDeserializer deserializer);
+
+  @protected
+  SpaceShopResult sse_decode_space_shop_result(SseDeserializer deserializer);
+
+  @protected
+  SpaceSimpleUser sse_decode_space_simple_user(SseDeserializer deserializer);
+
+  @protected
+  SpaceTab2 sse_decode_space_tab_2(SseDeserializer deserializer);
+
+  @protected
+  SpaceTab2Item sse_decode_space_tab_2_item(SseDeserializer deserializer);
+
+  @protected
+  SpaceTabFilter sse_decode_space_tab_filter(SseDeserializer deserializer);
+
+  @protected
+  SpaceTopImage sse_decode_space_top_image(SseDeserializer deserializer);
+
+  @protected
+  SpaceTopTitle sse_decode_space_top_title(SseDeserializer deserializer);
+
+  @protected
+  SpaceVideoBlock sse_decode_space_video_block(SseDeserializer deserializer);
+
+  @protected
+  SpaceWebBadge sse_decode_space_web_badge(SseDeserializer deserializer);
+
+  @protected
+  SpaceWebVideo sse_decode_space_web_video(SseDeserializer deserializer);
+
+  @protected
   SponsorBlockContext sse_decode_sponsor_block_context(
     SseDeserializer deserializer,
   );
@@ -4266,6 +6184,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SponsorUserInfoResult sse_decode_sponsor_user_info_result(
     SseDeserializer deserializer,
   );
+
+  @protected
+  SubItem sse_decode_sub_item(SseDeserializer deserializer);
+
+  @protected
+  SubList sse_decode_sub_list(SseDeserializer deserializer);
+
+  @protected
+  SubListResult sse_decode_sub_list_result(SseDeserializer deserializer);
 
   @protected
   SubtitleConvert sse_decode_subtitle_convert(SseDeserializer deserializer);
@@ -4304,6 +6231,41 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_decode_unit(SseDeserializer deserializer);
 
   @protected
+  UpowerLevel sse_decode_upower_level(SseDeserializer deserializer);
+
+  @protected
+  UpowerRank sse_decode_upower_rank(SseDeserializer deserializer);
+
+  @protected
+  UpowerRankItem sse_decode_upower_rank_item(SseDeserializer deserializer);
+
+  @protected
+  UpowerRankResult sse_decode_upower_rank_result(SseDeserializer deserializer);
+
+  @protected
+  UserContext sse_decode_user_context(SseDeserializer deserializer);
+
+  @protected
+  UserInfo sse_decode_user_info(SseDeserializer deserializer);
+
+  @protected
+  UserInfoResult sse_decode_user_info_result(SseDeserializer deserializer);
+
+  @protected
+  UserRealName sse_decode_user_real_name(SseDeserializer deserializer);
+
+  @protected
+  UserRealNameResult sse_decode_user_real_name_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  UserStat sse_decode_user_stat(SseDeserializer deserializer);
+
+  @protected
+  UserStatResult sse_decode_user_stat_result(SseDeserializer deserializer);
+
+  @protected
   VideoCandidateInput sse_decode_video_candidate_input(
     SseDeserializer deserializer,
   );
@@ -4337,6 +6299,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   VideoShotResult sse_decode_video_shot_result(SseDeserializer deserializer);
+
+  @protected
+  VideoTag sse_decode_video_tag(SseDeserializer deserializer);
+
+  @protected
+  VideoTagsResult sse_decode_video_tags_result(SseDeserializer deserializer);
 
   @protected
   VideoWriteContext sse_decode_video_write_context(
@@ -4455,6 +6423,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_coin_like_arc_page(
+    CoinLikeArcPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_danmaku_engine_options(
     DanmakuEngineOptions self,
     SseSerializer serializer,
@@ -4515,8 +6489,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_history_context(
+    HistoryContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_history_node(
     HistoryNode self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_history_page(
+    HistoryPage self,
     SseSerializer serializer,
   );
 
@@ -4544,6 +6530,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_language_options(
     LanguageOptions self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_later_page(
+    LaterPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_level_info(
+    LevelInfo self,
     SseSerializer serializer,
   );
 
@@ -4722,6 +6720,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_media_list(
+    MediaList self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_media_list_params(
+    MediaListParams self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_media_score(
     MediaScore self,
     SseSerializer serializer,
@@ -4730,6 +6740,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_media_stream(
     MediaStream self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_member_card(
+    MemberCard self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_member_guard_page(
+    MemberGuardPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_member_info(
+    MemberInfo self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_member_relation_stat(
+    MemberRelationStat self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_member_up_stat(
+    MemberUpStat self,
     SseSerializer serializer,
   );
 
@@ -4887,6 +6927,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_reject_page(
+    RejectPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_relation(Relation self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_relation_context(
+    RelationContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_reply_context(
     ReplyContext self,
     SseSerializer serializer,
@@ -4995,6 +7050,216 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_space_archive_history(
+    SpaceArchiveHistory self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_archive_order(
+    SpaceArchiveOrder self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_archive_page(
+    SpaceArchivePage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_archive_search_page(
+    SpaceArchiveSearchPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_archive_sort(
+    SpaceArchiveSort self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_article_block(
+    SpaceArticleBlock self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_article_page(
+    SpaceArticlePage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_audio_block(
+    SpaceAudioBlock self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_audio_page(
+    SpaceAudioPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_card(
+    SpaceCard self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_cheese_page(
+    SpaceCheesePage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_context(
+    SpaceContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_elec(
+    SpaceElec self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_episodic_button(
+    SpaceEpisodicButton self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_fav_block(
+    SpaceFavBlock self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_followed_by(
+    SpaceFollowedBy self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_guard(
+    SpaceGuard self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_images(
+    SpaceImages self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_live(
+    SpaceLive self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_live_medal(
+    SpaceLiveMedal self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_opus_collection_section(
+    SpaceOpusCollectionSection self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_opus_cover(
+    SpaceOpusCover self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_opus_flow_page(
+    SpaceOpusFlowPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_page(
+    SpacePage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_pr_info(
+    SpacePrInfo self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_relation(
+    SpaceRelation self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_reservation_lottery(
+    SpaceReservationLottery self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_search_archive_page(
+    SpaceSearchArchivePage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_season_series_page(
+    SpaceSeasonSeriesPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_season_web_page(
+    SpaceSeasonWebPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_setting(
+    SpaceSetting self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_shop_page(
+    SpaceShopPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_top_title(
+    SpaceTopTitle self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_video_block(
+    SpaceVideoBlock self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_space_web_badge(
+    SpaceWebBadge self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_sponsor_block_context(
     SponsorBlockContext self,
     SseSerializer serializer,
@@ -5007,6 +7272,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_sub_list(SubList self, SseSerializer serializer);
+
+  @protected
   void sse_encode_box_autoadd_transport_settings(
     TransportSettings self,
     SseSerializer serializer,
@@ -5017,6 +7285,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_upower_rank(
+    UpowerRank self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_user_context(
+    UserContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_user_info(
+    UserInfo self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_user_real_name(
+    UserRealName self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_user_stat(
+    UserStat self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_box_autoadd_video_page_context(
@@ -5085,8 +7383,41 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_clip_info(ClipInfo self, SseSerializer serializer);
 
   @protected
+  void sse_encode_coin_like_arc_item(
+    CoinLikeArcItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_coin_like_arc_page(
+    CoinLikeArcPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_coin_like_arc_result(
+    CoinLikeArcResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_coin_log_item(CoinLogItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_coin_log_result(CoinLogResult self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_coin_result(CoinResult self, SseSerializer serializer);
+
+  @protected
   void sse_encode_cover_scrim_style(
     CoverScrimStyle self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_created_tag_result(
+    CreatedTagResult self,
     SseSerializer serializer,
   );
 
@@ -5205,6 +7536,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_follow_tag(FollowTag self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_follow_tags_result(
+    FollowTagsResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_follow_user(FollowUser self, SseSerializer serializer);
 
   @protected
@@ -5247,7 +7587,40 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_guard_item(GuardItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_history_context(
+    HistoryContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_history_item(HistoryItem self, SseSerializer serializer);
+
+  @protected
   void sse_encode_history_node(HistoryNode self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_history_page(HistoryPage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_history_page_result(
+    HistoryPageResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_history_ref(HistoryRef self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_history_status_result(
+    HistoryStatusResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_history_tab(HistoryTab self, SseSerializer serializer);
 
   @protected
   void sse_encode_hot_song_heat(HotSongHeat self, SseSerializer serializer);
@@ -5275,6 +7648,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     LanguageOptions self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_later_item(LaterItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_later_page(LaterPage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_later_page_result(
+    LaterPageResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_level_info(LevelInfo self, SseSerializer serializer);
 
   @protected
   void sse_encode_like_list_page(LikeListPage self, SseSerializer serializer);
@@ -5328,6 +7716,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_list_clip_info(List<ClipInfo> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_coin_like_arc_item(
+    List<CoinLikeArcItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_coin_log_item(
+    List<CoinLogItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_danmaku_bucket_item(
     List<DanmakuBucketItem> self,
     SseSerializer serializer,
@@ -5364,6 +7764,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_follow_tag(
+    List<FollowTag> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_follow_user(
     List<FollowUser> self,
     SseSerializer serializer,
@@ -5388,8 +7794,32 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_guard_item(
+    List<GuardItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_history_item(
+    List<HistoryItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_history_tab(
+    List<HistoryTab> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_language_item(
     List<LanguageItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_later_item(
+    List<LaterItem> self,
     SseSerializer serializer,
   );
 
@@ -5550,8 +7980,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_login_log_item(
+    List<LoginLogItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_match_contest(
     List<MatchContest> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_media_list_item(
+    List<MediaListItem> self,
     SseSerializer serializer,
   );
 
@@ -5676,6 +8118,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_privacy_setting(
+    List<PrivacySetting> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_record_string_string(
     List<(String, String)> self,
     SseSerializer serializer,
@@ -5745,6 +8193,123 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_list_song_heat(List<SongHeat> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_space_archive_item(
+    List<SpaceArchiveItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_archive_tag(
+    List<SpaceArchiveTag> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_article_item(
+    List<SpaceArticleItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_audio_item(
+    List<SpaceAudioItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_card_tag(
+    List<SpaceCardTag> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_cheese_item(
+    List<SpaceCheeseItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_fav_item(
+    List<SpaceFavItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_opus_collection_item(
+    List<SpaceOpusCollectionItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_opus_flow_item(
+    List<SpaceOpusFlowItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_reservation(
+    List<SpaceReservation> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_search_archive_item(
+    List<SpaceSearchArchiveItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_season_series(
+    List<SpaceSeasonSeries> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_shop_item(
+    List<SpaceShopItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_simple_user(
+    List<SpaceSimpleUser> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_tab_2(
+    List<SpaceTab2> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_tab_2_item(
+    List<SpaceTab2Item> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_tab_filter(
+    List<SpaceTabFilter> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_top_image(
+    List<SpaceTopImage> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_web_video(
+    List<SpaceWebVideo> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_sub_item(List<SubItem> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_timeline_day(
     List<TimelineDay> self,
     SseSerializer serializer,
@@ -5763,10 +8328,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_upower_level(
+    List<UpowerLevel> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_upower_rank_item(
+    List<UpowerRankItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_video_candidate_input(
     List<VideoCandidateInput> self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_list_video_tag(List<VideoTag> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_view_point(
@@ -6132,6 +8712,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_login_log_item(LoginLogItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_login_log_result(
+    LoginLogResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_login_tokens_data(
     LoginTokensData self,
     SseSerializer serializer,
@@ -6168,10 +8757,79 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_match_team(MatchTeam self, SseSerializer serializer);
 
   @protected
+  void sse_encode_media_list(MediaList self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_media_list_item(MediaListItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_media_list_params(
+    MediaListParams self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_media_list_result(
+    MediaListResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_media_score(MediaScore self, SseSerializer serializer);
 
   @protected
   void sse_encode_media_stream(MediaStream self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_member_card(MemberCard self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_member_card_result(
+    MemberCardResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_member_guard_page(
+    MemberGuardPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_member_guard_result(
+    MemberGuardResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_member_info(MemberInfo self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_member_info_result(
+    MemberInfoResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_member_relation_stat(
+    MemberRelationStat self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_member_relation_stat_result(
+    MemberRelationStatResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_member_up_stat(MemberUpStat self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_member_up_stat_result(
+    MemberUpStatResult self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_misc_context(MiscContext self, SseSerializer serializer);
@@ -6240,6 +8898,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_coin_like_arc_page(
+    CoinLikeArcPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_danmaku_filter(
     DanmakuFilter? self,
     SseSerializer serializer,
@@ -6276,6 +8940,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_history_page(
+    HistoryPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_hot_song_heat(
     HotSongHeat? self,
     SseSerializer serializer,
@@ -6299,6 +8969,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_language_options(
     LanguageOptions? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_later_page(
+    LaterPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_level_info(
+    LevelInfo? self,
     SseSerializer serializer,
   );
 
@@ -6441,8 +9123,44 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_media_list(
+    MediaList? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_media_score(
     MediaScore? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_member_card(
+    MemberCard? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_member_guard_page(
+    MemberGuardPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_member_info(
+    MemberInfo? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_member_relation_stat(
+    MemberRelationStat? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_member_up_stat(
+    MemberUpStat? self,
     SseSerializer serializer,
   );
 
@@ -6579,6 +9297,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_reject_page(
+    RejectPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_relation(
+    Relation? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_reply_cursor(
     ReplyCursor? self,
     SseSerializer serializer,
@@ -6669,8 +9399,218 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_space_archive_history(
+    SpaceArchiveHistory? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_archive_order(
+    SpaceArchiveOrder? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_archive_page(
+    SpaceArchivePage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_archive_search_page(
+    SpaceArchiveSearchPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_archive_sort(
+    SpaceArchiveSort? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_article_block(
+    SpaceArticleBlock? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_article_page(
+    SpaceArticlePage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_audio_block(
+    SpaceAudioBlock? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_audio_page(
+    SpaceAudioPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_card(
+    SpaceCard? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_cheese_page(
+    SpaceCheesePage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_elec(
+    SpaceElec? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_episodic_button(
+    SpaceEpisodicButton? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_fav_block(
+    SpaceFavBlock? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_followed_by(
+    SpaceFollowedBy? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_guard(
+    SpaceGuard? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_images(
+    SpaceImages? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_live(
+    SpaceLive? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_live_medal(
+    SpaceLiveMedal? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_opus_collection_section(
+    SpaceOpusCollectionSection? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_opus_cover(
+    SpaceOpusCover? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_opus_flow_page(
+    SpaceOpusFlowPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_page(
+    SpacePage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_pr_info(
+    SpacePrInfo? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_relation(
+    SpaceRelation? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_reservation_lottery(
+    SpaceReservationLottery? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_search_archive_page(
+    SpaceSearchArchivePage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_season_series_page(
+    SpaceSeasonSeriesPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_season_web_page(
+    SpaceSeasonWebPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_setting(
+    SpaceSetting? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_shop_page(
+    SpaceShopPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_top_title(
+    SpaceTopTitle? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_video_block(
+    SpaceVideoBlock? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_web_badge(
+    SpaceWebBadge? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_sponsor_user_info(
     SponsorUserInfo? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_sub_list(
+    SubList? self,
     SseSerializer serializer,
   );
 
@@ -6679,6 +9619,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_upower_rank(
+    UpowerRank? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_user_info(
+    UserInfo? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_user_real_name(
+    UserRealName? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_user_stat(
+    UserStat? self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_opt_box_autoadd_video_selection_output(
@@ -6732,6 +9696,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_list_coin_log_item(
+    List<CoinLogItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_list_danmaku_bucket_item(
     List<DanmakuBucketItem>? self,
     SseSerializer serializer,
@@ -6749,6 +9719,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_feed_video_item(
     List<FeedVideoItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_follow_tag(
+    List<FollowTag>? self,
     SseSerializer serializer,
   );
 
@@ -6813,6 +9789,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_list_login_log_item(
+    List<LoginLogItem>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_list_media_stream(
     List<MediaStream>? self,
     SseSerializer serializer,
@@ -6867,6 +9849,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_list_privacy_setting(
+    List<PrivacySetting>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_list_search_article_item(
     List<SearchArticleItem>? self,
     SseSerializer serializer,
@@ -6911,6 +9899,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_timeline_day(
     List<TimelineDay>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_video_tag(
+    List<VideoTag>? self,
     SseSerializer serializer,
   );
 
@@ -7134,6 +10128,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_privacy_result(PrivacyResult self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_privacy_setting(
+    PrivacySetting self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_qr_code_data(QrCodeData self, SseSerializer serializer);
 
   @protected
@@ -7151,6 +10154,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_record_string_string(
     (String, String) self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_reject_page(RejectPage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_relation(Relation self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_relation_context(
+    RelationContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_relation_result(
+    RelationResult self,
     SseSerializer serializer,
   );
 
@@ -7198,6 +10219,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     ReplyReplyListResult self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_report_result(ReportResult self, SseSerializer serializer);
 
   @protected
   void sse_encode_reserve_action_data(
@@ -7386,6 +10410,354 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_song_heat(SongHeat self, SseSerializer serializer);
 
   @protected
+  void sse_encode_space_archive_history(
+    SpaceArchiveHistory self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_archive_item(
+    SpaceArchiveItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_archive_kind(
+    SpaceArchiveKind self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_archive_order(
+    SpaceArchiveOrder self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_archive_page(
+    SpaceArchivePage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_archive_result(
+    SpaceArchiveResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_archive_search_order(
+    SpaceArchiveSearchOrder self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_archive_search_page(
+    SpaceArchiveSearchPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_archive_search_result(
+    SpaceArchiveSearchResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_archive_sort(
+    SpaceArchiveSort self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_archive_tag(
+    SpaceArchiveTag self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_article_block(
+    SpaceArticleBlock self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_article_item(
+    SpaceArticleItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_article_page(
+    SpaceArticlePage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_article_result(
+    SpaceArticleResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_audio_block(
+    SpaceAudioBlock self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_audio_item(
+    SpaceAudioItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_audio_page(
+    SpaceAudioPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_audio_result(
+    SpaceAudioResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_card(SpaceCard self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_card_tag(SpaceCardTag self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_cheese_item(
+    SpaceCheeseItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_cheese_page(
+    SpaceCheesePage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_cheese_result(
+    SpaceCheeseResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_context(SpaceContext self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_elec(SpaceElec self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_episodic_button(
+    SpaceEpisodicButton self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_fav_block(SpaceFavBlock self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_fav_item(SpaceFavItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_followed_by(
+    SpaceFollowedBy self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_guard(SpaceGuard self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_images(SpaceImages self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_live(SpaceLive self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_live_medal(
+    SpaceLiveMedal self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_opus_collection_item(
+    SpaceOpusCollectionItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_opus_collection_section(
+    SpaceOpusCollectionSection self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_opus_cover(
+    SpaceOpusCover self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_opus_flow_item(
+    SpaceOpusFlowItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_opus_flow_page(
+    SpaceOpusFlowPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_opus_flow_result(
+    SpaceOpusFlowResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_page(SpacePage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_page_result(
+    SpacePageResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_pr_info(SpacePrInfo self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_relation(SpaceRelation self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_reservation(
+    SpaceReservation self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_reservation_lottery(
+    SpaceReservationLottery self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_search_archive_item(
+    SpaceSearchArchiveItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_search_archive_page(
+    SpaceSearchArchivePage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_search_archive_result(
+    SpaceSearchArchiveResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_season_series(
+    SpaceSeasonSeries self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_season_series_page(
+    SpaceSeasonSeriesPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_season_series_result(
+    SpaceSeasonSeriesResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_season_web_kind(
+    SpaceSeasonWebKind self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_season_web_page(
+    SpaceSeasonWebPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_season_web_result(
+    SpaceSeasonWebResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_setting(SpaceSetting self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_shop_item(SpaceShopItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_shop_page(SpaceShopPage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_shop_result(
+    SpaceShopResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_simple_user(
+    SpaceSimpleUser self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_tab_2(SpaceTab2 self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_tab_2_item(
+    SpaceTab2Item self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_tab_filter(
+    SpaceTabFilter self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_top_image(SpaceTopImage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_top_title(SpaceTopTitle self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_video_block(
+    SpaceVideoBlock self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_web_badge(SpaceWebBadge self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_web_video(SpaceWebVideo self, SseSerializer serializer);
+
+  @protected
   void sse_encode_sponsor_block_context(
     SponsorBlockContext self,
     SseSerializer serializer,
@@ -7414,6 +10786,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     SponsorUserInfoResult self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_sub_item(SubItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_sub_list(SubList self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_sub_list_result(SubListResult self, SseSerializer serializer);
 
   @protected
   void sse_encode_subtitle_convert(
@@ -7464,6 +10845,54 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_unit(void self, SseSerializer serializer);
 
   @protected
+  void sse_encode_upower_level(UpowerLevel self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_upower_rank(UpowerRank self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_upower_rank_item(
+    UpowerRankItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_upower_rank_result(
+    UpowerRankResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_user_context(UserContext self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_user_info(UserInfo self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_user_info_result(
+    UserInfoResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_user_real_name(UserRealName self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_user_real_name_result(
+    UserRealNameResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_user_stat(UserStat self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_user_stat_result(
+    UserStatResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_video_candidate_input(
     VideoCandidateInput self,
     SseSerializer serializer,
@@ -7511,6 +10940,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_video_shot_result(
     VideoShotResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_video_tag(VideoTag self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_video_tags_result(
+    VideoTagsResult self,
     SseSerializer serializer,
   );
 

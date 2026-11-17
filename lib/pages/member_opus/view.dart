@@ -4,8 +4,7 @@ import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:kilikili/grpc/bilibili/app/dynamic/v2.pb.dart'
-    show OpusFlowItem;
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/pages/common/fab_mixin.dart';
 import 'package:kilikili/pages/member_opus/controller.dart';
@@ -106,7 +105,7 @@ class _MemberOpusState extends State<MemberOpus>
                             (e) => ListTile(
                               dense: true,
                               onTap: () {
-                                if (e == _controller.type.value) {
+                                if (_controller.isSelected(e)) {
                                   return;
                                 }
                                 Get.back();
@@ -114,7 +113,7 @@ class _MemberOpusState extends State<MemberOpus>
                                   ..type.value = e
                                   ..onReload();
                               },
-                              tileColor: e == _controller.type.value
+                              tileColor: _controller.isSelected(e)
                                   ? ColorScheme.of(context).onInverseSurface
                                   : null,
                               title: Text(
@@ -144,7 +143,7 @@ class _MemberOpusState extends State<MemberOpus>
     maxCrossAxisExtent: Grid.smallCardWidth,
   );
 
-  Widget _buildBody(LoadingState<List<OpusFlowItem>?> loadingState) {
+  Widget _buildBody(LoadingState<List<SpaceOpusFlowItem>?> loadingState) {
     switch (loadingState) {
       case Loading():
         return SliverMasonryGrid(
@@ -173,14 +172,14 @@ class _MemberOpusState extends State<MemberOpus>
             ),
           );
           if (_controller.collection case final collection?
-              when collection.allCollections.isNotEmpty) {
+              when collection.items.isNotEmpty) {
             return SliverMainAxisGroup(
               slivers: [
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const .only(bottom: 10),
                     child: Text(
-                      collection.title,
+                      collection.title ?? '',
                       style: TextStyle(color: colorScheme.outline),
                     ),
                   ),

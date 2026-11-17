@@ -1,7 +1,6 @@
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/grpc/bilibili/app/dynamic/v2.pb.dart'
-    show SectionOpusCollection, OpusCollectionWithCover;
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/pages/member_opus/widgets/opus_grid.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
@@ -17,7 +16,7 @@ const _kGridDelegate = OpusGridDelegate(
   mainAxisExtent: 48,
 );
 
-class CollectionSection extends StatelessWidget {
+class CollectionSection extends StatefulWidget {
   const CollectionSection({
     super.key,
     required this.onCollapse,
@@ -25,16 +24,33 @@ class CollectionSection extends StatelessWidget {
   });
 
   final VoidCallback onCollapse;
-  final SectionOpusCollection collection;
+  final SpaceOpusCollectionSection collection;
+
+  @override
+  State<CollectionSection> createState() => _CollectionSectionState();
+}
+
+class _CollectionSectionState extends State<CollectionSection> {
+  late bool expanded = widget.collection.expand;
+  SpaceOpusCollectionSection get collection => widget.collection;
+
+  @override
+  void didUpdateWidget(covariant CollectionSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 刷新与换筛选会收到新文集区块，重新采用服务端初始展开状态。
+    if (!identical(oldWidget.collection, widget.collection)) {
+      expanded = widget.collection.expand;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final allCollections = collection.allCollections;
+    final allCollections = collection.items;
     final outline = ColorScheme.of(context).outline;
-    final length = collection.allCollections.length;
+    final length = collection.items.length;
     return OpusGridBuilder(
       childCount: length,
-      expand: collection.expand,
+      expand: expanded,
       gridDelegate: _kGridDelegate,
       builder: (_, opusGridInfo) {
         final count = opusGridInfo.crossAxisCount;
@@ -55,15 +71,14 @@ class CollectionSection extends StatelessWidget {
                 child: GestureDetector(
                   behavior: .translucent,
                   onTap: () {
-                    if (collection.expand) onCollapse();
-                    collection.expand = !collection.expand;
-                    (context as Element).markNeedsBuild();
+                    if (expanded) widget.onCollapse();
+                    setState(() => expanded = !expanded);
                   },
                   child: Padding(
                     padding: const .symmetric(vertical: 12),
                     child: Center(
                       child: Text(
-                        '${collection.expand ? '收起' : '展开'}全部文集',
+                        '${expanded ? '收起' : '展开'}全部文集',
                         style: TextStyle(fontSize: 13, color: outline),
                       ),
                     ),
@@ -82,7 +97,7 @@ class CollectionSection extends StatelessWidget {
             ),
           );
         }
-        if (collection.expand || count >= length) {
+        if (expanded || count >= length) {
           return [...allCollections.map(OpusCollectionItem.new), footer];
         }
         return [
@@ -100,7 +115,7 @@ class OpusCollectionItem extends StatelessWidget {
     super.key,
   });
 
-  final OpusCollectionWithCover item;
+  final SpaceOpusCollectionItem item;
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +126,7 @@ class OpusCollectionItem extends StatelessWidget {
         onTap: () => Get.toNamed(
           '/articleList',
           parameters: {
-            'id': item.collectionInfo.collectionId.toString(),
+            'id': item.collectionId.toString(),
           },
         ),
         child: Column(
@@ -125,7 +140,7 @@ class OpusCollectionItem extends StatelessWidget {
                     clipBehavior: .none,
                     children: [
                       NetworkImgLayer(
-                        src: item.coverPic,
+                        src: item.cover,
                         width: boxConstraints.maxWidth,
                         height: boxConstraints.maxHeight,
                         borderRadius: const .vertical(top: .circular(6)),
@@ -144,7 +159,7 @@ class OpusCollectionItem extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            item.coverBottomText.text,
+                            item.coverBottomText ?? '',
                             style: const TextStyle(
                               fontSize: 12,
                               color: Colors.white,
@@ -161,7 +176,7 @@ class OpusCollectionItem extends StatelessWidget {
               child: Padding(
                 padding: const .fromLTRB(4, 5, 0, 0),
                 child: Text(
-                  item.collectionInfo.title.texts.map((e) => e.text).join(),
+                  item.title ?? '',
                   maxLines: 1,
                   overflow: .ellipsis,
                   style: const TextStyle(fontSize: 13),
@@ -171,7 +186,7 @@ class OpusCollectionItem extends StatelessWidget {
             Padding(
               padding: const .fromLTRB(4, 0, 4, 4),
               child: Text(
-                item.subTitleText,
+                item.subTitle ?? '',
                 maxLines: 1,
                 overflow: .ellipsis,
                 style: TextStyle(

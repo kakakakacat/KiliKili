@@ -1,13 +1,10 @@
-import 'package:kilikili/grpc/bilibili/app/interfaces/v1.pb.dart'
-    show SearchArchiveReply;
-import 'package:kilikili/grpc/space.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/member.dart';
 import 'package:kilikili/models/common/member/search_type.dart';
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
 import 'package:kilikili/pages/member_search/controller.dart';
-import 'package:fixnum/fixnum.dart' show Int64;
+import 'package:kilikili/services/rust/rust_space.dart' as rust;
 
 class MemberSearchChildController extends CommonListController {
   MemberSearchChildController(this.controller, this.searchType);
@@ -16,8 +13,8 @@ class MemberSearchChildController extends CommonListController {
   final MemberSearchType searchType;
 
   // archive
-  late final _ps = Int64(20);
-  late final _midInt64 = Int64(int.parse(controller.mid));
+  static const _ps = 20;
+  late final _mid = int.parse(controller.mid);
 
   // dynamic
   String? offset;
@@ -34,9 +31,9 @@ class MemberSearchChildController extends CommonListController {
   List? getDataList(response) {
     switch (searchType) {
       case MemberSearchType.archive:
-        SearchArchiveReply data = response;
-        controller.counts[searchType.index] = data.total.toInt();
-        return data.archives;
+        final rust.SpaceSearchArchivePage data = response;
+        controller.counts[searchType.index] = data.total?.toInt() ?? 0;
+        return data.items;
       case MemberSearchType.dynamic:
         DynamicsDataModel data = response;
         offset = data.offset;
@@ -57,10 +54,10 @@ class MemberSearchChildController extends CommonListController {
   @override
   Future<LoadingState> customGetData() {
     return switch (searchType) {
-      MemberSearchType.archive => SpaceGrpc.searchArchive(
-        mid: _midInt64,
-        pn: page,
-        ps: _ps,
+      MemberSearchType.archive => rust.RustSpace.searchArchiveGrpc(
+        mid: _mid,
+        page: page,
+        pageSize: _ps,
         keyword: controller.editingController.text,
       ),
       MemberSearchType.dynamic => MemberHttp.dynSearch(

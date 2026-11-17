@@ -1,0 +1,14 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "mid": 800000401,
+    "attribute": 2,
+    "mtime": 1700000301,
+    "tag": [0, 900001],
+    "special": 1,
+    "uname": "",
+    "face": ""
+  }
+}

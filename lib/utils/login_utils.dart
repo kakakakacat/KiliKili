@@ -2,7 +2,6 @@ import 'dart:async' show FutureOr;
 import 'dart:io' show Platform;
 
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/user.dart';
 import 'package:kilikili/main.dart' show webViewEnvironment;
 import 'package:kilikili/services/account_service.dart';
 import 'package:kilikili/utils/accounts.dart';
@@ -10,8 +9,8 @@ import 'package:kilikili/utils/accounts/account.dart';
 import 'package:kilikili/utils/linux_cookie_manager.dart';
 import 'package:kilikili/utils/request_utils.dart';
 import 'package:kilikili/utils/storage.dart';
-import 'package:kilikili/utils/storage_pref.dart';
 import 'package:kilikili/utils/utils.dart';
+import 'package:kilikili/services/rust/rust_user.dart';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart' show Digest;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as web;
@@ -44,7 +43,7 @@ abstract final class LoginUtils {
 
   static Future<void> onLoginMain() async {
     final account = Accounts.main;
-    final res = await UserHttp.userInfo();
+    final res = await RustUser.userInfo();
     if (res case Success(:final response)) {
       setWebCookie(account);
       RequestUtils.syncHistoryStatus();
@@ -59,8 +58,9 @@ abstract final class LoginUtils {
         }
 
         SmartDialog.showToast('main登录成功');
-        if (response != Pref.userInfoCache) {
-          await GStorage.userInfo.put('userInfoCache', response);
+        final json = RustUser.cacheUserInfo(response);
+        if (json != null) {
+          await GStorage.userInfo.put('userInfoCache', json);
         }
       }
     } else {

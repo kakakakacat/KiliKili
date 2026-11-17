@@ -1,0 +1,70 @@
+{
+  "count": 329,
+  "items": [
+    {
+      "aid": 100200300,
+      "badge": "Union",
+      "bvid": "BV1xx411c7xx",
+      "cover": "https://i0.hdslb.com/bfs/archive/cover0.jpg",
+      "danmaku": 12345,
+      "desc": "一条描述",
+      "duration": 1492,
+      "owner_mid": 100001,
+      "owner_name": "用户01",
+      "progress": 746,
+      "pubdate": 1792584000,
+      "redirect_url": "",
+      "season_id": 2046621,
+      "title": "折1万次，会坏吗？深度评测",
+      "view": 13485620
+    },
+    {
+      "aid": 100200301,
+      "badge": "Lesson",
+      "bvid": "BV1yy411c7yy",
+      "cover": "https://i0.hdslb.com/bfs/archive/cover1.jpg",
+      "danmaku": 2,
+      "desc": null,
+      "duration": 600,
+      "owner_mid": 100001,
+      "owner_name": "用户01",
+      "progress": -1,
+      "pubdate": 1792000000,
+      "redirect_url": "https://www.bilibili.com/cheese/play/ep1",
+      "season_id": null,
+      "title": "一门课",
+      "view": 1000
+    },
+    {
+      "aid": 100200302,
+      "badge": "Charging",
+      "bvid": "BV1zz411c7zz",
+      "cover": "https://i0.hdslb.com/bfs/archive/cover2.jpg",
+      "danmaku": null,
+      "desc": null,
+      "duration": 3723,
+      "owner_mid": 100001,
+      "owner_name": "用户01",
+      "progress": null,
+      "pubdate": 1791000000,
+      "redirect_url": null,
+      "season_id": null,
+      "title": "充电专属的那一条",
+      "view": 42
+    }
+  ],
+  "tags": [
+    {
+      "count": 12,
+      "name": "充电专属",
+      "special_type": "charging",
+      "tid": null
+    },
+    {
+      "count": 7,
+      "name": "课堂",
+      "special_type": null,
+      "tid": 196
+    }
+  ]
+}

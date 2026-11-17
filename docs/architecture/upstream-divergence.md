@@ -250,6 +250,13 @@ cookie 存进账号体系」。同步上游时 `lib/http/login.dart` 的任何�
 同步上游时将协议/过滤/表情分段改动落在 Rust，宿主仅合布局与交互。
 数字包含本次暂存改动，不含被工具自动改写后恢复的编辑器和 macOS 配置。
 
+修订：2026-11-17（S6/S7 #56、#57，合入最新 main 后）——按 §6 对当前
+工作树重算：修改上游文件 **824**，其中实质改动 **344**、仅重命名 **480**；
+新增 **712**、删除 **271**，另有 **10** 项重命名不计入 A/D。
+用户接口、关注分组、历史/稍后再看、空间各列表改为 typed Rust；旧模型与
+通过后的一次性 parity 同 PR 删除。动态两条留给 #150，收藏课堂共享模型
+仍有生产者，投稿卡片仅保留无解析的视图适配。数字不含工具改写的编辑器配置。
+
 ## 1. 基准
 
 ```
@@ -267,23 +274,23 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 | 类别 | 数量 |
 | --- | ---: |
-| 修改的上游既有文件 | **882** |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | **618** |
-| &nbsp;&nbsp;其中：有实质改动 | **264** |
-| 新增文件 | **584** |
-| 删除文件 | **163** |
+| 修改的上游既有文件 | **824** |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | **480** |
+| &nbsp;&nbsp;其中：有实质改动 | **344** |
+| 新增文件 | **712** |
+| 删除文件 | **271** |
 
 「修改」总数一路下降（935 → 909 → 897 → 891 → 887），部分文件是因迁移被
 删除，从 M 转到了 D。#108 的界面改动一度把它顶回 892；合入 #111 的关注/
 粉丝切片后是 890，#140 的登录修复使其回到 891，S14 登录切片再删掉四个后
-是 887。删除数到 154，来源包括 PGC、直播、取流、关注/粉丝、登录接口迁移，
-以及 S4 的两个三连模型。
+是 887；S11b 后为 882，S6/S7 后为 824。删除数到 271，新增来源主要是
+空间、个人信息、关注分组、历史与稍后再看的旧模型。
 
 ## 3. 包名重命名：分叉面的主体
 
 `ba430476b chore: rename app package identifiers to KiliKili` 把每个 Dart
 文件的 `package:PiliPlus/` 改成了 `package:kilikili/`，一次触及 992 个文件。
-**当前分叉面里 618 个文件只有这一处差异。**
+**当前分叉面里 480 个文件只有这一处差异。**
 
 对同步的影响很具体：上游每改动一个 Dart 文件，我们这边大概率冲突，但
 **冲突内容永远是那一行 import**。处理方式是取上游版本后重新套用重命名，
@@ -294,7 +301,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 4. 有实质改动的上游文件
 
-264 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
+344 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
 见 §4.4，其余改动逐个列在 §4.3。
 
 ### 4.1 typed 直连迁移触及的上游文件
@@ -317,9 +324,11 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | 弹幕屏蔽规则的两个写操作 | #66 #50 / #100 | `lib/pages/danmaku_block/controller.dart`、`lib/pages/video/widgets/header_control.dart`；**删掉 `lib/http/danmaku_block.dart`**。仓库头两条走 Rust 的写操作，形状见 ADR-013 |
 | 短评五条写操作 | #60 #50 / 本次 | `lib/pages/pgc_review/**`；**删掉 `lib/http/pgc.dart`**（迁完整个文件只剩这五条） |
 | 想听 / 关注分组排序 | #66 #50 / #104 | `lib/pages/music/view.dart`、`lib/pages/follow_tag_sort/view.dart`、`lib/http/follow.dart`（瘦身）；**删掉 `lib/http/music.dart`** |
-| S15 关注/粉丝列表（#66 收尾） | #66 / 本次 | `lib/pages/follow/child/child_controller.dart`、`lib/pages/fan/controller.dart`、`lib/http/dynamics.dart`（`followings` 改吃 Rust，同一条接口不留第二份实现）、`lib/models/dynamics/up.dart`；**删掉 `lib/http/{follow,fan}.dart`**；留下单向适配 `lib/services/rust/follow_compat.dart`（`FollowData` 还有四个生产者在 S6 #56 / S7 #57） |
+| S15 关注/粉丝列表（#66 收尾） | #66 / 本次 | `lib/pages/follow/child/child_controller.dart`、`lib/pages/fan/controller.dart`、`lib/http/dynamics.dart`（`followings` 改吃 Rust，同一条接口不留第二份实现）、`lib/models/dynamics/up.dart`；**删掉 `lib/http/{follow,fan}.dart`**；临时单向适配与 `FollowData` 后随 S6/S7 删除 |
 | S4 视频页写操作（点赞/点踩/投币/三连/关注/删评论/追番/四条上报/不感兴趣） | #54 #50 / 本次 | `lib/http/video.dart`（瘦身到只剩 `replyAdd` 与四条只读）、`lib/common/widgets/video_popup_menu.dart`、`lib/pages/{article,blacklist,member,fan,whisper_link_setting,live_room,fav/pgc}/controller.dart`、`lib/pages/common/common_intro_controller.dart`、`lib/pages/dynamics/widgets/author_panel.dart`、`lib/pages/video/{controller.dart,introduction/{ugc,pgc}/controller.dart,reply/widgets/reply_item_grpc.dart}`、`lib/plugin/pl_player/controller.dart`、`lib/utils/request_utils.dart`；**删掉 `lib/models_new/triple/{ugc,pgc}_triple.dart`**。`replyAdd` 刻意留在 Dart，理由见 ADR-013 |
 | S11a 直播第三批（剩余六条只读） | #61 / #87 | `lib/http/live.dart`、`lib/pages/{live_emote,live_search,live_dm_block}/**`、`lib/pages/live_room/{controller.dart,contribution_rank/**}`、`lib/pages/member/{view.dart,widget/{medal_wall,user_info_card}.dart}`、`lib/pages/common/publish/common_rich_text_pub_page.dart`；留下单向适配 `lib/services/rust/live_rest_compat.dart` |
+
+| S6/S7 用户与空间 | #56 #57 / 本次 | `lib/http/member.dart`、`lib/pages/{member*,history*,later*,follow*,user*,privacy*}/**` 与共享卡片/多选层；**删掉 `lib/http/user.dart`、`lib/grpc/space.dart` 及独有模型**。`memberDynamic` / `dynSearch` 留给 #150；`SpaceArchiveItem` 与 `SpaceWebVideoModel` 仅作界面适配，收藏课堂模型随剩余生产者迁移删除 |
 
 **同步时怎么处理这一类冲突**：上游在这些文件里的改动，多数落在我们已经
 删掉的模型或函数上。判据是「这段逻辑现在归谁」——
@@ -334,29 +343,21 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 
 ### 4.2 删除的上游文件
 
-130 个：被 typed 结构取代的模型、迁空的 `lib/http` 文件，以及判据搬家后
-随之作废的 Dart 测试。
-
-（这张表按区域分类，与 §2 的 146 口径不同：§2 数的是整个仓库
-`--diff-filter=D` 的结果，含 `tool/`、生成器输入等非上游文件。）
+271 个，与 §2 同口径，按实际路径分类：
 
 | 区域 | 数量 | 内容 |
 | --- | ---: | --- |
-| `lib/models_new/` | 117 | live（39）、pgc（25）、reply（18）、video 的 ai_conclusion/note_list/play_info/video_shot（12）、emote（4）、match（4）、popular（4）、reply2reply（3）、blacklist（2）、music（2）、reply_interaction（2）、search（1）、sponsor_block（1） |
-| `lib/models/` | 3 | `search/search_esports.dart`、`user/danmaku_block.dart`、`video/play/url.dart` |
-| `lib/models_new/triple/` | 2 | `ugc_triple.dart`、`pgc_triple.dart`——随 S4 的一键三连迁移删除；**这两个上游从未被我们改过**（`fromJson` 里没有 import，连包名重命名都没碰到），是头两个从「未触及」直接转进「删除」的文件 |
-| `lib/http/` | 5 | `black.dart`、`match.dart`（整个文件只有只读接口，迁完即空）、`danmaku_block.dart`、`music.dart`、`pgc.dart`（写操作迁完即空） |
-| `test/` | 3 | `utils/{audio_quality_select,cdn_url,video_quality_select}_test.dart`——判据随 #79 搬进 `bili-core`，Dart 这边的用例跟着搬走 |
+| `lib/models_new/` | 232 | 空间 60、直播 47、PGC 25、评论 18、视频 13、member 10，及历史、稍后再看、账号与其他已迁模型；包含 triple 两个模型 |
+| `lib/models/` | 9 | 旧用户资料/计数及 Hive 适配器、member 资料、登录配置、赛事、弹幕规则与取流模型 |
+| `lib/http/` | 9 | `black`、`danmaku_block`、`fan`、`follow`、`login`、`match`、`music`、`pgc`、`user` |
+| `lib/grpc/` | 15 | metadata 生成代码 14 个，以及迁空的 `space.dart` |
+| `lib/tcp/` | 1 | 直播弹幕 TCP 宿主实现 |
+| `lib/pages/` | 1 | 无消费者的 REST 图文卡片 |
+| `test/` | 4 | 旧验证码配置测试与三项已下沉 Rust 的音画质/CDN 测试 |
 
-`lib/models_new/live/` 那 39 个分三批：第一批 16 个（分区、feed、关注、
-H5 房间信息）、第二批 7 个（`live_room_play_info/` 整个目录）、第三批
-16 个（表情包、搜索、屏蔽、贡献榜、勋章墙）。
-
-**该目录下仍活着的五个文件各有理由**，不是遗漏：`live_danmaku/` 与
-`live_dm_info/` 归 S11b（#62）；`live_superchat/` 的 `SuperChatItem` 第二
-个生产者是弹幕长连接，整条留给 S11b；`live_medal_wall/uinfo_medal.dart`
-是四个生产者的共享勋章模型，两个在 S11b；
-`live_feed_index/watched_show.dart` 还有动态与用户信息两个生产者。
+`lib/models_new/live/live_feed_index/watched_show.dart` 仅剩动态响应生产者，
+随 #150 迁移删除；其余已迁的直播模型不再保留。空间课堂模型仍被收藏课堂
+生产者消费；无 `fromJson` 的投稿视图适配随共享视频卡片基类删除。
 
 上游若改动这些文件，同步时按 §4.1 的判据处理；**不要恢复文件本身**。
 
@@ -456,20 +457,20 @@ Column 顺序、文字层级），丢弃——那一层我们已经整个换掉�
 
 ## 5. 新增文件
 
-584 个，不与上游冲突，按区域分布：
+712 个，不与上游冲突，按区域分布：
 
 | 区域 | 文件数 | 内容 |
 | --- | ---: | --- |
-| `rust/` | 366 | Rust workspace：7 个 crate、golden fixture 与快照 |
+| `rust/` | 480 | Rust workspace：7 个 crate、golden fixture 与快照 |
 | `rust_builder/` | 46 | cargokit，把 Rust 接入 Flutter 各端构建 |
-| `lib/services/` | 38 | 各切片的 typed 取数封装、会话寿命与传输适配 |
-| `test/` | 40 | parity 测试与桥接层集成测试 |
-| `lib/rust/` | 30 | FRB 生成的 Dart 绑定 |
-| `tool/` | 21 | 构建准备、FRB 生成、proto 生成、README 统计、产物核对、fixture 生成 |
+| `lib/services/` | 45 | 各切片的 typed 取数封装、会话寿命与传输适配 |
+| `test/` | 39 | parity 测试与桥接层集成测试 |
+| `lib/rust/` | 34 | FRB 生成的 Dart 绑定 |
+| `tool/` | 23 | 构建准备、FRB 生成、proto 生成、README 统计、产物核对、fixture 生成 |
 | `docs/` | 22 | RFC、ADR、M0 记录、QA 清单 |
 | `shaders/` | 1 | Liquid Glass 背板折射着色器 |
 | `lib/common/` | 3 | 封面大卡片、统计药丸与直播卡共用的文案行（issue #108） |
-| `lib/pages/` | 5 | 基线弹幕引擎（`danmaku/engine.dart`）、验证码弹窗外壳、极验页面脚本、短信验证码输入框、SC 展示状态 |
+| `lib/pages/` | 7 | 基线弹幕引擎（`danmaku/engine.dart`）、验证码弹窗外壳、极验页面脚本、短信验证码输入框、SC 展示状态、id 多选控制器与空间预约卡片 |
 | `lib/plugin/` | 1 | 播放器竖向音量指示组件（issue #136） |
 | `lib/utils/` | 1 | 从 `SubtitleUtils` 里搬出来的基线字幕转换（`subtitle_format.dart`） |
 | 其他 | 10 | workflow、`AGENTS.md` / `CLAUDE.md`、README 统计图、`flutter_rust_bridge.yaml` |

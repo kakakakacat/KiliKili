@@ -1,0 +1,10 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": [
+    { "tagid": 0, "name": "默认分组", "count": 128, "tip": "" },
+    { "tagid": -10, "name": "特别关注", "count": 3, "tip": "特别关注的 up 主动态会优先展示" },
+    { "tagid": 900001, "name": "示例分组", "count": 0, "tip": null }
+  ]
+}

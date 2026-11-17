@@ -6,7 +6,7 @@ import 'package:kilikili/common/widgets/button/more_btn.dart';
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/follow/list.dart';
+import 'package:kilikili/services/rust/rust_misc.dart' show FollowUser;
 import 'package:kilikili/pages/follow/child/child_controller.dart';
 import 'package:kilikili/pages/follow/controller.dart';
 import 'package:kilikili/pages/follow/widgets/follow_item.dart';
@@ -104,7 +104,7 @@ class _FollowChildPageState extends State<FollowChildPage>
     );
   }
 
-  Widget _buildBody(LoadingState<List<FollowItemModel>?> loadingState) {
+  Widget _buildBody(LoadingState<List<FollowUser>?> loadingState) {
     return switch (loadingState) {
       Loading() => const SliverPrototypeExtentList(
         prototypeItem: MsgFeedTopSkeleton(),
@@ -127,7 +127,16 @@ class _FollowChildPageState extends State<FollowChildPage>
                     isOwner: widget.controller?.isOwner,
                     onSelect: widget.onSelect,
                     afterMod: (attr) {
-                      item.attribute = attr == 0 ? -1 : 0;
+                      // Rust 的 `FollowUser` 不可变，整条换掉而不是改字段
+                      // ——把可变性塞回导出结构是让宿主的习惯泄进 Rust。
+                      response[index] = FollowUser(
+                        mid: item.mid,
+                        attribute: attr == 0 ? -1 : 0,
+                        uname: item.uname,
+                        face: item.face,
+                        sign: item.sign,
+                        officialVerify: item.officialVerify,
+                      );
                       _followController.loadingState.refresh();
                     },
                   );
@@ -143,7 +152,7 @@ class _FollowChildPageState extends State<FollowChildPage>
 
   Widget _buildSameFollowing(
     ColorScheme colorScheme,
-    LoadingState<List<FollowItemModel>?> state,
+    LoadingState<List<FollowUser>?> state,
   ) {
     return switch (state) {
       Success(:final response) =>

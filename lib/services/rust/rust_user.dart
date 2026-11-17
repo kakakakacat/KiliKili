@@ -38,6 +38,9 @@ export 'package:kilikili/rust/api/user.dart'
 /// （[cacheUserInfo] / [cachedUserInfo]）。老版本留下的二进制帧解不出来，
 /// 按「没有缓存」处理——首屏空一下，等 nav 回来，这是换格式一次性的代价。
 ///
+/// 「等 nav 回来」成立的前提是**登录态不依赖这份缓存**（issue #161）：
+/// 它只是头像昵称的本地副本，不是判断有没有登录的依据。
+///
 /// ## 账号
 ///
 /// 这一族在 `ApiType.apiTypeSet` 里都没有登记，与基线拦截器一样走 `main`。

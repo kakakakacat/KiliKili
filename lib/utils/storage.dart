@@ -26,6 +26,12 @@ abstract final class GStorage {
   /// 「unknown typeId」。换名之后老盒不再被打开，并在这里一次性删掉。
   /// 代价是老用户升级后首屏的头像/昵称空一下，等 nav 回来——这是换格式
   /// 一次性的成本，已在 #57 里确认过。
+  ///
+  /// **这句话当时漏了一个前提**（issue #161）：要等得到 nav，得有人去发。
+  /// 那时 `AccountService` 把登录态判在「有没有这份缓存」上，而唯一会发
+  /// nav 的地方又挡在同一个判断后面，缓存一空就再也填不回来。登录态现在
+  /// 取自账号本身，缓存只决定首屏先显示什么——改缓存格式之前先确认这条
+  /// 还成立。
   static late final Box<String> userInfo;
   static late final Box<dynamic> historyWord;
   static late final Box<dynamic> localCache;

@@ -61,17 +61,25 @@ impl std::error::Error for CryptoError {}
 /// `RSA PUBLIC KEY`（PKCS#1），线上两种都出现过。只认一种的话，另一种
 /// 会在"密码错误"的伪装下失败。
 ///
-/// 解析成功后还要求模数不短于 2048 bit（issue #156）。这是防御性的一层：
-/// 要下发弱公钥，攻击者得先是 TLS MITM，而到了那一步密码请求的明文他本来
-/// 就看得见，弱公钥并不额外给他什么。基线的 `RSAKeyParser` 同样不校验。
-/// 加这一条只因为代价是一次比较，而「服务端某天换了短密钥」这件事没有
-/// 别的地方会发现。
+/// 解析成功后还要求模数不短于 1024 bit（issue #156 加的这层，#161 改的
+/// 阈值）。这是防御性的一层：要下发弱公钥，攻击者得先是 TLS MITM，而到了
+/// 那一步密码请求的明文他本来就看得见，弱公钥并不额外给他什么。基线的
+/// `RSAKeyParser` 同样不校验。加这一条只因为代价是一次比较，而「服务端
+/// 某天换了更短的密钥」这件事没有别的地方会发现。
+///
+/// ## 下限是实测值，不是惯例
+///
+/// 2026-11-17 实测 `/x/passport-login/web/key` 下发的就是 **1024 bit** 的
+/// 公钥（SPKI DER 162 字节，base64 以 `MIGf` 开头）。#156 当时按「现在
+/// 都该用 2048」把下限写成 256 字节，于是密码登录与短信登录在取到真实
+/// 公钥后一律报「登录公钥无法解析」——短信登录也要公钥，`dt` 要用它加密
+/// （issue #161）。改阈值前请先抓一次这条接口，别按惯例定。
 ///
 /// # Errors
-/// 两种格式都解析不出，或模数短于 2048 bit → [`CryptoError::BadKey`]。
+/// 两种格式都解析不出，或模数短于 1024 bit → [`CryptoError::BadKey`]。
 pub fn parse_public_key(pem: &str) -> Result<RsaPublicKey, CryptoError> {
-    /// 可接受的最小模数字节数（2048 bit）。
-    const MIN_MODULUS_BYTES: usize = 256;
+    /// 可接受的最小模数字节数（1024 bit）。服务端当前就发这个长度。
+    const MIN_MODULUS_BYTES: usize = 128;
 
     let key = RsaPublicKey::from_public_key_pem(pem.trim())
         .or_else(|_| RsaPublicKey::from_pkcs1_pem(pem.trim()))
@@ -131,8 +139,8 @@ mod tests {
     use rsa::pkcs8::EncodePublicKey as _;
     use rsa::{Pkcs1v15Encrypt as Padding, RsaPrivateKey};
 
-    /// 2048 位：`parse_public_key` 的下限就是它（issue #156），再短的
-    /// 密钥连解析都过不去。生成一次复用——2048 位在 debug 下要几秒，
+    /// 2048 位。加解密用例用它：位数与服务端那把（1024）无关，这几个
+    /// 用例验的是填充与编码。生成一次复用——2048 位在 debug 下要几秒，
     /// 每个用例各生成一次会让这个 crate 的测试明显变慢。
     fn key_pair() -> (RsaPrivateKey, RsaPublicKey) {
         static PAIR: std::sync::OnceLock<(RsaPrivateKey, RsaPublicKey)> =
@@ -192,11 +200,41 @@ mod tests {
         assert_eq!(parse_public_key("not a pem"), Err(CryptoError::BadKey));
     }
 
-    /// issue #156：格式合法但模数过短的公钥也要拒。
+    /// issue #161 的回归：服务端发的是 **1024 位**公钥，必须能解析。
+    ///
+    /// 这个用例曾经是反过来写的——#156 把下限定成 2048，于是它断言 1024
+    /// 位要被拒，CI 把线上登录必然失败这件事一起钉住了。现在钉的是实测
+    /// 形状：1024 位 SPKI 的 DER 是 162 字节，base64 以 `MIGf` 开头，与
+    /// `/x/passport-login/web/key` 当前下发的一模一样。
     #[test]
-    fn short_modulus_is_rejected_even_though_the_pem_parses() {
+    fn the_server_sized_1024_bit_key_is_accepted() {
         let mut rng = rsa::rand_core::OsRng;
-        let weak = RsaPublicKey::from(&RsaPrivateKey::new(&mut rng, 1024).expect("生成弱密钥"));
+        let public = RsaPublicKey::from(&RsaPrivateKey::new(&mut rng, 1024).expect("生成测试密钥"));
+        let pem = public
+            .to_public_key_pem(rsa::pkcs8::LineEnding::LF)
+            .expect("导出 SPKI");
+
+        let body: String = pem
+            .lines()
+            .filter(|l| !l.starts_with("-----"))
+            .collect::<Vec<_>>()
+            .concat();
+        assert_eq!(
+            BASE64.decode(&body).expect("base64").len(),
+            162,
+            "1024 位 SPKI 的 DER 应是 162 字节 —— 与线上抓到的那把一致"
+        );
+        assert!(body.starts_with("MIGf"), "线上那把也是这个前缀：{body:.8}");
+
+        parse_public_key(&pem).expect("服务端当前就发这个长度，必须能解析");
+    }
+
+    /// 比服务端那把还短的公钥仍然要拒：这层校验的意义只剩「某天真的更短了
+    /// 要有人发现」。
+    #[test]
+    fn a_shorter_than_server_modulus_is_rejected_even_though_the_pem_parses() {
+        let mut rng = rsa::rand_core::OsRng;
+        let weak = RsaPublicKey::from(&RsaPrivateKey::new(&mut rng, 512).expect("生成弱密钥"));
         let pem = weak
             .to_public_key_pem(rsa::pkcs8::LineEnding::LF)
             .expect("导出 SPKI");

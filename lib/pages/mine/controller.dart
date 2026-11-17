@@ -110,9 +110,16 @@ class MineController extends GetxController with AccountMixin {
   void onInit() {
     super.onInit();
     _initTabs();
-    final userInfoCache = Pref.userInfoCache;
-    if (userInfoCache != null) {
-      userInfo.value = userInfoCache;
+    // 有缓存就先拿它填首屏，没有就空着——它只决定「先显示什么」。
+    if (Pref.userInfoCache case final cached?) {
+      userInfo.value = cached;
+    }
+    // **是否取数由登录态决定，不由缓存有没有决定**（issue #161）。
+    //
+    // 原来这两行在 `cache != null` 里面：缓存一旦为空（换存储格式、手工
+    // 清理），nav 就再也不会发，缓存也就再也填不回来，这一页永久停在
+    // 未登录——而 `onRefresh` 在未登录时直接返回，下拉也救不回来。
+    if (isLogin) {
       queryUserInfo();
       tabCtr().forEach((ctr) => ctr.queryData());
     }

@@ -90,12 +90,41 @@ struct UserInfoDto {
     is_senior_member: Option<i64>,
 }
 
+/// 收「数字或字符串」，两种都当整数；再不行就当没有这个值。
+///
+/// 满级账号的 `level_info.next_exp` 服务端发的是字符串 `"--"`（issue #161
+/// 实测），不是数字。基线从来读不到这个形状——`LevelInfo.fromJson` 在
+/// `current_level == 6` 时改取 `current_exp`，压根没碰 `next_exp`，所以
+/// 迁移时照抄语义的同时把类型写成了整数。
+///
+/// 而 serde 是**先把整个 DTO 解出来，再轮到那条分支**：一个用不上的字段
+/// 于是把整条 nav 响应判成协议错误，登录走不完、「我的」页也打不开。
+/// 等级那几个字段一律走这里：它们全是展示用的数字，解不出来最多少显示一个
+/// 进度条，远好过整个响应作废。
+fn lenient_i64<'de, D>(deserializer: D) -> Result<Option<i64>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::Deserialize as _;
+    Ok(
+        match Option::<serde_json::Value>::deserialize(deserializer)? {
+            Some(serde_json::Value::Number(n)) => n.as_i64(),
+            Some(serde_json::Value::String(s)) => s.parse().ok(),
+            _ => None,
+        },
+    )
+}
+
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
 struct LevelInfoDto {
+    #[serde(deserialize_with = "lenient_i64")]
     current_level: Option<i64>,
+    #[serde(deserialize_with = "lenient_i64")]
     current_min: Option<i64>,
+    #[serde(deserialize_with = "lenient_i64")]
     current_exp: Option<i64>,
+    #[serde(deserialize_with = "lenient_i64")]
     next_exp: Option<i64>,
 }
 
@@ -836,6 +865,36 @@ mod tests {
     };
     use crate::http::Idempotency;
     use crate::request::CsrfIn;
+
+    /// issue #161 的回归：满级账号的 `next_exp` 服务端发的是字符串
+    /// `"--"`，整条 nav 响应不能因此作废。
+    ///
+    /// 基线读不到这个形状（满级时它改取 `current_exp`），所以迁移时没人
+    /// 发现它不是数字；而 serde 先解完整个 DTO 才轮到那条分支，于是一个
+    /// 用不上的字段把登录与「我的」页一起打断。
+    #[test]
+    fn a_max_level_next_exp_is_a_string_and_must_not_fail_the_whole_response() {
+        let info = parse_user_info(
+            r#"{"code":0,"message":"0","data":{"isLogin":true,"uname":"满级用户","level_info":{"current_level":6,"current_min":28800,"current_exp":31000,"next_exp":"--"}}}"#,
+        )
+        .expect("满级账号的 nav 响应必须解析得了");
+        assert_eq!(info.is_login, Some(true), "响应整体不能因为这个字段作废");
+        let level = info.level_info.expect("有等级");
+        assert_eq!(level.next_exp, Some(31000), "满级时分母取 current_exp");
+        assert_eq!(level.current_min, Some(28800));
+    }
+
+    /// 数字以字符串形态出现时照样收下——服务端在这几个字段上并不一致。
+    #[test]
+    fn a_numeric_string_level_field_is_still_a_number() {
+        let info = parse_user_info(
+            r#"{"code":0,"message":"0","data":{"level_info":{"current_level":"5","current_exp":10800,"next_exp":"28800"}}}"#,
+        )
+        .expect("应解析成功");
+        let level = info.level_info.expect("有等级");
+        assert_eq!(level.current_level, Some(5));
+        assert_eq!(level.next_exp, Some(28800), "未满级时用服务端给的那个");
+    }
 
     #[test]
     fn max_level_takes_current_exp_as_the_denominator() {

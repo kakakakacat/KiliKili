@@ -14,7 +14,10 @@
 //!   `pendant`、`wallet`、`vip_label`…），用来证明它们会被忽略——
 //!   同 `misc_golden.rs` 里 `match_info` 的做法；
 //! - `user_info_max_level` 单独一份：满级时 `next_exp` 要取 `current_exp`，
-//!   这是基线 `LevelInfo.fromJson` 里的规则，一份 fixture 兼顾不了两种；
+//!   这是基线 `LevelInfo.fromJson` 里的规则，一份 fixture 兼顾不了两种。
+//!   这份 fixture 里的 `next_exp` 是**字符串 `"--"`**——服务端对满级账号
+//!   发的就是它（issue #161 实测）。原来这里写的是 `0`，那是手工造 fixture
+//!   时按「它是个数字」想当然填的，于是真机上整条 nav 响应解不出来；
 //! - `coin_log` 的 `delta` 同时有整数、小数与负数：整数不能显示成 `2.0`；
 //! - `space_setting` 的 `privacy` 里**故意少一个键**
 //!   （`disable_show_school`），用来证明没下发的开关是 `null` 而不是 0；

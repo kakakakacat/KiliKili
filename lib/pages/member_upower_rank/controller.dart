@@ -1,22 +1,19 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/member.dart';
-import 'package:kilikili/models_new/upower_rank/data.dart';
-import 'package:kilikili/models_new/upower_rank/level_info.dart';
-import 'package:kilikili/models_new/upower_rank/rank_info.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:get/get.dart';
 
 class UpowerRankController
-    extends CommonListController<UpowerRankData, UpowerRankInfo> {
+    extends CommonListController<UpowerRank, UpowerRankItem> {
   UpowerRankController({
     this.privilegeType,
     required this.upMid,
   });
 
-  final String upMid;
+  final int upMid;
   final int? privilegeType;
 
-  late final Rx<List<LevelInfo>?> tabs = Rx<List<LevelInfo>?>(null);
+  late final Rx<List<UpowerLevel>?> tabs = Rx<List<UpowerLevel>?>(null);
 
   @override
   void onInit() {
@@ -25,18 +22,17 @@ class UpowerRankController
   }
 
   @override
-  List<UpowerRankInfo>? getDataList(UpowerRankData response) {
+  List<UpowerRankItem>? getDataList(UpowerRank response) {
     isEnd = true;
-    if (privilegeType == null &&
-        response.levelInfo != null &&
-        response.levelInfo!.length > 1) {
-      tabs.value = response.levelInfo;
+    // 只有一个档位时不显示 tab 条；`levels` 只在不指定档位时才下发。
+    if (privilegeType == null && response.levels.length > 1) {
+      tabs.value = response.levels;
     }
-    return response.rankInfo;
+    return response.items;
   }
 
   @override
-  Future<LoadingState<UpowerRankData>> customGetData() => MemberHttp.upowerRank(
+  Future<LoadingState<UpowerRank>> customGetData() => RustSpace.upowerRank(
     upMid: upMid,
     page: page,
     privilegeType: privilegeType,

@@ -1,0 +1,41 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "items_lists": {
+      "page": { "page_num": 1, "page_size": 10, "total": 3 },
+      "seasons_list": [
+        {
+          "meta": {
+            "category": 0,
+            "cover": "//i0.example.test/bfs/archive/ssssssss.jpg",
+            "description": "示例合集简介",
+            "mid": 300000101,
+            "name": "示例合集名",
+            "ptime": 1761000000,
+            "season_id": 70011,
+            "total": 12
+          },
+          "recent_aids": [100000001, 100000002],
+          "archives": []
+        }
+      ],
+      "series_list": [
+        {
+          "meta": {
+            "category": 0,
+            "cover": "//i0.example.test/bfs/archive/tttttttt.jpg",
+            "description": "示例列表简介",
+            "mid": 300000101,
+            "name": "示例列表名",
+            "ptime": 1760000000,
+            "series_id": 80011,
+            "total": 5
+          },
+          "archives": []
+        }
+      ]
+    }
+  }
+}

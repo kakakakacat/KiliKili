@@ -14,19 +14,15 @@ import 'package:kilikili/models/common/member/contribute_type.dart';
 import 'package:kilikili/models/common/member/web_ss_type.dart';
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/models/member/tags.dart';
-import 'package:kilikili/models_new/member/coin_like_arc/data.dart';
 import 'package:kilikili/models_new/member/search_archive/data.dart';
 import 'package:kilikili/models_new/member/season_web/data.dart';
-import 'package:kilikili/models_new/member_guard/data.dart';
 import 'package:kilikili/models_new/space/space/data.dart';
 import 'package:kilikili/models_new/space/space_archive/data.dart';
 import 'package:kilikili/models_new/space/space_article/data.dart';
 import 'package:kilikili/models_new/space/space_audio/data.dart';
 import 'package:kilikili/models_new/space/space_cheese/data.dart';
 import 'package:kilikili/models_new/space/space_opus/data.dart';
-import 'package:kilikili/models_new/space/space_season_series/item.dart';
 import 'package:kilikili/models_new/space/space_shop/data.dart';
-import 'package:kilikili/models_new/upower_rank/data.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/app_sign.dart';
 import 'package:kilikili/utils/utils.dart';
@@ -64,27 +60,6 @@ abstract final class MemberHttp {
     );
     if (res.data['code'] == 0) {
       return Success(SpaceArticleData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<SpaceSsData>> seasonSeriesList({
-    required int? mid,
-    required int pn,
-  }) async {
-    final res = await Request().get(
-      Api.seasonSeries,
-      queryParameters: {
-        'mid': mid,
-        'page_num': pn,
-        'page_size': 10,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(
-        SpaceSsData.fromJson(res.data['data']?['items_lists'] ?? {}),
-      );
     } else {
       return Error(res.data['message']);
     }
@@ -440,68 +415,6 @@ abstract final class MemberHttp {
     }
   }
 
-  static Future<LoadingState<UpowerRankData>> upowerRank({
-    required Object upMid,
-    required int page,
-    int? privilegeType,
-  }) async {
-    final res = await Request().get(
-      Api.upowerRank,
-      queryParameters: {
-        'up_mid': upMid,
-        'pn': page,
-        'ps': 100,
-        'privilege_type': ?privilegeType,
-        'mobi_app': 'web',
-        'web_location': 333.1196,
-        if (Accounts.main.isLogin) 'csrf': Accounts.main.csrf,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(UpowerRankData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<CoinLikeArcData>> coinArc({
-    required int mid,
-    required int page,
-  }) async {
-    final res = await Request().get(
-      Api.coinArc,
-      queryParameters: {
-        'pn': page,
-        'ps': 20,
-        'vmid': mid,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(CoinLikeArcData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<CoinLikeArcData>> likeArc({
-    required int mid,
-    required int page,
-  }) async {
-    final res = await Request().get(
-      Api.likeArc,
-      queryParameters: {
-        'pn': page,
-        'ps': 20,
-        'vmid': mid,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(CoinLikeArcData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   static Future<LoadingState<SpaceShopData>> spaceShop({
     required int mid,
   }) async {
@@ -527,25 +440,6 @@ abstract final class MemberHttp {
     );
     if (res.data['code'] == 0) {
       return Success(SpaceShopData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<MemberGuardData>> memberGuard({
-    required Object ruid,
-    required int page,
-  }) async {
-    final res = await Request().get(
-      Api.memberGuard,
-      queryParameters: {
-        'page': page,
-        'page_size': 20,
-        'ruid': ruid,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(MemberGuardData.fromJson(res.data['data']));
     } else {
       return Error(res.data['message']);
     }

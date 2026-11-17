@@ -80,6 +80,108 @@ pub struct MemberCard {
     pub follower: Option<i64>,
 }
 
+/// 一个合集或列表。
+///
+/// 基线的 `SpaceSsModel` 只有一个 `meta`，这里摊平——多一层只为复刻服务端
+/// 的嵌套，没有第二个字段跟它并列。
+#[derive(Debug, Clone)]
+pub struct SpaceSeasonSeries {
+    pub cover: Option<String>,
+    pub name: Option<String>,
+    /// 最近更新时间，Unix 秒。
+    pub ptime: Option<i64>,
+    /// 里面有多少个稿件。
+    pub total: Option<i64>,
+    /// 合集 id。与 [`Self::series_id`] 必有其一，界面据此决定跳哪个页面。
+    pub season_id: Option<i64>,
+    /// 列表 id。
+    pub series_id: Option<i64>,
+}
+
+/// 一页「合集和列表」。合集与列表分开，拼接是界面的事。
+#[derive(Debug, Clone)]
+pub struct SpaceSeasonSeriesPage {
+    pub total: Option<i64>,
+    pub seasons: Vec<SpaceSeasonSeries>,
+    pub series: Vec<SpaceSeasonSeries>,
+}
+
+/// 投币/点赞列表里的一个稿件。
+#[derive(Debug, Clone)]
+pub struct CoinLikeArcItem {
+    pub title: Option<String>,
+    pub cover: Option<String>,
+    /// 形如 `bilibili://video/123`，交给路由解析。
+    pub uri: Option<String>,
+    /// 稿件 id，**字符串**（这条接口如此）。
+    pub param: Option<String>,
+    pub duration: Option<i64>,
+    /// 互动视频。
+    pub is_steins: Option<bool>,
+    /// 联合投稿。
+    pub is_cooperation: Option<bool>,
+    pub is_pgc: Option<bool>,
+    pub play: Option<i64>,
+    pub danmaku: Option<i64>,
+    /// 投币/点赞的时间，Unix 秒。不是稿件发布时间。
+    pub ctime: Option<i64>,
+}
+
+/// 一页投币/点赞列表。
+#[derive(Debug, Clone)]
+pub struct CoinLikeArcPage {
+    pub count: Option<i64>,
+    pub items: Vec<CoinLikeArcItem>,
+}
+
+/// 一位舰长/提督/总督。
+#[derive(Debug, Clone)]
+pub struct GuardItem {
+    pub uid: Option<i64>,
+    pub username: Option<String>,
+    pub face: Option<String>,
+    /// 1 总督、2 提督、3 舰长。
+    pub guard_level: Option<i64>,
+}
+
+/// 一页大航海名单。
+#[derive(Debug, Clone)]
+pub struct MemberGuardPage {
+    /// `1` 表示还有下一页。服务端给的就是整数，不是布尔。
+    pub has_more: Option<i64>,
+    pub items: Vec<GuardItem>,
+}
+
+/// 充电排行里的一个人。
+#[derive(Debug, Clone)]
+pub struct UpowerRankItem {
+    pub mid: Option<i64>,
+    pub nickname: Option<String>,
+    pub avatar: Option<String>,
+    /// 已充电天数。
+    pub day: Option<i64>,
+}
+
+/// 一个充电档位。
+#[derive(Debug, Clone)]
+pub struct UpowerLevel {
+    pub privilege_type: Option<i64>,
+    pub name: Option<String>,
+    pub member_total: Option<i64>,
+}
+
+/// 充电排行。
+#[derive(Debug, Clone)]
+pub struct UpowerRank {
+    pub items: Vec<UpowerRankItem>,
+    pub privilege_type: Option<i64>,
+    /// `Vec<i64>` 到 Dart 会变成装着 `BigInt` 的 `Int64List`，而档位编号是
+    /// 个位数——窄化成 `i32`，省掉每个调用点一次 `.toInt()`。
+    pub tabs: Vec<i32>,
+    /// 各档位的名字与人数。只有一个档位时界面不显示 tab 条。
+    pub levels: Vec<UpowerLevel>,
+}
+
 macro_rules! result_type {
     ($(#[$meta:meta])* $name:ident, $data:ty) => {
         $(#[$meta])*
@@ -112,6 +214,26 @@ result_type!(
     /// 用户名片的结果。
     MemberCardResult,
     MemberCard
+);
+result_type!(
+    /// 「合集和列表」一页的结果。
+    SpaceSeasonSeriesResult,
+    SpaceSeasonSeriesPage
+);
+result_type!(
+    /// 投币/点赞列表一页的结果。两条接口共用。
+    CoinLikeArcResult,
+    CoinLikeArcPage
+);
+result_type!(
+    /// 大航海名单一页的结果。
+    MemberGuardResult,
+    MemberGuardPage
+);
+result_type!(
+    /// 充电排行的结果。
+    UpowerRankResult,
+    UpowerRank
 );
 result_type!(
     /// 举报的结果。
@@ -278,6 +400,202 @@ pub async fn fetch_member_card(context: SpaceContext, mid: i64) -> MemberCardRes
             error_code: None,
         },
         Err(e) => MemberCardResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+
+/// 取一页「合集和列表」。
+pub async fn fetch_season_series(
+    context: SpaceContext,
+    mid: i64,
+    page: i64,
+    page_size: i64,
+) -> SpaceSeasonSeriesResult {
+    let (ctx, transport, _, _) = context.split();
+    let joined = init::runtime()
+        .spawn(
+            async move { space::fetch_season_series(&transport, &ctx, mid, page, page_size).await },
+        )
+        .await;
+
+    match flatten(joined) {
+        Ok(p) => SpaceSeasonSeriesResult {
+            data: Some(SpaceSeasonSeriesPage {
+                total: p.total,
+                seasons: p.seasons.into_iter().map(season_series).collect(),
+                series: p.series.into_iter().map(season_series).collect(),
+            }),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => SpaceSeasonSeriesResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+
+fn season_series(s: bili_domain::space::SpaceSeasonSeries) -> SpaceSeasonSeries {
+    SpaceSeasonSeries {
+        cover: s.cover,
+        name: s.name,
+        ptime: s.ptime,
+        total: s.total,
+        season_id: s.season_id,
+        series_id: s.series_id,
+    }
+}
+
+/// 取一页投币过/点赞过的稿件。`coin` 为真取投币列表。
+pub async fn fetch_coin_like_arc(
+    context: SpaceContext,
+    coin: bool,
+    mid: i64,
+    page: i64,
+    page_size: i64,
+) -> CoinLikeArcResult {
+    let (ctx, transport, _, _) = context.split();
+    let joined = init::runtime()
+        .spawn(async move {
+            space::fetch_coin_like_arc(&transport, &ctx, coin, mid, page, page_size).await
+        })
+        .await;
+
+    match flatten(joined) {
+        Ok(p) => CoinLikeArcResult {
+            data: Some(CoinLikeArcPage {
+                count: p.count,
+                items: p
+                    .items
+                    .into_iter()
+                    .map(|i| CoinLikeArcItem {
+                        title: i.title,
+                        cover: i.cover,
+                        uri: i.uri,
+                        param: i.param,
+                        duration: i.duration,
+                        is_steins: i.is_steins,
+                        is_cooperation: i.is_cooperation,
+                        is_pgc: i.is_pgc,
+                        play: i.play,
+                        danmaku: i.danmaku,
+                        ctime: i.ctime,
+                    })
+                    .collect(),
+            }),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => CoinLikeArcResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+
+/// 取一页大航海名单。
+pub async fn fetch_member_guard(
+    context: SpaceContext,
+    ruid: i64,
+    page: i64,
+    page_size: i64,
+) -> MemberGuardResult {
+    let (ctx, transport, _, _) = context.split();
+    let joined = init::runtime()
+        .spawn(
+            async move { space::fetch_member_guard(&transport, &ctx, ruid, page, page_size).await },
+        )
+        .await;
+
+    match flatten(joined) {
+        Ok(p) => MemberGuardResult {
+            data: Some(MemberGuardPage {
+                has_more: p.has_more,
+                items: p
+                    .items
+                    .into_iter()
+                    .map(|g| GuardItem {
+                        uid: g.uid,
+                        username: g.username,
+                        face: g.face,
+                        guard_level: g.guard_level,
+                    })
+                    .collect(),
+            }),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => MemberGuardResult {
+            data: None,
+            error_kind: Some(e.kind().to_string()),
+            error_detail: Some(e.detail().to_owned()),
+            error_code: e.code(),
+        },
+    }
+}
+
+/// 取充电排行。`privilege_type` 省掉表示「全部档位」。
+pub async fn fetch_upower_rank(
+    context: SpaceContext,
+    up_mid: i64,
+    page: i64,
+    page_size: i64,
+    privilege_type: Option<i64>,
+) -> UpowerRankResult {
+    let (ctx, transport, _, _) = context.split();
+    let joined = init::runtime()
+        .spawn(async move {
+            space::fetch_upower_rank(&transport, &ctx, up_mid, page, page_size, privilege_type)
+                .await
+        })
+        .await;
+
+    match flatten(joined) {
+        Ok(r) => UpowerRankResult {
+            data: Some(UpowerRank {
+                items: r
+                    .items
+                    .into_iter()
+                    .map(|i| UpowerRankItem {
+                        mid: i.mid,
+                        nickname: i.nickname,
+                        avatar: i.avatar,
+                        day: i.day,
+                    })
+                    .collect(),
+                privilege_type: r.privilege_type,
+                // 档位编号是个位数，窄化见字段文档。
+                tabs: r
+                    .tabs
+                    .into_iter()
+                    .map(|t| i32::try_from(t).unwrap_or(i32::MAX))
+                    .collect(),
+                levels: r
+                    .levels
+                    .into_iter()
+                    .map(|l| UpowerLevel {
+                        privilege_type: l.privilege_type,
+                        name: l.name,
+                        member_total: l.member_total,
+                    })
+                    .collect(),
+            }),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(e) => UpowerRankResult {
             data: None,
             error_kind: Some(e.kind().to_string()),
             error_detail: Some(e.detail().to_owned()),

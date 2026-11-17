@@ -8,8 +8,8 @@ import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/image_type.dart';
-import 'package:kilikili/models_new/upower_rank/rank_info.dart';
 import 'package:kilikili/pages/member_upower_rank/controller.dart';
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/utils/extension/widget_ext.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart' hide ListTile;
@@ -45,14 +45,14 @@ class _UpowerRankPageState extends State<UpowerRankPage>
     with AutomaticKeepAliveClientMixin {
   String? _name;
   Object? _count;
-  late final String _upMid;
+  late final int _upMid;
   late final UpowerRankController _controller;
 
   @override
   void initState() {
     super.initState();
     final params = Get.arguments;
-    _upMid = params['mid']!.toString();
+    _upMid = int.parse(params['mid']!);
     if (widget.privilegeType == null) {
       _name = params['name'];
       _count = params['count'];
@@ -176,12 +176,12 @@ class _UpowerRankPageState extends State<UpowerRankPage>
 
   Widget _buildBody(
     ThemeData theme,
-    LoadingState<List<UpowerRankInfo>?> loadingState,
+    LoadingState<List<UpowerRankItem>?> loadingState,
   ) {
     late final width = MediaQuery.textScalerOf(context).scale(32);
     return switch (loadingState) {
       Loading() => const SliverFillRemaining(child: m3eLoading),
-      Success<List<UpowerRankInfo>?>(:final response) =>
+      Success<List<UpowerRankItem>?>(:final response) =>
         response != null && response.isNotEmpty
             ? SliverList.builder(
                 itemCount: response.length,

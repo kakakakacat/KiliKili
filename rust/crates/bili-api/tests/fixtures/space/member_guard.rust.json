@@ -1,0 +1,23 @@
+{
+  "has_more": 1,
+  "items": [
+    {
+      "face": "//i1.example.test/bfs/face/wwwwwwww.jpg",
+      "guard_level": 1,
+      "uid": 300000201,
+      "username": "示例总督"
+    },
+    {
+      "face": "//i1.example.test/bfs/face/xxxxxxxx.jpg",
+      "guard_level": 3,
+      "uid": 300000202,
+      "username": "示例舰长"
+    },
+    {
+      "face": null,
+      "guard_level": null,
+      "uid": 300000203,
+      "username": null
+    }
+  ]
+}

@@ -85,3 +85,116 @@ pub struct MemberCard {
     /// 粉丝数。
     pub follower: Option<i64>,
 }
+
+// ------------------------------------------------------- 合集与列表、充电
+
+/// 一页「合集和列表」（`/x/polymer/web-space/seasons_series_list`）。
+///
+/// 合集（season）与列表（series）分两个数组下发，**这里保持分开**：
+/// 基线的界面把两者拼成一条列表显示，但合集与列表跳转到的是不同的页面，
+/// 区分靠的就是 `season_id` / `series_id` 哪个有值。拼接是界面的事，
+/// 协议的分法留在协议层。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct SpaceSeasonSeriesPage {
+    /// 两个数组加起来的总数，用于判断翻到底没有。
+    pub total: Option<i64>,
+    pub seasons: Vec<SpaceSeasonSeries>,
+    pub series: Vec<SpaceSeasonSeries>,
+}
+
+/// 一个合集或列表。
+///
+/// 基线的 `SpaceSsModel` 只有一个 `meta` 字段，这里把它摊平——多一层只为
+/// 复刻服务端的嵌套，没有第二个字段跟它并列。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct SpaceSeasonSeries {
+    pub cover: Option<String>,
+    pub name: Option<String>,
+    /// 最近更新时间，Unix 秒。
+    pub ptime: Option<i64>,
+    /// 里面有多少个稿件。
+    pub total: Option<i64>,
+    /// 合集 id。与 [`Self::series_id`] 必有其一，界面据此决定跳哪个页面。
+    pub season_id: Option<i64>,
+    /// 列表 id。
+    pub series_id: Option<i64>,
+}
+
+/// 一页「他投币过/点赞过的视频」（`/x/v2/space/coinarc`、`/x/v2/space/likearc`）。
+///
+/// 两条接口的响应形状完全一样，只换路径。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct CoinLikeArcPage {
+    pub count: Option<i64>,
+    pub items: Vec<CoinLikeArcItem>,
+}
+
+/// 投币/点赞列表里的一个稿件。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct CoinLikeArcItem {
+    pub title: Option<String>,
+    pub cover: Option<String>,
+    /// 形如 `bilibili://video/123`，由界面交给路由解析。
+    pub uri: Option<String>,
+    /// 稿件 id，**字符串**（这条接口如此）。
+    pub param: Option<String>,
+    pub duration: Option<i64>,
+    /// 互动视频。
+    pub is_steins: Option<bool>,
+    /// 联合投稿。
+    pub is_cooperation: Option<bool>,
+    pub is_pgc: Option<bool>,
+    pub play: Option<i64>,
+    pub danmaku: Option<i64>,
+    /// 投币/点赞的时间，Unix 秒。不是稿件发布时间。
+    pub ctime: Option<i64>,
+}
+
+/// 一页大航海名单（`/xlive/app-ucenter/v1/guard/MainGuardCardAll`）。
+///
+/// 挂在直播域上，base_url 由调用方给。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct MemberGuardPage {
+    /// `1` 表示还有下一页。服务端给的就是整数，不是布尔。
+    pub has_more: Option<i64>,
+    pub items: Vec<GuardItem>,
+}
+
+/// 一位舰长/提督/总督。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct GuardItem {
+    pub uid: Option<i64>,
+    pub username: Option<String>,
+    pub face: Option<String>,
+    /// 1 总督、2 提督、3 舰长。
+    pub guard_level: Option<i64>,
+}
+
+/// 充电排行（`/x/upower/up/member/rank/v2`）。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct UpowerRank {
+    pub items: Vec<UpowerRankItem>,
+    /// 当前这一页是哪个档位的。
+    pub privilege_type: Option<i64>,
+    pub tabs: Vec<i64>,
+    /// 各档位的名字与人数。只有一个档位时界面不显示 tab 条。
+    pub levels: Vec<UpowerLevel>,
+}
+
+/// 充电排行里的一个人。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct UpowerRankItem {
+    pub mid: Option<i64>,
+    pub nickname: Option<String>,
+    pub avatar: Option<String>,
+    /// 已充电天数。
+    pub day: Option<i64>,
+}
+
+/// 一个充电档位。
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct UpowerLevel {
+    pub privilege_type: Option<i64>,
+    pub name: Option<String>,
+    pub member_total: Option<i64>,
+}

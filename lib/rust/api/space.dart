@@ -7,8 +7,8 @@ import 'package:kilikili/rust/frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:kilikili/rust/api/transport.dart';
 
-// These functions are ignored because they are not marked as `pub`: `flatten`, `split`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These functions are ignored because they are not marked as `pub`: `flatten`, `season_series`, `split`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// 取别人的资料。
 ///
@@ -49,6 +49,62 @@ Future<MemberCardResult> fetchMemberCard({
   mid: mid,
 );
 
+/// 取一页「合集和列表」。
+Future<SpaceSeasonSeriesResult> fetchSeasonSeries({
+  required SpaceContext context,
+  required PlatformInt64 mid,
+  required PlatformInt64 page,
+  required PlatformInt64 pageSize,
+}) => RustLib.instance.api.crateApiSpaceFetchSeasonSeries(
+  context: context,
+  mid: mid,
+  page: page,
+  pageSize: pageSize,
+);
+
+/// 取一页投币过/点赞过的稿件。`coin` 为真取投币列表。
+Future<CoinLikeArcResult> fetchCoinLikeArc({
+  required SpaceContext context,
+  required bool coin,
+  required PlatformInt64 mid,
+  required PlatformInt64 page,
+  required PlatformInt64 pageSize,
+}) => RustLib.instance.api.crateApiSpaceFetchCoinLikeArc(
+  context: context,
+  coin: coin,
+  mid: mid,
+  page: page,
+  pageSize: pageSize,
+);
+
+/// 取一页大航海名单。
+Future<MemberGuardResult> fetchMemberGuard({
+  required SpaceContext context,
+  required PlatformInt64 ruid,
+  required PlatformInt64 page,
+  required PlatformInt64 pageSize,
+}) => RustLib.instance.api.crateApiSpaceFetchMemberGuard(
+  context: context,
+  ruid: ruid,
+  page: page,
+  pageSize: pageSize,
+);
+
+/// 取充电排行。`privilege_type` 省掉表示「全部档位」。
+Future<UpowerRankResult> fetchUpowerRank({
+  required SpaceContext context,
+  required PlatformInt64 upMid,
+  required PlatformInt64 page,
+  required PlatformInt64 pageSize,
+  PlatformInt64? privilegeType,
+}) => RustLib.instance.api.crateApiSpaceFetchUpowerRank(
+  context: context,
+  upMid: upMid,
+  page: page,
+  pageSize: pageSize,
+  privilegeType: privilegeType,
+);
+
 /// 举报用户。
 Future<ReportResult> reportMember({
   required SpaceContext context,
@@ -61,6 +117,161 @@ Future<ReportResult> reportMember({
   reason: reason,
   reasonV2: reasonV2,
 );
+
+/// 投币/点赞列表里的一个稿件。
+class CoinLikeArcItem {
+  final String? title;
+  final String? cover;
+
+  /// 形如 `bilibili://video/123`，交给路由解析。
+  final String? uri;
+
+  /// 稿件 id，**字符串**（这条接口如此）。
+  final String? param;
+  final PlatformInt64? duration;
+
+  /// 互动视频。
+  final bool? isSteins;
+
+  /// 联合投稿。
+  final bool? isCooperation;
+  final bool? isPgc;
+  final PlatformInt64? play;
+  final PlatformInt64? danmaku;
+
+  /// 投币/点赞的时间，Unix 秒。不是稿件发布时间。
+  final PlatformInt64? ctime;
+
+  const CoinLikeArcItem({
+    this.title,
+    this.cover,
+    this.uri,
+    this.param,
+    this.duration,
+    this.isSteins,
+    this.isCooperation,
+    this.isPgc,
+    this.play,
+    this.danmaku,
+    this.ctime,
+  });
+
+  @override
+  int get hashCode =>
+      title.hashCode ^
+      cover.hashCode ^
+      uri.hashCode ^
+      param.hashCode ^
+      duration.hashCode ^
+      isSteins.hashCode ^
+      isCooperation.hashCode ^
+      isPgc.hashCode ^
+      play.hashCode ^
+      danmaku.hashCode ^
+      ctime.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CoinLikeArcItem &&
+          runtimeType == other.runtimeType &&
+          title == other.title &&
+          cover == other.cover &&
+          uri == other.uri &&
+          param == other.param &&
+          duration == other.duration &&
+          isSteins == other.isSteins &&
+          isCooperation == other.isCooperation &&
+          isPgc == other.isPgc &&
+          play == other.play &&
+          danmaku == other.danmaku &&
+          ctime == other.ctime;
+}
+
+/// 一页投币/点赞列表。
+class CoinLikeArcPage {
+  final PlatformInt64? count;
+  final List<CoinLikeArcItem> items;
+
+  const CoinLikeArcPage({
+    this.count,
+    required this.items,
+  });
+
+  @override
+  int get hashCode => count.hashCode ^ items.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CoinLikeArcPage &&
+          runtimeType == other.runtimeType &&
+          count == other.count &&
+          items == other.items;
+}
+
+/// 投币/点赞列表一页的结果。两条接口共用。
+class CoinLikeArcResult {
+  final CoinLikeArcPage? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const CoinLikeArcResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CoinLikeArcResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+/// 一位舰长/提督/总督。
+class GuardItem {
+  final PlatformInt64? uid;
+  final String? username;
+  final String? face;
+
+  /// 1 总督、2 提督、3 舰长。
+  final PlatformInt64? guardLevel;
+
+  const GuardItem({
+    this.uid,
+    this.username,
+    this.face,
+    this.guardLevel,
+  });
+
+  @override
+  int get hashCode =>
+      uid.hashCode ^ username.hashCode ^ face.hashCode ^ guardLevel.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is GuardItem &&
+          runtimeType == other.runtimeType &&
+          uid == other.uid &&
+          username == other.username &&
+          face == other.face &&
+          guardLevel == other.guardLevel;
+}
 
 /// 用户名片。
 class MemberCard {
@@ -138,6 +349,61 @@ class MemberCardResult {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is MemberCardResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+/// 一页大航海名单。
+class MemberGuardPage {
+  /// `1` 表示还有下一页。服务端给的就是整数，不是布尔。
+  final PlatformInt64? hasMore;
+  final List<GuardItem> items;
+
+  const MemberGuardPage({
+    this.hasMore,
+    required this.items,
+  });
+
+  @override
+  int get hashCode => hasMore.hashCode ^ items.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is MemberGuardPage &&
+          runtimeType == other.runtimeType &&
+          hasMore == other.hasMore &&
+          items == other.items;
+}
+
+/// 大航海名单一页的结果。
+class MemberGuardResult {
+  final MemberGuardPage? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const MemberGuardResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is MemberGuardResult &&
           runtimeType == other.runtimeType &&
           data == other.data &&
           errorKind == other.errorKind &&
@@ -446,4 +712,235 @@ class SpaceContext {
           transport == other.transport &&
           mixinKey == other.mixinKey &&
           ts == other.ts;
+}
+
+/// 一个合集或列表。
+///
+/// 基线的 `SpaceSsModel` 只有一个 `meta`，这里摊平——多一层只为复刻服务端
+/// 的嵌套，没有第二个字段跟它并列。
+class SpaceSeasonSeries {
+  final String? cover;
+  final String? name;
+
+  /// 最近更新时间，Unix 秒。
+  final PlatformInt64? ptime;
+
+  /// 里面有多少个稿件。
+  final PlatformInt64? total;
+
+  /// 合集 id。与 [`Self::series_id`] 必有其一，界面据此决定跳哪个页面。
+  final PlatformInt64? seasonId;
+
+  /// 列表 id。
+  final PlatformInt64? seriesId;
+
+  const SpaceSeasonSeries({
+    this.cover,
+    this.name,
+    this.ptime,
+    this.total,
+    this.seasonId,
+    this.seriesId,
+  });
+
+  @override
+  int get hashCode =>
+      cover.hashCode ^
+      name.hashCode ^
+      ptime.hashCode ^
+      total.hashCode ^
+      seasonId.hashCode ^
+      seriesId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceSeasonSeries &&
+          runtimeType == other.runtimeType &&
+          cover == other.cover &&
+          name == other.name &&
+          ptime == other.ptime &&
+          total == other.total &&
+          seasonId == other.seasonId &&
+          seriesId == other.seriesId;
+}
+
+/// 一页「合集和列表」。合集与列表分开，拼接是界面的事。
+class SpaceSeasonSeriesPage {
+  final PlatformInt64? total;
+  final List<SpaceSeasonSeries> seasons;
+  final List<SpaceSeasonSeries> series;
+
+  const SpaceSeasonSeriesPage({
+    this.total,
+    required this.seasons,
+    required this.series,
+  });
+
+  @override
+  int get hashCode => total.hashCode ^ seasons.hashCode ^ series.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceSeasonSeriesPage &&
+          runtimeType == other.runtimeType &&
+          total == other.total &&
+          seasons == other.seasons &&
+          series == other.series;
+}
+
+/// 「合集和列表」一页的结果。
+class SpaceSeasonSeriesResult {
+  final SpaceSeasonSeriesPage? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const SpaceSeasonSeriesResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceSeasonSeriesResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+/// 一个充电档位。
+class UpowerLevel {
+  final PlatformInt64? privilegeType;
+  final String? name;
+  final PlatformInt64? memberTotal;
+
+  const UpowerLevel({
+    this.privilegeType,
+    this.name,
+    this.memberTotal,
+  });
+
+  @override
+  int get hashCode =>
+      privilegeType.hashCode ^ name.hashCode ^ memberTotal.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UpowerLevel &&
+          runtimeType == other.runtimeType &&
+          privilegeType == other.privilegeType &&
+          name == other.name &&
+          memberTotal == other.memberTotal;
+}
+
+/// 充电排行。
+class UpowerRank {
+  final List<UpowerRankItem> items;
+  final PlatformInt64? privilegeType;
+
+  /// `Vec<i64>` 到 Dart 会变成装着 `BigInt` 的 `Int64List`，而档位编号是
+  /// 个位数——窄化成 `i32`，省掉每个调用点一次 `.toInt()`。
+  final Int32List tabs;
+
+  /// 各档位的名字与人数。只有一个档位时界面不显示 tab 条。
+  final List<UpowerLevel> levels;
+
+  const UpowerRank({
+    required this.items,
+    this.privilegeType,
+    required this.tabs,
+    required this.levels,
+  });
+
+  @override
+  int get hashCode =>
+      items.hashCode ^ privilegeType.hashCode ^ tabs.hashCode ^ levels.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UpowerRank &&
+          runtimeType == other.runtimeType &&
+          items == other.items &&
+          privilegeType == other.privilegeType &&
+          tabs == other.tabs &&
+          levels == other.levels;
+}
+
+/// 充电排行里的一个人。
+class UpowerRankItem {
+  final PlatformInt64? mid;
+  final String? nickname;
+  final String? avatar;
+
+  /// 已充电天数。
+  final PlatformInt64? day;
+
+  const UpowerRankItem({
+    this.mid,
+    this.nickname,
+    this.avatar,
+    this.day,
+  });
+
+  @override
+  int get hashCode =>
+      mid.hashCode ^ nickname.hashCode ^ avatar.hashCode ^ day.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UpowerRankItem &&
+          runtimeType == other.runtimeType &&
+          mid == other.mid &&
+          nickname == other.nickname &&
+          avatar == other.avatar &&
+          day == other.day;
+}
+
+/// 充电排行的结果。
+class UpowerRankResult {
+  final UpowerRank? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const UpowerRankResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UpowerRankResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
 }

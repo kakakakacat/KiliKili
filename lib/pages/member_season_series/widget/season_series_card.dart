@@ -1,7 +1,7 @@
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
-import 'package:kilikili/models_new/space/space_season_series/season.dart';
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/utils/date_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
@@ -9,12 +9,12 @@ import 'package:material_ui/material_ui.dart';
 class SeasonSeriesCard extends StatelessWidget {
   const SeasonSeriesCard({super.key, required this.item, required this.onTap});
 
-  final SpaceSsModel item;
+  final SpaceSeasonSeries item;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final meta = item.meta!;
+    final meta = item;
     void onLongPress() => imageSaveDialog(
       title: meta.name,
       cover: meta.cover,

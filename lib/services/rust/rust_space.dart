@@ -13,10 +13,30 @@ import 'package:kilikili/utils/wbi_sign.dart';
 import 'package:flutter/foundation.dart';
 
 export 'package:kilikili/rust/api/space.dart'
-    show MemberCard, MemberInfo, MemberRelationStat, MemberUpStat;
+    show
+        CoinLikeArcItem,
+        CoinLikeArcPage,
+        GuardItem,
+        MemberCard,
+        MemberGuardPage,
+        MemberInfo,
+        MemberRelationStat,
+        MemberUpStat,
+        SpaceSeasonSeries,
+        SpaceSeasonSeriesPage,
+        UpowerLevel,
+        UpowerRank,
+        UpowerRankItem;
 
 /// 用户空间那一族的取数路径（S6 / issue #56）：别人的资料卡、关注关系
-/// 计数、播放与获赞总数、用户名片，以及举报。
+/// 计数、播放与获赞总数、用户名片、举报，以及合集与列表、投币/点赞过的
+/// 稿件、大航海名单、充电排行。
+///
+/// ## 三个不同的域
+///
+/// 这一族横跨四个主机：多数在 `api.bilibili.com`，举报在
+/// `space.bilibili.com`，投币/点赞列表在 `app.bilibili.com`，大航海名单在
+/// `live.bilibili.com`。base_url 由各方法按条传。
 ///
 /// 基线对应的 `MemberHttp` 函数随本次迁移逐族删除，按 ADR-011 决策四
 /// 不留降级开关。
@@ -142,6 +162,104 @@ abstract final class RustSpace {
       return _unwrap(result.data, result.errorDetail, result.errorCode);
     } catch (e, st) {
       return _crashed('用户名片', e, st);
+    }
+  }
+
+  /// 一页「合集和列表」。
+  ///
+  /// 合集与列表分两个数组回来，拼成一条列表是界面的事——它们跳转到的是
+  /// 不同的页面，区分靠 `seasonId` / `seriesId` 哪个有值。
+  static Future<LoadingState<rust_api.SpaceSeasonSeriesPage>> seasonSeries({
+    required int mid,
+    required int page,
+    int pageSize = 10,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await rust_api.fetchSeasonSeries(
+        context: await _context(path: Api.seasonSeries),
+        mid: mid,
+        page: page,
+        pageSize: pageSize,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('合集和列表', e, st);
+    }
+  }
+
+  /// 一页投币过/点赞过的稿件。[coin] 为真取投币列表。
+  ///
+  /// 两条接口的参数与响应形状完全一样，只换路径，所以共用一个方法。
+  static Future<LoadingState<rust_api.CoinLikeArcPage>> coinLikeArc({
+    required bool coin,
+    required int mid,
+    required int page,
+    int pageSize = 20,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await rust_api.fetchCoinLikeArc(
+        context: await _context(
+          // 这两条挂在 app 域上。
+          path: coin ? Api.coinArc : Api.likeArc,
+          baseUrl: HttpString.appBaseUrl,
+        ),
+        coin: coin,
+        mid: mid,
+        page: page,
+        pageSize: pageSize,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed(coin ? '投币过的视频' : '点赞过的视频', e, st);
+    }
+  }
+
+  /// 一页大航海名单。
+  static Future<LoadingState<rust_api.MemberGuardPage>> memberGuard({
+    required int ruid,
+    required int page,
+    int pageSize = 20,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await rust_api.fetchMemberGuard(
+        context: await _context(
+          // 这条挂在直播域上。
+          path: Api.memberGuard,
+          baseUrl: HttpString.liveBaseUrl,
+        ),
+        ruid: ruid,
+        page: page,
+        pageSize: pageSize,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('大航海名单', e, st);
+    }
+  }
+
+  /// 充电排行。[privilegeType] 省掉表示「全部档位」，此时响应里才带各档位
+  /// 的名字与人数。
+  static Future<LoadingState<rust_api.UpowerRank>> upowerRank({
+    required int upMid,
+    required int page,
+    int pageSize = 100,
+    int? privilegeType,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await rust_api.fetchUpowerRank(
+        context: await _context(path: Api.upowerRank),
+        upMid: upMid,
+        page: page,
+        pageSize: pageSize,
+        privilegeType: privilegeType,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('充电排行', e, st);
     }
   }
 

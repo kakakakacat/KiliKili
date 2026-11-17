@@ -112,6 +112,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   CaptchaSolutionData dco_decode_box_autoadd_captcha_solution_data(dynamic raw);
 
   @protected
+  CoinLikeArcPage dco_decode_box_autoadd_coin_like_arc_page(dynamic raw);
+
+  @protected
   DanmakuEngineOptions dco_decode_box_autoadd_danmaku_engine_options(
     dynamic raw,
   );
@@ -253,6 +256,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MemberCard dco_decode_box_autoadd_member_card(dynamic raw);
+
+  @protected
+  MemberGuardPage dco_decode_box_autoadd_member_guard_page(dynamic raw);
 
   @protected
   MemberInfo dco_decode_box_autoadd_member_info(dynamic raw);
@@ -410,6 +416,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SpaceContext dco_decode_box_autoadd_space_context(dynamic raw);
 
   @protected
+  SpaceSeasonSeriesPage dco_decode_box_autoadd_space_season_series_page(
+    dynamic raw,
+  );
+
+  @protected
   SponsorBlockContext dco_decode_box_autoadd_sponsor_block_context(dynamic raw);
 
   @protected
@@ -426,6 +437,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int dco_decode_box_autoadd_u_32(dynamic raw);
+
+  @protected
+  UpowerRank dco_decode_box_autoadd_upower_rank(dynamic raw);
 
   @protected
   UserContext dco_decode_box_autoadd_user_context(dynamic raw);
@@ -476,6 +490,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ClipInfo dco_decode_clip_info(dynamic raw);
+
+  @protected
+  CoinLikeArcItem dco_decode_coin_like_arc_item(dynamic raw);
+
+  @protected
+  CoinLikeArcPage dco_decode_coin_like_arc_page(dynamic raw);
+
+  @protected
+  CoinLikeArcResult dco_decode_coin_like_arc_result(dynamic raw);
 
   @protected
   CoinLogItem dco_decode_coin_log_item(dynamic raw);
@@ -604,6 +627,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   GrpcSubtitlesResult dco_decode_grpc_subtitles_result(dynamic raw);
 
   @protected
+  GuardItem dco_decode_guard_item(dynamic raw);
+
+  @protected
   HistoryContext dco_decode_history_context(dynamic raw);
 
   @protected
@@ -691,6 +717,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<ClipInfo> dco_decode_list_clip_info(dynamic raw);
 
   @protected
+  List<CoinLikeArcItem> dco_decode_list_coin_like_arc_item(dynamic raw);
+
+  @protected
   List<CoinLogItem> dco_decode_list_coin_log_item(dynamic raw);
 
   @protected
@@ -730,6 +759,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<GrpcSubtitle> dco_decode_list_grpc_subtitle(dynamic raw);
+
+  @protected
+  List<GuardItem> dco_decode_list_guard_item(dynamic raw);
 
   @protected
   List<HistoryItem> dco_decode_list_history_item(dynamic raw);
@@ -922,6 +954,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<SongHeat> dco_decode_list_song_heat(dynamic raw);
 
   @protected
+  List<SpaceSeasonSeries> dco_decode_list_space_season_series(dynamic raw);
+
+  @protected
   List<SubItem> dco_decode_list_sub_item(dynamic raw);
 
   @protected
@@ -932,6 +967,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<TitleSpan> dco_decode_list_title_span(dynamic raw);
+
+  @protected
+  List<UpowerLevel> dco_decode_list_upower_level(dynamic raw);
+
+  @protected
+  List<UpowerRankItem> dco_decode_list_upower_rank_item(dynamic raw);
 
   @protected
   List<VideoCandidateInput> dco_decode_list_video_candidate_input(dynamic raw);
@@ -1149,6 +1190,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MemberCardResult dco_decode_member_card_result(dynamic raw);
 
   @protected
+  MemberGuardPage dco_decode_member_guard_page(dynamic raw);
+
+  @protected
+  MemberGuardResult dco_decode_member_guard_result(dynamic raw);
+
+  @protected
   MemberInfo dco_decode_member_info(dynamic raw);
 
   @protected
@@ -1212,6 +1259,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   CaptchaRegistrationData? dco_decode_opt_box_autoadd_captcha_registration_data(
     dynamic raw,
   );
+
+  @protected
+  CoinLikeArcPage? dco_decode_opt_box_autoadd_coin_like_arc_page(dynamic raw);
 
   @protected
   DanmakuFilter? dco_decode_opt_box_autoadd_danmaku_filter(dynamic raw);
@@ -1318,6 +1368,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MemberCard? dco_decode_opt_box_autoadd_member_card(dynamic raw);
+
+  @protected
+  MemberGuardPage? dco_decode_opt_box_autoadd_member_guard_page(dynamic raw);
 
   @protected
   MemberInfo? dco_decode_opt_box_autoadd_member_info(dynamic raw);
@@ -1460,6 +1513,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SmsSendState? dco_decode_opt_box_autoadd_sms_send_state(dynamic raw);
 
   @protected
+  SpaceSeasonSeriesPage? dco_decode_opt_box_autoadd_space_season_series_page(
+    dynamic raw,
+  );
+
+  @protected
   SponsorUserInfo? dco_decode_opt_box_autoadd_sponsor_user_info(dynamic raw);
 
   @protected
@@ -1470,6 +1528,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
+
+  @protected
+  UpowerRank? dco_decode_opt_box_autoadd_upower_rank(dynamic raw);
 
   @protected
   UserInfo? dco_decode_opt_box_autoadd_user_info(dynamic raw);
@@ -1947,6 +2008,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SpaceContext dco_decode_space_context(dynamic raw);
 
   @protected
+  SpaceSeasonSeries dco_decode_space_season_series(dynamic raw);
+
+  @protected
+  SpaceSeasonSeriesPage dco_decode_space_season_series_page(dynamic raw);
+
+  @protected
+  SpaceSeasonSeriesResult dco_decode_space_season_series_result(dynamic raw);
+
+  @protected
   SponsorBlockContext dco_decode_sponsor_block_context(dynamic raw);
 
   @protected
@@ -2005,6 +2075,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void dco_decode_unit(dynamic raw);
+
+  @protected
+  UpowerLevel dco_decode_upower_level(dynamic raw);
+
+  @protected
+  UpowerRank dco_decode_upower_rank(dynamic raw);
+
+  @protected
+  UpowerRankItem dco_decode_upower_rank_item(dynamic raw);
+
+  @protected
+  UpowerRankResult dco_decode_upower_rank_result(dynamic raw);
 
   @protected
   UserContext dco_decode_user_context(dynamic raw);
@@ -2155,6 +2237,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   CaptchaSolutionData sse_decode_box_autoadd_captcha_solution_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  CoinLikeArcPage sse_decode_box_autoadd_coin_like_arc_page(
     SseDeserializer deserializer,
   );
 
@@ -2344,6 +2431,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MemberCard sse_decode_box_autoadd_member_card(SseDeserializer deserializer);
+
+  @protected
+  MemberGuardPage sse_decode_box_autoadd_member_guard_page(
+    SseDeserializer deserializer,
+  );
 
   @protected
   MemberInfo sse_decode_box_autoadd_member_info(SseDeserializer deserializer);
@@ -2561,6 +2653,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SpaceSeasonSeriesPage sse_decode_box_autoadd_space_season_series_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SponsorBlockContext sse_decode_box_autoadd_sponsor_block_context(
     SseDeserializer deserializer,
   );
@@ -2583,6 +2680,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
+
+  @protected
+  UpowerRank sse_decode_box_autoadd_upower_rank(SseDeserializer deserializer);
 
   @protected
   UserContext sse_decode_box_autoadd_user_context(SseDeserializer deserializer);
@@ -2647,6 +2747,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ClipInfo sse_decode_clip_info(SseDeserializer deserializer);
+
+  @protected
+  CoinLikeArcItem sse_decode_coin_like_arc_item(SseDeserializer deserializer);
+
+  @protected
+  CoinLikeArcPage sse_decode_coin_like_arc_page(SseDeserializer deserializer);
+
+  @protected
+  CoinLikeArcResult sse_decode_coin_like_arc_result(
+    SseDeserializer deserializer,
+  );
 
   @protected
   CoinLogItem sse_decode_coin_log_item(SseDeserializer deserializer);
@@ -2797,6 +2908,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  GuardItem sse_decode_guard_item(SseDeserializer deserializer);
+
+  @protected
   HistoryContext sse_decode_history_context(SseDeserializer deserializer);
 
   @protected
@@ -2896,6 +3010,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<ClipInfo> sse_decode_list_clip_info(SseDeserializer deserializer);
 
   @protected
+  List<CoinLikeArcItem> sse_decode_list_coin_like_arc_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<CoinLogItem> sse_decode_list_coin_log_item(SseDeserializer deserializer);
 
   @protected
@@ -2947,6 +3066,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<GrpcSubtitle> sse_decode_list_grpc_subtitle(
     SseDeserializer deserializer,
   );
+
+  @protected
+  List<GuardItem> sse_decode_list_guard_item(SseDeserializer deserializer);
 
   @protected
   List<HistoryItem> sse_decode_list_history_item(SseDeserializer deserializer);
@@ -3213,6 +3335,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<SongHeat> sse_decode_list_song_heat(SseDeserializer deserializer);
 
   @protected
+  List<SpaceSeasonSeries> sse_decode_list_space_season_series(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<SubItem> sse_decode_list_sub_item(SseDeserializer deserializer);
 
   @protected
@@ -3225,6 +3352,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<TitleSpan> sse_decode_list_title_span(SseDeserializer deserializer);
+
+  @protected
+  List<UpowerLevel> sse_decode_list_upower_level(SseDeserializer deserializer);
+
+  @protected
+  List<UpowerRankItem> sse_decode_list_upower_rank_item(
+    SseDeserializer deserializer,
+  );
 
   @protected
   List<VideoCandidateInput> sse_decode_list_video_candidate_input(
@@ -3474,6 +3609,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MemberCardResult sse_decode_member_card_result(SseDeserializer deserializer);
 
   @protected
+  MemberGuardPage sse_decode_member_guard_page(SseDeserializer deserializer);
+
+  @protected
+  MemberGuardResult sse_decode_member_guard_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   MemberInfo sse_decode_member_info(SseDeserializer deserializer);
 
   @protected
@@ -3547,6 +3690,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   CaptchaRegistrationData? sse_decode_opt_box_autoadd_captcha_registration_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  CoinLikeArcPage? sse_decode_opt_box_autoadd_coin_like_arc_page(
     SseDeserializer deserializer,
   );
 
@@ -3709,6 +3857,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MemberCard? sse_decode_opt_box_autoadd_member_card(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MemberGuardPage? sse_decode_opt_box_autoadd_member_guard_page(
     SseDeserializer deserializer,
   );
 
@@ -3915,6 +4068,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SpaceSeasonSeriesPage? sse_decode_opt_box_autoadd_space_season_series_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SponsorUserInfo? sse_decode_opt_box_autoadd_sponsor_user_info(
     SseDeserializer deserializer,
   );
@@ -3927,6 +4085,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
+
+  @protected
+  UpowerRank? sse_decode_opt_box_autoadd_upower_rank(
+    SseDeserializer deserializer,
+  );
 
   @protected
   UserInfo? sse_decode_opt_box_autoadd_user_info(SseDeserializer deserializer);
@@ -4526,6 +4689,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SpaceContext sse_decode_space_context(SseDeserializer deserializer);
 
   @protected
+  SpaceSeasonSeries sse_decode_space_season_series(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSeasonSeriesPage sse_decode_space_season_series_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SpaceSeasonSeriesResult sse_decode_space_season_series_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SponsorBlockContext sse_decode_sponsor_block_context(
     SseDeserializer deserializer,
   );
@@ -4592,6 +4770,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_decode_unit(SseDeserializer deserializer);
+
+  @protected
+  UpowerLevel sse_decode_upower_level(SseDeserializer deserializer);
+
+  @protected
+  UpowerRank sse_decode_upower_rank(SseDeserializer deserializer);
+
+  @protected
+  UpowerRankItem sse_decode_upower_rank_item(SseDeserializer deserializer);
+
+  @protected
+  UpowerRankResult sse_decode_upower_rank_result(SseDeserializer deserializer);
 
   @protected
   UserContext sse_decode_user_context(SseDeserializer deserializer);
@@ -4770,6 +4960,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_captcha_solution_data(
     CaptchaSolutionData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_coin_like_arc_page(
+    CoinLikeArcPage self,
     SseSerializer serializer,
   );
 
@@ -5043,6 +5239,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_member_card(
     MemberCard self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_member_guard_page(
+    MemberGuardPage self,
     SseSerializer serializer,
   );
 
@@ -5347,6 +5549,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_space_season_series_page(
+    SpaceSeasonSeriesPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_sponsor_block_context(
     SponsorBlockContext self,
     SseSerializer serializer,
@@ -5372,6 +5580,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_upower_rank(
+    UpowerRank self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_box_autoadd_user_context(
@@ -5462,6 +5676,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_clip_info(ClipInfo self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_coin_like_arc_item(
+    CoinLikeArcItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_coin_like_arc_page(
+    CoinLikeArcPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_coin_like_arc_result(
+    CoinLikeArcResult self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_coin_log_item(CoinLogItem self, SseSerializer serializer);
@@ -5650,6 +5882,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_guard_item(GuardItem self, SseSerializer serializer);
+
+  @protected
   void sse_encode_history_context(
     HistoryContext self,
     SseSerializer serializer,
@@ -5773,6 +6008,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_list_clip_info(List<ClipInfo> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_coin_like_arc_item(
+    List<CoinLikeArcItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_coin_log_item(
     List<CoinLogItem> self,
     SseSerializer serializer,
@@ -5841,6 +6082,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_grpc_subtitle(
     List<GrpcSubtitle> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_guard_item(
+    List<GuardItem> self,
     SseSerializer serializer,
   );
 
@@ -6202,6 +6449,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_list_song_heat(List<SongHeat> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_space_season_series(
+    List<SpaceSeasonSeries> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_sub_item(List<SubItem> self, SseSerializer serializer);
 
   @protected
@@ -6219,6 +6472,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_title_span(
     List<TitleSpan> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_upower_level(
+    List<UpowerLevel> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_upower_rank_item(
+    List<UpowerRankItem> self,
     SseSerializer serializer,
   );
 
@@ -6562,6 +6827,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_member_guard_page(
+    MemberGuardPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_member_guard_result(
+    MemberGuardResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_member_info(MemberInfo self, SseSerializer serializer);
 
   @protected
@@ -6654,6 +6931,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_captcha_registration_data(
     CaptchaRegistrationData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_coin_like_arc_page(
+    CoinLikeArcPage? self,
     SseSerializer serializer,
   );
 
@@ -6849,6 +7132,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_member_card(
     MemberCard? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_member_guard_page(
+    MemberGuardPage? self,
     SseSerializer serializer,
   );
 
@@ -7105,6 +7394,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_space_season_series_page(
+    SpaceSeasonSeriesPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_sponsor_user_info(
     SponsorUserInfo? self,
     SseSerializer serializer,
@@ -7121,6 +7416,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_upower_rank(
+    UpowerRank? self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_opt_box_autoadd_user_info(
@@ -7897,6 +8198,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_space_context(SpaceContext self, SseSerializer serializer);
 
   @protected
+  void sse_encode_space_season_series(
+    SpaceSeasonSeries self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_season_series_page(
+    SpaceSeasonSeriesPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_space_season_series_result(
+    SpaceSeasonSeriesResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_sponsor_block_context(
     SponsorBlockContext self,
     SseSerializer serializer,
@@ -7982,6 +8301,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_unit(void self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_upower_level(UpowerLevel self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_upower_rank(UpowerRank self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_upower_rank_item(
+    UpowerRankItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_upower_rank_result(
+    UpowerRankResult self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_user_context(UserContext self, SseSerializer serializer);

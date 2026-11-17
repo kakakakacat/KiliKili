@@ -1,0 +1,23 @@
+{
+  "seasons": [
+    {
+      "cover": "//i0.example.test/bfs/archive/ssssssss.jpg",
+      "name": "示例合集名",
+      "ptime": 1761000000,
+      "season_id": 70011,
+      "series_id": null,
+      "total": 12
+    }
+  ],
+  "series": [
+    {
+      "cover": "//i0.example.test/bfs/archive/tttttttt.jpg",
+      "name": "示例列表名",
+      "ptime": 1760000000,
+      "season_id": null,
+      "series_id": 80011,
+      "total": 5
+    }
+  ],
+  "total": 3
+}

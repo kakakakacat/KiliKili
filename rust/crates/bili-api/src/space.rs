@@ -15,7 +15,11 @@
 //! 切片范围内；**由统一改造请求表示的那个 PR 收口**（见 issue #67）。
 
 use bili_domain::error::DomainError;
-use bili_domain::space::{MemberCard, MemberInfo, MemberRelationStat, MemberUpStat};
+use bili_domain::space::{
+    CoinLikeArcItem, CoinLikeArcPage, GuardItem, MemberCard, MemberGuardPage, MemberInfo,
+    MemberRelationStat, MemberUpStat, SpaceSeasonSeries, SpaceSeasonSeriesPage, UpowerLevel,
+    UpowerRank, UpowerRankItem,
+};
 use bili_protocol::risk::RiskTokens;
 use serde::Deserialize;
 
@@ -32,6 +36,17 @@ pub mod path {
     /// 举报。**挂在 `space.bilibili.com` 上**，不是 api 域，base_url 由
     /// 调用方给。
     pub const REPORT_MEMBER: &str = "/ajax/report/add";
+
+    pub const SEASON_SERIES: &str = "/x/polymer/web-space/seasons_series_list";
+    pub const UPOWER_RANK: &str = "/x/upower/up/member/rank/v2";
+
+    /// 投币过的稿件。**挂在 `app.bilibili.com` 上**，base_url 由调用方给。
+    pub const COIN_ARC: &str = "/x/v2/space/coinarc";
+    /// 点赞过的稿件。同上，与 [`COIN_ARC`] 只差路径。
+    pub const LIKE_ARC: &str = "/x/v2/space/likearc";
+
+    /// 大航海名单。**挂在 `live.bilibili.com` 上**，base_url 由调用方给。
+    pub const MEMBER_GUARD: &str = "/xlive/app-ucenter/v1/guard/MainGuardCardAll";
 }
 
 /// `web_location`：空间页的页面来源标记，服务端据此分流风控策略。
@@ -395,9 +410,12 @@ pub async fn report_member<T: HttpTransport>(
 #[allow(clippy::expect_used)]
 mod tests {
     use super::{
-        member_card_request, member_info_request, parse_member_card, parse_member_info,
-        parse_member_up_stat, parse_report_result, report_member_request,
+        coin_like_arc_request, member_card_request, member_info_request, parse_coin_like_arc,
+        parse_member_card, parse_member_guard, parse_member_info, parse_member_up_stat,
+        parse_report_result, parse_season_series, parse_upower_rank, report_member_request,
+        upower_rank_request,
     };
+
     use crate::http::Idempotency;
     use crate::request::{CsrfIn, WriteBody};
     use bili_protocol::risk::RiskTokens;
@@ -490,4 +508,443 @@ mod tests {
         );
         assert!(parse_report_result(r#"{"status":true}"#).expect("应解析成功"));
     }
+
+    #[test]
+    fn the_payload_hides_one_level_down_under_items_lists() {
+        let page = parse_season_series(
+            r#"{"code":0,"data":{"items_lists":{"page":{"total":3},
+               "seasons_list":[{"meta":{"season_id":1,"name":"甲"}}],
+               "series_list":[{"meta":{"series_id":2,"name":"乙"}}]}}}"#,
+        )
+        .expect("应解析成功");
+        assert_eq!(page.total, Some(3));
+        assert_eq!(page.seasons.len(), 1, "合集与列表分开放");
+        assert_eq!(page.series.len(), 1);
+        assert_eq!(page.seasons[0].season_id, Some(1));
+        assert_eq!(page.series[0].series_id, Some(2));
+    }
+
+    #[test]
+    fn a_missing_items_lists_is_an_empty_page_not_an_error() {
+        let page = parse_season_series(r#"{"code":0,"data":{}}"#).expect("应解析成功");
+        assert!(page.seasons.is_empty() && page.series.is_empty());
+        assert_eq!(page.total, None);
+    }
+
+    #[test]
+    fn coin_and_like_differ_only_in_the_path() {
+        let coin = coin_like_arc_request(true, 1, 2, 20);
+        let like = coin_like_arc_request(false, 1, 2, 20);
+        assert_ne!(coin.path, like.path, "路径不同");
+        assert_eq!(coin.query, like.query, "参数完全一样，所以共用一个构造函数");
+    }
+
+    #[test]
+    fn the_arc_param_stays_a_string() {
+        let page = parse_coin_like_arc(
+            r#"{"code":0,"data":{"count":1,"item":[{"param":"123","title":"甲"}]}}"#,
+        )
+        .expect("应解析成功");
+        assert_eq!(page.items[0].param.as_deref(), Some("123"));
+    }
+
+    #[test]
+    fn a_guard_entry_missing_fields_does_not_fail_the_page() {
+        let page = parse_member_guard(
+            r#"{"code":0,"data":{"has_more":1,"guard_top_list":[{"uid":1},{}]}}"#,
+        )
+        .expect("基线这里会抛，我们不复刻");
+        assert_eq!(page.items.len(), 2);
+        assert_eq!(page.items[1].username, None);
+        assert_eq!(page.has_more, Some(1), "服务端给的是整数不是布尔");
+    }
+
+    #[test]
+    fn an_absent_privilege_type_is_omitted_entirely() {
+        let q = upower_rank_request(7, 1, 100, None).query_string();
+        assert!(
+            !q.contains("privilege_type"),
+            "基线用 `?privilegeType`，null 时整条不发 — {q}"
+        );
+        let q = upower_rank_request(7, 1, 100, Some(2)).query_string();
+        assert!(q.contains("privilege_type=2"), "给了就要发 — {q}");
+    }
+
+    #[test]
+    fn upower_tabs_and_levels_default_to_empty() {
+        let rank =
+            parse_upower_rank(r#"{"code":0,"data":{"privilege_type":1}}"#).expect("应解析成功");
+        assert!(rank.items.is_empty() && rank.tabs.is_empty() && rank.levels.is_empty());
+        assert_eq!(rank.privilege_type, Some(1));
+    }
+}
+
+// ------------------------------------------------- 合集与列表、充电、大航海
+
+/// 「合集和列表」一页的请求。
+///
+/// `page_size` 基线写死 10。
+#[must_use]
+pub fn season_series_request(mid: i64, page: i64, page_size: i64) -> PreparedRequest {
+    PreparedRequest {
+        path: path::SEASON_SERIES,
+        query: vec![
+            ("mid".to_owned(), mid.to_string()),
+            ("page_num".to_owned(), page.to_string()),
+            ("page_size".to_owned(), page_size.to_string()),
+        ],
+    }
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SeasonSeriesEnvelopeDto {
+    items_lists: Option<SeasonSeriesListsDto>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SeasonSeriesListsDto {
+    page: Option<SeasonSeriesPageDto>,
+    seasons_list: Option<Vec<SeasonSeriesItemDto>>,
+    series_list: Option<Vec<SeasonSeriesItemDto>>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SeasonSeriesPageDto {
+    total: Option<i64>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SeasonSeriesItemDto {
+    meta: Option<SeasonSeriesMetaDto>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct SeasonSeriesMetaDto {
+    cover: Option<String>,
+    name: Option<String>,
+    ptime: Option<i64>,
+    total: Option<i64>,
+    season_id: Option<i64>,
+    series_id: Option<i64>,
+}
+
+fn season_series_item(dto: SeasonSeriesItemDto) -> SpaceSeasonSeries {
+    let meta = dto.meta.unwrap_or_default();
+    SpaceSeasonSeries {
+        cover: meta.cover,
+        name: meta.name,
+        ptime: meta.ptime,
+        total: meta.total,
+        season_id: meta.season_id,
+        series_id: meta.series_id,
+    }
+}
+
+/// 解析一页「合集和列表」。
+///
+/// # Errors
+/// 信封失败沿用统一分类。
+///
+/// 真正的载荷藏在 `data.items_lists` 里，基线用的是
+/// `res.data['data']?['items_lists'] ?? {}`——整块缺失按空处理，不是错误。
+pub fn parse_season_series(body: &str) -> Result<SpaceSeasonSeriesPage, DomainError> {
+    let dto: SeasonSeriesEnvelopeDto = crate::envelope::unwrap_envelope(body)?;
+    let lists = dto.items_lists.unwrap_or_default();
+    Ok(SpaceSeasonSeriesPage {
+        total: lists.page.and_then(|p| p.total),
+        seasons: lists
+            .seasons_list
+            .unwrap_or_default()
+            .into_iter()
+            .map(season_series_item)
+            .collect(),
+        series: lists
+            .series_list
+            .unwrap_or_default()
+            .into_iter()
+            .map(season_series_item)
+            .collect(),
+    })
+}
+
+/// 取一页「合集和列表」。
+///
+/// # Errors
+/// 同 [`fetch_member_info`]。
+pub async fn fetch_season_series<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    mid: i64,
+    page: i64,
+    page_size: i64,
+) -> Result<SpaceSeasonSeriesPage, DomainError> {
+    let req = season_series_request(mid, page, page_size);
+    let body = crate::client::send(transport, ctx, &req).await?;
+    parse_season_series(&body)
+}
+
+/// 投币过/点赞过的稿件，一页。
+///
+/// `coin` 为 true 取投币列表，否则取点赞列表——两条接口的参数与响应形状
+/// 完全一样，只换路径，拆成两个函数只会得到两份同样的代码。
+#[must_use]
+pub fn coin_like_arc_request(coin: bool, mid: i64, page: i64, page_size: i64) -> PreparedRequest {
+    PreparedRequest {
+        path: if coin { path::COIN_ARC } else { path::LIKE_ARC },
+        query: vec![
+            ("pn".to_owned(), page.to_string()),
+            ("ps".to_owned(), page_size.to_string()),
+            ("vmid".to_owned(), mid.to_string()),
+        ],
+    }
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct CoinLikeArcPageDto {
+    count: Option<i64>,
+    item: Option<Vec<CoinLikeArcItemDto>>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct CoinLikeArcItemDto {
+    title: Option<String>,
+    cover: Option<String>,
+    uri: Option<String>,
+    param: Option<String>,
+    duration: Option<i64>,
+    is_steins: Option<bool>,
+    is_cooperation: Option<bool>,
+    is_pgc: Option<bool>,
+    play: Option<i64>,
+    danmaku: Option<i64>,
+    ctime: Option<i64>,
+}
+
+/// 解析一页投币/点赞列表。
+///
+/// # Errors
+/// 信封失败沿用统一分类。`item` 缺失按空列表处理。
+pub fn parse_coin_like_arc(body: &str) -> Result<CoinLikeArcPage, DomainError> {
+    let dto: CoinLikeArcPageDto = crate::envelope::unwrap_envelope(body)?;
+    Ok(CoinLikeArcPage {
+        count: dto.count,
+        items: dto
+            .item
+            .unwrap_or_default()
+            .into_iter()
+            .map(|i| CoinLikeArcItem {
+                title: i.title,
+                cover: i.cover,
+                uri: i.uri,
+                param: i.param,
+                duration: i.duration,
+                is_steins: i.is_steins,
+                is_cooperation: i.is_cooperation,
+                is_pgc: i.is_pgc,
+                play: i.play,
+                danmaku: i.danmaku,
+                ctime: i.ctime,
+            })
+            .collect(),
+    })
+}
+
+/// 取一页投币/点赞列表。
+///
+/// # Errors
+/// 同 [`fetch_member_info`]。
+pub async fn fetch_coin_like_arc<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    coin: bool,
+    mid: i64,
+    page: i64,
+    page_size: i64,
+) -> Result<CoinLikeArcPage, DomainError> {
+    let req = coin_like_arc_request(coin, mid, page, page_size);
+    let body = crate::client::send(transport, ctx, &req).await?;
+    parse_coin_like_arc(&body)
+}
+
+/// 大航海名单一页的请求。
+#[must_use]
+pub fn member_guard_request(ruid: i64, page: i64, page_size: i64) -> PreparedRequest {
+    PreparedRequest {
+        path: path::MEMBER_GUARD,
+        query: vec![
+            ("page".to_owned(), page.to_string()),
+            ("page_size".to_owned(), page_size.to_string()),
+            ("ruid".to_owned(), ruid.to_string()),
+        ],
+    }
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct MemberGuardPageDto {
+    guard_top_list: Option<Vec<GuardItemDto>>,
+    has_more: Option<i64>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct GuardItemDto {
+    uid: Option<i64>,
+    username: Option<String>,
+    face: Option<String>,
+    guard_level: Option<i64>,
+}
+
+/// 解析一页大航海名单。
+///
+/// # Errors
+/// 信封失败沿用统一分类。
+///
+/// 基线把这四个字段都声明成非空（`int uid` 而不是 `int?`），服务端少给一个
+/// 就直接抛。这里不复刻那个崩法：少一个字段显示不全，不该让整页打不开。
+pub fn parse_member_guard(body: &str) -> Result<MemberGuardPage, DomainError> {
+    let dto: MemberGuardPageDto = crate::envelope::unwrap_envelope(body)?;
+    Ok(MemberGuardPage {
+        has_more: dto.has_more,
+        items: dto
+            .guard_top_list
+            .unwrap_or_default()
+            .into_iter()
+            .map(|g| GuardItem {
+                uid: g.uid,
+                username: g.username,
+                face: g.face,
+                guard_level: g.guard_level,
+            })
+            .collect(),
+    })
+}
+
+/// 取一页大航海名单。
+///
+/// # Errors
+/// 同 [`fetch_member_info`]。
+pub async fn fetch_member_guard<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    ruid: i64,
+    page: i64,
+    page_size: i64,
+) -> Result<MemberGuardPage, DomainError> {
+    let req = member_guard_request(ruid, page, page_size);
+    let body = crate::client::send(transport, ctx, &req).await?;
+    parse_member_guard(&body)
+}
+
+/// 充电排行一页的请求。
+///
+/// `privilege_type` 省掉表示「全部档位」，此时响应里才带 `level_info`
+/// ——界面靠它决定要不要显示档位 tab 条。
+///
+/// `csrf` 走 [`PreparedRequest`] 不合适（这是读接口），基线在**未登录时
+/// 整条不发**；登录态由 [`RequestContext`] 的 cookie 表达，这里不再重复。
+#[must_use]
+pub fn upower_rank_request(
+    up_mid: i64,
+    page: i64,
+    page_size: i64,
+    privilege_type: Option<i64>,
+) -> PreparedRequest {
+    let mut query = vec![
+        ("up_mid".to_owned(), up_mid.to_string()),
+        ("pn".to_owned(), page.to_string()),
+        ("ps".to_owned(), page_size.to_string()),
+    ];
+    if let Some(t) = privilege_type {
+        query.push(("privilege_type".to_owned(), t.to_string()));
+    }
+    query.push(("mobi_app".to_owned(), "web".to_owned()));
+    query.push(("web_location".to_owned(), "333.1196".to_owned()));
+    PreparedRequest {
+        path: path::UPOWER_RANK,
+        query,
+    }
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct UpowerRankDto {
+    rank_info: Option<Vec<UpowerRankItemDto>>,
+    privilege_type: Option<i64>,
+    tabs: Option<Vec<i64>>,
+    level_info: Option<Vec<UpowerLevelDto>>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct UpowerRankItemDto {
+    mid: Option<i64>,
+    nickname: Option<String>,
+    avatar: Option<String>,
+    day: Option<i64>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct UpowerLevelDto {
+    privilege_type: Option<i64>,
+    name: Option<String>,
+    member_total: Option<i64>,
+}
+
+/// 解析充电排行。
+///
+/// # Errors
+/// 信封失败沿用统一分类。
+pub fn parse_upower_rank(body: &str) -> Result<UpowerRank, DomainError> {
+    let dto: UpowerRankDto = crate::envelope::unwrap_envelope(body)?;
+    Ok(UpowerRank {
+        items: dto
+            .rank_info
+            .unwrap_or_default()
+            .into_iter()
+            .map(|r| UpowerRankItem {
+                mid: r.mid,
+                nickname: r.nickname,
+                avatar: r.avatar,
+                day: r.day,
+            })
+            .collect(),
+        privilege_type: dto.privilege_type,
+        tabs: dto.tabs.unwrap_or_default(),
+        levels: dto
+            .level_info
+            .unwrap_or_default()
+            .into_iter()
+            .map(|l| UpowerLevel {
+                privilege_type: l.privilege_type,
+                name: l.name,
+                member_total: l.member_total,
+            })
+            .collect(),
+    })
+}
+
+/// 取充电排行。
+///
+/// # Errors
+/// 同 [`fetch_member_info`]。
+pub async fn fetch_upower_rank<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    up_mid: i64,
+    page: i64,
+    page_size: i64,
+    privilege_type: Option<i64>,
+) -> Result<UpowerRank, DomainError> {
+    let req = upower_rank_request(up_mid, page, page_size, privilege_type);
+    let body = crate::client::send(transport, ctx, &req).await?;
+    parse_upower_rank(&body)
 }

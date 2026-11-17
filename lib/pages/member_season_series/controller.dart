@@ -1,11 +1,9 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/member.dart';
-import 'package:kilikili/models_new/space/space_season_series/item.dart';
-import 'package:kilikili/models_new/space/space_season_series/season.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_space.dart';
 
 class SeasonSeriesController
-    extends CommonListController<SpaceSsData, SpaceSsModel> {
+    extends CommonListController<SpaceSeasonSeriesPage, SpaceSeasonSeries> {
   SeasonSeriesController(this.mid);
   final int mid;
   int? count;
@@ -17,10 +15,10 @@ class SeasonSeriesController
   }
 
   @override
-  List<SpaceSsModel>? getDataList(SpaceSsData response) {
-    count = response.page?.total;
-    return (response.seasonsList ?? <SpaceSsModel>[]) +
-        (response.seriesList ?? <SpaceSsModel>[]);
+  List<SpaceSeasonSeries>? getDataList(SpaceSeasonSeriesPage response) {
+    count = response.total;
+    // 合集与列表分两个数组下发，拼成一条列表是界面的事（见领域层文档）。
+    return [...response.seasons, ...response.series];
   }
 
   @override
@@ -31,9 +29,6 @@ class SeasonSeriesController
   }
 
   @override
-  Future<LoadingState<SpaceSsData>> customGetData() =>
-      MemberHttp.seasonSeriesList(
-        mid: mid,
-        pn: page,
-      );
+  Future<LoadingState<SpaceSeasonSeriesPage>> customGetData() =>
+      RustSpace.seasonSeries(mid: mid, page: page);
 }

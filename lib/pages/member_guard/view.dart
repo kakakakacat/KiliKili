@@ -6,7 +6,7 @@ import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/view_sliver_safe_area.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/member_guard/guard_top_list.dart';
+import 'package:kilikili/services/rust/rust_space.dart';
 import 'package:kilikili/pages/member_guard/controller.dart';
 import 'package:kilikili/utils/bili_utils.dart';
 import 'package:kilikili/utils/extension/widget_ext.dart';
@@ -95,9 +95,9 @@ class _MemberGuardState extends State<MemberGuard> {
                       safeArea: false,
                       visualDensity: .comfortable,
                       onTap: () => Get.toNamed('/member?mid=${item.uid}'),
-                      leading: _avatar(item.face, 32, item.guardLevel),
+                      leading: _avatar(item.face, 32, item.guardLevel ?? 3),
                       title: Text(
-                        item.username,
+                        item.username ?? '',
                         style: const TextStyle(fontSize: 14),
                       ),
                     );
@@ -126,10 +126,10 @@ class _MemberGuardState extends State<MemberGuard> {
               height: 67.5, // 50 * 1.35
               child: Align(
                 alignment: .bottomCenter,
-                child: _avatar(item.face, size, item.guardLevel),
+                child: _avatar(item.face, size, item.guardLevel ?? 3),
               ),
             ),
-            Text(item.username, maxLines: 1, overflow: .ellipsis),
+            Text(item.username ?? '', maxLines: 1, overflow: .ellipsis),
           ],
         ),
       ),
@@ -173,7 +173,9 @@ class _MemberGuardState extends State<MemberGuard> {
     );
   }
 
-  static Widget _avatar(String url, double size, int guardLevel) {
+  /// [url] 可空：舰长名单的字段在协议上都是可选的（基线把它们声明成
+  /// 非空，服务端少给一个就整页抛）。
+  static Widget _avatar(String? url, double size, int guardLevel) {
     final pendentSize = 1.35 * size;
     return Stack(
       clipBehavior: .none,

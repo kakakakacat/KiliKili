@@ -1,0 +1,34 @@
+{
+  "items": [
+    {
+      "avatar": "//i1.example.test/bfs/face/yyyyyyyy.jpg",
+      "day": 365,
+      "mid": 300000301,
+      "nickname": "示例充电用户甲"
+    },
+    {
+      "avatar": "//i1.example.test/bfs/face/zzzzzzzz.jpg",
+      "day": 30,
+      "mid": 300000302,
+      "nickname": "示例充电用户乙"
+    }
+  ],
+  "levels": [
+    {
+      "member_total": 120,
+      "name": "示例档位甲",
+      "privilege_type": 1
+    },
+    {
+      "member_total": 8,
+      "name": "示例档位乙",
+      "privilege_type": 2
+    }
+  ],
+  "privilege_type": 1,
+  "tabs": [
+    1,
+    2,
+    3
+  ]
+}

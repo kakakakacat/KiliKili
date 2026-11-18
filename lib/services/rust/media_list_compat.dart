@@ -1,5 +1,5 @@
 import 'package:kilikili/models/model_owner.dart';
-import 'package:kilikili/models_new/fav/fav_detail/cnt_info.dart';
+import 'package:kilikili/models_new/media_list/cnt_info.dart';
 import 'package:kilikili/models_new/media_list/media_list.dart';
 import 'package:kilikili/models_new/media_list/page.dart';
 import 'package:kilikili/services/rust/rust_history.dart' show MediaListItem;

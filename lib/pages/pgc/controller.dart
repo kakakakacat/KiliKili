@@ -1,7 +1,6 @@
-import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/home_tab_type.dart';
-import 'package:kilikili/models_new/fav/fav_pgc/list.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/pages/common/common_controller.dart'
     show RefreshImplMixin;
 import 'package:kilikili/pages/common/common_list_controller.dart';
@@ -60,8 +59,8 @@ class PgcController
   late RxInt followCount = (-1).obs;
   late bool followLoading = false;
   late bool followEnd = false;
-  late Rx<LoadingState<List<FavPgcItemModel>?>> followState =
-      LoadingState<List<FavPgcItemModel>?>.loading().obs;
+  late Rx<LoadingState<List<FavPgcItem>?>> followState =
+      LoadingState<List<FavPgcItem>?>.loading().obs;
   final followController = ScrollController();
 
   // timeline
@@ -119,7 +118,7 @@ class PgcController
       return;
     }
     followLoading = true;
-    final res = await FavHttp.favPgc(
+    final res = await RustFav.favPgc(
       type: tabType == HomeTabType.bangumi ? 1 : 2,
       pn: followPage,
     );
@@ -128,10 +127,10 @@ class PgcController
       final list = response.list;
       followCount.value = response.total ?? -1;
 
-      if (list == null || list.isEmpty) {
+      if (list.isEmpty) {
         followEnd = true;
         if (isRefresh) {
-          followState.value = Success(list);
+          followState.value = const Success(null);
         }
         followLoading = false;
         return;

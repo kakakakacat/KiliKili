@@ -1,8 +1,7 @@
 import 'package:kilikili/common/widgets/reorder_mixin.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/fav/fav_folder/list.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/pages/fav/video/controller.dart';
 import 'package:kilikili/pages/fav/video/widgets/item.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -22,7 +21,7 @@ class _FavFolderSortPageState extends State<FavFolderSortPage>
     with ReorderMixin {
   FavController get _favController => widget.favController;
 
-  late List<FavFolderInfo> sortList = List<FavFolderInfo>.from(
+  late List<FavFolder> sortList = List<FavFolder>.from(
     _favController.loadingState.value.data!,
   );
 
@@ -34,7 +33,7 @@ class _FavFolderSortPageState extends State<FavFolderSortPage>
         actions: [
           TextButton(
             onPressed: () async {
-              final res = await FavHttp.sortFavFolder(
+              final res = await RustFav.sortFavFolder(
                 sort: sortList.map((item) => item.id).join(','),
               );
               if (res.isSuccess) {

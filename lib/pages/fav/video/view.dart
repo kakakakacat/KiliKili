@@ -1,7 +1,7 @@
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/fav/fav_folder/list.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/pages/fav/video/controller.dart';
 import 'package:kilikili/pages/fav/video/widgets/item.dart';
 import 'package:kilikili/utils/grid.dart';
@@ -46,7 +46,7 @@ class _FavVideoPageState extends State<FavVideoPage>
     );
   }
 
-  Widget _buildBody(LoadingState<List<FavFolderInfo>?> loadingState) {
+  Widget _buildBody(LoadingState<List<FavFolder>?> loadingState) {
     return switch (loadingState) {
       Loading() => coverGridSkeleton,
       Success(:final response) =>

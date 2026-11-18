@@ -6,6 +6,7 @@
 import 'package:kilikili/rust/api/cover_scrim.dart';
 import 'package:kilikili/rust/api/danmaku.dart';
 import 'package:kilikili/rust/api/dynamic.dart';
+import 'package:kilikili/rust/api/fav.dart';
 import 'package:kilikili/rust/api/grpc.dart';
 import 'package:kilikili/rust/api/history.dart';
 import 'package:kilikili/rust/api/init.dart';
@@ -134,6 +135,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   double dco_decode_box_autoadd_f_64(dynamic raw);
+
+  @protected
+  FavArticleList dco_decode_box_autoadd_fav_article_list(dynamic raw);
+
+  @protected
+  FavContext dco_decode_box_autoadd_fav_context(dynamic raw);
+
+  @protected
+  FavDetail dco_decode_box_autoadd_fav_detail(dynamic raw);
+
+  @protected
+  FavFolder dco_decode_box_autoadd_fav_folder(dynamic raw);
+
+  @protected
+  FavFolderList dco_decode_box_autoadd_fav_folder_list(dynamic raw);
+
+  @protected
+  FavPgcList dco_decode_box_autoadd_fav_pgc_list(dynamic raw);
+
+  @protected
+  FavPugvList dco_decode_box_autoadd_fav_pugv_list(dynamic raw);
+
+  @protected
+  FavSeasonDetail dco_decode_box_autoadd_fav_season_detail(dynamic raw);
+
+  @protected
+  FavSignature dco_decode_box_autoadd_fav_signature(dynamic raw);
+
+  @protected
+  FavTopicList dco_decode_box_autoadd_fav_topic_list(dynamic raw);
 
   @protected
   FeedContext dco_decode_box_autoadd_feed_context(dynamic raw);
@@ -558,6 +589,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SponsorUserInfo dco_decode_box_autoadd_sponsor_user_info(dynamic raw);
 
   @protected
+  SubItem dco_decode_box_autoadd_sub_item(dynamic raw);
+
+  @protected
   SubList dco_decode_box_autoadd_sub_list(dynamic raw);
 
   @protected
@@ -696,6 +730,93 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   double dco_decode_f_64(dynamic raw);
+
+  @protected
+  FavArticleItem dco_decode_fav_article_item(dynamic raw);
+
+  @protected
+  FavArticleList dco_decode_fav_article_list(dynamic raw);
+
+  @protected
+  FavArticleListResult dco_decode_fav_article_list_result(dynamic raw);
+
+  @protected
+  FavContext dco_decode_fav_context(dynamic raw);
+
+  @protected
+  FavDetail dco_decode_fav_detail(dynamic raw);
+
+  @protected
+  FavDetailResult dco_decode_fav_detail_result(dynamic raw);
+
+  @protected
+  FavFolder dco_decode_fav_folder(dynamic raw);
+
+  @protected
+  FavFolderList dco_decode_fav_folder_list(dynamic raw);
+
+  @protected
+  FavFolderListResult dco_decode_fav_folder_list_result(dynamic raw);
+
+  @protected
+  FavFolderResult dco_decode_fav_folder_result(dynamic raw);
+
+  @protected
+  FavMedia dco_decode_fav_media(dynamic raw);
+
+  @protected
+  FavMoveMode dco_decode_fav_move_mode(dynamic raw);
+
+  @protected
+  FavMoveTarget dco_decode_fav_move_target(dynamic raw);
+
+  @protected
+  FavNote dco_decode_fav_note(dynamic raw);
+
+  @protected
+  FavNoteListResult dco_decode_fav_note_list_result(dynamic raw);
+
+  @protected
+  FavOrder dco_decode_fav_order(dynamic raw);
+
+  @protected
+  FavPgcItem dco_decode_fav_pgc_item(dynamic raw);
+
+  @protected
+  FavPgcList dco_decode_fav_pgc_list(dynamic raw);
+
+  @protected
+  FavPgcListResult dco_decode_fav_pgc_list_result(dynamic raw);
+
+  @protected
+  FavPugvItem dco_decode_fav_pugv_item(dynamic raw);
+
+  @protected
+  FavPugvList dco_decode_fav_pugv_list(dynamic raw);
+
+  @protected
+  FavPugvListResult dco_decode_fav_pugv_list_result(dynamic raw);
+
+  @protected
+  FavSeasonDetail dco_decode_fav_season_detail(dynamic raw);
+
+  @protected
+  FavSeasonDetailResult dco_decode_fav_season_detail_result(dynamic raw);
+
+  @protected
+  FavSeasonMedia dco_decode_fav_season_media(dynamic raw);
+
+  @protected
+  FavSignature dco_decode_fav_signature(dynamic raw);
+
+  @protected
+  FavTopicItem dco_decode_fav_topic_item(dynamic raw);
+
+  @protected
+  FavTopicList dco_decode_fav_topic_list(dynamic raw);
+
+  @protected
+  FavTopicListResult dco_decode_fav_topic_list_result(dynamic raw);
 
   @protected
   FeedContext dco_decode_feed_context(dynamic raw);
@@ -870,6 +991,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<EmotePackage> dco_decode_list_emote_package(dynamic raw);
+
+  @protected
+  List<FavArticleItem> dco_decode_list_fav_article_item(dynamic raw);
+
+  @protected
+  List<FavFolder> dco_decode_list_fav_folder(dynamic raw);
+
+  @protected
+  List<FavMedia> dco_decode_list_fav_media(dynamic raw);
+
+  @protected
+  List<FavNote> dco_decode_list_fav_note(dynamic raw);
+
+  @protected
+  List<FavPgcItem> dco_decode_list_fav_pgc_item(dynamic raw);
+
+  @protected
+  List<FavPugvItem> dco_decode_list_fav_pugv_item(dynamic raw);
+
+  @protected
+  List<FavSeasonMedia> dco_decode_list_fav_season_media(dynamic raw);
+
+  @protected
+  List<FavTopicItem> dco_decode_list_fav_topic_item(dynamic raw);
 
   @protected
   List<FeedVideoItem> dco_decode_list_feed_video_item(dynamic raw);
@@ -1124,6 +1269,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SpaceCheeseItem> dco_decode_list_space_cheese_item(dynamic raw);
+
+  @protected
+  List<SpaceFavGroup> dco_decode_list_space_fav_group(dynamic raw);
 
   @protected
   List<SpaceFavItem> dco_decode_list_space_fav_item(dynamic raw);
@@ -1550,6 +1698,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   double? dco_decode_opt_box_autoadd_f_64(dynamic raw);
 
   @protected
+  FavArticleList? dco_decode_opt_box_autoadd_fav_article_list(dynamic raw);
+
+  @protected
+  FavDetail? dco_decode_opt_box_autoadd_fav_detail(dynamic raw);
+
+  @protected
+  FavFolder? dco_decode_opt_box_autoadd_fav_folder(dynamic raw);
+
+  @protected
+  FavFolderList? dco_decode_opt_box_autoadd_fav_folder_list(dynamic raw);
+
+  @protected
+  FavPgcList? dco_decode_opt_box_autoadd_fav_pgc_list(dynamic raw);
+
+  @protected
+  FavPugvList? dco_decode_opt_box_autoadd_fav_pugv_list(dynamic raw);
+
+  @protected
+  FavSeasonDetail? dco_decode_opt_box_autoadd_fav_season_detail(dynamic raw);
+
+  @protected
+  FavTopicList? dco_decode_opt_box_autoadd_fav_topic_list(dynamic raw);
+
+  @protected
   FilterRule? dco_decode_opt_box_autoadd_filter_rule(dynamic raw);
 
   @protected
@@ -1936,6 +2108,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SponsorUserInfo? dco_decode_opt_box_autoadd_sponsor_user_info(dynamic raw);
 
   @protected
+  SubItem? dco_decode_opt_box_autoadd_sub_item(dynamic raw);
+
+  @protected
   SubList? dco_decode_opt_box_autoadd_sub_list(dynamic raw);
 
   @protected
@@ -1996,6 +2171,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<EmotePackage>? dco_decode_opt_list_emote_package(dynamic raw);
+
+  @protected
+  List<FavNote>? dco_decode_opt_list_fav_note(dynamic raw);
 
   @protected
   List<FeedVideoItem>? dco_decode_opt_list_feed_video_item(dynamic raw);
@@ -2093,6 +2271,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SkipSegment>? dco_decode_opt_list_skip_segment(dynamic raw);
+
+  @protected
+  List<SpaceFavGroup>? dco_decode_opt_list_space_fav_group(dynamic raw);
 
   @protected
   List<TimelineDay>? dco_decode_opt_list_timeline_day(dynamic raw);
@@ -2512,7 +2693,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SpaceFavBlock dco_decode_space_fav_block(dynamic raw);
 
   @protected
+  SpaceFavGroup dco_decode_space_fav_group(dynamic raw);
+
+  @protected
   SpaceFavItem dco_decode_space_fav_item(dynamic raw);
+
+  @protected
+  SpaceFavResult dco_decode_space_fav_result(dynamic raw);
 
   @protected
   SpaceFollowedBy dco_decode_space_followed_by(dynamic raw);
@@ -2885,6 +3072,48 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   double sse_decode_box_autoadd_f_64(SseDeserializer deserializer);
+
+  @protected
+  FavArticleList sse_decode_box_autoadd_fav_article_list(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FavContext sse_decode_box_autoadd_fav_context(SseDeserializer deserializer);
+
+  @protected
+  FavDetail sse_decode_box_autoadd_fav_detail(SseDeserializer deserializer);
+
+  @protected
+  FavFolder sse_decode_box_autoadd_fav_folder(SseDeserializer deserializer);
+
+  @protected
+  FavFolderList sse_decode_box_autoadd_fav_folder_list(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FavPgcList sse_decode_box_autoadd_fav_pgc_list(SseDeserializer deserializer);
+
+  @protected
+  FavPugvList sse_decode_box_autoadd_fav_pugv_list(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FavSeasonDetail sse_decode_box_autoadd_fav_season_detail(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FavSignature sse_decode_box_autoadd_fav_signature(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FavTopicList sse_decode_box_autoadd_fav_topic_list(
+    SseDeserializer deserializer,
+  );
 
   @protected
   FeedContext sse_decode_box_autoadd_feed_context(SseDeserializer deserializer);
@@ -3479,6 +3708,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SubItem sse_decode_box_autoadd_sub_item(SseDeserializer deserializer);
+
+  @protected
   SubList sse_decode_box_autoadd_sub_list(SseDeserializer deserializer);
 
   @protected
@@ -3649,6 +3881,105 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   double sse_decode_f_64(SseDeserializer deserializer);
+
+  @protected
+  FavArticleItem sse_decode_fav_article_item(SseDeserializer deserializer);
+
+  @protected
+  FavArticleList sse_decode_fav_article_list(SseDeserializer deserializer);
+
+  @protected
+  FavArticleListResult sse_decode_fav_article_list_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FavContext sse_decode_fav_context(SseDeserializer deserializer);
+
+  @protected
+  FavDetail sse_decode_fav_detail(SseDeserializer deserializer);
+
+  @protected
+  FavDetailResult sse_decode_fav_detail_result(SseDeserializer deserializer);
+
+  @protected
+  FavFolder sse_decode_fav_folder(SseDeserializer deserializer);
+
+  @protected
+  FavFolderList sse_decode_fav_folder_list(SseDeserializer deserializer);
+
+  @protected
+  FavFolderListResult sse_decode_fav_folder_list_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FavFolderResult sse_decode_fav_folder_result(SseDeserializer deserializer);
+
+  @protected
+  FavMedia sse_decode_fav_media(SseDeserializer deserializer);
+
+  @protected
+  FavMoveMode sse_decode_fav_move_mode(SseDeserializer deserializer);
+
+  @protected
+  FavMoveTarget sse_decode_fav_move_target(SseDeserializer deserializer);
+
+  @protected
+  FavNote sse_decode_fav_note(SseDeserializer deserializer);
+
+  @protected
+  FavNoteListResult sse_decode_fav_note_list_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FavOrder sse_decode_fav_order(SseDeserializer deserializer);
+
+  @protected
+  FavPgcItem sse_decode_fav_pgc_item(SseDeserializer deserializer);
+
+  @protected
+  FavPgcList sse_decode_fav_pgc_list(SseDeserializer deserializer);
+
+  @protected
+  FavPgcListResult sse_decode_fav_pgc_list_result(SseDeserializer deserializer);
+
+  @protected
+  FavPugvItem sse_decode_fav_pugv_item(SseDeserializer deserializer);
+
+  @protected
+  FavPugvList sse_decode_fav_pugv_list(SseDeserializer deserializer);
+
+  @protected
+  FavPugvListResult sse_decode_fav_pugv_list_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FavSeasonDetail sse_decode_fav_season_detail(SseDeserializer deserializer);
+
+  @protected
+  FavSeasonDetailResult sse_decode_fav_season_detail_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FavSeasonMedia sse_decode_fav_season_media(SseDeserializer deserializer);
+
+  @protected
+  FavSignature sse_decode_fav_signature(SseDeserializer deserializer);
+
+  @protected
+  FavTopicItem sse_decode_fav_topic_item(SseDeserializer deserializer);
+
+  @protected
+  FavTopicList sse_decode_fav_topic_list(SseDeserializer deserializer);
+
+  @protected
+  FavTopicListResult sse_decode_fav_topic_list_result(
+    SseDeserializer deserializer,
+  );
 
   @protected
   FeedContext sse_decode_feed_context(SseDeserializer deserializer);
@@ -3849,6 +4180,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<EmotePackage> sse_decode_list_emote_package(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<FavArticleItem> sse_decode_list_fav_article_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<FavFolder> sse_decode_list_fav_folder(SseDeserializer deserializer);
+
+  @protected
+  List<FavMedia> sse_decode_list_fav_media(SseDeserializer deserializer);
+
+  @protected
+  List<FavNote> sse_decode_list_fav_note(SseDeserializer deserializer);
+
+  @protected
+  List<FavPgcItem> sse_decode_list_fav_pgc_item(SseDeserializer deserializer);
+
+  @protected
+  List<FavPugvItem> sse_decode_list_fav_pugv_item(SseDeserializer deserializer);
+
+  @protected
+  List<FavSeasonMedia> sse_decode_list_fav_season_media(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<FavTopicItem> sse_decode_list_fav_topic_item(
     SseDeserializer deserializer,
   );
 
@@ -4203,6 +4564,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SpaceCheeseItem> sse_decode_list_space_cheese_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceFavGroup> sse_decode_list_space_fav_group(
     SseDeserializer deserializer,
   );
 
@@ -4725,6 +5091,46 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   double? sse_decode_opt_box_autoadd_f_64(SseDeserializer deserializer);
+
+  @protected
+  FavArticleList? sse_decode_opt_box_autoadd_fav_article_list(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FavDetail? sse_decode_opt_box_autoadd_fav_detail(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FavFolder? sse_decode_opt_box_autoadd_fav_folder(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FavFolderList? sse_decode_opt_box_autoadd_fav_folder_list(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FavPgcList? sse_decode_opt_box_autoadd_fav_pgc_list(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FavPugvList? sse_decode_opt_box_autoadd_fav_pugv_list(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FavSeasonDetail? sse_decode_opt_box_autoadd_fav_season_detail(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FavTopicList? sse_decode_opt_box_autoadd_fav_topic_list(
+    SseDeserializer deserializer,
+  );
 
   @protected
   FilterRule? sse_decode_opt_box_autoadd_filter_rule(
@@ -5291,6 +5697,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SubItem? sse_decode_opt_box_autoadd_sub_item(SseDeserializer deserializer);
+
+  @protected
   SubList? sse_decode_opt_box_autoadd_sub_list(SseDeserializer deserializer);
 
   @protected
@@ -5369,6 +5778,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<EmotePackage>? sse_decode_opt_list_emote_package(
     SseDeserializer deserializer,
   );
+
+  @protected
+  List<FavNote>? sse_decode_opt_list_fav_note(SseDeserializer deserializer);
 
   @protected
   List<FeedVideoItem>? sse_decode_opt_list_feed_video_item(
@@ -5504,6 +5916,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SkipSegment>? sse_decode_opt_list_skip_segment(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SpaceFavGroup>? sse_decode_opt_list_space_fav_group(
     SseDeserializer deserializer,
   );
 
@@ -6013,7 +6430,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SpaceFavBlock sse_decode_space_fav_block(SseDeserializer deserializer);
 
   @protected
+  SpaceFavGroup sse_decode_space_fav_group(SseDeserializer deserializer);
+
+  @protected
   SpaceFavItem sse_decode_space_fav_item(SseDeserializer deserializer);
+
+  @protected
+  SpaceFavResult sse_decode_space_fav_result(SseDeserializer deserializer);
 
   @protected
   SpaceFollowedBy sse_decode_space_followed_by(SseDeserializer deserializer);
@@ -6457,6 +6880,66 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_box_autoadd_f_64(double self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_fav_article_list(
+    FavArticleList self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_fav_context(
+    FavContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_fav_detail(
+    FavDetail self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_fav_folder(
+    FavFolder self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_fav_folder_list(
+    FavFolderList self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_fav_pgc_list(
+    FavPgcList self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_fav_pugv_list(
+    FavPugvList self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_fav_season_detail(
+    FavSeasonDetail self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_fav_signature(
+    FavSignature self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_fav_topic_list(
+    FavTopicList self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_box_autoadd_feed_context(
@@ -7272,6 +7755,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_sub_item(SubItem self, SseSerializer serializer);
+
+  @protected
   void sse_encode_box_autoadd_sub_list(SubList self, SseSerializer serializer);
 
   @protected
@@ -7495,6 +7981,132 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_f_64(double self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_fav_article_item(
+    FavArticleItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_fav_article_list(
+    FavArticleList self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_fav_article_list_result(
+    FavArticleListResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_fav_context(FavContext self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_fav_detail(FavDetail self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_fav_detail_result(
+    FavDetailResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_fav_folder(FavFolder self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_fav_folder_list(FavFolderList self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_fav_folder_list_result(
+    FavFolderListResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_fav_folder_result(
+    FavFolderResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_fav_media(FavMedia self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_fav_move_mode(FavMoveMode self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_fav_move_target(FavMoveTarget self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_fav_note(FavNote self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_fav_note_list_result(
+    FavNoteListResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_fav_order(FavOrder self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_fav_pgc_item(FavPgcItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_fav_pgc_list(FavPgcList self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_fav_pgc_list_result(
+    FavPgcListResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_fav_pugv_item(FavPugvItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_fav_pugv_list(FavPugvList self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_fav_pugv_list_result(
+    FavPugvListResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_fav_season_detail(
+    FavSeasonDetail self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_fav_season_detail_result(
+    FavSeasonDetailResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_fav_season_media(
+    FavSeasonMedia self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_fav_signature(FavSignature self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_fav_topic_item(FavTopicItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_fav_topic_list(FavTopicList self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_fav_topic_list_result(
+    FavTopicListResult self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_feed_context(FeedContext self, SseSerializer serializer);
@@ -7748,6 +8360,48 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_emote_package(
     List<EmotePackage> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_fav_article_item(
+    List<FavArticleItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_fav_folder(
+    List<FavFolder> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_fav_media(List<FavMedia> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_fav_note(List<FavNote> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_fav_pgc_item(
+    List<FavPgcItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_fav_pugv_item(
+    List<FavPugvItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_fav_season_media(
+    List<FavSeasonMedia> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_fav_topic_item(
+    List<FavTopicItem> self,
     SseSerializer serializer,
   );
 
@@ -8225,6 +8879,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_space_cheese_item(
     List<SpaceCheeseItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_space_fav_group(
+    List<SpaceFavGroup> self,
     SseSerializer serializer,
   );
 
@@ -8922,6 +9582,54 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_opt_box_autoadd_f_64(double? self, SseSerializer serializer);
 
   @protected
+  void sse_encode_opt_box_autoadd_fav_article_list(
+    FavArticleList? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_fav_detail(
+    FavDetail? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_fav_folder(
+    FavFolder? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_fav_folder_list(
+    FavFolderList? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_fav_pgc_list(
+    FavPgcList? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_fav_pugv_list(
+    FavPugvList? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_fav_season_detail(
+    FavSeasonDetail? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_fav_topic_list(
+    FavTopicList? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_filter_rule(
     FilterRule? self,
     SseSerializer serializer,
@@ -9609,6 +10317,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_sub_item(
+    SubItem? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_sub_list(
     SubList? self,
     SseSerializer serializer,
@@ -9713,6 +10427,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_emote_package(
     List<EmotePackage>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_fav_note(
+    List<FavNote>? self,
     SseSerializer serializer,
   );
 
@@ -9893,6 +10613,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_skip_segment(
     List<SkipSegment>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_space_fav_group(
+    List<SpaceFavGroup>? self,
     SseSerializer serializer,
   );
 
@@ -10563,7 +11289,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_space_fav_block(SpaceFavBlock self, SseSerializer serializer);
 
   @protected
+  void sse_encode_space_fav_group(SpaceFavGroup self, SseSerializer serializer);
+
+  @protected
   void sse_encode_space_fav_item(SpaceFavItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_fav_result(
+    SpaceFavResult self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_space_followed_by(

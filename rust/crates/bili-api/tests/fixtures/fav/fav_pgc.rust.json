@@ -1,0 +1,25 @@
+{
+  "list": [
+    {
+      "badge": "会员",
+      "cover": "https://example.invalid/bfs/bangumi/b1.jpg",
+      "is_finish": 0,
+      "new_ep_index_show": "更新至第 3 话",
+      "progress": "看到第 2 话",
+      "renewal_time": "每周五 20:00 更新",
+      "season_id": 44000001,
+      "title": "示例番剧"
+    },
+    {
+      "badge": "",
+      "cover": "https://example.invalid/bfs/bangumi/b2.jpg",
+      "is_finish": 1,
+      "new_ep_index_show": "全 1 话",
+      "progress": null,
+      "renewal_time": "",
+      "season_id": 44000002,
+      "title": "示例影视"
+    }
+  ],
+  "total": 2
+}

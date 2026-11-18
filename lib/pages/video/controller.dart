@@ -12,7 +12,7 @@ import 'package:kilikili/grpc/bilibili/app/listener/v1.pbenum.dart'
     show PlaylistSource;
 import 'package:kilikili/grpc/dm.dart';
 import 'package:kilikili/http/browser_ua.dart';
-import 'package:kilikili/http/fav.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/services/rust/media_list_compat.dart';
@@ -540,7 +540,7 @@ class VideoDetailController extends GetxController
                     mediaList.removeAt(index);
                   }
                 } else {
-                  final res = await FavHttp.favVideo(
+                  final res = await RustFav.favVideo(
                     resources: '${item.aid}:${item.type}',
                     delIds: '${args['mediaId']}',
                   );

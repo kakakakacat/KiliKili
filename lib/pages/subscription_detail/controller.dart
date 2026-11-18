@@ -1,18 +1,16 @@
-import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/sub/sub/list.dart';
-import 'package:kilikili/models_new/sub/sub_detail/data.dart';
-import 'package:kilikili/models_new/sub/sub_detail/media.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
+import 'package:kilikili/services/rust/rust_user.dart' show SubItem;
 import 'package:kilikili/pages/common/page_order/page_order_mixin.dart';
 import 'package:get/get.dart';
 
 class SubDetailController
-    extends CommonListController<SubDetailData, SubDetailItemModel>
+    extends CommonListController<FavSeasonDetail, FavSeasonMedia>
     with PageOrderMixin {
   late int id;
   String? heroTag;
-  SubItemModel? subInfo;
+  SubItem? subInfo;
 
   @override
   int get count => subInfo?.mediaCount ?? 0;
@@ -37,8 +35,9 @@ class SubDetailController
   }
 
   @override
-  List<SubDetailItemModel>? getDataList(SubDetailData response) {
-    subInfo = response.info;
+  List<FavSeasonMedia>? getDataList(FavSeasonDetail response) {
+    // 列表页传进来的 info 与详情接口回的 info 是同一个形状，后者更新。
+    subInfo = response.info ?? subInfo;
     return response.medias;
   }
 
@@ -55,10 +54,11 @@ class SubDetailController
   }
 
   @override
-  Future<LoadingState<SubDetailData>> customGetData() => FavHttp.favSeasonList(
-    id: id,
-    ps: _ps,
-    pn: page,
-    pageDesc: pageDesc,
-  );
+  Future<LoadingState<FavSeasonDetail>> customGetData() =>
+      RustFav.favSeasonList(
+        seasonId: id,
+        ps: _ps,
+        pn: page,
+        pageDesc: pageDesc,
+      );
 }

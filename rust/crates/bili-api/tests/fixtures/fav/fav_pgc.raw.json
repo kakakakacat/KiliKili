@@ -1,0 +1,39 @@
+{
+  "code": 0,
+  "message": "success",
+  "ttl": 1,
+  "data": {
+    "total": 2,
+    "pn": 1,
+    "ps": 15,
+    "list": [
+      {
+        "season_id": 44000001,
+        "media_id": 55000001,
+        "season_type": 1,
+        "season_type_name": "番剧",
+        "title": "示例番剧",
+        "cover": "https://example.invalid/bfs/bangumi/b1.jpg",
+        "total_count": 12,
+        "is_finish": 0,
+        "is_started": 1,
+        "badge": "会员",
+        "renewal_time": "每周五 20:00 更新",
+        "new_ep": { "id": 66000001, "index_show": "更新至第 3 话", "cover": "https://example.invalid/bfs/bangumi/e3.jpg" },
+        "progress": "看到第 2 话",
+        "follow_status": 2
+      },
+      {
+        "season_id": 44000002,
+        "title": "示例影视",
+        "cover": "https://example.invalid/bfs/bangumi/b2.jpg",
+        "is_finish": 1,
+        "badge": "",
+        "renewal_time": "",
+        "new_ep": { "index_show": "全 1 话" },
+        "progress": "",
+        "follow_status": 1
+      }
+    ]
+  }
+}

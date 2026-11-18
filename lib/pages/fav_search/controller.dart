@@ -1,21 +1,25 @@
-import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/fav_order_type.dart';
 import 'package:kilikili/models/common/video/source_type.dart';
-import 'package:kilikili/models_new/fav/fav_detail/data.dart';
-import 'package:kilikili/models_new/fav/fav_detail/media.dart';
-import 'package:kilikili/pages/common/multi_select/base.dart';
+import 'package:kilikili/pages/common/multi_select/id_based.dart';
 import 'package:kilikili/pages/common/search/common_search_controller.dart';
 import 'package:kilikili/pages/fav_detail/controller.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:get/get.dart';
 
 class FavSearchController
-    extends CommonSearchController<FavDetailData, FavDetailItemModel>
-    with
-        CommonMultiSelectMixin<FavDetailItemModel>,
-        DeleteItemMixin,
-        BaseFavController {
+    extends CommonSearchController<FavDetail, FavMedia>
+    with IdMultiSelectMixin<FavDetail, FavMedia, int>, BaseFavController {
+  @override
+  final RxBool enableMultiSelect = false.obs;
+
+  @override
+  final RxInt rxCount = 0.obs;
+
+  @override
+  int idOf(FavMedia item) => item.id ?? -identityHashCode(item);
+
   late int type;
   @override
   late int mediaId;
@@ -38,18 +42,17 @@ class FavSearchController
   final Rx<FavOrderType> order = FavOrderType.mtime.obs;
 
   @override
-  Future<LoadingState<FavDetailData>> customGetData() =>
-      FavHttp.userFavFolderDetail(
-        pn: page,
-        ps: 20,
-        mediaId: mediaId,
-        keyword: editController.text,
-        type: type,
-        order: order.value,
-      );
+  Future<LoadingState<FavDetail>> customGetData() => RustFav.favDetail(
+    pn: page,
+    ps: 20,
+    mediaId: mediaId,
+    keyword: editController.text,
+    type: type,
+    order: order.value,
+  );
 
   @override
-  List<FavDetailItemModel>? getDataList(FavDetailData response) {
+  List<FavMedia>? getDataList(FavDetail response) {
     if (response.hasMore == false) {
       isEnd = true;
     }
@@ -58,9 +61,9 @@ class FavSearchController
 
   @override
   // TODO: dimension
-  void onViewFav(FavDetailItemModel item, int? index) => PageUtils.toVideoPage(
+  void onViewFav(FavMedia item, int? index) => PageUtils.toVideoPage(
     bvid: item.bvid,
-    cid: item.ugc!.firstCid!,
+    cid: item.ugcFirstCid!,
     cover: item.cover,
     title: item.title,
     extraArguments: {

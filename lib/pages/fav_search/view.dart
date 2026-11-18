@@ -1,6 +1,5 @@
 import 'package:kilikili/models/common/fav_order_type.dart';
-import 'package:kilikili/models_new/fav/fav_detail/data.dart';
-import 'package:kilikili/models_new/fav/fav_detail/media.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/pages/common/search/common_search_page.dart';
 import 'package:kilikili/pages/fav_detail/widget/fav_video_card.dart';
 import 'package:kilikili/pages/fav_search/controller.dart';
@@ -20,7 +19,7 @@ class FavSearchPage extends StatefulWidget {
 
 class _FavSearchPageState
     extends
-        CommonSearchPageState<FavSearchPage, FavDetailData, FavDetailItemModel>
+        CommonSearchPageState<FavSearchPage, FavDetail, FavMedia>
     with GridMixin {
   @override
   final FavSearchController controller = Get.put(
@@ -37,7 +36,7 @@ class _FavSearchPageState
     return [
       TextButton(
         style: btnStyle,
-        onPressed: () => RequestUtils.onCopyOrMove<FavDetailItemModel>(
+        onPressed: () => RequestUtils.onCopyOrMove(
           context: context,
           isCopy: true,
           ctr: controller,
@@ -48,7 +47,7 @@ class _FavSearchPageState
       ),
       TextButton(
         style: btnStyle,
-        onPressed: () => RequestUtils.onCopyOrMove<FavDetailItemModel>(
+        onPressed: () => RequestUtils.onCopyOrMove(
           context: context,
           isCopy: false,
           ctr: controller,
@@ -86,7 +85,7 @@ class _FavSearchPageState
   ];
 
   @override
-  Widget buildList(List<FavDetailItemModel> list) {
+  Widget buildList(List<FavMedia> list) {
     return SliverGrid.builder(
       gridDelegate: coverGridDelegate,
       itemBuilder: (context, index) {

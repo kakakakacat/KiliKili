@@ -5,7 +5,7 @@ import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/fav/fav_pgc/list.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/pages/fav/pgc/controller.dart';
 import 'package:kilikili/pages/fav/pgc/pgc_layout.dart';
 import 'package:kilikili/pages/fav/pgc/widget/item.dart';
@@ -160,7 +160,7 @@ class _FavPgcChildPageState extends State<FavPgcChildPage>
     );
   }
 
-  Widget _buildBody(LoadingState<List<FavPgcItemModel>?> loadingState) {
+  Widget _buildBody(LoadingState<List<FavPgcItem>?> loadingState) {
     return switch (loadingState) {
       Loading() => SliverGrid(
         gridDelegate: Grid.coverCardDelegate(aspectRatio: 3 / 4),
@@ -178,7 +178,7 @@ class _FavPgcChildPageState extends State<FavPgcChildPage>
                     _favPgcController.onLoadMore();
                   }
                   final item = response[index];
-                  return FavPgcItem(
+                  return FavPgcCard(
                     item: item,
                     ctr: _favPgcController,
                     onSelect: () => _favPgcController.onSelect(item),

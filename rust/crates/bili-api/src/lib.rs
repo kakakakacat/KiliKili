@@ -34,6 +34,7 @@ pub mod danmaku_filter;
 pub mod dm_view;
 pub mod dynamic;
 pub mod envelope;
+pub mod fav;
 pub mod follow;
 pub mod grpc;
 pub mod grpc_danmaku;

@@ -1,6 +1,6 @@
 import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/fav/fav_folder/list.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/pages/common/common_intro_controller.dart';
 import 'package:kilikili/utils/bili_utils.dart';
 import 'package:kilikili/utils/feed_back.dart';
@@ -51,28 +51,30 @@ class _FavPanelState extends State<FavPanel> {
       case Loading():
         return m3eLoading;
       case Success():
-        final list = widget.ctr.favFolderData.value.list!;
+        final list = widget.ctr.favFolderData.value!.list;
         return ListView.builder(
           controller: widget.scrollController,
           itemCount: list.length,
           itemBuilder: (context, index) {
-            FavFolderInfo item = list[index];
+            final item = list[index];
             return Material(
               type: .transparency,
               child: Builder(
                 builder: (context) {
-                  final isChecked = item.favState == 1;
+                  // 勾选态记在控制器里，不写回列表项——列表项来自 Rust，
+                  // 字段是 final 的（见 FavMixin.selectedFavIds）。
+                  final isChecked = widget.ctr.selectedFavIds.contains(item.id);
+                  final count = widget.ctr.favFolderDisplayCount(item);
 
                   void onTap() {
-                    item
-                      ..favState = isChecked ? 0 : 1
-                      ..mediaCount += isChecked ? -1 : 1;
+                    if (!widget.ctr.selectedFavIds.remove(item.id)) {
+                      widget.ctr.selectedFavIds.add(item.id);
+                    }
                     (context as Element).markNeedsBuild();
                   }
 
                   final isFull =
-                      BiliUtils.isFavFolderFull(item.attr, item.mediaCount) &&
-                      !isChecked;
+                      BiliUtils.isFavFolderFull(item.attr, count) && !isChecked;
                   TextStyle? textStyle;
                   if (isFull) {
                     textStyle = TextStyle(color: colorScheme.outline);
@@ -97,7 +99,7 @@ class _FavPanelState extends State<FavPanel> {
                     minLeadingWidth: 0,
                     title: Text(item.title),
                     subtitle: Text(
-                      '${NumUtils.numFormat(item.mediaCount)}个内容${isFull ? '(已满)' : ''} · ${BiliUtils.isPublicFavText(item.attr)}',
+                      '${NumUtils.numFormat(count)}个内容${isFull ? '(已满)' : ''} · ${BiliUtils.isPublicFavText(item.attr)}',
                       style: textStyle,
                     ),
                     trailing: isFull
@@ -148,13 +150,11 @@ class _FavPanelState extends State<FavPanel> {
           actions: [
             TextButton.icon(
               onPressed: () => Get.toNamed('/createFav')?.then((data) {
-                if (data is FavFolderInfo && mounted) {
-                  widget.ctr.favFolderData.value.list?.insert(
-                    1,
-                    data
-                      ..favState = 1
-                      ..mediaCount = 1,
-                  );
+                if (data is FavFolder && mounted) {
+                  // 新建出来的夹子默认勾上：基线也是这么做的（它写的是
+                  // `favState = 1`），只是现在勾选态记在控制器里。
+                  widget.ctr.favFolderData.value?.list.insert(1, data);
+                  widget.ctr.selectedFavIds.add(data.id);
                   setState(() {});
                 }
               }),

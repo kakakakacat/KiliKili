@@ -2,8 +2,8 @@ import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/space/space_cheese/item.dart';
 import 'package:kilikili/pages/fav/cheese/controller.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/pages/member_cheese/widgets/item.dart';
 import 'package:kilikili/utils/grid.dart';
 import 'package:get/get.dart';
@@ -49,7 +49,7 @@ class _FavCheesePageState extends State<FavCheesePage>
 
   Widget _buildBody(
     ThemeData theme,
-    LoadingState<List<SpaceCheeseItem>?> loadingState,
+    LoadingState<List<FavPugvItem>?> loadingState,
   ) {
     return switch (loadingState) {
       Loading() => coverGridSkeleton,

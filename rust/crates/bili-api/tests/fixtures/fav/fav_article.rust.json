@@ -1,0 +1,21 @@
+{
+  "has_more": false,
+  "items": [
+    {
+      "author_name": "专栏作者",
+      "content": "示例专栏正文摘要",
+      "cover_url": "https://example.invalid/bfs/article/a1.jpg",
+      "like": "1.2万",
+      "opus_id": "990000000000000001",
+      "pub_time": "2026-01-02"
+    },
+    {
+      "author_name": null,
+      "content": "没有封面的专栏",
+      "cover_url": null,
+      "like": null,
+      "opus_id": "990000000000000002",
+      "pub_time": null
+    }
+  ]
+}

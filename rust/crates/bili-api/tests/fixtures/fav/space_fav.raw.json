@@ -1,0 +1,60 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": [
+    {
+      "id": 1,
+      "name": "收藏夹",
+      "mediaListResponse": {
+        "count": 2,
+        "hasMore": false,
+        "list": [
+          {
+            "id": 2101,
+            "media_id": 2101800000601,
+            "count": 37,
+            "is_public": 1,
+            "fid": 21,
+            "mid": 800000601,
+            "attr": 0,
+            "title": "默认收藏夹",
+            "cover": "https://example.invalid/bfs/archive/a1.jpg",
+            "upper": { "mid": 800000601, "name": "示例用户", "face": "https://example.invalid/bfs/face/u1.jpg" },
+            "cover_type": 2,
+            "intro": "",
+            "ctime": 1700000001,
+            "mtime": 1700000002,
+            "state": 0,
+            "fav_state": 0,
+            "media_count": 37,
+            "view_count": 0,
+            "type": 11,
+            "cnt_info": { "play": 1024, "danmaku": 8 }
+          },
+          { "id": 2102, "title": "私密夹", "media_count": 2, "type": 11 }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "name": "订阅的合集",
+      "mediaListResponse": {
+        "count": 1,
+        "list": [
+          {
+            "id": 990001,
+            "title": "示例合集",
+            "cover": "https://example.invalid/bfs/archive/s1.jpg",
+            "upper": { "mid": 800000603, "name": "合集作者" },
+            "media_count": 2,
+            "view_count": 2048,
+            "state": 0,
+            "type": 21,
+            "cnt_info": { "play": 4096, "danmaku": 12 }
+          }
+        ]
+      }
+    }
+  ]
+}

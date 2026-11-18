@@ -1,0 +1,24 @@
+{
+  "has_next": false,
+  "items": [
+    {
+      "cover": "https://example.invalid/bfs/pugv/c1.jpg",
+      "ctime": "1700000600",
+      "marks": [
+        "限时优惠",
+        "已购"
+      ],
+      "season_id": 77000001,
+      "status": "已完结",
+      "title": "示例课程"
+    },
+    {
+      "cover": null,
+      "ctime": null,
+      "marks": [],
+      "season_id": 77000002,
+      "status": null,
+      "title": "没有角标的课程"
+    }
+  ]
+}

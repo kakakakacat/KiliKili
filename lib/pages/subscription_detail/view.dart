@@ -2,9 +2,8 @@ import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/sub/sub/list.dart';
-import 'package:kilikili/models_new/sub/sub_detail/data.dart';
-import 'package:kilikili/models_new/sub/sub_detail/media.dart';
+import 'package:kilikili/services/rust/rust_user.dart' show SubItem;
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/pages/common/page_order/page_order_btn_mixin.dart';
 import 'package:kilikili/pages/subscription_detail/controller.dart';
 import 'package:kilikili/pages/subscription_detail/widget/sub_video_card.dart';
@@ -23,7 +22,7 @@ class SubDetailPage extends StatefulWidget {
   static Future<void>? toSubDetailPage(
     int id, {
     String? heroTag,
-    SubItemModel? subInfo,
+    SubItem? subInfo,
   }) {
     return Get.toNamed(
       '/subDetail',
@@ -39,7 +38,7 @@ class SubDetailPage extends StatefulWidget {
 class _SubDetailPageState extends State<SubDetailPage>
     with
         GridMixin,
-        PageOrderBtnMixin<SubDetailPage, SubDetailData, SubDetailItemModel> {
+        PageOrderBtnMixin<SubDetailPage, FavSeasonDetail, FavSeasonMedia> {
   @override
   late final SubDetailController controller;
 
@@ -82,7 +81,7 @@ class _SubDetailPageState extends State<SubDetailPage>
     );
   }
 
-  Widget _buildBody(LoadingState<List<SubDetailItemModel>?> loadingState) {
+  Widget _buildBody(LoadingState<List<FavSeasonMedia>?> loadingState) {
     return switch (loadingState) {
       Loading() => coverGridSkeleton,
       Success(:final response) =>
@@ -122,7 +121,7 @@ class _SubDetailPageState extends State<SubDetailPage>
     });
   }
 
-  Widget _buildAppBar(ThemeData theme, EdgeInsets padding, SubItemModel info) {
+  Widget _buildAppBar(ThemeData theme, EdgeInsets padding, SubItem info) {
     final style = TextStyle(
       height: 1,
       fontSize: 12.5,
@@ -194,9 +193,9 @@ class _SubDetailPageState extends State<SubDetailPage>
                     ),
                     GestureDetector(
                       onTap: () =>
-                          Get.toNamed('/member?mid=${info.upper!.mid}'),
+                          Get.toNamed('/member?mid=${info.upperMid}'),
                       child: Text(
-                        info.upper!.name!,
+                        info.upperName ?? '',
                         style: TextStyle(color: theme.colorScheme.primary),
                       ),
                     ),
@@ -204,7 +203,7 @@ class _SubDetailPageState extends State<SubDetailPage>
                     Text('共${info.mediaCount}条视频', style: style),
                     const SizedBox(height: 4),
                     Text(
-                      '${NumUtils.numFormat(info.viewCount ?? info.cntInfo?.play)}次播放',
+                      '${NumUtils.numFormat(info.viewCount ?? info.playCount)}次播放',
                       style: style,
                     ),
                   ],

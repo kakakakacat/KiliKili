@@ -10,7 +10,7 @@ import 'package:kilikili/common/widgets/keep_alive_wrapper.dart';
 import 'package:kilikili/common/widgets/scroll_physics.dart'
     show tabBarScrollPhysics;
 import 'package:kilikili/common/widgets/stat/stat.dart';
-import 'package:kilikili/http/fav.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/common/episode_panel_type.dart';
@@ -708,10 +708,8 @@ class _EpisodePanelState extends State<EpisodePanel>
   }
 
   Future<void> _onFavSeason(bool isFav) async {
-    final res = await FavHttp.seasonFav(
-      isFav: isFav,
-      seasonId: _seasonId,
-    );
+    // isFav 是**当前**状态，目标是它的反面。
+    final res = await RustFav.favSeason(seasonId: _seasonId, fav: !isFav);
     if (res.isSuccess) {
       _favState!.toggle();
       _ugcController.seasonFavState[_seasonId] = !isFav;

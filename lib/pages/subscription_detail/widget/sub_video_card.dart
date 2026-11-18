@@ -2,7 +2,7 @@ import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/http/search.dart';
 import 'package:kilikili/models/common/stat_type.dart';
-import 'package:kilikili/models_new/sub/sub_detail/media.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/utils/date_utils.dart';
 import 'package:kilikili/utils/duration_utils.dart';
 import 'package:kilikili/utils/page_utils.dart';
@@ -12,7 +12,7 @@ import 'package:material_ui/material_ui.dart';
 class SubVideoCardH extends StatelessWidget {
   const SubVideoCardH({super.key, required this.videoItem, this.searchType});
 
-  final SubDetailItemModel videoItem;
+  final FavSeasonMedia videoItem;
   final int? searchType;
 
   Future<void> _open() async {
@@ -46,8 +46,8 @@ class SubVideoCardH extends StatelessWidget {
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         topStats: [
-          (StatType.play, videoItem.cntInfo?.play),
-          (StatType.danmaku, videoItem.cntInfo?.danmaku),
+          (StatType.play, videoItem.playCount),
+          (StatType.danmaku, videoItem.danmakuCount),
         ],
         topDuration: (videoItem.duration ?? 0) > 0
             ? DurationUtils.formatDuration(videoItem.duration)

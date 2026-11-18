@@ -1,14 +1,14 @@
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/select_mask.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
-import 'package:kilikili/models_new/fav/fav_pgc/list.dart';
-import 'package:kilikili/pages/common/multi_select/base.dart';
+import 'package:kilikili/pages/fav/pgc/controller.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
-class FavPgcItem extends StatelessWidget {
-  const FavPgcItem({
+class FavPgcCard extends StatelessWidget {
+  const FavPgcCard({
     super.key,
     required this.item,
     required this.ctr,
@@ -16,8 +16,8 @@ class FavPgcItem extends StatelessWidget {
     required this.onUpdateStatus,
   });
 
-  final FavPgcItemModel item;
-  final MultiSelectBase ctr;
+  final FavPgcItem item;
+  final FavPgcController ctr;
   final VoidCallback onSelect;
   final VoidCallback onUpdateStatus;
 
@@ -31,7 +31,7 @@ class FavPgcItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.of(context);
-    final episode = item.newEp?.indexShow;
+    final episode = item.newEpIndexShow;
     final renewal = item.isFinish == 0 ? item.renewalTime : null;
     final details = [
       if (episode != null && episode.isNotEmpty) episode,
@@ -56,7 +56,7 @@ class FavPgcItem extends StatelessWidget {
           PBadge(text: item.badge, top: 6, right: 6),
         ],
         foregroundOverlays: [
-          Positioned.fill(child: selectMask(colorScheme, item.checked)),
+          Positioned.fill(child: selectMask(colorScheme, ctr.isChecked(item))),
         ],
         metaBuilder: details.isEmpty
             ? null

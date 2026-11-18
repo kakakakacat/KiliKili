@@ -1,0 +1,60 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "has_more": true,
+    "info": {
+      "id": 2101,
+      "fid": 21,
+      "mid": 800000601,
+      "attr": 0,
+      "title": "默认收藏夹",
+      "cover": "https://example.invalid/bfs/archive/a1.jpg",
+      "upper": { "mid": 800000601, "name": "示例用户", "face": "https://example.invalid/bfs/face/u1.jpg" },
+      "intro": "",
+      "fav_state": 0,
+      "media_count": 37
+    },
+    "medias": [
+      {
+        "id": 110000001,
+        "type": 2,
+        "title": "示例稿件",
+        "cover": "https://example.invalid/bfs/archive/m1.jpg",
+        "intro": "示例简介",
+        "page": 1,
+        "duration": 213,
+        "upper": { "mid": 800000602, "name": "示例作者", "face": "https://example.invalid/bfs/face/u2.jpg" },
+        "attr": 0,
+        "cnt_info": { "collect": 10, "play": 1024, "danmaku": 8, "vt": 0 },
+        "link": "bilibili://video/110000001",
+        "ctime": 1700000100,
+        "pubtime": 1700000101,
+        "fav_time": 1700000102,
+        "bv_id": "BV1xx411c7XX",
+        "bvid": "BV1xx411c7XX",
+        "ugc": { "first_cid": 220000001 }
+      },
+      {
+        "id": 330000001,
+        "type": 24,
+        "title": "示例番剧",
+        "cover": "https://example.invalid/bfs/archive/m2.jpg",
+        "intro": "第 1 话",
+        "duration": 0,
+        "attr": 0,
+        "fav_time": 1700000200,
+        "ogv": { "type_name": "番剧", "season_id": 44000001, "type_id": 1 }
+      },
+      {
+        "id": 110000002,
+        "type": 2,
+        "title": "已失效稿件",
+        "attr": 9,
+        "fav_time": 1700000300,
+        "bv_id": "BV1yy411c7YY"
+      }
+    ]
+  }
+}

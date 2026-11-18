@@ -1,12 +1,10 @@
-import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/fav/fav_topic/data.dart';
-import 'package:kilikili/models_new/fav/fav_topic/topic_item.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 class FavTopicController
-    extends CommonListController<FavTopicData, FavTopicItem> {
+    extends CommonListController<FavTopicList, FavTopicItem> {
   int? total;
 
   @override
@@ -23,9 +21,9 @@ class FavTopicController
   }
 
   @override
-  List<FavTopicItem>? getDataList(FavTopicData response) {
-    total = response.topicList?.pageInfo?.total;
-    return response.topicList?.topicItems;
+  List<FavTopicItem>? getDataList(FavTopicList response) {
+    total = response.total;
+    return response.items;
   }
 
   @override
@@ -35,11 +33,11 @@ class FavTopicController
   }
 
   @override
-  Future<LoadingState<FavTopicData>> customGetData() =>
-      FavHttp.favTopic(page: page);
+  Future<LoadingState<FavTopicList>> customGetData() =>
+      RustFav.favTopic(page: page);
 
   Future<void> onRemove(int index, int id) async {
-    final res = await FavHttp.delFavTopic(id);
+    final res = await RustFav.favTopicWrite(topicId: id, fav: false);
     if (res.isSuccess) {
       loadingState
         ..value.data!.removeAt(index)

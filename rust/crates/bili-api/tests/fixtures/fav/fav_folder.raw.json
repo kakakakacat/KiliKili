@@ -1,0 +1,21 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "id": 2104,
+    "fid": 24,
+    "mid": 800000601,
+    "attr": 0,
+    "title": "刚建好的收藏夹",
+    "cover": "",
+    "upper": {
+      "mid": 800000601,
+      "name": "示例用户",
+      "face": "https://example.invalid/bfs/face/u1.jpg"
+    },
+    "intro": "简介",
+    "fav_state": 0,
+    "media_count": 0
+  }
+}

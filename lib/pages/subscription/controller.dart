@@ -1,15 +1,14 @@
-import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/sub/sub/list.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
-import 'package:kilikili/services/rust/rust_user.dart' show RustUser, SubList;
-import 'package:kilikili/services/rust/sub_compat.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
+import 'package:kilikili/services/rust/rust_user.dart'
+    show RustUser, SubItem, SubList;
 import 'package:kilikili/utils/accounts.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
-class SubController extends CommonListController<SubList, SubItemModel> {
+class SubController extends CommonListController<SubList, SubItem> {
   late final account = Accounts.main;
 
   @override
@@ -28,7 +27,7 @@ class SubController extends CommonListController<SubList, SubItemModel> {
   }
 
   // 取消订阅
-  void cancelSub(SubItemModel subFolderItem) {
+  void cancelSub(SubItem subFolderItem) {
     showDialog(
       context: Get.context!,
       builder: (context) => AlertDialog(
@@ -44,9 +43,9 @@ class SubController extends CommonListController<SubList, SubItemModel> {
           ),
           TextButton(
             onPressed: () async {
-              final res = await FavHttp.cancelSub(
+              final res = await RustFav.cancelSub(
                 id: subFolderItem.id!,
-                type: subFolderItem.type!,
+                type: subFolderItem.kind!,
               );
               if (res.isSuccess) {
                 loadingState
@@ -66,13 +65,11 @@ class SubController extends CommonListController<SubList, SubItemModel> {
   }
 
   @override
-  List<SubItemModel>? getDataList(SubList response) {
+  List<SubItem>? getDataList(SubList response) {
     if (response.hasMore == false) {
       isEnd = true;
     }
-    // 还原成 `SubItemModel`：合集详情页那条接口还在 Dart，两边喂同一批
-    // 界面，见 `lib/services/rust/sub_compat.dart`。
-    return response.list.map((e) => e.toItemModel()).toList();
+    return response.list;
   }
 
   @override

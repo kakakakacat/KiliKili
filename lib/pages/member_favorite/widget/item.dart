@@ -1,7 +1,7 @@
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
-import 'package:kilikili/models_new/space/space_fav/list.dart';
+import 'package:kilikili/services/rust/rust_user.dart' show SubItem;
 import 'package:kilikili/pages/subscription_detail/view.dart';
 import 'package:kilikili/utils/bili_utils.dart';
 import 'package:kilikili/utils/num_utils.dart';
@@ -13,17 +13,17 @@ import 'package:material_ui/material_ui.dart';
 class MemberFavItem extends StatelessWidget {
   const MemberFavItem({super.key, required this.item, this.onDelete});
 
-  final SpaceFavItemModel item;
+  final SubItem item;
   final ValueChanged<bool?>? onDelete;
 
   @override
   Widget build(BuildContext context) {
     void onLongPress() => imageSaveDialog(title: item.title, cover: item.cover);
-    final info = item.type == 0
+    final info = item.kind == 0
         ? '${item.mediaCount}个内容 · ${BiliUtils.isPublicFavText(item.attr)}'
-        : item.type == 11
-        ? '${item.mediaCount}个内容 · ${item.upper?.name}'
-        : item.type == 21
+        : item.kind == 11
+        ? '${item.mediaCount}个内容 · ${item.upperName}'
+        : item.kind == 21
         ? '${item.mediaCount}个视频 · ${NumUtils.numFormat(item.viewCount)}播放'
         : '${item.mediaCount}个内容';
     return Padding(
@@ -31,11 +31,11 @@ class MemberFavItem extends StatelessWidget {
       child: CoverScrimCard(
         cover: item.cover,
         title: item.title ?? '',
-        upName: item.type == 21 ? item.upper?.name : null,
+        upName: item.kind == 21 ? item.upperName : null,
         coverOverlays: [
-          if (item.type == 21)
+          if (item.kind == 21)
             const PBadge(right: 6, top: 6, text: '合集')
-          else if (item.type == 11)
+          else if (item.kind == 11)
             const PBadge(right: 6, top: 6, text: '收藏夹'),
         ],
         metaBuilder: (context, colors) => [
@@ -50,7 +50,7 @@ class MemberFavItem extends StatelessWidget {
         ],
         onTap: () async {
           if (item.state == 1) return;
-          if (item.type == 0 || item.type == 11) {
+          if (item.kind == 0 || item.kind == 11) {
             final isDeleted = await Get.toNamed(
               '/favDetail',
               parameters: {

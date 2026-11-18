@@ -3,7 +3,7 @@ import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/view_sliver_safe_area.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/sub/sub/list.dart';
+import 'package:kilikili/services/rust/rust_user.dart' show SubItem;
 import 'package:kilikili/pages/subscription/controller.dart';
 import 'package:kilikili/pages/subscription/widgets/item.dart';
 import 'package:kilikili/utils/grid.dart';
@@ -40,7 +40,7 @@ class _SubPageState extends State<SubPage> with GridMixin {
     );
   }
 
-  Widget _buildBody(LoadingState<List<SubItemModel>?> loadingState) {
+  Widget _buildBody(LoadingState<List<SubItem>?> loadingState) {
     return switch (loadingState) {
       Loading() => coverGridSkeleton,
       Success(:final response) =>
@@ -52,7 +52,7 @@ class _SubPageState extends State<SubPage> with GridMixin {
                     _subController.onLoadMore();
                   }
                   final item = response[index];
-                  return SubItem(
+                  return SubFolderCard(
                     item: item,
                     cancelSub: () => _subController.cancelSub(item),
                   );

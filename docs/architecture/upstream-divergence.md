@@ -257,6 +257,16 @@ cookie 存进账号体系」。同步上游时 `lib/http/login.dart` 的任何�
 通过后的一次性 parity 同 PR 删除。动态两条留给 #150，收藏课堂共享模型
 仍有生产者，投稿卡片仅保留无解析的视图适配。数字不含工具改写的编辑器配置。
 
+修订：2026-11-18（material_ui 1.11.1 + 上游补丁更新 #168）——按 §6 实测：
+修改上游文件 **824 → 834**，其中实质改动 **344 → 354**、仅重命名仍 **480**；
+新增 **713**、删除 **271** 不变。新进「修改」桶的 10 个全部来自 cherry-pick
+上游 `915276c87 update patches`（`lib/scripts/material/` 下 8 个 patch +
+`dyn_tab_bar.dart`）。**这 10 个是上游自己的内容，不是本 fork 的分歧**——
+§6 以「最近一次上游合并的 tip」为基准，cherry-pick 进来的上游改动会被记成
+我们的改动，下次真正 merge 上游后它们会自动归零。
+同日 cherry-pick 的另三个上游 commit（`f61cdab35` `3bfb84e37` `217fb54f5`）
+未改变任何数字——那几个文件早已在「修改」桶里。
+
 ## 1. 基准
 
 ```
@@ -274,16 +284,17 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 | 类别 | 数量 |
 | --- | ---: |
-| 修改的上游既有文件 | **824** |
+| 修改的上游既有文件 | **834** |
 | &nbsp;&nbsp;其中：仅因包名重命名而改动 | **480** |
-| &nbsp;&nbsp;其中：有实质改动 | **344** |
-| 新增文件 | **712** |
+| &nbsp;&nbsp;其中：有实质改动 | **354** |
+| 新增文件 | **713** |
 | 删除文件 | **271** |
 
 「修改」总数一路下降（935 → 909 → 897 → 891 → 887），部分文件是因迁移被
 删除，从 M 转到了 D。#108 的界面改动一度把它顶回 892；合入 #111 的关注/
 粉丝切片后是 890，#140 的登录修复使其回到 891，S14 登录切片再删掉四个后
-是 887；S11b 后为 882，S6/S7 后为 824。删除数到 271，新增来源主要是
+是 887；S11b 后为 882，S6/S7 后为 824；#168 cherry-pick 上游补丁更新后为 834
+（那 10 个是上游自己的内容，见顶部 2026-11-18 修订条）。删除数到 271，新增来源主要是
 空间、个人信息、关注分组、历史与稍后再看的旧模型。
 
 ## 3. 包名重命名：分叉面的主体
@@ -301,7 +312,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 ## 4. 有实质改动的上游文件
 
-344 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
+354 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
 见 §4.4，其余改动逐个列在 §4.3。
 
 ### 4.1 typed 直连迁移触及的上游文件
@@ -376,6 +387,7 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | `lib/common/widgets/floating_navigation_bar.dart`、`lib/pages/main/view.dart` | #122 | 三种首页底栏共用玻璃背景、胶囊裁切、4px 内容内边距与边缘留白；安全区仅在胶囊外处理，分栏中心对齐选中背景，图标与文字组合居中，降低底色与高光的不透明度；保留导航与隐藏行为 |
 | `lib/pages/main/controller.dart` | #128 | 底部导航在页面间按方向滑动 240 毫秒；侧栏仍直接切换 |
 | `lib/scripts/double_tap_gesture.patch` | #143 | 给 Flutter SDK 的 `DoubleTapGestureRecognizer` 加一个 `doubleTapTimeout` 参数（默认仍为 `kDoubleTapTimeout`，只有播放器选择性调短）；**改了它就多一个只在打过补丁的 SDK 上才存在的符号**，见 AGENTS §5 |
+| `lib/scripts/material/*.patch`（8 个）、`lib/common/widgets/flutter/dyn_tab_bar.dart` | #168 | cherry-pick 上游 `915276c87`，把补丁对齐到 `material_ui` 1.11.x；`tabs.patch` 新引入 `minimumIndicatorWidth`，**又一个只在打过补丁的包里存在的符号**。补丁与 `material_ui` 版本强绑定：1.10.0 上 `scaffold.patch` 打不上，必须连同 `pubspec.lock` 的版本一起动 |
 | `lib/common/widgets/expandable.dart` | #141 | 展开/折叠时长 300 → 180ms，抽成共用常量 `kIntroExpandDuration`，并新增标题旁的三角指示 `ExpandIndicator` |
 | `lib/http/video.dart` | `f321aea73` `43827d42f` `9385cf06d` 及 S3 | 视频详情与取流接入 Rust（**仍是 JSON 往返 + 开关**，见 #79）；S3 又从中删去了五条只读接口，见 §4.1 |
 | `lib/http/search.dart` | `130b9f533`、S9 | 搜索建议接入 Rust；S9 之后整条搜索是 typed 直连、**无开关无回退**，见 §4.1 |

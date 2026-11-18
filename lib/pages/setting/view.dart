@@ -220,8 +220,21 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   Future<void> _removeAccounts(Set<LoginAccount> accounts) async {
+    // 登出 main 会让首页与「我的」入口切回未登录态（`Accounts.deleteAll` 里
+    // 走 `LoginUtils.onLogoutMain`，重置 AccountService 的 isLogin/face）。
+    // 停在设置页就看不到这个变化，所以退回首页（#164）。
+    //
+    // 刻意只在 main 变成未登录时跳转：登出的若只是 video / heartbeat 账号，
+    // 首页上什么都不会变，这时把人弹出设置页反而像是误操作。
+    final wasMainLogin = Accounts.main.isLogin;
     await Accounts.deleteAll(accounts);
-    if (mounted) _noAccount.value = Accounts.account.isEmpty;
+    if (!mounted) return;
+    _noAccount.value = Accounts.account.isEmpty;
+    if (wasMainLogin && !Accounts.main.isLogin) {
+      // 用 until 而不是 back：设置页之上可能还堆着二级设置页，逐级 pop 会把
+      // 登出前的页面再显示一遍，返回键也可能退回这里。
+      Get.until((route) => route.isFirst);
+    }
   }
 
   static Future<LoginAccount?> _logoutWrapper(LoginAccount account) async {

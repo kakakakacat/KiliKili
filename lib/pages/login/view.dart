@@ -1,5 +1,6 @@
 import 'package:kilikili/common/constants.dart';
 import 'package:kilikili/common/dial_prefix.dart';
+import 'package:kilikili/common/widgets/capsule_tab.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
@@ -42,6 +43,44 @@ class _LoginPageState extends State<LoginPage> {
     _loginPageCtr.didChangeDependencies(context);
   }
 
+  /// 主操作：提交登录。填充胶囊，一屏只会有一个（#162）。
+  ///
+  /// 这里不设 `shape`：M3 的 FilledButton 默认就是 [StadiumBorder]，再写一遍
+  /// 只会在以后换主题时多一处要同步的地方。
+  Widget _primaryAction({
+    required VoidCallback? onPressed,
+    required IconData icon,
+    required String label,
+  }) => FilledButton.icon(
+    onPressed: onPressed,
+    icon: Icon(icon, size: 20),
+    label: Text(label),
+    style: FilledButton.styleFrom(
+      minimumSize: const Size(160, 48),
+      padding: const EdgeInsets.symmetric(horizontal: 28),
+      textStyle: const TextStyle(fontWeight: FontWeight.w600),
+    ),
+  );
+
+  /// 次操作：获取验证码、刷新二维码、保存至相册等。tonal 胶囊，比主操作轻一级。
+  ///
+  /// 禁用态（如验证码冷却）刻意不自绘：tonal 的默认禁用色本身就够暗，自己调
+  /// 反而会和别处的禁用按钮对不上。
+  Widget _secondaryAction({
+    required VoidCallback? onPressed,
+    required IconData icon,
+    required String label,
+  }) => FilledButton.tonalIcon(
+    onPressed: onPressed,
+    icon: Icon(icon, size: 18),
+    label: Text(label),
+    style: FilledButton.styleFrom(
+      minimumSize: const Size(0, 40),
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    ),
+  );
+
   Widget loginByQRCode(ThemeData theme) {
     return Column(
       children: [
@@ -58,15 +97,19 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
         const SizedBox(height: 5),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        // 用 Wrap 而不是 Row：三个胶囊比原来的文字按钮宽，窄屏上 Row 会直接
+        // 溢出报黄黑条（#162 验收第二条）。
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 8,
+          runSpacing: 8,
           children: [
-            TextButton.icon(
+            _secondaryAction(
               onPressed: _loginPageCtr.refreshQRCode,
-              icon: const Icon(Icons.refresh),
-              label: const Text('刷新二维码'),
+              icon: Icons.refresh,
+              label: '刷新二维码',
             ),
-            TextButton.icon(
+            _secondaryAction(
               onPressed: () async {
                 SmartDialog.showLoading(msg: '正在生成截图');
                 final boundary =
@@ -81,17 +124,17 @@ class _LoginPageState extends State<LoginPage> {
                     "${Constants.appName}_loginQRCode_${_loginPageCtr.codeInfo.value.data.authCode.hashCode.toUnsigned(32).toRadixString(16)}";
                 ImageUtils.saveByteImg(bytes: pngBytes, fileName: picName);
               },
-              icon: const Icon(Icons.save),
-              label: const Text('保存至相册'),
+              icon: Icons.save_alt_outlined,
+              label: '保存至相册',
             ),
             if (kDebugMode || PlatformUtils.isMobile)
-              TextButton.icon(
+              _secondaryAction(
                 onPressed: () => PageUtils.launchURL(
                   'bilibili://browser?url=${Uri.encodeComponent(_loginPageCtr.codeInfo.value.data.url)}',
                   mode: LaunchMode.externalNonBrowserApplication,
                 ),
-                icon: const Icon(Icons.open_in_browser_outlined),
-                label: const Text('其他应用打开'),
+                icon: Icons.open_in_browser_outlined,
+                label: '其他应用打开',
               ),
           ],
         ),
@@ -204,10 +247,10 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ),
-        OutlinedButton.icon(
+        _primaryAction(
           onPressed: _loginPageCtr.loginByCookie,
-          icon: const Icon(Icons.login),
-          label: const Text('登录'),
+          icon: Icons.login,
+          label: '登录',
         ),
       ],
     );
@@ -276,7 +319,10 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const Text('显示密码'),
             const Spacer(),
-            TextButton(
+            // 第三层级：刻意留成无背景的文字按钮，只补一个图标。做成胶囊会和
+            // 下面的「登录」抢，而它本就是条出口链接，不是这页要你点的操作。
+            TextButton.icon(
+              icon: const Icon(Icons.help_outline, size: 18),
               onPressed: () {
                 //https://passport.bilibili.com/h5-app/passport/login/findPassword
                 //https://passport.bilibili.com/passport/findPassword
@@ -334,15 +380,15 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 );
               },
-              child: const Text('忘记密码'),
+              label: const Text('忘记密码'),
             ),
             const SizedBox(width: 20),
           ],
         ),
-        OutlinedButton.icon(
+        _primaryAction(
           onPressed: _loginPageCtr.loginByPassword,
-          icon: const Icon(Icons.login),
-          label: const Text('登录'),
+          icon: Icons.login,
+          label: '登录',
         ),
         const SizedBox(height: 20),
         Padding(
@@ -466,30 +512,39 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 Obx(
-                  () => TextButton.icon(
-                    onPressed: _loginPageCtr.smsSendCooldown > 0
-                        ? null
-                        : () {
-                            _loginPageCtr.smsCodeFocusNode.requestFocus();
-                            _loginPageCtr.sendSmsCode();
-                          },
-                    icon: const Icon(Icons.send),
-                    label: Text(
-                      _loginPageCtr.smsSendCooldown > 0
-                          ? '等待${_loginPageCtr.smsSendCooldown}秒'
-                          : '获取验证码',
-                    ),
-                  ),
+                  () {
+                    final cooling = _loginPageCtr.smsSendCooldown > 0;
+                    return Padding(
+                      // 胶囊有背景色，贴着输入框下划线会糊成一块。
+                      padding: const EdgeInsets.only(left: 8, bottom: 4),
+                      child: _secondaryAction(
+                        onPressed: cooling
+                            ? null
+                            : () {
+                                _loginPageCtr.smsCodeFocusNode.requestFocus();
+                                _loginPageCtr.sendSmsCode();
+                              },
+                        // 冷却中换成表盘图标：光看文字「等待 N 秒」要读一遍才
+                        // 知道按不动，图标一眼就能分辨（#162 验收第二条）。
+                        icon: cooling
+                            ? Icons.hourglass_bottom_outlined
+                            : Icons.send_outlined,
+                        label: cooling
+                            ? '等待${_loginPageCtr.smsSendCooldown}秒'
+                            : '获取验证码',
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
           ),
         ),
         const SizedBox(height: 20),
-        OutlinedButton.icon(
+        _primaryAction(
           onPressed: _loginPageCtr.loginBySmsCode,
-          icon: const Icon(Icons.login),
-          label: const Text('登录'),
+          icon: Icons.login,
+          label: '登录',
         ),
         const SizedBox(height: 20),
         Padding(
@@ -509,6 +564,40 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   late EdgeInsets padding;
+
+  /// 四个登录方式入口。竖屏在标题下占一行，横屏收进 AppBar 右侧，样式同一份。
+  ///
+  /// 选中态由胶囊本身表达，所以把 TabBar 自己的下划线指示器与分隔线去掉；
+  /// `isScrollable` 是为了窄屏——四个胶囊排不下时横向滚动，而不是压扁文字。
+  Widget _methodTabBar() => TabBar(
+    controller: _loginPageCtr.tabController,
+    isScrollable: true,
+    tabAlignment: TabAlignment.center,
+    indicator: const BoxDecoration(),
+    indicatorSize: TabBarIndicatorSize.tab,
+    dividerHeight: 0,
+    dividerColor: Colors.transparent,
+    labelPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+    splashBorderRadius: const BorderRadius.all(Radius.circular(24)),
+    tabs: [
+      for (final (index, (icon, label)) in _loginMethods.indexed)
+        Tab(
+          child: CapsuleTab(
+            controller: _loginPageCtr.tabController,
+            index: index,
+            icon: icon,
+            label: label,
+          ),
+        ),
+    ],
+  );
+
+  static const List<(IconData, String)> _loginMethods = [
+    (Icons.password, '密码'),
+    (Icons.sms_outlined, '短信'),
+    (Icons.qr_code, '扫码'),
+    (Icons.cookie_outlined, 'Cookie'),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -531,40 +620,7 @@ class _LoginPageState extends State<LoginPage> {
               Expanded(
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: TabBar(
-                    isScrollable: true,
-                    dividerHeight: 0,
-                    tabs: const [
-                      Tab(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [Icon(Icons.password), Text(' 密码')],
-                        ),
-                      ),
-                      Tab(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [Icon(Icons.sms_outlined), Text(' 短信')],
-                        ),
-                      ),
-                      Tab(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [Icon(Icons.qr_code), Text(' 扫码')],
-                        ),
-                      ),
-                      Tab(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.cookie_outlined),
-                            Text(' Cookie'),
-                          ],
-                        ),
-                      ),
-                    ],
-                    controller: _loginPageCtr.tabController,
-                  ),
+                  child: _methodTabBar(),
                 ),
               ),
           ],
@@ -572,16 +628,7 @@ class _LoginPageState extends State<LoginPage> {
       ),
       body: Column(
         children: [
-          if (!isLandscape)
-            TabBar(
-              tabs: const [
-                Tab(icon: Icon(Icons.password), text: '密码'),
-                Tab(icon: Icon(Icons.sms_outlined), text: '短信'),
-                Tab(icon: Icon(Icons.qr_code), text: '扫码'),
-                Tab(icon: Icon(Icons.cookie_outlined), text: 'Cookie'),
-              ],
-              controller: _loginPageCtr.tabController,
-            ),
+          if (!isLandscape) _methodTabBar(),
           Expanded(
             child: NotificationListener<ScrollStartNotification>(
               onNotification: (notification) {

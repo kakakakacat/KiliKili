@@ -169,11 +169,7 @@ mixin FavMixin on TripleMixin {
   /// final 的——而勾选本来也不是协议的一部分，它是界面状态（AGENTS.md §2）。
   final Set<int> selectedFavIds = <int>{};
 
-  /// 面板上新建出来的收藏夹 id。
-  ///
-  /// 它们的 `mediaCount` 来自新建时的响应（0），而界面要显示「1 个内容」
-  /// ——那个 1 是本次勾选带来的，和已有夹子的 +1 是同一回事，所以统一由
-  /// [favFolderDisplayCount] 算，不单独记。
+  /// 快速收藏落到哪个夹子。查一次之后缓存，避免每次都翻一遍列表。
   int? quickFavId;
   late final enableQuickFav = Pref.enableQuickFav;
   final Rxn<FavFolderList> favFolderData = Rxn<FavFolderList>();

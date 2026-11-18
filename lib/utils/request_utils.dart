@@ -581,8 +581,10 @@ abstract final class RequestUtils {
                 TextButton(
                   onPressed: () {
                     if (checkedId != null) {
-                      // 倒序：界面上是从上往下勾的，而服务端按发过去的顺序
-                      // 逐条插入目标夹子，正序发会把顺序整体翻过来。
+                      // 倒序照搬基线（`allChecked.toList().reversed`）。
+                      // 它为什么反着发没有记载，多半是因为服务端按收到的
+                      // 顺序逐条插入目标夹子；没有验证过，所以**不要顺手
+                      // 改成正序**——改错了不报错，只是目标夹子里的顺序反了。
                       final removeList = ctr.allChecked.toList().reversed
                           .toList();
                       SmartDialog.showLoading();

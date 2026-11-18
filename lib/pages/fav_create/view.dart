@@ -5,7 +5,7 @@ import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/view_insets_safe_area.dart';
-import 'package:kilikili/http/fav.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/msg.dart';
 import 'package:kilikili/utils/bili_utils.dart';
@@ -57,7 +57,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
 
   void _getFolderInfo() {
     _errMsg = null;
-    FavHttp.favFolderInfo(mediaId: _mediaId).then((res) {
+    RustFav.favFolderInfo(_mediaId!).then((res) {
       if (res case Success(:final response)) {
         _titleController.text = response.title;
         _introController.text = response.intro ?? '';
@@ -90,7 +90,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
                 SmartDialog.showToast('名称不能为空');
                 return;
               }
-              FavHttp.addOrEditFolder(
+              RustFav.addOrEditFolder(
                 isAdd: _mediaId == null,
                 mediaId: _mediaId,
                 title: _titleController.text,

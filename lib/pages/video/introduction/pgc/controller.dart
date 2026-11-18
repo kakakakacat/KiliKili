@@ -3,7 +3,7 @@ import 'dart:math' as math;
 
 import 'package:kilikili/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:kilikili/http/constants.dart';
-import 'package:kilikili/http/fav.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/search.dart';
 import 'package:kilikili/http/video.dart';
@@ -544,9 +544,8 @@ class PgcIntroController extends CommonIntroController {
   }
 
   Future<void> onFavPugv(bool isFav) async {
-    final res = isFav
-        ? await FavHttp.delFavPugv(seasonId)
-        : await FavHttp.addFavPugv(seasonId);
+    // isFav 是**当前**状态，目标是它的反面。
+    final res = await RustFav.favPugvWrite(seasonId: seasonId, fav: !isFav);
     if (res.isSuccess) {
       this.isFav.toggle();
       SmartDialog.showToast('${isFav ? '取消' : ''}收藏成功');

@@ -3,18 +3,18 @@ import 'package:kilikili/common/widgets/button/icon_button.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/stat/stat.dart';
 import 'package:kilikili/models/common/stat_type.dart';
-import 'package:kilikili/models_new/fav/fav_article/item.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/pages/article/view.dart';
 import 'package:material_ui/material_ui.dart';
 
-class FavArticleItem extends StatelessWidget {
-  const FavArticleItem({
+class FavArticleCard extends StatelessWidget {
+  const FavArticleCard({
     super.key,
     required this.item,
     required this.onDelete,
   });
 
-  final FavArticleItemModel item;
+  final FavArticleItem item;
   final VoidCallback onDelete;
 
   @override
@@ -27,7 +27,7 @@ class FavArticleItem extends StatelessWidget {
         children: [
           InkWell(
             onTap: () => ArticlePage.toArticlePage(
-              id: item.opusId!.toString(),
+              id: item.opusId!,
               type: .opus,
             ),
             child: Padding(
@@ -38,13 +38,13 @@ class FavArticleItem extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (item.cover != null) ...[
+                  if (item.coverUrl != null) ...[
                     AspectRatio(
                       aspectRatio: Style.aspectRatio,
                       child: LayoutBuilder(
                         builder: (context, boxConstraints) {
                           return NetworkImgLayer(
-                            src: item.cover!.url,
+                            src: item.coverUrl,
                             width: boxConstraints.maxWidth,
                             height: boxConstraints.maxHeight,
                           );
@@ -71,7 +71,7 @@ class FavArticleItem extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          item.author!.name!,
+                          item.authorName ?? '',
                           maxLines: 1,
                           style: TextStyle(
                             fontSize: 13,
@@ -84,7 +84,7 @@ class FavArticleItem extends StatelessWidget {
                           children: [
                             StatWidget(
                               type: StatType.like,
-                              value: item.stat!.like,
+                              value: item.like,
                               color: theme.colorScheme.outline,
                             ),
                             Text(

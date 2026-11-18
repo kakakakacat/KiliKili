@@ -1,12 +1,10 @@
-import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/fav/fav_article/data.dart';
-import 'package:kilikili/models_new/fav/fav_article/item.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 class FavArticleController
-    extends CommonListController<FavArticleData, FavArticleItemModel> {
+    extends CommonListController<FavArticleList, FavArticleItem> {
   @override
   void onInit() {
     super.onInit();
@@ -14,7 +12,7 @@ class FavArticleController
   }
 
   @override
-  List<FavArticleItemModel>? getDataList(FavArticleData response) {
+  List<FavArticleItem>? getDataList(FavArticleList response) {
     if (response.hasMore == false) {
       isEnd = true;
     }
@@ -22,11 +20,11 @@ class FavArticleController
   }
 
   @override
-  Future<LoadingState<FavArticleData>> customGetData() =>
-      FavHttp.favArticle(page: page);
+  Future<LoadingState<FavArticleList>> customGetData() =>
+      RustFav.favArticle(page: page);
 
   Future<void> onRemove(int index, String id) async {
-    final res = await FavHttp.communityAction(opusId: id, action: 4);
+    final res = await RustFav.communityAction(opusId: id, action: 4);
     if (res.isSuccess) {
       loadingState
         ..value.data!.removeAt(index)

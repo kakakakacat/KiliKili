@@ -147,3 +147,25 @@ App 主机及 `bili-http-engine` / UA；小店保留 mall 主机、APP 签名查
 JSON 请求体及不带 csrf 的形状。小店虽用 POST，操作仍是幂等只读。
 空间 gRPC 投稿搜索与图文流保持原服务方法和分页字段；未设置的可选参数
 保持省略。请求形状由 Rust 单测约束，真实账号与网关行为仍需 Phase 2 验证。
+
+## 2026-11-18：收藏夹请求迁入 Rust（#58）
+
+`lib/http/fav.dart` 那 34 条接口的请求构造改由 Rust 负责，参数集、主机与
+固定常量沿用基线，不调整签名算法或协议版本。几处容易被当成 bug 而「顺手
+修正」的形状，原样保留并有测试钉住：
+
+- **`sortFav` / `sortFavFolder` 的 csrf 参与 APP 签名**。基线是把 csrf 放进
+  同一个 map 再 `AppSign.appSign(data)`，于是 `sign` 覆盖了它。注入点因此
+  从 `send_write` 前移到请求构造处（ADR-013 补充十三）。签名算法本身没改。
+- **笔记列表那两条 GET 带 csrf**，放在查询串里（ADR-013 补充十四）。
+- **图文收藏（`simple_action`）是 JSON 体、csrf 在查询串上**，而同一片其余
+  21 条写操作都是表单体、csrf 在体里。统一成表单会让 CI 全绿而真机上回一个
+  无从反推的业务错误码。
+- **个人空间收藏页伪装成移动端客户端**：`build` / `version` / `mobi_app`
+  / `statistics` 那一组参数，以及 `bili-http-engine: cronet` 与移动端 UA
+  两条头。少一个服务端会换一套分组回来，不报错。
+- **收藏夹封面用 `Uri.encodeFull` 而不是 `encodeComponent`**：它保留 `:/`
+  等 URL 结构字符，换成后者会把整条地址编成不可用的串。
+
+请求形状由 `bili-api::fav::write_tests` 与 `test/bridge/fav_bridge_test.dart`
+两头约束，真实账号与网关行为仍需 Phase 2 验证。

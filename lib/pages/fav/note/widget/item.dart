@@ -1,21 +1,21 @@
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/select_mask.dart';
-import 'package:kilikili/models_new/fav/fav_note/list.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/pages/fav/note/controller.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
-class FavNoteItem extends StatelessWidget {
-  const FavNoteItem({
+class FavNoteCard extends StatelessWidget {
+  const FavNoteCard({
     super.key,
     required this.item,
     required this.ctr,
     required this.onSelect,
   });
 
-  final FavNoteItemModel item;
+  final FavNote item;
   final FavNoteController ctr;
   final VoidCallback onSelect;
 
@@ -68,7 +68,7 @@ class FavNoteItem extends StatelessWidget {
                           Positioned.fill(
                             child: selectMask(
                               colorScheme,
-                              item.checked,
+                              ctr.isChecked(item),
                             ),
                           ),
                         ],

@@ -3,7 +3,7 @@ import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/fav/fav_note/list.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/pages/fav/note/controller.dart';
 import 'package:kilikili/pages/fav/note/widget/item.dart';
 import 'package:kilikili/pages/fav/pgc/pgc_layout.dart';
@@ -134,7 +134,7 @@ class _FavNoteChildPageState extends State<FavNoteChildPage>
     );
   }
 
-  Widget _buildBody(LoadingState<List<FavNoteItemModel>?> loadingState) {
+  Widget _buildBody(LoadingState<List<FavNote>?> loadingState) {
     return switch (loadingState) {
       Loading() => gridSkeleton,
       Success(:final response) =>
@@ -146,7 +146,7 @@ class _FavNoteChildPageState extends State<FavNoteChildPage>
                     _favNoteController.onLoadMore();
                   }
                   final item = response[index];
-                  return FavNoteItem(
+                  return FavNoteCard(
                     item: item,
                     ctr: _favNoteController,
                     onSelect: () => _favNoteController.onSelect(item),

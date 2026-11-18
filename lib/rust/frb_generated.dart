@@ -6,6 +6,7 @@
 import 'package:kilikili/rust/api/cover_scrim.dart';
 import 'package:kilikili/rust/api/danmaku.dart';
 import 'package:kilikili/rust/api/dynamic.dart';
+import 'package:kilikili/rust/api/fav.dart';
 import 'package:kilikili/rust/api/grpc.dart';
 import 'package:kilikili/rust/api/history.dart';
 import 'package:kilikili/rust/api/init.dart';
@@ -100,7 +101,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 1616881121;
+  int get rustContentHash => 1547026719;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -118,6 +119,14 @@ abstract class RustLibApi extends BaseApi {
     required PlatformInt64 kind,
   });
 
+  Future<FavFolderResult> crateApiFavAddFolder({
+    required FavContext context,
+    required String title,
+    required String intro,
+    required PlatformInt64 privacy,
+    required String cover,
+  });
+
   Future<WriteResult> crateApiRelationAddUsersToTags({
     required RelationContext context,
     required String fids,
@@ -132,6 +141,11 @@ abstract class RustLibApi extends BaseApi {
 
   List<CdnServiceEntry> crateApiPlaybackCdnServices();
 
+  Future<WriteResult> crateApiFavCleanFav({
+    required FavContext context,
+    required PlatformInt64 mediaId,
+  });
+
   Future<WriteResult> crateApiHistoryClearHistory({
     required HistoryContext context,
   });
@@ -141,6 +155,12 @@ abstract class RustLibApi extends BaseApi {
     required String bvid,
     required PlatformInt64 multiply,
     required PlatformInt64 selectLike,
+  });
+
+  Future<WriteResult> crateApiFavCommunityAction({
+    required FavContext context,
+    required String opusId,
+    required PlatformInt64 action,
   });
 
   CoverScrimStyle crateApiCoverScrimComputeCoverScrim({
@@ -153,6 +173,16 @@ abstract class RustLibApi extends BaseApi {
   Future<SubtitleConvert> crateApiSubtitleConvertSubtitle({
     required String body,
     required int format,
+  });
+
+  Future<WriteResult> crateApiFavCopyOrMoveFav({
+    required FavContext context,
+    required FavMoveMode mode,
+    required FavMoveTarget target,
+    PlatformInt64? srcMediaId,
+    required PlatformInt64 tarMediaId,
+    PlatformInt64? mid,
+    required String resources,
   });
 
   Future<String> crateApiInitCoreVersion();
@@ -210,6 +240,17 @@ abstract class RustLibApi extends BaseApi {
     required String kid,
   });
 
+  Future<WriteResult> crateApiFavDelNote({
+    required FavContext context,
+    required String ids,
+    required bool published,
+  });
+
+  Future<WriteResult> crateApiFavDeleteFolder({
+    required FavContext context,
+    required String mediaIds,
+  });
+
   Future<WriteResult> crateApiVideoWriteDislikeVideo({
     required AppWriteContext context,
     required String bvid,
@@ -246,7 +287,53 @@ abstract class RustLibApi extends BaseApi {
     String? reasonDesc,
   });
 
+  Future<FavFolderResult> crateApiFavEditFolder({
+    required FavContext context,
+    required PlatformInt64 mediaId,
+    required String title,
+    required String intro,
+    required PlatformInt64 privacy,
+    required String cover,
+  });
+
   CoverScrimStyle crateApiCoverScrimFallbackCoverScrim({required int tintRgb});
+
+  Future<WriteResult> crateApiFavFavArticle({
+    required FavContext context,
+    required PlatformInt64 id,
+    required bool fav,
+  });
+
+  Future<WriteResult> crateApiFavFavFolder({
+    required FavContext context,
+    required PlatformInt64 mediaId,
+    required bool fav,
+  });
+
+  Future<WriteResult> crateApiFavFavPugv({
+    required FavContext context,
+    required PlatformInt64 seasonId,
+    required bool fav,
+  });
+
+  Future<WriteResult> crateApiFavFavSeason({
+    required FavContext context,
+    required PlatformInt64 seasonId,
+    required bool fav,
+  });
+
+  Future<WriteResult> crateApiFavFavTopic({
+    required FavContext context,
+    required PlatformInt64 topicId,
+    required bool fav,
+  });
+
+  Future<WriteResult> crateApiFavFavVideo({
+    required FavContext context,
+    required String resources,
+    required String addIds,
+    required String delIds,
+  });
 
   Future<WriteResult> crateApiVideoWriteFeedDislike({
     required AppWriteContext context,
@@ -262,6 +349,11 @@ abstract class RustLibApi extends BaseApi {
     required String bvid,
     required PlatformInt64 cid,
     PlatformInt64? upMid,
+  });
+
+  Future<FavFolderListResult> crateApiFavFetchAllFavFolders({
+    required FavContext context,
+    required PlatformInt64 upMid,
   });
 
   Future<MusicDetailResult> crateApiMiscFetchBgmDetail({
@@ -329,6 +421,74 @@ abstract class RustLibApi extends BaseApi {
     required PlatformInt64 page,
     required PlatformInt64 pageSize,
     String? orderType,
+  });
+
+  Future<FavArticleListResult> crateApiFavFetchFavArticles({
+    required FavContext context,
+    required PlatformInt64 page,
+  });
+
+  Future<FavDetailResult> crateApiFavFetchFavDetail({
+    required FavContext context,
+    required PlatformInt64 mediaId,
+    required PlatformInt64 pn,
+    required PlatformInt64 ps,
+    required String keyword,
+    required FavOrder order,
+    required PlatformInt64 kind,
+    required bool pageDesc,
+  });
+
+  Future<FavFolderResult> crateApiFavFetchFavFolderInfo({
+    required FavContext context,
+    required PlatformInt64 mediaId,
+  });
+
+  Future<FavFolderListResult> crateApiFavFetchFavFolders({
+    required FavContext context,
+    required PlatformInt64 upMid,
+    required PlatformInt64 pn,
+    required PlatformInt64 ps,
+  });
+
+  Future<SubListResult> crateApiFavFetchFavFoldersAsSubs({
+    required FavContext context,
+    required PlatformInt64 upMid,
+    required PlatformInt64 pn,
+    required PlatformInt64 ps,
+  });
+
+  Future<FavNoteListResult> crateApiFavFetchFavNotes({
+    required FavContext context,
+    required PlatformInt64 page,
+    required bool published,
+  });
+
+  Future<FavPgcListResult> crateApiFavFetchFavPgc({
+    required FavContext context,
+    required PlatformInt64 vmid,
+    required PlatformInt64 kind,
+    PlatformInt64? followStatus,
+    required PlatformInt64 pn,
+  });
+
+  Future<FavPugvListResult> crateApiFavFetchFavPugv({
+    required FavContext context,
+    required PlatformInt64 mid,
+    required PlatformInt64 pn,
+  });
+
+  Future<FavSeasonDetailResult> crateApiFavFetchFavSeasonDetail({
+    required FavContext context,
+    required PlatformInt64 seasonId,
+    required PlatformInt64 pn,
+    required PlatformInt64 ps,
+    required bool pageDesc,
+  });
+
+  Future<FavTopicListResult> crateApiFavFetchFavTopics({
+    required FavContext context,
+    required PlatformInt64 page,
   });
 
   Future<FollowListResult> crateApiRelationFetchFollowSearch({
@@ -781,6 +941,11 @@ abstract class RustLibApi extends BaseApi {
     required PlatformInt64 pageSize,
   });
 
+  Future<SpaceFavResult> crateApiFavFetchSpaceFav({
+    required FavContext context,
+    required PlatformInt64 upMid,
+  });
+
   Future<SpaceOpusFlowResult> crateApiSpaceFetchSpaceOpusFlow({
     required GrpcContext context,
     required PlatformInt64 hostMid,
@@ -879,6 +1044,13 @@ abstract class RustLibApi extends BaseApi {
     required TransportSettings transport,
   });
 
+  Future<FavFolderListResult> crateApiFavFetchVideoInFolder({
+    required FavContext context,
+    required PlatformInt64 upMid,
+    required PlatformInt64 rid,
+    PlatformInt64? kind,
+  });
+
   Future<VideoShotResult> crateApiVideoPageFetchVideoShot({
     required VideoPageContext context,
     required String bvid,
@@ -917,6 +1089,13 @@ abstract class RustLibApi extends BaseApi {
   });
 
   Future<String> crateApiInitInitApp({required String maxLevel});
+
+  Future<WriteResult> crateApiFavLikeTopic({
+    required FavContext context,
+    required PlatformInt64 topicId,
+    required PlatformInt64 upMid,
+    required bool like,
+  });
 
   Future<ToastResult> crateApiVideoWriteLikeVideo({
     required AppWriteContext context,
@@ -1237,6 +1416,19 @@ abstract class RustLibApi extends BaseApi {
 
   String? crateApiUserSerializeUserInfo({required UserInfo info});
 
+  Future<WriteResult> crateApiFavSortFav({
+    required FavContext context,
+    required FavSignature signature,
+    required PlatformInt64 mediaId,
+    required String sort,
+  });
+
+  Future<WriteResult> crateApiFavSortFavFolder({
+    required FavContext context,
+    required FavSignature signature,
+    required String sort,
+  });
+
   Future<WriteResult> crateApiMiscSortFollowTag({
     required MiscContext context,
     required String tagids,
@@ -1302,6 +1494,12 @@ abstract class RustLibApi extends BaseApi {
   Future<UgcTripleResult> crateApiVideoWriteUgcTriple({
     required VideoWriteContext context,
     required String bvid,
+  });
+
+  Future<WriteResult> crateApiFavUnfavAll({
+    required FavContext context,
+    required PlatformInt64 rid,
+    required PlatformInt64 kind,
   });
 
   Future<WriteResult> crateApiRelationUpdateFollowTag({
@@ -1397,6 +1595,46 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<FavFolderResult> crateApiFavAddFolder({
+    required FavContext context,
+    required String title,
+    required String intro,
+    required PlatformInt64 privacy,
+    required String cover,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_String(title, serializer);
+          sse_encode_String(intro, serializer);
+          sse_encode_i_64(privacy, serializer);
+          sse_encode_String(cover, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 2,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fav_folder_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavAddFolderConstMeta,
+        argValues: [context, title, intro, privacy, cover],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavAddFolderConstMeta => const TaskConstMeta(
+    debugName: "add_folder",
+    argNames: ["context", "title", "intro", "privacy", "cover"],
+  );
+
+  @override
   Future<WriteResult> crateApiRelationAddUsersToTags({
     required RelationContext context,
     required String fids,
@@ -1412,7 +1650,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 2,
+            funcId: 3,
             port: port_,
           );
         },
@@ -1442,7 +1680,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_box_autoadd_grpc_identity(identity, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 4)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_list_record_string_string,
@@ -1470,7 +1708,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 4,
+            funcId: 5,
             port: port_,
           );
         },
@@ -1497,7 +1735,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 5)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 6)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_list_cdn_service_entry,
@@ -1517,6 +1755,40 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<WriteResult> crateApiFavCleanFav({
+    required FavContext context,
+    required PlatformInt64 mediaId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(mediaId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 7,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavCleanFavConstMeta,
+        argValues: [context, mediaId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavCleanFavConstMeta => const TaskConstMeta(
+    debugName: "clean_fav",
+    argNames: ["context", "mediaId"],
+  );
+
+  @override
   Future<WriteResult> crateApiHistoryClearHistory({
     required HistoryContext context,
   }) {
@@ -1528,7 +1800,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 6,
+            funcId: 8,
             port: port_,
           );
         },
@@ -1567,7 +1839,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 7,
+            funcId: 9,
             port: port_,
           );
         },
@@ -1589,6 +1861,42 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<WriteResult> crateApiFavCommunityAction({
+    required FavContext context,
+    required String opusId,
+    required PlatformInt64 action,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_String(opusId, serializer);
+          sse_encode_i_64(action, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 10,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavCommunityActionConstMeta,
+        argValues: [context, opusId, action],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavCommunityActionConstMeta => const TaskConstMeta(
+    debugName: "community_action",
+    argNames: ["context", "opusId", "action"],
+  );
+
+  @override
   CoverScrimStyle crateApiCoverScrimComputeCoverScrim({
     required List<int> rgba,
     required int width,
@@ -1603,7 +1911,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_u_32(width, serializer);
           sse_encode_u_32(height, serializer);
           sse_encode_u_32(tintRgb, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 8)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 11)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_cover_scrim_style,
@@ -1636,7 +1944,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 9,
+            funcId: 12,
             port: port_,
           );
         },
@@ -1658,6 +1966,66 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<WriteResult> crateApiFavCopyOrMoveFav({
+    required FavContext context,
+    required FavMoveMode mode,
+    required FavMoveTarget target,
+    PlatformInt64? srcMediaId,
+    required PlatformInt64 tarMediaId,
+    PlatformInt64? mid,
+    required String resources,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_fav_move_mode(mode, serializer);
+          sse_encode_fav_move_target(target, serializer);
+          sse_encode_opt_box_autoadd_i_64(srcMediaId, serializer);
+          sse_encode_i_64(tarMediaId, serializer);
+          sse_encode_opt_box_autoadd_i_64(mid, serializer);
+          sse_encode_String(resources, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 13,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavCopyOrMoveFavConstMeta,
+        argValues: [
+          context,
+          mode,
+          target,
+          srcMediaId,
+          tarMediaId,
+          mid,
+          resources,
+        ],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavCopyOrMoveFavConstMeta => const TaskConstMeta(
+    debugName: "copy_or_move_fav",
+    argNames: [
+      "context",
+      "mode",
+      "target",
+      "srcMediaId",
+      "tarMediaId",
+      "mid",
+      "resources",
+    ],
+  );
+
+  @override
   Future<String> crateApiInitCoreVersion() {
     return handler.executeNormal(
       NormalTask(
@@ -1666,7 +2034,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 10,
+            funcId: 14,
             port: port_,
           );
         },
@@ -1700,7 +2068,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 11,
+            funcId: 15,
             port: port_,
           );
         },
@@ -1739,7 +2107,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 12,
+            funcId: 16,
             port: port_,
           );
         },
@@ -1771,7 +2139,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_i_64(sessionId, serializer);
           sse_encode_i_32(progressMs, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 13)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 17)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_opt_list_danmaku_bucket_item,
@@ -1797,7 +2165,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_i_64(sessionId, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 14)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 18)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
@@ -1825,7 +2193,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_box_autoadd_danmaku_engine_options(options, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 15)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 19)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_danmaku_open_result,
@@ -1849,7 +2217,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 16)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 20)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_u_32,
@@ -1883,7 +2251,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_i_64(seenEpoch, serializer);
           sse_encode_i_32(positionMs, serializer);
           sse_encode_i_64(epoch, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 17)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 21)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_danmaku_progress_step,
@@ -1918,7 +2286,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 18,
+            funcId: 22,
             port: port_,
           );
         },
@@ -1953,7 +2321,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 19,
+            funcId: 23,
             port: port_,
           );
         },
@@ -1988,7 +2356,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 20,
+            funcId: 24,
             port: port_,
           );
         },
@@ -2023,7 +2391,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 21,
+            funcId: 25,
             port: port_,
           );
         },
@@ -2044,6 +2412,76 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
+  Future<WriteResult> crateApiFavDelNote({
+    required FavContext context,
+    required String ids,
+    required bool published,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_String(ids, serializer);
+          sse_encode_bool(published, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 26,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavDelNoteConstMeta,
+        argValues: [context, ids, published],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavDelNoteConstMeta => const TaskConstMeta(
+    debugName: "del_note",
+    argNames: ["context", "ids", "published"],
+  );
+
+  @override
+  Future<WriteResult> crateApiFavDeleteFolder({
+    required FavContext context,
+    required String mediaIds,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_String(mediaIds, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 27,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavDeleteFolderConstMeta,
+        argValues: [context, mediaIds],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavDeleteFolderConstMeta => const TaskConstMeta(
+    debugName: "delete_folder",
+    argNames: ["context", "mediaIds"],
+  );
+
+  @override
   Future<WriteResult> crateApiVideoWriteDislikeVideo({
     required AppWriteContext context,
     required String bvid,
@@ -2059,7 +2497,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 22,
+            funcId: 28,
             port: port_,
           );
         },
@@ -2102,7 +2540,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 23,
+            funcId: 29,
             port: port_,
           );
         },
@@ -2140,7 +2578,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_opt_String(url, serializer);
           sse_encode_opt_list_String(backupUrl, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 24)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 30)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_list_String,
@@ -2179,7 +2617,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 25,
+            funcId: 31,
             port: port_,
           );
         },
@@ -2219,7 +2657,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 26,
+            funcId: 32,
             port: port_,
           );
         },
@@ -2240,13 +2678,55 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
+  Future<FavFolderResult> crateApiFavEditFolder({
+    required FavContext context,
+    required PlatformInt64 mediaId,
+    required String title,
+    required String intro,
+    required PlatformInt64 privacy,
+    required String cover,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(mediaId, serializer);
+          sse_encode_String(title, serializer);
+          sse_encode_String(intro, serializer);
+          sse_encode_i_64(privacy, serializer);
+          sse_encode_String(cover, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 33,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fav_folder_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavEditFolderConstMeta,
+        argValues: [context, mediaId, title, intro, privacy, cover],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavEditFolderConstMeta => const TaskConstMeta(
+    debugName: "edit_folder",
+    argNames: ["context", "mediaId", "title", "intro", "privacy", "cover"],
+  );
+
+  @override
   CoverScrimStyle crateApiCoverScrimFallbackCoverScrim({required int tintRgb}) {
     return handler.executeSync(
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_u_32(tintRgb, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 27)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 34)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_cover_scrim_style,
@@ -2264,6 +2744,224 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         debugName: "fallback_cover_scrim",
         argNames: ["tintRgb"],
       );
+
+  @override
+  Future<WriteResult> crateApiFavFavArticle({
+    required FavContext context,
+    required PlatformInt64 id,
+    required bool fav,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(id, serializer);
+          sse_encode_bool(fav, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 35,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavFavArticleConstMeta,
+        argValues: [context, id, fav],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavFavArticleConstMeta => const TaskConstMeta(
+    debugName: "fav_article",
+    argNames: ["context", "id", "fav"],
+  );
+
+  @override
+  Future<WriteResult> crateApiFavFavFolder({
+    required FavContext context,
+    required PlatformInt64 mediaId,
+    required bool fav,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(mediaId, serializer);
+          sse_encode_bool(fav, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 36,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavFavFolderConstMeta,
+        argValues: [context, mediaId, fav],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavFavFolderConstMeta => const TaskConstMeta(
+    debugName: "fav_folder",
+    argNames: ["context", "mediaId", "fav"],
+  );
+
+  @override
+  Future<WriteResult> crateApiFavFavPugv({
+    required FavContext context,
+    required PlatformInt64 seasonId,
+    required bool fav,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(seasonId, serializer);
+          sse_encode_bool(fav, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 37,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavFavPugvConstMeta,
+        argValues: [context, seasonId, fav],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavFavPugvConstMeta => const TaskConstMeta(
+    debugName: "fav_pugv",
+    argNames: ["context", "seasonId", "fav"],
+  );
+
+  @override
+  Future<WriteResult> crateApiFavFavSeason({
+    required FavContext context,
+    required PlatformInt64 seasonId,
+    required bool fav,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(seasonId, serializer);
+          sse_encode_bool(fav, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 38,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavFavSeasonConstMeta,
+        argValues: [context, seasonId, fav],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavFavSeasonConstMeta => const TaskConstMeta(
+    debugName: "fav_season",
+    argNames: ["context", "seasonId", "fav"],
+  );
+
+  @override
+  Future<WriteResult> crateApiFavFavTopic({
+    required FavContext context,
+    required PlatformInt64 topicId,
+    required bool fav,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(topicId, serializer);
+          sse_encode_bool(fav, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 39,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavFavTopicConstMeta,
+        argValues: [context, topicId, fav],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavFavTopicConstMeta => const TaskConstMeta(
+    debugName: "fav_topic",
+    argNames: ["context", "topicId", "fav"],
+  );
+
+  @override
+  Future<WriteResult> crateApiFavFavVideo({
+    required FavContext context,
+    required String resources,
+    required String addIds,
+    required String delIds,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_String(resources, serializer);
+          sse_encode_String(addIds, serializer);
+          sse_encode_String(delIds, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 40,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavFavVideoConstMeta,
+        argValues: [context, resources, addIds, delIds],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavFavVideoConstMeta => const TaskConstMeta(
+    debugName: "fav_video",
+    argNames: ["context", "resources", "addIds", "delIds"],
+  );
 
   @override
   Future<WriteResult> crateApiVideoWriteFeedDislike({
@@ -2287,7 +2985,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 28,
+            funcId: 41,
             port: port_,
           );
         },
@@ -2326,7 +3024,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 29,
+            funcId: 42,
             port: port_,
           );
         },
@@ -2348,6 +3046,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<FavFolderListResult> crateApiFavFetchAllFavFolders({
+    required FavContext context,
+    required PlatformInt64 upMid,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(upMid, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 43,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fav_folder_list_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavFetchAllFavFoldersConstMeta,
+        argValues: [context, upMid],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavFetchAllFavFoldersConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_all_fav_folders",
+        argNames: ["context", "upMid"],
+      );
+
+  @override
   Future<MusicDetailResult> crateApiMiscFetchBgmDetail({
     required MiscContext context,
     required String musicId,
@@ -2361,7 +3094,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 30,
+            funcId: 44,
             port: port_,
           );
         },
@@ -2395,7 +3128,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 31,
+            funcId: 45,
             port: port_,
           );
         },
@@ -2434,7 +3167,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 32,
+            funcId: 46,
             port: port_,
           );
         },
@@ -2464,7 +3197,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 33,
+            funcId: 47,
             port: port_,
           );
         },
@@ -2504,7 +3237,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 34,
+            funcId: 48,
             port: port_,
           );
         },
@@ -2537,7 +3270,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 35,
+            funcId: 49,
             port: port_,
           );
         },
@@ -2569,7 +3302,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 36,
+            funcId: 50,
             port: port_,
           );
         },
@@ -2608,7 +3341,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 37,
+            funcId: 51,
             port: port_,
           );
         },
@@ -2644,7 +3377,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 38,
+            funcId: 52,
             port: port_,
           );
         },
@@ -2677,7 +3410,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 39,
+            funcId: 53,
             port: port_,
           );
         },
@@ -2711,7 +3444,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 40,
+            funcId: 54,
             port: port_,
           );
         },
@@ -2744,7 +3477,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 41,
+            funcId: 55,
             port: port_,
           );
         },
@@ -2784,7 +3517,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 42,
+            funcId: 56,
             port: port_,
           );
         },
@@ -2802,6 +3535,395 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiMiscFetchFansConstMeta => const TaskConstMeta(
     debugName: "fetch_fans",
     argNames: ["context", "vmid", "page", "pageSize", "orderType"],
+  );
+
+  @override
+  Future<FavArticleListResult> crateApiFavFetchFavArticles({
+    required FavContext context,
+    required PlatformInt64 page,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(page, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 57,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fav_article_list_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavFetchFavArticlesConstMeta,
+        argValues: [context, page],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavFetchFavArticlesConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_fav_articles",
+        argNames: ["context", "page"],
+      );
+
+  @override
+  Future<FavDetailResult> crateApiFavFetchFavDetail({
+    required FavContext context,
+    required PlatformInt64 mediaId,
+    required PlatformInt64 pn,
+    required PlatformInt64 ps,
+    required String keyword,
+    required FavOrder order,
+    required PlatformInt64 kind,
+    required bool pageDesc,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(mediaId, serializer);
+          sse_encode_i_64(pn, serializer);
+          sse_encode_i_64(ps, serializer);
+          sse_encode_String(keyword, serializer);
+          sse_encode_fav_order(order, serializer);
+          sse_encode_i_64(kind, serializer);
+          sse_encode_bool(pageDesc, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 58,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fav_detail_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavFetchFavDetailConstMeta,
+        argValues: [context, mediaId, pn, ps, keyword, order, kind, pageDesc],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavFetchFavDetailConstMeta => const TaskConstMeta(
+    debugName: "fetch_fav_detail",
+    argNames: [
+      "context",
+      "mediaId",
+      "pn",
+      "ps",
+      "keyword",
+      "order",
+      "kind",
+      "pageDesc",
+    ],
+  );
+
+  @override
+  Future<FavFolderResult> crateApiFavFetchFavFolderInfo({
+    required FavContext context,
+    required PlatformInt64 mediaId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(mediaId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 59,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fav_folder_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavFetchFavFolderInfoConstMeta,
+        argValues: [context, mediaId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavFetchFavFolderInfoConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_fav_folder_info",
+        argNames: ["context", "mediaId"],
+      );
+
+  @override
+  Future<FavFolderListResult> crateApiFavFetchFavFolders({
+    required FavContext context,
+    required PlatformInt64 upMid,
+    required PlatformInt64 pn,
+    required PlatformInt64 ps,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(upMid, serializer);
+          sse_encode_i_64(pn, serializer);
+          sse_encode_i_64(ps, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 60,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fav_folder_list_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavFetchFavFoldersConstMeta,
+        argValues: [context, upMid, pn, ps],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavFetchFavFoldersConstMeta => const TaskConstMeta(
+    debugName: "fetch_fav_folders",
+    argNames: ["context", "upMid", "pn", "ps"],
+  );
+
+  @override
+  Future<SubListResult> crateApiFavFetchFavFoldersAsSubs({
+    required FavContext context,
+    required PlatformInt64 upMid,
+    required PlatformInt64 pn,
+    required PlatformInt64 ps,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(upMid, serializer);
+          sse_encode_i_64(pn, serializer);
+          sse_encode_i_64(ps, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 61,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_sub_list_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavFetchFavFoldersAsSubsConstMeta,
+        argValues: [context, upMid, pn, ps],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavFetchFavFoldersAsSubsConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_fav_folders_as_subs",
+        argNames: ["context", "upMid", "pn", "ps"],
+      );
+
+  @override
+  Future<FavNoteListResult> crateApiFavFetchFavNotes({
+    required FavContext context,
+    required PlatformInt64 page,
+    required bool published,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(page, serializer);
+          sse_encode_bool(published, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 62,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fav_note_list_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavFetchFavNotesConstMeta,
+        argValues: [context, page, published],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavFetchFavNotesConstMeta => const TaskConstMeta(
+    debugName: "fetch_fav_notes",
+    argNames: ["context", "page", "published"],
+  );
+
+  @override
+  Future<FavPgcListResult> crateApiFavFetchFavPgc({
+    required FavContext context,
+    required PlatformInt64 vmid,
+    required PlatformInt64 kind,
+    PlatformInt64? followStatus,
+    required PlatformInt64 pn,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(vmid, serializer);
+          sse_encode_i_64(kind, serializer);
+          sse_encode_opt_box_autoadd_i_64(followStatus, serializer);
+          sse_encode_i_64(pn, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 63,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fav_pgc_list_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavFetchFavPgcConstMeta,
+        argValues: [context, vmid, kind, followStatus, pn],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavFetchFavPgcConstMeta => const TaskConstMeta(
+    debugName: "fetch_fav_pgc",
+    argNames: ["context", "vmid", "kind", "followStatus", "pn"],
+  );
+
+  @override
+  Future<FavPugvListResult> crateApiFavFetchFavPugv({
+    required FavContext context,
+    required PlatformInt64 mid,
+    required PlatformInt64 pn,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(mid, serializer);
+          sse_encode_i_64(pn, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 64,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fav_pugv_list_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavFetchFavPugvConstMeta,
+        argValues: [context, mid, pn],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavFetchFavPugvConstMeta => const TaskConstMeta(
+    debugName: "fetch_fav_pugv",
+    argNames: ["context", "mid", "pn"],
+  );
+
+  @override
+  Future<FavSeasonDetailResult> crateApiFavFetchFavSeasonDetail({
+    required FavContext context,
+    required PlatformInt64 seasonId,
+    required PlatformInt64 pn,
+    required PlatformInt64 ps,
+    required bool pageDesc,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(seasonId, serializer);
+          sse_encode_i_64(pn, serializer);
+          sse_encode_i_64(ps, serializer);
+          sse_encode_bool(pageDesc, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 65,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fav_season_detail_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavFetchFavSeasonDetailConstMeta,
+        argValues: [context, seasonId, pn, ps, pageDesc],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavFetchFavSeasonDetailConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_fav_season_detail",
+        argNames: ["context", "seasonId", "pn", "ps", "pageDesc"],
+      );
+
+  @override
+  Future<FavTopicListResult> crateApiFavFetchFavTopics({
+    required FavContext context,
+    required PlatformInt64 page,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(page, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 66,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fav_topic_list_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavFetchFavTopicsConstMeta,
+        argValues: [context, page],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavFetchFavTopicsConstMeta => const TaskConstMeta(
+    debugName: "fetch_fav_topics",
+    argNames: ["context", "page"],
   );
 
   @override
@@ -2824,7 +3946,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 43,
+            funcId: 67,
             port: port_,
           );
         },
@@ -2867,7 +3989,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 44,
+            funcId: 68,
             port: port_,
           );
         },
@@ -2900,7 +4022,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 45,
+            funcId: 69,
             port: port_,
           );
         },
@@ -2939,7 +4061,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 46,
+            funcId: 70,
             port: port_,
           );
         },
@@ -2980,7 +4102,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 47,
+            funcId: 71,
             port: port_,
           );
         },
@@ -3021,7 +4143,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 48,
+            funcId: 72,
             port: port_,
           );
         },
@@ -3054,7 +4176,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 49,
+            funcId: 73,
             port: port_,
           );
         },
@@ -3091,7 +4213,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 50,
+            funcId: 74,
             port: port_,
           );
         },
@@ -3134,7 +4256,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 51,
+            funcId: 75,
             port: port_,
           );
         },
@@ -3176,7 +4298,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 52,
+            funcId: 76,
             port: port_,
           );
         },
@@ -3215,7 +4337,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 53,
+            funcId: 77,
             port: port_,
           );
         },
@@ -3253,7 +4375,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 54,
+            funcId: 78,
             port: port_,
           );
         },
@@ -3292,7 +4414,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 55,
+            funcId: 79,
             port: port_,
           );
         },
@@ -3327,7 +4449,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 56,
+            funcId: 80,
             port: port_,
           );
         },
@@ -3362,7 +4484,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 57,
+            funcId: 81,
             port: port_,
           );
         },
@@ -3397,7 +4519,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 58,
+            funcId: 82,
             port: port_,
           );
         },
@@ -3436,7 +4558,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 59,
+            funcId: 83,
             port: port_,
           );
         },
@@ -3470,7 +4592,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 60,
+            funcId: 84,
             port: port_,
           );
         },
@@ -3505,7 +4627,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 61,
+            funcId: 85,
             port: port_,
           );
         },
@@ -3542,7 +4664,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 62,
+            funcId: 86,
             port: port_,
           );
         },
@@ -3577,7 +4699,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 63,
+            funcId: 87,
             port: port_,
           );
         },
@@ -3620,7 +4742,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 64,
+            funcId: 88,
             port: port_,
           );
         },
@@ -3661,7 +4783,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 65,
+            funcId: 89,
             port: port_,
           );
         },
@@ -3704,7 +4826,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 66,
+            funcId: 90,
             port: port_,
           );
         },
@@ -3750,7 +4872,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 67,
+            funcId: 91,
             port: port_,
           );
         },
@@ -3785,7 +4907,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 68,
+            funcId: 92,
             port: port_,
           );
         },
@@ -3818,7 +4940,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 69,
+            funcId: 93,
             port: port_,
           );
         },
@@ -3852,7 +4974,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 70,
+            funcId: 94,
             port: port_,
           );
         },
@@ -3886,7 +5008,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 71,
+            funcId: 95,
             port: port_,
           );
         },
@@ -3921,7 +5043,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 72,
+            funcId: 96,
             port: port_,
           );
         },
@@ -3960,7 +5082,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 73,
+            funcId: 97,
             port: port_,
           );
         },
@@ -3995,7 +5117,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 74,
+            funcId: 98,
             port: port_,
           );
         },
@@ -4030,7 +5152,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 75,
+            funcId: 99,
             port: port_,
           );
         },
@@ -4065,7 +5187,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 76,
+            funcId: 100,
             port: port_,
           );
         },
@@ -4106,7 +5228,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 77,
+            funcId: 101,
             port: port_,
           );
         },
@@ -4145,7 +5267,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 78,
+            funcId: 102,
             port: port_,
           );
         },
@@ -4182,7 +5304,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 79,
+            funcId: 103,
             port: port_,
           );
         },
@@ -4217,7 +5339,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 80,
+            funcId: 104,
             port: port_,
           );
         },
@@ -4255,7 +5377,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 81,
+            funcId: 105,
             port: port_,
           );
         },
@@ -4294,7 +5416,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 82,
+            funcId: 106,
             port: port_,
           );
         },
@@ -4334,7 +5456,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 83,
+            funcId: 107,
             port: port_,
           );
         },
@@ -4370,7 +5492,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 84,
+            funcId: 108,
             port: port_,
           );
         },
@@ -4409,7 +5531,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 85,
+            funcId: 109,
             port: port_,
           );
         },
@@ -4452,7 +5574,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 86,
+            funcId: 110,
             port: port_,
           );
         },
@@ -4499,7 +5621,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 87,
+            funcId: 111,
             port: port_,
           );
         },
@@ -4552,7 +5674,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 88,
+            funcId: 112,
             port: port_,
           );
         },
@@ -4585,7 +5707,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 89,
+            funcId: 113,
             port: port_,
           );
         },
@@ -4620,7 +5742,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 90,
+            funcId: 114,
             port: port_,
           );
         },
@@ -4657,7 +5779,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 91,
+            funcId: 115,
             port: port_,
           );
         },
@@ -4694,7 +5816,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 92,
+            funcId: 116,
             port: port_,
           );
         },
@@ -4729,7 +5851,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 93,
+            funcId: 117,
             port: port_,
           );
         },
@@ -4764,7 +5886,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 94,
+            funcId: 118,
             port: port_,
           );
         },
@@ -4799,7 +5921,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 95,
+            funcId: 119,
             port: port_,
           );
         },
@@ -4836,7 +5958,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 96,
+            funcId: 120,
             port: port_,
           );
         },
@@ -4877,7 +5999,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 97,
+            funcId: 121,
             port: port_,
           );
         },
@@ -4918,7 +6040,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 98,
+            funcId: 122,
             port: port_,
           );
         },
@@ -4961,7 +6083,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 99,
+            funcId: 123,
             port: port_,
           );
         },
@@ -5000,7 +6122,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 100,
+            funcId: 124,
             port: port_,
           );
         },
@@ -5037,7 +6159,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 101,
+            funcId: 125,
             port: port_,
           );
         },
@@ -5076,7 +6198,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 102,
+            funcId: 126,
             port: port_,
           );
         },
@@ -5111,7 +6233,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 103,
+            funcId: 127,
             port: port_,
           );
         },
@@ -5154,7 +6276,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 104,
+            funcId: 128,
             port: port_,
           );
         },
@@ -5191,7 +6313,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 105,
+            funcId: 129,
             port: port_,
           );
         },
@@ -5244,7 +6366,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 106,
+            funcId: 130,
             port: port_,
           );
         },
@@ -5315,7 +6437,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 107,
+            funcId: 131,
             port: port_,
           );
         },
@@ -5372,7 +6494,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 108,
+            funcId: 132,
             port: port_,
           );
         },
@@ -5411,7 +6533,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 109,
+            funcId: 133,
             port: port_,
           );
         },
@@ -5450,7 +6572,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 110,
+            funcId: 134,
             port: port_,
           );
         },
@@ -5472,6 +6594,40 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<SpaceFavResult> crateApiFavFetchSpaceFav({
+    required FavContext context,
+    required PlatformInt64 upMid,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(upMid, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 135,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_space_fav_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavFetchSpaceFavConstMeta,
+        argValues: [context, upMid],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavFetchSpaceFavConstMeta => const TaskConstMeta(
+    debugName: "fetch_space_fav",
+    argNames: ["context", "upMid"],
+  );
+
+  @override
   Future<SpaceOpusFlowResult> crateApiSpaceFetchSpaceOpusFlow({
     required GrpcContext context,
     required PlatformInt64 hostMid,
@@ -5491,7 +6647,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 111,
+            funcId: 136,
             port: port_,
           );
         },
@@ -5528,7 +6684,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 112,
+            funcId: 137,
             port: port_,
           );
         },
@@ -5569,7 +6725,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 113,
+            funcId: 138,
             port: port_,
           );
         },
@@ -5614,7 +6770,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 114,
+            funcId: 139,
             port: port_,
           );
         },
@@ -5657,7 +6813,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 115,
+            funcId: 140,
             port: port_,
           );
         },
@@ -5700,7 +6856,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 116,
+            funcId: 141,
             port: port_,
           );
         },
@@ -5740,7 +6896,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 117,
+            funcId: 142,
             port: port_,
           );
         },
@@ -5777,7 +6933,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 118,
+            funcId: 143,
             port: port_,
           );
         },
@@ -5816,7 +6972,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 119,
+            funcId: 144,
             port: port_,
           );
         },
@@ -5856,7 +7012,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 120,
+            funcId: 145,
             port: port_,
           );
         },
@@ -5889,7 +7045,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 121,
+            funcId: 146,
             port: port_,
           );
         },
@@ -5929,7 +7085,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 122,
+            funcId: 147,
             port: port_,
           );
         },
@@ -5962,7 +7118,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 123,
+            funcId: 148,
             port: port_,
           );
         },
@@ -6008,7 +7164,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 124,
+            funcId: 149,
             port: port_,
           );
         },
@@ -6048,6 +7204,45 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<FavFolderListResult> crateApiFavFetchVideoInFolder({
+    required FavContext context,
+    required PlatformInt64 upMid,
+    required PlatformInt64 rid,
+    PlatformInt64? kind,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(upMid, serializer);
+          sse_encode_i_64(rid, serializer);
+          sse_encode_opt_box_autoadd_i_64(kind, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 150,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fav_folder_list_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavFetchVideoInFolderConstMeta,
+        argValues: [context, upMid, rid, kind],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavFetchVideoInFolderConstMeta =>
+      const TaskConstMeta(
+        debugName: "fetch_video_in_folder",
+        argNames: ["context", "upMid", "rid", "kind"],
+      );
+
+  @override
   Future<VideoShotResult> crateApiVideoPageFetchVideoShot({
     required VideoPageContext context,
     required String bvid,
@@ -6063,7 +7258,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 125,
+            funcId: 151,
             port: port_,
           );
         },
@@ -6100,7 +7295,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 126,
+            funcId: 152,
             port: port_,
           );
         },
@@ -6134,7 +7329,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 127,
+            funcId: 153,
             port: port_,
           );
         },
@@ -6165,7 +7360,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 128,
+            funcId: 154,
           )!;
         },
         codec: SseCodec(
@@ -6213,7 +7408,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 129,
+            funcId: 155,
             port: port_,
           );
         },
@@ -6270,7 +7465,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 130,
+            funcId: 156,
             port: port_,
           );
         },
@@ -6301,7 +7496,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 131,
+            funcId: 157,
             port: port_,
           );
         },
@@ -6322,6 +7517,44 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
+  Future<WriteResult> crateApiFavLikeTopic({
+    required FavContext context,
+    required PlatformInt64 topicId,
+    required PlatformInt64 upMid,
+    required bool like,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(topicId, serializer);
+          sse_encode_i_64(upMid, serializer);
+          sse_encode_bool(like, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 158,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavLikeTopicConstMeta,
+        argValues: [context, topicId, upMid, like],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavLikeTopicConstMeta => const TaskConstMeta(
+    debugName: "like_topic",
+    argNames: ["context", "topicId", "upMid", "like"],
+  );
+
+  @override
   Future<ToastResult> crateApiVideoWriteLikeVideo({
     required AppWriteContext context,
     required String bvid,
@@ -6337,7 +7570,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 132,
+            funcId: 159,
             port: port_,
           );
         },
@@ -6372,7 +7605,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 133,
+            funcId: 160,
           )!;
         },
         codec: SseCodec(
@@ -6406,7 +7639,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 134,
+            funcId: 161,
           )!;
         },
         codec: SseCodec(
@@ -6450,7 +7683,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 135,
+            funcId: 162,
           )!;
         },
         codec: SseCodec(
@@ -6492,7 +7725,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 136,
+            funcId: 163,
           )!;
         },
         codec: SseCodec(
@@ -6528,7 +7761,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 137,
+            funcId: 164,
           )!;
         },
         codec: SseCodec(
@@ -6566,7 +7799,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 138,
+            funcId: 165,
             port: port_,
           );
         },
@@ -6607,7 +7840,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 139,
+            funcId: 166,
             port: port_,
           );
         },
@@ -6641,7 +7874,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 140,
+            funcId: 167,
             port: port_,
           );
         },
@@ -6675,7 +7908,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 141,
+            funcId: 168,
             port: port_,
           );
         },
@@ -6708,7 +7941,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 142,
+            funcId: 169,
             port: port_,
           );
         },
@@ -6740,7 +7973,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 143,
+            funcId: 170,
             port: port_,
           );
         },
@@ -6773,7 +8006,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 144,
+            funcId: 171,
             port: port_,
           );
         },
@@ -6807,7 +8040,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 145,
+            funcId: 172,
             port: port_,
           );
         },
@@ -6847,7 +8080,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 146,
+            funcId: 173,
             port: port_,
           );
         },
@@ -6882,7 +8115,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 147,
+            funcId: 174,
             port: port_,
           );
         },
@@ -6924,7 +8157,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 148,
+            funcId: 175,
             port: port_,
           );
         },
@@ -6968,7 +8201,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 149,
+            funcId: 176,
             port: port_,
           );
         },
@@ -7007,7 +8240,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 150,
+            funcId: 177,
             port: port_,
           );
         },
@@ -7042,7 +8275,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 151,
+            funcId: 178,
           )!;
         },
         codec: SseCodec(
@@ -7080,7 +8313,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 152,
+            funcId: 179,
             port: port_,
           );
         },
@@ -7115,7 +8348,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 153,
+            funcId: 180,
           )!;
         },
         codec: SseCodec(
@@ -7149,7 +8382,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 154,
+            funcId: 181,
           )!;
         },
         codec: SseCodec(
@@ -7181,7 +8414,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 155,
+            funcId: 182,
             port: port_,
           );
         },
@@ -7212,7 +8445,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 156,
+            funcId: 183,
           )!;
         },
         codec: SseCodec(
@@ -7244,7 +8477,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 157,
+            funcId: 184,
             port: port_,
           );
         },
@@ -7279,7 +8512,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 158,
+            funcId: 185,
             port: port_,
           );
         },
@@ -7314,7 +8547,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 159,
+            funcId: 186,
             port: port_,
           );
         },
@@ -7348,7 +8581,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 160,
+            funcId: 187,
           )!;
         },
         codec: SseCodec(
@@ -7382,7 +8615,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 161,
+            funcId: 188,
             port: port_,
           );
         },
@@ -7418,7 +8651,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 162,
+            funcId: 189,
             port: port_,
           );
         },
@@ -7454,7 +8687,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 163,
+            funcId: 190,
             port: port_,
           );
         },
@@ -7491,7 +8724,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 164,
+            funcId: 191,
             port: port_,
           );
         },
@@ -7531,7 +8764,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 165,
+            funcId: 192,
             port: port_,
           );
         },
@@ -7571,7 +8804,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 166,
+            funcId: 193,
             port: port_,
           );
         },
@@ -7605,7 +8838,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 167,
+            funcId: 194,
             port: port_,
           );
         },
@@ -7642,7 +8875,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 168,
+            funcId: 195,
             port: port_,
           );
         },
@@ -7681,7 +8914,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 169,
+            funcId: 196,
           )!;
         },
         codec: SseCodec(
@@ -7710,7 +8943,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 170,
+            funcId: 197,
           )!;
         },
         codec: SseCodec(
@@ -7748,7 +8981,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 171,
+            funcId: 198,
             port: port_,
           );
         },
@@ -7789,7 +9022,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 172,
+            funcId: 199,
             port: port_,
           );
         },
@@ -7828,7 +9061,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 173,
+            funcId: 200,
             port: port_,
           );
         },
@@ -7866,7 +9099,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 174,
+            funcId: 201,
             port: port_,
           );
         },
@@ -7900,7 +9133,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 175,
+            funcId: 202,
             port: port_,
           );
         },
@@ -7934,7 +9167,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 176,
+            funcId: 203,
             port: port_,
           );
         },
@@ -7971,7 +9204,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 177,
+            funcId: 204,
             port: port_,
           );
         },
@@ -8005,7 +9238,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 178,
+            funcId: 205,
             port: port_,
           );
         },
@@ -8039,7 +9272,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 179,
+            funcId: 206,
             port: port_,
           );
         },
@@ -8074,7 +9307,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 180,
+            funcId: 207,
             port: port_,
           );
         },
@@ -8108,7 +9341,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 181,
+            funcId: 208,
             port: port_,
           );
         },
@@ -8146,7 +9379,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 182,
+            funcId: 209,
             port: port_,
           );
         },
@@ -8183,7 +9416,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 183,
+            funcId: 210,
             port: port_,
           );
         },
@@ -8218,7 +9451,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 184,
+            funcId: 211,
             port: port_,
           );
         },
@@ -8252,7 +9485,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 185,
+            funcId: 212,
             port: port_,
           );
         },
@@ -8286,7 +9519,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 186,
+            funcId: 213,
           )!;
         },
         codec: SseCodec(
@@ -8326,7 +9559,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 187,
+            funcId: 214,
           )!;
         },
         codec: SseCodec(
@@ -8368,7 +9601,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 188,
+            funcId: 215,
           )!;
         },
         codec: SseCodec(
@@ -8389,6 +9622,80 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<WriteResult> crateApiFavSortFav({
+    required FavContext context,
+    required FavSignature signature,
+    required PlatformInt64 mediaId,
+    required String sort,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_box_autoadd_fav_signature(signature, serializer);
+          sse_encode_i_64(mediaId, serializer);
+          sse_encode_String(sort, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 216,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavSortFavConstMeta,
+        argValues: [context, signature, mediaId, sort],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavSortFavConstMeta => const TaskConstMeta(
+    debugName: "sort_fav",
+    argNames: ["context", "signature", "mediaId", "sort"],
+  );
+
+  @override
+  Future<WriteResult> crateApiFavSortFavFolder({
+    required FavContext context,
+    required FavSignature signature,
+    required String sort,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_box_autoadd_fav_signature(signature, serializer);
+          sse_encode_String(sort, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 217,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavSortFavFolderConstMeta,
+        argValues: [context, signature, sort],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavSortFavFolderConstMeta => const TaskConstMeta(
+    debugName: "sort_fav_folder",
+    argNames: ["context", "signature", "sort"],
+  );
+
+  @override
   Future<WriteResult> crateApiMiscSortFollowTag({
     required MiscContext context,
     required String tagids,
@@ -8402,7 +9709,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 189,
+            funcId: 218,
             port: port_,
           );
         },
@@ -8436,7 +9743,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 190,
+            funcId: 219,
           )!;
         },
         codec: SseCodec(
@@ -8470,7 +9777,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 191,
+            funcId: 220,
           )!;
         },
         codec: SseCodec(
@@ -8506,7 +9813,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 192,
+            funcId: 221,
             port: port_,
           );
         },
@@ -8540,7 +9847,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 193,
+            funcId: 222,
             port: port_,
           );
         },
@@ -8577,7 +9884,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 194,
+            funcId: 223,
             port: port_,
           );
         },
@@ -8608,7 +9915,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 195,
+            funcId: 224,
           )!;
         },
         codec: SseCodec(
@@ -8644,7 +9951,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 196,
+            funcId: 225,
             port: port_,
           );
         },
@@ -8679,7 +9986,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 197,
+            funcId: 226,
             port: port_,
           );
         },
@@ -8713,7 +10020,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 198,
+            funcId: 227,
             port: port_,
           );
         },
@@ -8749,7 +10056,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 199,
+            funcId: 228,
             port: port_,
           );
         },
@@ -8785,7 +10092,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 200,
+            funcId: 229,
             port: port_,
           );
         },
@@ -8819,7 +10126,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 201,
+            funcId: 230,
             port: port_,
           );
         },
@@ -8841,6 +10148,42 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<WriteResult> crateApiFavUnfavAll({
+    required FavContext context,
+    required PlatformInt64 rid,
+    required PlatformInt64 kind,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_fav_context(context, serializer);
+          sse_encode_i_64(rid, serializer);
+          sse_encode_i_64(kind, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 231,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_write_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFavUnfavAllConstMeta,
+        argValues: [context, rid, kind],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFavUnfavAllConstMeta => const TaskConstMeta(
+    debugName: "unfav_all",
+    argNames: ["context", "rid", "kind"],
+  );
+
+  @override
   Future<WriteResult> crateApiRelationUpdateFollowTag({
     required RelationContext context,
     required PlatformInt64 tagid,
@@ -8856,7 +10199,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 202,
+            funcId: 232,
             port: port_,
           );
         },
@@ -8897,7 +10240,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 203,
+            funcId: 233,
             port: port_,
           );
         },
@@ -8934,7 +10277,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 204,
+            funcId: 234,
             port: port_,
           );
         },
@@ -8970,7 +10313,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 205,
+            funcId: 235,
           )!;
         },
         codec: SseCodec(
@@ -9004,7 +10347,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 206,
+            funcId: 236,
             port: port_,
           );
         },
@@ -9038,7 +10381,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 207,
+            funcId: 237,
             port: port_,
           );
         },
@@ -9072,7 +10415,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 208,
+            funcId: 238,
             port: port_,
           );
         },
@@ -9106,7 +10449,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 209,
+            funcId: 239,
             port: port_,
           );
         },
@@ -9390,6 +10733,66 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   double dco_decode_box_autoadd_f_64(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as double;
+  }
+
+  @protected
+  FavArticleList dco_decode_box_autoadd_fav_article_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_fav_article_list(raw);
+  }
+
+  @protected
+  FavContext dco_decode_box_autoadd_fav_context(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_fav_context(raw);
+  }
+
+  @protected
+  FavDetail dco_decode_box_autoadd_fav_detail(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_fav_detail(raw);
+  }
+
+  @protected
+  FavFolder dco_decode_box_autoadd_fav_folder(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_fav_folder(raw);
+  }
+
+  @protected
+  FavFolderList dco_decode_box_autoadd_fav_folder_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_fav_folder_list(raw);
+  }
+
+  @protected
+  FavPgcList dco_decode_box_autoadd_fav_pgc_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_fav_pgc_list(raw);
+  }
+
+  @protected
+  FavPugvList dco_decode_box_autoadd_fav_pugv_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_fav_pugv_list(raw);
+  }
+
+  @protected
+  FavSeasonDetail dco_decode_box_autoadd_fav_season_detail(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_fav_season_detail(raw);
+  }
+
+  @protected
+  FavSignature dco_decode_box_autoadd_fav_signature(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_fav_signature(raw);
+  }
+
+  @protected
+  FavTopicList dco_decode_box_autoadd_fav_topic_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_fav_topic_list(raw);
   }
 
   @protected
@@ -10234,6 +11637,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SubItem dco_decode_box_autoadd_sub_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_sub_item(raw);
+  }
+
+  @protected
   SubList dco_decode_box_autoadd_sub_list(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_sub_list(raw);
@@ -10775,6 +12184,411 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   double dco_decode_f_64(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as double;
+  }
+
+  @protected
+  FavArticleItem dco_decode_fav_article_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return FavArticleItem(
+      opusId: dco_decode_opt_String(arr[0]),
+      content: dco_decode_opt_String(arr[1]),
+      authorName: dco_decode_opt_String(arr[2]),
+      coverUrl: dco_decode_opt_String(arr[3]),
+      like: dco_decode_opt_String(arr[4]),
+      pubTime: dco_decode_opt_String(arr[5]),
+    );
+  }
+
+  @protected
+  FavArticleList dco_decode_fav_article_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return FavArticleList(
+      items: dco_decode_list_fav_article_item(arr[0]),
+      hasMore: dco_decode_opt_box_autoadd_bool(arr[1]),
+    );
+  }
+
+  @protected
+  FavArticleListResult dco_decode_fav_article_list_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return FavArticleListResult(
+      data: dco_decode_opt_box_autoadd_fav_article_list(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  FavContext dco_decode_fav_context(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return FavContext(
+      baseUrl: dco_decode_String(arr[0]),
+      cookie: dco_decode_opt_String(arr[1]),
+      csrf: dco_decode_opt_String(arr[2]),
+      headers: dco_decode_list_record_string_string(arr[3]),
+      timeoutMs: dco_decode_u_64(arr[4]),
+      transport: dco_decode_transport_settings(arr[5]),
+    );
+  }
+
+  @protected
+  FavDetail dco_decode_fav_detail(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return FavDetail(
+      info: dco_decode_opt_box_autoadd_fav_folder(arr[0]),
+      medias: dco_decode_list_fav_media(arr[1]),
+      hasMore: dco_decode_opt_box_autoadd_bool(arr[2]),
+    );
+  }
+
+  @protected
+  FavDetailResult dco_decode_fav_detail_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return FavDetailResult(
+      data: dco_decode_opt_box_autoadd_fav_detail(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  FavFolder dco_decode_fav_folder(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 12)
+      throw Exception('unexpected arr length: expect 12 but see ${arr.length}');
+    return FavFolder(
+      id: dco_decode_i_64(arr[0]),
+      fid: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      mid: dco_decode_i_64(arr[2]),
+      attr: dco_decode_i_64(arr[3]),
+      title: dco_decode_String(arr[4]),
+      cover: dco_decode_String(arr[5]),
+      upperMid: dco_decode_opt_box_autoadd_i_64(arr[6]),
+      upperName: dco_decode_opt_String(arr[7]),
+      upperFace: dco_decode_opt_String(arr[8]),
+      intro: dco_decode_opt_String(arr[9]),
+      favState: dco_decode_opt_box_autoadd_i_64(arr[10]),
+      mediaCount: dco_decode_i_64(arr[11]),
+    );
+  }
+
+  @protected
+  FavFolderList dco_decode_fav_folder_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return FavFolderList(
+      count: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      list: dco_decode_list_fav_folder(arr[1]),
+      hasMore: dco_decode_opt_box_autoadd_bool(arr[2]),
+    );
+  }
+
+  @protected
+  FavFolderListResult dco_decode_fav_folder_list_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return FavFolderListResult(
+      data: dco_decode_opt_box_autoadd_fav_folder_list(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  FavFolderResult dco_decode_fav_folder_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return FavFolderResult(
+      data: dco_decode_opt_box_autoadd_fav_folder(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  FavMedia dco_decode_fav_media(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 17)
+      throw Exception('unexpected arr length: expect 17 but see ${arr.length}');
+    return FavMedia(
+      id: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      kind: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      title: dco_decode_opt_String(arr[2]),
+      cover: dco_decode_opt_String(arr[3]),
+      intro: dco_decode_opt_String(arr[4]),
+      duration: dco_decode_opt_box_autoadd_i_64(arr[5]),
+      upperMid: dco_decode_opt_box_autoadd_i_64(arr[6]),
+      upperName: dco_decode_opt_String(arr[7]),
+      upperFace: dco_decode_opt_String(arr[8]),
+      attr: dco_decode_opt_box_autoadd_i_64(arr[9]),
+      playCount: dco_decode_opt_box_autoadd_i_64(arr[10]),
+      danmakuCount: dco_decode_opt_box_autoadd_i_64(arr[11]),
+      favTime: dco_decode_opt_box_autoadd_i_64(arr[12]),
+      bvid: dco_decode_opt_String(arr[13]),
+      ogvTypeName: dco_decode_opt_String(arr[14]),
+      ogvSeasonId: dco_decode_opt_box_autoadd_i_64(arr[15]),
+      ugcFirstCid: dco_decode_opt_box_autoadd_i_64(arr[16]),
+    );
+  }
+
+  @protected
+  FavMoveMode dco_decode_fav_move_mode(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return FavMoveMode.values[raw as int];
+  }
+
+  @protected
+  FavMoveTarget dco_decode_fav_move_target(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return FavMoveTarget.values[raw as int];
+  }
+
+  @protected
+  FavNote dco_decode_fav_note(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    return FavNote(
+      webUrl: dco_decode_opt_String(arr[0]),
+      title: dco_decode_opt_String(arr[1]),
+      summary: dco_decode_opt_String(arr[2]),
+      message: dco_decode_opt_String(arr[3]),
+      pic: dco_decode_opt_String(arr[4]),
+      cvid: dco_decode_opt_String(arr[5]),
+      noteId: dco_decode_opt_String(arr[6]),
+    );
+  }
+
+  @protected
+  FavNoteListResult dco_decode_fav_note_list_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return FavNoteListResult(
+      data: dco_decode_opt_list_fav_note(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  FavOrder dco_decode_fav_order(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return FavOrder.values[raw as int];
+  }
+
+  @protected
+  FavPgcItem dco_decode_fav_pgc_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 8)
+      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
+    return FavPgcItem(
+      seasonId: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      title: dco_decode_opt_String(arr[1]),
+      cover: dco_decode_opt_String(arr[2]),
+      isFinish: dco_decode_opt_box_autoadd_i_64(arr[3]),
+      badge: dco_decode_opt_String(arr[4]),
+      newEpIndexShow: dco_decode_opt_String(arr[5]),
+      renewalTime: dco_decode_opt_String(arr[6]),
+      progress: dco_decode_opt_String(arr[7]),
+    );
+  }
+
+  @protected
+  FavPgcList dco_decode_fav_pgc_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return FavPgcList(
+      list: dco_decode_list_fav_pgc_item(arr[0]),
+      total: dco_decode_opt_box_autoadd_i_64(arr[1]),
+    );
+  }
+
+  @protected
+  FavPgcListResult dco_decode_fav_pgc_list_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return FavPgcListResult(
+      data: dco_decode_opt_box_autoadd_fav_pgc_list(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  FavPugvItem dco_decode_fav_pugv_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return FavPugvItem(
+      cover: dco_decode_opt_String(arr[0]),
+      marks: dco_decode_list_String(arr[1]),
+      seasonId: dco_decode_opt_box_autoadd_i_64(arr[2]),
+      status: dco_decode_opt_String(arr[3]),
+      title: dco_decode_opt_String(arr[4]),
+      ctime: dco_decode_opt_String(arr[5]),
+    );
+  }
+
+  @protected
+  FavPugvList dco_decode_fav_pugv_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return FavPugvList(
+      items: dco_decode_list_fav_pugv_item(arr[0]),
+      hasNext: dco_decode_opt_box_autoadd_bool(arr[1]),
+    );
+  }
+
+  @protected
+  FavPugvListResult dco_decode_fav_pugv_list_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return FavPugvListResult(
+      data: dco_decode_opt_box_autoadd_fav_pugv_list(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  FavSeasonDetail dco_decode_fav_season_detail(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return FavSeasonDetail(
+      info: dco_decode_opt_box_autoadd_sub_item(arr[0]),
+      medias: dco_decode_list_fav_season_media(arr[1]),
+    );
+  }
+
+  @protected
+  FavSeasonDetailResult dco_decode_fav_season_detail_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return FavSeasonDetailResult(
+      data: dco_decode_opt_box_autoadd_fav_season_detail(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  FavSeasonMedia dco_decode_fav_season_media(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 8)
+      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
+    return FavSeasonMedia(
+      id: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      title: dco_decode_opt_String(arr[1]),
+      cover: dco_decode_opt_String(arr[2]),
+      duration: dco_decode_opt_box_autoadd_i_64(arr[3]),
+      pubtime: dco_decode_opt_box_autoadd_i_64(arr[4]),
+      bvid: dco_decode_opt_String(arr[5]),
+      playCount: dco_decode_opt_box_autoadd_i_64(arr[6]),
+      danmakuCount: dco_decode_opt_box_autoadd_i_64(arr[7]),
+    );
+  }
+
+  @protected
+  FavSignature dco_decode_fav_signature(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return FavSignature(
+      appkey: dco_decode_String(arr[0]),
+      appsec: dco_decode_String(arr[1]),
+      ts: dco_decode_i_64(arr[2]),
+    );
+  }
+
+  @protected
+  FavTopicItem dco_decode_fav_topic_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return FavTopicItem(
+      id: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      name: dco_decode_opt_String(arr[1]),
+    );
+  }
+
+  @protected
+  FavTopicList dco_decode_fav_topic_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return FavTopicList(
+      items: dco_decode_list_fav_topic_item(arr[0]),
+      total: dco_decode_opt_box_autoadd_i_64(arr[1]),
+    );
+  }
+
+  @protected
+  FavTopicListResult dco_decode_fav_topic_list_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return FavTopicListResult(
+      data: dco_decode_opt_box_autoadd_fav_topic_list(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
   }
 
   @protected
@@ -11506,6 +13320,54 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<FavArticleItem> dco_decode_list_fav_article_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_fav_article_item).toList();
+  }
+
+  @protected
+  List<FavFolder> dco_decode_list_fav_folder(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_fav_folder).toList();
+  }
+
+  @protected
+  List<FavMedia> dco_decode_list_fav_media(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_fav_media).toList();
+  }
+
+  @protected
+  List<FavNote> dco_decode_list_fav_note(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_fav_note).toList();
+  }
+
+  @protected
+  List<FavPgcItem> dco_decode_list_fav_pgc_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_fav_pgc_item).toList();
+  }
+
+  @protected
+  List<FavPugvItem> dco_decode_list_fav_pugv_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_fav_pugv_item).toList();
+  }
+
+  @protected
+  List<FavSeasonMedia> dco_decode_list_fav_season_media(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_fav_season_media).toList();
+  }
+
+  @protected
+  List<FavTopicItem> dco_decode_list_fav_topic_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_fav_topic_item).toList();
+  }
+
+  @protected
   List<FeedVideoItem> dco_decode_list_feed_video_item(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_feed_video_item).toList();
@@ -12013,6 +13875,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<SpaceCheeseItem> dco_decode_list_space_cheese_item(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_space_cheese_item).toList();
+  }
+
+  @protected
+  List<SpaceFavGroup> dco_decode_list_space_fav_group(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_space_fav_group).toList();
   }
 
   @protected
@@ -13773,6 +15641,54 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  FavArticleList? dco_decode_opt_box_autoadd_fav_article_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_fav_article_list(raw);
+  }
+
+  @protected
+  FavDetail? dco_decode_opt_box_autoadd_fav_detail(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_fav_detail(raw);
+  }
+
+  @protected
+  FavFolder? dco_decode_opt_box_autoadd_fav_folder(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_fav_folder(raw);
+  }
+
+  @protected
+  FavFolderList? dco_decode_opt_box_autoadd_fav_folder_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_fav_folder_list(raw);
+  }
+
+  @protected
+  FavPgcList? dco_decode_opt_box_autoadd_fav_pgc_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_fav_pgc_list(raw);
+  }
+
+  @protected
+  FavPugvList? dco_decode_opt_box_autoadd_fav_pugv_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_fav_pugv_list(raw);
+  }
+
+  @protected
+  FavSeasonDetail? dco_decode_opt_box_autoadd_fav_season_detail(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_fav_season_detail(raw);
+  }
+
+  @protected
+  FavTopicList? dco_decode_opt_box_autoadd_fav_topic_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_fav_topic_list(raw);
+  }
+
+  @protected
   FilterRule? dco_decode_opt_box_autoadd_filter_rule(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_filter_rule(raw);
@@ -14536,6 +16452,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SubItem? dco_decode_opt_box_autoadd_sub_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_sub_item(raw);
+  }
+
+  @protected
   SubList? dco_decode_opt_box_autoadd_sub_list(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_sub_list(raw);
@@ -14659,6 +16581,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<EmotePackage>? dco_decode_opt_list_emote_package(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_list_emote_package(raw);
+  }
+
+  @protected
+  List<FavNote>? dco_decode_opt_list_fav_note(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_list_fav_note(raw);
   }
 
   @protected
@@ -14850,6 +16778,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<SkipSegment>? dco_decode_opt_list_skip_segment(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_list_skip_segment(raw);
+  }
+
+  @protected
+  List<SpaceFavGroup>? dco_decode_opt_list_space_fav_group(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_list_space_fav_group(raw);
   }
 
   @protected
@@ -16927,6 +18861,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SpaceFavGroup dco_decode_space_fav_group(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return SpaceFavGroup(
+      id: dco_decode_opt_box_autoadd_i_64(arr[0]),
+      name: dco_decode_opt_String(arr[1]),
+      count: dco_decode_opt_box_autoadd_i_64(arr[2]),
+      list: dco_decode_list_sub_item(arr[3]),
+    );
+  }
+
+  @protected
   SpaceFavItem dco_decode_space_fav_item(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -16938,6 +18886,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       cover: dco_decode_opt_String(arr[2]),
       count: dco_decode_opt_box_autoadd_i_64(arr[3]),
       isPublic: dco_decode_opt_box_autoadd_i_64(arr[4]),
+    );
+  }
+
+  @protected
+  SpaceFavResult dco_decode_space_fav_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return SpaceFavResult(
+      data: dco_decode_opt_list_space_fav_group(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
     );
   }
 
@@ -18496,6 +20458,78 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  FavArticleList sse_decode_box_autoadd_fav_article_list(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_fav_article_list(deserializer));
+  }
+
+  @protected
+  FavContext sse_decode_box_autoadd_fav_context(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_fav_context(deserializer));
+  }
+
+  @protected
+  FavDetail sse_decode_box_autoadd_fav_detail(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_fav_detail(deserializer));
+  }
+
+  @protected
+  FavFolder sse_decode_box_autoadd_fav_folder(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_fav_folder(deserializer));
+  }
+
+  @protected
+  FavFolderList sse_decode_box_autoadd_fav_folder_list(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_fav_folder_list(deserializer));
+  }
+
+  @protected
+  FavPgcList sse_decode_box_autoadd_fav_pgc_list(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_fav_pgc_list(deserializer));
+  }
+
+  @protected
+  FavPugvList sse_decode_box_autoadd_fav_pugv_list(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_fav_pugv_list(deserializer));
+  }
+
+  @protected
+  FavSeasonDetail sse_decode_box_autoadd_fav_season_detail(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_fav_season_detail(deserializer));
+  }
+
+  @protected
+  FavSignature sse_decode_box_autoadd_fav_signature(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_fav_signature(deserializer));
+  }
+
+  @protected
+  FavTopicList sse_decode_box_autoadd_fav_topic_list(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_fav_topic_list(deserializer));
+  }
+
+  @protected
   FeedContext sse_decode_box_autoadd_feed_context(
     SseDeserializer deserializer,
   ) {
@@ -19531,6 +21565,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SubItem sse_decode_box_autoadd_sub_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_sub_item(deserializer));
+  }
+
+  @protected
   SubList sse_decode_box_autoadd_sub_list(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_sub_list(deserializer));
@@ -20134,6 +22174,451 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   double sse_decode_f_64(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getFloat64();
+  }
+
+  @protected
+  FavArticleItem sse_decode_fav_article_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_opusId = sse_decode_opt_String(deserializer);
+    var var_content = sse_decode_opt_String(deserializer);
+    var var_authorName = sse_decode_opt_String(deserializer);
+    var var_coverUrl = sse_decode_opt_String(deserializer);
+    var var_like = sse_decode_opt_String(deserializer);
+    var var_pubTime = sse_decode_opt_String(deserializer);
+    return FavArticleItem(
+      opusId: var_opusId,
+      content: var_content,
+      authorName: var_authorName,
+      coverUrl: var_coverUrl,
+      like: var_like,
+      pubTime: var_pubTime,
+    );
+  }
+
+  @protected
+  FavArticleList sse_decode_fav_article_list(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_items = sse_decode_list_fav_article_item(deserializer);
+    var var_hasMore = sse_decode_opt_box_autoadd_bool(deserializer);
+    return FavArticleList(items: var_items, hasMore: var_hasMore);
+  }
+
+  @protected
+  FavArticleListResult sse_decode_fav_article_list_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_fav_article_list(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return FavArticleListResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  FavContext sse_decode_fav_context(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_baseUrl = sse_decode_String(deserializer);
+    var var_cookie = sse_decode_opt_String(deserializer);
+    var var_csrf = sse_decode_opt_String(deserializer);
+    var var_headers = sse_decode_list_record_string_string(deserializer);
+    var var_timeoutMs = sse_decode_u_64(deserializer);
+    var var_transport = sse_decode_transport_settings(deserializer);
+    return FavContext(
+      baseUrl: var_baseUrl,
+      cookie: var_cookie,
+      csrf: var_csrf,
+      headers: var_headers,
+      timeoutMs: var_timeoutMs,
+      transport: var_transport,
+    );
+  }
+
+  @protected
+  FavDetail sse_decode_fav_detail(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_info = sse_decode_opt_box_autoadd_fav_folder(deserializer);
+    var var_medias = sse_decode_list_fav_media(deserializer);
+    var var_hasMore = sse_decode_opt_box_autoadd_bool(deserializer);
+    return FavDetail(info: var_info, medias: var_medias, hasMore: var_hasMore);
+  }
+
+  @protected
+  FavDetailResult sse_decode_fav_detail_result(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_fav_detail(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return FavDetailResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  FavFolder sse_decode_fav_folder(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_i_64(deserializer);
+    var var_fid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_mid = sse_decode_i_64(deserializer);
+    var var_attr = sse_decode_i_64(deserializer);
+    var var_title = sse_decode_String(deserializer);
+    var var_cover = sse_decode_String(deserializer);
+    var var_upperMid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_upperName = sse_decode_opt_String(deserializer);
+    var var_upperFace = sse_decode_opt_String(deserializer);
+    var var_intro = sse_decode_opt_String(deserializer);
+    var var_favState = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_mediaCount = sse_decode_i_64(deserializer);
+    return FavFolder(
+      id: var_id,
+      fid: var_fid,
+      mid: var_mid,
+      attr: var_attr,
+      title: var_title,
+      cover: var_cover,
+      upperMid: var_upperMid,
+      upperName: var_upperName,
+      upperFace: var_upperFace,
+      intro: var_intro,
+      favState: var_favState,
+      mediaCount: var_mediaCount,
+    );
+  }
+
+  @protected
+  FavFolderList sse_decode_fav_folder_list(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_count = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_list = sse_decode_list_fav_folder(deserializer);
+    var var_hasMore = sse_decode_opt_box_autoadd_bool(deserializer);
+    return FavFolderList(
+      count: var_count,
+      list: var_list,
+      hasMore: var_hasMore,
+    );
+  }
+
+  @protected
+  FavFolderListResult sse_decode_fav_folder_list_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_fav_folder_list(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return FavFolderListResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  FavFolderResult sse_decode_fav_folder_result(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_fav_folder(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return FavFolderResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  FavMedia sse_decode_fav_media(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_kind = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_cover = sse_decode_opt_String(deserializer);
+    var var_intro = sse_decode_opt_String(deserializer);
+    var var_duration = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_upperMid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_upperName = sse_decode_opt_String(deserializer);
+    var var_upperFace = sse_decode_opt_String(deserializer);
+    var var_attr = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_playCount = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_danmakuCount = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_favTime = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_bvid = sse_decode_opt_String(deserializer);
+    var var_ogvTypeName = sse_decode_opt_String(deserializer);
+    var var_ogvSeasonId = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_ugcFirstCid = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return FavMedia(
+      id: var_id,
+      kind: var_kind,
+      title: var_title,
+      cover: var_cover,
+      intro: var_intro,
+      duration: var_duration,
+      upperMid: var_upperMid,
+      upperName: var_upperName,
+      upperFace: var_upperFace,
+      attr: var_attr,
+      playCount: var_playCount,
+      danmakuCount: var_danmakuCount,
+      favTime: var_favTime,
+      bvid: var_bvid,
+      ogvTypeName: var_ogvTypeName,
+      ogvSeasonId: var_ogvSeasonId,
+      ugcFirstCid: var_ugcFirstCid,
+    );
+  }
+
+  @protected
+  FavMoveMode sse_decode_fav_move_mode(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return FavMoveMode.values[inner];
+  }
+
+  @protected
+  FavMoveTarget sse_decode_fav_move_target(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return FavMoveTarget.values[inner];
+  }
+
+  @protected
+  FavNote sse_decode_fav_note(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_webUrl = sse_decode_opt_String(deserializer);
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_summary = sse_decode_opt_String(deserializer);
+    var var_message = sse_decode_opt_String(deserializer);
+    var var_pic = sse_decode_opt_String(deserializer);
+    var var_cvid = sse_decode_opt_String(deserializer);
+    var var_noteId = sse_decode_opt_String(deserializer);
+    return FavNote(
+      webUrl: var_webUrl,
+      title: var_title,
+      summary: var_summary,
+      message: var_message,
+      pic: var_pic,
+      cvid: var_cvid,
+      noteId: var_noteId,
+    );
+  }
+
+  @protected
+  FavNoteListResult sse_decode_fav_note_list_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_list_fav_note(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return FavNoteListResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  FavOrder sse_decode_fav_order(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return FavOrder.values[inner];
+  }
+
+  @protected
+  FavPgcItem sse_decode_fav_pgc_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_seasonId = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_cover = sse_decode_opt_String(deserializer);
+    var var_isFinish = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_badge = sse_decode_opt_String(deserializer);
+    var var_newEpIndexShow = sse_decode_opt_String(deserializer);
+    var var_renewalTime = sse_decode_opt_String(deserializer);
+    var var_progress = sse_decode_opt_String(deserializer);
+    return FavPgcItem(
+      seasonId: var_seasonId,
+      title: var_title,
+      cover: var_cover,
+      isFinish: var_isFinish,
+      badge: var_badge,
+      newEpIndexShow: var_newEpIndexShow,
+      renewalTime: var_renewalTime,
+      progress: var_progress,
+    );
+  }
+
+  @protected
+  FavPgcList sse_decode_fav_pgc_list(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_list = sse_decode_list_fav_pgc_item(deserializer);
+    var var_total = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return FavPgcList(list: var_list, total: var_total);
+  }
+
+  @protected
+  FavPgcListResult sse_decode_fav_pgc_list_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_fav_pgc_list(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return FavPgcListResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  FavPugvItem sse_decode_fav_pugv_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_cover = sse_decode_opt_String(deserializer);
+    var var_marks = sse_decode_list_String(deserializer);
+    var var_seasonId = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_status = sse_decode_opt_String(deserializer);
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_ctime = sse_decode_opt_String(deserializer);
+    return FavPugvItem(
+      cover: var_cover,
+      marks: var_marks,
+      seasonId: var_seasonId,
+      status: var_status,
+      title: var_title,
+      ctime: var_ctime,
+    );
+  }
+
+  @protected
+  FavPugvList sse_decode_fav_pugv_list(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_items = sse_decode_list_fav_pugv_item(deserializer);
+    var var_hasNext = sse_decode_opt_box_autoadd_bool(deserializer);
+    return FavPugvList(items: var_items, hasNext: var_hasNext);
+  }
+
+  @protected
+  FavPugvListResult sse_decode_fav_pugv_list_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_fav_pugv_list(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return FavPugvListResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  FavSeasonDetail sse_decode_fav_season_detail(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_info = sse_decode_opt_box_autoadd_sub_item(deserializer);
+    var var_medias = sse_decode_list_fav_season_media(deserializer);
+    return FavSeasonDetail(info: var_info, medias: var_medias);
+  }
+
+  @protected
+  FavSeasonDetailResult sse_decode_fav_season_detail_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_fav_season_detail(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return FavSeasonDetailResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  FavSeasonMedia sse_decode_fav_season_media(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_cover = sse_decode_opt_String(deserializer);
+    var var_duration = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_pubtime = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_bvid = sse_decode_opt_String(deserializer);
+    var var_playCount = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_danmakuCount = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return FavSeasonMedia(
+      id: var_id,
+      title: var_title,
+      cover: var_cover,
+      duration: var_duration,
+      pubtime: var_pubtime,
+      bvid: var_bvid,
+      playCount: var_playCount,
+      danmakuCount: var_danmakuCount,
+    );
+  }
+
+  @protected
+  FavSignature sse_decode_fav_signature(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_appkey = sse_decode_String(deserializer);
+    var var_appsec = sse_decode_String(deserializer);
+    var var_ts = sse_decode_i_64(deserializer);
+    return FavSignature(appkey: var_appkey, appsec: var_appsec, ts: var_ts);
+  }
+
+  @protected
+  FavTopicItem sse_decode_fav_topic_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_name = sse_decode_opt_String(deserializer);
+    return FavTopicItem(id: var_id, name: var_name);
+  }
+
+  @protected
+  FavTopicList sse_decode_fav_topic_list(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_items = sse_decode_list_fav_topic_item(deserializer);
+    var var_total = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return FavTopicList(items: var_items, total: var_total);
+  }
+
+  @protected
+  FavTopicListResult sse_decode_fav_topic_list_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_fav_topic_list(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return FavTopicListResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
   }
 
   @protected
@@ -21056,6 +23541,110 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <EmotePackage>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_emote_package(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<FavArticleItem> sse_decode_list_fav_article_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <FavArticleItem>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_fav_article_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<FavFolder> sse_decode_list_fav_folder(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <FavFolder>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_fav_folder(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<FavMedia> sse_decode_list_fav_media(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <FavMedia>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_fav_media(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<FavNote> sse_decode_list_fav_note(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <FavNote>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_fav_note(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<FavPgcItem> sse_decode_list_fav_pgc_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <FavPgcItem>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_fav_pgc_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<FavPugvItem> sse_decode_list_fav_pugv_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <FavPugvItem>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_fav_pugv_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<FavSeasonMedia> sse_decode_list_fav_season_media(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <FavSeasonMedia>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_fav_season_media(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<FavTopicItem> sse_decode_list_fav_topic_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <FavTopicItem>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_fav_topic_item(deserializer));
     }
     return ans_;
   }
@@ -22127,6 +24716,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <SpaceCheeseItem>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_space_cheese_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SpaceFavGroup> sse_decode_list_space_fav_group(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SpaceFavGroup>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_space_fav_group(deserializer));
     }
     return ans_;
   }
@@ -24281,6 +26884,110 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  FavArticleList? sse_decode_opt_box_autoadd_fav_article_list(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_fav_article_list(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  FavDetail? sse_decode_opt_box_autoadd_fav_detail(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_fav_detail(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  FavFolder? sse_decode_opt_box_autoadd_fav_folder(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_fav_folder(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  FavFolderList? sse_decode_opt_box_autoadd_fav_folder_list(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_fav_folder_list(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  FavPgcList? sse_decode_opt_box_autoadd_fav_pgc_list(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_fav_pgc_list(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  FavPugvList? sse_decode_opt_box_autoadd_fav_pugv_list(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_fav_pugv_list(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  FavSeasonDetail? sse_decode_opt_box_autoadd_fav_season_detail(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_fav_season_detail(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  FavTopicList? sse_decode_opt_box_autoadd_fav_topic_list(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_fav_topic_list(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   FilterRule? sse_decode_opt_box_autoadd_filter_rule(
     SseDeserializer deserializer,
   ) {
@@ -25767,6 +28474,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SubItem? sse_decode_opt_box_autoadd_sub_item(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_sub_item(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   SubList? sse_decode_opt_box_autoadd_sub_list(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -26003,6 +28721,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_list_emote_package(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  List<FavNote>? sse_decode_opt_list_fav_note(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_list_fav_note(deserializer));
     } else {
       return null;
     }
@@ -26388,6 +29117,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_list_skip_segment(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  List<SpaceFavGroup>? sse_decode_opt_list_space_fav_group(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_list_space_fav_group(deserializer));
     } else {
       return null;
     }
@@ -28858,6 +31600,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SpaceFavGroup sse_decode_space_fav_group(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_name = sse_decode_opt_String(deserializer);
+    var var_count = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_list = sse_decode_list_sub_item(deserializer);
+    return SpaceFavGroup(
+      id: var_id,
+      name: var_name,
+      count: var_count,
+      list: var_list,
+    );
+  }
+
+  @protected
   SpaceFavItem sse_decode_space_fav_item(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_mediaId = sse_decode_opt_box_autoadd_i_64(deserializer);
@@ -28871,6 +31628,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       cover: var_cover,
       count: var_count,
       isPublic: var_isPublic,
+    );
+  }
+
+  @protected
+  SpaceFavResult sse_decode_space_fav_result(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_list_space_fav_group(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return SpaceFavResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
     );
   }
 
@@ -30588,6 +33360,96 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_fav_article_list(
+    FavArticleList self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_fav_article_list(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_fav_context(
+    FavContext self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_fav_context(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_fav_detail(
+    FavDetail self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_fav_detail(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_fav_folder(
+    FavFolder self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_fav_folder(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_fav_folder_list(
+    FavFolderList self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_fav_folder_list(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_fav_pgc_list(
+    FavPgcList self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_fav_pgc_list(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_fav_pugv_list(
+    FavPugvList self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_fav_pugv_list(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_fav_season_detail(
+    FavSeasonDetail self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_fav_season_detail(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_fav_signature(
+    FavSignature self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_fav_signature(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_fav_topic_list(
+    FavTopicList self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_fav_topic_list(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_feed_context(
     FeedContext self,
     SseSerializer serializer,
@@ -31815,6 +34677,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_sub_item(SubItem self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_sub_item(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_sub_list(SubList self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_sub_list(self, serializer);
@@ -32292,6 +35160,326 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_f_64(double self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putFloat64(self);
+  }
+
+  @protected
+  void sse_encode_fav_article_item(
+    FavArticleItem self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.opusId, serializer);
+    sse_encode_opt_String(self.content, serializer);
+    sse_encode_opt_String(self.authorName, serializer);
+    sse_encode_opt_String(self.coverUrl, serializer);
+    sse_encode_opt_String(self.like, serializer);
+    sse_encode_opt_String(self.pubTime, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_article_list(
+    FavArticleList self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_fav_article_item(self.items, serializer);
+    sse_encode_opt_box_autoadd_bool(self.hasMore, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_article_list_result(
+    FavArticleListResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_fav_article_list(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_context(FavContext self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.baseUrl, serializer);
+    sse_encode_opt_String(self.cookie, serializer);
+    sse_encode_opt_String(self.csrf, serializer);
+    sse_encode_list_record_string_string(self.headers, serializer);
+    sse_encode_u_64(self.timeoutMs, serializer);
+    sse_encode_transport_settings(self.transport, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_detail(FavDetail self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_fav_folder(self.info, serializer);
+    sse_encode_list_fav_media(self.medias, serializer);
+    sse_encode_opt_box_autoadd_bool(self.hasMore, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_detail_result(
+    FavDetailResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_fav_detail(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_folder(FavFolder self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_64(self.id, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.fid, serializer);
+    sse_encode_i_64(self.mid, serializer);
+    sse_encode_i_64(self.attr, serializer);
+    sse_encode_String(self.title, serializer);
+    sse_encode_String(self.cover, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.upperMid, serializer);
+    sse_encode_opt_String(self.upperName, serializer);
+    sse_encode_opt_String(self.upperFace, serializer);
+    sse_encode_opt_String(self.intro, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.favState, serializer);
+    sse_encode_i_64(self.mediaCount, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_folder_list(
+    FavFolderList self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.count, serializer);
+    sse_encode_list_fav_folder(self.list, serializer);
+    sse_encode_opt_box_autoadd_bool(self.hasMore, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_folder_list_result(
+    FavFolderListResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_fav_folder_list(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_folder_result(
+    FavFolderResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_fav_folder(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_media(FavMedia self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.id, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.kind, serializer);
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_String(self.cover, serializer);
+    sse_encode_opt_String(self.intro, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.duration, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.upperMid, serializer);
+    sse_encode_opt_String(self.upperName, serializer);
+    sse_encode_opt_String(self.upperFace, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.attr, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.playCount, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.danmakuCount, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.favTime, serializer);
+    sse_encode_opt_String(self.bvid, serializer);
+    sse_encode_opt_String(self.ogvTypeName, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.ogvSeasonId, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.ugcFirstCid, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_move_mode(FavMoveMode self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_move_target(
+    FavMoveTarget self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_note(FavNote self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.webUrl, serializer);
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_String(self.summary, serializer);
+    sse_encode_opt_String(self.message, serializer);
+    sse_encode_opt_String(self.pic, serializer);
+    sse_encode_opt_String(self.cvid, serializer);
+    sse_encode_opt_String(self.noteId, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_note_list_result(
+    FavNoteListResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_list_fav_note(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_order(FavOrder self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_pgc_item(FavPgcItem self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.seasonId, serializer);
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_String(self.cover, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.isFinish, serializer);
+    sse_encode_opt_String(self.badge, serializer);
+    sse_encode_opt_String(self.newEpIndexShow, serializer);
+    sse_encode_opt_String(self.renewalTime, serializer);
+    sse_encode_opt_String(self.progress, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_pgc_list(FavPgcList self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_fav_pgc_item(self.list, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.total, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_pgc_list_result(
+    FavPgcListResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_fav_pgc_list(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_pugv_item(FavPugvItem self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.cover, serializer);
+    sse_encode_list_String(self.marks, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.seasonId, serializer);
+    sse_encode_opt_String(self.status, serializer);
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_String(self.ctime, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_pugv_list(FavPugvList self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_fav_pugv_item(self.items, serializer);
+    sse_encode_opt_box_autoadd_bool(self.hasNext, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_pugv_list_result(
+    FavPugvListResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_fav_pugv_list(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_season_detail(
+    FavSeasonDetail self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_sub_item(self.info, serializer);
+    sse_encode_list_fav_season_media(self.medias, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_season_detail_result(
+    FavSeasonDetailResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_fav_season_detail(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_season_media(
+    FavSeasonMedia self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.id, serializer);
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_String(self.cover, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.duration, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.pubtime, serializer);
+    sse_encode_opt_String(self.bvid, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.playCount, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.danmakuCount, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_signature(FavSignature self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.appkey, serializer);
+    sse_encode_String(self.appsec, serializer);
+    sse_encode_i_64(self.ts, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_topic_item(FavTopicItem self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.id, serializer);
+    sse_encode_opt_String(self.name, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_topic_list(FavTopicList self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_fav_topic_item(self.items, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.total, serializer);
+  }
+
+  @protected
+  void sse_encode_fav_topic_list_result(
+    FavTopicListResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_fav_topic_list(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
   }
 
   @protected
@@ -32954,6 +36142,99 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_emote_package(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_fav_article_item(
+    List<FavArticleItem> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_fav_article_item(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_fav_folder(
+    List<FavFolder> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_fav_folder(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_fav_media(
+    List<FavMedia> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_fav_media(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_fav_note(List<FavNote> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_fav_note(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_fav_pgc_item(
+    List<FavPgcItem> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_fav_pgc_item(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_fav_pugv_item(
+    List<FavPugvItem> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_fav_pugv_item(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_fav_season_media(
+    List<FavSeasonMedia> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_fav_season_media(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_fav_topic_item(
+    List<FavTopicItem> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_fav_topic_item(item, serializer);
     }
   }
 
@@ -33929,6 +37210,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_space_cheese_item(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_space_fav_group(
+    List<SpaceFavGroup> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_space_fav_group(item, serializer);
     }
   }
 
@@ -35567,6 +38860,110 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_fav_article_list(
+    FavArticleList? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_fav_article_list(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_fav_detail(
+    FavDetail? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_fav_detail(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_fav_folder(
+    FavFolder? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_fav_folder(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_fav_folder_list(
+    FavFolderList? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_fav_folder_list(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_fav_pgc_list(
+    FavPgcList? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_fav_pgc_list(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_fav_pugv_list(
+    FavPugvList? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_fav_pugv_list(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_fav_season_detail(
+    FavSeasonDetail? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_fav_season_detail(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_fav_topic_list(
+    FavTopicList? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_fav_topic_list(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_box_autoadd_filter_rule(
     FilterRule? self,
     SseSerializer serializer,
@@ -37059,6 +40456,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_sub_item(
+    SubItem? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_sub_item(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_box_autoadd_sub_list(
     SubList? self,
     SseSerializer serializer,
@@ -37306,6 +40716,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_list_emote_package(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_list_fav_note(
+    List<FavNote>? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_list_fav_note(self, serializer);
     }
   }
 
@@ -37696,6 +41119,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_list_skip_segment(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_list_space_fav_group(
+    List<SpaceFavGroup>? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_list_space_fav_group(self, serializer);
     }
   }
 
@@ -39440,6 +42876,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_space_fav_group(
+    SpaceFavGroup self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_i_64(self.id, serializer);
+    sse_encode_opt_String(self.name, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.count, serializer);
+    sse_encode_list_sub_item(self.list, serializer);
+  }
+
+  @protected
   void sse_encode_space_fav_item(SpaceFavItem self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_opt_box_autoadd_i_64(self.mediaId, serializer);
@@ -39447,6 +42895,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_opt_String(self.cover, serializer);
     sse_encode_opt_box_autoadd_i_64(self.count, serializer);
     sse_encode_opt_box_autoadd_i_64(self.isPublic, serializer);
+  }
+
+  @protected
+  void sse_encode_space_fav_result(
+    SpaceFavResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_list_space_fav_group(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
   }
 
   @protected

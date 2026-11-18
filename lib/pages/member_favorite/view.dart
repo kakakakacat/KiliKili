@@ -4,7 +4,7 @@ import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/space/space_fav/data.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/pages/member_favorite/controller.dart';
 import 'package:kilikili/pages/member_favorite/widget/item.dart';
 import 'package:kilikili/utils/grid.dart';
@@ -66,7 +66,7 @@ class _MemberFavoriteState extends State<MemberFavorite>
 
   Widget _buildBody(
     ThemeData theme,
-    LoadingState<List<SpaceFavData>?> loadingState,
+    LoadingState<List<SpaceFavGroup>?> loadingState,
   ) {
     return switch (loadingState) {
       Loading() => SliverPadding(
@@ -107,7 +107,7 @@ class _MemberFavoriteState extends State<MemberFavorite>
 
   Widget _buildItem(
     ThemeData theme, {
-    required Rx<SpaceFavData> data,
+    required Rx<SpaceFavGroup> data,
     required RxBool isEnd,
     required bool isFav,
   }) {
@@ -146,7 +146,7 @@ class _MemberFavoriteState extends State<MemberFavorite>
                             style: const TextStyle(fontSize: 14),
                           ),
                           TextSpan(
-                            text: ' ${data.value.mediaListResponse?.count}',
+                            text: ' ${data.value.count}',
                             style: TextStyle(
                               fontSize: 13,
                               color: theme.colorScheme.outline,
@@ -162,11 +162,11 @@ class _MemberFavoriteState extends State<MemberFavorite>
           ),
         ),
         Obx(() {
-          final list = data.value.mediaListResponse?.list;
+          final list = data.value.list;
           if (!_controller.isExpand(isFav)) {
             return const SliverToBoxAdapter();
           }
-          if (list != null && list.isNotEmpty) {
+          if (list.isNotEmpty) {
             return SliverGrid.builder(
               gridDelegate: coverGridDelegate,
               itemCount: list.length,
@@ -176,9 +176,7 @@ class _MemberFavoriteState extends State<MemberFavorite>
                   item: item,
                   onDelete: (isDeleted) {
                     if (isDeleted ?? false) {
-                      _controller.favState
-                        ..value.mediaListResponse?.list?.remove(item)
-                        ..refresh();
+                      _controller.removeFav(item);
                     }
                   },
                 );

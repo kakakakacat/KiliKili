@@ -1,0 +1,48 @@
+{
+  "count": 3,
+  "has_more": false,
+  "list": [
+    {
+      "attr": 0,
+      "cover": "https://example.invalid/bfs/archive/a1.jpg",
+      "fav_state": 0,
+      "fid": 21,
+      "id": 2101,
+      "intro": "",
+      "media_count": 37,
+      "mid": 800000601,
+      "title": "默认收藏夹",
+      "upper_face": "https://example.invalid/bfs/face/u1.jpg",
+      "upper_mid": 800000601,
+      "upper_name": "示例用户"
+    },
+    {
+      "attr": 23,
+      "cover": "",
+      "fav_state": 1,
+      "fid": 22,
+      "id": 2102,
+      "intro": "只有自己看得见",
+      "media_count": 2,
+      "mid": 800000601,
+      "title": "私密夹",
+      "upper_face": null,
+      "upper_mid": null,
+      "upper_name": null
+    },
+    {
+      "attr": 0,
+      "cover": "",
+      "fav_state": null,
+      "fid": null,
+      "id": 2103,
+      "intro": null,
+      "media_count": 0,
+      "mid": 0,
+      "title": "什么都没有的那一项",
+      "upper_face": null,
+      "upper_mid": null,
+      "upper_name": null
+    }
+  ]
+}

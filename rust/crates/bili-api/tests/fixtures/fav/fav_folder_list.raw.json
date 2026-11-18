@@ -1,0 +1,53 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "count": 3,
+    "has_more": false,
+    "season_count": 0,
+    "list": [
+      {
+        "id": 2101,
+        "fid": 21,
+        "mid": 800000601,
+        "attr": 0,
+        "title": "默认收藏夹",
+        "cover": "https://example.invalid/bfs/archive/a1.jpg",
+        "upper": {
+          "mid": 800000601,
+          "name": "示例用户",
+          "face": "https://example.invalid/bfs/face/u1.jpg",
+          "followed": false,
+          "vip_type": 0
+        },
+        "cover_type": 2,
+        "intro": "",
+        "ctime": 1700000001,
+        "mtime": 1700000002,
+        "state": 0,
+        "fav_state": 0,
+        "like_state": 0,
+        "media_count": 37,
+        "view_count": 0,
+        "type": 11
+      },
+      {
+        "id": 2102,
+        "fid": 22,
+        "mid": 800000601,
+        "attr": 23,
+        "title": "私密夹",
+        "cover": "",
+        "intro": "只有自己看得见",
+        "media_count": 2,
+        "fav_state": 1,
+        "type": 11
+      },
+      {
+        "id": 2103,
+        "title": "什么都没有的那一项"
+      }
+    ]
+  }
+}

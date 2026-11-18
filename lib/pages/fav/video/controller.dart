@@ -1,11 +1,9 @@
-import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/fav/fav_folder/data.dart';
-import 'package:kilikili/models_new/fav/fav_folder/list.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/utils/accounts.dart';
 
-class FavController extends CommonListController<FavFolderData, FavFolderInfo> {
+class FavController extends CommonListController<FavFolderList, FavFolder> {
   late final account = Accounts.main;
 
   @override
@@ -24,7 +22,7 @@ class FavController extends CommonListController<FavFolderData, FavFolderInfo> {
   }
 
   @override
-  List<FavFolderInfo>? getDataList(FavFolderData response) {
+  List<FavFolder>? getDataList(FavFolderList response) {
     if (response.hasMore == false) {
       isEnd = true;
     }
@@ -32,9 +30,10 @@ class FavController extends CommonListController<FavFolderData, FavFolderInfo> {
   }
 
   @override
-  Future<LoadingState<FavFolderData>> customGetData() => FavHttp.userfavFolder(
-    pn: page,
-    ps: 20,
-    mid: account.mid,
-  );
+  Future<LoadingState<FavFolderList>> customGetData() =>
+      RustFav.userFavFolder(
+        pn: page,
+        ps: 20,
+        mid: account.mid,
+      );
 }

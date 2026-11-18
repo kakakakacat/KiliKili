@@ -1,13 +1,10 @@
 import 'package:kilikili/common/widgets/custom_icon.dart';
-import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/account_type.dart';
 import 'package:kilikili/models/common/later_view_type.dart';
 import 'package:kilikili/models/common/mine_tab_type.dart';
 import 'package:kilikili/models/common/theme/theme_type.dart';
-import 'package:kilikili/models_new/fav/fav_folder/data.dart';
-import 'package:kilikili/models_new/fav/fav_folder/list.dart';
-import 'package:kilikili/models_new/sub/sub/list.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
 import 'package:kilikili/services/account_service.dart';
 import 'package:kilikili/utils/accounts.dart';
@@ -19,7 +16,6 @@ import 'package:kilikili/utils/storage_pref.dart';
 import 'package:kilikili/utils/theme_utils.dart';
 import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/services/rust/rust_user.dart';
-import 'package:kilikili/services/rust/sub_compat.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -355,17 +351,17 @@ mixin MineRefreshMixin<R, T> on CommonListController<R, T> {
   }
 }
 
-class FavCtr extends CommonListController<FavFolderData, FavFolderInfo>
+class FavCtr extends CommonListController<FavFolderList, FavFolder>
     with MineRefreshMixin {
   @override
-  List<FavFolderInfo>? getDataList(FavFolderData response) {
+  List<FavFolder>? getDataList(FavFolderList response) {
     count = response.count;
     if (response.hasMore == false) isEnd = true;
     return response.list;
   }
 
   @override
-  Future<LoadingState<FavFolderData>> customGetData() => FavHttp.userfavFolder(
+  Future<LoadingState<FavFolderList>> customGetData() => RustFav.userFavFolder(
     pn: page,
     ps: _ps,
     mid: Accounts.main.mid,
@@ -424,14 +420,13 @@ class LaterCtr extends CommonListController<LaterPage, LaterItem>
   );
 }
 
-class SubCtr extends CommonListController<SubList, SubItemModel>
+class SubCtr extends CommonListController<SubList, SubItem>
     with MineRefreshMixin {
   @override
-  List<SubItemModel>? getDataList(SubList response) {
+  List<SubItem>? getDataList(SubList response) {
     count = response.count;
     if (response.hasMore == false) isEnd = true;
-    // 见 `lib/services/rust/sub_compat.dart`：合集详情页那条接口还在 Dart。
-    return response.list.map((e) => e.toItemModel()).toList();
+    return response.list;
   }
 
   @override

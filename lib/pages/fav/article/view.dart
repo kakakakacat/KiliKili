@@ -2,7 +2,7 @@ import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/fav/fav_article/item.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/pages/fav/article/controller.dart';
 import 'package:kilikili/pages/fav/article/widget/item.dart';
 import 'package:kilikili/utils/grid.dart';
@@ -48,7 +48,7 @@ class _FavArticlePageState extends State<FavArticlePage>
     );
   }
 
-  Widget _buildBody(LoadingState<List<FavArticleItemModel>?> loadingState) {
+  Widget _buildBody(LoadingState<List<FavArticleItem>?> loadingState) {
     return switch (loadingState) {
       Loading() => gridSkeleton,
       Success(:final response) =>
@@ -60,7 +60,7 @@ class _FavArticlePageState extends State<FavArticlePage>
                     _favArticleController.onLoadMore();
                   }
                   final item = response[index];
-                  return FavArticleItem(
+                  return FavArticleCard(
                     item: item,
                     onDelete: () => showConfirmDialog(
                       context: context,

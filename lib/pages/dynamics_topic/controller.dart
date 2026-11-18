@@ -1,5 +1,5 @@
 import 'package:kilikili/http/dynamics.dart';
-import 'package:kilikili/http/fav.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models_new/dynamic/dyn_topic_feed/item.dart';
 import 'package:kilikili/models_new/dynamic/dyn_topic_feed/topic_card_list.dart';
@@ -100,9 +100,8 @@ class DynTopicController
       return;
     }
     final isFav = this.isFav.value;
-    final res = isFav
-        ? await FavHttp.delFavTopic(topicId)
-        : await FavHttp.addFavTopic(topicId);
+    // 传目标状态：isFav 是当前状态，目标是它的反面。
+    final res = await RustFav.favTopicWrite(topicId: topicId, fav: !isFav);
     if (res.isSuccess) {
       if (isFav) {
         topState.value.data!.topicItem!.fav -= 1;
@@ -121,7 +120,7 @@ class DynTopicController
       return;
     }
     final isLike = this.isLike.value;
-    final res = await FavHttp.likeTopic(topicId, isLike);
+    final res = await RustFav.likeTopic(topicId: topicId, like: !isLike);
     if (res.isSuccess) {
       if (isLike) {
         topState.value.data!.topicItem!.like -= 1;

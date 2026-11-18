@@ -6,7 +6,7 @@ import 'package:kilikili/grpc/bilibili/app/listener/v1.pbenum.dart'
     show PlaylistSource;
 import 'package:kilikili/models/common/badge_type.dart';
 import 'package:kilikili/models/common/stat_type.dart';
-import 'package:kilikili/models_new/fav/fav_detail/media.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/pages/audio/view.dart';
 import 'package:kilikili/pages/fav_detail/controller.dart';
 import 'package:kilikili/utils/date_utils.dart';
@@ -18,7 +18,7 @@ import 'package:material_ui/material_ui.dart';
 
 // 收藏视频卡片 - 水平布局
 class FavVideoCardH extends StatelessWidget {
-  final FavDetailItemModel item;
+  final FavMedia item;
   final int? index;
   final BaseFavController? ctr;
 
@@ -34,11 +34,11 @@ class FavVideoCardH extends StatelessWidget {
   void _onTap() {
     // 0/4/16/...: 正常；9: up自己删除；1: 其他原因删除
     if (const [1, 9].contains(item.attr)) {
-      Get.toNamed('/member?mid=${item.upper?.mid}');
+      Get.toNamed('/member?mid=${item.upperMid}');
       return;
     }
 
-    switch (item.type) {
+    switch (item.kind) {
       case 12:
         AudioPage.toAudioPage(
           oid: item.id!,
@@ -48,7 +48,7 @@ class FavVideoCardH extends StatelessWidget {
         break;
       case 24:
         PageUtils.viewPgc(
-          seasonId: item.ogv!.seasonId,
+          seasonId: item.ogvSeasonId,
           epId: item.id,
         );
         break;
@@ -76,14 +76,14 @@ class FavVideoCardH extends StatelessWidget {
             cover: item.cover,
             bvid: item.bvid,
           );
-    final badge = item.type == 12 ? '音频' : item.ogv?.typeName;
+    final badge = item.kind == 12 ? '音频' : item.ogvTypeName;
     final date = DateFormatUtils.dateFormat(item.favTime);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       child: CoverScrimCard(
         cover: item.cover,
         title: item.title ?? '',
-        upName: item.upper?.name,
+        upName: item.upperName,
         onTap: isSort
             ? null
             : enableMultiSelect
@@ -91,11 +91,11 @@ class FavVideoCardH extends StatelessWidget {
             : _onTap,
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        topStats: item.type == 24
+        topStats: item.kind == 24
             ? const []
             : [
-                (StatType.play, item.cntInfo?.play),
-                (StatType.danmaku, item.cntInfo?.danmaku),
+                (StatType.play, item.playCount),
+                (StatType.danmaku, item.danmakuCount),
               ],
         topDuration: item.duration != null && item.duration! > 0
             ? DurationUtils.formatDuration(item.duration)
@@ -104,17 +104,19 @@ class FavVideoCardH extends StatelessWidget {
           if (badge != null && badge.isNotEmpty)
             PBadge(
               text: badge,
-              top: item.type != 24 || (item.duration ?? 0) > 0 ? 54 : 6,
+              top: item.kind != 24 || (item.duration ?? 0) > 0 ? 54 : 6,
               right: 6,
               type: PBadgeType.gray,
             ),
         ],
         foregroundOverlays: [
           if (!isSort)
-            Positioned.fill(child: selectMask(colorScheme, item.checked)),
+            Positioned.fill(
+              child: selectMask(colorScheme, ctr!.isChecked(item)),
+            ),
         ],
         metaBuilder: (context, colors) => [
-          if (item.type == 24 && item.intro?.isNotEmpty == true)
+          if (item.kind == 24 && item.intro?.isNotEmpty == true)
             Flexible(
               child: Text(
                 item.intro!,
@@ -152,7 +154,7 @@ class FavVideoCardH extends StatelessWidget {
                         TextButton(
                           onPressed: () {
                             Get.back();
-                            ctr!.onCancelFav(index!, item.id!, item.type!);
+                            ctr!.onCancelFav(index!, item.id!, item.kind!);
                           },
                           child: const Text('确定取消'),
                         ),

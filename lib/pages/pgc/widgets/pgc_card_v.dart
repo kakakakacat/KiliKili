@@ -2,7 +2,7 @@ import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/models/common/badge_type.dart';
-import 'package:kilikili/models_new/fav/fav_pgc/list.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
@@ -14,13 +14,13 @@ class PgcCardV extends StatelessWidget {
     required this.item,
   });
 
-  final FavPgcItemModel item;
+  final FavPgcItem item;
 
   void onLongPress() => showPgcCover(title: item.title, cover: item.cover);
 
   @override
   Widget build(BuildContext context) {
-    final subtitle = item.progress ?? item.newEp?.indexShow;
+    final subtitle = item.progress ?? item.newEpIndexShow;
     return CoverScrimCard(
       cover: item.cover,
       title: item.title!,

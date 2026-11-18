@@ -1,10 +1,9 @@
 import 'dart:async' show FutureOr, Timer;
 
-import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/services/rust/rust_history.dart';
 import 'package:kilikili/models/common/video/source_type.dart';
-import 'package:kilikili/models_new/fav/fav_folder/data.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/models_new/video/video_detail/data.dart';
 import 'package:kilikili/models_new/video/video_detail/episode.dart';
 import 'package:kilikili/models_new/video/video_detail/stat_detail.dart';
@@ -161,17 +160,30 @@ abstract class CommonIntroController extends GetxController
 }
 
 mixin FavMixin on TripleMixin {
-  Set? favIds;
+  /// 服务端说的「这个资源已经在哪几个夹子里」。`null` 表示还没查过。
+  Set<int>? favIds;
+
+  /// 收藏面板上**当前的勾选**。初值就是 [favIds]。
+  ///
+  /// 基线把勾选态直接写回列表项的 `favState`，列表项迁到 Rust 之后字段是
+  /// final 的——而勾选本来也不是协议的一部分，它是界面状态（AGENTS.md §2）。
+  final Set<int> selectedFavIds = <int>{};
+
+  /// 面板上新建出来的收藏夹 id。
+  ///
+  /// 它们的 `mediaCount` 来自新建时的响应（0），而界面要显示「1 个内容」
+  /// ——那个 1 是本次勾选带来的，和已有夹子的 +1 是同一回事，所以统一由
+  /// [favFolderDisplayCount] 算，不单独记。
   int? quickFavId;
   late final enableQuickFav = Pref.enableQuickFav;
-  final Rx<FavFolderData> favFolderData = FavFolderData().obs;
+  final Rxn<FavFolderList> favFolderData = Rxn<FavFolderList>();
 
   (Object, int) get getFavRidType;
 
-  Future<LoadingState<FavFolderData>> queryVideoInFolder() async {
+  Future<LoadingState<FavFolderList>> queryVideoInFolder() async {
     favIds = null;
     final (rid, type) = getFavRidType;
-    final res = await FavHttp.videoInFolder(
+    final res = await RustFav.videoInFolder(
       mid: Accounts.main.mid,
       rid: rid,
       type: type,
@@ -179,11 +191,22 @@ mixin FavMixin on TripleMixin {
     if (res case Success(:final response)) {
       favFolderData.value = response;
       favIds = response.list
-          ?.where((item) => item.favState == 1)
+          .where((item) => item.favState == 1)
           .map((item) => item.id)
           .toSet();
+      selectedFavIds
+        ..clear()
+        ..addAll(favIds!);
     }
     return res;
+  }
+
+  /// 面板上该显示的内容数：服务端给的那个，加上本次勾选的增减。
+  int favFolderDisplayCount(FavFolder item) {
+    final wasFaved = favIds?.contains(item.id) == true;
+    final isSelected = selectedFavIds.contains(item.id);
+    if (isSelected == wasFaved) return item.mediaCount;
+    return item.mediaCount + (isSelected ? 1 : -1);
   }
 
   int get favFolderId {
@@ -191,7 +214,7 @@ mixin FavMixin on TripleMixin {
       return this.quickFavId!;
     }
     final quickFavId = Pref.quickFavId;
-    final list = favFolderData.value.list!;
+    final list = favFolderData.value!.list;
     if (quickFavId != null) {
       final folderInfo = list.firstWhereOrNull((e) => e.id == quickFavId);
       if (folderInfo != null) {
@@ -234,8 +257,8 @@ mixin FavMixin on TripleMixin {
         if (res.isSuccess) {
           final hasFav = this.hasFav.value;
           final result = hasFav
-              ? await FavHttp.unfavAll(rid: rid, type: type)
-              : await FavHttp.favVideo(
+              ? await RustFav.unfavAll(rid: rid, type: type)
+              : await RustFav.favVideo(
                   resources: '$rid:$type',
                   addIds: favFolderId.toString(),
                 );
@@ -254,26 +277,23 @@ mixin FavMixin on TripleMixin {
       return;
     }
 
-    List<int?> addMediaIdsNew = [];
-    List<int?> delMediaIdsNew = [];
+    final List<int> addMediaIdsNew = [];
+    final List<int> delMediaIdsNew = [];
     try {
-      for (final i in favFolderData.value.list!) {
-        bool isFaved = favIds?.contains(i.id) == true;
-        if (i.favState == 1) {
-          if (!isFaved) {
-            addMediaIdsNew.add(i.id);
-          }
-        } else {
-          if (isFaved) {
-            delMediaIdsNew.add(i.id);
-          }
+      for (final i in favFolderData.value!.list) {
+        final isFaved = favIds?.contains(i.id) == true;
+        final isSelected = selectedFavIds.contains(i.id);
+        if (isSelected && !isFaved) {
+          addMediaIdsNew.add(i.id);
+        } else if (!isSelected && isFaved) {
+          delMediaIdsNew.add(i.id);
         }
       }
     } catch (e) {
       if (kDebugMode) debugPrint(e.toString());
     }
     SmartDialog.showLoading(msg: '请求中');
-    final result = await FavHttp.favVideo(
+    final result = await RustFav.favVideo(
       resources: '$rid:$type',
       addIds: addMediaIdsNew.join(','),
       delIds: delMediaIdsNew.join(','),

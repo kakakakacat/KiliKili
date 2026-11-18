@@ -267,6 +267,22 @@ cookie 存进账号体系」。同步上游时 `lib/http/login.dart` 的任何�
 同日 cherry-pick 的另三个上游 commit（`f61cdab35` `3bfb84e37` `217fb54f5`）
 未改变任何数字——那几个文件早已在「修改」桶里。
 
+修订：2026-11-18（S8 收藏夹迁 Rust，issue #58，为本次）——按 §6 对当前
+index 实测：修改上游文件 **834 → 815**（19 个从 M 转进 D），其中实质改动
+**354 → 378**、仅重命名 **480 → 437**；新增 **713 → 742**，删除
+**271 → 302**。
+`lib/http/fav.dart` 整个删掉，连同 `lib/models_new/fav/` 全部 20 个、
+`lib/models_new/sub/{sub,sub_detail}/` 四个、
+`lib/models_new/space/{space_fav,space_cheese}/` 六个模型。
+`lib/models_new/fav/fav_detail/cnt_info.dart` **不是删除而是搬家**
+（移到 `lib/models_new/media_list/`）：播放列表那一片还在用它，而它原来的
+目录整个没了。
+`lib/services/rust/sub_compat.dart` 也删了——它的注释里写着「收藏夹那片迁完
+`favSeasonList` 的那个 PR 应当连同本文件一起删」，这一刻到了。
+新进「有实质改动」桶的 22 个上游文件集中在收藏夹各页（详情、搜索、排序、
+创建、面板、四个页签）、订阅与合集详情、个人空间收藏页、追番列表与「我的」。
+数字不含工作树里本就改着的三个本机文件（编辑器配置与 macOS 构建配置）。
+
 ## 1. 基准
 
 ```

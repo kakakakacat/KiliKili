@@ -3,6 +3,7 @@
 pub mod cover_scrim;
 pub mod danmaku;
 pub mod dynamic;
+pub mod fav;
 pub mod grpc;
 pub mod history;
 pub mod init;

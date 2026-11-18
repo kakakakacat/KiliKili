@@ -8,7 +8,7 @@ import 'package:kilikili/common/widgets/gesture/horizontal_drag_gesture_recogniz
     show deviceTouchSlop, touchSlopH;
 import 'package:kilikili/common/widgets/image_grid/image_grid_view.dart'
     show ImageGridView, ImageModel;
-import 'package:kilikili/http/fav.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/sponsor_block/skip_type.dart';
 import 'package:kilikili/pages/common/slide/common_slide_page.dart';
@@ -408,10 +408,10 @@ void _visitor(Element context) {
 
 Future<void> _showFavDialog(BuildContext context) async {
   if (Accounts.main.isLogin) {
-    final res = await FavHttp.allFavFolders(Accounts.main.mid);
+    final res = await RustFav.allFavFolders(Accounts.main.mid);
     if (res case Success(:final response)) {
       final list = response.list;
-      if (list == null || list.isEmpty) {
+      if (list.isEmpty) {
         return;
       }
       final quickFavId = Pref.quickFavId;

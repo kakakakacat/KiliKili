@@ -11,7 +11,7 @@ import 'package:kilikili/common/widgets/view_safe_area.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/fav_type.dart';
 import 'package:kilikili/models/common/home_tab_type.dart';
-import 'package:kilikili/models_new/fav/fav_pgc/list.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/pages/pgc/controller.dart';
 import 'package:kilikili/pages/pgc/widgets/pgc_card_v.dart';
 import 'package:kilikili/pages/pgc/widgets/pgc_card_v_timeline.dart';
@@ -396,7 +396,7 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
     ),
   );
 
-  Widget _buildFollowBody(LoadingState<List<FavPgcItemModel>?> loadingState) {
+  Widget _buildFollowBody(LoadingState<List<FavPgcItem>?> loadingState) {
     return switch (loadingState) {
       Loading() => m3eLoading,
       Success(:final response) =>

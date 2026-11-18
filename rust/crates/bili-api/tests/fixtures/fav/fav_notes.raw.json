@@ -1,0 +1,20 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "total": 2,
+    "list": [
+      {
+        "cvid": "9007199254740993",
+        "note_id": 9007199254740993,
+        "title": "示例笔记",
+        "summary": "笔记摘要",
+        "message": "来自 示例稿件",
+        "web_url": "https://example.invalid/read/cv9007199254740993",
+        "arc": { "aid": 110000001, "pic": "https://example.invalid/bfs/archive/m1.jpg" }
+      },
+      { "note_id": "9007199254740994", "title": "没有稿件的笔记" }
+    ]
+  }
+}

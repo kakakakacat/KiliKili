@@ -1,8 +1,7 @@
 import 'package:kilikili/common/widgets/reorder_mixin.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/fav/fav_detail/media.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/pages/fav_detail/controller.dart';
 import 'package:kilikili/pages/fav_detail/widget/fav_video_card.dart';
 import 'package:kilikili/utils/extension/iterable_ext.dart';
@@ -22,7 +21,7 @@ class FavSortPage extends StatefulWidget {
 class _FavSortPageState extends State<FavSortPage> with ReorderMixin {
   FavDetailController get _favDetailController => widget.favDetailController;
 
-  late List<FavDetailItemModel> sortList = List<FavDetailItemModel>.from(
+  late List<FavMedia> sortList = List<FavMedia>.from(
     _favDetailController.loadingState.value.data!,
   );
   List<String> sort = <String>[];
@@ -49,7 +48,9 @@ class _FavSortPageState extends State<FavSortPage> with ReorderMixin {
   Widget build(BuildContext context) {
     return SimpleScaffold(
       appBar: AppBar(
-        title: Text('排序: ${_favDetailController.folderInfo.value.title}'),
+        title: Text(
+          '排序: ${_favDetailController.folderInfo.value?.title ?? ''}',
+        ),
         actions: [
           TextButton(
             onPressed: () {
@@ -57,7 +58,7 @@ class _FavSortPageState extends State<FavSortPage> with ReorderMixin {
                 Get.back();
                 return;
               }
-              FavHttp.sortFav(
+              RustFav.sortFav(
                 mediaId: _favDetailController.mediaId,
                 sort: sort.join(','),
               ).then((res) {
@@ -87,7 +88,7 @@ class _FavSortPageState extends State<FavSortPage> with ReorderMixin {
       oldIndex > newIndex ? newIndex - 1 : newIndex, // might be Negative
     );
     sort.add(
-      '${newItem == null ? '0:0' : '${newItem.id}:${newItem.type}'}:${oldItem.id}:${oldItem.type}',
+      '${newItem == null ? '0:0' : '${newItem.id}:${newItem.kind}'}:${oldItem.id}:${oldItem.kind}',
     );
 
     sortList.insert(newIndex, sortList.removeAt(oldIndex));

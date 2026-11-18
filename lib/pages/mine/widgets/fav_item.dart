@@ -1,5 +1,5 @@
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/models_new/fav/fav_folder/list.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/utils/bili_utils.dart';
 import 'package:kilikili/utils/utils.dart';
 import 'package:get/get.dart';
@@ -12,7 +12,7 @@ class FavFolderItem extends StatelessWidget {
     required this.onPop,
   });
 
-  final FavFolderInfo item;
+  final FavFolder item;
   final VoidCallback onPop;
 
   @override

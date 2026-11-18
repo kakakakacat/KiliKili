@@ -1,0 +1,23 @@
+{
+  "code": 0,
+  "message": "success",
+  "ttl": 1,
+  "data": {
+    "page": { "num": 1, "size": 20, "total": 1, "next": false },
+    "items": [
+      {
+        "season_id": 77000001,
+        "title": "示例课程",
+        "cover": "https://example.invalid/bfs/pugv/c1.jpg",
+        "marks": ["限时优惠", "已购"],
+        "status": "已完结",
+        "ctime": "1700000600",
+        "url": "https://example.invalid/cheese/play/ss77000001"
+      },
+      {
+        "season_id": 77000002,
+        "title": "没有角标的课程"
+      }
+    ]
+  }
+}

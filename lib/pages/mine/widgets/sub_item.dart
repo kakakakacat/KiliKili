@@ -1,7 +1,8 @@
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/models_new/sub/sub/list.dart';
-import 'package:kilikili/pages/subscription/widgets/item.dart' show onPushSub;
+import 'package:kilikili/services/rust/rust_user.dart' show SubItem;
+import 'package:kilikili/pages/subscription/widgets/item.dart'
+    show SubItemLabel, onPushSub;
 import 'package:kilikili/utils/utils.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -12,7 +13,7 @@ class MineSubItem extends StatelessWidget {
     required this.onPop,
   });
 
-  final SubItemModel item;
+  final SubItem item;
   final VoidCallback onPop;
 
   @override

@@ -9,15 +9,13 @@ import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:kilikili/grpc/im.dart';
 import 'package:kilikili/http/dynamics.dart';
-import 'package:kilikili/http/fav.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/validate.dart';
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/models/login/model.dart';
-import 'package:kilikili/models_new/fav/fav_detail/media.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/pages/common/multi_select/id_based.dart';
 import 'package:kilikili/services/rust/rust_history.dart';
-import 'package:kilikili/pages/common/multi_select/base.dart';
 import 'package:kilikili/pages/dynamics_tab/controller.dart';
 import 'package:kilikili/pages/fav_detail/controller.dart'
     show BaseFavController;
@@ -448,11 +446,11 @@ abstract final class RequestUtils {
     required IdMultiSelectMixin<LaterPage, LaterItem, int> ctr,
     required dynamic mid,
   }) {
-    FavHttp.allFavFolders(mid).then((res) {
+    RustFav.allFavFolders(mid).then((res) {
       if (!context.mounted) return;
       if (res case Success(:final response)) {
         final list = response.list;
-        if (list == null || list.isEmpty) return;
+        if (list.isEmpty) return;
         int? checkedId;
         showDialog(
           context: context,
@@ -493,11 +491,11 @@ abstract final class RequestUtils {
                     if (checkedId == null) return;
                     final removed = ctr.allChecked.map(ctr.idOf).toSet();
                     SmartDialog.showLoading();
-                    FavHttp.copyOrMoveFav(
+                    RustFav.copyOrMoveFav(
                       isCopy: isCopy,
                       isFav: false,
                       srcMediaId: null,
-                      tarMediaId: checkedId,
+                      tarMediaId: checkedId!,
                       resources: removed.join(','),
                       mid: isCopy ? mid : null,
                     ).then((res) {
@@ -527,18 +525,24 @@ abstract final class RequestUtils {
     });
   }
 
-  static void onCopyOrMove<T extends MultiSelectData>({
+  /// 收藏夹内的复制 / 移动。
+  ///
+  /// 只服务收藏夹那两个页面（详情与夹内搜索），所以直接收
+  /// [BaseFavController] 而不是一个泛型的多选控制器：泛型版本当初是为了
+  /// 兼容 `MultiSelectData`，而列表项迁到 Rust 之后那条路已经走不通
+  /// （不可就地改，选中态按 id 记）。
+  static void onCopyOrMove({
     required BuildContext context,
     required bool isCopy,
-    required CommonMultiSelectMixin<T> ctr,
+    required BaseFavController ctr,
     required dynamic mediaId,
     required dynamic mid,
   }) {
-    FavHttp.allFavFolders(mid).then((res) {
+    RustFav.allFavFolders(mid).then((res) {
       if (!context.mounted) return;
       if (res case Success(:final response)) {
         final list = response.list;
-        if (list == null || list.isEmpty) return;
+        if (list.isEmpty) return;
         int? checkedId;
         showDialog(
           context: context,
@@ -577,37 +581,28 @@ abstract final class RequestUtils {
                 TextButton(
                   onPressed: () {
                     if (checkedId != null) {
-                      final isFav = ctr is BaseFavController;
-                      final removeList = isFav
-                          ? ctr.allChecked.toList().reversed.toSet()
-                          : ctr.allChecked.toSet();
+                      // 倒序：界面上是从上往下勾的，而服务端按发过去的顺序
+                      // 逐条插入目标夹子，正序发会把顺序整体翻过来。
+                      final removeList = ctr.allChecked.toList().reversed
+                          .toList();
                       SmartDialog.showLoading();
-                      FavHttp.copyOrMoveFav(
+                      RustFav.copyOrMoveFav(
                         isCopy: isCopy,
-                        isFav: isFav,
+                        isFav: true,
                         srcMediaId: mediaId,
-                        tarMediaId: checkedId,
+                        tarMediaId: checkedId!,
                         resources: removeList
-                            .map(
-                              (e) => switch (e) {
-                                FavDetailItemModel _ => '${e.id}:${e.type}',
-                                _ => throw UnsupportedError(e.toString()),
-                              },
-                            )
+                            .map((e) => '${e.id}:${e.kind}')
                             .join(','),
                         mid: isCopy ? mid : null,
                       ).then((res) {
                         if (res.isSuccess) {
                           ctr.handleSelect(checked: false);
                           if (!isCopy) {
-                            ctr.loadingState
-                              ..value.data!.removeWhere(removeList.contains)
-                              ..refresh();
-                            if (isFav) {
-                              (ctr as BaseFavController).updateCount?.call(
-                                removeList.length,
-                              );
-                            }
+                            ctr.afterDeleteIds(
+                              removeList.map(ctr.idOf).toSet(),
+                            );
+                            ctr.updateCount?.call(removeList.length);
                           }
                           SmartDialog.dismiss();
                           SmartDialog.showToast('${isCopy ? '复制' : '移动'}成功');

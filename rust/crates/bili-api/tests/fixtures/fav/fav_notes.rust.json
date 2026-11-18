@@ -1,0 +1,20 @@
+[
+  {
+    "cvid": "9007199254740993",
+    "message": "来自 示例稿件",
+    "note_id": "9007199254740993",
+    "pic": "https://example.invalid/bfs/archive/m1.jpg",
+    "summary": "笔记摘要",
+    "title": "示例笔记",
+    "web_url": "https://example.invalid/read/cv9007199254740993"
+  },
+  {
+    "cvid": null,
+    "message": null,
+    "note_id": "9007199254740994",
+    "pic": null,
+    "summary": null,
+    "title": "没有稿件的笔记",
+    "web_url": null
+  }
+]

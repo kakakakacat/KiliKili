@@ -1,5 +1,5 @@
 import 'package:kilikili/http/dynamics.dart';
-import 'package:kilikili/http/fav.dart';
+import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/dynamic/article_type.dart';
 import 'package:kilikili/models/common/image_preview_type.dart';
@@ -192,11 +192,10 @@ class ArticleController extends CommonDynController
     final favorite = stats.value?.favorite;
     if (favorite == null) return;
     final isFav = favorite.status ?? false;
+    // isFav 是当前状态；两条路径都传目标状态（opus 那条是 3 收藏 / 4 取消）。
     final res = type == .read
-        ? isFav
-              ? await FavHttp.delFavArticle(id: commentId)
-              : await FavHttp.addFavArticle(id: commentId)
-        : await FavHttp.communityAction(opusId: id, action: isFav ? 4 : 3);
+        ? await RustFav.favArticleWrite(id: commentId, fav: !isFav)
+        : await RustFav.communityAction(opusId: id, action: isFav ? 4 : 3);
     if (res.isSuccess) {
       favorite
         ..status = !isFav

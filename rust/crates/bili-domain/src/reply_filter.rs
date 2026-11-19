@@ -58,6 +58,13 @@ pub struct ReplyFilterSettings {
     pub block_at_count: Option<i64>,
     /// 评论关键词正则源串（基线 `Pref.banWordForReply`）。空串=不启用。
     pub ban_word: String,
+    /// 稿件简介。与之逐字相同（去掉首尾空白后）的根评论会被移除，对应基线
+    /// `ReplyController._removeIntro` + `Pref.filterIntro`。
+    ///
+    /// `None` / 空串 = 不启用，与 [`Self::ban_word`] 同一个约定。开关与取值
+    /// 在基线里是两个东西（`_filterIntro` 与 `intro`），合成一个的理由是
+    /// 两者只有「一起有效」一种组合，分开表达会多出一个无意义的状态。
+    pub intro: Option<String>,
 }
 
 /// 一条 URL 的带货标记，对应基线 `ReplyInfo.content.urls` 里**带 `extra`
@@ -102,6 +109,7 @@ pub struct ReplyFilter {
     block_at_only: bool,
     block_at_count: Option<i64>,
     ban_word: Option<regex::Regex>,
+    intro: Option<String>,
 }
 
 impl ReplyFilter {
@@ -138,6 +146,11 @@ impl ReplyFilter {
             } else {
                 Some(compile_user_pattern(&settings.ban_word, "评论关键词过滤")?)
             },
+            intro: settings
+                .intro
+                .as_ref()
+                .map(|s| s.trim().to_owned())
+                .filter(|s| !s.is_empty()),
         })
     }
 
@@ -155,6 +168,17 @@ impl ReplyFilter {
                 .ban_word
                 .as_ref()
                 .is_some_and(|re| re.is_match(&item.message))
+    }
+
+    /// 这条评论是不是把稿件简介原样复读了一遍。
+    ///
+    /// **刻意不并进 [`Self::removes`]**：基线只把它用在根评论列表上
+    /// （`ReplyController._removeIntro` 作用于 `MainListReply.replies`），
+    /// 楼中楼、对话、折叠列表都不过。并进去会多屏蔽掉一批基线显示的评论，
+    /// 那不是迁移，是改行为。
+    #[must_use]
+    pub fn removes_as_intro(&self, message: &str) -> bool {
+        self.intro.as_ref().is_some_and(|i| message.trim() == i)
     }
 
     /// 基线 `_blockReplyAtCount`：`atNameToMid.length >= 阈值`。
@@ -470,6 +494,29 @@ mod tests {
         let mut item = plain();
         item.message = format!("快来看 {GOODS_URL_PREFIX}/x");
         assert!(!f.removes(&item), "开关没开时带货评论照样显示");
+    }
+
+    #[test]
+    fn intro_is_matched_after_trimming_both_sides() {
+        let f = filter(ReplyFilterSettings {
+            intro: Some("  本期视频的简介  ".to_owned()),
+            ..ReplyFilterSettings::default()
+        });
+        assert!(f.removes_as_intro(" 本期视频的简介\n"));
+        assert!(!f.removes_as_intro("本期视频的简介！"));
+        // 根评论列表之外的规则不受影响。
+        let mut item = plain();
+        item.message = "本期视频的简介".to_owned();
+        assert!(!f.removes(&item), "简介判定刻意不并进 removes");
+    }
+
+    #[test]
+    fn empty_intro_disables_the_rule() {
+        let f = filter(ReplyFilterSettings {
+            intro: Some("   ".to_owned()),
+            ..ReplyFilterSettings::default()
+        });
+        assert!(!f.removes_as_intro("   "), "空简介不该把空评论也删掉");
     }
 
     #[test]

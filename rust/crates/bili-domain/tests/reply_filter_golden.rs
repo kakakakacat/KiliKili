@@ -41,6 +41,9 @@ fn settings_from(value: &Value) -> ReplyFilterSettings {
         // 缺字段 = 基线的 null = 不启用。
         block_at_count: value["block_at_count"].as_i64(),
         ban_word: value["ban_word"].as_str().unwrap_or_default().to_owned(),
+        // 简介判定不走 `removes`（见 `ReplyFilter::removes_as_intro`），
+        // 这份对照 fixture 也就不带它。
+        intro: None,
     }
 }
 

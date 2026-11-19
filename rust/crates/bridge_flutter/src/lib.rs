@@ -9,8 +9,10 @@
 //!   （FRB 会把非 `sync` 函数放到 Rust 工作线程，重活不占 Dart 线程）；
 //!   `#[frb(sync)]` 只用于「基线那一侧本来就是同步的、且确实轻」的调用：
 //!   弹幕会话的开关与取桶（`api::danmaku`）、清晰度/音质选择
-//!   （`api::media_select`）。判据见 ADR-010：改成异步会迫使调用方也变成
-//!   异步，而那两处分别在渲染路径与起播路径上
+//!   （`api::media_select`）、封面遮罩配色（`api::cover_scrim`）、评论
+//!   过滤判定（`api::reply_filter`）。判据见 ADR-010：改成异步会迫使调
+//!   用方也变成异步，而这几处分别在渲染路径、起播路径、列表滚动路径与
+//!   评论列表路径上
 //! - 事件携带 `session_id` / `generation`，过期结果必须被丢弃
 //! - 日志不得包含 Cookie/Token，统一经 `bili_domain::redact`
 

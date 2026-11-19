@@ -302,6 +302,23 @@ S14 登录切片（`34a34982b`）就进了「有实质改动」桶，本次只�
 不参与上游同步），首页那份等有单子统一时再并过来。这是 §4.4 那类
 「界面改动扩大分叉面」里成本最低的一种：**只增不改**。
 
+修订：2026-11-19（S2 评论过滤规则下沉 Rust，issue #52，为本次）——按 §6 对
+当前分支实测：修改上游文件仍 **812**，其中实质改动 **378 → 380**、
+仅重命名 **434 → 432**，新增 **743 → 750**，删除 **302** 不变。
+转入「有实质改动」的两个是 `lib/grpc/reply.dart`（四条过滤规则搬走，
+只剩取数与应用判定结果）与 `lib/common/constants.dart`（`goodsUrlPrefix`
+随规则搬到 `bili_domain::reply_filter`，上游那一份删掉）。
+
+这一片的分叉面与取流那次同类：**把上游文件里的算法搬空了**，不是插开关。
+同步上游时 `lib/grpc/reply.dart` 里涉及过滤判定的冲突**不要照上游解**——
+上游改的是实现，我们这边已经没有实现了，要改的是 Rust 侧
+（见 §4.1 末尾那三条判据与 ADR-011 补充十三）。
+
+注意本片**只搬了规则**：`ReplyGrpc` 的五条 gRPC 取数、`reply/v1` 的
+2 万行 pb 子树与 27 个直接吃 pb 的 UI 文件都还在，属于 #52 的续单。
+在那之前 `lib/services/rust/rust_reply_filter.dart` 里有一段
+`ReplyInfo` → 规则输入的投影，按 AGENTS.md §2 例外写明了随哪一片删除。
+
 ## 1. 基准
 
 ```
@@ -375,6 +392,7 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | S11a 直播第三批（剩余六条只读） | #61 / #87 | `lib/http/live.dart`、`lib/pages/{live_emote,live_search,live_dm_block}/**`、`lib/pages/live_room/{controller.dart,contribution_rank/**}`、`lib/pages/member/{view.dart,widget/{medal_wall,user_info_card}.dart}`、`lib/pages/common/publish/common_rich_text_pub_page.dart`；留下单向适配 `lib/services/rust/live_rest_compat.dart` |
 
 | S6/S7 用户与空间 | #56 #57 / 本次 | `lib/http/member.dart`、`lib/pages/{member*,history*,later*,follow*,user*,privacy*}/**` 与共享卡片/多选层；**删掉 `lib/http/user.dart`、`lib/grpc/space.dart` 及独有模型**。`memberDynamic` / `dynSearch` 留给 #150；`SpaceArchiveItem` 与 `SpaceWebVideoModel` 仅作界面适配，收藏课堂模型随剩余生产者迁移删除 |
+| S2 评论过滤规则 | #52 / 本次 | `lib/grpc/reply.dart`（`needRemoveGrpc` 与三个私有判定搬进 `bili_domain::reply_filter`，只剩取数与应用 mask）、`lib/common/constants.dart`（删 `goodsUrlPrefix`）。**只搬规则**：五条 gRPC取数、`reply/v1` pb 子树与 27 个吃 pb 的 UI 文件留给续单；`lib/services/rust/rust_reply_filter.dart` 里的投影随那一片删除 |
 
 **同步时怎么处理这一类冲突**：上游在这些文件里的改动，多数落在我们已经
 删掉的模型或函数上。判据是「这段逻辑现在归谁」——

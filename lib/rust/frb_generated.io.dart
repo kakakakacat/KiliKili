@@ -21,6 +21,7 @@ import 'package:kilikili/rust/api/play_url_fetch.dart';
 import 'package:kilikili/rust/api/playback.dart';
 import 'package:kilikili/rust/api/relation.dart';
 import 'package:kilikili/rust/api/reply.dart';
+import 'package:kilikili/rust/api/reply_filter.dart';
 import 'package:kilikili/rust/api/search.dart';
 import 'package:kilikili/rust/api/search_suggest.dart';
 import 'package:kilikili/rust/api/space.dart';
@@ -417,6 +418,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ReplyCursor dco_decode_box_autoadd_reply_cursor(dynamic raw);
+
+  @protected
+  ReplyFilterSettings dco_decode_box_autoadd_reply_filter_settings(dynamic raw);
 
   @protected
   ReplyInteract dco_decode_box_autoadd_reply_interact(dynamic raw);
@@ -1220,7 +1224,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<(String, String)> dco_decode_list_record_string_string(dynamic raw);
 
   @protected
+  List<ReplyFilterItem> dco_decode_list_reply_filter_item(dynamic raw);
+
+  @protected
   List<ReplyItem> dco_decode_list_reply_item(dynamic raw);
+
+  @protected
+  List<ReplyUrlExtra> dco_decode_list_reply_url_extra(dynamic raw);
 
   @protected
   List<SearchActivityItem> dco_decode_list_search_activity_item(dynamic raw);
@@ -2158,6 +2168,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<BgmRecommend>? dco_decode_opt_list_bgm_recommend(dynamic raw);
 
   @protected
+  List<bool>? dco_decode_opt_list_bool(dynamic raw);
+
+  @protected
   List<ClipInfo>? dco_decode_opt_list_clip_info(dynamic raw);
 
   @protected
@@ -2465,6 +2478,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReplyCursor dco_decode_reply_cursor(dynamic raw);
 
   @protected
+  ReplyFilterItem dco_decode_reply_filter_item(dynamic raw);
+
+  @protected
+  ReplyFilterMaskResult dco_decode_reply_filter_mask_result(dynamic raw);
+
+  @protected
+  ReplyFilterSettings dco_decode_reply_filter_settings(dynamic raw);
+
+  @protected
   ReplyInteract dco_decode_reply_interact(dynamic raw);
 
   @protected
@@ -2490,6 +2512,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ReplyReplyListResult dco_decode_reply_reply_list_result(dynamic raw);
+
+  @protected
+  ReplyUrlExtra dco_decode_reply_url_extra(dynamic raw);
 
   @protected
   ReportResult dco_decode_report_result(dynamic raw);
@@ -3466,6 +3491,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ReplyCursor sse_decode_box_autoadd_reply_cursor(SseDeserializer deserializer);
+
+  @protected
+  ReplyFilterSettings sse_decode_box_autoadd_reply_filter_settings(
+    SseDeserializer deserializer,
+  );
 
   @protected
   ReplyInteract sse_decode_box_autoadd_reply_interact(
@@ -4489,7 +4519,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<ReplyFilterItem> sse_decode_list_reply_filter_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<ReplyItem> sse_decode_list_reply_item(SseDeserializer deserializer);
+
+  @protected
+  List<ReplyUrlExtra> sse_decode_list_reply_url_extra(
+    SseDeserializer deserializer,
+  );
 
   @protected
   List<SearchActivityItem> sse_decode_list_search_activity_item(
@@ -5759,6 +5799,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<bool>? sse_decode_opt_list_bool(SseDeserializer deserializer);
+
+  @protected
   List<ClipInfo>? sse_decode_opt_list_clip_info(SseDeserializer deserializer);
 
   @protected
@@ -6148,6 +6191,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReplyCursor sse_decode_reply_cursor(SseDeserializer deserializer);
 
   @protected
+  ReplyFilterItem sse_decode_reply_filter_item(SseDeserializer deserializer);
+
+  @protected
+  ReplyFilterMaskResult sse_decode_reply_filter_mask_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ReplyFilterSettings sse_decode_reply_filter_settings(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   ReplyInteract sse_decode_reply_interact(SseDeserializer deserializer);
 
   @protected
@@ -6177,6 +6233,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReplyReplyListResult sse_decode_reply_reply_list_result(
     SseDeserializer deserializer,
   );
+
+  @protected
+  ReplyUrlExtra sse_decode_reply_url_extra(SseDeserializer deserializer);
 
   @protected
   ReportResult sse_decode_report_result(SseDeserializer deserializer);
@@ -7433,6 +7492,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_reply_cursor(
     ReplyCursor self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_reply_filter_settings(
+    ReplyFilterSettings self,
     SseSerializer serializer,
   );
 
@@ -8784,8 +8849,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_reply_filter_item(
+    List<ReplyFilterItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_reply_item(
     List<ReplyItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_reply_url_extra(
+    List<ReplyUrlExtra> self,
     SseSerializer serializer,
   );
 
@@ -10404,6 +10481,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_list_bool(List<bool>? self, SseSerializer serializer);
+
+  @protected
   void sse_encode_opt_list_clip_info(
     List<ClipInfo>? self,
     SseSerializer serializer,
@@ -10908,6 +10988,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_reply_cursor(ReplyCursor self, SseSerializer serializer);
 
   @protected
+  void sse_encode_reply_filter_item(
+    ReplyFilterItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_reply_filter_mask_result(
+    ReplyFilterMaskResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_reply_filter_settings(
+    ReplyFilterSettings self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_reply_interact(ReplyInteract self, SseSerializer serializer);
 
   @protected
@@ -10945,6 +11043,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     ReplyReplyListResult self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_reply_url_extra(ReplyUrlExtra self, SseSerializer serializer);
 
   @protected
   void sse_encode_report_result(ReportResult self, SseSerializer serializer);

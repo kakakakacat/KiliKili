@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1547026719;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 338071682;
 
 // Section: executor
 
@@ -8625,6 +8625,42 @@ fn wire__crate__api__video_write__reply_del_impl(
         },
     )
 }
+fn wire__crate__api__reply_filter__reply_filter_mask_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "reply_filter_mask",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_settings =
+                <crate::api::reply_filter::ReplyFilterSettings>::sse_decode(&mut deserializer);
+            let api_items =
+                <Vec<crate::api::reply_filter::ReplyFilterItem>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>(crate::api::reply_filter::reply_filter_mask(
+                    api_settings,
+                    api_items,
+                ))?;
+                std::result::Result::Ok(output_ok)
+            })())
+        },
+    )
+}
 fn wire__crate__api__space__report_member_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -13313,6 +13349,20 @@ impl SseDecode for Vec<(String, String)> {
     }
 }
 
+impl SseDecode for Vec<crate::api::reply_filter::ReplyFilterItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::reply_filter::ReplyFilterItem>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::api::reply::ReplyItem> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -13320,6 +13370,20 @@ impl SseDecode for Vec<crate::api::reply::ReplyItem> {
         let mut ans_ = Vec::with_capacity(len_ as usize);
         for idx_ in 0..len_ {
             ans_.push(<crate::api::reply::ReplyItem>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::reply_filter::ReplyUrlExtra> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::reply_filter::ReplyUrlExtra>::sse_decode(
+                deserializer,
+            ));
         }
         return ans_;
     }
@@ -17474,6 +17538,17 @@ impl SseDecode for Option<Vec<crate::api::misc::BgmRecommend>> {
     }
 }
 
+impl SseDecode for Option<Vec<bool>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<Vec<bool>>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
 impl SseDecode for Option<Vec<crate::api::play_url::ClipInfo>> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -19078,6 +19153,65 @@ impl SseDecode for crate::api::reply::ReplyCursor {
     }
 }
 
+impl SseDecode for crate::api::reply_filter::ReplyFilterItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_mid = <i64>::sse_decode(deserializer);
+        let mut var_message = <String>::sse_decode(deserializer);
+        let mut var_atNames = <Vec<String>>::sse_decode(deserializer);
+        let mut var_hasEmotes = <bool>::sse_decode(deserializer);
+        let mut var_hasPictures = <bool>::sse_decode(deserializer);
+        let mut var_urlExtras =
+            <Vec<crate::api::reply_filter::ReplyUrlExtra>>::sse_decode(deserializer);
+        let mut var_root = <i64>::sse_decode(deserializer);
+        let mut var_parent = <i64>::sse_decode(deserializer);
+        return crate::api::reply_filter::ReplyFilterItem {
+            mid: var_mid,
+            message: var_message,
+            at_names: var_atNames,
+            has_emotes: var_hasEmotes,
+            has_pictures: var_hasPictures,
+            url_extras: var_urlExtras,
+            root: var_root,
+            parent: var_parent,
+        };
+    }
+}
+
+impl SseDecode for crate::api::reply_filter::ReplyFilterMaskResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data = <Option<Vec<bool>>>::sse_decode(deserializer);
+        let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
+        let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
+        return crate::api::reply_filter::ReplyFilterMaskResult {
+            data: var_data,
+            error_kind: var_errorKind,
+            error_detail: var_errorDetail,
+            error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::reply_filter::ReplyFilterSettings {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_blockedMids = <Vec<i64>>::sse_decode(deserializer);
+        let mut var_antiGoods = <bool>::sse_decode(deserializer);
+        let mut var_blockAtOnly = <bool>::sse_decode(deserializer);
+        let mut var_blockAtCount = <Option<i64>>::sse_decode(deserializer);
+        let mut var_banWord = <String>::sse_decode(deserializer);
+        return crate::api::reply_filter::ReplyFilterSettings {
+            blocked_mids: var_blockedMids,
+            anti_goods: var_antiGoods,
+            block_at_only: var_blockAtOnly,
+            block_at_count: var_blockAtCount,
+            ban_word: var_banWord,
+        };
+    }
+}
+
 impl SseDecode for crate::api::reply::ReplyInteract {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -19243,6 +19377,20 @@ impl SseDecode for crate::api::reply::ReplyReplyListResult {
             error_kind: var_errorKind,
             error_detail: var_errorDetail,
             error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::reply_filter::ReplyUrlExtra {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_goodsCmControl = <i64>::sse_decode(deserializer);
+        let mut var_hasGoodsItemId = <bool>::sse_decode(deserializer);
+        let mut var_hasGoodsPrefetchedCache = <bool>::sse_decode(deserializer);
+        return crate::api::reply_filter::ReplyUrlExtra {
+            goods_cm_control: var_goodsCmControl,
+            has_goods_item_id: var_hasGoodsItemId,
+            has_goods_prefetched_cache: var_hasGoodsPrefetchedCache,
         };
     }
 }
@@ -22568,42 +22716,42 @@ fn pde_ffi_dispatcher_primary_impl(
         }
         199 => wire__crate__api__video_write__relation_mod_impl(port, ptr, rust_vec_len, data_len),
         200 => wire__crate__api__video_write__reply_del_impl(port, ptr, rust_vec_len, data_len),
-        201 => wire__crate__api__space__report_member_impl(port, ptr, rust_vec_len, data_len),
-        202 => wire__crate__api__dynamic__reserve_info_impl(port, ptr, rust_vec_len, data_len),
-        203 => {
+        202 => wire__crate__api__space__report_member_impl(port, ptr, rust_vec_len, data_len),
+        203 => wire__crate__api__dynamic__reserve_info_impl(port, ptr, rust_vec_len, data_len),
+        204 => {
             wire__crate__api__video_write__room_entry_action_impl(port, ptr, rust_vec_len, data_len)
         }
-        204 => wire__crate__api__dynamic__save_vote_impl(port, ptr, rust_vec_len, data_len),
-        205 => wire__crate__api__search__search_all_impl(port, ptr, rust_vec_len, data_len),
-        206 => wire__crate__api__search__search_article_impl(port, ptr, rust_vec_len, data_len),
-        207 => wire__crate__api__search__search_live_impl(port, ptr, rust_vec_len, data_len),
-        208 => wire__crate__api__search__search_pgc_impl(port, ptr, rust_vec_len, data_len),
-        209 => wire__crate__api__search__search_recommend_impl(port, ptr, rust_vec_len, data_len),
-        210 => wire__crate__api__search__search_trending_impl(port, ptr, rust_vec_len, data_len),
-        211 => wire__crate__api__search__search_user_impl(port, ptr, rust_vec_len, data_len),
-        212 => wire__crate__api__search__search_video_impl(port, ptr, rust_vec_len, data_len),
-        216 => wire__crate__api__fav__sort_fav_impl(port, ptr, rust_vec_len, data_len),
-        217 => wire__crate__api__fav__sort_fav_folder_impl(port, ptr, rust_vec_len, data_len),
-        218 => wire__crate__api__misc__sort_follow_tag_impl(port, ptr, rust_vec_len, data_len),
-        221 => wire__crate__api__user__space_reserve_impl(port, ptr, rust_vec_len, data_len),
-        222 => wire__crate__api__user__space_setting_mod_impl(port, ptr, rust_vec_len, data_len),
-        223 => wire__crate__api__relation__special_action_impl(port, ptr, rust_vec_len, data_len),
-        225 => wire__crate__api__dynamic__thumb_dynamic_impl(port, ptr, rust_vec_len, data_len),
-        226 => wire__crate__api__history__to_view_clear_impl(port, ptr, rust_vec_len, data_len),
-        227 => wire__crate__api__history__to_view_del_impl(port, ptr, rust_vec_len, data_len),
-        228 => wire__crate__api__history__to_view_later_impl(port, ptr, rust_vec_len, data_len),
-        229 => wire__crate__api__dynamic__top_dynamic_impl(port, ptr, rust_vec_len, data_len),
-        230 => wire__crate__api__video_write__ugc_triple_impl(port, ptr, rust_vec_len, data_len),
-        231 => wire__crate__api__fav__unfav_all_impl(port, ptr, rust_vec_len, data_len),
-        232 => {
+        205 => wire__crate__api__dynamic__save_vote_impl(port, ptr, rust_vec_len, data_len),
+        206 => wire__crate__api__search__search_all_impl(port, ptr, rust_vec_len, data_len),
+        207 => wire__crate__api__search__search_article_impl(port, ptr, rust_vec_len, data_len),
+        208 => wire__crate__api__search__search_live_impl(port, ptr, rust_vec_len, data_len),
+        209 => wire__crate__api__search__search_pgc_impl(port, ptr, rust_vec_len, data_len),
+        210 => wire__crate__api__search__search_recommend_impl(port, ptr, rust_vec_len, data_len),
+        211 => wire__crate__api__search__search_trending_impl(port, ptr, rust_vec_len, data_len),
+        212 => wire__crate__api__search__search_user_impl(port, ptr, rust_vec_len, data_len),
+        213 => wire__crate__api__search__search_video_impl(port, ptr, rust_vec_len, data_len),
+        217 => wire__crate__api__fav__sort_fav_impl(port, ptr, rust_vec_len, data_len),
+        218 => wire__crate__api__fav__sort_fav_folder_impl(port, ptr, rust_vec_len, data_len),
+        219 => wire__crate__api__misc__sort_follow_tag_impl(port, ptr, rust_vec_len, data_len),
+        222 => wire__crate__api__user__space_reserve_impl(port, ptr, rust_vec_len, data_len),
+        223 => wire__crate__api__user__space_setting_mod_impl(port, ptr, rust_vec_len, data_len),
+        224 => wire__crate__api__relation__special_action_impl(port, ptr, rust_vec_len, data_len),
+        226 => wire__crate__api__dynamic__thumb_dynamic_impl(port, ptr, rust_vec_len, data_len),
+        227 => wire__crate__api__history__to_view_clear_impl(port, ptr, rust_vec_len, data_len),
+        228 => wire__crate__api__history__to_view_del_impl(port, ptr, rust_vec_len, data_len),
+        229 => wire__crate__api__history__to_view_later_impl(port, ptr, rust_vec_len, data_len),
+        230 => wire__crate__api__dynamic__top_dynamic_impl(port, ptr, rust_vec_len, data_len),
+        231 => wire__crate__api__video_write__ugc_triple_impl(port, ptr, rust_vec_len, data_len),
+        232 => wire__crate__api__fav__unfav_all_impl(port, ptr, rust_vec_len, data_len),
+        233 => {
             wire__crate__api__relation__update_follow_tag_impl(port, ptr, rust_vec_len, data_len)
         }
-        233 => wire__crate__api__dynamic__update_reserve_impl(port, ptr, rust_vec_len, data_len),
-        234 => wire__crate__api__misc__update_wish_impl(port, ptr, rust_vec_len, data_len),
-        236 => wire__crate__api__user__vip_exp_add_impl(port, ptr, rust_vec_len, data_len),
-        237 => wire__crate__api__dynamic__vote_info_impl(port, ptr, rust_vec_len, data_len),
-        238 => wire__crate__api__wbi__wbi_mixin_key_impl(port, ptr, rust_vec_len, data_len),
-        239 => wire__crate__api__wbi__wbi_sign_impl(port, ptr, rust_vec_len, data_len),
+        234 => wire__crate__api__dynamic__update_reserve_impl(port, ptr, rust_vec_len, data_len),
+        235 => wire__crate__api__misc__update_wish_impl(port, ptr, rust_vec_len, data_len),
+        237 => wire__crate__api__user__vip_exp_add_impl(port, ptr, rust_vec_len, data_len),
+        238 => wire__crate__api__dynamic__vote_info_impl(port, ptr, rust_vec_len, data_len),
+        239 => wire__crate__api__wbi__wbi_mixin_key_impl(port, ptr, rust_vec_len, data_len),
+        240 => wire__crate__api__wbi__wbi_sign_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -22651,17 +22799,18 @@ fn pde_ffi_dispatcher_sync_impl(
         187 => wire__crate__api__playback__pgc_clip_segments_impl(ptr, rust_vec_len, data_len),
         196 => wire__crate__api__playback__pick_cdn_url_impl(ptr, rust_vec_len, data_len),
         197 => wire__crate__api__history__playback_progress_ms_impl(ptr, rust_vec_len, data_len),
-        213 => {
+        201 => wire__crate__api__reply_filter__reply_filter_mask_impl(ptr, rust_vec_len, data_len),
+        214 => {
             wire__crate__api__media_select__select_target_audio_impl(ptr, rust_vec_len, data_len)
         }
-        214 => {
+        215 => {
             wire__crate__api__media_select__select_target_video_impl(ptr, rust_vec_len, data_len)
         }
-        215 => wire__crate__api__user__serialize_user_info_impl(ptr, rust_vec_len, data_len),
-        219 => wire__crate__api__space__space_article_is_end_impl(ptr, rust_vec_len, data_len),
-        220 => wire__crate__api__space__space_audio_is_end_impl(ptr, rust_vec_len, data_len),
-        224 => wire__crate__api__playback__stream_play_urls_impl(ptr, rust_vec_len, data_len),
-        235 => wire__crate__api__user__user_info_with_profile_impl(ptr, rust_vec_len, data_len),
+        216 => wire__crate__api__user__serialize_user_info_impl(ptr, rust_vec_len, data_len),
+        220 => wire__crate__api__space__space_article_is_end_impl(ptr, rust_vec_len, data_len),
+        221 => wire__crate__api__space__space_audio_is_end_impl(ptr, rust_vec_len, data_len),
+        225 => wire__crate__api__playback__stream_play_urls_impl(ptr, rust_vec_len, data_len),
+        236 => wire__crate__api__user__user_info_with_profile_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -29045,6 +29194,80 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::reply::ReplyCursor>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply_filter::ReplyFilterItem {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.mid.into_into_dart().into_dart(),
+            self.message.into_into_dart().into_dart(),
+            self.at_names.into_into_dart().into_dart(),
+            self.has_emotes.into_into_dart().into_dart(),
+            self.has_pictures.into_into_dart().into_dart(),
+            self.url_extras.into_into_dart().into_dart(),
+            self.root.into_into_dart().into_dart(),
+            self.parent.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply_filter::ReplyFilterItem
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply_filter::ReplyFilterItem>
+    for crate::api::reply_filter::ReplyFilterItem
+{
+    fn into_into_dart(self) -> crate::api::reply_filter::ReplyFilterItem {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply_filter::ReplyFilterMaskResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.error_kind.into_into_dart().into_dart(),
+            self.error_detail.into_into_dart().into_dart(),
+            self.error_code.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply_filter::ReplyFilterMaskResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply_filter::ReplyFilterMaskResult>
+    for crate::api::reply_filter::ReplyFilterMaskResult
+{
+    fn into_into_dart(self) -> crate::api::reply_filter::ReplyFilterMaskResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply_filter::ReplyFilterSettings {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.blocked_mids.into_into_dart().into_dart(),
+            self.anti_goods.into_into_dart().into_dart(),
+            self.block_at_only.into_into_dart().into_dart(),
+            self.block_at_count.into_into_dart().into_dart(),
+            self.ban_word.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply_filter::ReplyFilterSettings
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply_filter::ReplyFilterSettings>
+    for crate::api::reply_filter::ReplyFilterSettings
+{
+    fn into_into_dart(self) -> crate::api::reply_filter::ReplyFilterSettings {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::reply::ReplyInteract {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -29251,6 +29474,28 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::reply::ReplyReplyListResult>
     for crate::api::reply::ReplyReplyListResult
 {
     fn into_into_dart(self) -> crate::api::reply::ReplyReplyListResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply_filter::ReplyUrlExtra {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.goods_cm_control.into_into_dart().into_dart(),
+            self.has_goods_item_id.into_into_dart().into_dart(),
+            self.has_goods_prefetched_cache.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply_filter::ReplyUrlExtra
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply_filter::ReplyUrlExtra>
+    for crate::api::reply_filter::ReplyUrlExtra
+{
+    fn into_into_dart(self) -> crate::api::reply_filter::ReplyUrlExtra {
         self
     }
 }
@@ -35075,12 +35320,32 @@ impl SseEncode for Vec<(String, String)> {
     }
 }
 
+impl SseEncode for Vec<crate::api::reply_filter::ReplyFilterItem> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::reply_filter::ReplyFilterItem>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::api::reply::ReplyItem> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <crate::api::reply::ReplyItem>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::reply_filter::ReplyUrlExtra> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::reply_filter::ReplyUrlExtra>::sse_encode(item, serializer);
         }
     }
 }
@@ -38120,6 +38385,16 @@ impl SseEncode for Option<Vec<crate::api::misc::BgmRecommend>> {
     }
 }
 
+impl SseEncode for Option<Vec<bool>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <Vec<bool>>::sse_encode(value, serializer);
+        }
+    }
+}
+
 impl SseEncode for Option<Vec<crate::api::play_url::ClipInfo>> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -39203,6 +39478,41 @@ impl SseEncode for crate::api::reply::ReplyCursor {
     }
 }
 
+impl SseEncode for crate::api::reply_filter::ReplyFilterItem {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i64>::sse_encode(self.mid, serializer);
+        <String>::sse_encode(self.message, serializer);
+        <Vec<String>>::sse_encode(self.at_names, serializer);
+        <bool>::sse_encode(self.has_emotes, serializer);
+        <bool>::sse_encode(self.has_pictures, serializer);
+        <Vec<crate::api::reply_filter::ReplyUrlExtra>>::sse_encode(self.url_extras, serializer);
+        <i64>::sse_encode(self.root, serializer);
+        <i64>::sse_encode(self.parent, serializer);
+    }
+}
+
+impl SseEncode for crate::api::reply_filter::ReplyFilterMaskResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<Vec<bool>>>::sse_encode(self.data, serializer);
+        <Option<String>>::sse_encode(self.error_kind, serializer);
+        <Option<String>>::sse_encode(self.error_detail, serializer);
+        <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::reply_filter::ReplyFilterSettings {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<i64>>::sse_encode(self.blocked_mids, serializer);
+        <bool>::sse_encode(self.anti_goods, serializer);
+        <bool>::sse_encode(self.block_at_only, serializer);
+        <Option<i64>>::sse_encode(self.block_at_count, serializer);
+        <String>::sse_encode(self.ban_word, serializer);
+    }
+}
+
 impl SseEncode for crate::api::reply::ReplyInteract {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -39302,6 +39612,15 @@ impl SseEncode for crate::api::reply::ReplyReplyListResult {
         <Option<String>>::sse_encode(self.error_kind, serializer);
         <Option<String>>::sse_encode(self.error_detail, serializer);
         <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::reply_filter::ReplyUrlExtra {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i64>::sse_encode(self.goods_cm_control, serializer);
+        <bool>::sse_encode(self.has_goods_item_id, serializer);
+        <bool>::sse_encode(self.has_goods_prefetched_cache, serializer);
     }
 }
 

@@ -16,5 +16,10 @@ serde.workspace = true
 # 弹幕规则与推荐屏蔽词共用同一份判定。
 regex.workspace = true
 
+[dev-dependencies]
+# 过滤规则的对照用例是 JSON：同一份输入与期望值，Rust 与基线各跑一遍
+# （tests/fixtures/reply_filter/cases.json）。
+serde_json.workspace = true
+
 [lints]
 workspace = true

@@ -1,0 +1,320 @@
+{
+  "comment": [
+    "评论过滤规则的对照用例（S2 / issue #52）。两边各跑一遍同一份文件：",
+    "  Rust  rust/crates/bili-domain/tests/reply_filter_golden.rs",
+    "  基线  test/services/rust/reply_filter_parity_test.dart",
+    "",
+    "期望值 `removed` 的判据在 Dart 那一侧：它逐行转写了迁移前",
+    "`lib/grpc/reply.dart` 的 ReplyGrpc.needRemoveGrpc 及其三个私有方法，",
+    "用真正的 Dart String / RegExp 跑同一批输入。期望值与基线不符时它会红。",
+    "",
+    "为什么不是「基线生成快照、Rust 比对」那条链：这条路径没有响应报文，",
+    "输入是一组字段而不是一份 raw JSON，手写用例能覆盖到真实响应里难得",
+    "一见的边界（光一个 @、抬头缺冒号、emoji 名字）。",
+    "",
+    "`message` 里的昵称与链接均为杜撰，不是真实用户数据。"
+  ],
+  "cases": [
+    {
+      "name": "普通评论：什么规则都不开",
+      "settings": {},
+      "item": { "mid": 1001, "message": "这个讲得真清楚" },
+      "removed": false
+    },
+    {
+      "name": "拉黑的 UP 主",
+      "settings": { "blocked_mids": [1001] },
+      "item": { "mid": 1001, "message": "这个讲得真清楚" },
+      "removed": true
+    },
+    {
+      "name": "没拉黑的人不受影响",
+      "settings": { "blocked_mids": [2002] },
+      "item": { "mid": 1001, "message": "这个讲得真清楚" },
+      "removed": false
+    },
+    {
+      "name": "@ 数量达到阈值（基线是 >=，不是 >）",
+      "settings": { "block_at_count": 2 },
+      "item": {
+        "mid": 1001,
+        "message": "@阿强 @阿明 一起看",
+        "at_names": ["阿强", "阿明"]
+      },
+      "removed": true
+    },
+    {
+      "name": "@ 数量差一个，不到阈值",
+      "settings": { "block_at_count": 3 },
+      "item": {
+        "mid": 1001,
+        "message": "@阿强 @阿明 一起看",
+        "at_names": ["阿强", "阿明"]
+      },
+      "removed": false
+    },
+    {
+      "name": "纯 @ 评论（根评论，没有抬头）",
+      "settings": { "block_at_only": true },
+      "item": {
+        "mid": 1001,
+        "message": "@阿强 @阿明",
+        "at_names": ["阿强", "阿明"]
+      },
+      "removed": true
+    },
+    {
+      "name": "纯 @ 开关没开时照常显示",
+      "settings": {},
+      "item": {
+        "mid": 1001,
+        "message": "@阿强 @阿明",
+        "at_names": ["阿强", "阿明"]
+      },
+      "removed": false
+    },
+    {
+      "name": "@ 之后还有正文，不算纯 @",
+      "settings": { "block_at_only": true },
+      "item": {
+        "mid": 1001,
+        "message": "@阿强 说得对",
+        "at_names": ["阿强"]
+      },
+      "removed": false
+    },
+    {
+      "name": "@ 了一个服务端没给 mid 的名字，当成正文",
+      "settings": { "block_at_only": true },
+      "item": {
+        "mid": 1001,
+        "message": "@阿强 @路人",
+        "at_names": ["阿强"]
+      },
+      "removed": false
+    },
+    {
+      "name": "纯 @ 但带表情，放行",
+      "settings": { "block_at_only": true },
+      "item": {
+        "mid": 1001,
+        "message": "@阿强",
+        "at_names": ["阿强"],
+        "has_emotes": true
+      },
+      "removed": false
+    },
+    {
+      "name": "纯 @ 但带图，放行",
+      "settings": { "block_at_only": true },
+      "item": {
+        "mid": 1001,
+        "message": "@阿强",
+        "at_names": ["阿强"],
+        "has_pictures": true
+      },
+      "removed": false
+    },
+    {
+      "name": "楼中楼：跳过服务端拼的抬头，冒号之后是纯 @",
+      "settings": { "block_at_only": true },
+      "item": {
+        "mid": 1001,
+        "message": "回复 @阿明:@阿强",
+        "at_names": ["阿明", "阿强"],
+        "root": 7,
+        "parent": 9
+      },
+      "removed": true
+    },
+    {
+      "name": "同一串但 root == parent：「回复」两个字就是正文",
+      "settings": { "block_at_only": true },
+      "item": {
+        "mid": 1001,
+        "message": "回复 @阿明:@阿强",
+        "at_names": ["阿明", "阿强"],
+        "root": 7,
+        "parent": 7
+      },
+      "removed": false
+    },
+    {
+      "name": "楼中楼但抬头没有冒号：基线放行",
+      "settings": { "block_at_only": true },
+      "item": {
+        "mid": 1001,
+        "message": "@阿强",
+        "at_names": ["阿强"],
+        "root": 7,
+        "parent": 9
+      },
+      "removed": false
+    },
+    {
+      "name": "光一个 @ 后面没有名字",
+      "settings": { "block_at_only": true },
+      "item": {
+        "mid": 1001,
+        "message": "@ ",
+        "at_names": ["阿强"]
+      },
+      "removed": false
+    },
+    {
+      "name": "换行也算 @ 之间的间隔",
+      "settings": { "block_at_only": true },
+      "item": {
+        "mid": 1001,
+        "message": "@阿强\n@阿明",
+        "at_names": ["阿强", "阿明"]
+      },
+      "removed": true
+    },
+    {
+      "name": "名字里有 emoji（UTF-16 代理对 / UTF-8 四字节）",
+      "settings": { "block_at_only": true },
+      "item": {
+        "mid": 1001,
+        "message": "@阿强🎉 @阿明",
+        "at_names": ["阿强🎉", "阿明"]
+      },
+      "removed": true
+    },
+    {
+      "name": "atNameToMid 为空时整条规则不生效",
+      "settings": { "block_at_only": true },
+      "item": { "mid": 1001, "message": "@阿强" },
+      "removed": false
+    },
+    {
+      "name": "带货：goodsCmControl == 1",
+      "settings": { "anti_goods": true },
+      "item": {
+        "mid": 1001,
+        "message": "这个讲得真清楚",
+        "url_extras": [{ "goods_cm_control": 1 }]
+      },
+      "removed": true
+    },
+    {
+      "name": "带货：goodsCmControl 是 2，基线判的是 == 1",
+      "settings": { "anti_goods": true },
+      "item": {
+        "mid": 1001,
+        "message": "这个讲得真清楚",
+        "url_extras": [{ "goods_cm_control": 2 }]
+      },
+      "removed": false
+    },
+    {
+      "name": "带货：goodsItemId 存在即算，不看值",
+      "settings": { "anti_goods": true },
+      "item": {
+        "mid": 1001,
+        "message": "这个讲得真清楚",
+        "url_extras": [{ "has_goods_item_id": true }]
+      },
+      "removed": true
+    },
+    {
+      "name": "带货：goodsPrefetchedCache 存在即算",
+      "settings": { "anti_goods": true },
+      "item": {
+        "mid": 1001,
+        "message": "这个讲得真清楚",
+        "url_extras": [{ "has_goods_prefetched_cache": true }]
+      },
+      "removed": true
+    },
+    {
+      "name": "带货：多条 URL 里只要有一条命中",
+      "settings": { "anti_goods": true },
+      "item": {
+        "mid": 1001,
+        "message": "这个讲得真清楚",
+        "url_extras": [{}, { "goods_cm_control": 1 }]
+      },
+      "removed": true
+    },
+    {
+      "name": "带货：正文里的链接前缀",
+      "settings": { "anti_goods": true },
+      "item": {
+        "mid": 1001,
+        "message": "快来看 https://gaoneng.bilibili.com/tetris/x"
+      },
+      "removed": true
+    },
+    {
+      "name": "带货开关没开时照常显示",
+      "settings": {},
+      "item": {
+        "mid": 1001,
+        "message": "快来看 https://gaoneng.bilibili.com/tetris/x",
+        "url_extras": [{ "goods_cm_control": 1 }]
+      },
+      "removed": false
+    },
+    {
+      "name": "关键词命中",
+      "settings": { "ban_word": "广告|推广" },
+      "item": { "mid": 1001, "message": "这是广告" },
+      "removed": true
+    },
+    {
+      "name": "关键词不区分大小写",
+      "settings": { "ban_word": "SPAM" },
+      "item": { "mid": 1001, "message": "这是 spam" },
+      "removed": true
+    },
+    {
+      "name": "关键词没命中",
+      "settings": { "ban_word": "广告|推广" },
+      "item": { "mid": 1001, "message": "这个讲得真清楚" },
+      "removed": false
+    },
+    {
+      "name": "空的关键词串等于关掉这条规则",
+      "settings": { "ban_word": "" },
+      "item": { "mid": 1001, "message": "这是广告" },
+      "removed": false
+    },
+    {
+      "name": "多条规则同时开：命中其中一条即移除",
+      "settings": {
+        "blocked_mids": [9999],
+        "anti_goods": true,
+        "block_at_only": true,
+        "block_at_count": 5,
+        "ban_word": "广告"
+      },
+      "item": { "mid": 1001, "message": "这是广告" },
+      "removed": true
+    },
+    {
+      "name": "多条规则同时开但一条都没命中",
+      "settings": {
+        "blocked_mids": [9999],
+        "anti_goods": true,
+        "block_at_only": true,
+        "block_at_count": 5,
+        "ban_word": "广告"
+      },
+      "item": {
+        "mid": 1001,
+        "message": "@阿强 说得对",
+        "at_names": ["阿强"]
+      },
+      "removed": false
+    }
+  ],
+  "rejected_patterns": {
+    "comment": [
+      "两端语义不同、或 Rust 引擎编不过的正则：必须被拒（ErrorKind::Unsupported），",
+      "不能当作「没有这条规则」继续（ADR-010 决策二）。Dart 侧只断言它们",
+      "在基线里能编过——正是「能编过但语义不同」才危险。"
+    ],
+    "patterns": ["\\d{3}", "\\w+", "\\bfoo\\b", "a{2,3}"]
+  }
+}

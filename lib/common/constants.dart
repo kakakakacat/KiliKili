@@ -37,7 +37,10 @@ abstract final class Constants {
     r'https?://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]',
   );
 
-  static const goodsUrlPrefix = "https://gaoneng.bilibili.com/tetris";
+  // goodsUrlPrefix 随评论过滤规则一并搬到 Rust（S2 / issue #52），见
+  // `bili_domain::reply_filter::GOODS_URL_PREFIX`。它是判定规则的一部分
+  // （「长这样的链接算带货」），不是界面文案，留一份在这里只会让人以为
+  // 改它还有用。
 
   // static const dynFeatures = 'itemOpusStyle,listOnlyfans,onlyfansQaCard';
   static const dynFeatures =

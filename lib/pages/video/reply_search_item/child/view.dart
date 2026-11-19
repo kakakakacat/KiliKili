@@ -1,11 +1,10 @@
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show SearchItem;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/reply/reply_search_type.dart';
 import 'package:kilikili/pages/video/reply_search_item/child/controller.dart';
 import 'package:kilikili/pages/video/reply_search_item/child/widgets/item.dart';
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:kilikili/utils/grid.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -49,7 +48,7 @@ class _ReplySearchChildPageState extends State<ReplySearchChildPage>
     );
   }
 
-  Widget _buildBody(LoadingState<List<SearchItem>?> loadingState) {
+  Widget _buildBody(LoadingState<List<ReplySearchItem>?> loadingState) {
     return switch (loadingState) {
       Loading() => coverGridSkeleton,
       Success(:final response) =>
@@ -60,7 +59,7 @@ class _ReplySearchChildPageState extends State<ReplySearchChildPage>
                   if (index == response.length - 1) {
                     _controller.onLoadMore();
                   }
-                  return ReplySearchItem(
+                  return ReplySearchItemCard(
                     item: response[index],
                     type: widget.searchType,
                   );

@@ -6,14 +6,13 @@ import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:kilikili/common/widgets/view_safe_area.dart';
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show ReplyInfo, MainListReply;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/pages/common/fab_mixin.dart';
 import 'package:kilikili/pages/common/reply/reply_footer_mixin.dart';
 import 'package:kilikili/pages/main_reply/controller.dart';
 import 'package:kilikili/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:kilikili/pages/video/reply_reply/view.dart';
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:kilikili/utils/extension/widget_ext.dart';
 import 'package:kilikili/utils/feed_back.dart';
 import 'package:kilikili/utils/num_utils.dart';
@@ -47,7 +46,7 @@ class _MainReplyPageState extends State<MainReplyPage>
         SingleTickerProviderStateMixin,
         BaseFabMixin,
         FabMixin,
-        ReplyFooterMixin<MainReplyPage, MainListReply> {
+        ReplyFooterMixin<MainReplyPage, ReplyMainPage> {
   @override
   final MainReplyController controller = Get.put(
     MainReplyController(),
@@ -112,7 +111,7 @@ class _MainReplyPageState extends State<MainReplyPage>
     );
   }
 
-  Widget _buildBody(LoadingState<List<ReplyInfo>?> loadingState) {
+  Widget _buildBody(LoadingState<List<ReplyEntity>?> loadingState) {
     return switch (loadingState) {
       Loading() => const SliverPrototypeExtentList(
         prototypeItem: VideoReplySkeleton(),
@@ -190,7 +189,7 @@ class _MainReplyPageState extends State<MainReplyPage>
     );
   }
 
-  void throttleReplyReply(ReplyInfo replyItem, int? id) {
+  void throttleReplyReply(ReplyEntity replyItem, int? id) {
     EasyThrottle.throttle(
       'replyReply',
       const Duration(milliseconds: 500),
@@ -198,7 +197,7 @@ class _MainReplyPageState extends State<MainReplyPage>
     );
   }
 
-  void replyReply(ReplyInfo replyItem, int? id) {
+  void replyReply(ReplyEntity replyItem, int? id) {
     Get.to(
       SimpleScaffold(
         appBar: AppBar(
@@ -213,8 +212,8 @@ class _MainReplyPageState extends State<MainReplyPage>
           child: VideoReplyReplyPanel(
             enableSlide: false,
             id: id,
-            oid: replyItem.oid.toInt(),
-            rpid: replyItem.id.toInt(),
+            oid: replyItem.oid,
+            rpid: replyItem.id,
             isVideoDetail: false,
             replyType: controller.replyType,
             firstFloor: replyItem,

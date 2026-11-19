@@ -5,11 +5,10 @@ import 'package:kilikili/common/widgets/dialog/export_import.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/view_sliver_safe_area.dart';
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show ReplyInfo;
 import 'package:kilikili/pages/article/view.dart';
 import 'package:kilikili/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:kilikili/pages/video/reply_reply/view.dart';
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:kilikili/utils/app_scheme.dart';
 import 'package:kilikili/utils/bili_utils.dart';
 import 'package:kilikili/utils/id_utils.dart';
@@ -30,15 +29,17 @@ class MyReply extends StatefulWidget {
   @override
   State<MyReply> createState() => _MyReplyState();
 
-  static Map<String, Uint8List> json2ReplyProto(List<dynamic> list) => {
-    for (var e in list)
-      e['id'].toString(): (ReplyInfo.create()..mergeFromProto3Json(e))
-          .writeToBuffer(),
-  };
+  /// 把一份导出文件变成可以直接写进盒子的 `键 → 字节`。
+  ///
+  /// 格式的读写在 Rust（`bili_api::reply_grpc_store`）：老的 proto3 JSON
+  /// 导出文件与新格式都认。拿不到结果时返回 null，调用点据此报错而不是
+  /// 静默写入半份数据。
+  static Map<String, Uint8List>? json2ReplyBytes(List<dynamic> list) =>
+      RustReplyGrpc.importStored(Utils.jsonEncoder.convert(list));
 }
 
 class _MyReplyState extends State<MyReply> with DynMixin {
-  final List<ReplyInfo> _replies = <ReplyInfo>[];
+  final List<ReplyEntity> _replies = <ReplyEntity>[];
 
   @override
   void initState() {
@@ -48,7 +49,8 @@ class _MyReplyState extends State<MyReply> with DynMixin {
 
   void _initReply() {
     _replies
-      ..assignAll(GStorage.reply!.values.map(ReplyInfo.fromBuffer))
+      // 解不开的条目直接跳过：一条坏数据不该让整页打不开。
+      ..assignAll(GStorage.reply!.values.map(RustReplyGrpc.decodeStored).nonNulls)
       ..sort((a, b) => b.ctime.compareTo(a.ctime)); // rpid not aligned;
   }
 
@@ -118,20 +120,20 @@ class _MyReplyState extends State<MyReply> with DynMixin {
     );
   }
 
-  void _replyReply(ReplyInfo replyInfo, int? rpid) {
+  void _replyReply(ReplyEntity replyInfo, int? rpid) {
     int? rootRpId, secondRpId;
-    final id = replyInfo.id.toInt();
-    if (replyInfo.hasRoot()) {
-      rootRpId = replyInfo.root.toInt();
+    final id = replyInfo.id;
+    if (replyInfo.root != 0) {
+      rootRpId = replyInfo.root;
       secondRpId = id;
     } else {
       rootRpId = id;
     }
-    final type = replyInfo.type.toInt();
+    final type = replyInfo.kind;
     switch (type) {
       case 1:
         PiliScheme.videoPush(
-          replyInfo.oid.toInt(),
+          replyInfo.oid,
           null,
           rootRpId: rootRpId,
           secondRpId: secondRpId,
@@ -154,7 +156,7 @@ class _MyReplyState extends State<MyReply> with DynMixin {
         } else {
           // TODO:
           VideoReplyReplyPanel.toReply(
-            oid: replyInfo.oid.toInt(),
+            oid: replyInfo.oid,
             rootId: rootRpId,
             rpId: secondRpId,
             type: type,
@@ -168,8 +170,8 @@ class _MyReplyState extends State<MyReply> with DynMixin {
     setState(() {});
   }
 
-  void _onCheckReply(ReplyInfo replyInfo) {
-    final oid = replyInfo.oid.toInt();
+  void _onCheckReply(ReplyEntity replyInfo) {
+    final oid = replyInfo.oid;
     ReplyUtils.onCheckReply(
       replyInfo: replyInfo,
       biliSendCommAntifraud: Pref.biliSendCommAntifraud,
@@ -182,9 +184,9 @@ class _MyReplyState extends State<MyReply> with DynMixin {
   }
 
   String _onExport() {
-    return Utils.jsonEncoder.convert(
-      _replies.map((e) => e.toProto3Json()).toList(),
-    );
+    final json = RustReplyGrpc.exportStored(GStorage.reply!.values.toList());
+    if (json == null) throw StateError('评论存档导出失败');
+    return json;
   }
 
   void _showExportDialog() {
@@ -220,7 +222,9 @@ class _MyReplyState extends State<MyReply> with DynMixin {
   }
 
   Future<void> _onImport(List<dynamic> list) async {
-    await GStorage.reply!.putAll(MyReply.json2ReplyProto(list));
+    final entries = MyReply.json2ReplyBytes(list);
+    if (entries == null) throw StateError('评论存档不是合法的格式');
+    await GStorage.reply!.putAll(entries);
     if (mounted) {
       _initReply();
       setState(() {});

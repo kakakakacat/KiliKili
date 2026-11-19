@@ -1,11 +1,10 @@
 import 'dart:io' show Platform;
 
 import 'package:kilikili/common/widgets/selection_text.dart';
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show ReplyInfo;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/reply/reply_sort_type.dart';
 import 'package:kilikili/services/rust/rust_reply.dart';
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/accounts/account.dart';
 import 'package:kilikili/utils/android/android_helper.dart';
@@ -20,25 +19,34 @@ import 'package:material_ui/material_ui.dart';
 
 abstract final class ReplyUtils {
   static void onCheckReply({
-    required ReplyInfo replyInfo,
+    required ReplyEntity replyInfo,
     required bool biliSendCommAntifraud,
     required sourceId,
     required bool isManual,
   }) {
     try {
       _checkReply(
-        oid: replyInfo.oid.toInt(),
-        type: replyInfo.type.toInt(),
-        id: replyInfo.id.toInt(),
+        oid: replyInfo.oid,
+        type: replyInfo.kind,
+        id: replyInfo.id,
         message: replyInfo.content.message,
         //
-        root: replyInfo.root.toInt(),
-        parent: replyInfo.parent.toInt(),
-        ctime: replyInfo.ctime.toInt(),
+        root: replyInfo.root,
+        parent: replyInfo.parent,
+        ctime: replyInfo.ctime,
+        // 字段名照 protobuf 的 proto3 JSON：对面那个 Android 组件按这几个
+        // 名字读（见 biliSendCommAntifraud），改名就对不上了。
         pictures: replyInfo.content.pictures
-            .map((item) => item.toProto3Json())
+            .map(
+              (item) => {
+                'imgSrc': item.imgSrc,
+                'imgWidth': item.imgWidth,
+                'imgHeight': item.imgHeight,
+                'imgSize': item.imgSize,
+              },
+            )
             .toList(),
-        mid: replyInfo.mid.toInt(),
+        mid: replyInfo.mid,
         //
         isManual: isManual,
         biliSendCommAntifraud: biliSendCommAntifraud,

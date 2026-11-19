@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:kilikili/common/constants.dart';
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show ReplyInfo;
 import 'package:kilikili/http/api.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
@@ -23,14 +21,13 @@ import 'package:kilikili/utils/extension/string_ext.dart';
 import 'package:kilikili/utils/global_data.dart';
 import 'package:kilikili/utils/id_utils.dart';
 import 'package:kilikili/utils/recommend_filter.dart';
-import 'package:kilikili/utils/request_utils.dart';
 import 'package:kilikili/utils/storage.dart';
 import 'package:kilikili/utils/subtitle_utils.dart';
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:kilikili/utils/utils.dart';
 import 'package:kilikili/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show compute;
-import 'package:protobuf/protobuf.dart';
 
 /// view层根据 status 判断渲染逻辑
 abstract final class VideoHttp {
@@ -255,7 +252,7 @@ abstract final class VideoHttp {
   // parent	num	父评论rpid	非必要	二级评论同根评论id 大于二级评论为要回复的评论id
   // message	str	发送评论内容	必要	最大1000字符
   // plat	num	发送平台标识	非必要	1：web端 2：安卓客户端  3：ios客户端  4：wp客户端
-  static Future<LoadingState<ReplyInfo?>> replyAdd({
+  static Future<LoadingState<ReplyEntity?>> replyAdd({
     required int type,
     required int oid,
     required String message,
@@ -284,14 +281,16 @@ abstract final class VideoHttp {
     );
     if (res.data['code'] == 0) {
       try {
-        final replyInfo = RequestUtils.replyCast(res.data['data']['reply']);
-        GStorage.reply?.put(
-          replyInfo.id.toString(),
-          (replyInfo.deepCopy()
-                ..unknownFields.clear()
-                ..clearTrackInfo())
-              .writeToBuffer(),
+        // 字段改名（`uname`/`avatar`/`level_info`…）在 Rust
+        // （`bili_api::reply_grpc_store::from_rest_reply`）。请求本身还在
+        // 这里：写操作按 ADR-013 单独迁。
+        final replyInfo = RustReplyGrpc.fromRestJson(
+          jsonEncode(res.data['data']['reply']),
         );
+        if (replyInfo == null) return const Success(null);
+        if (RustReplyGrpc.encodeStored(replyInfo) case final bytes?) {
+          GStorage.reply?.put(replyInfo.id.toString(), bytes);
+        }
         return Success(replyInfo);
       } catch (e, s) {
         Utils.reportError(e, s);

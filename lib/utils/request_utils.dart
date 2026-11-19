@@ -5,8 +5,6 @@ import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:kilikili/common/widgets/selection_text.dart';
 import 'package:kilikili/grpc/bilibili/im/type.pbenum.dart';
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show ReplyInfo;
 import 'package:kilikili/grpc/im.dart';
 import 'package:kilikili/http/dynamics.dart';
 import 'package:kilikili/http/loading_state.dart';
@@ -254,27 +252,6 @@ abstract final class RequestUtils {
         );
       }
     }
-  }
-
-  static ReplyInfo replyCast(Map res) {
-    Map? emote = res['content']['emote'];
-    emote?.forEach((key, value) {
-      value['size'] = value['meta']['size'];
-    });
-    return ReplyInfo.create()..mergeFromProto3Json(
-      res
-        ..['content'].remove('members')
-        ..['id'] = res['rpid']
-        ..['member']['name'] = res['member']['uname']
-        ..['member']['face'] = res['member']['avatar']
-        ..['member']['level'] = res['member']['level_info']['current_level']
-        ..['member']['vipStatus'] = res['member']['vip']['vipStatus']
-        ..['member']['vipType'] = res['member']['vip']['vipType']
-        ..['member']['officialVerifyType'] =
-            res['member']['official_verify']['type']
-        ..['content']['emotes'] = emote,
-      ignoreUnknownFields: true,
-    );
   }
 
   // static Future<dynamic> getWwebid(mid) async {

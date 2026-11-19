@@ -291,8 +291,12 @@ pub struct ReplySearchItem {
 }
 
 /// 一页搜索结果。
+///
+/// 名字里不叫 `ReplySearchPage` 是为了避开宿主自己的
+/// `lib/pages/video/reply_search_item/view.dart` 里那个同名的页面 widget：
+/// Dart 没有命名空间，两者会直接撞上。
 #[derive(Debug, Clone, PartialEq, Default)]
-pub struct ReplySearchPage {
+pub struct ReplySearchList {
     pub items: Vec<ReplySearchItem>,
     pub has_next: bool,
 }
@@ -333,7 +337,7 @@ macro_rules! result_type {
 result_type!(ReplyMainPageResult, ReplyMainPage);
 result_type!(ReplyDetailPageResult, ReplyDetailPage);
 result_type!(ReplyFlatPageResult, ReplyFlatPage);
-result_type!(ReplySearchPageResult, ReplySearchPage);
+result_type!(ReplySearchListResult, ReplySearchList);
 result_type!(ReplyTranslationResult, ReplyContent);
 result_type!(ReplyEntityResult, ReplyEntity);
 result_type!(ReplyBytesResult, Vec<u8>);
@@ -534,8 +538,8 @@ fn flat_page_from(page: domain::ReplyFlatPage) -> ReplyFlatPage {
     }
 }
 
-fn search_page_from(page: domain::ReplySearchPage) -> ReplySearchPage {
-    ReplySearchPage {
+fn search_page_from(page: domain::ReplySearchPage) -> ReplySearchList {
+    ReplySearchList {
         items: page
             .items
             .into_iter()
@@ -900,10 +904,10 @@ pub async fn fetch_reply_search_item(
     page: i64,
     item_kind: ReplySearchItemKind,
     keyword: String,
-) -> ReplySearchPageResult {
+) -> ReplySearchListResult {
     let (ctx, transport) = context.split();
     let item_kind = item_kind.into_domain();
-    ReplySearchPageResult::from_result(
+    ReplySearchListResult::from_result(
         flatten(
             init::runtime()
                 .spawn(async move {

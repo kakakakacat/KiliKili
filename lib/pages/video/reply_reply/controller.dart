@@ -1,9 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show ReplyInfo, DetailListReply;
-import 'package:kilikili/grpc/reply.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/reply/reply_sort_type.dart';
 import 'package:kilikili/models_new/dynamic/dyn_mention/item.dart';
@@ -12,10 +9,10 @@ import 'package:kilikili/pages/common/reply/fold/reply_fold_mixin.dart';
 import 'package:kilikili/pages/common/reply/reply_controller.dart';
 import 'package:kilikili/pages/video/reply_new/view.dart';
 import 'package:kilikili/pages/video/reply_reply/tree.dart';
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:kilikili/utils/id_utils.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
-import 'package:fixnum/fixnum.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
@@ -44,7 +41,7 @@ class VideoReplyReplyController extends ReplyController
   int replyType;
 
   bool hasRoot = false;
-  final firstFloor = Rxn<ReplyInfo>();
+  final firstFloor = Rxn<ReplyEntity>();
 
   final index = RxnInt();
 
@@ -58,7 +55,7 @@ class VideoReplyReplyController extends ReplyController
   @override
   ReplySortType get prefSortType => Pref.reply2SortType;
 
-  late final removedReply = HashMap<Int64, ReplyInfo>();
+  late final removedReply = HashMap<int, ReplyEntity>();
 
   @override
   void onInit() {
@@ -67,41 +64,39 @@ class VideoReplyReplyController extends ReplyController
   }
 
   @override
-  List<ReplyInfo>? getDataList(response) {
-    return dialog != null ? response.replies : response.root.replies;
-  }
+  List<ReplyEntity>? getDataList(response) => response.replies;
 
   @override
   bool customHandleResponse(bool isRefresh, Success response) {
     final data = response.response;
 
     if (isRefresh) {
-      handleSubjectControl(data.subjectControl);
+      handleSubject(data.subject);
     }
 
     // reply2Reply // isDialogue.not
-    if (data is DetailListReply) {
-      count.value = data.root.count.toInt();
+    if (data is ReplyDetailPage) {
+      count.value = data.root.count;
       if (isRefresh && !hasRoot) {
         firstFloor.value ??= data.root;
       }
       if (id != null) {
-        setIndexById(Int64(id!), data.root.replies);
+        setIndexById(id!, data.replies);
         id = null;
       }
 
-      getFoldCard(data.mixedCards);
+      foldCard = data.foldCard;
+      for (final removed in data.removed) {
+        removedReply[removed.id] = removed;
+      }
     }
 
-    handlePagination(
-      cursor: data.cursor,
-      offset: data.paginationReply.nextOffset,
-    );
+    handlePagination(isEnd: data.isEnd, offset: data.nextOffset);
 
     return false;
   }
 
-  Iterable<ReplyInfo> getParentChain(int index, ReplyInfo? firstFloor) {
+  Iterable<ReplyEntity> getParentChain(int index, ReplyEntity? firstFloor) {
     final data = loadingState.value.data!;
     final item = data[index];
     final replies = [item];
@@ -118,9 +113,9 @@ class VideoReplyReplyController extends ReplyController
     return replies.reversed;
   }
 
-  bool setIndexById(Int64 id64, [List<ReplyInfo>? replies]) {
+  bool setIndexById(int rpid, [List<ReplyEntity>? replies]) {
     final index = (replies ?? loadingState.value.data!).indexWhere(
-      (item) => item.id == id64,
+      (item) => item.id == rpid,
     );
     if (index != -1) {
       this.index.value = index;
@@ -152,21 +147,20 @@ class VideoReplyReplyController extends ReplyController
 
   @override
   Future<LoadingState> customGetData() => dialog != null
-      ? ReplyGrpc.dialogList(
+      ? RustReplyGrpc.dialogList(
           type: replyType,
           oid: oid,
           root: rpid,
           dialog: dialog!,
           offset: nextOffset,
         )
-      : ReplyGrpc.detailList(
+      : RustReplyGrpc.detailList(
           type: replyType,
           oid: oid,
           root: rpid,
           rpid: id ?? 0,
           mode: mode,
           offset: nextOffset,
-          removed: removedReply,
         );
 
   @override
@@ -177,16 +171,16 @@ class VideoReplyReplyController extends ReplyController
     return super.onReload();
   }
 
-  Future<ReplyInfo?> _sendReply(ReplyInfo replyItem) async {
+  Future<ReplyEntity?> _sendReply(ReplyEntity replyItem) async {
     final (bool inputDisable, String? hint) = replyHint;
     if (inputDisable) return null;
 
-    final oid = replyItem.oid.toInt();
-    final root = replyItem.id.toInt();
+    final oid = replyItem.oid;
+    final root = replyItem.id;
     final key = oid + root;
 
     final replyInfo = await Get.key.currentState!.push(
-      PublishRoute<ReplyInfo>(
+      PublishRoute<ReplyEntity>(
         pageBuilder: (context, _, _) {
           return ReplyPage(
             hint: hint,
@@ -220,7 +214,7 @@ class VideoReplyReplyController extends ReplyController
 
   @override
   Future<void> onReply(
-    covariant ReplyInfo replyItem, {
+    covariant ReplyEntity replyItem, {
     int? oid,
     int? replyType,
     covariant int index = -1,
@@ -323,7 +317,7 @@ class VideoReplyReplyController extends ReplyController
   void buildTree() {
     final data = loadingState.rawValue.data!;
     if (data.isEmpty) return;
-    final seen = HashSet<Int64>();
+    final seen = HashSet<int>();
     data.retainWhere((i) => seen.add(i.id));
     showReplyTree = true;
     replyTree.value = ReplyTree.build(
@@ -353,7 +347,7 @@ class VideoReplyReplyController extends ReplyController
     return false;
   }
 
-  Future<void> onReplyByTreeNode(int index, ReplyInfo replyItem) async {
+  Future<void> onReplyByTreeNode(int index, ReplyEntity replyItem) async {
     if (await _sendReply(replyItem) case final replyInfo?) {
       replyTree
         ..rawValue!.appendLeaf(replyInfo, index)
@@ -367,7 +361,7 @@ class VideoReplyReplyController extends ReplyController
     }
   }
 
-  void onRemoveByTreeNode(int index, ReplyInfo replyItem) {
+  void onRemoveByTreeNode(int index, ReplyEntity replyItem) {
     replyTree
       ..rawValue!.remove(index)
       ..refresh();

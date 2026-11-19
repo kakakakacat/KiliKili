@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -769585327;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 510744115;
 
 // Section: executor
 
@@ -9580,7 +9580,7 @@ fn wire__crate__api__reply_grpc__reply_search_item_default_impl(
         },
     )
 }
-fn wire__crate__api__reply_grpc__reply_search_page_default_impl(
+fn wire__crate__api__reply_grpc__reply_search_list_default_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -9588,7 +9588,7 @@ fn wire__crate__api__reply_grpc__reply_search_page_default_impl(
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "reply_search_page_default",
+            debug_name: "reply_search_list_default",
             port: Some(port_),
             mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
         },
@@ -9606,7 +9606,7 @@ fn wire__crate__api__reply_grpc__reply_search_page_default_impl(
             move |context| {
                 transform_result_sse::<_, ()>((move || {
                     let output_ok =
-                        Ok::<_, ()>(crate::api::reply_grpc::ReplySearchPage::default())?;
+                        Ok::<_, ()>(crate::api::reply_grpc::ReplySearchList::default())?;
                     std::result::Result::Ok(output_ok)
                 })())
             }
@@ -18226,11 +18226,11 @@ impl SseDecode for Option<crate::api::reply::ReplyReplyList> {
     }
 }
 
-impl SseDecode for Option<crate::api::reply_grpc::ReplySearchPage> {
+impl SseDecode for Option<crate::api::reply_grpc::ReplySearchList> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         if (<bool>::sse_decode(deserializer)) {
-            return Some(<crate::api::reply_grpc::ReplySearchPage>::sse_decode(
+            return Some(<crate::api::reply_grpc::ReplySearchList>::sse_decode(
                 deserializer,
             ));
         } else {
@@ -21252,28 +21252,28 @@ impl SseDecode for crate::api::reply_grpc::ReplySearchItemKind {
     }
 }
 
-impl SseDecode for crate::api::reply_grpc::ReplySearchPage {
+impl SseDecode for crate::api::reply_grpc::ReplySearchList {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_items =
             <Vec<crate::api::reply_grpc::ReplySearchItem>>::sse_decode(deserializer);
         let mut var_hasNext = <bool>::sse_decode(deserializer);
-        return crate::api::reply_grpc::ReplySearchPage {
+        return crate::api::reply_grpc::ReplySearchList {
             items: var_items,
             has_next: var_hasNext,
         };
     }
 }
 
-impl SseDecode for crate::api::reply_grpc::ReplySearchPageResult {
+impl SseDecode for crate::api::reply_grpc::ReplySearchListResult {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_data =
-            <Option<crate::api::reply_grpc::ReplySearchPage>>::sse_decode(deserializer);
+            <Option<crate::api::reply_grpc::ReplySearchList>>::sse_decode(deserializer);
         let mut var_errorKind = <Option<String>>::sse_decode(deserializer);
         let mut var_errorDetail = <Option<String>>::sse_decode(deserializer);
         let mut var_errorCode = <Option<i64>>::sse_decode(deserializer);
-        return crate::api::reply_grpc::ReplySearchPageResult {
+        return crate::api::reply_grpc::ReplySearchListResult {
             data: var_data,
             error_kind: var_errorKind,
             error_detail: var_errorDetail,
@@ -24871,7 +24871,7 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        227 => wire__crate__api__reply_grpc__reply_search_page_default_impl(
+        227 => wire__crate__api__reply_grpc__reply_search_list_default_impl(
             port,
             ptr,
             rust_vec_len,
@@ -32151,7 +32151,7 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::reply_grpc::ReplySearchItemKi
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
-impl flutter_rust_bridge::IntoDart for crate::api::reply_grpc::ReplySearchPage {
+impl flutter_rust_bridge::IntoDart for crate::api::reply_grpc::ReplySearchList {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
             self.items.into_into_dart().into_dart(),
@@ -32161,18 +32161,18 @@ impl flutter_rust_bridge::IntoDart for crate::api::reply_grpc::ReplySearchPage {
     }
 }
 impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
-    for crate::api::reply_grpc::ReplySearchPage
+    for crate::api::reply_grpc::ReplySearchList
 {
 }
-impl flutter_rust_bridge::IntoIntoDart<crate::api::reply_grpc::ReplySearchPage>
-    for crate::api::reply_grpc::ReplySearchPage
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply_grpc::ReplySearchList>
+    for crate::api::reply_grpc::ReplySearchList
 {
-    fn into_into_dart(self) -> crate::api::reply_grpc::ReplySearchPage {
+    fn into_into_dart(self) -> crate::api::reply_grpc::ReplySearchList {
         self
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
-impl flutter_rust_bridge::IntoDart for crate::api::reply_grpc::ReplySearchPageResult {
+impl flutter_rust_bridge::IntoDart for crate::api::reply_grpc::ReplySearchListResult {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
             self.data.into_into_dart().into_dart(),
@@ -32184,13 +32184,13 @@ impl flutter_rust_bridge::IntoDart for crate::api::reply_grpc::ReplySearchPageRe
     }
 }
 impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
-    for crate::api::reply_grpc::ReplySearchPageResult
+    for crate::api::reply_grpc::ReplySearchListResult
 {
 }
-impl flutter_rust_bridge::IntoIntoDart<crate::api::reply_grpc::ReplySearchPageResult>
-    for crate::api::reply_grpc::ReplySearchPageResult
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply_grpc::ReplySearchListResult>
+    for crate::api::reply_grpc::ReplySearchListResult
 {
-    fn into_into_dart(self) -> crate::api::reply_grpc::ReplySearchPageResult {
+    fn into_into_dart(self) -> crate::api::reply_grpc::ReplySearchListResult {
         self
     }
 }
@@ -40906,12 +40906,12 @@ impl SseEncode for Option<crate::api::reply::ReplyReplyList> {
     }
 }
 
-impl SseEncode for Option<crate::api::reply_grpc::ReplySearchPage> {
+impl SseEncode for Option<crate::api::reply_grpc::ReplySearchList> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <bool>::sse_encode(self.is_some(), serializer);
         if let Some(value) = self {
-            <crate::api::reply_grpc::ReplySearchPage>::sse_encode(value, serializer);
+            <crate::api::reply_grpc::ReplySearchList>::sse_encode(value, serializer);
         }
     }
 }
@@ -43039,7 +43039,7 @@ impl SseEncode for crate::api::reply_grpc::ReplySearchItemKind {
     }
 }
 
-impl SseEncode for crate::api::reply_grpc::ReplySearchPage {
+impl SseEncode for crate::api::reply_grpc::ReplySearchList {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <Vec<crate::api::reply_grpc::ReplySearchItem>>::sse_encode(self.items, serializer);
@@ -43047,10 +43047,10 @@ impl SseEncode for crate::api::reply_grpc::ReplySearchPage {
     }
 }
 
-impl SseEncode for crate::api::reply_grpc::ReplySearchPageResult {
+impl SseEncode for crate::api::reply_grpc::ReplySearchListResult {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        <Option<crate::api::reply_grpc::ReplySearchPage>>::sse_encode(self.data, serializer);
+        <Option<crate::api::reply_grpc::ReplySearchList>>::sse_encode(self.data, serializer);
         <Option<String>>::sse_encode(self.error_kind, serializer);
         <Option<String>>::sse_encode(self.error_detail, serializer);
         <Option<i64>>::sse_encode(self.error_code, serializer);

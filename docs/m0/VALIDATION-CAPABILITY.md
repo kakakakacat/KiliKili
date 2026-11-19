@@ -446,3 +446,46 @@ Flutter SDK 补丁的机器上也跑得起来，并且不会随 pb 子树被删�
 本次不改变 CI 触发与门禁。新增的两个测试都落在已有的 job 里（Rust 走
 `cargo test --workspace`，Dart 走 `flutter-test.yml`），不需要新的 runner
 或外部二进制。
+
+### 评论取数的离线验证（#176）
+
+#52 那一节写着「gRPC 传输与 `reply/v1` 的消息解码仍在 Dart（留给 #52 的
+续单）」——续单就是本次，那句话不再成立。
+
+#### 新增的能力
+
+`rust/crates/bili-api/tests/reply_grpc_golden.rs` 把「pb 响应 → 领域实体」
+的投影冻结成一份 JSON 快照
+（`tests/fixtures/reply_grpc/main_list.rust.json`）。投影改了之后 diff 直接
+显示动了哪个字段。覆盖：表情图的三档回退链、按埋点串前缀认笔记、
+`official_verify_type == 0` 与「没有认证」的区别、粉丝牌与装扮卡的有无、
+UP 置顶并入列表头部、被拉黑的根评论连同其楼中楼一起消失。
+
+`bili-api::reply_grpc_store` 的单测覆盖「我的评论」的存档格式：新旧两种
+格式都读得进来（老盒子里是 protobuf 字节，老导出文件是 proto3 JSON）、
+超过 53 位的 id 写成字符串、一条坏数据让整次导出失败而不是导出半份。
+
+`tool/proto-generator` 多两条自检：`KEEP` 规则点名的消息或字段在上游消失
+时生成器失败（见 ADR-012「评论落地」）。`tool/proto-generate.sh --check`
+不变。
+
+#### 证明不了什么
+
+**这份快照不是抓包。** `fixtures/grpc/README.md` 里那两份是真实响应的
+脱敏投影；评论拿不到同样的东西——`MainList` 的每条评论都带昵称、头像、
+正文与 IP 属地，脱敏完剩下的就是手工构造的消息。所以快照里的 pb 消息
+写在测试代码里而不是提交成二进制：它证明的是**投影规则**，不是「线上
+响应能解开」。
+
+于是这几件事仍然只能真机看，按 QA 矩阵走 Phase 2：服务端到底给不给
+`memberV2.garb`、折叠卡的游标能不能原样回填、翻译接口对没有译文的评论
+返回什么、整页被过滤光时自动翻页会不会翻不完。
+
+#52 留下的 `test/services/rust/reply_filter_parity_test.dart` **不受影响**：
+它当初就刻意不 import `lib/`、不构造 protobuf 对象，正是为了熬过 pb 子树
+被删的这一片。
+
+#### CI
+
+不改变触发与门禁。新增测试落在已有的 `cargo test --workspace` 里，不需要
+新 runner 或外部二进制。

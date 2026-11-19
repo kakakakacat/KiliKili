@@ -1,7 +1,7 @@
 import 'dart:io' show Platform;
 
 import 'package:kilikili/common/widgets/custom_icon.dart';
-import 'package:kilikili/grpc/reply.dart';
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:kilikili/models/common/reply/reply_sort_type.dart';
 import 'package:kilikili/pages/setting/models/model.dart';
 import 'package:kilikili/pages/setting/widgets/slider_dialog.dart';
@@ -68,7 +68,7 @@ List<SettingsModel> get replySettings => [
     leading: const Icon(CustomIcons.shopping_bag_not_interested),
     setKey: SettingBoxKey.antiGoodsReply,
     defaultVal: false,
-    onChanged: (value) => ReplyGrpc.antiGoodsReply = value,
+    onChanged: (value) => RustReplyGrpc.antiGoodsReply = value,
   ),
   const NormalModel(
     title: '屏蔽评论@数量',
@@ -92,8 +92,8 @@ List<SettingsModel> get replySettings => [
     title: '评论关键词过滤',
     key: SettingBoxKey.banWordForReply,
     onChanged: (value) {
-      ReplyGrpc.replyRegExp = value;
-      ReplyGrpc.enableFilter = value.pattern.isNotEmpty;
+      RustReplyGrpc.replyRegExp = value;
+      RustReplyGrpc.enableFilter = value.pattern.isNotEmpty;
     },
   ),
   NormalModel(
@@ -192,7 +192,7 @@ Future<void> _showReplyAtBlockDialog(
 ) async {
   void onChanged([int? value]) {
     Get.back();
-    ReplyGrpc.blockReplyAtCount = value;
+    RustReplyGrpc.blockReplyAtCount = value;
     GStorage.setting
         .put(SettingBoxKey.blockReplyAtCount, value)
         .whenComplete(setState);
@@ -239,7 +239,7 @@ Future<void> _showReplyAtBlockDialog(
 }
 
 void _onBlockAtOnlyReplyChanged(bool value) =>
-    ReplyGrpc.blockAtOnlyReply = value;
+    RustReplyGrpc.blockAtOnlyReply = value;
 
 Future<void> _showReplyDepthDialog(
   BuildContext context,

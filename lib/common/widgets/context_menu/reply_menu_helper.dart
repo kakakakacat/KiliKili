@@ -3,7 +3,7 @@ part of 'package:kilikili/pages/video/reply/widgets/reply_item_grpc.dart';
 void showReplyCopyDialog(
   BuildContext context,
   String message,
-  Map<String, Emote> emotes,
+  Map<String, ReplyEmote> emotes,
 ) {
   bool showEmote = false;
   showDialog(
@@ -34,14 +34,14 @@ void showReplyCopyDialog(
                 ContextMenuButtonItem(
                   onPressed: () {
                     String text = RegExp.escape(state.selectedText!);
-                    if (ReplyGrpc.enableFilter) text = '|$text';
+                    if (RustReplyGrpc.enableFilter) text = '|$text';
 
                     showConfirmDialog(
                       context: context,
                       title: const Text('是否确认评论过滤的变更：'),
                       content: Text.rich(
                         TextSpan(
-                          text: ReplyGrpc.replyRegExp.pattern,
+                          text: RustReplyGrpc.replyRegExp.pattern,
                           children: [
                             TextSpan(
                               text: text,
@@ -54,12 +54,12 @@ void showReplyCopyDialog(
                         ),
                       ),
                       onConfirm: () {
-                        final filter = ReplyGrpc.replyRegExp.pattern + text;
-                        ReplyGrpc.replyRegExp = RegExp(
+                        final filter = RustReplyGrpc.replyRegExp.pattern + text;
+                        RustReplyGrpc.replyRegExp = RegExp(
                           filter,
                           caseSensitive: true,
                         );
-                        ReplyGrpc.enableFilter = true;
+                        RustReplyGrpc.enableFilter = true;
                         GStorage.setting.put(
                           SettingBoxKey.banWordForReply,
                           filter,
@@ -84,19 +84,21 @@ void showReplyCopyDialog(
                       children: emotes.entries.mapIndexed(
                         (i, e) {
                           final emote = e.value;
-                          final size = emote.size.toInt() * 25.0;
+                          final size = emote.size * 25.0;
                           return TextSpan(
                             children: [
                               if (i != 0) const TextSpan(text: '\n\n'),
                               WidgetSpan(
                                 child: NetworkImgLayer(
-                                  src: emote.url,
+                                  src: emote.displayUrl,
                                   type: .emote,
                                   width: size,
                                   height: size,
                                 ),
                               ),
-                              TextSpan(text: '\n${e.key}\n${emote.url}'),
+                              TextSpan(
+                                text: '\n${e.key}\n${emote.displayUrl}',
+                              ),
                             ],
                           );
                         },

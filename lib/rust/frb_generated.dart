@@ -102,7 +102,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -769585327;
+  int get rustContentHash => 510744115;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -908,7 +908,7 @@ abstract class RustLibApi extends BaseApi {
     String? csrf,
   });
 
-  Future<ReplySearchPageResult> crateApiReplyGrpcFetchReplySearchItem({
+  Future<ReplySearchListResult> crateApiReplyGrpcFetchReplySearchItem({
     required GrpcContext context,
     required PlatformInt64 oid,
     required PlatformInt64 kind,
@@ -1440,7 +1440,7 @@ abstract class RustLibApi extends BaseApi {
 
   Future<ReplySearchItem> crateApiReplyGrpcReplySearchItemDefault();
 
-  Future<ReplySearchPage> crateApiReplyGrpcReplySearchPageDefault();
+  Future<ReplySearchList> crateApiReplyGrpcReplySearchListDefault();
 
   Future<ReplySubject> crateApiReplyGrpcReplySubjectDefault();
 
@@ -6514,7 +6514,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<ReplySearchPageResult> crateApiReplyGrpcFetchReplySearchItem({
+  Future<ReplySearchListResult> crateApiReplyGrpcFetchReplySearchItem({
     required GrpcContext context,
     required PlatformInt64 oid,
     required PlatformInt64 kind,
@@ -6540,7 +6540,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           );
         },
         codec: SseCodec(
-          decodeSuccessData: sse_decode_reply_search_page_result,
+          decodeSuccessData: sse_decode_reply_search_list_result,
           decodeErrorData: null,
         ),
         constMeta: kCrateApiReplyGrpcFetchReplySearchItemConstMeta,
@@ -10085,7 +10085,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<ReplySearchPage> crateApiReplyGrpcReplySearchPageDefault() {
+  Future<ReplySearchList> crateApiReplyGrpcReplySearchListDefault() {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -10098,19 +10098,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           );
         },
         codec: SseCodec(
-          decodeSuccessData: sse_decode_reply_search_page,
+          decodeSuccessData: sse_decode_reply_search_list,
           decodeErrorData: null,
         ),
-        constMeta: kCrateApiReplyGrpcReplySearchPageDefaultConstMeta,
+        constMeta: kCrateApiReplyGrpcReplySearchListDefaultConstMeta,
         argValues: [],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiReplyGrpcReplySearchPageDefaultConstMeta =>
+  TaskConstMeta get kCrateApiReplyGrpcReplySearchListDefaultConstMeta =>
       const TaskConstMeta(
-        debugName: "reply_search_page_default",
+        debugName: "reply_search_list_default",
         argNames: [],
       );
 
@@ -12652,9 +12652,9 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  ReplySearchPage dco_decode_box_autoadd_reply_search_page(dynamic raw) {
+  ReplySearchList dco_decode_box_autoadd_reply_search_list(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return dco_decode_reply_search_page(raw);
+    return dco_decode_reply_search_list(raw);
   }
 
   @protected
@@ -17613,9 +17613,9 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  ReplySearchPage? dco_decode_opt_box_autoadd_reply_search_page(dynamic raw) {
+  ReplySearchList? dco_decode_opt_box_autoadd_reply_search_list(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw == null ? null : dco_decode_box_autoadd_reply_search_page(raw);
+    return raw == null ? null : dco_decode_box_autoadd_reply_search_list(raw);
   }
 
   @protected
@@ -19722,25 +19722,25 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  ReplySearchPage dco_decode_reply_search_page(dynamic raw) {
+  ReplySearchList dco_decode_reply_search_list(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
     if (arr.length != 2)
       throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
-    return ReplySearchPage(
+    return ReplySearchList(
       items: dco_decode_list_reply_search_item(arr[0]),
       hasNext: dco_decode_bool(arr[1]),
     );
   }
 
   @protected
-  ReplySearchPageResult dco_decode_reply_search_page_result(dynamic raw) {
+  ReplySearchListResult dco_decode_reply_search_list_result(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
     if (arr.length != 4)
       throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
-    return ReplySearchPageResult(
-      data: dco_decode_opt_box_autoadd_reply_search_page(arr[0]),
+    return ReplySearchListResult(
+      data: dco_decode_opt_box_autoadd_reply_search_list(arr[0]),
       errorKind: dco_decode_opt_String(arr[1]),
       errorDetail: dco_decode_opt_String(arr[2]),
       errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
@@ -23354,11 +23354,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  ReplySearchPage sse_decode_box_autoadd_reply_search_page(
+  ReplySearchList sse_decode_box_autoadd_reply_search_list(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    return (sse_decode_reply_search_page(deserializer));
+    return (sse_decode_reply_search_list(deserializer));
   }
 
   @protected
@@ -30352,13 +30352,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  ReplySearchPage? sse_decode_opt_box_autoadd_reply_search_page(
+  ReplySearchList? sse_decode_opt_box_autoadd_reply_search_list(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
     if (sse_decode_bool(deserializer)) {
-      return (sse_decode_box_autoadd_reply_search_page(deserializer));
+      return (sse_decode_box_autoadd_reply_search_list(deserializer));
     } else {
       return null;
     }
@@ -33287,23 +33287,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  ReplySearchPage sse_decode_reply_search_page(SseDeserializer deserializer) {
+  ReplySearchList sse_decode_reply_search_list(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_items = sse_decode_list_reply_search_item(deserializer);
     var var_hasNext = sse_decode_bool(deserializer);
-    return ReplySearchPage(items: var_items, hasNext: var_hasNext);
+    return ReplySearchList(items: var_items, hasNext: var_hasNext);
   }
 
   @protected
-  ReplySearchPageResult sse_decode_reply_search_page_result(
+  ReplySearchListResult sse_decode_reply_search_list_result(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_data = sse_decode_opt_box_autoadd_reply_search_page(deserializer);
+    var var_data = sse_decode_opt_box_autoadd_reply_search_list(deserializer);
     var var_errorKind = sse_decode_opt_String(deserializer);
     var var_errorDetail = sse_decode_opt_String(deserializer);
     var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
-    return ReplySearchPageResult(
+    return ReplySearchListResult(
       data: var_data,
       errorKind: var_errorKind,
       errorDetail: var_errorDetail,
@@ -37502,12 +37502,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_box_autoadd_reply_search_page(
-    ReplySearchPage self,
+  void sse_encode_box_autoadd_reply_search_list(
+    ReplySearchList self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_reply_search_page(self, serializer);
+    sse_encode_reply_search_list(self, serializer);
   }
 
   @protected
@@ -43419,15 +43419,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_opt_box_autoadd_reply_search_page(
-    ReplySearchPage? self,
+  void sse_encode_opt_box_autoadd_reply_search_list(
+    ReplySearchList? self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
     sse_encode_bool(self != null, serializer);
     if (self != null) {
-      sse_encode_box_autoadd_reply_search_page(self, serializer);
+      sse_encode_box_autoadd_reply_search_list(self, serializer);
     }
   }
 
@@ -45906,8 +45906,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_reply_search_page(
-    ReplySearchPage self,
+  void sse_encode_reply_search_list(
+    ReplySearchList self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -45916,12 +45916,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_reply_search_page_result(
-    ReplySearchPageResult self,
+  void sse_encode_reply_search_list_result(
+    ReplySearchListResult self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_opt_box_autoadd_reply_search_page(self.data, serializer);
+    sse_encode_opt_box_autoadd_reply_search_list(self.data, serializer);
     sse_encode_opt_String(self.errorKind, serializer);
     sse_encode_opt_String(self.errorDetail, serializer);
     sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);

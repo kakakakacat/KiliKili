@@ -483,7 +483,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReplyReplyList dco_decode_box_autoadd_reply_reply_list(dynamic raw);
 
   @protected
-  ReplySearchPage dco_decode_box_autoadd_reply_search_page(dynamic raw);
+  ReplySearchList dco_decode_box_autoadd_reply_search_list(dynamic raw);
 
   @protected
   ReplyVote dco_decode_box_autoadd_reply_vote(dynamic raw);
@@ -2073,7 +2073,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReplyReplyList? dco_decode_opt_box_autoadd_reply_reply_list(dynamic raw);
 
   @protected
-  ReplySearchPage? dco_decode_opt_box_autoadd_reply_search_page(dynamic raw);
+  ReplySearchList? dco_decode_opt_box_autoadd_reply_search_list(dynamic raw);
 
   @protected
   ReplyVote? dco_decode_opt_box_autoadd_reply_vote(dynamic raw);
@@ -2709,10 +2709,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReplySearchItemKind dco_decode_reply_search_item_kind(dynamic raw);
 
   @protected
-  ReplySearchPage dco_decode_reply_search_page(dynamic raw);
+  ReplySearchList dco_decode_reply_search_list(dynamic raw);
 
   @protected
-  ReplySearchPageResult dco_decode_reply_search_page_result(dynamic raw);
+  ReplySearchListResult dco_decode_reply_search_list_result(dynamic raw);
 
   @protected
   ReplySortMode dco_decode_reply_sort_mode(dynamic raw);
@@ -3807,7 +3807,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  ReplySearchPage sse_decode_box_autoadd_reply_search_page(
+  ReplySearchList sse_decode_box_autoadd_reply_search_list(
     SseDeserializer deserializer,
   );
 
@@ -5909,7 +5909,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  ReplySearchPage? sse_decode_opt_box_autoadd_reply_search_page(
+  ReplySearchList? sse_decode_opt_box_autoadd_reply_search_list(
     SseDeserializer deserializer,
   );
 
@@ -6735,10 +6735,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  ReplySearchPage sse_decode_reply_search_page(SseDeserializer deserializer);
+  ReplySearchList sse_decode_reply_search_list(SseDeserializer deserializer);
 
   @protected
-  ReplySearchPageResult sse_decode_reply_search_page_result(
+  ReplySearchListResult sse_decode_reply_search_list_result(
     SseDeserializer deserializer,
   );
 
@@ -8156,8 +8156,8 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_box_autoadd_reply_search_page(
-    ReplySearchPage self,
+  void sse_encode_box_autoadd_reply_search_list(
+    ReplySearchList self,
     SseSerializer serializer,
   );
 
@@ -10880,8 +10880,8 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_opt_box_autoadd_reply_search_page(
-    ReplySearchPage? self,
+  void sse_encode_opt_box_autoadd_reply_search_list(
+    ReplySearchList? self,
     SseSerializer serializer,
   );
 
@@ -11930,14 +11930,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_reply_search_page(
-    ReplySearchPage self,
+  void sse_encode_reply_search_list(
+    ReplySearchList self,
     SseSerializer serializer,
   );
 
   @protected
-  void sse_encode_reply_search_page_result(
-    ReplySearchPageResult self,
+  void sse_encode_reply_search_list_result(
+    ReplySearchListResult self,
     SseSerializer serializer,
   );
 

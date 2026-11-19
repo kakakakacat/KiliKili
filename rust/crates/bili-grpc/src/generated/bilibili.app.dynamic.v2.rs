@@ -3,46 +3,4 @@
 pub struct OpusItem {
     #[prost(int64, optional, tag = "1")]
     pub opus_id: ::core::option::Option<i64>,
-    #[prost(enumeration = "OpusType", optional, tag = "2")]
-    pub opus_type: ::core::option::Option<i32>,
-    #[prost(int64, optional, tag = "3")]
-    pub oid: ::core::option::Option<i64>,
-}
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
-#[repr(i32)]
-pub enum OpusType {
-    Dyn = 0,
-    Article = 1,
-    Note = 2,
-    Word = 3,
-    Repost = 4,
-    MangaEp = 5,
-}
-impl OpusType {
-    /// String value of the enum field names used in the ProtoBuf definition.
-    ///
-    /// The values are not transformed in any way and thus are considered stable
-    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
-    pub fn as_str_name(&self) -> &'static str {
-        match self {
-            Self::Dyn => "OPUS_TYPE_DYN",
-            Self::Article => "OPUS_TYPE_ARTICLE",
-            Self::Note => "OPUS_TYPE_NOTE",
-            Self::Word => "OPUS_TYPE_WORD",
-            Self::Repost => "OPUS_TYPE_REPOST",
-            Self::MangaEp => "OPUS_TYPE_MANGA_EP",
-        }
-    }
-    /// Creates an enum from field names used in the ProtoBuf definition.
-    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
-        match value {
-            "OPUS_TYPE_DYN" => Some(Self::Dyn),
-            "OPUS_TYPE_ARTICLE" => Some(Self::Article),
-            "OPUS_TYPE_NOTE" => Some(Self::Note),
-            "OPUS_TYPE_WORD" => Some(Self::Word),
-            "OPUS_TYPE_REPOST" => Some(Self::Repost),
-            "OPUS_TYPE_MANGA_EP" => Some(Self::MangaEp),
-            _ => None,
-        }
-    }
 }

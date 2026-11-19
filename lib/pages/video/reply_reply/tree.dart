@@ -1,8 +1,75 @@
 import 'dart:collection';
 
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart';
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:collection/collection.dart';
-import 'package:fixnum/fixnum.dart';
+
+/// `ctime` 的上下界。基线用 `Int64.MAX_VALUE` / `MIN_VALUE` 做扫描初值；
+/// 领域实体的 `ctime` 是 Dart 的 `int`（64 位），边界同样取整数极值。
+const _maxCtime = 0x7fffffffffffffff;
+const _minCtime = -0x8000000000000000;
+
+/// 合成一条占位评论。
+///
+/// 线程化视图里，被删或被屏蔽的父评论不会随页下发，但它的子评论要挂在
+/// 某个节点下，否则整棵子树断掉。这条占位只需要身份（id / 父子关系）、
+/// 一个用于排序的 `ctime`，以及一个用来显示「回复了谁」的作者。
+///
+/// **为什么留在宿主**（AGENTS.md §2 的例外要求写明理由）：合成的触发时机
+/// 与折叠状态是线程化视图自己的事，整棵 [ReplyTree] 都还在 Dart；把合成
+/// 单独挪到 Rust 只会让一个算法跨两边。它随「线程化评论下沉」那一片一起
+/// 走，#176 的范围里只有取数那一半。
+ReplyEntity _placeholder({
+  required int id,
+  required int parent,
+  required int dialog,
+  required int root,
+  required int ctime,
+  required ReplyUser? member,
+}) {
+  return ReplyEntity(
+    id: id,
+    oid: 0,
+    kind: 0,
+    mid: member?.mid ?? 0,
+    root: root,
+    parent: parent,
+    dialog: dialog,
+    ctime: ctime,
+    like: 0,
+    count: 0,
+    content: const ReplyContent(
+      message: '',
+      emotes: {},
+      topics: [],
+      atNameToMid: {},
+      urls: {},
+      pictures: [],
+      members: {},
+    ),
+    member:
+        member ??
+        const ReplyUser(
+          mid: 0,
+          name: '',
+          face: '',
+          level: 0,
+          isSenior: false,
+          vipStatus: 0,
+          vipType: 0,
+        ),
+    control: ReplyControlInfo(
+      action: 0,
+      isUpTop: false,
+      showTranslation: false,
+      upReply: false,
+      isNote: false,
+      isNoteV2: false,
+      canTranslate: false,
+      cardLabels: [],
+    ),
+    replies: [],
+  );
+}
 
 /// 无法显示父评论的原因分类
 enum ReasonType {
@@ -23,7 +90,7 @@ class ReplyTreeNode {
     this.reason,
   });
 
-  final ReplyInfo reply;
+  final ReplyEntity reply;
   final int depth;
 
   int collapsed = 0;
@@ -71,7 +138,7 @@ extension type ReplyTree._(List<ReplyTreeNode> _vis)
   @pragma('vm:prefer-inline')
   ReplyTreeNode operator [](int index) => _vis[index];
 
-  static int replyCompare(ReplyInfo a, ReplyInfo b) {
+  static int replyCompare(ReplyEntity a, ReplyEntity b) {
     final ctimeCmp = a.ctime.compareTo(b.ctime);
     if (ctimeCmp != 0) return ctimeCmp;
     return a.id.compareTo(b.id);
@@ -86,10 +153,10 @@ extension type ReplyTree._(List<ReplyTreeNode> _vis)
   /// 2. 合成缺失父占位
   /// 3. DFS 前序拍平
   factory ReplyTree.build({
-    required List<ReplyInfo> data,
-    required HashSet<Int64> seen,
-    required Int64 rootId,
-    required Map<Int64, ReplyInfo> removed,
+    required List<ReplyEntity> data,
+    required HashSet<int> seen,
+    required int rootId,
+    required Map<int, ReplyEntity> removed,
     int foldDepth = 0,
     ReplyTreeNode? root,
   }) {
@@ -101,18 +168,18 @@ extension type ReplyTree._(List<ReplyTreeNode> _vis)
 
     if (foldDepth == 0) foldDepth = -1;
 
-    final children = HashMap<Int64, List<ReplyInfo>>();
-    final suppressed = HashMap<Int64, ReasonType>();
+    final children = HashMap<int, List<ReplyEntity>>();
+    final suppressed = HashMap<int, ReasonType>();
 
-    void addNode(ReplyInfo r) {
+    void addNode(ReplyEntity r) {
       assert(r.id != rootId, 'rootId $rootId 出现在子评论内');
       (children[r.parent] ??= []).add(r);
       seen.add(r.id);
     }
 
     // ── 1. 上溯 + 建桶 ──
-    final toSynthDialogs = <Int64>{};
-    final toSynthParents = <Int64>{};
+    final toSynthDialogs = <int>{};
+    final toSynthParents = <int>{};
 
     for (final r in data) {
       (children[r.parent] ??= []).add(r);
@@ -146,21 +213,21 @@ extension type ReplyTree._(List<ReplyTreeNode> _vis)
 
     // ── 2. 合成缺失父 ──
     // 只登记未实体化的 dialog id；2b 后有 kids 才进桶，幽灵直接丢弃
-    final deferred = <Int64>[];
+    final deferred = <int>[];
 
-    ReplyInfo synthReply(
-      Int64 p,
-      List<ReplyInfo> kids, [
+    ReplyEntity synthReply(
+      int p,
+      List<ReplyEntity> kids, [
       bool needAnchor = false,
     ]) {
       assert(kids.isNotEmpty, '节点 $p kids isEmpty');
-      var mKidCtime = Int64.MAX_VALUE;
+      var mKidCtime = _maxCtime;
 
-      Member? mention;
+      ReplyUser? mention;
       var mPri = 1 << 30;
-      var mMentCtime = Int64.MIN_VALUE;
+      var mMentCtime = _minCtime;
 
-      Int64? anchor;
+      int? anchor;
 
       for (final r in kids) {
         if (r.ctime < mKidCtime) mKidCtime = r.ctime;
@@ -178,13 +245,12 @@ extension type ReplyTree._(List<ReplyTreeNode> _vis)
         }
       }
 
-      return ReplyInfo(
+      return _placeholder(
         id: p,
         parent: anchor ?? rootId,
         dialog: anchor ?? p,
         root: rootId,
         ctime: mKidCtime,
-        mid: mention?.mid,
         member: mention,
       );
     }
@@ -235,9 +301,9 @@ extension type ReplyTree._(List<ReplyTreeNode> _vis)
 
     // ── 3. DFS 前序 ──
     final rows = <ReplyTreeNode>[];
-    final visited = HashSet<Int64>();
+    final visited = HashSet<int>();
 
-    int walk(ReplyInfo r, int depth, ReplyTreeNode? parent, bool visible) {
+    int walk(ReplyEntity r, int depth, ReplyTreeNode? parent, bool visible) {
       if (!visited.add(r.id)) {
         assert(false, '评论出现环：${r.id}');
         return -1;
@@ -338,7 +404,7 @@ extension type ReplyTree._(List<ReplyTreeNode> _vis)
   ///
   /// 前置条件：祖先均处于展开态，否则 [ReplyTreeNode.collapsed] 状态错误。
   /// [c] 是该节点所有子节点里 ctime 最大的。
-  int appendLeaf(ReplyInfo c, int index) {
+  int appendLeaf(ReplyEntity c, int index) {
     final parent = _vis[index];
     assert(
       parent.isLeaf || replyCompare(parent._children!.last.reply, c) < 0,
@@ -371,8 +437,9 @@ extension type ReplyTree._(List<ReplyTreeNode> _vis)
   /// - 叶子：从 [ReplyTreeNode._children] 与 [_vis] 移除。
   /// 前置条件：祖先均处于展开态，否则 [ReplyTreeNode.collapsed] 状态错误。
   ///
-  /// 原始数据的同步删除使用 [ReplyList.reverseIdentityIndexOf] 定位，
-  /// [ReplyInfo.==] 是 [DeepCollectionEquality]，不应使用 [List.remove]。
+  /// 原始数据的同步删除使用 [ReplyList.reverseIdentityIndexOf] 定位：
+  /// [ReplyEntity] 的 `==` 是按值比较（FRB 生成的实现逐字段比），同一页里
+  /// 两条内容完全相同的评论会被当成同一个，不应使用 [List.remove]。
   ReplyTreeNode remove(int index) {
     final node = _vis[index];
     assert(node._debugAncestorsExpanded(), '祖先未处于展开态');
@@ -408,11 +475,11 @@ extension type ReplyTree._(List<ReplyTreeNode> _vis)
     return _vis[index + 1].depth < _vis[index].depth;
   }
 
-  /// 从 [ReplyInfo.parentReplyMember] 提取被回复者信息，用于合成占位父。
-  static (int, Member?) _extractMention(ReplyInfo reply) {
-    // 合成节点无parentReplyMember
-    if (!reply.hasParentReplyMember()) return const (1 << 30, null);
-    final parent = reply.parentReplyMember;
+  /// 从 [ReplyEntity.parentMember] 提取被回复者信息，用于合成占位父。
+  static (int, ReplyUser?) _extractMention(ReplyEntity reply) {
+    // 合成节点无 parentMember
+    final parent = reply.parentMember;
+    if (parent == null) return const (1 << 30, null);
     final members = reply.content.members;
 
     // 1) 名字命中成员表：直接用
@@ -420,18 +487,28 @@ extension type ReplyTree._(List<ReplyTreeNode> _vis)
       return (1, m);
     }
     // 2) 改名：原名字不在成员表，但 mid 相同，认为是同一人
-    if (parent.hasMid()) {
-      final mid = parent.mid;
+    if (parent.mid case final mid?) {
       if (members.values.firstWhereOrNull((i) => i.mid == mid) case final m?) {
         return (1, m);
       }
     }
-    // 3) 自回复：无mid属性
+    // 3) 自回复：无 mid 属性
     if (parent.name == reply.member.name) {
       return (2, reply.member);
     }
-    // 4) 可能自回复但改名，也可能是古早回复无member信息
-    return (3, Member(name: parent.name, mid: parent.mid));
+    // 4) 可能自回复但改名，也可能是古早回复无 member 信息
+    return (
+      3,
+      ReplyUser(
+        mid: parent.mid ?? 0,
+        name: parent.name,
+        face: '',
+        level: 0,
+        isSenior: false,
+        vipStatus: 0,
+        vipType: 0,
+      ),
+    );
   }
 }
 

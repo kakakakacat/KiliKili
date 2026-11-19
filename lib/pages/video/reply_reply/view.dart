@@ -9,19 +9,17 @@ import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/simple_colored_box.dart';
 import 'package:kilikili/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:kilikili/common/widgets/view_safe_area.dart';
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show ReplyInfo;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/pages/common/reply/reply_footer_mixin.dart';
 import 'package:kilikili/pages/common/slide/common_slide_page.dart';
 import 'package:kilikili/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:kilikili/pages/video/reply_reply/controller.dart';
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:kilikili/utils/app_scheme.dart';
 import 'package:kilikili/utils/extension/widget_ext.dart';
 import 'package:kilikili/utils/num_utils.dart';
 import 'package:kilikili/utils/utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
-import 'package:fixnum/fixnum.dart' show Int64;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -45,11 +43,11 @@ class VideoReplyReplyPanel extends CommonSlidePage {
   final int oid;
   final int rpid;
   final int? dialog;
-  final ReplyInfo? firstFloor;
+  final ReplyEntity? firstFloor;
   final bool isVideoDetail;
   final int replyType;
   final bool isNested;
-  final Int64? upMid;
+  final int? upMid;
 
   static Future<void>? toReply({
     required int oid,
@@ -180,7 +178,8 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
     );
   }
 
-  ReplyInfo? get firstFloor => widget.firstFloor ?? controller.firstFloor.value;
+  ReplyEntity? get firstFloor =>
+      widget.firstFloor ?? controller.firstFloor.value;
 
   ScrollController get scrollController =>
       controller.nestedController ?? controller.scrollController;
@@ -217,7 +216,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
     );
   }
 
-  Widget _header(ReplyInfo firstFloor) {
+  Widget _header(ReplyEntity firstFloor) {
     return SliverMainAxisGroup(
       slivers: [
         SliverToBoxAdapter(
@@ -331,7 +330,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
     );
   }
 
-  Widget _buildBody(LoadingState<List<ReplyInfo>?> loadingState) {
+  Widget _buildBody(LoadingState<List<ReplyEntity>?> loadingState) {
     final jumpIndex = controller.index.value;
     switch (loadingState) {
       case Loading():
@@ -404,7 +403,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
     }
   }
 
-  Widget _replyItem(BuildContext context, ReplyInfo replyItem, int index) {
+  Widget _replyItem(BuildContext context, ReplyEntity replyItem, int index) {
     return ReplyItemGrpc(
       replyItem: replyItem,
       replyLevel: isDialogue ? 3 : 2,
@@ -419,19 +418,19 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
     );
   }
 
-  void _onJumpToParent(ReplyInfo replyItem) {
+  void _onJumpToParent(ReplyEntity replyItem) {
     if (!controller.setIndexById(replyItem.parent)) {
       SmartDialog.showToast('评论可能已被删除');
     }
   }
 
-  void _showDialogue(BuildContext context, ReplyInfo replyItem) {
+  void _showDialogue(BuildContext context, ReplyEntity replyItem) {
     MiniScaffold.of(context).showBottomSheet(
       constraints: const BoxConstraints(),
       (context) => VideoReplyReplyPanel(
-        oid: replyItem.oid.toInt(),
-        rpid: replyItem.root.toInt(),
-        dialog: replyItem.dialog.toInt(),
+        oid: replyItem.oid,
+        rpid: replyItem.root,
+        dialog: replyItem.dialog,
         replyType: widget.replyType,
         isVideoDetail: true,
         isNested: widget.isNested,

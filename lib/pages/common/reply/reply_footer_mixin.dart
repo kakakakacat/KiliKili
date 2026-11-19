@@ -1,7 +1,6 @@
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show FoldCard;
 import 'package:kilikili/pages/common/reply/fold/reply_fold_mixin.dart';
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:material_ui/material_ui.dart';
 
 mixin ReplyFooterMixin<T extends StatefulWidget, R> on State<T> {
@@ -23,7 +22,7 @@ mixin ReplyFooterMixin<T extends StatefulWidget, R> on State<T> {
     return buildEndItem();
   }
 
-  Widget _buildFoldItem(FoldCard fold) {
+  Widget _buildFoldItem(ReplyFoldCard fold) {
     return Container(
       height: 125,
       alignment: .topCenter,

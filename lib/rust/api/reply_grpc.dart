@@ -93,7 +93,7 @@ Future<ReplyFlatPageResult> fetchReplyFoldList({
 );
 
 /// 评论区里搜稿件 / 专栏（发评论时插链接用）。不过滤。
-Future<ReplySearchPageResult> fetchReplySearchItem({
+Future<ReplySearchListResult> fetchReplySearchItem({
   required GrpcContext context,
   required PlatformInt64 oid,
   required PlatformInt64 kind,
@@ -1031,17 +1031,21 @@ enum ReplySearchItemKind {
 }
 
 /// 一页搜索结果。
-class ReplySearchPage {
+///
+/// 名字里不叫 `ReplySearchPage` 是为了避开宿主自己的
+/// `lib/pages/video/reply_search_item/view.dart` 里那个同名的页面 widget：
+/// Dart 没有命名空间，两者会直接撞上。
+class ReplySearchList {
   final List<ReplySearchItem> items;
   final bool hasNext;
 
-  const ReplySearchPage({
+  const ReplySearchList({
     required this.items,
     required this.hasNext,
   });
 
-  static Future<ReplySearchPage> default_() =>
-      RustLib.instance.api.crateApiReplyGrpcReplySearchPageDefault();
+  static Future<ReplySearchList> default_() =>
+      RustLib.instance.api.crateApiReplyGrpcReplySearchListDefault();
 
   @override
   int get hashCode => items.hashCode ^ hasNext.hashCode;
@@ -1049,19 +1053,19 @@ class ReplySearchPage {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ReplySearchPage &&
+      other is ReplySearchList &&
           runtimeType == other.runtimeType &&
           items == other.items &&
           hasNext == other.hasNext;
 }
 
-class ReplySearchPageResult {
-  final ReplySearchPage? data;
+class ReplySearchListResult {
+  final ReplySearchList? data;
   final String? errorKind;
   final String? errorDetail;
   final PlatformInt64? errorCode;
 
-  const ReplySearchPageResult({
+  const ReplySearchListResult({
     this.data,
     this.errorKind,
     this.errorDetail,
@@ -1078,7 +1082,7 @@ class ReplySearchPageResult {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ReplySearchPageResult &&
+      other is ReplySearchListResult &&
           runtimeType == other.runtimeType &&
           data == other.data &&
           errorKind == other.errorKind &&

@@ -1,0 +1,299 @@
+{
+  "fold_card": {
+    "bottom_text": "查看折叠评论",
+    "pagination_offset": "fold-cursor"
+  },
+  "has_up_top": true,
+  "is_end": false,
+  "next_offset": "next-cursor",
+  "replies": [
+    {
+      "card": null,
+      "content": {
+        "at_name_to_mid": {},
+        "emotes": {},
+        "members": {},
+        "message": "UP 置顶",
+        "note": null,
+        "pictures": [],
+        "topics": [],
+        "urls": {},
+        "vote": null
+      },
+      "control": {
+        "action": 0,
+        "can_translate": false,
+        "card_labels": [],
+        "is_note": false,
+        "is_note_v2": false,
+        "is_up_top": false,
+        "location": null,
+        "show_translation": false,
+        "up_reply": false,
+        "vote_option": null
+      },
+      "count": 0,
+      "ctime": 1699000000,
+      "dialog": 0,
+      "id": 1000,
+      "kind": 1,
+      "like": 0,
+      "member": {
+        "face": "",
+        "is_senior": false,
+        "level": 0,
+        "medal": null,
+        "mid": 3001,
+        "name": "乙",
+        "official_verify_type": null,
+        "pendant_image": null,
+        "vip_status": 0,
+        "vip_type": 0
+      },
+      "mid": 3001,
+      "oid": 2001,
+      "parent": 0,
+      "parent_member": null,
+      "replies": [],
+      "root": 0,
+      "translated_content": null
+    },
+    {
+      "card": {
+        "fan_color": "#FFD700",
+        "fan_num_prefix": "NO.",
+        "image": "https://example.invalid/card.png",
+        "number": "000123"
+      },
+      "content": {
+        "at_name_to_mid": {
+          "甲": 3002
+        },
+        "emotes": {
+          "[doge]": {
+            "display_url": "https://example.invalid/e.webp",
+            "jump_url": "https://example.invalid/jump",
+            "size": 1
+          }
+        },
+        "members": {
+          "甲": {
+            "face": "",
+            "is_senior": false,
+            "level": 0,
+            "medal": null,
+            "mid": 3002,
+            "name": "甲",
+            "official_verify_type": null,
+            "pendant_image": null,
+            "vip_status": 0,
+            "vip_type": 0
+          }
+        },
+        "message": "[doge] @甲 #话题# av1 看这里",
+        "note": null,
+        "pictures": [
+          {
+            "img_height": 480.0,
+            "img_size": 123.0,
+            "img_src": "https://example.invalid/p.jpg",
+            "img_width": 640.0
+          }
+        ],
+        "topics": [
+          "话题"
+        ],
+        "urls": {
+          "av1": {
+            "app_url_schema": "bilibili://video/1",
+            "is_note": false,
+            "is_word_search": true,
+            "prefix_icon": "https://example.invalid/icon.png",
+            "title": "某稿件"
+          }
+        },
+        "vote": {
+          "id": 9001,
+          "title": "投票标题"
+        }
+      },
+      "control": {
+        "action": 1,
+        "can_translate": true,
+        "card_labels": [
+          "热评"
+        ],
+        "is_note": true,
+        "is_note_v2": true,
+        "is_up_top": true,
+        "location": "IP属地：上海",
+        "show_translation": false,
+        "up_reply": true,
+        "vote_option": {
+          "desc": "红方观点",
+          "label_kind": 1
+        }
+      },
+      "count": 7,
+      "ctime": 1700000000,
+      "dialog": 0,
+      "id": 1001,
+      "kind": 1,
+      "like": 42,
+      "member": {
+        "face": "https://example.invalid/face.jpg",
+        "is_senior": true,
+        "level": 6,
+        "medal": {
+          "color": 21845,
+          "color_name": 16777215,
+          "level": 20,
+          "name": "牌子"
+        },
+        "mid": 3001,
+        "name": "乙",
+        "official_verify_type": 0,
+        "pendant_image": "https://example.invalid/pendant.png",
+        "vip_status": 1,
+        "vip_type": 2
+      },
+      "mid": 3001,
+      "oid": 2001,
+      "parent": 0,
+      "parent_member": {
+        "mid": 3002,
+        "name": "甲"
+      },
+      "replies": [
+        {
+          "card": null,
+          "content": {
+            "at_name_to_mid": {},
+            "emotes": {},
+            "members": {},
+            "message": "楼中楼一",
+            "note": null,
+            "pictures": [],
+            "topics": [],
+            "urls": {},
+            "vote": null
+          },
+          "control": {
+            "action": 0,
+            "can_translate": false,
+            "card_labels": [],
+            "is_note": false,
+            "is_note_v2": false,
+            "is_up_top": false,
+            "location": null,
+            "show_translation": false,
+            "up_reply": false,
+            "vote_option": null
+          },
+          "count": 0,
+          "ctime": 1700000100,
+          "dialog": 0,
+          "id": 1002,
+          "kind": 1,
+          "like": 0,
+          "member": {
+            "face": "",
+            "is_senior": false,
+            "level": 0,
+            "medal": null,
+            "mid": 3002,
+            "name": "丙",
+            "official_verify_type": null,
+            "pendant_image": null,
+            "vip_status": 0,
+            "vip_type": 0
+          },
+          "mid": 3002,
+          "oid": 2001,
+          "parent": 1001,
+          "parent_member": null,
+          "replies": [],
+          "root": 1001,
+          "translated_content": null
+        }
+      ],
+      "root": 0,
+      "translated_content": null
+    },
+    {
+      "card": null,
+      "content": {
+        "at_name_to_mid": {},
+        "emotes": {},
+        "members": {},
+        "message": "cv1 笔记",
+        "note": {
+          "click_url": null,
+          "opus_id": 5001
+        },
+        "pictures": [],
+        "topics": [],
+        "urls": {
+          "cv1": {
+            "app_url_schema": "",
+            "is_note": true,
+            "is_word_search": false,
+            "prefix_icon": null,
+            "title": "某笔记"
+          }
+        },
+        "vote": null
+      },
+      "control": {
+        "action": 0,
+        "can_translate": false,
+        "card_labels": [],
+        "is_note": false,
+        "is_note_v2": false,
+        "is_up_top": false,
+        "location": null,
+        "show_translation": false,
+        "up_reply": false,
+        "vote_option": null
+      },
+      "count": 0,
+      "ctime": 1700000200,
+      "dialog": 0,
+      "id": 1004,
+      "kind": 1,
+      "like": 0,
+      "member": {
+        "face": "",
+        "is_senior": false,
+        "level": 0,
+        "medal": null,
+        "mid": 3003,
+        "name": "丁",
+        "official_verify_type": null,
+        "pendant_image": null,
+        "vip_status": 0,
+        "vip_type": 0
+      },
+      "mid": 3003,
+      "oid": 2001,
+      "parent": 0,
+      "parent_member": null,
+      "replies": [],
+      "root": 0,
+      "translated_content": null
+    }
+  ],
+  "subject": {
+    "count": 123,
+    "input_disable": false,
+    "root_text": "仅粉丝可发",
+    "show_title": true,
+    "title": "全部评论",
+    "up_mid": 3001
+  },
+  "vote_card": {
+    "count": 100,
+    "title": "投票标题",
+    "vote_id": 9001
+  }
+}

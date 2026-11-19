@@ -416,9 +416,9 @@ fn project_fold_card(cards: &[pb::MixedCard]) -> Option<ReplyFoldCard> {
         if card.r#type != Some(pb::mixed_card::Type::Fold as i32) {
             return None;
         }
-        let pb::mixed_card::Item::Fold(fold) = card.item.as_ref()? else {
-            return None;
-        };
+        // 生成面上只留了折叠这一个分支（热点与问卷没有消费者），所以这里
+        // 不再有别的 case 可分。
+        let pb::mixed_card::Item::Fold(fold) = card.item.as_ref()?;
         Some(ReplyFoldCard {
             bottom_text: fold.bottom_text.clone().unwrap_or_default(),
             pagination_offset: fold
@@ -460,8 +460,6 @@ fn project_search_item(item: &pb::SearchItem) -> Option<ReplySearchItem> {
             category: None,
             duration: None,
         }),
-        // 商品条目基线没有渲染分支，整条丢掉而不是画一张空卡片。
-        pb::search_item::Item::Goods(_) => None,
     }
 }
 
@@ -600,49 +598,76 @@ pub async fn fetch_main_list<T: HttpTransport>(
             main_list_request(oid, kind, rpid, mode, offset.as_deref()),
         )
         .await?;
-        let mut data: pb::MainListReply = decode(&bytes, "评论列表")?;
-
-        let mut up_top = data.up_top.take();
-        if let Some(top) = &mut up_top {
-            if removes(filter, top) {
-                up_top = None;
-            } else {
-                let mut dropped = Vec::new();
-                retain(filter, &mut top.replies, &mut dropped);
-            }
+        match project_main_list(&bytes, filter, is_refresh, offset.as_deref())? {
+            MainListOutcome::Page(page) => return Ok(*page),
+            MainListOutcome::EmptyPage { next } => offset = Some(next),
         }
-        retain_nested(filter, &mut data.replies);
-
-        let next = next_offset(data.pagination_reply.as_ref());
-        let end = is_end(data.cursor.as_ref(), &next, offset.as_deref());
-
-        if data.replies.is_empty() && up_top.is_none() && !end {
-            offset = Some(next);
-            continue;
-        }
-
-        let has_up_top = up_top.is_some();
-        let mut replies: Vec<ReplyEntity> = Vec::with_capacity(data.replies.len() + 1);
-        if is_refresh {
-            replies.extend(up_top.as_ref().map(project_reply));
-        }
-        replies.extend(data.replies.iter().map(project_reply));
-        replies.retain(|reply| !filter.removes_as_intro(&reply.content.message));
-
-        return Ok(ReplyMainPage {
-            replies,
-            has_up_top,
-            subject: project_subject(data.subject_control.as_ref()),
-            vote_card: data.vote_card.as_ref().map(|card| ReplyVoteCard {
-                vote_id: card.vote_id.unwrap_or_default(),
-                title: card.title.clone().unwrap_or_default(),
-                count: card.count.unwrap_or_default(),
-            }),
-            fold_card: project_fold_card(&data.mixed_cards),
-            next_offset: next,
-            is_end: end,
-        });
     }
+}
+
+/// 一页根评论过滤之后的两种结局。
+#[derive(Debug)]
+pub enum MainListOutcome {
+    /// 有内容（或者已经到底了），交给界面。
+    Page(Box<ReplyMainPage>),
+    /// 整页被过滤光了，但还有下一页。`next` 是下一页的 offset。
+    EmptyPage { next: String },
+}
+
+/// 解码并投影一页根评论。网络那一段不参与。
+///
+/// 单独拆出来是为了能在没有网络的情况下把「过滤 → 合并置顶 → 剔除简介
+/// 复读 → 投影」整条链路钉住（`tests/reply_grpc_golden.rs`）。
+///
+/// # Errors
+/// 响应不是合法的 protobuf。
+pub fn project_main_list(
+    bytes: &[u8],
+    filter: &ReplyFilter,
+    is_refresh: bool,
+    requested_offset: Option<&str>,
+) -> Result<MainListOutcome, DomainError> {
+    let mut data: pb::MainListReply = decode(bytes, "评论列表")?;
+
+    let mut up_top = data.up_top.take();
+    if let Some(top) = &mut up_top {
+        if removes(filter, top) {
+            up_top = None;
+        } else {
+            let mut dropped = Vec::new();
+            retain(filter, &mut top.replies, &mut dropped);
+        }
+    }
+    retain_nested(filter, &mut data.replies);
+
+    let next = next_offset(data.pagination_reply.as_ref());
+    let end = is_end(data.cursor.as_ref(), &next, requested_offset);
+
+    if data.replies.is_empty() && up_top.is_none() && !end {
+        return Ok(MainListOutcome::EmptyPage { next });
+    }
+
+    let has_up_top = up_top.is_some();
+    let mut replies: Vec<ReplyEntity> = Vec::with_capacity(data.replies.len() + 1);
+    if is_refresh {
+        replies.extend(up_top.as_ref().map(project_reply));
+    }
+    replies.extend(data.replies.iter().map(project_reply));
+    replies.retain(|reply| !filter.removes_as_intro(&reply.content.message));
+
+    Ok(MainListOutcome::Page(Box::new(ReplyMainPage {
+        replies,
+        has_up_top,
+        subject: project_subject(data.subject_control.as_ref()),
+        vote_card: data.vote_card.as_ref().map(|card| ReplyVoteCard {
+            vote_id: card.vote_id.unwrap_or_default(),
+            title: card.title.clone().unwrap_or_default(),
+            count: card.count.unwrap_or_default(),
+        }),
+        fold_card: project_fold_card(&data.mixed_cards),
+        next_offset: next,
+        is_end: end,
+    })))
 }
 
 /// 取一页楼中楼。

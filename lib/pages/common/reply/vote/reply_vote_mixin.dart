@@ -1,18 +1,14 @@
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show MainListReply, VoteCard, ReplyInfo;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 
-mixin ReplyVoteMixin on CommonListController<MainListReply, ReplyInfo> {
-  VoteCard? voteCard;
+mixin ReplyVoteMixin on CommonListController<ReplyMainPage, ReplyEntity> {
+  ReplyVoteCard? voteCard;
 
   @override
-  bool customHandleResponse(bool isRefresh, Success<MainListReply> response) {
+  bool customHandleResponse(bool isRefresh, Success<ReplyMainPage> response) {
     if (isRefresh) {
-      final res = response.response;
-      if (res.hasVoteCard()) {
-        voteCard = res.voteCard;
-      }
+      voteCard = response.response.voteCard ?? voteCard;
     }
     return super.customHandleResponse(isRefresh, response);
   }

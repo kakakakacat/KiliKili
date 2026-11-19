@@ -10,8 +10,7 @@ import 'package:kilikili/common/widgets/flutter/text_field/text_field.dart';
 import 'package:kilikili/common/widgets/scroll_physics.dart'
     show platformClampingPhysics;
 import 'package:kilikili/common/widgets/view_safe_area.dart';
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show ReplyInfo;
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/dynamics/result.dart' show FilePicModel;
@@ -54,7 +53,7 @@ class ReplyPage extends CommonRichTextPubPage {
   final int root;
   final int parent;
   final int replyType;
-  final ReplyInfo? replyItem;
+  final ReplyEntity? replyItem;
   final String? hint;
   final bool canUploadPic;
   // mention
@@ -506,10 +505,12 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
 
     final replyItem = widget.replyItem;
     if (replyItem != null) {
-      final basic = replyItem.memberV2.basic;
+      // 基线取的是 `memberV2.basic`，而 `member` 与它同源（服务端两处都给
+      // 同一个人的昵称与头像）。领域实体只保留一份。
+      final member = replyItem.member;
       return MentionItem(
-        face: basic.face,
-        name: basic.name,
+        face: member.face,
+        name: member.name,
         uid: replyItem.mid.toString(),
       );
     }

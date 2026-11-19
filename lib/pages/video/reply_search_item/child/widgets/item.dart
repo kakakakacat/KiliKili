@@ -1,48 +1,35 @@
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show SearchItem, SearchItemVideoSubType;
 import 'package:kilikili/models/common/badge_type.dart';
 import 'package:kilikili/models/common/reply/reply_search_type.dart';
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:kilikili/utils/duration_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
-class ReplySearchItem extends StatelessWidget {
-  const ReplySearchItem({super.key, required this.item, required this.type});
+/// 名字带 `Card` 是为了与 Rust 导出的条目实体 [ReplySearchItem] 区分：
+/// 那边是数据，这边是画它的卡片。
+class ReplySearchItemCard extends StatelessWidget {
+  const ReplySearchItemCard({
+    super.key,
+    required this.item,
+    required this.type,
+  });
 
-  final SearchItem item;
+  final ReplySearchItem item;
   final ReplySearchType type;
 
   @override
   Widget build(BuildContext context) {
-    String title = '';
-    String cover = '';
-    String? upNickname;
-    String? category;
-    int? duration;
-    switch (type) {
-      case ReplySearchType.video:
-        if (item.video.type == SearchItemVideoSubType.UGC) {
-          final ugc = item.video.ugc;
-          title = ugc.title;
-          cover = ugc.cover;
-          upNickname = ugc.upNickname;
-          duration = ugc.duration.toInt();
-        } else {
-          final pgc = item.video.pgc;
-          title = pgc.title;
-          cover = pgc.cover;
-          category = pgc.category;
-        }
-      case ReplySearchType.article:
-        final article = item.article;
-        title = article.title;
-        cover = article.covers.firstOrNull ?? '';
-        upNickname = article.upNickname;
-    }
+    // 「UGC 取时长、PGC 取分区、专栏取第一张封面」这些分支在 Rust 投影时
+    // 就分完了：没有的那一项是 null。
+    final title = item.title;
+    final cover = item.cover;
+    final upNickname = item.upNickname;
+    final category = item.category;
+    final duration = item.duration;
     void onLongPress() => imageSaveDialog(title: title, cover: cover);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),

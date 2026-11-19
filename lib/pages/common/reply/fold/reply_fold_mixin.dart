@@ -1,29 +1,20 @@
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show FoldCard, MainListReply, MixedCard, ReplyInfo;
-import 'package:kilikili/grpc/reply.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/pages/common/reply/reply_controller.dart';
-import 'package:collection/collection.dart';
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 mixin BaseReplyFoldMixin<R> on ReplyController<R> {
-  FoldCard? foldCard;
-
-  void getFoldCard(List<MixedCard> mixedCards) {
-    if (mixedCards.isNotEmpty) {
-      foldCard = mixedCards.firstWhereOrNull((e) => e.type == .FOLD)?.fold;
-    }
-  }
+  ReplyFoldCard? foldCard;
 
   Future<void> loadFoldList({bool toast = true}) async {
     if (isLoading) return;
     isLoading = true;
     try {
-      final res = await ReplyGrpc.foldList(
+      final res = await RustReplyGrpc.foldList(
         oid: oid,
         type: replyType,
-        pagination: foldCard!.foldPagination,
+        offset: foldCard!.paginationOffset,
       );
       if (isClosed) return;
       if (res case Success(:final response)) {
@@ -32,8 +23,10 @@ mixin BaseReplyFoldMixin<R> on ReplyController<R> {
         loadingState
           ..value.data!.addAll(response.replies)
           ..refresh();
-        if (toast && response.hasTitle()) {
-          SmartDialog.showToast(response.title);
+        if (toast) {
+          if (response.title case final title?) {
+            SmartDialog.showToast(title);
+          }
         }
       } else {
         res.toast();
@@ -53,10 +46,10 @@ mixin BaseReplyFoldMixin<R> on ReplyController<R> {
   }
 }
 
-mixin ReplyFoldMixin on BaseReplyFoldMixin<MainListReply> {
+mixin ReplyFoldMixin on BaseReplyFoldMixin<ReplyMainPage> {
   @override
-  List<ReplyInfo>? getDataList(MainListReply response) {
-    getFoldCard(response.mixedCards);
+  List<ReplyEntity>? getDataList(ReplyMainPage response) {
+    foldCard = response.foldCard;
     return response.replies;
   }
 }

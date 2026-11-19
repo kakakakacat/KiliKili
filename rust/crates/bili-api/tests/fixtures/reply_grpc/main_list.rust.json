@@ -3,6 +3,7 @@
     "bottom_text": "查看折叠评论",
     "pagination_offset": "fold-cursor"
   },
+  "has_mixed_cards": true,
   "has_up_top": true,
   "is_end": false,
   "next_offset": "next-cursor",

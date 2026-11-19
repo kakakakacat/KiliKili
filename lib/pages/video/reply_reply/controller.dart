@@ -85,7 +85,7 @@ class VideoReplyReplyController extends ReplyController
         id = null;
       }
 
-      foldCard = data.foldCard;
+      if (data.hasMixedCards) foldCard = data.foldCard;
       for (final removed in data.removed) {
         removedReply[removed.id] = removed;
       }

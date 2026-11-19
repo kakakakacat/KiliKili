@@ -19314,16 +19314,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ReplyDetailPage dco_decode_reply_detail_page(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 7)
-      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    if (arr.length != 8)
+      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
     return ReplyDetailPage(
       root: dco_decode_reply_entity(arr[0]),
       replies: dco_decode_list_reply_entity(arr[1]),
       subject: dco_decode_reply_subject(arr[2]),
       foldCard: dco_decode_opt_box_autoadd_reply_fold_card(arr[3]),
-      removed: dco_decode_list_reply_entity(arr[4]),
-      nextOffset: dco_decode_String(arr[5]),
-      isEnd: dco_decode_bool(arr[6]),
+      hasMixedCards: dco_decode_bool(arr[4]),
+      removed: dco_decode_list_reply_entity(arr[5]),
+      nextOffset: dco_decode_String(arr[6]),
+      isEnd: dco_decode_bool(arr[7]),
     );
   }
 
@@ -19566,16 +19567,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ReplyMainPage dco_decode_reply_main_page(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 7)
-      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    if (arr.length != 8)
+      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
     return ReplyMainPage(
       replies: dco_decode_list_reply_entity(arr[0]),
       hasUpTop: dco_decode_bool(arr[1]),
       subject: dco_decode_reply_subject(arr[2]),
       voteCard: dco_decode_opt_box_autoadd_reply_vote_card(arr[3]),
       foldCard: dco_decode_opt_box_autoadd_reply_fold_card(arr[4]),
-      nextOffset: dco_decode_String(arr[5]),
-      isEnd: dco_decode_bool(arr[6]),
+      hasMixedCards: dco_decode_bool(arr[5]),
+      nextOffset: dco_decode_String(arr[6]),
+      isEnd: dco_decode_bool(arr[7]),
     );
   }
 
@@ -32822,6 +32824,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_replies = sse_decode_list_reply_entity(deserializer);
     var var_subject = sse_decode_reply_subject(deserializer);
     var var_foldCard = sse_decode_opt_box_autoadd_reply_fold_card(deserializer);
+    var var_hasMixedCards = sse_decode_bool(deserializer);
     var var_removed = sse_decode_list_reply_entity(deserializer);
     var var_nextOffset = sse_decode_String(deserializer);
     var var_isEnd = sse_decode_bool(deserializer);
@@ -32830,6 +32833,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       replies: var_replies,
       subject: var_subject,
       foldCard: var_foldCard,
+      hasMixedCards: var_hasMixedCards,
       removed: var_removed,
       nextOffset: var_nextOffset,
       isEnd: var_isEnd,
@@ -33130,6 +33134,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_subject = sse_decode_reply_subject(deserializer);
     var var_voteCard = sse_decode_opt_box_autoadd_reply_vote_card(deserializer);
     var var_foldCard = sse_decode_opt_box_autoadd_reply_fold_card(deserializer);
+    var var_hasMixedCards = sse_decode_bool(deserializer);
     var var_nextOffset = sse_decode_String(deserializer);
     var var_isEnd = sse_decode_bool(deserializer);
     return ReplyMainPage(
@@ -33138,6 +33143,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       subject: var_subject,
       voteCard: var_voteCard,
       foldCard: var_foldCard,
+      hasMixedCards: var_hasMixedCards,
       nextOffset: var_nextOffset,
       isEnd: var_isEnd,
     );
@@ -45579,6 +45585,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_list_reply_entity(self.replies, serializer);
     sse_encode_reply_subject(self.subject, serializer);
     sse_encode_opt_box_autoadd_reply_fold_card(self.foldCard, serializer);
+    sse_encode_bool(self.hasMixedCards, serializer);
     sse_encode_list_reply_entity(self.removed, serializer);
     sse_encode_String(self.nextOffset, serializer);
     sse_encode_bool(self.isEnd, serializer);
@@ -45791,6 +45798,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_reply_subject(self.subject, serializer);
     sse_encode_opt_box_autoadd_reply_vote_card(self.voteCard, serializer);
     sse_encode_opt_box_autoadd_reply_fold_card(self.foldCard, serializer);
+    sse_encode_bool(self.hasMixedCards, serializer);
     sse_encode_String(self.nextOffset, serializer);
     sse_encode_bool(self.isEnd, serializer);
   }

@@ -253,6 +253,13 @@ pub struct ReplyMainPage {
     pub subject: ReplySubject,
     pub vote_card: Option<ReplyVoteCard>,
     pub fold_card: Option<ReplyFoldCard>,
+    /// 这一页下发了混合卡。
+    ///
+    /// 用来区分「这一页说没有折叠卡」与「这一页根本没提折叠卡」：基线
+    /// 只在前者清掉折叠入口，后者沿用上一页的（`getFoldCard` 的
+    /// `if (mixedCards.isNotEmpty)`）。跨页的状态在宿主手里，所以这条
+    /// 规则留在宿主，Rust 只把事实带过去。
+    pub has_mixed_cards: bool,
     /// 下一页的 offset。为空表示没有下一页。
     pub next_offset: String,
     pub is_end: bool,
@@ -266,6 +273,8 @@ pub struct ReplyDetailPage {
     pub replies: Vec<ReplyEntity>,
     pub subject: ReplySubject,
     pub fold_card: Option<ReplyFoldCard>,
+    /// 同 [`ReplyMainPage::has_mixed_cards`]。
+    pub has_mixed_cards: bool,
     /// 被过滤规则删掉的那些。线程化视图要用它们占位，否则子树会断。
     pub removed: Vec<ReplyEntity>,
     pub next_offset: String,

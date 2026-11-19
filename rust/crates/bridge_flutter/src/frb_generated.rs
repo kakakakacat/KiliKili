@@ -20752,6 +20752,7 @@ impl SseDecode for crate::api::reply_grpc::ReplyDetailPage {
         let mut var_subject = <crate::api::reply_grpc::ReplySubject>::sse_decode(deserializer);
         let mut var_foldCard =
             <Option<crate::api::reply_grpc::ReplyFoldCard>>::sse_decode(deserializer);
+        let mut var_hasMixedCards = <bool>::sse_decode(deserializer);
         let mut var_removed = <Vec<crate::api::reply_grpc::ReplyEntity>>::sse_decode(deserializer);
         let mut var_nextOffset = <String>::sse_decode(deserializer);
         let mut var_isEnd = <bool>::sse_decode(deserializer);
@@ -20760,6 +20761,7 @@ impl SseDecode for crate::api::reply_grpc::ReplyDetailPage {
             replies: var_replies,
             subject: var_subject,
             fold_card: var_foldCard,
+            has_mixed_cards: var_hasMixedCards,
             removed: var_removed,
             next_offset: var_nextOffset,
             is_end: var_isEnd,
@@ -21073,6 +21075,7 @@ impl SseDecode for crate::api::reply_grpc::ReplyMainPage {
             <Option<crate::api::reply_grpc::ReplyVoteCard>>::sse_decode(deserializer);
         let mut var_foldCard =
             <Option<crate::api::reply_grpc::ReplyFoldCard>>::sse_decode(deserializer);
+        let mut var_hasMixedCards = <bool>::sse_decode(deserializer);
         let mut var_nextOffset = <String>::sse_decode(deserializer);
         let mut var_isEnd = <bool>::sse_decode(deserializer);
         return crate::api::reply_grpc::ReplyMainPage {
@@ -21081,6 +21084,7 @@ impl SseDecode for crate::api::reply_grpc::ReplyMainPage {
             subject: var_subject,
             vote_card: var_voteCard,
             fold_card: var_foldCard,
+            has_mixed_cards: var_hasMixedCards,
             next_offset: var_nextOffset,
             is_end: var_isEnd,
         };
@@ -31498,6 +31502,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::reply_grpc::ReplyDetailPage {
             self.replies.into_into_dart().into_dart(),
             self.subject.into_into_dart().into_dart(),
             self.fold_card.into_into_dart().into_dart(),
+            self.has_mixed_cards.into_into_dart().into_dart(),
             self.removed.into_into_dart().into_dart(),
             self.next_offset.into_into_dart().into_dart(),
             self.is_end.into_into_dart().into_dart(),
@@ -31889,6 +31894,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::reply_grpc::ReplyMainPage {
             self.subject.into_into_dart().into_dart(),
             self.vote_card.into_into_dart().into_dart(),
             self.fold_card.into_into_dart().into_dart(),
+            self.has_mixed_cards.into_into_dart().into_dart(),
             self.next_offset.into_into_dart().into_dart(),
             self.is_end.into_into_dart().into_dart(),
         ]
@@ -42727,6 +42733,7 @@ impl SseEncode for crate::api::reply_grpc::ReplyDetailPage {
         <Vec<crate::api::reply_grpc::ReplyEntity>>::sse_encode(self.replies, serializer);
         <crate::api::reply_grpc::ReplySubject>::sse_encode(self.subject, serializer);
         <Option<crate::api::reply_grpc::ReplyFoldCard>>::sse_encode(self.fold_card, serializer);
+        <bool>::sse_encode(self.has_mixed_cards, serializer);
         <Vec<crate::api::reply_grpc::ReplyEntity>>::sse_encode(self.removed, serializer);
         <String>::sse_encode(self.next_offset, serializer);
         <bool>::sse_encode(self.is_end, serializer);
@@ -42922,6 +42929,7 @@ impl SseEncode for crate::api::reply_grpc::ReplyMainPage {
         <crate::api::reply_grpc::ReplySubject>::sse_encode(self.subject, serializer);
         <Option<crate::api::reply_grpc::ReplyVoteCard>>::sse_encode(self.vote_card, serializer);
         <Option<crate::api::reply_grpc::ReplyFoldCard>>::sse_encode(self.fold_card, serializer);
+        <bool>::sse_encode(self.has_mixed_cards, serializer);
         <String>::sse_encode(self.next_offset, serializer);
         <bool>::sse_encode(self.is_end, serializer);
     }

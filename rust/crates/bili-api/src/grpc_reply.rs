@@ -665,6 +665,7 @@ pub fn project_main_list(
             count: card.count.unwrap_or_default(),
         }),
         fold_card: project_fold_card(&data.mixed_cards),
+        has_mixed_cards: !data.mixed_cards.is_empty(),
         next_offset: next,
         is_end: end,
     })))
@@ -705,6 +706,7 @@ pub async fn fetch_detail_list<T: HttpTransport>(
         root: project_reply(&root_reply),
         subject: project_subject(data.subject_control.as_ref()),
         fold_card: project_fold_card(&data.mixed_cards),
+        has_mixed_cards: !data.mixed_cards.is_empty(),
         removed: removed.iter().map(project_reply).collect(),
         is_end: is_end(data.cursor.as_ref(), &next, offset),
         next_offset: next,

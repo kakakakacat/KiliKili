@@ -348,6 +348,9 @@ class ReplyDetailPage {
   final ReplySubject subject;
   final ReplyFoldCard? foldCard;
 
+  /// 同 [`ReplyMainPage::has_mixed_cards`]。
+  final bool hasMixedCards;
+
   /// 被过滤规则删掉的那些；线程化视图要用它们占位。
   final List<ReplyEntity> removed;
   final String nextOffset;
@@ -358,6 +361,7 @@ class ReplyDetailPage {
     required this.replies,
     required this.subject,
     this.foldCard,
+    required this.hasMixedCards,
     required this.removed,
     required this.nextOffset,
     required this.isEnd,
@@ -372,6 +376,7 @@ class ReplyDetailPage {
       replies.hashCode ^
       subject.hashCode ^
       foldCard.hashCode ^
+      hasMixedCards.hashCode ^
       removed.hashCode ^
       nextOffset.hashCode ^
       isEnd.hashCode;
@@ -385,6 +390,7 @@ class ReplyDetailPage {
           replies == other.replies &&
           subject == other.subject &&
           foldCard == other.foldCard &&
+          hasMixedCards == other.hasMixedCards &&
           removed == other.removed &&
           nextOffset == other.nextOffset &&
           isEnd == other.isEnd;
@@ -787,6 +793,10 @@ class ReplyMainPage {
   final ReplySubject subject;
   final ReplyVoteCard? voteCard;
   final ReplyFoldCard? foldCard;
+
+  /// 这一页下发了混合卡。为 false 时宿主应当**沿用上一页的折叠入口**，
+  /// 而不是把它清掉——基线 `getFoldCard` 就是这么写的。
+  final bool hasMixedCards;
   final String nextOffset;
   final bool isEnd;
 
@@ -796,6 +806,7 @@ class ReplyMainPage {
     required this.subject,
     this.voteCard,
     this.foldCard,
+    required this.hasMixedCards,
     required this.nextOffset,
     required this.isEnd,
   });
@@ -810,6 +821,7 @@ class ReplyMainPage {
       subject.hashCode ^
       voteCard.hashCode ^
       foldCard.hashCode ^
+      hasMixedCards.hashCode ^
       nextOffset.hashCode ^
       isEnd.hashCode;
 
@@ -823,6 +835,7 @@ class ReplyMainPage {
           subject == other.subject &&
           voteCard == other.voteCard &&
           foldCard == other.foldCard &&
+          hasMixedCards == other.hasMixedCards &&
           nextOffset == other.nextOffset &&
           isEnd == other.isEnd;
 }

@@ -49,7 +49,9 @@ mixin BaseReplyFoldMixin<R> on ReplyController<R> {
 mixin ReplyFoldMixin on BaseReplyFoldMixin<ReplyMainPage> {
   @override
   List<ReplyEntity>? getDataList(ReplyMainPage response) {
-    foldCard = response.foldCard;
+    // 这一页没提混合卡时**沿用上一页的折叠入口**，别清掉——照抄基线
+    // `getFoldCard` 的 `if (mixedCards.isNotEmpty)`。
+    if (response.hasMixedCards) foldCard = response.foldCard;
     return response.replies;
   }
 }

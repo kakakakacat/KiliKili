@@ -249,6 +249,9 @@ pub struct ReplyMainPage {
     pub subject: ReplySubject,
     pub vote_card: Option<ReplyVoteCard>,
     pub fold_card: Option<ReplyFoldCard>,
+    /// 这一页下发了混合卡。为 false 时宿主应当**沿用上一页的折叠入口**，
+    /// 而不是把它清掉——基线 `getFoldCard` 就是这么写的。
+    pub has_mixed_cards: bool,
     pub next_offset: String,
     pub is_end: bool,
 }
@@ -260,6 +263,8 @@ pub struct ReplyDetailPage {
     pub replies: Vec<ReplyEntity>,
     pub subject: ReplySubject,
     pub fold_card: Option<ReplyFoldCard>,
+    /// 同 [`ReplyMainPage::has_mixed_cards`]。
+    pub has_mixed_cards: bool,
     /// 被过滤规则删掉的那些；线程化视图要用它们占位。
     pub removed: Vec<ReplyEntity>,
     pub next_offset: String,
@@ -511,6 +516,7 @@ fn main_page_from(page: domain::ReplyMainPage) -> ReplyMainPage {
             count: c.count,
         }),
         fold_card: page.fold_card.map(fold_from),
+        has_mixed_cards: page.has_mixed_cards,
         next_offset: page.next_offset,
         is_end: page.is_end,
     }
@@ -522,6 +528,7 @@ fn detail_page_from(page: domain::ReplyDetailPage) -> ReplyDetailPage {
         replies: page.replies.into_iter().map(entity_from).collect(),
         subject: subject_from(page.subject),
         fold_card: page.fold_card.map(fold_from),
+        has_mixed_cards: page.has_mixed_cards,
         removed: page.removed.into_iter().map(entity_from).collect(),
         next_offset: page.next_offset,
         is_end: page.is_end,

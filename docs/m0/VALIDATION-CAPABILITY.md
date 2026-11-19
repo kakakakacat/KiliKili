@@ -422,3 +422,27 @@ csrf 在查询串、没有 data 的响应判成功、未登录不伪造空 csrf�
 
 本次不改变 CI 触发与门禁，也不增加真机验证结论；收藏、订阅、追番、课程、
 话题、专栏与笔记的真实入口按 QA 矩阵 M25～M27 留到 Phase 2。
+
+### 评论过滤规则的离线验证（#52）
+
+本次迁的是**规则**，不是取数：gRPC 传输与 `reply/v1` 的消息解码仍在 Dart
+（留给 #52 的续单），所以没有新的 golden 快照，对照物是一份用例文件。
+
+`rust/crates/bili-domain/tests/fixtures/reply_filter/cases.json` 的 31 条
+用例由两侧各跑一遍：Rust 的 `bili-domain/tests/reply_filter_golden.rs`，
+与基线侧的 `test/services/rust/reply_filter_parity_test.dart`。后者逐行
+转写了迁移前 `ReplyGrpc` 的四个方法，**判据在它那一侧**——期望值与基线
+不符时它会红。它不 import `lib/`，也不构造 protobuf 对象，因此在没打
+Flutter SDK 补丁的机器上也跑得起来，并且不会随 pb 子树被删而失效。
+
+这份用例覆盖的是「字段进去、判定出来」。它**证明不了**真实评论里这些
+字段长什么样——带货标记的三个字段、楼中楼抬头的冒号、服务端给不给
+`atNameToMid`，都要真机看，列在 QA 矩阵 M28。
+
+另外 `bili-domain` 的单测（15 条）记的是**为什么是这个行为**：`>=` 而非
+`>` 的阈值、`goodsCmControl == 1` 而非非零、抬头缺冒号时放行、emoji 昵称
+在 UTF-16 与 UTF-8 两种扫描下切分边界一致。
+
+本次不改变 CI 触发与门禁。新增的两个测试都落在已有的 job 里（Rust 走
+`cargo test --workspace`，Dart 走 `flutter-test.yml`），不需要新的 runner
+或外部二进制。

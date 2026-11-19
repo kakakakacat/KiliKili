@@ -18,7 +18,68 @@ const ROOTS: &[&str] = &[
     ".bilibili.community.service.dm.v1.DmSegMobileReq",
     ".bilibili.community.service.dm.v1.DmViewReq",
     ".bilibili.app.interfaces.v1.SearchArchiveReq",
+    ".bilibili.main.community.reply.v1.MainListReq",
+    ".bilibili.main.community.reply.v1.MainListReply",
+    ".bilibili.main.community.reply.v1.DetailListReq",
+    ".bilibili.main.community.reply.v1.DetailListReply",
+    ".bilibili.main.community.reply.v1.FoldListReq",
+    ".bilibili.main.community.reply.v1.FoldListResp",
+    ".bilibili.main.community.reply.v1.DialogListReq",
+    ".bilibili.main.community.reply.v1.DialogListReply",
+    ".bilibili.main.community.reply.v1.SearchItemReq",
+    ".bilibili.main.community.reply.v1.SearchItemReply",
+    ".bilibili.main.community.reply.v1.TranslateReplyReq",
+    ".bilibili.main.community.reply.v1.TranslateReplyResp",
 ];
+
+/// 从依赖闭包里剪掉的字段，写成 `<消息全限定名>.<字段名>`。
+///
+/// **这不是优化，是边界**：评论的 `Content.rich_text` 里挂着一个
+/// `bilibili.app.dynamic.v2.OpusItem`，而界面只读它的 `opus_id`
+/// （`reply_item_grpc.dart` 拿它跳图文动态）。顺着 `modules` / `extend`
+/// 走下去是 5 500 行动态树——那是 S5/S6 的范围，评论这一片一个字段都不读。
+/// prost 对没生成的字段按未知字段跳过，解码不受影响。
+///
+/// 剪掉一条就要能说出「谁消费它」的答案是「没有」。规则一旦对不上任何
+/// 字段就**失败**（见 [`prune`]）：上游把字段改名或删掉之后，留在这里的
+/// 死规则会悄悄变成「下次新加的同名字段也被剪掉」。
+const PRUNE: &[&str] = &[
+    ".bilibili.app.dynamic.v2.OpusItem.modules",
+    ".bilibili.app.dynamic.v2.OpusItem.extend",
+    // `CM.source_content` 是 `google.protobuf.Any`，没有消费者。留着它就要把
+    // `prost-types` 链进发布产物，换来一个谁都不读的字段。
+    ".bilibili.main.community.reply.v1.CM.source_content",
+];
+
+/// 按 [`PRUNE`] 剪字段；有规则没命中就失败。
+fn prune(files: &mut [FileDescriptorProto]) -> Result<(), String> {
+    fn walk(items: &mut [DescriptorProto], prefix: &str, hit: &mut BTreeSet<String>) {
+        for item in items {
+            let name = format!("{prefix}.{}", item.name());
+            item.field.retain(|field| {
+                let path = format!("{name}.{}", field.name());
+                if PRUNE.contains(&path.as_str()) {
+                    hit.insert(path);
+                    false
+                } else {
+                    true
+                }
+            });
+            walk(&mut item.nested_type, &name, hit);
+        }
+    }
+    let mut hit = BTreeSet::new();
+    for file in files {
+        let prefix = format!(".{}", file.package());
+        walk(&mut file.message_type, &prefix, &mut hit);
+    }
+    for rule in PRUNE {
+        if !hit.contains(*rule) {
+            return Err(format!("prune rule matched nothing: {rule}"));
+        }
+    }
+    Ok(())
+}
 
 fn expected_package(name: &str) -> Result<String, String> {
     name.strip_suffix(".proto")
@@ -226,7 +287,9 @@ fn generate(repo: &Path, output: &Path) -> Result<(), String> {
     // 已删除 Dart 子树从机械快照恢复；仍存在的上游描述符优先，避免快照遮住更新。
     read_sources(&repo.join("tool/proto-generator/inputs"), &mut files)?;
     read_sources(&repo.join("lib/grpc/bilibili"), &mut files)?;
-    let mut file = select(files.into_values().collect(), ROOTS)?;
+    let mut sources: Vec<_> = files.into_values().collect();
+    prune(&mut sources)?;
+    let mut file = select(sources, ROOTS)?;
     // protobuf.dart 区分未设置与显式零值；prost 默认 proto3 标量会丢掉这一位。
     // synthetic optional 只恢复存在性，不改变字段号、类型或实际 wire 格式。
     fn preserve_presence(message: &mut DescriptorProto) {
@@ -340,6 +403,19 @@ mod tests {
         let mut file = file();
         file.package = Some("wrong.package".into());
         assert!(validate(&[file]).unwrap_err().contains("package"));
+    }
+
+    /// 死规则必须报错：上游改名或删掉字段之后，留着的规则会悄悄变成
+    /// 「下次新加的同名字段也被剪掉」。
+    #[test]
+    fn rejects_stale_prune_rules() {
+        let mut files = vec![file()];
+        files[0].message_type[0].field[0].label = Some(1);
+        assert!(
+            prune(&mut files)
+                .unwrap_err()
+                .contains("prune rule matched nothing")
+        );
     }
 
     #[test]

@@ -187,7 +187,12 @@ const KEEP: &[(&str, &[&str])] = &[
     (".bilibili.main.community.reply.v1.MemberV2", &["garb"]),
     (
         ".bilibili.main.community.reply.v1.MemberV2.Garb",
-        &["card_image", "card_number", "card_fan_color", "fan_num_prefix"],
+        &[
+            "card_image",
+            "card_number",
+            "card_fan_color",
+            "fan_num_prefix",
+        ],
     ),
     (
         ".bilibili.main.community.reply.v1.Emote",
@@ -195,7 +200,13 @@ const KEEP: &[(&str, &[&str])] = &[
     ),
     (
         ".bilibili.main.community.reply.v1.Url",
-        &["title", "prefix_icon", "app_url_schema", "click_report", "extra"],
+        &[
+            "title",
+            "prefix_icon",
+            "app_url_schema",
+            "click_report",
+            "extra",
+        ],
     ),
     (
         ".bilibili.main.community.reply.v1.Url.Extra",
@@ -218,10 +229,20 @@ const KEEP: &[(&str, &[&str])] = &[
     // 评论区状态：开关与文案之外的那二十来个字段没有消费者。
     (
         ".bilibili.main.community.reply.v1.SubjectControl",
-        &["up_mid", "show_title", "input_disable", "root_text", "count", "title"],
+        &[
+            "up_mid",
+            "show_title",
+            "input_disable",
+            "root_text",
+            "count",
+            "title",
+        ],
     ),
     // `RichText` 的两个分支都只读一个字段；opus 那边不跟进动态树。
-    (".bilibili.main.community.reply.v1.RichTextNote", &["click_url"]),
+    (
+        ".bilibili.main.community.reply.v1.RichTextNote",
+        &["click_url"],
+    ),
     (".bilibili.app.dynamic.v2.OpusItem", &["opus_id"]),
     // `CM.source_content` 是 `google.protobuf.Any`，没有消费者。留着它就要把
     // `prost-types` 链进发布产物，换来一个谁都不读的字段。
@@ -410,11 +431,7 @@ fn read_sources(
 ///
 /// 不可达但仍有可达后代的外层消息留成一个**空壳**（字段清掉），因为
 /// prost 把嵌套类型生成在外层的模块里，外层整条删掉后代就没处放了。
-fn retain_selected(
-    items: &mut Vec<DescriptorProto>,
-    prefix: &str,
-    selected: &BTreeSet<String>,
-) {
+fn retain_selected(items: &mut Vec<DescriptorProto>, prefix: &str, selected: &BTreeSet<String>) {
     items.retain_mut(|message| {
         let name = format!("{prefix}.{}", message.name());
         retain_selected(&mut message.nested_type, &name, selected);
@@ -450,7 +467,11 @@ fn select(
             .ok_or_else(|| format!("unknown type {name}"))?;
         let file = &files[index];
         let mut all = BTreeMap::new();
-        messages(&file.message_type, &format!(".{}", file.package()), &mut all);
+        messages(
+            &file.message_type,
+            &format!(".{}", file.package()),
+            &mut all,
+        );
         // 枚举没有字段，查不到就是枚举，不是错。
         if let Some(message) = all.get(&name) {
             pending.extend(message.field.iter().filter_map(|f| f.type_name.clone()));

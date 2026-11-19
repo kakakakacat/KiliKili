@@ -3,8 +3,7 @@ import 'package:kilikili/common/constants.dart';
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/button/icon_button.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show ReplyInfo;
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:kilikili/models/common/video/video_type.dart';
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/pages/common/publish/publish_route.dart';
@@ -86,23 +85,23 @@ class _SavePanelState extends State<SavePanel> {
   @override
   void initState() {
     super.initState();
-    if (_item case final ReplyInfo i) {
+    if (_item case final ReplyEntity i) {
       _parseReply(i);
     } else if (_item case final DynamicItemModel i) {
       uri = _parseDyn(i);
       if (kDebugMode) debugPrint(uri);
-    } else if (_item case final Iterable<ReplyInfo> i) {
+    } else if (_item case final Iterable<ReplyEntity> i) {
       _parseReply(i.first);
     }
   }
 
   static String _reply2Uri(
-    ReplyInfo reply,
+    ReplyEntity reply,
     bool hasRoot, [
     String? enterUri,
   ]) {
     var uri =
-        'bilibili://comment/detail/${reply.type}/${reply.oid}/${hasRoot ? reply.root : reply.id}/';
+        'bilibili://comment/detail/${reply.kind}/${reply.oid}/${hasRoot ? reply.root : reply.id}/';
     final parameters = [
       if (hasRoot) 'anchor=${reply.id}',
       if (enterUri != null) 'enterUri=$enterUri',
@@ -111,10 +110,10 @@ class _SavePanelState extends State<SavePanel> {
     return uri;
   }
 
-  void _parseReply(ReplyInfo reply) {
+  void _parseReply(ReplyEntity reply) {
     itemType = '评论';
     final currentRoute = Get.currentRoute;
-    late final hasRoot = reply.hasRoot();
+    late final hasRoot = reply.root != 0;
 
     if (currentRoute == '/videoV') {
       final rootId = hasRoot ? reply.root : reply.id;
@@ -162,8 +161,7 @@ class _SavePanelState extends State<SavePanel> {
         dynItem = Get.arguments['item'] as DynamicItemModel;
         uname = dynItem.modules.moduleAuthor?.name;
       } catch (_) {}
-      final type = reply.type;
-      if (type == .ONE) {
+      if (reply.kind == 1) {
         uri =
             'https://www.bilibili.com/video/av${reply.oid}?comment_on=1&comment_root_id=${hasRoot ? reply.root : reply.id}${hasRoot ? '&comment_secondary_id=${reply.id}' : ''}';
       } else {
@@ -175,7 +173,7 @@ class _SavePanelState extends State<SavePanel> {
       }
     } else if (currentRoute.startsWith('/Scaffold')) {
       try {
-        final type = reply.type.toInt();
+        final type = reply.kind;
         final oid = Get.arguments['oid'] ?? reply.oid;
         final rootId = hasRoot ? reply.root : reply.id;
         if (type == 1) {
@@ -340,7 +338,7 @@ class _SavePanelState extends State<SavePanel> {
     }
   }
 
-  ReplyItemGrpc _handleReply(ReplyInfo i, [divider = true]) => ReplyItemGrpc(
+  ReplyItemGrpc _handleReply(ReplyEntity i, [divider = true]) => ReplyItemGrpc(
     replyItem: i,
     replyLevel: 0,
     upMid: widget.upMid,
@@ -358,7 +356,7 @@ class _SavePanelState extends State<SavePanel> {
     final Widget child;
 
     switch (_item) {
-      case ReplyInfo reply:
+      case ReplyEntity reply:
         child = _handleReply(reply, false);
       case DynamicItemModel dyn:
         child = DynamicPanel(
@@ -366,10 +364,10 @@ class _SavePanelState extends State<SavePanel> {
           isDetail: true,
           isSave: true,
         );
-      case Iterable<ReplyInfo> chain:
+      case Iterable<ReplyEntity> chain:
         final first = chain.first;
         final List<Widget> children;
-        if (first.parent == .ZERO) {
+        if (first.parent == 0) {
           children = [
             _handleReply(first, false),
             Divider(

@@ -5,14 +5,13 @@ import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/sliver/sliver_floating_header.dart';
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show ReplyInfo, MainListReply;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/pages/common/fab_mixin.dart';
 import 'package:kilikili/pages/common/reply/reply_footer_mixin.dart';
 import 'package:kilikili/pages/common/reply/vote/reply_vote_item.dart';
 import 'package:kilikili/pages/video/reply/controller.dart';
 import 'package:kilikili/pages/video/reply/widgets/reply_item_grpc.dart';
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:kilikili/utils/feed_back.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -39,7 +38,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
         SingleTickerProviderStateMixin,
         BaseFabMixin,
         FabMixin,
-        ReplyFooterMixin<VideoReplyPanel, MainListReply> {
+        ReplyFooterMixin<VideoReplyPanel, ReplyMainPage> {
   @override
   late ColorScheme colorScheme;
   @override
@@ -144,7 +143,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
     );
   }
 
-  Widget _buildBody(LoadingState<List<ReplyInfo>?> loadingState) {
+  Widget _buildBody(LoadingState<List<ReplyEntity>?> loadingState) {
     switch (loadingState) {
       case Loading():
         return const SliverPrototypeExtentList(

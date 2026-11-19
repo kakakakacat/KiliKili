@@ -8,6 +8,11 @@ pub mod bilibili {
                 }
             }
         }
+        pub mod dynamic {
+            pub mod v2 {
+                include!("bilibili.app.dynamic.v2.rs");
+            }
+        }
         pub mod interfaces {
             pub mod v1 {
                 include!("bilibili.app.interfaces.v1.rs");
@@ -19,6 +24,15 @@ pub mod bilibili {
             pub mod dm {
                 pub mod v1 {
                     include!("bilibili.community.service.dm.v1.rs");
+                }
+            }
+        }
+    }
+    pub mod main {
+        pub mod community {
+            pub mod reply {
+                pub mod v1 {
+                    include!("bilibili.main.community.reply.v1.rs");
                 }
             }
         }
@@ -37,5 +51,8 @@ pub mod bilibili {
         pub mod network {
             include!("bilibili.metadata.network.rs");
         }
+    }
+    pub mod pagination {
+        include!("bilibili.pagination.rs");
     }
 }

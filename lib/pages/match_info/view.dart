@@ -1,10 +1,9 @@
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/view_safe_area.dart';
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show ReplyInfo;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/services/rust/rust_misc.dart';
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:kilikili/pages/common/dyn/common_dyn_page.dart';
 import 'package:kilikili/pages/match_info/controller.dart';
 import 'package:kilikili/pages/match_info/widgets/match_info_item.dart';
@@ -74,7 +73,7 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
   }
 
   @override
-  void replyReply(BuildContext context, ReplyInfo replyItem, int? id) {
+  void replyReply(BuildContext context, ReplyEntity replyItem, int? id) {
     Get.to(
       SimpleScaffold(
         appBar: AppBar(
@@ -89,8 +88,8 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
           child: VideoReplyReplyPanel(
             enableSlide: false,
             id: id,
-            oid: replyItem.oid.toInt(),
-            rpid: replyItem.id.toInt(),
+            oid: replyItem.oid,
+            rpid: replyItem.id,
             isVideoDetail: false,
             replyType: controller.replyType,
             firstFloor: replyItem,

@@ -7,8 +7,7 @@ import 'package:kilikili/common/widgets/scaffold/mini_scaffold.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:kilikili/common/widgets/view_safe_area.dart';
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show ReplyInfo, MainListReply;
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/enum_with_label.dart';
 import 'package:kilikili/pages/article/widgets/sliver_list.dart';
@@ -50,7 +49,7 @@ mixin DynReplyLocateStateMixin<T extends StatefulWidget>
   }
 
   @override
-  Widget buildReply(BuildContext context, int index, ReplyInfo item) {
+  Widget buildReply(BuildContext context, int index, ReplyEntity item) {
     final child = super.buildReply(context, index, item);
     final controller = dynReplyLocateCtr;
     if (item.id == controller.targetRootRpId) {
@@ -75,7 +74,7 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
         SingleTickerProviderStateMixin<T>,
         BaseFabMixin,
         FabMixin,
-        ReplyFooterMixin<T, MainListReply>,
+        ReplyFooterMixin<T, ReplyMainPage>,
         CommonDynPageMixin<T> {}
 
 abstract class CommonDynPageMultiState<T extends StatefulWidget>
@@ -84,7 +83,7 @@ abstract class CommonDynPageMultiState<T extends StatefulWidget>
         TickerProviderStateMixin<T>,
         BaseFabMixin,
         FabMixin,
-        ReplyFooterMixin<T, MainListReply>,
+        ReplyFooterMixin<T, ReplyMainPage>,
         CommonDynPageMixin<T> {
   late final TabController tabController;
 
@@ -111,7 +110,7 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
         TickerProvider,
         BaseFabMixin<T>,
         FabMixin<T>,
-        ReplyFooterMixin<T, MainListReply> {
+        ReplyFooterMixin<T, ReplyMainPage> {
   @override
   CommonDynController get controller;
   bool get isArticle => false;
@@ -179,7 +178,7 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
     );
   }
 
-  Widget replyList(LoadingState<List<ReplyInfo>?> loadingState) {
+  Widget replyList(LoadingState<List<ReplyEntity>?> loadingState) {
     switch (loadingState) {
       case Loading():
         return const SliverPrototypeExtentList(
@@ -240,7 +239,7 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
     }
   }
 
-  Widget buildReply(BuildContext context, int index, ReplyInfo item) {
+  Widget buildReply(BuildContext context, int index, ReplyEntity item) {
     return ReplyItemGrpc(
       replyItem: item,
       replyLevel: 1,
@@ -266,7 +265,7 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
     );
   }
 
-  void throttleReplyReply(BuildContext context, ReplyInfo replyItem, int? id) {
+  void throttleReplyReply(BuildContext context, ReplyEntity replyItem, int? id) {
     EasyThrottle.throttle(
       'replyReply',
       const Duration(milliseconds: 500),
@@ -274,7 +273,7 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
     );
   }
 
-  void replyReply(BuildContext context, ReplyInfo replyItem, int? id) {
+  void replyReply(BuildContext context, ReplyEntity replyItem, int? id) {
     Widget replyReplyPage({bool showBackBtn = true}) {
       final child = ViewSafeArea(
         left: showBackBtn,

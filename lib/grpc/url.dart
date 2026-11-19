@@ -18,15 +18,8 @@ abstract final class GrpcUrl {
   static const dmSegMobile = '/bilibili.community.service.dm.v1.DM/DmSegMobile';
   static const dmView = '/bilibili.community.service.dm.v1.DM/DmView';
 
-  // reply
-  static const reply = '/bilibili.main.community.reply.v1.Reply';
-  static const mainList = '$reply/MainList';
-  static const detailList = '$reply/DetailList';
-  static const foldList = '$reply/FoldList';
-  static const dialogList = '$reply/DialogList';
-  // static const replyInfo = '$reply/ReplyInfo';
-  static const searchItem = '$reply/SearchItem';
-  static const translateReply = '$reply/TranslateReply';
+  // 评论的六条路径随取数一并迁到 Rust（`bili_protocol::grpc` 的
+  // `REPLY_*`，见 issue #176），这里不再保留第二份。
 
   // im
   static const im = '/bilibili.im.interface.v1.ImInterface';

@@ -437,3 +437,78 @@ Dart protobuf 的 setter 会保留显式零值/空串，prost 默认 proto3 标�
 离线解帧 parity 使用真实匿名响应的脱敏投影，来源与处理见
 `rust/crates/bili-api/tests/fixtures/grpc/README.md`。网络桩与 FFI 证明完整链路
 能返回字节/typed 字幕和错误值；登录态、代理/证书及真机回归仍留 Phase 2。
+
+## 评论落地（S2 续单 #176，2026-11-19）
+
+### 体积实测：决策四那条 +1 MiB 的线触发了一次回退
+
+「影响」里写着「S2 落地时必须报一个实测 delta；单片若超过 +1 MiB，回到
+『只生成用到的那些文件』重新评估」。它触发了。
+
+本机 `aarch64-apple-darwin`、release profile（`lto = "thin"`、
+`codegen-units = 1`、`strip = "debuginfo"`）对 `libbridge_flutter.dylib`
+的实测：
+
+| 配置 | 产物字节 | 相对基线 |
+| --- | ---: | ---: |
+| `e94f07e75`（基线） | 18 662 528 | — |
+| 按根消息整棵生成（第一版） | 20 137 856 | **+1.41 MiB** |
+| 只生成界面读的字段（现状） | 19 763 680 | **+1.05 MiB** |
+| 基线 + 生成码（探针拉进链接，不含投影与导出面） | 18 740 368 | **+76.0 KiB** |
+
+第四行是关键：**生成码本身只有 +76 KiB**，剩下的 +999 KiB 是投影代码与
+FRB 的导出面（22 个实体结构的 sse/dco 编解码）。决策四那条线防的是
+「生成码长成第二个 18 万行」，按这个判据现状是 +76 KiB，远在线下；而
+FRB 导出面的体积是决策五的代价，它随 Phase 2 去掉 FRB 一并消失，不是
+生成策略能动的。
+
+第一版与现状的差 374 KiB 来自三处把**整棵别的树**拖进来的字段，它们
+一个消费者都没有：`MemberV2` 的 `basic`/`official`/`vip`/…（通向
+`dagw/component/avatar` 694 行、`vas/garb`、`account/service`）、
+`Content.rich_text` 的 opus 分支（通向 `app/dynamic/v2` 5 500 行）、
+以及 `MainListReply` 的活动/抽奖/问卷/运营位等十几棵子树。
+
+### 决策四补充：按**字段**裁，不只按根消息裁
+
+原文说「按切片生成，不一次性生成整棵树」，实现上是从根消息出发求依赖
+闭包。实测表明只有根消息这一层粒度不够：一棵响应树上挂十几个没人读的
+子树是常态。生成器因此多一张 `KEEP` 表
+（`tool/proto-generator/src/main.rs`），每条消息列出**界面真的读的那些
+字段**，其余字段在求闭包之前就裁掉。prost 对没生成的字段按未知字段跳
+过，解码不受影响。
+
+两条自检，都会让生成器直接失败：
+
+- `KEEP` 点名的消息在上游消失 → 规则失效没人知道；
+- `KEEP` 点名的字段在上游改名或删除 → 同上。
+
+可达性也改成**按消息**算而不是按顶层消息算：嵌套消息原先跟着外层整棵
+带进来，裁了 `MemberV2.basic` 而 `MemberV2.Basic` 还在，等于白裁。不可达
+但仍有可达后代的外层消息留成空壳，因为 prost 把嵌套类型生成在外层的模块
+里。
+
+**代价**：要显示一个新字段时，除了写 UI 还要在 `KEEP` 里加一行。这比
+「先把 18 万行都生成出来再说」麻烦，但那正是决策四不想要的东西。
+
+### 落地范围
+
+`MainList` / `DetailList` / `FoldList` / `DialogList` / `SearchItem` /
+`TranslateReply` 六条全部迁入 `bili-api::grpc_reply`，请求面与基线逐字段
+相同（没有协议变更，因此 `protocol-changelog.md` 不记）。`lib/grpc/reply.dart`
+与 `lib/grpc/bilibili/main/community/reply/**`（20 864 行）同 PR 删除。
+
+决策五点名的那批算法跟着下沉：整页被过滤光时自动翻下一页、简介复读的
+剔除、表情图的 `webp → gif → 原图` 回退链、按埋点串前缀认笔记链接。过滤
+规则（#52 已落地）不再由宿主逐页调用，`reply_filter_mask` 这个导出面随之
+删除。
+
+一处决策五没预见的东西：「我的评论」的本地存档与导入导出在基线里是
+protobuf 生成类做的（`writeToBuffer` / `toProto3Json`），pb 子树一删就
+没人实现，而它是**用户数据**。格式因此也下沉
+（`bili-api::reply_grpc_store`），读两种写一种：老的 proto3 JSON 导出文件
+与老盒子里的 protobuf 字节都照常读得进来。
+
+**线程化评论视图（`reply_reply/tree.dart`）仍在 Dart**，连同它合成占位
+父评论的那段规则。理由与退出条件写在那个文件里：合成的触发时机与折叠
+状态是该视图自己的事，单独挪走只会让一个算法跨两边。它不在 #176 的范围
+（那里只有取数那一半），需要自己的切片。

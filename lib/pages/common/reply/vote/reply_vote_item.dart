@@ -1,16 +1,15 @@
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show VoteCard;
 import 'package:kilikili/pages/dynamics/widgets/vote.dart';
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:kilikili/utils/num_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
 Widget buildVoteCard(
   BuildContext context,
   ColorScheme colorScheme,
-  VoteCard voteCard,
+  ReplyVoteCard voteCard,
 ) {
   return InkWell(
-    onTap: () => showVoteDialog(context, voteCard.voteId.toInt()),
+    onTap: () => showVoteDialog(context, voteCard.voteId),
     child: Padding(
       padding: const .symmetric(horizontal: 12, vertical: 6),
       child: Row(
@@ -34,7 +33,7 @@ Widget buildVoteCard(
               children: [
                 Text(voteCard.title, maxLines: 1, overflow: .ellipsis),
                 Text(
-                  '${NumUtils.numFormat(voteCard.count.toInt())}人参与',
+                  '${NumUtils.numFormat(voteCard.count)}人参与',
                   maxLines: 1,
                   overflow: .ellipsis,
                   style: TextStyle(fontSize: 13, color: colorScheme.outline),

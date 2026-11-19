@@ -5,10 +5,9 @@ import 'dart:ui' as ui;
 
 import 'package:kilikili/build_config.dart';
 import 'package:kilikili/common/constants.dart';
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show ReplyInfo;
 import 'package:kilikili/pages/my_reply/view.dart';
 import 'package:kilikili/pages/search/controller.dart';
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/device_utils.dart';
 import 'package:kilikili/utils/font_utils.dart';
@@ -206,9 +205,9 @@ abstract final class ConfigArchive {
   static String? _exportReply() {
     final box = GStorage.reply;
     if (box == null) return null;
-    return jsonEncode(
-      box.values.map((e) => ReplyInfo.fromBuffer(e).toProto3Json()).toList(),
-    );
+    // 格式在 Rust（`bili_api::reply_grpc_store`）。导不出来就整个不带这项，
+    // 而不是往归档里塞半份。
+    return RustReplyGrpc.exportStored(box.values.toList());
   }
 
   static String _exportSearch() {
@@ -259,7 +258,9 @@ abstract final class ConfigArchive {
   static void _importReply(List<dynamic> list) {
     final box = GStorage.reply;
     if (box == null) return;
-    box.putAll(MyReply.json2ReplyProto(list));
+    final entries = MyReply.json2ReplyBytes(list);
+    if (entries == null) throw ArgumentError('评论数据格式不正确');
+    box.putAll(entries);
   }
 
   static void _importSearch(List<dynamic> list) {

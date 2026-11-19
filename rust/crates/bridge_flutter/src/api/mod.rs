@@ -18,7 +18,7 @@ pub mod play_url_fetch;
 pub mod playback;
 pub mod relation;
 pub mod reply;
-pub mod reply_filter;
+pub mod reply_grpc;
 pub mod search;
 pub mod search_suggest;
 pub mod space;

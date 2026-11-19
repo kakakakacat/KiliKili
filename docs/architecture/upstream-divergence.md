@@ -319,6 +319,35 @@ S14 登录切片（`34a34982b`）就进了「有实质改动」桶，本次只�
 在那之前 `lib/services/rust/rust_reply_filter.dart` 里有一段
 `ReplyInfo` → 规则输入的投影，按 AGENTS.md §2 例外写明了随哪一片删除。
 
+修订：2026-11-19（S2 续单：评论 gRPC 取数与 pb 子树，issue #176，为本次）
+——按 §6 对当前分支实测：修改上游文件 **812 → 811**，其中实质改动
+**380 → 398**、仅重命名 **432 → 413**，新增 **750 → 758**，删除
+**302 → 305**。
+
+**19 个文件从「仅重命名波及」转进「有实质改动」**，是本仓库单次最多的一
+批：`lib/pages/{common/reply,video/reply,video/reply_reply,video/reply_new,
+video/reply_search_item,main_reply,my_reply,common/dyn,setting/models}` 下
+的评论相关文件、`lib/common/widgets/context_menu/reply_menu_helper.dart`
+与 `lib/utils/config_archive.dart`。原因是上一片（#52）只搬了规则，这一片
+把**取数、消息解码与实体形状**一起换掉了，吃 `ReplyInfo` 的每个文件都要
+改。
+
+`lib/grpc/reply.dart` 从「有实质改动」转进「删除」——与取流、收藏那几次
+同一个形状：上游文件里的东西搬空之后整个删掉，而不是留一个空壳。另外
+删掉 `lib/grpc/bilibili/main/community/reply/v1.pb{,enum}.dart`
+（`v1.pbjson.dart` 被 git 判成重命名到 `tool/proto-generator/inputs/`，
+因此不计入删除；它作为生成器的输入快照留着，见 ADR-012 决策四 4.3）。
+
+同步上游时这一片的冲突判据与 #52 那条相同，范围扩大到整个评论区：
+`lib/grpc/reply.dart` 已经不存在，上游对它的改动**不要照搬**；吃评论
+实体的那 28 个 UI 文件里，涉及字段形状的冲突要改的是
+`bili_domain::reply_grpc` 与 `bili_api::grpc_reply`，不是 Dart 侧
+（§4.1 末尾那三条判据与 ADR-011 补充十三）。
+
+一处**没有**扩大分叉面的地方：共享的 pb 子树
+（`dagw/component/avatar`、`pagination`、`account/service`、`vas/garb`、
+`app/dynamic/v2`）都还有别的 importer，逐个 `grep -rl` 确认后原样保留。
+
 ## 1. 基准
 
 ```

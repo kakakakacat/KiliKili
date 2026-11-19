@@ -1,28 +1,26 @@
 import 'package:kilikili/common/widgets/colored_box_transition.dart';
 import 'package:kilikili/common/widgets/flutter/text_field/controller.dart';
-import 'package:kilikili/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show MainListReply, ReplyInfo, SubjectControl, Mode, CursorReply;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/reply.dart';
 import 'package:kilikili/models/common/reply/reply_sort_type.dart';
 import 'package:kilikili/models_new/dynamic/dyn_mention/item.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
 import 'package:kilikili/pages/common/publish/publish_route.dart';
+import 'package:kilikili/services/rust/rust_reply_grpc.dart';
 import 'package:kilikili/pages/video/reply_new/view.dart';
 import 'package:kilikili/utils/feed_back.dart';
 import 'package:kilikili/utils/reply_scheme_helper.dart';
 import 'package:kilikili/utils/reply_utils.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:collection/collection.dart';
-import 'package:fixnum/fixnum.dart' show Int64;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
-mixin MainReplyLocateMixin on ReplyLocateMixin<MainListReply> {
+mixin MainReplyLocateMixin on ReplyLocateMixin<ReplyMainPage> {
   final Map args = Get.arguments ?? const {};
 
-  Int64? targetRootRpId; // highlight
+  int? targetRootRpId; // highlight
   void clearTargetRootRpId() {
     args.remove(rootRpIdKey);
     targetRootRpId = null;
@@ -31,13 +29,13 @@ mixin MainReplyLocateMixin on ReplyLocateMixin<MainListReply> {
   @override
   void onInit() {
     if (args[rootRpIdKey] case final int rpid) {
-      rootRpId = Int64(rpid);
+      rootRpId = rpid;
     }
     super.onInit();
   }
 
   @override
-  bool customHandleResponse(bool isRefresh, Success<MainListReply> response) {
+  bool customHandleResponse(bool isRefresh, Success<ReplyMainPage> response) {
     final flag = super.customHandleResponse(isRefresh, response);
     if (isRefresh && rootRpId != null && args.containsKey(rootRpIdKey)) {
       final replies = response.response.replies;
@@ -49,7 +47,7 @@ mixin MainReplyLocateMixin on ReplyLocateMixin<MainListReply> {
     return flag;
   }
 
-  void onAnimRootReply(ReplyInfo rootReply) {
+  void onAnimRootReply(ReplyEntity rootReply) {
     targetRootRpId = rootRpId;
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => colorAnimController
@@ -96,23 +94,23 @@ mixin ReplyLocateMixin<T>
   }
 }
 
-abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
+abstract class ReplyController<R> extends CommonListController<R, ReplyEntity> {
   ReplyController({int count = -1}) : count = RxInt(count);
 
   int get oid;
   int get replyType;
 
-  Int64? rootRpId;
+  int? rootRpId;
   late final RxInt count;
 
   late final Rx<ReplySortType> sortType;
-  late Mode mode;
+  late ReplySortMode mode;
 
   final savedReplies = <Object, List<RichTextItem>?>{};
 
-  Int64? upMid;
+  int? upMid;
   String? nextOffset;
-  SubjectControl? subjectControl;
+  ReplySubject? subjectControl;
   late bool hasUpTop = false;
 
   @override
@@ -132,7 +130,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
     super.onInit();
     final cacheSortType = prefSortType;
     sortType = cacheSortType.obs;
-    mode = cacheSortType == .time ? Mode.MAIN_LIST_TIME : Mode.MAIN_LIST_HOT;
+    mode = cacheSortType == .time ? ReplySortMode.time : ReplySortMode.hot;
   }
 
   @override
@@ -146,51 +144,38 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
     }
   }
 
-  late final _filterIntro = Pref.filterIntro;
+  /// 稿件简介。设置里开了「过滤简介复读」时，与它逐字相同的根评论会被
+  /// 移除——判定在 Rust（`ReplyFilter::removes_as_intro`），这里只负责把
+  /// 当前稿件的简介随请求递过去。
   String? intro;
-  @pragma('vm:prefer-inline')
-  void _removeIntro(MainListReply data) {
-    final intro = this.intro;
-    if (intro != null &&
-        intro.isNotEmpty &&
-        _filterIntro &&
-        data.replies.isNotEmpty) {
-      data.replies.removeWhere((i) => i.content.message.trim() == intro);
-    }
-  }
 
   @override
   bool customHandleResponse(bool isRefresh, Success<R> response) {
-    final data = response.response as MainListReply;
-    count.value = data.subjectControl.count.toInt();
+    final data = response.response as ReplyMainPage;
+    count.value = data.subject.count;
     if (isRefresh) {
-      handleSubjectControl(data.subjectControl);
-      if (hasUpTop = data.hasUpTop()) {
-        data.replies.insert(0, data.upTop);
-      }
+      handleSubject(data.subject);
+      hasUpTop = data.hasUpTop;
       if (subjectControl?.title == ReplySortType.select.desc) {
         sortType.value = .select;
       }
     }
 
-    handlePagination(
-      cursor: data.cursor,
-      offset: data.paginationReply.nextOffset,
-    );
-
-    _removeIntro(data);
+    handlePagination(isEnd: data.isEnd, offset: data.nextOffset);
 
     return false;
   }
 
-  void handlePagination({required CursorReply cursor, required String offset}) {
-    if (cursor.isEnd || offset.isEmpty || nextOffset == offset) isEnd = true;
+  /// UP 置顶的并入、简介复读的剔除、「同一个 offset 翻两次」的判定都已经
+  /// 在 Rust 做掉了（见 `bili_api::grpc_reply`）。这里只接住结果。
+  void handlePagination({required bool isEnd, required String offset}) {
+    if (isEnd) this.isEnd = true;
     nextOffset = offset;
   }
 
-  void handleSubjectControl(SubjectControl control) {
-    subjectControl = control;
-    upMid = control.upMid;
+  void handleSubject(ReplySubject subject) {
+    subjectControl = subject;
+    upMid = subject.upMid;
   }
 
   @override
@@ -206,11 +191,11 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
     switch (sortType.value) {
       case ReplySortType.time:
         sortType.value = ReplySortType.hot;
-        mode = Mode.MAIN_LIST_HOT;
+        mode = ReplySortMode.hot;
         break;
       case ReplySortType.hot:
         sortType.value = ReplySortType.time;
-        mode = Mode.MAIN_LIST_TIME;
+        mode = ReplySortMode.time;
         break;
       case ReplySortType.select:
         return;
@@ -225,8 +210,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
     try {
       if (subjectControl case final subjectControl?) {
         inputDisable = subjectControl.inputDisable;
-        if (subjectControl.hasRootText()) {
-          final rootText = subjectControl.rootText;
+        if (subjectControl.rootText case final rootText?) {
           if (inputDisable) {
             SmartDialog.showToast(rootText);
           }
@@ -240,7 +224,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
   }
 
   void onReply(
-    ReplyInfo? replyItem, {
+    ReplyEntity? replyItem, {
     int? oid,
     int? replyType,
     MentionItem? mentionItem,
@@ -266,10 +250,10 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
             pageBuilder: (buildContext, animation, secondaryAnimation) {
               return ReplyPage(
                 hint: hint,
-                oid: oid ?? replyItem!.oid.toInt(),
-                root: oid != null ? 0 : replyItem!.id.toInt(),
-                parent: oid != null ? 0 : replyItem!.id.toInt(),
-                replyType: replyItem?.type.toInt() ?? replyType!,
+                oid: oid ?? replyItem!.oid,
+                root: oid != null ? 0 : replyItem!.id,
+                parent: oid != null ? 0 : replyItem!.id,
+                replyType: replyItem?.kind ?? replyType!,
                 replyItem: replyItem,
                 mentionItem: mentionItem,
                 items: savedReplies[key],
@@ -290,7 +274,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
         )
         .then(
           (replyInfo) {
-            if (replyInfo is ReplyInfo) {
+            if (replyInfo is ReplyEntity) {
               savedReplies.remove(key);
               if (loadingState.value case Success(:final response)) {
                 if (response == null) {
@@ -319,7 +303,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
         );
   }
 
-  void onRemove(int index, ReplyInfo item, int? subIndex) {
+  void onRemove(int index, ReplyEntity item, int? subIndex) {
     if (subIndex == null) {
       loadingState.value.data!.removeAt(index);
     } else {
@@ -331,7 +315,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
     loadingState.refresh();
   }
 
-  void onCheckReply(ReplyInfo replyInfo, {bool isManual = true}) {
+  void onCheckReply(ReplyEntity replyInfo, {bool isManual = true}) {
     ReplyUtils.onCheckReply(
       replyInfo: replyInfo,
       biliSendCommAntifraud: _biliSendCommAntifraud,
@@ -341,12 +325,12 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
   }
 
   Future<void> onToggleTop(
-    ReplyInfo item,
+    ReplyEntity item,
     int index,
     oid,
     int type,
   ) async {
-    bool isUpTop = item.replyControl.isUpTop;
+    bool isUpTop = item.control.isUpTop;
     final res = await ReplyHttp.replyTop(
       oid: oid,
       type: type,
@@ -354,11 +338,11 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
       isUpTop: isUpTop,
     );
     if (res.isSuccess) {
-      item.replyControl.isUpTop = !isUpTop;
+      item.control.isUpTop = !isUpTop;
       if (!isUpTop && index != 0) {
         final list = loadingState.value.data!;
         list
-          ..first.replyControl.isUpTop = false
+          ..first.control.isUpTop = false
           ..insert(0, list.removeAt(index));
       }
       loadingState.refresh();

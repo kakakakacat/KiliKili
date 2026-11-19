@@ -35,7 +35,7 @@ export 'package:kilikili/rust/api/reply.dart'
 ///
 /// 本文件迁的是 REST 这条路径。它在当前代码里的唯一消费者是
 /// `ReplyUtils`（评论是否被 shadow ban 的自检），表情包面板则服务于评论
-/// 发布框。评论列表本身由 `lib/grpc/` 的 protobuf 类型驱动（S2 / #52）。
+/// 发布框。评论列表本身走 gRPC，见 `RustReplyGrpc`（S2 / #52 + #176）。
 ///
 /// ## 账号归属
 ///

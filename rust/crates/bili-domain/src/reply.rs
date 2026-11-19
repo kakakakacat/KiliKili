@@ -4,7 +4,7 @@
 //!
 //! 基线 `lib/models_new/reply/` 有 20 个文件，把服务端下发的每一棵装饰
 //! 子树都照抄了一遍（勋章、头像挂件、大会员标签、等级、认证……）。但
-//! 评论区 UI 走的是 gRPC（S2 / issue #52），消费的是 protobuf 类型；REST
+//! 评论区 UI 走的是 gRPC（它自己的实体在 [`crate::reply_grpc`]）；REST
 //! 这条路径在迁移前**只有一个消费者**：`lib/utils/reply_utils.dart` 的
 //! 「评论是否被 shadow ban」自检，它只读 `replies[].rpid`。
 //!

@@ -19,6 +19,7 @@ import 'package:kilikili/utils/storage_pref.dart';
 import 'package:kilikili/utils/utils.dart';
 import 'package:kilikili/utils/waterfall.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -183,10 +184,21 @@ class _MyReplyState extends State<MyReply> with DynMixin {
     );
   }
 
+  /// 导出失败时抛出。基线用 protobuf 生成类做这件事，不会失败；现在格式
+  /// 在 Rust，盒子里有一条读不出来的数据就会整个失败——那比导出一份少了
+  /// 几条的存档好。两个入口各自接住它（[_runExport]）。
   String _onExport() {
     final json = RustReplyGrpc.exportStored(GStorage.reply!.values.toList());
     if (json == null) throw StateError('评论存档导出失败');
     return json;
+  }
+
+  void _runExport(VoidCallback export) {
+    try {
+      export();
+    } catch (e) {
+      SmartDialog.showToast('导出失败：$e');
+    }
   }
 
   void _showExportDialog() {
@@ -202,7 +214,7 @@ class _MyReplyState extends State<MyReply> with DynMixin {
             title: const Text('导出至剪贴板', style: style),
             onTap: () {
               Get.back();
-              exportToClipBoard(onExport: _onExport);
+              _runExport(() => exportToClipBoard(onExport: _onExport));
             },
           ),
           ListTile(
@@ -210,9 +222,11 @@ class _MyReplyState extends State<MyReply> with DynMixin {
             title: const Text('导出文件至本地', style: style),
             onTap: () {
               Get.back();
-              exportToLocalFile(
-                onExport: _onExport,
-                localFileName: () => 'reply',
+              _runExport(
+                () => exportToLocalFile(
+                  onExport: _onExport,
+                  localFileName: () => 'reply',
+                ),
               );
             },
           ),

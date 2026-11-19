@@ -570,6 +570,9 @@ class ReplyItemGrpc extends StatelessWidget {
     final isVip = member.vipStatus > 0 && member.vipType == 2;
 
     Widget? trailing;
+    // 基线判的是 `hasMid() && upMid == mid`，即「字段存在」而不是「非零」。
+    // 实体把 mid 摊平成 int 之后这个区别没了，改判非零：mid 为 0 的那条
+    // 评论没有作者可言，给它挂 UP 角标是基线的一个边角 bug，不跟。
     if (replyItem.mid != 0 && upMid == replyItem.mid) {
       trailing = const PBadge(
         text: 'UP',

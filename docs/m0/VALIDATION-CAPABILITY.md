@@ -489,3 +489,49 @@ UP 置顶并入列表头部、被拉黑的根评论连同其楼中楼一起消�
 
 不改变触发与门禁。新增测试落在已有的 `cargo test --workspace` 里，不需要
 新 runner 或外部二进制。
+
+### 评论正文分词与线程化视图的离线验证（#179）
+
+#176 那一节说「正文里的表情、@、话题、链接…逐个点一遍」只能真机看——
+那是指**服务端给的字段**。字段**怎么被切成段**这一半，本次可以离线验了。
+
+#### 新增的能力
+
+两组「fixture 两侧共用、判据在 Dart」的对照，机制与 #52 的
+`reply_filter_parity_test.dart` 相同：
+
+| fixture | 被验的那一侧 | 判据（逐行转写基线） |
+| --- | --- | --- |
+| `bili-domain/tests/fixtures/reply_richtext/cases.json` | `reply_richtext_golden.rs` | `test/services/rust/reply_richtext_parity_test.dart` |
+| `bili-domain/tests/fixtures/reply_thread/cases.json` | `reply_thread_golden.rs` | `test/services/rust/reply_thread_parity_test.dart` |
+
+分词那组 27 条，钉住：备选词的拼接顺序、同一条链接只渲染一次、词条搜索
+开关、时间戳的有效性与全角冒号归一化、`[笔记]` 的位置与可点性、链接的
+跳转目标判定（av/bv、`/read/cv`、`note-app/view?cvid=`、scheme、词条）。
+
+线程化那组 13 条，钉住：排序（ctime 升序、同 ctime 比 id）、缺失父评论的
+合成与 `ctime` 取子评论最小值、沿 `removed` 的多级上溯、交叉 id 与
+deferred 的 dialog、`foldDepth` 的折叠层级与条数、「回复了谁」的四级优先级。
+
+两份判据都**不 import `lib/`**，和 #52 那份一样能在没打 Flutter SDK 补丁
+的机器上跑。
+
+#### 证明不了什么
+
+**它们证明的是判定，不是渲染。** 段落怎么变成 `InlineSpan`——表情图加载
+不加载得出来、笔记前缀排版歪没歪、手势识别器会不会和外层的长按打架——
+一条都没覆盖，只能真机看（QA 矩阵 M30）。
+
+分词那组有**一条用例 Dart 侧是跳过的**（`baseline_order_dependent`）：
+互为前缀的两个 `@` 名谁先匹配，基线取决于一次哈希迭代，本来就不确定，
+拿它当判据只是在判今天这次哈希。Rust 侧把顺序定死成长度降序并单独测，
+`only_the_known_divergence_is_marked` 守着这个标记别被滥用。
+
+线程化那组喂的是**手工构造的字段**，不是真实响应：真实响应里难得见到
+「被屏蔽的祖先链」「dialog 比父评论先到」这些形状，而那正是这段代码最
+容易错的地方。反过来，服务端到底会不会下发这些形状，fixture 说了不算。
+
+#### CI
+
+不改变触发与门禁。Rust 那两个测试落在 `cargo test --workspace`，Dart 那
+两个落在 `flutter-test.yml`，不需要新 runner 或外部二进制。

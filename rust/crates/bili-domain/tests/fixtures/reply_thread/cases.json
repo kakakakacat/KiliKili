@@ -1,0 +1,287 @@
+{
+  "_comment": [
+    "线程化视图合成的对照用例（S2 续单 / issue #179）。",
+    "两侧共用：`reply_thread_golden.rs` 是被验的那一侧，",
+    "`test/services/rust/reply_thread_parity_test.dart` 是判据——它逐行转写了",
+    "迁移前 `tree.dart` 的 `ReplyTree.build`。",
+    "",
+    "行的投影里，等于默认值的字段一律不写：parent 为空、reason 为 none、",
+    "collapsed 为 0、visible 为 true、index 与 placeholder 为空。这样一条用例",
+    "读起来就是「这一行是谁、在第几层」。"
+  ],
+  "cases": [
+    {
+      "name": "同一层按 ctime 升序，ctime 相同再比 id",
+      "root_id": 1,
+      "data": [
+        { "id": 3, "parent": 1, "dialog": 3, "ctime": 200 },
+        { "id": 2, "parent": 1, "dialog": 2, "ctime": 100 },
+        { "id": 4, "parent": 1, "dialog": 4, "ctime": 100 }
+      ],
+      "rows": [
+        { "source": "data", "index": 1, "id": 2, "depth": 0 },
+        { "source": "data", "index": 2, "id": 4, "depth": 0 },
+        { "source": "data", "index": 0, "id": 3, "depth": 0 }
+      ]
+    },
+    {
+      "name": "父评论没随页下发：合成一条占位，ctime 取子评论最小值",
+      "root_id": 1,
+      "data": [
+        { "id": 5, "parent": 9, "dialog": 9, "ctime": 300 },
+        { "id": 6, "parent": 9, "dialog": 9, "ctime": 200 }
+      ],
+      "rows": [
+        {
+          "source": "synthetic",
+          "id": 9,
+          "depth": 0,
+          "reason": "deleted",
+          "placeholder": { "parent": 1, "dialog": 9, "ctime": 200, "mid": 0, "name": "" }
+        },
+        { "source": "data", "index": 1, "id": 6, "depth": 1, "parent": 0 },
+        { "source": "data", "index": 0, "id": 5, "depth": 1, "parent": 0 }
+      ]
+    },
+    {
+      "name": "被本地规则删掉的祖先从 removed 里捞回来",
+      "root_id": 1,
+      "removed": [{ "id": 7, "parent": 1, "dialog": 7, "ctime": 50 }],
+      "data": [{ "id": 8, "parent": 7, "dialog": 7, "ctime": 100 }],
+      "rows": [
+        { "source": "removed", "id": 7, "depth": 0, "reason": "blocked" },
+        { "source": "data", "index": 0, "id": 8, "depth": 1, "parent": 0 }
+      ]
+    },
+    {
+      "name": "沿 removed 连着上溯两级",
+      "root_id": 1,
+      "removed": [
+        { "id": 11, "parent": 1, "dialog": 11, "ctime": 10 },
+        { "id": 12, "parent": 11, "dialog": 11, "ctime": 20 }
+      ],
+      "data": [{ "id": 13, "parent": 12, "dialog": 11, "ctime": 100 }],
+      "rows": [
+        { "source": "removed", "id": 11, "depth": 0, "reason": "blocked" },
+        { "source": "removed", "id": 12, "depth": 1, "parent": 0, "reason": "blocked" },
+        { "source": "data", "index": 0, "id": 13, "depth": 2, "parent": 1 }
+      ]
+    },
+    {
+      "name": "foldDepth 折起那一层的子树并记下条数",
+      "root_id": 1,
+      "fold_depth": 1,
+      "data": [
+        { "id": 10, "parent": 1, "dialog": 10, "ctime": 100 },
+        { "id": 11, "parent": 10, "dialog": 10, "ctime": 200 },
+        { "id": 12, "parent": 11, "dialog": 10, "ctime": 300 }
+      ],
+      "rows": [
+        { "source": "data", "index": 0, "id": 10, "depth": 0 },
+        { "source": "data", "index": 1, "id": 11, "depth": 1, "parent": 0, "collapsed": 1 },
+        {
+          "source": "data",
+          "index": 2,
+          "id": 12,
+          "depth": 2,
+          "parent": 1,
+          "visible": false
+        }
+      ]
+    },
+    {
+      "name": "foldDepth 为 0 等于不折叠",
+      "root_id": 1,
+      "fold_depth": 0,
+      "data": [
+        { "id": 10, "parent": 1, "dialog": 10, "ctime": 100 },
+        { "id": 11, "parent": 10, "dialog": 10, "ctime": 200 }
+      ],
+      "rows": [
+        { "source": "data", "index": 0, "id": 10, "depth": 0 },
+        { "source": "data", "index": 1, "id": 11, "depth": 1, "parent": 0 }
+      ]
+    },
+    {
+      "name": "dialog 还没实体化时先挂起，等父占位合成出来再补",
+      "_comment": "2a 把 30 记进 deferred，2b 合成 40 时把它挂到 30 下，2c 才实体化 30",
+      "root_id": 1,
+      "data": [{ "id": 50, "parent": 40, "dialog": 30, "ctime": 500 }],
+      "rows": [
+        {
+          "source": "synthetic",
+          "id": 30,
+          "depth": 0,
+          "reason": "deleted",
+          "placeholder": { "parent": 1, "dialog": 30, "ctime": 500, "mid": 0, "name": "" }
+        },
+        {
+          "source": "synthetic",
+          "id": 40,
+          "depth": 1,
+          "parent": 0,
+          "reason": "deleted",
+          "placeholder": { "parent": 30, "dialog": 30, "ctime": 500, "mid": 0, "name": "" }
+        },
+        { "source": "data", "index": 0, "id": 50, "depth": 2, "parent": 1 }
+      ]
+    },
+    {
+      "name": "占位的「回复了谁」优先取成员表",
+      "root_id": 1,
+      "data": [
+        {
+          "id": 31,
+          "parent": 30,
+          "dialog": 30,
+          "ctime": 100,
+          "parent_member": { "mid": 42, "name": "甲" },
+          "members": { "甲": { "mid": 42, "name": "甲" } }
+        }
+      ],
+      "rows": [
+        {
+          "source": "synthetic",
+          "id": 30,
+          "depth": 0,
+          "reason": "deleted",
+          "placeholder": { "parent": 1, "dialog": 30, "ctime": 100, "mid": 42, "name": "甲" }
+        },
+        { "source": "data", "index": 0, "id": 31, "depth": 1, "parent": 0 }
+      ]
+    },
+    {
+      "name": "改了名：名字不在成员表里，但 mid 对得上",
+      "root_id": 1,
+      "data": [
+        {
+          "id": 31,
+          "parent": 30,
+          "dialog": 30,
+          "ctime": 100,
+          "parent_member": { "mid": 42, "name": "旧名字" },
+          "members": { "新名字": { "mid": 42, "name": "新名字" } }
+        }
+      ],
+      "rows": [
+        {
+          "source": "synthetic",
+          "id": 30,
+          "depth": 0,
+          "reason": "deleted",
+          "placeholder": {
+            "parent": 1,
+            "dialog": 30,
+            "ctime": 100,
+            "mid": 42,
+            "name": "新名字"
+          }
+        },
+        { "source": "data", "index": 0, "id": 31, "depth": 1, "parent": 0 }
+      ]
+    },
+    {
+      "name": "自回复：被回复者没有 mid，名字与作者相同",
+      "root_id": 1,
+      "data": [
+        {
+          "id": 31,
+          "parent": 30,
+          "dialog": 30,
+          "ctime": 100,
+          "member": { "mid": 77, "name": "乙" },
+          "parent_member": { "name": "乙" }
+        }
+      ],
+      "rows": [
+        {
+          "source": "synthetic",
+          "id": 30,
+          "depth": 0,
+          "reason": "deleted",
+          "placeholder": { "parent": 1, "dialog": 30, "ctime": 100, "mid": 77, "name": "乙" }
+        },
+        { "source": "data", "index": 0, "id": 31, "depth": 1, "parent": 0 }
+      ]
+    },
+    {
+      "name": "谁也认不出来时只好拿被回复者的名字造一个",
+      "root_id": 1,
+      "data": [
+        {
+          "id": 31,
+          "parent": 30,
+          "dialog": 30,
+          "ctime": 100,
+          "member": { "mid": 77, "name": "乙" },
+          "parent_member": { "name": "查无此人" }
+        }
+      ],
+      "rows": [
+        {
+          "source": "synthetic",
+          "id": 30,
+          "depth": 0,
+          "reason": "deleted",
+          "placeholder": {
+            "parent": 1,
+            "dialog": 30,
+            "ctime": 100,
+            "mid": 0,
+            "name": "查无此人"
+          }
+        },
+        { "source": "data", "index": 0, "id": 31, "depth": 1, "parent": 0 }
+      ]
+    },
+    {
+      "name": "多条子评论时，占位认人取优先级最高、同优先级取最晚的那条",
+      "root_id": 1,
+      "data": [
+        {
+          "id": 31,
+          "parent": 30,
+          "dialog": 30,
+          "ctime": 100,
+          "member": { "mid": 77, "name": "乙" },
+          "parent_member": { "name": "查无此人" }
+        },
+        {
+          "id": 32,
+          "parent": 30,
+          "dialog": 30,
+          "ctime": 200,
+          "parent_member": { "mid": 42, "name": "甲" },
+          "members": { "甲": { "mid": 42, "name": "甲" } }
+        }
+      ],
+      "rows": [
+        {
+          "source": "synthetic",
+          "id": 30,
+          "depth": 0,
+          "reason": "deleted",
+          "placeholder": { "parent": 1, "dialog": 30, "ctime": 100, "mid": 42, "name": "甲" }
+        },
+        { "source": "data", "index": 0, "id": 31, "depth": 1, "parent": 0 },
+        { "source": "data", "index": 1, "id": 32, "depth": 1, "parent": 0 }
+      ]
+    },
+    {
+      "name": "一棵两层的树：每一层各自排序",
+      "root_id": 1,
+      "data": [
+        { "id": 20, "parent": 1, "dialog": 20, "ctime": 100 },
+        { "id": 21, "parent": 1, "dialog": 21, "ctime": 300 },
+        { "id": 22, "parent": 20, "dialog": 20, "ctime": 400 },
+        { "id": 23, "parent": 20, "dialog": 20, "ctime": 200 }
+      ],
+      "rows": [
+        { "source": "data", "index": 0, "id": 20, "depth": 0 },
+        { "source": "data", "index": 3, "id": 23, "depth": 1, "parent": 0 },
+        { "source": "data", "index": 2, "id": 22, "depth": 1, "parent": 0 },
+        { "source": "data", "index": 1, "id": 21, "depth": 0 }
+      ]
+    }
+  ]
+}

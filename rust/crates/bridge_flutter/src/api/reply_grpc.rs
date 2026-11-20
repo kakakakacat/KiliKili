@@ -31,6 +31,8 @@ use bili_api::reply_grpc_store;
 use bili_domain::error::{DomainError, ErrorKind};
 use bili_domain::reply_filter::{self, ReplyFilter};
 use bili_domain::reply_grpc as domain;
+use bili_domain::reply_richtext as richtext;
+use bili_domain::reply_thread;
 use flutter_rust_bridge::frb;
 
 use crate::api::grpc::GrpcContext;
@@ -997,4 +999,278 @@ pub fn import_stored_replies(json: String) -> ReplyImportResult {
 #[frb(sync)]
 pub fn reply_from_rest_json(json: String) -> ReplyEntityResult {
     ReplyEntityResult::from_result(reply_grpc_store::from_rest_reply(&json).map(entity_from))
+}
+
+// ─────────────────────────── 正文分词 ───────────────────────────
+//
+// 基线 `ReplyItemGrpc._buildMessage` 的判定部分（S2 续单 / issue #179）。
+// 规则在 `bili_domain::reply_richtext`，这里只做导出面的翻译。
+
+/// 一段正文是什么。镜像 [`richtext::ReplySegmentKind`]。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ReplySegmentKind {
+    Text,
+    Emote,
+    Mention,
+    Topic,
+    Vote,
+    Timestamp,
+    Link,
+    Note,
+}
+
+/// 点下去干什么。载荷统一放 [`ReplySegment::target`]。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ReplyTapAction {
+    /// 不可点，界面按次要色画。
+    None,
+    /// 内置 webview 打开 `target`。
+    Webview,
+    /// 稿件页。`target` 是 av/bv 字面量。
+    Archive,
+    /// 专栏。`target` 是 cvid。
+    Article,
+    /// 图文动态。`target` 是 opus id。
+    Opus,
+    /// app scheme 路由。`target` 是服务端给的跳转串。
+    Scheme,
+    /// 搜索结果页。`target` 是关键词。
+    Search,
+}
+
+/// 正文里的一段。宿主按 [`Self::kind`] 建对应的 `InlineSpan`。
+#[derive(Debug, Clone, PartialEq)]
+pub struct ReplySegment {
+    pub kind: ReplySegmentKind,
+    /// 要画出来的文本。表情段是占位符原文。
+    pub text: String,
+    /// Mention 段：被 @ 的 mid。
+    pub mid: Option<i64>,
+    /// Topic 段：不带 `#` 的话题名。
+    pub topic: Option<String>,
+    /// Emote 段：表情本身。
+    pub emote: Option<ReplyEmote>,
+    /// Vote 段：投票 id 与标题。
+    pub vote: Option<ReplyVote>,
+    /// Timestamp 段：要跳到的秒数。`None` = 超出稿件时长或解析不出来，
+    /// 此时只当纯文本画（不变色、不可点）。
+    pub seek_seconds: Option<i64>,
+    /// Link 段：标题前的小图标。
+    pub prefix_icon: Option<String>,
+    pub action: ReplyTapAction,
+    /// [`Self::action`] 的载荷。
+    pub target: String,
+}
+
+/// 把一条正文切成段。
+///
+/// ## 为什么没有 `XxxResult` 信封
+///
+/// 它没有失败态。分词用的正则由内容拼出来，编不过时领域层退化成「整条
+/// 消息一段纯文本」而不是报错——它不是过滤规则，失败不会让被屏蔽的内容
+/// 漏出来（见 `bili_domain::reply_richtext` 的模块文档）。给一个永远
+/// `error_kind == null` 的信封只会让调用点多一层解包。
+///
+/// ## `#[frb(sync)]` 与每次 build 的开销
+///
+/// 调用点是 widget 的 `build`，异步会让正文晚一帧出现。同步调用的代价是
+/// `content` 整个走一趟 FFI（包括分词用不到的 `pictures` / `members`）；
+/// 基线在同一个位置**每次 build 都要新编译一条正则**，那一笔更贵，所以
+/// 这不是净劣化。真要省，就把入参收窄成领域层的
+/// `ReplyRichTextInput`——现在不做，是因为多一个导出结构换不回这点开销。
+#[frb(sync)]
+pub fn build_reply_segments(
+    content: ReplyContent,
+    control: ReplyControlInfo,
+    enable_word_re: bool,
+    video_duration_ms: Option<i64>,
+) -> Vec<ReplySegment> {
+    let input = richtext_input(content, &control);
+    let settings = richtext::ReplyRichTextSettings {
+        enable_word_re,
+        video_duration_ms,
+    };
+    richtext::segment(&input, &settings)
+        .into_iter()
+        .map(segment_from)
+        .collect()
+}
+
+/// 只挑分词真正要读的那几个字段（同 `grpc_reply::filter_input` 的做法）。
+fn richtext_input(
+    content: ReplyContent,
+    control: &ReplyControlInfo,
+) -> richtext::ReplyRichTextInput {
+    let domain_content = content_into(content);
+    richtext::ReplyRichTextInput {
+        message: domain_content.message,
+        emotes: domain_content.emotes,
+        topics: domain_content.topics,
+        at_name_to_mid: domain_content.at_name_to_mid,
+        urls: domain_content.urls,
+        vote: domain_content.vote,
+        note: domain_content.note,
+        is_note: control.is_note,
+        is_note_v2: control.is_note_v2,
+    }
+}
+
+fn segment_from(segment: richtext::ReplySegment) -> ReplySegment {
+    ReplySegment {
+        kind: match segment.kind {
+            richtext::ReplySegmentKind::Text => ReplySegmentKind::Text,
+            richtext::ReplySegmentKind::Emote => ReplySegmentKind::Emote,
+            richtext::ReplySegmentKind::Mention => ReplySegmentKind::Mention,
+            richtext::ReplySegmentKind::Topic => ReplySegmentKind::Topic,
+            richtext::ReplySegmentKind::Vote => ReplySegmentKind::Vote,
+            richtext::ReplySegmentKind::Timestamp => ReplySegmentKind::Timestamp,
+            richtext::ReplySegmentKind::Link => ReplySegmentKind::Link,
+            richtext::ReplySegmentKind::Note => ReplySegmentKind::Note,
+        },
+        text: segment.text,
+        mid: segment.mid,
+        topic: segment.topic,
+        emote: segment.emote.map(|e| ReplyEmote {
+            size: e.size,
+            display_url: e.display_url,
+            jump_url: e.jump_url,
+        }),
+        vote: segment.vote.map(|v| ReplyVote {
+            id: v.id,
+            title: v.title,
+        }),
+        seek_seconds: segment.seek_seconds,
+        prefix_icon: segment.prefix_icon,
+        action: match segment.action {
+            richtext::ReplyTapAction::None => ReplyTapAction::None,
+            richtext::ReplyTapAction::Webview => ReplyTapAction::Webview,
+            richtext::ReplyTapAction::Archive => ReplyTapAction::Archive,
+            richtext::ReplyTapAction::Article => ReplyTapAction::Article,
+            richtext::ReplyTapAction::Opus => ReplyTapAction::Opus,
+            richtext::ReplyTapAction::Scheme => ReplyTapAction::Scheme,
+            richtext::ReplyTapAction::Search => ReplyTapAction::Search,
+        },
+        target: segment.target,
+    }
+}
+
+// ─────────────────────── 线程化视图的合成 ───────────────────────
+//
+// 基线 `lib/pages/video/reply_reply/tree.dart` 的 `ReplyTree.build`
+// （S2 续单 / issue #179）。规则在 `bili_domain::reply_thread`。
+
+/// 一行的内容从哪来。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ReplyRowSource {
+    /// 传进去的那一页，按 [`ReplyThreadRow::index`] 取。
+    Data,
+    /// 被过滤规则删掉、从 `removed` 里捞回来的，按 [`ReplyThreadRow::id`] 取。
+    Removed,
+    /// 合成出来的占位，整条在 [`ReplyThreadRow::placeholder`] 里。
+    Synthetic,
+}
+
+/// 这一行为什么显示不出原文。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ReplyRowReason {
+    None,
+    /// 服务端没下发，按「已删除」占位。
+    Deleted,
+    /// 被本地过滤规则删掉，按「已屏蔽」占位。
+    Blocked,
+}
+
+/// DFS 前序里的一行。
+///
+/// **不带实体**（合成出来的占位除外）：宿主删评论时按 `identical` 在原始
+/// 列表里定位，把实体重新发一遍回去会让那个判定失效。见
+/// `bili_domain::reply_thread` 的模块文档。
+#[derive(Debug, Clone, PartialEq)]
+pub struct ReplyThreadRow {
+    pub source: ReplyRowSource,
+    /// `Data`：传进去那一页的下标。
+    pub index: Option<u32>,
+    /// `Removed` / `Synthetic`：评论 id。
+    pub id: i64,
+    /// `Synthetic`：合成出来的占位。
+    pub placeholder: Option<ReplyEntity>,
+    /// 0 是根评论的直接子节点。
+    pub depth: i32,
+    /// 父**行**的下标；`None` 表示挂在根评论下。
+    pub parent: Option<u32>,
+    pub reason: ReplyRowReason,
+    /// 这一行被自动折叠起来的后代数量。0 表示没折叠。
+    pub collapsed: i32,
+    /// 这一刻画不画得出来。折叠节点的整棵子树为 false。
+    pub visible: bool,
+}
+
+/// 把一页楼中楼接成 DFS 前序。
+///
+/// `data` 必须**已按 id 去重**。`removed` 传的是那张表的值，Rust 自己按
+/// id 建索引——导出面上不出现宿主的 `HashMap<int, ...>` 形状。
+///
+/// `#[frb(sync)]`：调用点是 `buildTree()`，基线那边本来就是同步的，改成
+/// 异步会把整条楼中楼的渲染推迟一帧，而这里只是一页几十条的排序与拍平。
+#[frb(sync)]
+pub fn build_reply_thread(
+    data: Vec<ReplyEntity>,
+    removed: Vec<ReplyEntity>,
+    root_id: i64,
+    fold_depth: i32,
+) -> Vec<ReplyThreadRow> {
+    let items: Vec<reply_thread::ReplyThreadItem> = data.iter().map(thread_item).collect();
+    let removed: std::collections::HashMap<i64, reply_thread::ReplyThreadItem> =
+        removed.iter().map(|e| (e.id, thread_item(e))).collect();
+
+    reply_thread::build(&items, &removed, root_id, fold_depth)
+        .into_iter()
+        .map(thread_row_from)
+        .collect()
+}
+
+/// 只挑建树真正要读的那几个字段。
+fn thread_item(entity: &ReplyEntity) -> reply_thread::ReplyThreadItem {
+    reply_thread::ReplyThreadItem {
+        id: entity.id,
+        parent: entity.parent,
+        dialog: entity.dialog,
+        ctime: entity.ctime,
+        member: member_into(entity.member.clone()),
+        parent_member: entity
+            .parent_member
+            .as_ref()
+            .map(|m| domain::ReplyParentMember {
+                mid: m.mid,
+                name: m.name.clone(),
+            }),
+        members: entity
+            .content
+            .members
+            .iter()
+            .map(|(name, user)| (name.clone(), member_into(user.clone())))
+            .collect(),
+    }
+}
+
+fn thread_row_from(row: reply_thread::ReplyThreadRow) -> ReplyThreadRow {
+    ReplyThreadRow {
+        source: match row.source {
+            reply_thread::ReplyRowSource::Data => ReplyRowSource::Data,
+            reply_thread::ReplyRowSource::Removed => ReplyRowSource::Removed,
+            reply_thread::ReplyRowSource::Synthetic => ReplyRowSource::Synthetic,
+        },
+        index: row.index.map(|i| u32::try_from(i).unwrap_or(u32::MAX)),
+        id: row.id,
+        placeholder: row.placeholder.map(entity_from),
+        depth: row.depth,
+        parent: row.parent.map(|i| u32::try_from(i).unwrap_or(u32::MAX)),
+        reason: match row.reason {
+            reply_thread::ReplyRowReason::None => ReplyRowReason::None,
+            reply_thread::ReplyRowReason::Deleted => ReplyRowReason::Deleted,
+            reply_thread::ReplyRowReason::Blocked => ReplyRowReason::Blocked,
+        },
+        collapsed: row.collapsed,
+        visible: row.visible,
+    }
 }

@@ -23,11 +23,17 @@ export 'package:kilikili/rust/api/reply_grpc.dart'
         ReplyNote,
         ReplyParentMember,
         ReplyPicture,
+        ReplyRowReason,
+        ReplyRowSource,
         ReplySearchItem,
         ReplySearchItemKind,
         ReplySearchList,
+        ReplySegment,
+        ReplySegmentKind,
         ReplySortMode,
         ReplySubject,
+        ReplyTapAction,
+        ReplyThreadRow,
         ReplyUrl,
         ReplyUser,
         ReplyVote,
@@ -64,6 +70,13 @@ abstract final class RustReplyGrpc {
     caseSensitive: false,
   );
   static bool enableFilter = replyRegExp.pattern.isNotEmpty;
+
+  /// 设置里的「评论区搜索关键词」。关掉时词条搜索链接退化成纯文本。
+  ///
+  /// 与上面四个同理：设置页就地改写它，是真相源而不是 `Pref` 的缓存。
+  /// 它原先挂在 `ReplyItemGrpc` 上，随分词下沉（#179）挪到这里——分词
+  /// 的入参统一由本文件注入，分散在 widget 上只会让下一个人找不到。
+  static bool enableWordRe = Pref.enableWordRe;
 
   static const String _notReady = 'Rust Core 未就绪，评论区暂不可用';
 
@@ -227,6 +240,65 @@ abstract final class RustReplyGrpc {
       return Error(res.errorDetail, code: res.errorCode?.toInt());
     }
     return Success(res.data);
+  }
+
+  /// 把一条正文切成段（基线 `ReplyItemGrpc._buildMessage` 的判定部分）。
+  ///
+  /// 「哪一段是什么、点下去跳哪」在 Rust，宿主只按段建 `InlineSpan`。
+  /// 没有 [LoadingState] 信封：分词没有失败态，正则编不过时 Rust 退化成
+  /// 整条纯文本——它不是过滤规则，失败不会让被屏蔽的内容漏出来。
+  ///
+  /// [videoDurationMs] 是当前稿件时长，决定一个时间戳可不可点。取不到
+  /// 播放器时传 null（基线那边是 `Get.find` 抛异常后 `isValid` 保持
+  /// false），此时时间戳一律按纯文本画。
+  ///
+  /// `RustCore` 未就绪时返回整条纯文本：评论能走到这里就说明它已经加载
+  /// 出来了，这时候把正文整个吞掉显然更糟。
+  static List<rust_api.ReplySegment> segments({
+    required rust_api.ReplyContent content,
+    required rust_api.ReplyControlInfo control,
+    required int? videoDurationMs,
+  }) {
+    if (!RustCore.isReady) {
+      return [
+        rust_api.ReplySegment(
+          kind: rust_api.ReplySegmentKind.text,
+          text: content.message,
+          action: rust_api.ReplyTapAction.none,
+          target: '',
+        ),
+      ];
+    }
+    return rust_api.buildReplySegments(
+      content: content,
+      control: control,
+      enableWordRe: enableWordRe,
+      videoDurationMs: videoDurationMs,
+    );
+  }
+
+  /// 把一页楼中楼接成 DFS 前序（基线 `ReplyTree.build` 的结构与合成）。
+  ///
+  /// [data] 需先按 id 去重。返回的行**不带实体**（合成出来的占位除外），
+  /// 带的是来源——宿主删评论时按 `identical` 在原始列表里定位，把实体
+  /// 重新发一遍回去会让那个判定失效。
+  ///
+  /// `RustCore` 未就绪时返回空列表。实际走不到：这一页评论本身就是 Rust
+  /// 取回来的，取得到就说明它已就绪。写成空列表而不是抛异常，只是不想在
+  /// 一个不可能的分支上让界面崩掉。
+  static List<rust_api.ReplyThreadRow> thread({
+    required List<rust_api.ReplyEntity> data,
+    required Map<int, rust_api.ReplyEntity> removed,
+    required int rootId,
+    required int foldDepth,
+  }) {
+    if (!RustCore.isReady) return const [];
+    return rust_api.buildReplyThread(
+      data: data,
+      removed: removed.values.toList(),
+      rootId: rootId,
+      foldDepth: foldDepth,
+    );
   }
 
   // ─────────────────────── 「我的评论」的本地存档 ───────────────────────

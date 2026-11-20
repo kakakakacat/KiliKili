@@ -322,7 +322,6 @@ class VideoReplyReplyController extends ReplyController
     showReplyTree = true;
     replyTree.value = ReplyTree.build(
       data: data,
-      seen: seen,
       rootId: firstFloor.rawValue?.id ?? data.first.root,
       removed: removedReply,
       foldDepth: Pref.foldDepth,

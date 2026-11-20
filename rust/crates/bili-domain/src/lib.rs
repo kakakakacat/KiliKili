@@ -22,6 +22,8 @@ pub mod regex_compat;
 pub mod reply;
 pub mod reply_filter;
 pub mod reply_grpc;
+pub mod reply_richtext;
+pub mod reply_thread;
 pub mod search;
 pub mod session;
 pub mod space;

@@ -1,0 +1,412 @@
+{
+  "_comment": [
+    "评论正文分词的对照用例（S2 续单 / issue #179）。",
+    "两侧共用：`reply_richtext_golden.rs` 是被验的那一侧，",
+    "`test/services/rust/reply_richtext_parity_test.dart` 是判据——它逐行转写了",
+    "迁移前 `reply_item_grpc.dart` 的 `_buildMessage`，用真正的 Dart RegExp 跑同一份文件。",
+    "",
+    "比较的是每一段的 kind/text/action/target/mid/topic/seek：那些是判定的产物。",
+    "表情图的 url、链接的小图标这些是透传字段，不是决定，不参与比较。",
+    "",
+    "带 `baseline_order_dependent: true` 的用例 Dart 侧会跳过，理由见那边的文档：",
+    "基线的备选词顺序来自哈希迭代，本来就不确定，Rust 把它定死了。"
+  ],
+  "cases": [
+    {
+      "name": "没有可点元素时整条就是一段纯文本",
+      "content": { "message": "这个视频我看了三遍" },
+      "segments": [{ "kind": "text", "text": "这个视频我看了三遍" }]
+    },
+    {
+      "name": "表情与文本混排",
+      "content": {
+        "message": "前面[doge]后面",
+        "emotes": {
+          "[doge]": { "size": 1, "display_url": "https://i0.example/doge.png" }
+        }
+      },
+      "segments": [
+        { "kind": "text", "text": "前面" },
+        { "kind": "emote", "text": "[doge]" },
+        { "kind": "text", "text": "后面" }
+      ]
+    },
+    {
+      "name": "相邻两个表情之间不产生空文本段",
+      "content": {
+        "message": "[doge][妙啊]",
+        "emotes": {
+          "[doge]": { "size": 1, "display_url": "https://i0.example/doge.png" },
+          "[妙啊]": { "size": 1, "display_url": "https://i0.example/miao.png" }
+        }
+      },
+      "segments": [
+        { "kind": "emote", "text": "[doge]" },
+        { "kind": "emote", "text": "[妙啊]" }
+      ]
+    },
+    {
+      "name": "@ 跳转带上 mid",
+      "content": {
+        "message": "@甲乙 你怎么看",
+        "at_name_to_mid": { "甲乙": 10086 }
+      },
+      "segments": [
+        { "kind": "mention", "text": "@甲乙", "mid": 10086 },
+        { "kind": "text", "text": " 你怎么看" }
+      ]
+    },
+    {
+      "name": "互为前缀的两个 @ 名：长的优先",
+      "baseline_order_dependent": true,
+      "content": {
+        "message": "@甲乙丙 来了",
+        "at_name_to_mid": { "甲乙": 1, "甲乙丙": 2 }
+      },
+      "segments": [
+        { "kind": "mention", "text": "@甲乙丙", "mid": 2 },
+        { "kind": "text", "text": " 来了" }
+      ]
+    },
+    {
+      "name": "话题点开是搜索",
+      "content": {
+        "message": "聊聊 #编程# 吧",
+        "topics": ["编程"]
+      },
+      "segments": [
+        { "kind": "text", "text": "聊聊 " },
+        {
+          "kind": "topic",
+          "text": "#编程#",
+          "topic": "编程",
+          "action": "search",
+          "target": "编程"
+        },
+        { "kind": "text", "text": " 吧" }
+      ]
+    },
+    {
+      "name": "正文里不在话题表里的 #xx# 只是纯文本",
+      "content": { "message": "聊聊 #编程# 吧" },
+      "segments": [{ "kind": "text", "text": "聊聊 #编程# 吧" }]
+    },
+    {
+      "name": "投票占位换成标题",
+      "content": {
+        "message": "{vote:7} 投起来",
+        "vote": { "id": 7, "title": "你站哪边" }
+      },
+      "segments": [
+        { "kind": "vote", "text": "{vote:7}" },
+        { "kind": "text", "text": " 投起来" }
+      ]
+    },
+    {
+      "name": "没有投票载荷时占位退化成纯文本",
+      "_comment": "占位仍然被正则切了出来，只是落到纯文本那一支，于是是两段而不是一段",
+      "content": { "message": "{vote:7} 投起来" },
+      "segments": [
+        { "kind": "text", "text": "{vote:7}" },
+        { "kind": "text", "text": " 投起来" }
+      ]
+    },
+    {
+      "name": "时长之内的时间戳可点，之外的不可点",
+      "settings": { "video_duration_ms": 90000 },
+      "content": { "message": "00:30 精彩，03:00 更精彩" },
+      "segments": [
+        { "kind": "timestamp", "text": "00:30", "seek": 30 },
+        { "kind": "text", "text": " 精彩，" },
+        { "kind": "timestamp", "text": "03:00" },
+        { "kind": "text", "text": " 更精彩" }
+      ]
+    },
+    {
+      "name": "取不到播放器时时间戳一律不可点",
+      "content": { "message": "00:30" },
+      "segments": [{ "kind": "timestamp", "text": "00:30" }]
+    },
+    {
+      "name": "全角冒号先归一化再解析",
+      "settings": { "video_duration_ms": 600000 },
+      "content": { "message": "01：30" },
+      "segments": [{ "kind": "timestamp", "text": "01:30", "seek": 90 }]
+    },
+    {
+      "name": "带时的时间戳",
+      "settings": { "video_duration_ms": 7200000 },
+      "content": { "message": "1:00:00" },
+      "segments": [{ "kind": "timestamp", "text": "1:00:00", "seek": 3600 }]
+    },
+    {
+      "name": "链接换成标题",
+      "content": {
+        "message": "看这个 https://www.example.com/x 很好",
+        "urls": {
+          "https://www.example.com/x": {
+            "title": "一个页面",
+            "prefix_icon": "https://i0.example/icon.png"
+          }
+        }
+      },
+      "segments": [
+        { "kind": "text", "text": "看这个 " },
+        {
+          "kind": "link",
+          "text": "一个页面",
+          "action": "webview",
+          "target": "https://www.example.com/x"
+        },
+        { "kind": "text", "text": " 很好" }
+      ]
+    },
+    {
+      "name": "同一条链接第二次出现时失去标题",
+      "content": {
+        "message": "https://www.example.com/x 再贴一次 https://www.example.com/x",
+        "urls": {
+          "https://www.example.com/x": { "title": "一个页面" }
+        }
+      },
+      "segments": [
+        {
+          "kind": "link",
+          "text": "一个页面",
+          "action": "webview",
+          "target": "https://www.example.com/x"
+        },
+        { "kind": "text", "text": " 再贴一次 " },
+        {
+          "kind": "link",
+          "text": "https://www.example.com/x",
+          "action": "webview",
+          "target": "https://www.example.com/x"
+        }
+      ]
+    },
+    {
+      "name": "没有在 urls 里登记的裸链接也可点",
+      "content": { "message": "直接贴 https://www.example.com/y 了" },
+      "segments": [
+        { "kind": "text", "text": "直接贴 " },
+        {
+          "kind": "link",
+          "text": "https://www.example.com/y",
+          "action": "webview",
+          "target": "https://www.example.com/y"
+        },
+        { "kind": "text", "text": " 了" }
+      ]
+    },
+    {
+      "name": "服务端没给 scheme 时按字面量认稿件",
+      "content": {
+        "message": "去看 BV1xx411c7mD",
+        "urls": { "BV1xx411c7mD": { "title": "某稿件" } }
+      },
+      "segments": [
+        { "kind": "text", "text": "去看 " },
+        {
+          "kind": "link",
+          "text": "某稿件",
+          "action": "archive",
+          "target": "BV1xx411c7mD"
+        }
+      ]
+    },
+    {
+      "name": "从 /read/cv 里抠 cvid",
+      "content": {
+        "message": "见 https://www.example.com/read/cv998244353",
+        "urls": {
+          "https://www.example.com/read/cv998244353": { "title": "某专栏" }
+        }
+      },
+      "segments": [
+        { "kind": "text", "text": "见 " },
+        {
+          "kind": "link",
+          "text": "某专栏",
+          "action": "article",
+          "target": "998244353"
+        }
+      ]
+    },
+    {
+      "name": "笔记链接挪到正文最前面",
+      "content": {
+        "message": "正文在这里 cv998244353 结尾",
+        "urls": {
+          "cv998244353": { "title": "某笔记", "is_note": true }
+        }
+      },
+      "segments": [
+        {
+          "kind": "link",
+          "text": "[笔记] ",
+          "action": "article",
+          "target": "998244353"
+        },
+        { "kind": "text", "text": "正文在这里 " },
+        { "kind": "text", "text": " 结尾" }
+      ]
+    },
+    {
+      "name": "词条搜索开着时跳搜索结果页",
+      "settings": { "enable_word_re": true },
+      "content": {
+        "message": "试试 某个词条 吧",
+        "urls": {
+          "某个词条": {
+            "title": "某个词条",
+            "app_url_schema": "bilibili://search?keyword=x",
+            "is_word_search": true
+          }
+        }
+      },
+      "segments": [
+        { "kind": "text", "text": "试试 " },
+        {
+          "kind": "link",
+          "text": "某个词条",
+          "action": "search",
+          "target": "某个词条"
+        },
+        { "kind": "text", "text": " 吧" }
+      ]
+    },
+    {
+      "name": "词条搜索关掉时退化成纯文本",
+      "content": {
+        "message": "试试 某个词条 吧",
+        "urls": {
+          "某个词条": {
+            "title": "某个词条",
+            "app_url_schema": "bilibili://search?keyword=x",
+            "is_word_search": true
+          }
+        }
+      },
+      "segments": [
+        { "kind": "text", "text": "试试 " },
+        { "kind": "text", "text": "某个词条" },
+        { "kind": "text", "text": " 吧" }
+      ]
+    },
+    {
+      "name": "标成笔记但正文里没有笔记链接：补一个可点的前缀",
+      "content": {
+        "message": "笔记正文",
+        "note": { "opus_id": 424242 },
+        "is_note": true,
+        "is_note_v2": true
+      },
+      "segments": [
+        { "kind": "note", "text": "[笔记] ", "action": "opus", "target": "424242" },
+        { "kind": "text", "text": "笔记正文" }
+      ]
+    },
+    {
+      "name": "有 click_url 时走 scheme 而不是 opus",
+      "content": {
+        "message": "笔记正文",
+        "note": {
+          "click_url": "bilibili://opus/detail/424242",
+          "opus_id": 424242
+        },
+        "is_note": true,
+        "is_note_v2": true
+      },
+      "segments": [
+        {
+          "kind": "note",
+          "text": "[笔记] ",
+          "action": "scheme",
+          "target": "bilibili://opus/detail/424242"
+        },
+        { "kind": "text", "text": "笔记正文" }
+      ]
+    },
+    {
+      "name": "两个跳转目标都没有的笔记前缀不可点",
+      "content": {
+        "message": "笔记正文",
+        "is_note": true,
+        "is_note_v2": true
+      },
+      "segments": [
+        { "kind": "note", "text": "[笔记] " },
+        { "kind": "text", "text": "笔记正文" }
+      ]
+    },
+    {
+      "name": "正文里已有笔记链接时不再补前缀",
+      "content": {
+        "message": "正文 cv998244353",
+        "urls": { "cv998244353": { "title": "某笔记", "is_note": true } },
+        "note": { "opus_id": 424242 },
+        "is_note": true,
+        "is_note_v2": true
+      },
+      "segments": [
+        {
+          "kind": "link",
+          "text": "[笔记] ",
+          "action": "article",
+          "target": "998244353"
+        },
+        { "kind": "text", "text": "正文 " }
+      ]
+    },
+    {
+      "name": "只有 is_note 没有 is_note_v2 时不补前缀",
+      "content": {
+        "message": "正文",
+        "note": { "opus_id": 424242 },
+        "is_note": true
+      },
+      "segments": [{ "kind": "text", "text": "正文" }]
+    },
+    {
+      "name": "一条正文里什么都有",
+      "settings": { "enable_word_re": true, "video_duration_ms": 300000 },
+      "content": {
+        "message": "@甲乙 看 02:00 的 #编程# [doge] https://www.example.com/x {vote:7}",
+        "emotes": {
+          "[doge]": { "size": 1, "display_url": "https://i0.example/doge.png" }
+        },
+        "topics": ["编程"],
+        "at_name_to_mid": { "甲乙": 10086 },
+        "urls": {
+          "https://www.example.com/x": { "title": "一个页面" }
+        },
+        "vote": { "id": 7, "title": "你站哪边" }
+      },
+      "segments": [
+        { "kind": "mention", "text": "@甲乙", "mid": 10086 },
+        { "kind": "text", "text": " 看 " },
+        { "kind": "timestamp", "text": "02:00", "seek": 120 },
+        { "kind": "text", "text": " 的 " },
+        {
+          "kind": "topic",
+          "text": "#编程#",
+          "topic": "编程",
+          "action": "search",
+          "target": "编程"
+        },
+        { "kind": "text", "text": " " },
+        { "kind": "emote", "text": "[doge]" },
+        { "kind": "text", "text": " " },
+        {
+          "kind": "link",
+          "text": "一个页面",
+          "action": "webview",
+          "target": "https://www.example.com/x"
+        },
+        { "kind": "text", "text": " " },
+        { "kind": "vote", "text": "{vote:7}" }
+      ]
+    }
+  ]
+}

@@ -348,6 +348,28 @@ video/reply_search_item,main_reply,my_reply,common/dyn,setting/models}` 下
 （`dagw/component/avatar`、`pagination`、`account/service`、`vas/garb`、
 `app/dynamic/v2`）都还有别的 importer，逐个 `grep -rl` 确认后原样保留。
 
+修订：2026-11-20（S2 续单：正文分词与线程化视图合成，issue #179，为本次）
+——按 §6 对当前分支实测：修改上游文件 **811** 不变，其中实质改动 **398**、
+仅重命名 **413** 也都不变；新增 **758 → 766**，删除 **305** 不变。
+
+本次碰的四个上游文件（`lib/pages/video/reply/widgets/reply_item_grpc.dart`、
+`lib/pages/video/reply_reply/{tree,controller}.dart`、
+`lib/pages/setting/models/reply_settings.dart`）在 #176 那一轮**已经**转进
+「有实质改动」，所以分类一个没动——这正是连着迁同一片的常态：第一刀把
+文件从上游那一侧切下来，后面几刀只是在我们自己这一侧继续削。
+
+新增的 8 个文件全在本 fork 自己的目录里（`rust/crates/bili-domain/` 的两个
+模块与两份 golden、两份 fixture，`test/services/rust/` 的两份一次性对照），
+不扩大与上游的接触面。
+
+分叉面的**性质**变了一点，值得记一笔：前两片（#52 规则、#176 取数）搬走的
+是「上游文件里本来就独立的一段」，这一片搬的是**嵌在 widget 里的算法**——
+`_buildMessage` 原本与 `InlineSpan` 的拼装缠在一起，`ReplyTree.build` 原本
+与折叠态缠在一起。同步上游时这两处的冲突判据因此更细：上游改的若是**画法**
+（颜色、间距、用哪个 widget），照上游解；若是**判定**（哪一段算链接、占位
+父评论挂在哪），要改的是 `bili_domain::reply_richtext` /
+`bili_domain::reply_thread`，Dart 侧已经没有那段实现了。
+
 ## 1. 基准
 
 ```

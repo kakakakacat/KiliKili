@@ -435,10 +435,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReplyContext dco_decode_box_autoadd_reply_context(dynamic raw);
 
   @protected
+  ReplyControlInfo dco_decode_box_autoadd_reply_control_info(dynamic raw);
+
+  @protected
   ReplyCursor dco_decode_box_autoadd_reply_cursor(dynamic raw);
 
   @protected
   ReplyDetailPage dco_decode_box_autoadd_reply_detail_page(dynamic raw);
+
+  @protected
+  ReplyEmote dco_decode_box_autoadd_reply_emote(dynamic raw);
 
   @protected
   ReplyEntity dco_decode_box_autoadd_reply_entity(dynamic raw);
@@ -1312,6 +1318,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<ReplySearchItem> dco_decode_list_reply_search_item(dynamic raw);
 
   @protected
+  List<ReplySegment> dco_decode_list_reply_segment(dynamic raw);
+
+  @protected
+  List<ReplyThreadRow> dco_decode_list_reply_thread_row(dynamic raw);
+
+  @protected
   List<SearchActivityItem> dco_decode_list_search_activity_item(dynamic raw);
 
   @protected
@@ -2032,6 +2044,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReplyDetailPage? dco_decode_opt_box_autoadd_reply_detail_page(dynamic raw);
 
   @protected
+  ReplyEmote? dco_decode_opt_box_autoadd_reply_emote(dynamic raw);
+
+  @protected
   ReplyEntity? dco_decode_opt_box_autoadd_reply_entity(dynamic raw);
 
   @protected
@@ -2703,6 +2718,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReplyReplyListResult dco_decode_reply_reply_list_result(dynamic raw);
 
   @protected
+  ReplyRowReason dco_decode_reply_row_reason(dynamic raw);
+
+  @protected
+  ReplyRowSource dco_decode_reply_row_source(dynamic raw);
+
+  @protected
   ReplySearchItem dco_decode_reply_search_item(dynamic raw);
 
   @protected
@@ -2715,13 +2736,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReplySearchListResult dco_decode_reply_search_list_result(dynamic raw);
 
   @protected
+  ReplySegment dco_decode_reply_segment(dynamic raw);
+
+  @protected
+  ReplySegmentKind dco_decode_reply_segment_kind(dynamic raw);
+
+  @protected
   ReplySortMode dco_decode_reply_sort_mode(dynamic raw);
 
   @protected
   ReplySubject dco_decode_reply_subject(dynamic raw);
 
   @protected
+  ReplyTapAction dco_decode_reply_tap_action(dynamic raw);
+
+  @protected
   ReplyTextResult dco_decode_reply_text_result(dynamic raw);
+
+  @protected
+  ReplyThreadRow dco_decode_reply_thread_row(dynamic raw);
 
   @protected
   ReplyTranslationResult dco_decode_reply_translation_result(dynamic raw);
@@ -3743,12 +3776,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  ReplyControlInfo sse_decode_box_autoadd_reply_control_info(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   ReplyCursor sse_decode_box_autoadd_reply_cursor(SseDeserializer deserializer);
 
   @protected
   ReplyDetailPage sse_decode_box_autoadd_reply_detail_page(
     SseDeserializer deserializer,
   );
+
+  @protected
+  ReplyEmote sse_decode_box_autoadd_reply_emote(SseDeserializer deserializer);
 
   @protected
   ReplyEntity sse_decode_box_autoadd_reply_entity(SseDeserializer deserializer);
@@ -4870,6 +4911,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<ReplySegment> sse_decode_list_reply_segment(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<ReplyThreadRow> sse_decode_list_reply_thread_row(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<SearchActivityItem> sse_decode_list_search_activity_item(
     SseDeserializer deserializer,
   );
@@ -5844,6 +5895,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  ReplyEmote? sse_decode_opt_box_autoadd_reply_emote(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   ReplyEntity? sse_decode_opt_box_autoadd_reply_entity(
     SseDeserializer deserializer,
   );
@@ -6727,6 +6783,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  ReplyRowReason sse_decode_reply_row_reason(SseDeserializer deserializer);
+
+  @protected
+  ReplyRowSource sse_decode_reply_row_source(SseDeserializer deserializer);
+
+  @protected
   ReplySearchItem sse_decode_reply_search_item(SseDeserializer deserializer);
 
   @protected
@@ -6743,13 +6805,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  ReplySegment sse_decode_reply_segment(SseDeserializer deserializer);
+
+  @protected
+  ReplySegmentKind sse_decode_reply_segment_kind(SseDeserializer deserializer);
+
+  @protected
   ReplySortMode sse_decode_reply_sort_mode(SseDeserializer deserializer);
 
   @protected
   ReplySubject sse_decode_reply_subject(SseDeserializer deserializer);
 
   @protected
+  ReplyTapAction sse_decode_reply_tap_action(SseDeserializer deserializer);
+
+  @protected
   ReplyTextResult sse_decode_reply_text_result(SseDeserializer deserializer);
+
+  @protected
+  ReplyThreadRow sse_decode_reply_thread_row(SseDeserializer deserializer);
 
   @protected
   ReplyTranslationResult sse_decode_reply_translation_result(
@@ -8060,6 +8134,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_reply_control_info(
+    ReplyControlInfo self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_reply_cursor(
     ReplyCursor self,
     SseSerializer serializer,
@@ -8068,6 +8148,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_reply_detail_page(
     ReplyDetailPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_reply_emote(
+    ReplyEmote self,
     SseSerializer serializer,
   );
 
@@ -9551,6 +9637,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_reply_segment(
+    List<ReplySegment> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_reply_thread_row(
+    List<ReplyThreadRow> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_search_activity_item(
     List<SearchActivityItem> self,
     SseSerializer serializer,
@@ -10802,6 +10900,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_reply_emote(
+    ReplyEmote? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_reply_entity(
     ReplyEntity? self,
     SseSerializer serializer,
@@ -11918,6 +12022,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_reply_row_reason(
+    ReplyRowReason self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_reply_row_source(
+    ReplyRowSource self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_reply_search_item(
     ReplySearchItem self,
     SseSerializer serializer,
@@ -11942,14 +12058,35 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_reply_segment(ReplySegment self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_reply_segment_kind(
+    ReplySegmentKind self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_reply_sort_mode(ReplySortMode self, SseSerializer serializer);
 
   @protected
   void sse_encode_reply_subject(ReplySubject self, SseSerializer serializer);
 
   @protected
+  void sse_encode_reply_tap_action(
+    ReplyTapAction self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_reply_text_result(
     ReplyTextResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_reply_thread_row(
+    ReplyThreadRow self,
     SseSerializer serializer,
   );
 

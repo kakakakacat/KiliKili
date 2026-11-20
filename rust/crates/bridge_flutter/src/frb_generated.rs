@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 510744115;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -589407004;
 
 // Section: executor
 
@@ -208,6 +208,85 @@ fn wire__crate__api__grpc__build_grpc_headers_impl(
             deserializer.end();
             transform_result_sse::<_, ()>((move || {
                 let output_ok = Ok::<_, ()>(crate::api::grpc::build_grpc_headers(api_identity))?;
+                std::result::Result::Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__reply_grpc__build_reply_segments_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "build_reply_segments",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_content = <crate::api::reply_grpc::ReplyContent>::sse_decode(&mut deserializer);
+            let api_control =
+                <crate::api::reply_grpc::ReplyControlInfo>::sse_decode(&mut deserializer);
+            let api_enable_word_re = <bool>::sse_decode(&mut deserializer);
+            let api_video_duration_ms = <Option<i64>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>(crate::api::reply_grpc::build_reply_segments(
+                    api_content,
+                    api_control,
+                    api_enable_word_re,
+                    api_video_duration_ms,
+                ))?;
+                std::result::Result::Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__reply_grpc__build_reply_thread_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "build_reply_thread",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_data =
+                <Vec<crate::api::reply_grpc::ReplyEntity>>::sse_decode(&mut deserializer);
+            let api_removed =
+                <Vec<crate::api::reply_grpc::ReplyEntity>>::sse_decode(&mut deserializer);
+            let api_root_id = <i64>::sse_decode(&mut deserializer);
+            let api_fold_depth = <i32>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>(crate::api::reply_grpc::build_reply_thread(
+                    api_data,
+                    api_removed,
+                    api_root_id,
+                    api_fold_depth,
+                ))?;
                 std::result::Result::Ok(output_ok)
             })())
         },
@@ -14662,6 +14741,34 @@ impl SseDecode for Vec<crate::api::reply_grpc::ReplySearchItem> {
     }
 }
 
+impl SseDecode for Vec<crate::api::reply_grpc::ReplySegment> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::reply_grpc::ReplySegment>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::reply_grpc::ReplyThreadRow> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::reply_grpc::ReplyThreadRow>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::api::search::SearchActivityItem> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -18067,6 +18174,19 @@ impl SseDecode for Option<crate::api::reply_grpc::ReplyDetailPage> {
     }
 }
 
+impl SseDecode for Option<crate::api::reply_grpc::ReplyEmote> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::reply_grpc::ReplyEmote>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
 impl SseDecode for Option<crate::api::reply_grpc::ReplyEntity> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -21224,6 +21344,32 @@ impl SseDecode for crate::api::reply::ReplyReplyListResult {
     }
 }
 
+impl SseDecode for crate::api::reply_grpc::ReplyRowReason {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::reply_grpc::ReplyRowReason::None,
+            1 => crate::api::reply_grpc::ReplyRowReason::Deleted,
+            2 => crate::api::reply_grpc::ReplyRowReason::Blocked,
+            _ => unreachable!("Invalid variant for ReplyRowReason: {}", inner),
+        };
+    }
+}
+
+impl SseDecode for crate::api::reply_grpc::ReplyRowSource {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::reply_grpc::ReplyRowSource::Data,
+            1 => crate::api::reply_grpc::ReplyRowSource::Removed,
+            2 => crate::api::reply_grpc::ReplyRowSource::Synthetic,
+            _ => unreachable!("Invalid variant for ReplyRowSource: {}", inner),
+        };
+    }
+}
+
 impl SseDecode for crate::api::reply_grpc::ReplySearchItem {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -21286,6 +21432,52 @@ impl SseDecode for crate::api::reply_grpc::ReplySearchListResult {
     }
 }
 
+impl SseDecode for crate::api::reply_grpc::ReplySegment {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_kind = <crate::api::reply_grpc::ReplySegmentKind>::sse_decode(deserializer);
+        let mut var_text = <String>::sse_decode(deserializer);
+        let mut var_mid = <Option<i64>>::sse_decode(deserializer);
+        let mut var_topic = <Option<String>>::sse_decode(deserializer);
+        let mut var_emote = <Option<crate::api::reply_grpc::ReplyEmote>>::sse_decode(deserializer);
+        let mut var_vote = <Option<crate::api::reply_grpc::ReplyVote>>::sse_decode(deserializer);
+        let mut var_seekSeconds = <Option<i64>>::sse_decode(deserializer);
+        let mut var_prefixIcon = <Option<String>>::sse_decode(deserializer);
+        let mut var_action = <crate::api::reply_grpc::ReplyTapAction>::sse_decode(deserializer);
+        let mut var_target = <String>::sse_decode(deserializer);
+        return crate::api::reply_grpc::ReplySegment {
+            kind: var_kind,
+            text: var_text,
+            mid: var_mid,
+            topic: var_topic,
+            emote: var_emote,
+            vote: var_vote,
+            seek_seconds: var_seekSeconds,
+            prefix_icon: var_prefixIcon,
+            action: var_action,
+            target: var_target,
+        };
+    }
+}
+
+impl SseDecode for crate::api::reply_grpc::ReplySegmentKind {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::reply_grpc::ReplySegmentKind::Text,
+            1 => crate::api::reply_grpc::ReplySegmentKind::Emote,
+            2 => crate::api::reply_grpc::ReplySegmentKind::Mention,
+            3 => crate::api::reply_grpc::ReplySegmentKind::Topic,
+            4 => crate::api::reply_grpc::ReplySegmentKind::Vote,
+            5 => crate::api::reply_grpc::ReplySegmentKind::Timestamp,
+            6 => crate::api::reply_grpc::ReplySegmentKind::Link,
+            7 => crate::api::reply_grpc::ReplySegmentKind::Note,
+            _ => unreachable!("Invalid variant for ReplySegmentKind: {}", inner),
+        };
+    }
+}
+
 impl SseDecode for crate::api::reply_grpc::ReplySortMode {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -21318,6 +21510,23 @@ impl SseDecode for crate::api::reply_grpc::ReplySubject {
     }
 }
 
+impl SseDecode for crate::api::reply_grpc::ReplyTapAction {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::reply_grpc::ReplyTapAction::None,
+            1 => crate::api::reply_grpc::ReplyTapAction::Webview,
+            2 => crate::api::reply_grpc::ReplyTapAction::Archive,
+            3 => crate::api::reply_grpc::ReplyTapAction::Article,
+            4 => crate::api::reply_grpc::ReplyTapAction::Opus,
+            5 => crate::api::reply_grpc::ReplyTapAction::Scheme,
+            6 => crate::api::reply_grpc::ReplyTapAction::Search,
+            _ => unreachable!("Invalid variant for ReplyTapAction: {}", inner),
+        };
+    }
+}
+
 impl SseDecode for crate::api::reply_grpc::ReplyTextResult {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -21330,6 +21539,33 @@ impl SseDecode for crate::api::reply_grpc::ReplyTextResult {
             error_kind: var_errorKind,
             error_detail: var_errorDetail,
             error_code: var_errorCode,
+        };
+    }
+}
+
+impl SseDecode for crate::api::reply_grpc::ReplyThreadRow {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_source = <crate::api::reply_grpc::ReplyRowSource>::sse_decode(deserializer);
+        let mut var_index = <Option<u32>>::sse_decode(deserializer);
+        let mut var_id = <i64>::sse_decode(deserializer);
+        let mut var_placeholder =
+            <Option<crate::api::reply_grpc::ReplyEntity>>::sse_decode(deserializer);
+        let mut var_depth = <i32>::sse_decode(deserializer);
+        let mut var_parent = <Option<u32>>::sse_decode(deserializer);
+        let mut var_reason = <crate::api::reply_grpc::ReplyRowReason>::sse_decode(deserializer);
+        let mut var_collapsed = <i32>::sse_decode(deserializer);
+        let mut var_visible = <bool>::sse_decode(deserializer);
+        return crate::api::reply_grpc::ReplyThreadRow {
+            source: var_source,
+            index: var_index,
+            id: var_id,
+            placeholder: var_placeholder,
+            depth: var_depth,
+            parent: var_parent,
+            reason: var_reason,
+            collapsed: var_collapsed,
+            visible: var_visible,
         };
     }
 }
@@ -24380,570 +24616,570 @@ fn pde_ffi_dispatcher_primary_impl(
         1 => wire__crate__api__misc__add_danmaku_filter_impl(port, ptr, rust_vec_len, data_len),
         2 => wire__crate__api__fav__add_folder_impl(port, ptr, rust_vec_len, data_len),
         3 => wire__crate__api__relation__add_users_to_tags_impl(port, ptr, rust_vec_len, data_len),
-        5 => wire__crate__api__login__captcha_solution_data_default_impl(
+        7 => wire__crate__api__login__captcha_solution_data_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        7 => wire__crate__api__fav__clean_fav_impl(port, ptr, rust_vec_len, data_len),
-        8 => wire__crate__api__history__clear_history_impl(port, ptr, rust_vec_len, data_len),
-        9 => wire__crate__api__video_write__coin_video_impl(port, ptr, rust_vec_len, data_len),
-        10 => wire__crate__api__fav__community_action_impl(port, ptr, rust_vec_len, data_len),
-        12 => wire__crate__api__subtitle__convert_subtitle_impl(port, ptr, rust_vec_len, data_len),
-        13 => wire__crate__api__fav__copy_or_move_fav_impl(port, ptr, rust_vec_len, data_len),
-        14 => wire__crate__api__init__core_version_impl(port, ptr, rust_vec_len, data_len),
-        15 => wire__crate__api__relation__create_follow_tag_impl(port, ptr, rust_vec_len, data_len),
-        16 => wire__crate__api__dynamic__create_reserve_impl(port, ptr, rust_vec_len, data_len),
-        22 => {
+        9 => wire__crate__api__fav__clean_fav_impl(port, ptr, rust_vec_len, data_len),
+        10 => wire__crate__api__history__clear_history_impl(port, ptr, rust_vec_len, data_len),
+        11 => wire__crate__api__video_write__coin_video_impl(port, ptr, rust_vec_len, data_len),
+        12 => wire__crate__api__fav__community_action_impl(port, ptr, rust_vec_len, data_len),
+        14 => wire__crate__api__subtitle__convert_subtitle_impl(port, ptr, rust_vec_len, data_len),
+        15 => wire__crate__api__fav__copy_or_move_fav_impl(port, ptr, rust_vec_len, data_len),
+        16 => wire__crate__api__init__core_version_impl(port, ptr, rust_vec_len, data_len),
+        17 => wire__crate__api__relation__create_follow_tag_impl(port, ptr, rust_vec_len, data_len),
+        18 => wire__crate__api__dynamic__create_reserve_impl(port, ptr, rust_vec_len, data_len),
+        24 => {
             wire__crate__api__danmaku__danmaku_push_segment_impl(port, ptr, rust_vec_len, data_len)
         }
-        24 => wire__crate__api__misc__del_danmaku_filter_impl(port, ptr, rust_vec_len, data_len),
-        25 => wire__crate__api__relation__del_follow_tag_impl(port, ptr, rust_vec_len, data_len),
-        26 => wire__crate__api__history__del_history_impl(port, ptr, rust_vec_len, data_len),
-        27 => wire__crate__api__fav__del_note_impl(port, ptr, rust_vec_len, data_len),
-        28 => wire__crate__api__fav__delete_folder_impl(port, ptr, rust_vec_len, data_len),
-        29 => wire__crate__api__video_write__dislike_video_impl(port, ptr, rust_vec_len, data_len),
-        30 => wire__crate__api__dynamic__do_vote_impl(port, ptr, rust_vec_len, data_len),
-        32 => wire__crate__api__dynamic__dyn_reserve_impl(port, ptr, rust_vec_len, data_len),
-        33 => wire__crate__api__user__dynamic_report_impl(port, ptr, rust_vec_len, data_len),
-        34 => wire__crate__api__fav__edit_folder_impl(port, ptr, rust_vec_len, data_len),
-        38 => wire__crate__api__fav__fav_article_impl(port, ptr, rust_vec_len, data_len),
-        39 => wire__crate__api__fav__fav_folder_impl(port, ptr, rust_vec_len, data_len),
-        40 => wire__crate__api__fav__fav_pugv_impl(port, ptr, rust_vec_len, data_len),
-        41 => wire__crate__api__fav__fav_season_impl(port, ptr, rust_vec_len, data_len),
-        42 => wire__crate__api__fav__fav_topic_impl(port, ptr, rust_vec_len, data_len),
-        43 => wire__crate__api__fav__fav_video_impl(port, ptr, rust_vec_len, data_len),
-        44 => wire__crate__api__video_write__feed_dislike_impl(port, ptr, rust_vec_len, data_len),
-        45 => wire__crate__api__video_page__fetch_ai_conclusion_impl(
+        26 => wire__crate__api__misc__del_danmaku_filter_impl(port, ptr, rust_vec_len, data_len),
+        27 => wire__crate__api__relation__del_follow_tag_impl(port, ptr, rust_vec_len, data_len),
+        28 => wire__crate__api__history__del_history_impl(port, ptr, rust_vec_len, data_len),
+        29 => wire__crate__api__fav__del_note_impl(port, ptr, rust_vec_len, data_len),
+        30 => wire__crate__api__fav__delete_folder_impl(port, ptr, rust_vec_len, data_len),
+        31 => wire__crate__api__video_write__dislike_video_impl(port, ptr, rust_vec_len, data_len),
+        32 => wire__crate__api__dynamic__do_vote_impl(port, ptr, rust_vec_len, data_len),
+        34 => wire__crate__api__dynamic__dyn_reserve_impl(port, ptr, rust_vec_len, data_len),
+        35 => wire__crate__api__user__dynamic_report_impl(port, ptr, rust_vec_len, data_len),
+        36 => wire__crate__api__fav__edit_folder_impl(port, ptr, rust_vec_len, data_len),
+        40 => wire__crate__api__fav__fav_article_impl(port, ptr, rust_vec_len, data_len),
+        41 => wire__crate__api__fav__fav_folder_impl(port, ptr, rust_vec_len, data_len),
+        42 => wire__crate__api__fav__fav_pugv_impl(port, ptr, rust_vec_len, data_len),
+        43 => wire__crate__api__fav__fav_season_impl(port, ptr, rust_vec_len, data_len),
+        44 => wire__crate__api__fav__fav_topic_impl(port, ptr, rust_vec_len, data_len),
+        45 => wire__crate__api__fav__fav_video_impl(port, ptr, rust_vec_len, data_len),
+        46 => wire__crate__api__video_write__feed_dislike_impl(port, ptr, rust_vec_len, data_len),
+        47 => wire__crate__api__video_page__fetch_ai_conclusion_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        46 => wire__crate__api__fav__fetch_all_fav_folders_impl(port, ptr, rust_vec_len, data_len),
-        47 => wire__crate__api__misc__fetch_bgm_detail_impl(port, ptr, rust_vec_len, data_len),
-        48 => wire__crate__api__misc__fetch_bgm_recommend_impl(port, ptr, rust_vec_len, data_len),
-        49 => wire__crate__api__misc__fetch_black_list_impl(port, ptr, rust_vec_len, data_len),
-        50 => wire__crate__api__user__fetch_coin_impl(port, ptr, rust_vec_len, data_len),
-        51 => wire__crate__api__space__fetch_coin_like_arc_impl(port, ptr, rust_vec_len, data_len),
-        52 => wire__crate__api__user__fetch_coin_log_impl(port, ptr, rust_vec_len, data_len),
-        53 => wire__crate__api__misc__fetch_danmaku_filter_impl(port, ptr, rust_vec_len, data_len),
-        54 => wire__crate__api__grpc__fetch_dm_segment_impl(port, ptr, rust_vec_len, data_len),
-        55 => wire__crate__api__grpc__fetch_dm_subtitles_impl(port, ptr, rust_vec_len, data_len),
-        56 => wire__crate__api__dynamic__fetch_dyn_red_impl(port, ptr, rust_vec_len, data_len),
-        57 => wire__crate__api__reply__fetch_emote_panel_impl(port, ptr, rust_vec_len, data_len),
-        58 => wire__crate__api__user__fetch_exp_log_impl(port, ptr, rust_vec_len, data_len),
-        59 => wire__crate__api__misc__fetch_fans_impl(port, ptr, rust_vec_len, data_len),
-        60 => wire__crate__api__fav__fetch_fav_articles_impl(port, ptr, rust_vec_len, data_len),
-        61 => wire__crate__api__fav__fetch_fav_detail_impl(port, ptr, rust_vec_len, data_len),
-        62 => wire__crate__api__fav__fetch_fav_folder_info_impl(port, ptr, rust_vec_len, data_len),
-        63 => wire__crate__api__fav__fetch_fav_folders_impl(port, ptr, rust_vec_len, data_len),
-        64 => {
+        48 => wire__crate__api__fav__fetch_all_fav_folders_impl(port, ptr, rust_vec_len, data_len),
+        49 => wire__crate__api__misc__fetch_bgm_detail_impl(port, ptr, rust_vec_len, data_len),
+        50 => wire__crate__api__misc__fetch_bgm_recommend_impl(port, ptr, rust_vec_len, data_len),
+        51 => wire__crate__api__misc__fetch_black_list_impl(port, ptr, rust_vec_len, data_len),
+        52 => wire__crate__api__user__fetch_coin_impl(port, ptr, rust_vec_len, data_len),
+        53 => wire__crate__api__space__fetch_coin_like_arc_impl(port, ptr, rust_vec_len, data_len),
+        54 => wire__crate__api__user__fetch_coin_log_impl(port, ptr, rust_vec_len, data_len),
+        55 => wire__crate__api__misc__fetch_danmaku_filter_impl(port, ptr, rust_vec_len, data_len),
+        56 => wire__crate__api__grpc__fetch_dm_segment_impl(port, ptr, rust_vec_len, data_len),
+        57 => wire__crate__api__grpc__fetch_dm_subtitles_impl(port, ptr, rust_vec_len, data_len),
+        58 => wire__crate__api__dynamic__fetch_dyn_red_impl(port, ptr, rust_vec_len, data_len),
+        59 => wire__crate__api__reply__fetch_emote_panel_impl(port, ptr, rust_vec_len, data_len),
+        60 => wire__crate__api__user__fetch_exp_log_impl(port, ptr, rust_vec_len, data_len),
+        61 => wire__crate__api__misc__fetch_fans_impl(port, ptr, rust_vec_len, data_len),
+        62 => wire__crate__api__fav__fetch_fav_articles_impl(port, ptr, rust_vec_len, data_len),
+        63 => wire__crate__api__fav__fetch_fav_detail_impl(port, ptr, rust_vec_len, data_len),
+        64 => wire__crate__api__fav__fetch_fav_folder_info_impl(port, ptr, rust_vec_len, data_len),
+        65 => wire__crate__api__fav__fetch_fav_folders_impl(port, ptr, rust_vec_len, data_len),
+        66 => {
             wire__crate__api__fav__fetch_fav_folders_as_subs_impl(port, ptr, rust_vec_len, data_len)
         }
-        65 => wire__crate__api__fav__fetch_fav_notes_impl(port, ptr, rust_vec_len, data_len),
-        66 => wire__crate__api__fav__fetch_fav_pgc_impl(port, ptr, rust_vec_len, data_len),
-        67 => wire__crate__api__fav__fetch_fav_pugv_impl(port, ptr, rust_vec_len, data_len),
-        68 => {
+        67 => wire__crate__api__fav__fetch_fav_notes_impl(port, ptr, rust_vec_len, data_len),
+        68 => wire__crate__api__fav__fetch_fav_pgc_impl(port, ptr, rust_vec_len, data_len),
+        69 => wire__crate__api__fav__fetch_fav_pugv_impl(port, ptr, rust_vec_len, data_len),
+        70 => {
             wire__crate__api__fav__fetch_fav_season_detail_impl(port, ptr, rust_vec_len, data_len)
         }
-        69 => wire__crate__api__fav__fetch_fav_topics_impl(port, ptr, rust_vec_len, data_len),
-        70 => {
+        71 => wire__crate__api__fav__fetch_fav_topics_impl(port, ptr, rust_vec_len, data_len),
+        72 => {
             wire__crate__api__relation__fetch_follow_search_impl(port, ptr, rust_vec_len, data_len)
         }
-        71 => wire__crate__api__relation__fetch_follow_up_group_impl(
+        73 => wire__crate__api__relation__fetch_follow_up_group_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        72 => {
+        74 => {
             wire__crate__api__relation__fetch_follow_up_tags_impl(port, ptr, rust_vec_len, data_len)
         }
-        73 => wire__crate__api__relation__fetch_followed_up_impl(port, ptr, rust_vec_len, data_len),
-        74 => wire__crate__api__misc__fetch_followings_impl(port, ptr, rust_vec_len, data_len),
-        75 => wire__crate__api__history__fetch_history_list_impl(port, ptr, rust_vec_len, data_len),
-        76 => {
+        75 => wire__crate__api__relation__fetch_followed_up_impl(port, ptr, rust_vec_len, data_len),
+        76 => wire__crate__api__misc__fetch_followings_impl(port, ptr, rust_vec_len, data_len),
+        77 => wire__crate__api__history__fetch_history_list_impl(port, ptr, rust_vec_len, data_len),
+        78 => {
             wire__crate__api__history__fetch_history_status_impl(port, ptr, rust_vec_len, data_len)
         }
-        77 => {
+        79 => {
             wire__crate__api__video_feed__fetch_hot_videos_impl(port, ptr, rust_vec_len, data_len)
         }
-        78 => wire__crate__api__dynamic__fetch_like_list_impl(port, ptr, rust_vec_len, data_len),
-        79 => wire__crate__api__live__fetch_live_area_list_impl(port, ptr, rust_vec_len, data_len),
-        80 => wire__crate__api__live__fetch_live_contribution_rank_impl(
+        80 => wire__crate__api__dynamic__fetch_like_list_impl(port, ptr, rust_vec_len, data_len),
+        81 => wire__crate__api__live__fetch_live_area_list_impl(port, ptr, rust_vec_len, data_len),
+        82 => wire__crate__api__live__fetch_live_contribution_rank_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        81 => wire__crate__api__live_danmaku__fetch_live_danmaku_prefetch_impl(
+        83 => wire__crate__api__live_danmaku__fetch_live_danmaku_prefetch_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        82 => wire__crate__api__live_danmaku__fetch_live_danmaku_token_impl(
+        84 => wire__crate__api__live_danmaku__fetch_live_danmaku_token_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        83 => wire__crate__api__live__fetch_live_emoticons_impl(port, ptr, rust_vec_len, data_len),
-        84 => wire__crate__api__live__fetch_live_fav_tags_impl(port, ptr, rust_vec_len, data_len),
-        85 => wire__crate__api__live__fetch_live_follow_impl(port, ptr, rust_vec_len, data_len),
-        86 => wire__crate__api__live__fetch_live_index_impl(port, ptr, rust_vec_len, data_len),
-        87 => wire__crate__api__live__fetch_live_medal_name_impl(port, ptr, rust_vec_len, data_len),
-        88 => wire__crate__api__live__fetch_live_medal_wall_impl(port, ptr, rust_vec_len, data_len),
-        89 => wire__crate__api__live__fetch_live_room_area_list_impl(
+        85 => wire__crate__api__live__fetch_live_emoticons_impl(port, ptr, rust_vec_len, data_len),
+        86 => wire__crate__api__live__fetch_live_fav_tags_impl(port, ptr, rust_vec_len, data_len),
+        87 => wire__crate__api__live__fetch_live_follow_impl(port, ptr, rust_vec_len, data_len),
+        88 => wire__crate__api__live__fetch_live_index_impl(port, ptr, rust_vec_len, data_len),
+        89 => wire__crate__api__live__fetch_live_medal_name_impl(port, ptr, rust_vec_len, data_len),
+        90 => wire__crate__api__live__fetch_live_medal_wall_impl(port, ptr, rust_vec_len, data_len),
+        91 => wire__crate__api__live__fetch_live_room_area_list_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        90 => wire__crate__api__live__fetch_live_room_h5_impl(port, ptr, rust_vec_len, data_len),
-        91 => wire__crate__api__live__fetch_live_room_play_info_impl(
+        92 => wire__crate__api__live__fetch_live_room_h5_impl(port, ptr, rust_vec_len, data_len),
+        93 => wire__crate__api__live__fetch_live_room_play_info_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        92 => wire__crate__api__live__fetch_live_search_impl(port, ptr, rust_vec_len, data_len),
-        93 => {
+        94 => wire__crate__api__live__fetch_live_search_impl(port, ptr, rust_vec_len, data_len),
+        95 => {
             wire__crate__api__live__fetch_live_second_list_impl(port, ptr, rust_vec_len, data_len)
         }
-        94 => {
+        96 => {
             wire__crate__api__live__fetch_live_shield_info_impl(port, ptr, rust_vec_len, data_len)
         }
-        95 => wire__crate__api__live_danmaku__fetch_live_super_chat_impl(
+        97 => wire__crate__api__live_danmaku__fetch_live_super_chat_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        96 => wire__crate__api__user__fetch_login_log_impl(port, ptr, rust_vec_len, data_len),
-        97 => wire__crate__api__misc__fetch_match_info_impl(port, ptr, rust_vec_len, data_len),
-        98 => wire__crate__api__history__fetch_media_list_impl(port, ptr, rust_vec_len, data_len),
-        99 => wire__crate__api__space__fetch_member_card_impl(port, ptr, rust_vec_len, data_len),
-        100 => wire__crate__api__space__fetch_member_guard_impl(port, ptr, rust_vec_len, data_len),
-        101 => wire__crate__api__space__fetch_member_info_impl(port, ptr, rust_vec_len, data_len),
-        102 => wire__crate__api__space__fetch_member_relation_stat_impl(
+        98 => wire__crate__api__user__fetch_login_log_impl(port, ptr, rust_vec_len, data_len),
+        99 => wire__crate__api__misc__fetch_match_info_impl(port, ptr, rust_vec_len, data_len),
+        100 => wire__crate__api__history__fetch_media_list_impl(port, ptr, rust_vec_len, data_len),
+        101 => wire__crate__api__space__fetch_member_card_impl(port, ptr, rust_vec_len, data_len),
+        102 => wire__crate__api__space__fetch_member_guard_impl(port, ptr, rust_vec_len, data_len),
+        103 => wire__crate__api__space__fetch_member_info_impl(port, ptr, rust_vec_len, data_len),
+        104 => wire__crate__api__space__fetch_member_relation_stat_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        103 => {
+        105 => {
             wire__crate__api__space__fetch_member_up_stat_impl(port, ptr, rust_vec_len, data_len)
         }
-        104 => {
+        106 => {
             wire__crate__api__video_page__fetch_note_list_impl(port, ptr, rust_vec_len, data_len)
         }
-        105 => {
+        107 => {
             wire__crate__api__video_page__fetch_online_total_impl(port, ptr, rust_vec_len, data_len)
         }
-        106 => {
+        108 => {
             wire__crate__api__pgc__fetch_pgc_default_index_impl(port, ptr, rust_vec_len, data_len)
         }
-        107 => wire__crate__api__pgc__fetch_pgc_index_impl(port, ptr, rust_vec_len, data_len),
-        108 => {
+        109 => wire__crate__api__pgc__fetch_pgc_index_impl(port, ptr, rust_vec_len, data_len),
+        110 => {
             wire__crate__api__pgc__fetch_pgc_index_condition_impl(port, ptr, rust_vec_len, data_len)
         }
-        109 => wire__crate__api__pgc__fetch_pgc_rank_impl(port, ptr, rust_vec_len, data_len),
-        110 => wire__crate__api__pgc__fetch_pgc_reviews_impl(port, ptr, rust_vec_len, data_len),
-        111 => {
+        111 => wire__crate__api__pgc__fetch_pgc_rank_impl(port, ptr, rust_vec_len, data_len),
+        112 => wire__crate__api__pgc__fetch_pgc_reviews_impl(port, ptr, rust_vec_len, data_len),
+        113 => {
             wire__crate__api__pgc__fetch_pgc_season_detail_impl(port, ptr, rust_vec_len, data_len)
         }
-        112 => wire__crate__api__pgc__fetch_pgc_timeline_impl(port, ptr, rust_vec_len, data_len),
-        113 => {
+        114 => wire__crate__api__pgc__fetch_pgc_timeline_impl(port, ptr, rust_vec_len, data_len),
+        115 => {
             wire__crate__api__video_page__fetch_play_info_impl(port, ptr, rust_vec_len, data_len)
         }
-        114 => {
+        116 => {
             wire__crate__api__play_url_fetch__fetch_play_url_impl(port, ptr, rust_vec_len, data_len)
         }
-        115 => wire__crate__api__video_feed__fetch_popular_precious_impl(
+        117 => wire__crate__api__video_feed__fetch_popular_precious_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        116 => wire__crate__api__video_feed__fetch_popular_series_list_impl(
+        118 => wire__crate__api__video_feed__fetch_popular_series_list_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        117 => wire__crate__api__video_feed__fetch_popular_series_one_impl(
+        119 => wire__crate__api__video_feed__fetch_popular_series_one_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        118 => wire__crate__api__sponsor_block__fetch_port_video_impl(
+        120 => wire__crate__api__sponsor_block__fetch_port_video_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        119 => {
+        121 => {
             wire__crate__api__pgc__fetch_pugv_season_detail_impl(port, ptr, rust_vec_len, data_len)
         }
-        120 => {
+        122 => {
             wire__crate__api__video_feed__fetch_rank_videos_impl(port, ptr, rust_vec_len, data_len)
         }
-        121 => wire__crate__api__video_feed__fetch_related_videos_impl(
+        123 => wire__crate__api__video_feed__fetch_related_videos_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        122 => wire__crate__api__relation__fetch_relation_impl(port, ptr, rust_vec_len, data_len),
-        123 => wire__crate__api__reply_grpc__fetch_reply_detail_list_impl(
+        124 => wire__crate__api__relation__fetch_relation_impl(port, ptr, rust_vec_len, data_len),
+        125 => wire__crate__api__reply_grpc__fetch_reply_detail_list_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        124 => wire__crate__api__reply_grpc__fetch_reply_dialog_list_impl(
+        126 => wire__crate__api__reply_grpc__fetch_reply_dialog_list_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        125 => wire__crate__api__reply_grpc__fetch_reply_fold_list_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        126 => {
-            wire__crate__api__reply__fetch_reply_interaction_impl(port, ptr, rust_vec_len, data_len)
-        }
-        127 => wire__crate__api__reply__fetch_reply_list_anonymous_impl(
+        127 => wire__crate__api__reply_grpc__fetch_reply_fold_list_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
         128 => {
-            wire__crate__api__reply__fetch_reply_list_paged_impl(port, ptr, rust_vec_len, data_len)
+            wire__crate__api__reply__fetch_reply_interaction_impl(port, ptr, rust_vec_len, data_len)
         }
-        129 => wire__crate__api__reply_grpc__fetch_reply_main_list_impl(
+        129 => wire__crate__api__reply__fetch_reply_list_anonymous_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
         130 => {
+            wire__crate__api__reply__fetch_reply_list_paged_impl(port, ptr, rust_vec_len, data_len)
+        }
+        131 => wire__crate__api__reply_grpc__fetch_reply_main_list_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        132 => {
             wire__crate__api__reply__fetch_reply_reply_list_impl(port, ptr, rust_vec_len, data_len)
         }
-        131 => wire__crate__api__reply_grpc__fetch_reply_search_item_impl(
+        133 => wire__crate__api__reply_grpc__fetch_reply_search_item_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        132 => wire__crate__api__reply_grpc__fetch_reply_translation_impl(
+        134 => wire__crate__api__reply_grpc__fetch_reply_translation_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        133 => {
+        135 => {
             wire__crate__api__relation__fetch_same_following_impl(port, ptr, rust_vec_len, data_len)
         }
-        134 => {
+        136 => {
             wire__crate__api__history__fetch_search_history_impl(port, ptr, rust_vec_len, data_len)
         }
-        135 => wire__crate__api__space__fetch_season_series_impl(port, ptr, rust_vec_len, data_len),
-        136 => wire__crate__api__pgc__fetch_season_status_impl(port, ptr, rust_vec_len, data_len),
-        137 => {
+        137 => wire__crate__api__space__fetch_season_series_impl(port, ptr, rust_vec_len, data_len),
+        138 => wire__crate__api__pgc__fetch_season_status_impl(port, ptr, rust_vec_len, data_len),
+        139 => {
             wire__crate__api__history__fetch_see_you_later_impl(port, ptr, rust_vec_len, data_len)
         }
-        138 => wire__crate__api__sponsor_block__fetch_skip_segments_impl(
+        140 => wire__crate__api__sponsor_block__fetch_skip_segments_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        139 => wire__crate__api__space__fetch_space_archive_impl(port, ptr, rust_vec_len, data_len),
-        140 => wire__crate__api__space__fetch_space_archive_search_impl(
+        141 => wire__crate__api__space__fetch_space_archive_impl(port, ptr, rust_vec_len, data_len),
+        142 => wire__crate__api__space__fetch_space_archive_search_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        141 => wire__crate__api__space__fetch_space_article_impl(port, ptr, rust_vec_len, data_len),
-        142 => wire__crate__api__space__fetch_space_audio_impl(port, ptr, rust_vec_len, data_len),
-        143 => wire__crate__api__space__fetch_space_cheese_impl(port, ptr, rust_vec_len, data_len),
-        144 => wire__crate__api__fav__fetch_space_fav_impl(port, ptr, rust_vec_len, data_len),
-        145 => {
+        143 => wire__crate__api__space__fetch_space_article_impl(port, ptr, rust_vec_len, data_len),
+        144 => wire__crate__api__space__fetch_space_audio_impl(port, ptr, rust_vec_len, data_len),
+        145 => wire__crate__api__space__fetch_space_cheese_impl(port, ptr, rust_vec_len, data_len),
+        146 => wire__crate__api__fav__fetch_space_fav_impl(port, ptr, rust_vec_len, data_len),
+        147 => {
             wire__crate__api__space__fetch_space_opus_flow_impl(port, ptr, rust_vec_len, data_len)
         }
-        146 => wire__crate__api__space__fetch_space_page_impl(port, ptr, rust_vec_len, data_len),
-        147 => wire__crate__api__space__fetch_space_search_archive_impl(
+        148 => wire__crate__api__space__fetch_space_page_impl(port, ptr, rust_vec_len, data_len),
+        149 => wire__crate__api__space__fetch_space_search_archive_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        148 => {
+        150 => {
             wire__crate__api__space__fetch_space_season_web_impl(port, ptr, rust_vec_len, data_len)
         }
-        149 => wire__crate__api__user__fetch_space_setting_impl(port, ptr, rust_vec_len, data_len),
-        150 => wire__crate__api__space__fetch_space_shop_impl(port, ptr, rust_vec_len, data_len),
-        151 => wire__crate__api__sponsor_block__fetch_sponsor_uptime_impl(
+        151 => wire__crate__api__user__fetch_space_setting_impl(port, ptr, rust_vec_len, data_len),
+        152 => wire__crate__api__space__fetch_space_shop_impl(port, ptr, rust_vec_len, data_len),
+        153 => wire__crate__api__sponsor_block__fetch_sponsor_uptime_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        152 => wire__crate__api__sponsor_block__fetch_sponsor_user_info_impl(
+        154 => wire__crate__api__sponsor_block__fetch_sponsor_user_info_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        153 => wire__crate__api__user__fetch_sub_list_impl(port, ptr, rust_vec_len, data_len),
-        154 => wire__crate__api__space__fetch_upower_rank_impl(port, ptr, rust_vec_len, data_len),
-        155 => wire__crate__api__user__fetch_user_info_impl(port, ptr, rust_vec_len, data_len),
-        156 => wire__crate__api__user__fetch_user_real_name_impl(port, ptr, rust_vec_len, data_len),
-        157 => wire__crate__api__user__fetch_user_stat_impl(port, ptr, rust_vec_len, data_len),
-        158 => wire__crate__api__video_detail_fetch__fetch_video_detail_impl(
+        155 => wire__crate__api__user__fetch_sub_list_impl(port, ptr, rust_vec_len, data_len),
+        156 => wire__crate__api__space__fetch_upower_rank_impl(port, ptr, rust_vec_len, data_len),
+        157 => wire__crate__api__user__fetch_user_info_impl(port, ptr, rust_vec_len, data_len),
+        158 => wire__crate__api__user__fetch_user_real_name_impl(port, ptr, rust_vec_len, data_len),
+        159 => wire__crate__api__user__fetch_user_stat_impl(port, ptr, rust_vec_len, data_len),
+        160 => wire__crate__api__video_detail_fetch__fetch_video_detail_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        159 => wire__crate__api__fav__fetch_video_in_folder_impl(port, ptr, rust_vec_len, data_len),
-        160 => {
+        161 => wire__crate__api__fav__fetch_video_in_folder_impl(port, ptr, rust_vec_len, data_len),
+        162 => {
             wire__crate__api__video_page__fetch_video_shot_impl(port, ptr, rust_vec_len, data_len)
         }
-        161 => wire__crate__api__user__fetch_video_tags_impl(port, ptr, rust_vec_len, data_len),
-        162 => wire__crate__api__dynamic__followee_votes_impl(port, ptr, rust_vec_len, data_len),
-        164 => wire__crate__api__video_write__heart_beat_impl(port, ptr, rust_vec_len, data_len),
-        165 => {
+        163 => wire__crate__api__user__fetch_video_tags_impl(port, ptr, rust_vec_len, data_len),
+        164 => wire__crate__api__dynamic__followee_votes_impl(port, ptr, rust_vec_len, data_len),
+        166 => wire__crate__api__video_write__heart_beat_impl(port, ptr, rust_vec_len, data_len),
+        167 => {
             wire__crate__api__video_write__history_report_impl(port, ptr, rust_vec_len, data_len)
         }
-        167 => wire__crate__api__init__init_app_impl(port, ptr, rust_vec_len, data_len),
-        168 => wire__crate__api__fav__like_topic_impl(port, ptr, rust_vec_len, data_len),
-        169 => wire__crate__api__video_write__like_video_impl(port, ptr, rust_vec_len, data_len),
-        175 => wire__crate__api__login__login_by_password_impl(port, ptr, rust_vec_len, data_len),
-        176 => wire__crate__api__login__login_by_sms_impl(port, ptr, rust_vec_len, data_len),
-        177 => wire__crate__api__login__login_devices_impl(port, ptr, rust_vec_len, data_len),
-        178 => wire__crate__api__login__login_exchange_oauth_code_impl(
+        169 => wire__crate__api__init__init_app_impl(port, ptr, rust_vec_len, data_len),
+        170 => wire__crate__api__fav__like_topic_impl(port, ptr, rust_vec_len, data_len),
+        171 => wire__crate__api__video_write__like_video_impl(port, ptr, rust_vec_len, data_len),
+        177 => wire__crate__api__login__login_by_password_impl(port, ptr, rust_vec_len, data_len),
+        178 => wire__crate__api__login__login_by_sms_impl(port, ptr, rust_vec_len, data_len),
+        179 => wire__crate__api__login__login_devices_impl(port, ptr, rust_vec_len, data_len),
+        180 => wire__crate__api__login__login_exchange_oauth_code_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        179 => wire__crate__api__login__login_logout_impl(port, ptr, rust_vec_len, data_len),
-        180 => wire__crate__api__login__login_pre_capture_impl(port, ptr, rust_vec_len, data_len),
-        181 => wire__crate__api__login__login_qrcode_impl(port, ptr, rust_vec_len, data_len),
-        182 => wire__crate__api__login__login_qrcode_poll_impl(port, ptr, rust_vec_len, data_len),
-        183 => {
+        181 => wire__crate__api__login__login_logout_impl(port, ptr, rust_vec_len, data_len),
+        182 => wire__crate__api__login__login_pre_capture_impl(port, ptr, rust_vec_len, data_len),
+        183 => wire__crate__api__login__login_qrcode_impl(port, ptr, rust_vec_len, data_len),
+        184 => wire__crate__api__login__login_qrcode_poll_impl(port, ptr, rust_vec_len, data_len),
+        185 => {
             wire__crate__api__login__login_resolve_captcha_impl(port, ptr, rust_vec_len, data_len)
         }
-        184 => {
+        186 => {
             wire__crate__api__login__login_safe_center_info_impl(port, ptr, rust_vec_len, data_len)
         }
-        185 => {
+        187 => {
             wire__crate__api__login__login_safe_center_sms_impl(port, ptr, rust_vec_len, data_len)
         }
-        186 => wire__crate__api__login__login_safe_center_verify_impl(
+        188 => wire__crate__api__login__login_safe_center_verify_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        187 => wire__crate__api__login__login_send_sms_code_impl(port, ptr, rust_vec_len, data_len),
-        189 => wire__crate__api__video_write__media_list_history_impl(
+        189 => wire__crate__api__login__login_send_sms_code_impl(port, ptr, rust_vec_len, data_len),
+        191 => wire__crate__api__video_write__media_list_history_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        192 => wire__crate__api__search_suggest__parse_search_suggest_impl(
+        194 => wire__crate__api__search_suggest__parse_search_suggest_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        194 => wire__crate__api__video_detail__parse_video_detail_impl(
+        196 => wire__crate__api__video_detail__parse_video_detail_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        195 => wire__crate__api__history__pause_history_impl(port, ptr, rust_vec_len, data_len),
-        196 => wire__crate__api__video_write__pgc_add_impl(port, ptr, rust_vec_len, data_len),
-        198 => wire__crate__api__video_write__pgc_del_impl(port, ptr, rust_vec_len, data_len),
-        199 => wire__crate__api__pgc__pgc_review_del_impl(port, ptr, rust_vec_len, data_len),
-        200 => wire__crate__api__pgc__pgc_review_dislike_impl(port, ptr, rust_vec_len, data_len),
-        201 => wire__crate__api__pgc__pgc_review_like_impl(port, ptr, rust_vec_len, data_len),
-        202 => wire__crate__api__pgc__pgc_review_modify_impl(port, ptr, rust_vec_len, data_len),
-        203 => wire__crate__api__pgc__pgc_review_post_impl(port, ptr, rust_vec_len, data_len),
-        204 => wire__crate__api__video_write__pgc_triple_impl(port, ptr, rust_vec_len, data_len),
-        205 => wire__crate__api__video_write__pgc_update_impl(port, ptr, rust_vec_len, data_len),
-        208 => {
+        197 => wire__crate__api__history__pause_history_impl(port, ptr, rust_vec_len, data_len),
+        198 => wire__crate__api__video_write__pgc_add_impl(port, ptr, rust_vec_len, data_len),
+        200 => wire__crate__api__video_write__pgc_del_impl(port, ptr, rust_vec_len, data_len),
+        201 => wire__crate__api__pgc__pgc_review_del_impl(port, ptr, rust_vec_len, data_len),
+        202 => wire__crate__api__pgc__pgc_review_dislike_impl(port, ptr, rust_vec_len, data_len),
+        203 => wire__crate__api__pgc__pgc_review_like_impl(port, ptr, rust_vec_len, data_len),
+        204 => wire__crate__api__pgc__pgc_review_modify_impl(port, ptr, rust_vec_len, data_len),
+        205 => wire__crate__api__pgc__pgc_review_post_impl(port, ptr, rust_vec_len, data_len),
+        206 => wire__crate__api__video_write__pgc_triple_impl(port, ptr, rust_vec_len, data_len),
+        207 => wire__crate__api__video_write__pgc_update_impl(port, ptr, rust_vec_len, data_len),
+        210 => {
             wire__crate__api__dynamic__private_pub_setting_impl(port, ptr, rust_vec_len, data_len)
         }
-        209 => wire__crate__api__video_write__relation_mod_impl(port, ptr, rust_vec_len, data_len),
-        210 => {
+        211 => wire__crate__api__video_write__relation_mod_impl(port, ptr, rust_vec_len, data_len),
+        212 => {
             wire__crate__api__reply_grpc__reply_card_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        211 => wire__crate__api__reply_grpc__reply_content_default_impl(
+        213 => wire__crate__api__reply_grpc__reply_content_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        212 => wire__crate__api__reply_grpc__reply_control_info_default_impl(
+        214 => wire__crate__api__reply_grpc__reply_control_info_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        213 => wire__crate__api__video_write__reply_del_impl(port, ptr, rust_vec_len, data_len),
-        214 => wire__crate__api__reply_grpc__reply_detail_page_default_impl(
+        215 => wire__crate__api__video_write__reply_del_impl(port, ptr, rust_vec_len, data_len),
+        216 => wire__crate__api__reply_grpc__reply_detail_page_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        215 => wire__crate__api__reply_grpc__reply_emote_default_impl(
+        217 => wire__crate__api__reply_grpc__reply_emote_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        216 => wire__crate__api__reply_grpc__reply_entity_default_impl(
+        218 => wire__crate__api__reply_grpc__reply_entity_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        217 => wire__crate__api__reply_grpc__reply_filter_input_default_impl(
+        219 => wire__crate__api__reply_grpc__reply_filter_input_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        218 => wire__crate__api__reply_grpc__reply_flat_page_default_impl(
+        220 => wire__crate__api__reply_grpc__reply_flat_page_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        219 => wire__crate__api__reply_grpc__reply_fold_card_default_impl(
+        221 => wire__crate__api__reply_grpc__reply_fold_card_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        221 => wire__crate__api__reply_grpc__reply_main_page_default_impl(
+        223 => wire__crate__api__reply_grpc__reply_main_page_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        222 => wire__crate__api__reply_grpc__reply_medal_default_impl(
+        224 => wire__crate__api__reply_grpc__reply_medal_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        223 => {
+        225 => {
             wire__crate__api__reply_grpc__reply_note_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        224 => wire__crate__api__reply_grpc__reply_parent_member_default_impl(
+        226 => wire__crate__api__reply_grpc__reply_parent_member_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        225 => wire__crate__api__reply_grpc__reply_picture_default_impl(
+        227 => wire__crate__api__reply_grpc__reply_picture_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        226 => wire__crate__api__reply_grpc__reply_search_item_default_impl(
+        228 => wire__crate__api__reply_grpc__reply_search_item_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        227 => wire__crate__api__reply_grpc__reply_search_list_default_impl(
+        229 => wire__crate__api__reply_grpc__reply_search_list_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        228 => wire__crate__api__reply_grpc__reply_subject_default_impl(
+        230 => wire__crate__api__reply_grpc__reply_subject_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        229 => {
+        231 => {
             wire__crate__api__reply_grpc__reply_url_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        230 => {
+        232 => {
             wire__crate__api__reply_grpc__reply_user_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        231 => wire__crate__api__reply_grpc__reply_vote_card_default_impl(
+        233 => wire__crate__api__reply_grpc__reply_vote_card_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        232 => {
+        234 => {
             wire__crate__api__reply_grpc__reply_vote_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        233 => wire__crate__api__reply_grpc__reply_vote_option_default_impl(
+        235 => wire__crate__api__reply_grpc__reply_vote_option_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        234 => wire__crate__api__space__report_member_impl(port, ptr, rust_vec_len, data_len),
-        235 => wire__crate__api__dynamic__reserve_info_impl(port, ptr, rust_vec_len, data_len),
-        236 => {
+        236 => wire__crate__api__space__report_member_impl(port, ptr, rust_vec_len, data_len),
+        237 => wire__crate__api__dynamic__reserve_info_impl(port, ptr, rust_vec_len, data_len),
+        238 => {
             wire__crate__api__video_write__room_entry_action_impl(port, ptr, rust_vec_len, data_len)
         }
-        237 => wire__crate__api__dynamic__save_vote_impl(port, ptr, rust_vec_len, data_len),
-        238 => wire__crate__api__search__search_all_impl(port, ptr, rust_vec_len, data_len),
-        239 => wire__crate__api__search__search_article_impl(port, ptr, rust_vec_len, data_len),
-        240 => wire__crate__api__search__search_live_impl(port, ptr, rust_vec_len, data_len),
-        241 => wire__crate__api__search__search_pgc_impl(port, ptr, rust_vec_len, data_len),
-        242 => wire__crate__api__search__search_recommend_impl(port, ptr, rust_vec_len, data_len),
-        243 => wire__crate__api__search__search_trending_impl(port, ptr, rust_vec_len, data_len),
-        244 => wire__crate__api__search__search_user_impl(port, ptr, rust_vec_len, data_len),
-        245 => wire__crate__api__search__search_video_impl(port, ptr, rust_vec_len, data_len),
-        249 => wire__crate__api__fav__sort_fav_impl(port, ptr, rust_vec_len, data_len),
-        250 => wire__crate__api__fav__sort_fav_folder_impl(port, ptr, rust_vec_len, data_len),
-        251 => wire__crate__api__misc__sort_follow_tag_impl(port, ptr, rust_vec_len, data_len),
-        254 => wire__crate__api__user__space_reserve_impl(port, ptr, rust_vec_len, data_len),
-        255 => wire__crate__api__user__space_setting_mod_impl(port, ptr, rust_vec_len, data_len),
-        256 => wire__crate__api__relation__special_action_impl(port, ptr, rust_vec_len, data_len),
-        258 => wire__crate__api__dynamic__thumb_dynamic_impl(port, ptr, rust_vec_len, data_len),
-        259 => wire__crate__api__history__to_view_clear_impl(port, ptr, rust_vec_len, data_len),
-        260 => wire__crate__api__history__to_view_del_impl(port, ptr, rust_vec_len, data_len),
-        261 => wire__crate__api__history__to_view_later_impl(port, ptr, rust_vec_len, data_len),
-        262 => wire__crate__api__dynamic__top_dynamic_impl(port, ptr, rust_vec_len, data_len),
-        263 => wire__crate__api__video_write__ugc_triple_impl(port, ptr, rust_vec_len, data_len),
-        264 => wire__crate__api__fav__unfav_all_impl(port, ptr, rust_vec_len, data_len),
-        265 => {
+        239 => wire__crate__api__dynamic__save_vote_impl(port, ptr, rust_vec_len, data_len),
+        240 => wire__crate__api__search__search_all_impl(port, ptr, rust_vec_len, data_len),
+        241 => wire__crate__api__search__search_article_impl(port, ptr, rust_vec_len, data_len),
+        242 => wire__crate__api__search__search_live_impl(port, ptr, rust_vec_len, data_len),
+        243 => wire__crate__api__search__search_pgc_impl(port, ptr, rust_vec_len, data_len),
+        244 => wire__crate__api__search__search_recommend_impl(port, ptr, rust_vec_len, data_len),
+        245 => wire__crate__api__search__search_trending_impl(port, ptr, rust_vec_len, data_len),
+        246 => wire__crate__api__search__search_user_impl(port, ptr, rust_vec_len, data_len),
+        247 => wire__crate__api__search__search_video_impl(port, ptr, rust_vec_len, data_len),
+        251 => wire__crate__api__fav__sort_fav_impl(port, ptr, rust_vec_len, data_len),
+        252 => wire__crate__api__fav__sort_fav_folder_impl(port, ptr, rust_vec_len, data_len),
+        253 => wire__crate__api__misc__sort_follow_tag_impl(port, ptr, rust_vec_len, data_len),
+        256 => wire__crate__api__user__space_reserve_impl(port, ptr, rust_vec_len, data_len),
+        257 => wire__crate__api__user__space_setting_mod_impl(port, ptr, rust_vec_len, data_len),
+        258 => wire__crate__api__relation__special_action_impl(port, ptr, rust_vec_len, data_len),
+        260 => wire__crate__api__dynamic__thumb_dynamic_impl(port, ptr, rust_vec_len, data_len),
+        261 => wire__crate__api__history__to_view_clear_impl(port, ptr, rust_vec_len, data_len),
+        262 => wire__crate__api__history__to_view_del_impl(port, ptr, rust_vec_len, data_len),
+        263 => wire__crate__api__history__to_view_later_impl(port, ptr, rust_vec_len, data_len),
+        264 => wire__crate__api__dynamic__top_dynamic_impl(port, ptr, rust_vec_len, data_len),
+        265 => wire__crate__api__video_write__ugc_triple_impl(port, ptr, rust_vec_len, data_len),
+        266 => wire__crate__api__fav__unfav_all_impl(port, ptr, rust_vec_len, data_len),
+        267 => {
             wire__crate__api__relation__update_follow_tag_impl(port, ptr, rust_vec_len, data_len)
         }
-        266 => wire__crate__api__dynamic__update_reserve_impl(port, ptr, rust_vec_len, data_len),
-        267 => wire__crate__api__misc__update_wish_impl(port, ptr, rust_vec_len, data_len),
-        269 => wire__crate__api__user__vip_exp_add_impl(port, ptr, rust_vec_len, data_len),
-        270 => wire__crate__api__dynamic__vote_info_impl(port, ptr, rust_vec_len, data_len),
-        271 => wire__crate__api__wbi__wbi_mixin_key_impl(port, ptr, rust_vec_len, data_len),
-        272 => wire__crate__api__wbi__wbi_sign_impl(port, ptr, rust_vec_len, data_len),
+        268 => wire__crate__api__dynamic__update_reserve_impl(port, ptr, rust_vec_len, data_len),
+        269 => wire__crate__api__misc__update_wish_impl(port, ptr, rust_vec_len, data_len),
+        271 => wire__crate__api__user__vip_exp_add_impl(port, ptr, rust_vec_len, data_len),
+        272 => wire__crate__api__dynamic__vote_info_impl(port, ptr, rust_vec_len, data_len),
+        273 => wire__crate__api__wbi__wbi_mixin_key_impl(port, ptr, rust_vec_len, data_len),
+        274 => wire__crate__api__wbi__wbi_sign_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -24957,58 +25193,60 @@ fn pde_ffi_dispatcher_sync_impl(
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
         4 => wire__crate__api__grpc__build_grpc_headers_impl(ptr, rust_vec_len, data_len),
-        6 => wire__crate__api__playback__cdn_services_impl(ptr, rust_vec_len, data_len),
-        11 => wire__crate__api__cover_scrim__compute_cover_scrim_impl(ptr, rust_vec_len, data_len),
-        17 => wire__crate__api__danmaku__danmaku_bucket_impl(ptr, rust_vec_len, data_len),
-        18 => wire__crate__api__danmaku__danmaku_close_impl(ptr, rust_vec_len, data_len),
-        19 => wire__crate__api__danmaku__danmaku_open_impl(ptr, rust_vec_len, data_len),
-        20 => {
+        5 => wire__crate__api__reply_grpc__build_reply_segments_impl(ptr, rust_vec_len, data_len),
+        6 => wire__crate__api__reply_grpc__build_reply_thread_impl(ptr, rust_vec_len, data_len),
+        8 => wire__crate__api__playback__cdn_services_impl(ptr, rust_vec_len, data_len),
+        13 => wire__crate__api__cover_scrim__compute_cover_scrim_impl(ptr, rust_vec_len, data_len),
+        19 => wire__crate__api__danmaku__danmaku_bucket_impl(ptr, rust_vec_len, data_len),
+        20 => wire__crate__api__danmaku__danmaku_close_impl(ptr, rust_vec_len, data_len),
+        21 => wire__crate__api__danmaku__danmaku_open_impl(ptr, rust_vec_len, data_len),
+        22 => {
             wire__crate__api__danmaku__danmaku_open_session_count_impl(ptr, rust_vec_len, data_len)
         }
-        21 => wire__crate__api__danmaku__danmaku_progress_step_impl(ptr, rust_vec_len, data_len),
-        23 => wire__crate__api__reply_grpc__decode_stored_reply_impl(ptr, rust_vec_len, data_len),
-        31 => wire__crate__api__playback__durl_play_urls_impl(ptr, rust_vec_len, data_len),
-        35 => wire__crate__api__reply_grpc__encode_stored_reply_impl(ptr, rust_vec_len, data_len),
-        36 => wire__crate__api__reply_grpc__export_stored_replies_impl(ptr, rust_vec_len, data_len),
-        37 => wire__crate__api__cover_scrim__fallback_cover_scrim_impl(ptr, rust_vec_len, data_len),
-        163 => wire__crate__api__playback__has_volume_measurement_impl(ptr, rust_vec_len, data_len),
-        166 => {
+        23 => wire__crate__api__danmaku__danmaku_progress_step_impl(ptr, rust_vec_len, data_len),
+        25 => wire__crate__api__reply_grpc__decode_stored_reply_impl(ptr, rust_vec_len, data_len),
+        33 => wire__crate__api__playback__durl_play_urls_impl(ptr, rust_vec_len, data_len),
+        37 => wire__crate__api__reply_grpc__encode_stored_reply_impl(ptr, rust_vec_len, data_len),
+        38 => wire__crate__api__reply_grpc__export_stored_replies_impl(ptr, rust_vec_len, data_len),
+        39 => wire__crate__api__cover_scrim__fallback_cover_scrim_impl(ptr, rust_vec_len, data_len),
+        165 => wire__crate__api__playback__has_volume_measurement_impl(ptr, rust_vec_len, data_len),
+        168 => {
             wire__crate__api__reply_grpc__import_stored_replies_impl(ptr, rust_vec_len, data_len)
         }
-        170 => wire__crate__api__live_danmaku__live_danmaku_filter_mask_impl(
+        172 => wire__crate__api__live_danmaku__live_danmaku_filter_mask_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        171 => wire__crate__api__live_danmaku__live_socket_close_impl(ptr, rust_vec_len, data_len),
-        172 => wire__crate__api__live_danmaku__live_socket_open_impl(ptr, rust_vec_len, data_len),
-        173 => wire__crate__api__live_danmaku__live_socket_poll_impl(ptr, rust_vec_len, data_len),
-        174 => {
+        173 => wire__crate__api__live_danmaku__live_socket_close_impl(ptr, rust_vec_len, data_len),
+        174 => wire__crate__api__live_danmaku__live_socket_open_impl(ptr, rust_vec_len, data_len),
+        175 => wire__crate__api__live_danmaku__live_socket_poll_impl(ptr, rust_vec_len, data_len),
+        176 => {
             wire__crate__api__live_danmaku__live_socket_set_rules_impl(ptr, rust_vec_len, data_len)
         }
-        188 => wire__crate__api__playback__loudnorm_params_impl(ptr, rust_vec_len, data_len),
-        190 => wire__crate__api__playback__merge_video_streams_impl(ptr, rust_vec_len, data_len),
-        191 => wire__crate__api__playback__missing_video_quality_below_highest_impl(
+        190 => wire__crate__api__playback__loudnorm_params_impl(ptr, rust_vec_len, data_len),
+        192 => wire__crate__api__playback__merge_video_streams_impl(ptr, rust_vec_len, data_len),
+        193 => wire__crate__api__playback__missing_video_quality_below_highest_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        193 => wire__crate__api__user__parse_user_info_cache_impl(ptr, rust_vec_len, data_len),
-        197 => wire__crate__api__playback__pgc_clip_segments_impl(ptr, rust_vec_len, data_len),
-        206 => wire__crate__api__playback__pick_cdn_url_impl(ptr, rust_vec_len, data_len),
-        207 => wire__crate__api__history__playback_progress_ms_impl(ptr, rust_vec_len, data_len),
-        220 => wire__crate__api__reply_grpc__reply_from_rest_json_impl(ptr, rust_vec_len, data_len),
-        246 => {
+        195 => wire__crate__api__user__parse_user_info_cache_impl(ptr, rust_vec_len, data_len),
+        199 => wire__crate__api__playback__pgc_clip_segments_impl(ptr, rust_vec_len, data_len),
+        208 => wire__crate__api__playback__pick_cdn_url_impl(ptr, rust_vec_len, data_len),
+        209 => wire__crate__api__history__playback_progress_ms_impl(ptr, rust_vec_len, data_len),
+        222 => wire__crate__api__reply_grpc__reply_from_rest_json_impl(ptr, rust_vec_len, data_len),
+        248 => {
             wire__crate__api__media_select__select_target_audio_impl(ptr, rust_vec_len, data_len)
         }
-        247 => {
+        249 => {
             wire__crate__api__media_select__select_target_video_impl(ptr, rust_vec_len, data_len)
         }
-        248 => wire__crate__api__user__serialize_user_info_impl(ptr, rust_vec_len, data_len),
-        252 => wire__crate__api__space__space_article_is_end_impl(ptr, rust_vec_len, data_len),
-        253 => wire__crate__api__space__space_audio_is_end_impl(ptr, rust_vec_len, data_len),
-        257 => wire__crate__api__playback__stream_play_urls_impl(ptr, rust_vec_len, data_len),
-        268 => wire__crate__api__user__user_info_with_profile_impl(ptr, rust_vec_len, data_len),
+        250 => wire__crate__api__user__serialize_user_info_impl(ptr, rust_vec_len, data_len),
+        254 => wire__crate__api__space__space_article_is_end_impl(ptr, rust_vec_len, data_len),
+        255 => wire__crate__api__space__space_audio_is_end_impl(ptr, rust_vec_len, data_len),
+        259 => wire__crate__api__playback__stream_play_urls_impl(ptr, rust_vec_len, data_len),
+        270 => wire__crate__api__user__user_info_with_profile_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -32111,6 +32349,50 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::reply::ReplyReplyListResult>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply_grpc::ReplyRowReason {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::None => 0.into_dart(),
+            Self::Deleted => 1.into_dart(),
+            Self::Blocked => 2.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply_grpc::ReplyRowReason
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply_grpc::ReplyRowReason>
+    for crate::api::reply_grpc::ReplyRowReason
+{
+    fn into_into_dart(self) -> crate::api::reply_grpc::ReplyRowReason {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply_grpc::ReplyRowSource {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::Data => 0.into_dart(),
+            Self::Removed => 1.into_dart(),
+            Self::Synthetic => 2.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply_grpc::ReplyRowSource
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply_grpc::ReplyRowSource>
+    for crate::api::reply_grpc::ReplyRowSource
+{
+    fn into_into_dart(self) -> crate::api::reply_grpc::ReplyRowSource {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::reply_grpc::ReplySearchItem {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -32201,6 +32483,62 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::reply_grpc::ReplySearchListRe
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply_grpc::ReplySegment {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.kind.into_into_dart().into_dart(),
+            self.text.into_into_dart().into_dart(),
+            self.mid.into_into_dart().into_dart(),
+            self.topic.into_into_dart().into_dart(),
+            self.emote.into_into_dart().into_dart(),
+            self.vote.into_into_dart().into_dart(),
+            self.seek_seconds.into_into_dart().into_dart(),
+            self.prefix_icon.into_into_dart().into_dart(),
+            self.action.into_into_dart().into_dart(),
+            self.target.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply_grpc::ReplySegment
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply_grpc::ReplySegment>
+    for crate::api::reply_grpc::ReplySegment
+{
+    fn into_into_dart(self) -> crate::api::reply_grpc::ReplySegment {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply_grpc::ReplySegmentKind {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::Text => 0.into_dart(),
+            Self::Emote => 1.into_dart(),
+            Self::Mention => 2.into_dart(),
+            Self::Topic => 3.into_dart(),
+            Self::Vote => 4.into_dart(),
+            Self::Timestamp => 5.into_dart(),
+            Self::Link => 6.into_dart(),
+            Self::Note => 7.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply_grpc::ReplySegmentKind
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply_grpc::ReplySegmentKind>
+    for crate::api::reply_grpc::ReplySegmentKind
+{
+    fn into_into_dart(self) -> crate::api::reply_grpc::ReplySegmentKind {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::reply_grpc::ReplySortMode {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
@@ -32247,6 +32585,32 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::reply_grpc::ReplySubject>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply_grpc::ReplyTapAction {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::None => 0.into_dart(),
+            Self::Webview => 1.into_dart(),
+            Self::Archive => 2.into_dart(),
+            Self::Article => 3.into_dart(),
+            Self::Opus => 4.into_dart(),
+            Self::Scheme => 5.into_dart(),
+            Self::Search => 6.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply_grpc::ReplyTapAction
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply_grpc::ReplyTapAction>
+    for crate::api::reply_grpc::ReplyTapAction
+{
+    fn into_into_dart(self) -> crate::api::reply_grpc::ReplyTapAction {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::reply_grpc::ReplyTextResult {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -32266,6 +32630,34 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::reply_grpc::ReplyTextResult>
     for crate::api::reply_grpc::ReplyTextResult
 {
     fn into_into_dart(self) -> crate::api::reply_grpc::ReplyTextResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::reply_grpc::ReplyThreadRow {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.source.into_into_dart().into_dart(),
+            self.index.into_into_dart().into_dart(),
+            self.id.into_into_dart().into_dart(),
+            self.placeholder.into_into_dart().into_dart(),
+            self.depth.into_into_dart().into_dart(),
+            self.parent.into_into_dart().into_dart(),
+            self.reason.into_into_dart().into_dart(),
+            self.collapsed.into_into_dart().into_dart(),
+            self.visible.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::reply_grpc::ReplyThreadRow
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::reply_grpc::ReplyThreadRow>
+    for crate::api::reply_grpc::ReplyThreadRow
+{
+    fn into_into_dart(self) -> crate::api::reply_grpc::ReplyThreadRow {
         self
     }
 }
@@ -38367,6 +38759,26 @@ impl SseEncode for Vec<crate::api::reply_grpc::ReplySearchItem> {
     }
 }
 
+impl SseEncode for Vec<crate::api::reply_grpc::ReplySegment> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::reply_grpc::ReplySegment>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::reply_grpc::ReplyThreadRow> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::reply_grpc::ReplyThreadRow>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::api::search::SearchActivityItem> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -40782,6 +41194,16 @@ impl SseEncode for Option<crate::api::reply_grpc::ReplyDetailPage> {
     }
 }
 
+impl SseEncode for Option<crate::api::reply_grpc::ReplyEmote> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::reply_grpc::ReplyEmote>::sse_encode(value, serializer);
+        }
+    }
+}
+
 impl SseEncode for Option<crate::api::reply_grpc::ReplyEntity> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -43019,6 +43441,40 @@ impl SseEncode for crate::api::reply::ReplyReplyListResult {
     }
 }
 
+impl SseEncode for crate::api::reply_grpc::ReplyRowReason {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::reply_grpc::ReplyRowReason::None => 0,
+                crate::api::reply_grpc::ReplyRowReason::Deleted => 1,
+                crate::api::reply_grpc::ReplyRowReason::Blocked => 2,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
+impl SseEncode for crate::api::reply_grpc::ReplyRowSource {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::reply_grpc::ReplyRowSource::Data => 0,
+                crate::api::reply_grpc::ReplyRowSource::Removed => 1,
+                crate::api::reply_grpc::ReplyRowSource::Synthetic => 2,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
 impl SseEncode for crate::api::reply_grpc::ReplySearchItem {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -43065,6 +43521,44 @@ impl SseEncode for crate::api::reply_grpc::ReplySearchListResult {
     }
 }
 
+impl SseEncode for crate::api::reply_grpc::ReplySegment {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <crate::api::reply_grpc::ReplySegmentKind>::sse_encode(self.kind, serializer);
+        <String>::sse_encode(self.text, serializer);
+        <Option<i64>>::sse_encode(self.mid, serializer);
+        <Option<String>>::sse_encode(self.topic, serializer);
+        <Option<crate::api::reply_grpc::ReplyEmote>>::sse_encode(self.emote, serializer);
+        <Option<crate::api::reply_grpc::ReplyVote>>::sse_encode(self.vote, serializer);
+        <Option<i64>>::sse_encode(self.seek_seconds, serializer);
+        <Option<String>>::sse_encode(self.prefix_icon, serializer);
+        <crate::api::reply_grpc::ReplyTapAction>::sse_encode(self.action, serializer);
+        <String>::sse_encode(self.target, serializer);
+    }
+}
+
+impl SseEncode for crate::api::reply_grpc::ReplySegmentKind {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::reply_grpc::ReplySegmentKind::Text => 0,
+                crate::api::reply_grpc::ReplySegmentKind::Emote => 1,
+                crate::api::reply_grpc::ReplySegmentKind::Mention => 2,
+                crate::api::reply_grpc::ReplySegmentKind::Topic => 3,
+                crate::api::reply_grpc::ReplySegmentKind::Vote => 4,
+                crate::api::reply_grpc::ReplySegmentKind::Timestamp => 5,
+                crate::api::reply_grpc::ReplySegmentKind::Link => 6,
+                crate::api::reply_grpc::ReplySegmentKind::Note => 7,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
 impl SseEncode for crate::api::reply_grpc::ReplySortMode {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -43093,6 +43587,27 @@ impl SseEncode for crate::api::reply_grpc::ReplySubject {
     }
 }
 
+impl SseEncode for crate::api::reply_grpc::ReplyTapAction {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::reply_grpc::ReplyTapAction::None => 0,
+                crate::api::reply_grpc::ReplyTapAction::Webview => 1,
+                crate::api::reply_grpc::ReplyTapAction::Archive => 2,
+                crate::api::reply_grpc::ReplyTapAction::Article => 3,
+                crate::api::reply_grpc::ReplyTapAction::Opus => 4,
+                crate::api::reply_grpc::ReplyTapAction::Scheme => 5,
+                crate::api::reply_grpc::ReplyTapAction::Search => 6,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
 impl SseEncode for crate::api::reply_grpc::ReplyTextResult {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -43100,6 +43615,21 @@ impl SseEncode for crate::api::reply_grpc::ReplyTextResult {
         <Option<String>>::sse_encode(self.error_kind, serializer);
         <Option<String>>::sse_encode(self.error_detail, serializer);
         <Option<i64>>::sse_encode(self.error_code, serializer);
+    }
+}
+
+impl SseEncode for crate::api::reply_grpc::ReplyThreadRow {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <crate::api::reply_grpc::ReplyRowSource>::sse_encode(self.source, serializer);
+        <Option<u32>>::sse_encode(self.index, serializer);
+        <i64>::sse_encode(self.id, serializer);
+        <Option<crate::api::reply_grpc::ReplyEntity>>::sse_encode(self.placeholder, serializer);
+        <i32>::sse_encode(self.depth, serializer);
+        <Option<u32>>::sse_encode(self.parent, serializer);
+        <crate::api::reply_grpc::ReplyRowReason>::sse_encode(self.reason, serializer);
+        <i32>::sse_encode(self.collapsed, serializer);
+        <bool>::sse_encode(self.visible, serializer);
     }
 }
 

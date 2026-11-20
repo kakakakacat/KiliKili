@@ -8,8 +8,8 @@ import 'package:kilikili/rust/api/grpc.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:kilikili/rust/api/transport.dart';
 
-// These functions are ignored because they are not marked as `pub`: `compile`, `content_from`, `content_into`, `control_from`, `detail_page_from`, `entity_from`, `entity_into`, `flat_page_from`, `flatten`, `fold_from`, `from_result`, `from_result`, `from_result`, `from_result`, `from_result`, `from_result`, `from_result`, `from_result`, `from_result`, `into_domain`, `into_domain`, `main_page_from`, `member_from`, `member_into`, `offset_of`, `search_page_from`, `subject_from`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These functions are ignored because they are not marked as `pub`: `compile`, `content_from`, `content_into`, `control_from`, `detail_page_from`, `entity_from`, `entity_into`, `flat_page_from`, `flatten`, `fold_from`, `from_result`, `from_result`, `from_result`, `from_result`, `from_result`, `from_result`, `from_result`, `from_result`, `from_result`, `into_domain`, `into_domain`, `main_page_from`, `member_from`, `member_into`, `offset_of`, `richtext_input`, `search_page_from`, `segment_from`, `subject_from`, `thread_item`, `thread_row_from`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// 取一页根评论（`MainList`）。
 ///
@@ -147,6 +147,53 @@ ReplyImportResult importStoredReplies({required String json}) =>
 /// 请求本身还在宿主侧（写操作按 ADR-013 单独迁），这里只接管字段映射。
 ReplyEntityResult replyFromRestJson({required String json}) =>
     RustLib.instance.api.crateApiReplyGrpcReplyFromRestJson(json: json);
+
+/// 把一条正文切成段。
+///
+/// ## 为什么没有 `XxxResult` 信封
+///
+/// 它没有失败态。分词用的正则由内容拼出来，编不过时领域层退化成「整条
+/// 消息一段纯文本」而不是报错——它不是过滤规则，失败不会让被屏蔽的内容
+/// 漏出来（见 `bili_domain::reply_richtext` 的模块文档）。给一个永远
+/// `error_kind == null` 的信封只会让调用点多一层解包。
+///
+/// ## `#[frb(sync)]` 与每次 build 的开销
+///
+/// 调用点是 widget 的 `build`，异步会让正文晚一帧出现。同步调用的代价是
+/// `content` 整个走一趟 FFI（包括分词用不到的 `pictures` / `members`）；
+/// 基线在同一个位置**每次 build 都要新编译一条正则**，那一笔更贵，所以
+/// 这不是净劣化。真要省，就把入参收窄成领域层的
+/// `ReplyRichTextInput`——现在不做，是因为多一个导出结构换不回这点开销。
+List<ReplySegment> buildReplySegments({
+  required ReplyContent content,
+  required ReplyControlInfo control,
+  required bool enableWordRe,
+  PlatformInt64? videoDurationMs,
+}) => RustLib.instance.api.crateApiReplyGrpcBuildReplySegments(
+  content: content,
+  control: control,
+  enableWordRe: enableWordRe,
+  videoDurationMs: videoDurationMs,
+);
+
+/// 把一页楼中楼接成 DFS 前序。
+///
+/// `data` 必须**已按 id 去重**。`removed` 传的是那张表的值，Rust 自己按
+/// id 建索引——导出面上不出现宿主的 `HashMap<int, ...>` 形状。
+///
+/// `#[frb(sync)]`：调用点是 `buildTree()`，基线那边本来就是同步的，改成
+/// 异步会把整条楼中楼的渲染推迟一帧，而这里只是一页几十条的排序与拍平。
+List<ReplyThreadRow> buildReplyThread({
+  required List<ReplyEntity> data,
+  required List<ReplyEntity> removed,
+  required PlatformInt64 rootId,
+  required int foldDepth,
+}) => RustLib.instance.api.crateApiReplyGrpcBuildReplyThread(
+  data: data,
+  removed: removed,
+  rootId: rootId,
+  foldDepth: foldDepth,
+);
 
 class ReplyBytesResult {
   final Uint8List? data;
@@ -990,6 +1037,29 @@ class ReplyPicture {
           imgSize == other.imgSize;
 }
 
+/// 这一行为什么显示不出原文。
+enum ReplyRowReason {
+  none,
+
+  /// 服务端没下发，按「已删除」占位。
+  deleted,
+
+  /// 被本地过滤规则删掉，按「已屏蔽」占位。
+  blocked,
+}
+
+/// 一行的内容从哪来。
+enum ReplyRowSource {
+  /// 传进去的那一页，按 [`ReplyThreadRow::index`] 取。
+  data,
+
+  /// 被过滤规则删掉、从 `removed` 里捞回来的，按 [`ReplyThreadRow::id`] 取。
+  removed,
+
+  /// 合成出来的占位，整条在 [`ReplyThreadRow::placeholder`] 里。
+  synthetic,
+}
+
 /// 评论区搜索出来的一条稿件 / 专栏。
 class ReplySearchItem {
   final String url;
@@ -1103,6 +1173,91 @@ class ReplySearchListResult {
           errorCode == other.errorCode;
 }
 
+/// 正文里的一段。宿主按 [`Self::kind`] 建对应的 `InlineSpan`。
+class ReplySegment {
+  final ReplySegmentKind kind;
+
+  /// 要画出来的文本。表情段是占位符原文。
+  final String text;
+
+  /// Mention 段：被 @ 的 mid。
+  final PlatformInt64? mid;
+
+  /// Topic 段：不带 `#` 的话题名。
+  final String? topic;
+
+  /// Emote 段：表情本身。
+  final ReplyEmote? emote;
+
+  /// Vote 段：投票 id 与标题。
+  final ReplyVote? vote;
+
+  /// Timestamp 段：要跳到的秒数。`None` = 超出稿件时长或解析不出来，
+  /// 此时只当纯文本画（不变色、不可点）。
+  final PlatformInt64? seekSeconds;
+
+  /// Link 段：标题前的小图标。
+  final String? prefixIcon;
+  final ReplyTapAction action;
+
+  /// [`Self::action`] 的载荷。
+  final String target;
+
+  const ReplySegment({
+    required this.kind,
+    required this.text,
+    this.mid,
+    this.topic,
+    this.emote,
+    this.vote,
+    this.seekSeconds,
+    this.prefixIcon,
+    required this.action,
+    required this.target,
+  });
+
+  @override
+  int get hashCode =>
+      kind.hashCode ^
+      text.hashCode ^
+      mid.hashCode ^
+      topic.hashCode ^
+      emote.hashCode ^
+      vote.hashCode ^
+      seekSeconds.hashCode ^
+      prefixIcon.hashCode ^
+      action.hashCode ^
+      target.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ReplySegment &&
+          runtimeType == other.runtimeType &&
+          kind == other.kind &&
+          text == other.text &&
+          mid == other.mid &&
+          topic == other.topic &&
+          emote == other.emote &&
+          vote == other.vote &&
+          seekSeconds == other.seekSeconds &&
+          prefixIcon == other.prefixIcon &&
+          action == other.action &&
+          target == other.target;
+}
+
+/// 一段正文是什么。镜像 [`richtext::ReplySegmentKind`]。
+enum ReplySegmentKind {
+  text,
+  emote,
+  mention,
+  topic,
+  vote,
+  timestamp,
+  link,
+  note,
+}
+
 /// 根评论列表的排序。
 enum ReplySortMode {
   time,
@@ -1152,6 +1307,30 @@ class ReplySubject {
           rootText == other.rootText;
 }
 
+/// 点下去干什么。载荷统一放 [`ReplySegment::target`]。
+enum ReplyTapAction {
+  /// 不可点，界面按次要色画。
+  none,
+
+  /// 内置 webview 打开 `target`。
+  webview,
+
+  /// 稿件页。`target` 是 av/bv 字面量。
+  archive,
+
+  /// 专栏。`target` 是 cvid。
+  article,
+
+  /// 图文动态。`target` 是 opus id。
+  opus,
+
+  /// app scheme 路由。`target` 是服务端给的跳转串。
+  scheme,
+
+  /// 搜索结果页。`target` 是关键词。
+  search,
+}
+
 class ReplyTextResult {
   final String? data;
   final String? errorKind;
@@ -1181,6 +1360,76 @@ class ReplyTextResult {
           errorKind == other.errorKind &&
           errorDetail == other.errorDetail &&
           errorCode == other.errorCode;
+}
+
+/// DFS 前序里的一行。
+///
+/// **不带实体**（合成出来的占位除外）：宿主删评论时按 `identical` 在原始
+/// 列表里定位，把实体重新发一遍回去会让那个判定失效。见
+/// `bili_domain::reply_thread` 的模块文档。
+class ReplyThreadRow {
+  final ReplyRowSource source;
+
+  /// `Data`：传进去那一页的下标。
+  final int? index;
+
+  /// `Removed` / `Synthetic`：评论 id。
+  final PlatformInt64 id;
+
+  /// `Synthetic`：合成出来的占位。
+  final ReplyEntity? placeholder;
+
+  /// 0 是根评论的直接子节点。
+  final int depth;
+
+  /// 父**行**的下标；`None` 表示挂在根评论下。
+  final int? parent;
+  final ReplyRowReason reason;
+
+  /// 这一行被自动折叠起来的后代数量。0 表示没折叠。
+  final int collapsed;
+
+  /// 这一刻画不画得出来。折叠节点的整棵子树为 false。
+  final bool visible;
+
+  const ReplyThreadRow({
+    required this.source,
+    this.index,
+    required this.id,
+    this.placeholder,
+    required this.depth,
+    this.parent,
+    required this.reason,
+    required this.collapsed,
+    required this.visible,
+  });
+
+  @override
+  int get hashCode =>
+      source.hashCode ^
+      index.hashCode ^
+      id.hashCode ^
+      placeholder.hashCode ^
+      depth.hashCode ^
+      parent.hashCode ^
+      reason.hashCode ^
+      collapsed.hashCode ^
+      visible.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ReplyThreadRow &&
+          runtimeType == other.runtimeType &&
+          source == other.source &&
+          index == other.index &&
+          id == other.id &&
+          placeholder == other.placeholder &&
+          depth == other.depth &&
+          parent == other.parent &&
+          reason == other.reason &&
+          collapsed == other.collapsed &&
+          visible == other.visible;
 }
 
 class ReplyTranslationResult {

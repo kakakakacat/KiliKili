@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:kilikili/common/assets.dart';
-import 'package:kilikili/common/constants.dart';
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/custom_icon.dart';
@@ -33,12 +32,10 @@ import 'package:kilikili/utils/bili_utils.dart';
 import 'package:kilikili/utils/color_utils.dart';
 import 'package:kilikili/utils/danmaku_utils.dart';
 import 'package:kilikili/utils/date_utils.dart';
-import 'package:kilikili/utils/duration_utils.dart';
 import 'package:kilikili/utils/extension/context_ext.dart';
 import 'package:kilikili/utils/extension/iterable_ext.dart';
 import 'package:kilikili/utils/extension/num_ext.dart';
 import 'package:kilikili/utils/extension/selectable_region_ext.dart';
-import 'package:kilikili/utils/extension/string_ext.dart';
 import 'package:kilikili/utils/extension/theme_ext.dart';
 import 'package:kilikili/utils/feed_back.dart';
 import 'package:kilikili/utils/global_data.dart';
@@ -439,9 +436,6 @@ class ReplyItemGrpc extends StatelessWidget {
   final VoidCallback? toggleCollapse;
   final VoidCallback? onScrollLeft;
 
-  static final _voteRegExp = RegExp(r"^\{vote:\d+?\}$");
-  static final _timeRegExp = RegExp(r'^(?:\d+[:：])?\d+[:：]\d+$');
-  static bool enableWordRe = Pref.enableWordRe;
   static int? replyLengthLimit = Pref.replyLengthLimit;
 
   void _showMore(BuildContext context) => showModalBottomSheet(
@@ -982,280 +976,174 @@ class ReplyItemGrpc extends StatelessWidget {
     );
   }
 
+  /// 当前稿件时长（毫秒），决定一个时间戳可不可点。
+  ///
+  /// 取不到播放器时给 null：基线在这里是 `Get.find` 抛异常后 `isValid`
+  /// 保持 false，两边结果一样，只是一边靠异常一边靠空值。
+  ///
+  /// **先问 `isRegistered` 再 `find`**，不是洁癖：基线只在正文里真的出现
+  /// 时间戳时才走这一步，而分词的入参每次 build 都要它。评论区也挂在动态
+  /// 详情这类没有 [VideoDetailController] 的页面上，在那里每条评论的每次
+  /// build 都抛一次异常，代价比查一次注册表大得多。
+  int? _videoDurationMs() {
+    try {
+      final tag = getTag?.call() ?? Get.arguments?['heroTag'];
+      if (tag is! String) return null;
+      if (!Get.isRegistered<VideoDetailController>(tag: tag)) return null;
+      return Get.find<VideoDetailController>(tag: tag).data.timeLength;
+    } catch (e) {
+      if (kDebugMode) debugPrint('failed to resolve duration: $e');
+      return null;
+    }
+  }
+
+  /// 正文。
+  ///
+  /// 「哪一段是什么、点下去跳哪」在 `bili_domain::reply_richtext`
+  /// （#179）。这里只把段落翻成 `InlineSpan`——图片、配色、手势识别器与
+  /// 具体路由，换一个宿主框架时本来就要重写的那些。
   InlineSpan _buildMessage(
     BuildContext context,
     ColorScheme colorScheme,
     ReplyContent content,
     ReplyControlInfo replyControl,
   ) {
-    final List<InlineSpan> spanChildren = <InlineSpan>[];
-    bool hasNote = false;
+    return TextSpan(
+      children: [
+        for (final segment in RustReplyGrpc.segments(
+          content: content,
+          control: replyControl,
+          videoDurationMs: _videoDurationMs(),
+        ))
+          _buildSegment(context, colorScheme, segment),
+      ],
+    );
+  }
 
-    final urlKeys = content.urls.keys;
-    // 构建正则表达式
-    final List<String> specialTokens = [
-      ...content.emotes.keys,
-      ...content.topics.map((e) => '#$e#'),
-      ...content.atNameToMid.keys.map((e) => '@$e'),
-      ...urlKeys,
-    ];
-    String patternStr = [
-      ...specialTokens.map(RegExp.escape),
-      r'(?:\d+[:：])?\d+[:：]\d+',
-      r'\{vote:\d+?\}',
-      Constants.urlRegex.pattern,
-    ].join('|');
-    final RegExp pattern = RegExp(patternStr);
+  InlineSpan _buildSegment(
+    BuildContext context,
+    ColorScheme colorScheme,
+    ReplySegment segment,
+  ) {
+    switch (segment.kind) {
+      case ReplySegmentKind.text:
+        return TextSpan(text: segment.text);
 
-    late List<String> matchedUrls = [];
-
-    void addPlainTextSpan(str) {
-      spanChildren.add(TextSpan(text: str));
-    }
-
-    void addUrl(String matchStr, ReplyUrl url, {bool addPlainText = false}) {
-      if (url.isWordSearch && !enableWordRe) {
-        if (addPlainText) {
-          addPlainTextSpan(matchStr);
-        }
-        return;
-      }
-      // 「这条链接是不是笔记」的判据（埋点串的前缀）在 Rust 算好了。
-      final isCv = url.isNote;
-      if (isCv) {
-        hasNote = true;
-      }
-      final prefixIcon = url.prefixIcon;
-      final children = [
-        if (!isCv && prefixIcon != null)
-          WidgetSpan(
-            child: CachedNetworkImage(
-              height: 19,
-              memCacheHeight: 19.cacheSize(context),
-              color: colorScheme.primary,
-              imageUrl: ImageUtils.thumbnailUrl(prefixIcon),
-              placeholder: (_, _) => const SizedBox.shrink(),
+      case ReplySegmentKind.emote:
+        final emote = segment.emote!;
+        final size = emote.size * 20.0;
+        return WidgetSpan(
+          child: emoteTooltipBuilder(
+            url: emote.displayUrl,
+            emote: segment.text,
+            triggerMode: .tap,
+            jumpUrl: emote.jumpUrl,
+            colorScheme: colorScheme,
+            child: NetworkImgLayer(
+              src: emote.displayUrl,
+              type: .emote,
+              width: size,
+              height: size,
             ),
           ),
-        TextSpan(
-          text: isCv ? '[笔记] ' : url.title,
+        );
+
+      case ReplySegmentKind.mention:
+        return TextSpan(
+          text: segment.text,
           style: TextStyle(color: colorScheme.primary),
           recognizer: NoDeadlineTapGestureRecognizer()
-            ..onTap = () {
-              if (url.appUrlSchema.isEmpty) {
-                if (RegExp(
-                  r'^(av|bv)',
-                  caseSensitive: false,
-                ).hasMatch(matchStr)) {
-                  UrlUtils.matchUrlPush(matchStr, '');
-                } else {
-                  RegExpMatch? match = RegExp(
-                    r'^cv(\d+)$|/read/cv(\d+)|note-app/view\?cvid=(\d+)',
-                    caseSensitive: false,
-                  ).firstMatch(matchStr);
-                  String? cvid =
-                      match?.group(1) ?? match?.group(2) ?? match?.group(3);
-                  if (cvid != null) {
-                    ArticlePage.toArticlePage(id: cvid, type: .read);
-                    return;
-                  }
-                  PageUtils.handleWebview(matchStr);
-                }
-              } else {
-                if (url.isWordSearch) {
-                  Get.toNamed(
-                    '/searchResult',
-                    parameters: {'keyword': url.title},
-                  );
-                } else {
-                  PageUtils.handleWebview(matchStr);
-                }
-              }
-            },
-        ),
-      ];
-      if (isCv) {
-        spanChildren.insertAll(0, children);
-      } else {
-        spanChildren.addAll(children);
-      }
-    }
+            ..onTap = () => Get.toNamed('/member?mid=${segment.mid}'),
+        );
 
-    // 分割文本并处理每个部分
-    content.message.splitMapJoin(
-      pattern,
-      onMatch: (Match match) {
-        String matchStr = match[0]!;
-        late final name = matchStr.substring(1);
-        late final topic = matchStr.substring1;
-        if (content.emotes.containsKey(matchStr)) {
-          // 处理表情
-          final emote = content.emotes[matchStr]!;
-          final size = emote.size * 20.0;
-          // `webp → gif → 原图` 的回退链在 Rust 算完了。
-          final url = emote.displayUrl;
-          spanChildren.add(
-            WidgetSpan(
-              child: emoteTooltipBuilder(
-                url: url,
-                emote: matchStr,
-                triggerMode: .tap,
-                jumpUrl: emote.jumpUrl,
-                colorScheme: colorScheme,
-                child: NetworkImgLayer(
-                  src: url,
-                  type: .emote,
-                  width: size,
-                  height: size,
+      case ReplySegmentKind.vote:
+        final vote = segment.vote!;
+        return TextSpan(
+          text: '投票: ${vote.title}',
+          style: TextStyle(color: colorScheme.primary),
+          recognizer: NoDeadlineTapGestureRecognizer()
+            ..onTap = () => showVoteDialog(context, vote.id),
+        );
+
+      case ReplySegmentKind.timestamp:
+        final seconds = segment.seekSeconds;
+        if (seconds == null) return TextSpan(text: segment.text);
+        // 可点的那些两侧补一个空格，让它在正文里像个按钮。排版是宿主的
+        // 事，Rust 只负责说它可不可点。
+        return TextSpan(
+          text: ' ${segment.text} ',
+          style: TextStyle(color: colorScheme.primary),
+          recognizer: NoDeadlineTapGestureRecognizer()
+            ..onTap = () => _seekTo(segment.text, seconds),
+        );
+
+      case ReplySegmentKind.topic:
+      case ReplySegmentKind.note:
+        return TextSpan(
+          text: segment.text,
+          style: TextStyle(
+            // 两个跳转目标都没有的「[笔记]」只能画成不可点的样子。
+            color: segment.action == ReplyTapAction.none
+                ? colorScheme.secondary
+                : colorScheme.primary,
+          ),
+          recognizer: _recognizer(segment),
+        );
+
+      case ReplySegmentKind.link:
+        final prefixIcon = segment.prefixIcon;
+        return TextSpan(
+          children: [
+            if (prefixIcon != null)
+              WidgetSpan(
+                child: CachedNetworkImage(
+                  height: 19,
+                  memCacheHeight: 19.cacheSize(context),
+                  color: colorScheme.primary,
+                  imageUrl: ImageUtils.thumbnailUrl(prefixIcon),
+                  placeholder: (_, _) => const SizedBox.shrink(),
                 ),
               ),
-            ),
-          );
-        } else if (matchStr.startsWith("@") &&
-            content.atNameToMid.containsKey(name)) {
-          // 处理@用户
-          spanChildren.add(
             TextSpan(
-              text: matchStr,
+              text: segment.text,
               style: TextStyle(color: colorScheme.primary),
-              recognizer: NoDeadlineTapGestureRecognizer()
-                ..onTap = () =>
-                    Get.toNamed('/member?mid=${content.atNameToMid[name]}'),
+              recognizer: _recognizer(segment),
             ),
-          );
-        } else if (_voteRegExp.hasMatch(matchStr) && content.vote != null) {
-          final vote = content.vote!;
-          spanChildren.add(
-            TextSpan(
-              text: '投票: ${vote.title}',
-              style: TextStyle(color: colorScheme.primary),
-              recognizer: NoDeadlineTapGestureRecognizer()
-                ..onTap = () => showVoteDialog(context, vote.id),
-            ),
-          );
-        } else if (_timeRegExp.hasMatch(matchStr)) {
-          matchStr = matchStr.replaceAll('：', ':');
-          bool isValid = false;
-          try {
-            final tag = getTag?.call() ?? Get.arguments?['heroTag'];
-            if (tag != null) {
-              final ctr = Get.find<VideoDetailController>(tag: tag);
-              isValid =
-                  DurationUtils.parseDuration(matchStr) * 1000 <=
-                  ctr.data.timeLength!;
-            }
-          } catch (e) {
-            if (kDebugMode) debugPrint('failed to validate: $e');
-          }
-          spanChildren.add(
-            TextSpan(
-              text: isValid ? ' $matchStr ' : matchStr,
-              style: isValid ? TextStyle(color: colorScheme.primary) : null,
-              recognizer: isValid
-                  ? (NoDeadlineTapGestureRecognizer()
-                      ..onTap = () {
-                        try {
-                          SmartDialog.showToast('跳转至：$matchStr');
-                          Get.find<VideoDetailController>(
-                            tag: Get.arguments['heroTag'],
-                          ).plPlayerController.seekTo(
-                            Duration(
-                              seconds: DurationUtils.parseDuration(matchStr),
-                            ),
-                          );
-                        } catch (e) {
-                          SmartDialog.showToast('跳转失败: $e');
-                        }
-                      })
-                  : null,
-            ),
-          );
-        } else {
-          final url = content.urls[matchStr];
-          if (url != null && !matchedUrls.contains(matchStr)) {
-            addUrl(matchStr, url, addPlainText: true);
-            // 只显示一次
-            matchedUrls.add(matchStr);
-          } else if (matchStr.length > 1 && content.topics.contains(topic)) {
-            spanChildren.add(
-              TextSpan(
-                text: matchStr,
-                style: TextStyle(color: colorScheme.primary),
-                recognizer: NoDeadlineTapGestureRecognizer()
-                  ..onTap = () {
-                    Get.toNamed(
-                      '/searchResult',
-                      parameters: {'keyword': topic},
-                    );
-                  },
-              ),
-            );
-          } else if (Constants.urlRegex.hasMatch(matchStr)) {
-            spanChildren.add(
-              TextSpan(
-                text: matchStr,
-                style: TextStyle(color: colorScheme.primary),
-                recognizer: NoDeadlineTapGestureRecognizer()
-                  ..onTap = () => PageUtils.handleWebview(matchStr),
-              ),
-            );
-          } else {
-            addPlainTextSpan(matchStr);
-          }
-        }
-        return '';
-      },
-      onNonMatch: (String nonMatchStr) {
-        addPlainTextSpan(nonMatchStr);
-        return nonMatchStr;
-      },
-    );
-
-    // if (urlKeys.isNotEmpty) {
-    //   List<String> unmatchedItems = urlKeys
-    //       .where((url) => !matchedUrls.contains(url))
-    //       .toList();
-    //   if (unmatchedItems.isNotEmpty) {
-    //     for (final patternStr in unmatchedItems) {
-    //       addUrl(patternStr, content.urls[patternStr]!);
-    //     }
-    //   }
-    // }
-
-    if (!hasNote && replyControl.isNote && replyControl.isNoteV2) {
-      final Color color;
-      NoDeadlineTapGestureRecognizer? recognizer;
-
-      // `note` 只在两个跳转目标至少有一个时才有值（判定在 Rust），
-      // 没有就只画一个不可点的「[笔记]」。
-      final note = content.note;
-      if (note != null) {
-        color = colorScheme.primary;
-        recognizer = NoDeadlineTapGestureRecognizer()
-          ..onTap = () {
-            if (note.clickUrl case final clickUrl?) {
-              PiliScheme.routePushFromUrl(clickUrl);
-            } else {
-              ArticlePage.toArticlePage(
-                id: note.opusId.toString(),
-                type: .opus,
-              );
-            }
-          };
-      } else {
-        color = colorScheme.secondary;
-      }
-      spanChildren.insert(
-        0,
-        TextSpan(
-          text: '[笔记] ',
-          style: TextStyle(color: color),
-          recognizer: recognizer,
-        ),
-      );
+          ],
+        );
     }
+  }
 
-    return TextSpan(children: spanChildren);
+  NoDeadlineTapGestureRecognizer? _recognizer(ReplySegment segment) {
+    final onTap = _onTap(segment);
+    if (onTap == null) return null;
+    return NoDeadlineTapGestureRecognizer()..onTap = onTap;
+  }
+
+  /// 段落的点击行为。跳哪由 Rust 定（[ReplySegment.action]），这里只把它
+  /// 兑换成本宿主的路由调用。
+  VoidCallback? _onTap(ReplySegment segment) => switch (segment.action) {
+    ReplyTapAction.none => null,
+    ReplyTapAction.webview => () => PageUtils.handleWebview(segment.target),
+    ReplyTapAction.archive => () => UrlUtils.matchUrlPush(segment.target, ''),
+    ReplyTapAction.article => () =>
+      ArticlePage.toArticlePage(id: segment.target, type: .read),
+    ReplyTapAction.opus => () =>
+      ArticlePage.toArticlePage(id: segment.target, type: .opus),
+    ReplyTapAction.scheme => () => PiliScheme.routePushFromUrl(segment.target),
+    ReplyTapAction.search => () =>
+      Get.toNamed('/searchResult', parameters: {'keyword': segment.target}),
+  };
+
+  void _seekTo(String label, int seconds) {
+    try {
+      SmartDialog.showToast('跳转至：$label');
+      Get.find<VideoDetailController>(
+        tag: Get.arguments['heroTag'],
+      ).plPlayerController.seekTo(Duration(seconds: seconds));
+    } catch (e) {
+      SmartDialog.showToast('跳转失败: $e');
+    }
   }
 
   Widget _morePanel({

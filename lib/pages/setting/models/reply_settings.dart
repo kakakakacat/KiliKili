@@ -108,7 +108,7 @@ List<SettingsModel> get replySettings => [
     leading: const Icon(Icons.search_outlined),
     setKey: SettingBoxKey.enableWordRe,
     defaultVal: false,
-    onChanged: (value) => ReplyItemGrpc.enableWordRe = value,
+    onChanged: (value) => RustReplyGrpc.enableWordRe = value,
   ),
   const SwitchModel(
     title: '默认展示评论区',

@@ -263,10 +263,10 @@ fn build_pattern(input: &ReplyRichTextInput) -> String {
 /// 直接不发，省掉宿主一次无谓的 span。
 #[must_use]
 pub fn segment(input: &ReplyRichTextInput, settings: &ReplyRichTextSettings) -> Vec<ReplySegment> {
-    let Ok(pattern) = Regex::new(&build_pattern(input)) else {
-        // 见模块文档：分词不是过滤，失败降级成纯文本。
-        return vec![ReplySegment::text(input.message.clone())];
-    };
+    // 见模块文档：分词不是过滤，正则编不过就降级成一整段纯文本。注意是
+    // 降级而不是提前返回——`[笔记]` 前缀的判定在下面，它跟正文切不切得开
+    // 没有关系，早返回会把它一起丢掉。
+    let pattern = Regex::new(&build_pattern(input)).ok();
 
     // `front` 收的是要挪到正文最前面的那些（笔记链接）。基线每命中一条
     // 就 `insertAll(0, ...)`，于是多条笔记链接的相对顺序是**倒序**——
@@ -277,23 +277,28 @@ pub fn segment(input: &ReplyRichTextInput, settings: &ReplyRichTextSettings) -> 
     let mut has_note = false;
     let mut cursor = 0usize;
 
-    for m in pattern.find_iter(&input.message) {
-        if m.start() > cursor {
-            body.push(ReplySegment::text(&input.message[cursor..m.start()]));
+    match pattern.as_ref() {
+        Some(pattern) => {
+            for m in pattern.find_iter(&input.message) {
+                if m.start() > cursor {
+                    body.push(ReplySegment::text(&input.message[cursor..m.start()]));
+                }
+                cursor = m.end();
+                classify(
+                    m.as_str(),
+                    input,
+                    settings,
+                    &mut front,
+                    &mut body,
+                    &mut matched_urls,
+                    &mut has_note,
+                );
+            }
+            if cursor < input.message.len() {
+                body.push(ReplySegment::text(&input.message[cursor..]));
+            }
         }
-        cursor = m.end();
-        classify(
-            m.as_str(),
-            input,
-            settings,
-            &mut front,
-            &mut body,
-            &mut matched_urls,
-            &mut has_note,
-        );
-    }
-    if cursor < input.message.len() {
-        body.push(ReplySegment::text(&input.message[cursor..]));
+        None => body.push(ReplySegment::text(input.message.clone())),
     }
 
     // 正文里没有笔记链接，但这条评论被标成笔记：补一个前缀。两个跳转

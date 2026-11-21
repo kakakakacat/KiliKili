@@ -4,45 +4,46 @@
 <rect width="920" height="472" rx="16" fill="#0d1117"/>
 <rect x="1" y="1" width="918" height="470" rx="15" fill="none" stroke="#30363d"/>
 <text x="28" y="42" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="22" font-weight="700">代码修改 · Code changes</text>
-<text x="28" y="72" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">自 fork 起 +111,733 / −32,872 行 · 不含生成文件与上游同步</text>
+<text x="28" y="72" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="14" font-weight="400">自 fork 起 +131,386 / −36,977 行 · 不含生成文件与上游同步</text>
 <rect x="28" y="88" width="11" height="11" rx="2" fill="#3fb950"/>
 <text x="45" y="98" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">新增</text>
 <rect x="91" y="88" width="11" height="11" rx="2" fill="#f85149"/>
 <text x="108" y="98" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">删除</text>
-<text x="28" y="134" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">80634f98</text>
-<text x="112" y="134" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">#160 feat(rust): 用户空间与「我的」迁至 typed…</text>
-<rect x="440" y="121" width="236" height="16" rx="3" fill="#3fb950"/>
-<rect x="676" y="121" width="64" height="16" rx="3" fill="#f85149"/>
-<text x="755" y="134" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+22,488 / −6,073</text>
-<text x="28" y="177" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">ad186d5b</text>
-<text x="112" y="177" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">fix(login): 公钥下限按实测改回 1024 位（#161）…</text>
-<rect x="440" y="164" width="1" height="16" rx="3" fill="#3fb950"/>
-<text x="755" y="177" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+125 / −13</text>
-<text x="28" y="220" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">b43db8d6</text>
-<text x="112" y="220" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">#159 feat(live): 将直播弹幕长连接迁到 Rust（S…</text>
-<rect x="440" y="207" width="42" height="16" rx="3" fill="#3fb950"/>
-<rect x="482" y="207" width="20" height="16" rx="3" fill="#f85149"/>
-<text x="755" y="220" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+3,951 / −1,917</text>
-<text x="28" y="263" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">aa211d98</text>
-<text x="112" y="263" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">fix(rust): 错误描述不再带上含凭据的 URL（#156） …</text>
-<rect x="440" y="250" width="1" height="16" rx="3" fill="#3fb950"/>
-<text x="755" y="263" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+131 / −16</text>
-<text x="28" y="306" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">b5ea24a1</text>
-<text x="112" y="306" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">#153 feat(rust): 登录流程迁到 Rust（S14 #…</text>
-<rect x="440" y="293" width="55" height="16" rx="3" fill="#3fb950"/>
-<rect x="495" y="293" width="12" height="16" rx="3" fill="#f85149"/>
-<text x="755" y="306" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+5,268 / −1,187</text>
-<text x="28" y="349" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">3ff214b6</text>
-<text x="112" y="349" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">fix(login): 短信验证码空白页与登录交互（#140） (#…</text>
+<text x="28" y="134" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">1d713916</text>
+<text x="112" y="134" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">#186 把 Android NDK 升到 r30 并在仓库里显式钉…</text>
+<rect x="440" y="121" width="0" height="16" rx="3" fill="#3fb950"/>
+<text x="755" y="134" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+7 / −1</text>
+<text x="28" y="177" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">54ad2549</text>
+<text x="112" y="177" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">#183 为 Linux/Windows/macOS 发布包接入可复…</text>
+<rect x="440" y="164" width="3" height="16" rx="3" fill="#3fb950"/>
+<text x="755" y="177" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+89 / −0</text>
+<text x="28" y="220" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">191af5f1</text>
+<text x="112" y="220" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">#180 S2 续单：富文本分词与线程化视图合成下沉到 Rust（#…</text>
+<rect x="440" y="207" width="110" height="16" rx="3" fill="#3fb950"/>
+<rect x="550" y="207" width="18" height="16" rx="3" fill="#f85149"/>
+<text x="755" y="220" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+3,412 / −557</text>
+<text x="28" y="263" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">de0899f8</text>
+<text x="112" y="263" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">#178 S2 续单：评论 gRPC 取数迁 Rust，拆除 rep…</text>
+<rect x="440" y="250" width="235" height="16" rx="3" fill="#3fb950"/>
+<rect x="675" y="250" width="41" height="16" rx="3" fill="#f85149"/>
+<text x="755" y="263" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+7,282 / −1,280</text>
+<text x="28" y="306" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">e94f07e7</text>
+<text x="112" y="306" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">#177 feat(rust): 评论过滤规则下沉到 Rust（#5…</text>
+<rect x="440" y="293" width="44" height="16" rx="3" fill="#3fb950"/>
+<rect x="484" y="293" width="3" height="16" rx="3" fill="#f85149"/>
+<text x="755" y="306" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+1,375 / −85</text>
+<text x="28" y="349" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">13a85fdc</text>
+<text x="112" y="349" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">#174 feat(ui): 登录页按钮改为胶囊＋图标（#162）</text>
 <rect x="440" y="336" width="6" height="16" rx="3" fill="#3fb950"/>
-<rect x="446" y="336" width="1" height="16" rx="3" fill="#f85149"/>
-<text x="755" y="349" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+612 / −140</text>
-<text x="28" y="392" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">20fc81ef</text>
-<text x="112" y="392" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">#151 feat(player): 音量提示改为 iOS 风格竖向…</text>
-<rect x="440" y="379" width="1" height="16" rx="3" fill="#3fb950"/>
-<text x="755" y="392" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+139 / −45</text>
-<text x="28" y="435" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">3065037e</text>
-<text x="112" y="435" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">feat(ui): 首页分类改为带图标的胶囊（#138） (#152)</text>
-<rect x="440" y="422" width="1" height="16" rx="3" fill="#3fb950"/>
-<text x="755" y="435" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+64 / −2</text>
+<rect x="446" y="336" width="3" height="16" rx="3" fill="#f85149"/>
+<text x="755" y="349" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+194 / −80</text>
+<text x="28" y="392" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">54895d59</text>
+<text x="112" y="392" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">#173 fix(ui): 登出 main 账号成功后返回首页（#1…</text>
+<rect x="440" y="379" width="0" height="16" rx="3" fill="#3fb950"/>
+<text x="755" y="392" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+14 / −1</text>
+<text x="28" y="435" fill="#58a6ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="13" font-weight="600">27bcf6e5</text>
+<text x="112" y="435" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">#170 feat(rust): 收藏夹 34 条接口迁到 type…</text>
+<rect x="440" y="422" width="233" height="16" rx="3" fill="#3fb950"/>
+<rect x="673" y="422" width="67" height="16" rx="3" fill="#f85149"/>
+<text x="755" y="435" fill="#e6edf3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, sans-serif" font-size="12" font-weight="400">+7,220 / −2,073</text>
 </svg>

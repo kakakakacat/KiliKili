@@ -55,6 +55,82 @@ jobs:
           mv build/windows/x64/runner/Release/* Release/KiliKili-Win/
           mv dist/**/*.exe KiliKili-Win-Setup/KiliKili_windows_${{env.version}}_x64_setup.exe
 
+      # Windows 的发布身份是一张代码签名证书（约定见 docs/release/SIGNING.md）。
+      # 没配 secret 时跳过，产物与以前一样未签名——SmartScreen 会拦一道，
+      # 用户要点「更多信息 → 仍要运行」。这一步只负责把该说的话说清楚，
+      # 不要让「没签名」这件事只存在于没人看的日志里（#146 的教训）。
+      #
+      # 这里走的是 .pfx 那条路。2023-06-01 起 CA/B Forum 要求代码签名证书的
+      # 私钥存在硬件或云端 HSM 里，新签发的 OV/EV 证书**不会**是一个能下载的
+      # .pfx——选定云签名供应商（Azure Trusted Signing 等）后，这一步要加一个
+      # 走 `signtool /dlib` 的分支。详见 docs/release/SIGNING.md §3.2。
+      #
+      # 刻意只签这两个最终产物：便携版里的 kilikili.exe 和安装包本身。
+      # 安装包内部那一份 exe 签不到——fastforge 一条命令同时做 flutter build
+      # 和 Inno Setup 打包，等它跑完时 exe 已经被压进安装包了。要连那一份
+      # 一起签，得把 fastforge 拆成「先 build、签、再 package」，而 package
+      # 会重跑一次 flutter build、很可能覆盖掉刚签好的 exe。没有证书在手时
+      # 这个改法验证不了，留到真拿到证书、能在 CI 里跑通一次时再动（#121）。
+      - name: 签名 Windows 产物
+        id: signing
+        shell: pwsh
+        env:
+          CERT_PFX_BASE64: ${{ secrets.WINDOWS_CERT_PFX_BASE64 }}
+          CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
+          CERT_SHA1: ${{ secrets.WINDOWS_CERT_SHA1 }}
+          TIMESTAMP_URL: ${{ vars.WINDOWS_TIMESTAMP_URL }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          if ([string]::IsNullOrEmpty($env:CERT_PFX_BASE64)) {
+            Write-Host "未配置 WINDOWS_CERT_PFX_BASE64：本次 Windows 产物不签名。"
+            Write-Host "用户首次运行会看到 SmartScreen 警告；这些包不应作为正式发布分发。"
+            Write-Host "配置步骤见 docs/release/SIGNING.md。"
+            "signing=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            exit 0
+          }
+
+          # signtool 随 Windows SDK 安装，路径带版本号，runner 镜像换版本时会变。
+          $signtool = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\signtool.exe" |
+            Sort-Object FullName | Select-Object -Last 1
+          if (-not $signtool) { throw "找不到 signtool.exe" }
+          Write-Host "signtool: $($signtool.FullName)"
+
+          $pfx = Join-Path $env:RUNNER_TEMP "codesign.pfx"
+          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:CERT_PFX_BASE64))
+
+          # 时间戳必须打：证书过期后，已签名的包仍然可信，否则一到期全部失效。
+          $ts = $env:TIMESTAMP_URL
+          if ([string]::IsNullOrEmpty($ts)) { $ts = "http://timestamp.digicert.com" }
+
+          $targets = @(
+            "Release/KiliKili-Win/kilikili.exe",
+            "KiliKili-Win-Setup/KiliKili_windows_${{env.version}}_x64_setup.exe"
+          )
+          foreach ($t in $targets) {
+            if (-not (Test-Path $t)) { throw "待签名文件不存在: $t" }
+            & $signtool.FullName sign /f $pfx /p $env:CERT_PASSWORD `
+              /fd sha256 /tr $ts /td sha256 /v $t
+            if ($LASTEXITCODE -ne 0) { throw "签名失败: $t" }
+          }
+          Remove-Item $pfx -Force
+
+          # 签完当场验。/pa 用「授权代码签名」策略，与系统实际校验的一致。
+          foreach ($t in $targets) {
+            & $signtool.FullName verify /pa /v $t
+            if ($LASTEXITCODE -ne 0) { throw "签名校验失败: $t" }
+          }
+
+          # 指纹钉：证书换了而仓库里记的指纹没换，说明发布身份被悄悄替换了。
+          if (-not [string]::IsNullOrEmpty($env:CERT_SHA1)) {
+            $actual = (Get-AuthenticodeSignature $targets[0]).SignerCertificate.Thumbprint
+            $expected = $env:CERT_SHA1.Replace(" ", "").ToUpperInvariant()
+            if ($actual -ne $expected) {
+              throw "签名证书指纹与 WINDOWS_CERT_SHA1 不一致：实际 $actual，期望 $expected"
+            }
+            Write-Host "证书指纹匹配: $actual"
+          }
+          "signing=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
       - name: Compress
         run: |
           Compress-Archive -Path "Release/KiliKili-Win" -DestinationPath "KiliKili_windows_${{env.version}}_x64_portable.zip"

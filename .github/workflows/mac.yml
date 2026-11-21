@@ -34,8 +34,87 @@ jobs:
         shell: pwsh
         run: lib/scripts/patch.ps1 macOS
 
+      # macOS 的发布身份是 Developer ID Application 证书 + 公证（约定见
+      # docs/release/SIGNING.md）。没配 secret 时跳过，产物与以前一样未签名：
+      # 用户双击会被 Gatekeeper 拦，要右键「打开」或 xattr -d 才能跑起来。
+      # 这里把「没签名」显式打出来，不让它只躺在日志里（#146 的教训）。
+      #
+      # 放在构建之前：证书有问题要在 10 分钟的构建之前就红。
+      - name: 导入 Apple 签名身份
+        id: signing
+        env:
+          CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+          CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+          SIGN_IDENTITY: ${{ vars.MACOS_SIGN_IDENTITY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CERT_P12_BASE64:-}" ]; then
+            printf '未配置 MACOS_CERT_P12_BASE64：本次 macOS 产物不签名、不公证。\n'
+            printf '用户双击会被 Gatekeeper 拦下；这样的包不应作为正式发布分发。\n'
+            printf '配置步骤见 docs/release/SIGNING.md。\n'
+            printf 'signing=false\n' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # 证书进一个临时钥匙串，构建完随 runner 一起消失，不碰 login.keychain。
+          KEYCHAIN="$RUNNER_TEMP/kilikili-signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -base64 24)"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 3600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+
+          printf '%s' "$CERT_P12_BASE64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "${CERT_PASSWORD:-}" \
+            -T /usr/bin/codesign -T /usr/bin/security
+          rm -f "$RUNNER_TEMP/cert.p12"
+          # 不设 partition list 的话，codesign 调用私钥时会弹 UI 授权框，
+          # 在无人值守的 runner 上表现为卡住直到超时。
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" > /dev/null
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+
+          IDENTITY="${SIGN_IDENTITY:-}"
+          if [ -z "$IDENTITY" ]; then
+            IDENTITY="$(security find-identity -v -p codesigning "$KEYCHAIN" \
+              | awk -F'"' '/Developer ID Application/ { print $2; exit }')"
+          fi
+          if [ -z "$IDENTITY" ]; then
+            printf '钥匙串里没有 Developer ID Application 证书。\n'
+            printf '对外分发必须用这一类（Apple Development / Apple Distribution 都不行）。\n'
+            security find-identity -v -p codesigning "$KEYCHAIN" || true
+            exit 1
+          fi
+          printf '签名身份: %s\n' "$IDENTITY"
+
+          printf 'signing=true\n' >> "$GITHUB_OUTPUT"
+          printf 'identity=%s\n' "$IDENTITY" >> "$GITHUB_OUTPUT"
+
       - name: Build Mac
         run: flutter build macos --release --dart-define-from-file=pili_release.json --no-pub
+
+      - name: 签名 .app
+        if: ${{ steps.signing.outputs.signing == 'true' }}
+        env:
+          IDENTITY: ${{ steps.signing.outputs.identity }}
+        run: |
+          set -euo pipefail
+          APP="build/macos/Build/Products/Release/KiliKili.app"
+
+          # 由内向外签：嵌套代码必须先签，外层才签得住。
+          # 不用 --deep——Apple 已不推荐，且它对 .dylib 的处理并不可靠。
+          while IFS= read -r -d '' f; do
+            printf '签名嵌套代码: %s\n' "$f"
+            codesign --force --timestamp --options runtime --sign "$IDENTITY" "$f"
+          done < <(find "$APP/Contents/Frameworks" -maxdepth 1 \
+            \( -name '*.dylib' -o -name '*.framework' \) -print0)
+
+          codesign --force --timestamp --options runtime \
+            --entitlements macos/Runner/Release.entitlements \
+            --sign "$IDENTITY" "$APP"
+
+          codesign --verify --strict --verbose=2 "$APP"
+          codesign --display --verbose=4 "$APP" 2>&1 | grep -E 'Authority|TeamIdentifier|flags'
+        shell: bash
 
       - name: Prepare Upload
         run: |
@@ -61,6 +140,71 @@ jobs:
             printf "体积过小，dmg 很可能不完整\n"
             exit 1
           fi
+        shell: bash
+
+      # DMG 本身也要签：Gatekeeper 校验的是用户双击的那个文件。
+      # 公证（notarize）与签名是两件事——只签名的包在 macOS 10.15+ 上仍会被
+      # 拦，提示「无法验证开发者」。装订（staple）让首次打开不需要联网。
+      - name: 签名、公证并装订 DMG
+        if: ${{ steps.signing.outputs.signing == 'true' }}
+        env:
+          IDENTITY: ${{ steps.signing.outputs.identity }}
+          NOTARY_KEY_BASE64: ${{ secrets.MACOS_NOTARY_KEY_BASE64 }}
+          NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          DMG="KiliKili_macos_${{ env.version }}.dmg"
+
+          codesign --force --timestamp --sign "$IDENTITY" "$DMG"
+          codesign --verify --strict --verbose=2 "$DMG"
+
+          if [ -z "${NOTARY_KEY_BASE64:-}" ]; then
+            printf 'DMG 已签名，但未配置公证凭据（MACOS_NOTARY_KEY_BASE64）。\n'
+            printf '未公证的包在 macOS 10.15+ 上首次打开仍会被 Gatekeeper 拦下。\n'
+            exit 0
+          fi
+
+          KEY="$RUNNER_TEMP/notary.p8"
+          printf '%s' "$NOTARY_KEY_BASE64" | base64 --decode > "$KEY"
+          JSON="$RUNNER_TEMP/notary.json"
+
+          set +e
+          xcrun notarytool submit "$DMG" \
+            --key "$KEY" --key-id "$NOTARY_KEY_ID" --issuer "$NOTARY_ISSUER_ID" \
+            --wait --timeout 30m --output-format json > "$JSON"
+          rc=$?
+          set -e
+
+          SUBMISSION_ID="$(jq -r '.id // empty' "$JSON" 2>/dev/null || true)"
+          STATUS="$(jq -r '.status // empty' "$JSON" 2>/dev/null || true)"
+          printf '公证结果: %s (id=%s)\n' "${STATUS:-未知}" "${SUBMISSION_ID:-无}"
+
+          if [ "$rc" -ne 0 ] || [ "$STATUS" != "Accepted" ]; then
+            # 公证被拒时，真正的原因只在这份日志里（通常是某个嵌套二进制
+            # 没签、没开 hardened runtime，或缺时间戳）。不打出来就只剩
+            # 一句 Invalid，下一个人无从查起。
+            if [ -n "$SUBMISSION_ID" ]; then
+              xcrun notarytool log "$SUBMISSION_ID" \
+                --key "$KEY" --key-id "$NOTARY_KEY_ID" --issuer "$NOTARY_ISSUER_ID" || true
+            fi
+            rm -f "$KEY"
+            exit 1
+          fi
+          rm -f "$KEY"
+
+          xcrun stapler staple "$DMG"
+          xcrun stapler validate "$DMG"
+          # 按 Gatekeeper 实际放行 DMG 的那条策略复核一次。
+          spctl -a -t open --context context:primary-signature -vv "$DMG"
+        shell: bash
+
+      - name: 未签名时的提示
+        if: ${{ steps.signing.outputs.signing != 'true' }}
+        run: |
+          printf '本次 macOS 产物没有签名也没有公证（未配置 MACOS_CERT_P12_BASE64）。\n'
+          printf '用户双击会被 Gatekeeper 拦下，需要右键「打开」或 xattr -dr com.apple.quarantine。\n'
+          printf '配置步骤见 docs/release/SIGNING.md。\n'
         shell: bash
 
       - name: Release

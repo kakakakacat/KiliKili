@@ -148,6 +148,9 @@ jobs:
         if: ${{ (github.event_name == 'pull_request' && github.repository == 'kakakakacat/KiliKili') || github.event.inputs.build_ios == 'true' }}
         uses: ./.github/workflows/ios.yml
         permissions: write-all
+        # 发布签名的 secret 要显式传进去：可复用工作流默认拿不到调用方的
+        # secrets，少了这一行，签名步骤会在 Secrets 配好之后依然静默跳过。
+        secrets: inherit
         with:
             tag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}
 
@@ -155,6 +158,9 @@ jobs:
         if: ${{ github.event.inputs.build_mac == 'true' }}
         uses: ./.github/workflows/mac.yml
         permissions: write-all
+        # 发布签名的 secret 要显式传进去：可复用工作流默认拿不到调用方的
+        # secrets，少了这一行，签名步骤会在 Secrets 配好之后依然静默跳过。
+        secrets: inherit
         with:
             tag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}
 
@@ -162,6 +168,9 @@ jobs:
         if: ${{ (github.event_name == 'pull_request' && github.repository == 'kakakakacat/KiliKili') || github.event.inputs.build_win_x64 == 'true' }}
         uses: ./.github/workflows/win_x64.yml
         permissions: write-all
+        # 发布签名的 secret 要显式传进去：可复用工作流默认拿不到调用方的
+        # secrets，少了这一行，签名步骤会在 Secrets 配好之后依然静默跳过。
+        secrets: inherit
         with:
             tag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}
 
@@ -169,5 +178,8 @@ jobs:
         if: ${{ github.event.inputs.build_linux_x64 == 'true' }}
         uses: ./.github/workflows/linux_x64.yml
         permissions: write-all
+        # 发布签名的 secret 要显式传进去：可复用工作流默认拿不到调用方的
+        # secrets，少了这一行，签名步骤会在 Secrets 配好之后依然静默跳过。
+        secrets: inherit
         with:
             tag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}

@@ -18,6 +18,9 @@ Apple 与 Android 改为手动 dispatch（理由见 §2.1）；「成本约束�
 真实 FFI 和 Android 产物检查；定时/按需调用五端打包工作流。下文 §2.1 保留
 原先手动流程的历史说明；当前触发与发布门槛以 [QA-001](../qa/RELEASE-VALIDATION.md)
 和 `ci.yml` 为准。
+修订：2026-11-21 — 五端发布包签名接入 CI（#121）：Linux 的 GPG 签名与校验
+已实现并在打包流程里**当场复核**，Windows / macOS 的签名与公证步骤已接好、
+等证书；本文末尾新增一节记这条链在 CI 里能验到什么、必须留给人工的是什么
 修订：2026-11-21 — Slint + libmpv 实验台（`spikes/slint-mpv`）落地并在 Windows
 上实跑一次，本文末尾新增一节记它能验到什么、验不到什么。它**不进 CI**，
 也不改动上表任何一格的结论
@@ -290,7 +293,7 @@ Docker 27.3.1，已承载 6 个生产容器
 
 ## 4. 遗留缺口
 
-- **iOS 签名**：`ios/Runner.xcodeproj` 中 `DEVELOPMENT_TEAM = ""`，bundle id 仍为占位 `com.example.piliplus`。CI 与本机均只能 `--no-codesign` 构建；真机安装需配置 Apple Developer Team。（macOS 为 `CODE_SIGN_IDENTITY = "-"` ad-hoc 签名，不受影响。）
+- **iOS 签名**：`ios/Runner.xcodeproj` 中 `DEVELOPMENT_TEAM = ""`，bundle id 仍为占位 `com.example.piliplus`。CI 与本机均只能 `--no-codesign` 构建；真机安装需配置 Apple Developer Team。（macOS 为 `CODE_SIGN_IDENTITY = "-"` ad-hoc 签名，不受影响。）这说的是**开发期真机安装**；对外分发的发布签名是另一件事，结论见[发布签名](../release/SIGNING.md) §5：iOS 侧载的签名身份属于使用者，仓库侧没有、也不该有可复用的发布身份。
 - **iOS 模拟器 runtime**：本机 `simctl list runtimes` 为空，模拟器冒烟测试需额外下载 runtime。
 - **Linux GPU/合成**：如后续确有必要，比 Docker 可靠得多的路径是在 Windows 设备上安装双系统，或使用支持 GPU 分区直通的 VM。当前判断为投入产出比不足，暂不投入。
 
@@ -561,3 +564,35 @@ runner 一样都没有；编译成功与「视频能不能垫在 UI 底下」是
 
 已跑：Windows 11 / RX 7900 GRE，自动项全 PASS（58 fps、p95 17ms、
 `d3d11va-copy`）。macOS（#8）、Android（#9）未跑。
+
+### 发布包签名（#121，2026-11-21）
+
+约定与材料在[发布签名](../release/SIGNING.md)，这里只记**验证能力的边界**。
+
+**CI 现在能验到的**（打包流程内，失败即红）：
+
+- Linux：分离签名逐个 `gpg --verify`、`sha256sum --check`、`rpm --checksig`；
+  deb 的 `_gpgorigin` 与 AppImage 的 `.sha256_sig` 确认签名写进去了，且
+  `gpg --list-packets` 认出签它的就是我们那把钥匙。导入密钥时还会**空签一次**
+  确认子钥无口令，并与 `assets/linux/signing-key.asc` 比对指纹。
+- Windows：`signtool verify /pa`，配了 `WINDOWS_CERT_SHA1` 时比对证书指纹。
+- macOS：`codesign --verify --strict`、`notarytool` 的 `Accepted` 状态、
+  `stapler validate`、`spctl -a -t open`。
+
+**CI 验不了、必须人工的**（对应 [QA-001](../qa/RELEASE-VALIDATION.md) 的 S01–S04）：
+
+1. **身份是不是「那一个」。** CI 比对的是仓库里钉的指纹，而指纹文件和 secret
+   都在同一批人手里；「这把钥匙确实属于这个项目」只能由人对着记录表核。
+2. **原地升级。** 签名验过只说明包的来源可信，不说明它能覆盖安装上一版——
+   后者是 Android 当年真正出问题的地方（#146），而 runner 上没有「上一版」。
+3. **干净系统上的首次打开。** Gatekeeper 与 SmartScreen 的实际行为取决于
+   用户机器的状态（是否联网、是否已信任过该发布者）。runner 的环境和开发机
+   都不能代表它。
+4. **包管理器视角的安装**（`dnf install` 本地 rpm、`appimaged` 下的 AppImage）：
+   需要对应发行版环境，受 §3 的 Linux best-effort 约束，当前只能记
+   `NOT TESTED`。
+
+**未配 secret 时的状态**：各平台照常产出未签名的包，日志里显式写明。
+CI 不会因为「没签名」而变红——否则在密钥到位之前所有构建都红，没人能用。
+这一条是有意的取舍：把「没签名」做成**日志里必然看得见的一行**，而不是
+一个会被长期按掉的红叉。

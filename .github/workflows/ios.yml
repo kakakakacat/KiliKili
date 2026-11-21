@@ -34,6 +34,17 @@ jobs:
         shell: pwsh
         run: lib/scripts/patch.ps1 iOS
 
+      # iOS 是五端里唯一「仓库侧没有发布身份」的平台，这是结论不是遗漏
+      # （#121，决策与理由见 docs/release/SIGNING.md §iOS）：
+      #
+      # 分发方式是侧载（AltStore / Sideloadly / TrollStore 等），最终签名由
+      # **使用者自己的 Apple ID** 在本机完成，签名身份也因此属于使用者。
+      # 仓库这边就算买了开发者账号，也只能签出 ad-hoc（要逐台登记 UDID）
+      # 或企业证书（与本项目的分发方式不符）的包——都不是能复用给所有人的
+      # 发布身份。所以这里产出的是**故意未签名**的 IPA。
+      #
+      # 下面那行 `codesign --sign -` 是 ad-hoc 签名，不是发布签名：它只给
+      # 框架写一个占位签名，让侧载工具重签时不出错。
       - name: Build iOS
         run: |
           flutter build ios --release --no-codesign --dart-define-from-file=pili_release.json --no-pub

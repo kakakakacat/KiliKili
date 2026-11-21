@@ -270,8 +270,21 @@ PR**，不要只留在代码和 Issues 里：
   因此换一个 CI 包就要先 `adb uninstall`，会清掉登录态、设置与离线缓存；
   这些包也**不能对外分发**。带 `tag` 发一次版同样是 debug 签名，以后补上
   正式签名时老用户无法原地升级。修法见 issue #146。
-- Android 的 JKS 只用于 Android；Apple 平台和 Windows 安装包分别按各自
-  的签名身份与证书流程处理，不共用此 JKS。
+- **发布签名的约定在 [`docs/release/SIGNING.md`](docs/release/SIGNING.md)**，
+  五端各一套身份，不共用：Android 的 JKS 只用于 Android，Linux 用 GPG，
+  Apple 与 Windows 各按自己的证书流程来。跨会话不变的几条：
+
+  - **私钥、证书、口令不进仓库**；进仓库的只有公钥与指纹
+    （`assets/linux/signing-key.asc`），CI 每次构建都拿它比对——这是
+    「下一版还是同一个发布者」唯一的锚点，不一致就直接红。
+  - **CI 的 GPG 子钥必须无口令。** rpmsign / debsigs / appimagetool 各自去调
+    gpg，没有统一的口令传递口子，有口令时它们要么卡在 pinentry 上，要么
+    静默产出未签名的包。
+  - **可复用工作流默认拿不到调用方的 secrets**：`build.yml` 调四个平台
+    workflow 时必须带 `secrets: inherit`，少这一行的话 Secrets 配好了签名
+    也照样跳过，而且一声不吭（#146 的形状）。
+  - 未配 secret 时各平台照常产出**未签名**的包，日志里会写明；这些包能装，
+    但**不能作为正式发布分发**。
 
 ---
 

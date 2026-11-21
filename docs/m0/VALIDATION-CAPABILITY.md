@@ -569,12 +569,16 @@ runner 一样都没有；编译成功与「视频能不能垫在 UI 底下」是
 
 约定与材料在[发布签名](../release/SIGNING.md)，这里只记**验证能力的边界**。
 
-**CI 现在能验到的**（打包流程内，失败即红）：
+**CI 现在能验到的**（打包流程内，失败即红。Linux 这条已在
+[run 44876645273](https://github.com/kakakakacat/KiliKili/actions/runs/44876645273)
+上实跑通过，不是纸面设计）：
 
 - Linux：分离签名逐个 `gpg --verify`、`sha256sum --check`、`rpm --checksig`；
-  deb 的 `_gpgorigin` 与 AppImage 的 `.sha256_sig` 确认签名写进去了，且
-  `gpg --list-packets` 认出签它的就是我们那把钥匙。导入密钥时还会**空签一次**
-  确认子钥无口令，并与 `assets/linux/signing-key.asc` 比对指纹。
+  deb 的 `_gpgorigin` 确认签名写进去了，且 `gpg --list-packets` 认出签它的
+  就是我们那把钥匙。导入密钥时还会**空签一次**确认子钥无口令，并与
+  `assets/linux/signing-key.asc` 比对指纹。AppImage 没有包内签名，理由见
+  [发布签名](../release/SIGNING.md) §2.1——`appimagetool --sign` 会把 squashfs
+  截掉，只剩 runtime，而它自己报 `[sign] Success`；拦下这一次的是体积闸门。
 - Windows：`signtool verify /pa`，配了 `WINDOWS_CERT_SHA1` 时比对证书指纹。
 - macOS：`codesign --verify --strict`、`notarytool` 的 `Accepted` 状态、
   `stapler validate`、`spctl -a -t open`。

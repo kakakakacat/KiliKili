@@ -1,6 +1,6 @@
 # 发布签名：各平台的身份、材料与验证
 
-状态：**Linux 已实现并可用（待仓库所有者生成密钥）；Windows / macOS 已接好流程，等证书；iOS 结论为「仓库侧没有发布身份」**
+状态：**Linux 已启用并实跑验证通过（密钥已配，run 44876645273）；Windows / macOS 已接好流程，等证书；iOS 结论为「仓库侧没有发布身份」**
 日期：2026-11-21
 关联：[issue #121](https://github.com/kakakakacat/KiliKili/issues/121)、[issue #146](https://github.com/kakakakacat/KiliKili/issues/146)、[AGENTS.md §8](../../AGENTS.md)、[发布验证](../qa/RELEASE-VALIDATION.md)
 
@@ -16,7 +16,7 @@
 
 | 平台 | 实际分发方式 | 发布身份 | 当前状态 | 材料形态 |
 |---|---|---|---|---|
-| Linux | GitHub Release 的 deb / rpm / AppImage / tar.gz | 一把 GPG 密钥 | **流程已就绪，等密钥** | GPG 签名子钥（无口令） |
+| Linux | GitHub Release 的 deb / rpm / AppImage / tar.gz | 一把 GPG 密钥 | **已启用**（2026-11-21 实跑通过） | GPG 签名子钥（无口令） |
 | Windows | GitHub Release 的 setup.exe / 便携版 zip | 代码签名证书 | 未签名，接入点已留 | OV/EV 证书（见 §3 的硬件存储约束） |
 | macOS | GitHub Release 的 dmg | Developer ID Application + 公证 | 未签名未公证，接入点已留 | Apple 证书 p12 + 公证 API key |
 | iOS | 侧载（AltStore / Sideloadly 等） | **没有，也不该有**（§5） | 故意未签名 | — |
@@ -172,6 +172,7 @@ rm -rf "$GNUPGHOME"; unset GNUPGHOME
 | 子钥到期 | 2028-11-20（到期前用主钥续签即可，**身份不变**） |
 | 公钥文件 | `assets/linux/signing-key.asc` |
 | 生成日期 | 2026-11-21 |
+| 首次实跑验证 | [run 44876645273](https://github.com/kakakakacat/KiliKili/actions/runs/44876645273)：CI 侧签名与校验全绿；本机用仓库里这份公钥跑 `tool/verify-release-signatures.sh` 验下载到的真实产物，通过 |
 | 备份位置（不写具体路径/口令） | **待办**：主钥、自动生成的吊销证书与 CI 子钥导出目前只在生成它的那台开发机上，尚未转入加密介质 |
 | 首次使用的版本 | *待填：第一个带签名的正式发布* |
 
@@ -372,10 +373,11 @@ xcrun stapler validate KiliKili_macos_*.dmg
 
 按平台独立，哪一项做完哪一项生效：
 
-- [ ] **Linux**：按 §2.2 生成密钥 → 提交 `assets/linux/signing-key.asc` →
-      填 §2.5 记录表 → `gh secret set LINUX_GPG_PRIVATE_KEY` → 手动
-      dispatch 一次 `build.yml` 只开 Linux，确认日志里有「签名身份: …」
-      和「全部校验通过」。
+- [x] **Linux**：密钥已生成、公钥已钉在 `assets/linux/signing-key.asc`、
+      `LINUX_GPG_PRIVATE_KEY` 已配、实跑验证通过（§2.5）。
+- [ ] **Linux 的备份**：主钥、吊销证书与 CI 子钥导出仍在生成它的那台开发机上，
+      要转入加密介质并补上 §2.5 的「备份位置」。主钥丢了只能换身份，
+      而换身份等于所有老用户的校验一齐失败。
 - [ ] **Windows**：先定供应商形态（§3.2），再决定是走 `.pfx` 分支还是加
       云签名分支；拿到后设 `WINDOWS_CERT_PFX_BASE64` /
       `WINDOWS_CERT_PASSWORD` / `WINDOWS_CERT_SHA1`，填 §3.4。

@@ -1,0 +1,48 @@
+# SPIKE-001 / SPIKE-002 的实验台。见 README.md 与 docs/m0/spikes/。
+#
+# 刻意**自成一个 workspace**，不进 `rust/`：
+#
+# - `rust.yml` 按 `rust/**` 触发，并跑 `cargo test --workspace` 与几个
+#   target 的交叉编译。spike 要链 libmpv 和 GPU 栈，进了 workspace 就等于
+#   给所有 CI 作业加一个它们装不了的系统依赖。
+# - spike 是**证据产出工具**，不是产品代码。它可以随 Go/No-Go 结论整个删掉，
+#   `rust/` 下的 crate 不行。
+#
+# 反过来，它**依赖** `bili-domain` / `bili-danmaku` / `bili-api`：这个实验要
+# 回答的不是「Slint 能不能画字」，而是「ADR-003 的 PlayerPort 契约配上真实
+# 弹幕引擎的输出，能不能在 Slint 里跑到可接受的帧率」。用假的数据结构问不出
+# 这个问题。
+[workspace]
+
+[package]
+name = "slint-mpv-spike"
+version = "0.0.0"
+edition = "2024"
+publish = false
+license = "GPL-3.0-or-later"
+
+[dependencies]
+bili-api = { path = "../../rust/crates/bili-api" }
+bili-danmaku = { path = "../../rust/crates/bili-danmaku" }
+bili-domain = { path = "../../rust/crates/bili-domain" }
+
+anyhow = "1"
+clap = { version = "4", features = ["derive", "env"] }
+# libmpv 走**运行期动态加载**，不在构建期链接：这样 mac 上一条
+# `brew install mpv`、Windows 上一个 dll 就能跑，不需要 dev 包、不需要
+# pkg-config、不需要 bindgen/libclang。代价是那些 extern 声明要自己维护，
+# 见 src/mpv/sys.rs 的说明。
+libloading = "0.9"
+png = "0.18"
+slint = "1.19"
+sysinfo = "0.40"
+
+[build-dependencies]
+slint-build = "1.19"
+
+[profile.release]
+# spike 的数字要能代表 Phase 2 的真实形态，所以按 rust/Cargo.toml 的
+# release profile 来测，不要用 dev 的数字写报告。
+opt-level = 3
+lto = "thin"
+codegen-units = 1

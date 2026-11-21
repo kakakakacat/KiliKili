@@ -1,7 +1,15 @@
 # M0 Slint + Playback Spike: executable acceptance plan
 
-Status: **PLANNED, NOT RUN**  
+Status: **HARNESS READY; macOS RUN PENDING**（2026-11-21 起）
 Start reference: RFC-0001 v0.2
+
+实验台在 `spikes/slint-mpv`（自成 workspace，`rust.yml` 不碰它），用法见它的
+README。跑出来的记录放 [spikes/](spikes/README.md)，已有一份 Windows 自检记录；
+macOS 那条（issue #8）仍然 **NOT TESTED**，因为写它的那台开发机不是 mac，
+而这项验证按 [VALIDATION-CAPABILITY](VALIDATION-CAPABILITY.md) §1 只能在本机 M4 上做。
+
+Windows 那一跑不改变下面的顺序（macOS 仍然先行），它回答的是「实验台本身能不能
+用」。顺带暴露的三个与平台无关的坑见 [spikes/README.md](spikes/README.md)。
 
 ## Scope and order
 
@@ -27,9 +35,12 @@ Phase 2 Slint migration is **NO-GO** if video compositing/overlay, mobile lifecy
 
 ## Initial backlog
 
-- [ ] M0-SPIKE-01: macOS libmpv + Slint video + danmaku overlay
+- [~] M0-SPIKE-01: macOS libmpv + Slint video + danmaku overlay
+      （实验台与记录位就绪；macOS 实跑未做，见 [spikes/SPIKE-001-macos.md](spikes/SPIKE-001-macos.md)）
 - [ ] M0-SPIKE-02: Android surface/lifecycle + libmpv versus Media3 fallback
 - [ ] M0-SPIKE-03: Slint list virtualization, rich content, IME, accessibility
 - [ ] M0-SPIKE-04: iOS libmpv/AVPlayer feasibility and PiP/background-audio comparison
-- [ ] M0-SPIKE-05: collect real baseline CPU/RSS/video frame-time samples
+- [~] M0-SPIKE-05: collect real baseline CPU/RSS/video frame-time samples
+      （采集手段就绪：帧耗时分位数 / 掉帧 / CPU / RSS 随每次实验自动入记录；
+      目前只有 Windows 一组样本）
 - [ ] M0-SPIKE-06: author ADR-004 with measurements, not assumptions

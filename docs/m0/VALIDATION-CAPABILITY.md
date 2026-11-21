@@ -18,6 +18,9 @@ Apple 与 Android 改为手动 dispatch（理由见 §2.1）；「成本约束�
 真实 FFI 和 Android 产物检查；定时/按需调用五端打包工作流。下文 §2.1 保留
 原先手动流程的历史说明；当前触发与发布门槛以 [QA-001](../qa/RELEASE-VALIDATION.md)
 和 `ci.yml` 为准。
+修订：2026-11-21 — Slint + libmpv 实验台（`spikes/slint-mpv`）落地并在 Windows
+上实跑一次，本文末尾新增一节记它能验到什么、验不到什么。它**不进 CI**，
+也不改动上表任何一格的结论
 关联：RFC-0001 §9.3 / §16.7，ADR-004
 
 本文回答一个 RFC 里此前含糊带过的问题：五个目标平台，**哪些能做真机验收、哪些只能做编译验证、哪些根本没覆盖**。结论直接影响 M4/M5 的准入范围，以及 ADR-004 能拿到多少实测数据。
@@ -535,3 +538,26 @@ deferred 的 dialog、`foldDepth` 的折叠层级与条数、「回复了谁」�
 
 不改变触发与门禁。Rust 那两个测试落在 `cargo test --workspace`，Dart 那
 两个落在 `flutter-test.yml`，不需要新 runner 或外部二进制。
+
+### Slint + libmpv 的 GUI/性能实测能力（#8，2026-11-21）
+
+此前本文只能回答「某端能不能跑 GUI」，回答不了「**Slint 形态下**能不能」——
+Phase 2 的播放路径一行实测数据都没有。`spikes/slint-mpv` 补上的就是这段：
+一个脚本化的实验台，跑一次产出一份带环境、媒体、测量与验证项的记录
+（见 [spikes/](spikes/README.md)）。
+
+**它能自动判的**：平均帧率、帧耗时 p50/p95/p99、掉帧数、进程 CPU 与 RSS、
+`hwdec-current` 是否真的不是 `no`、暂停后位置是否冻结、`SeekCompleted` 是否
+真的来过且位置对、seek 期间旧代际事件是否被闸门丢掉、有无 `Failed` /
+`SurfaceLost`。
+
+**它判不了、必须人看的**：层级对不对、画面方向与比例、HiDPI 下的清晰度、
+音画同步。这些只产出截图，结论栏写「人工确认」——程序不替人按 PASS。
+
+**它不在 CI 里，也不该进 CI**：需要 GPU 合成、显示输出与声音，GitHub 的
+runner 一样都没有；编译成功与「视频能不能垫在 UI 底下」是两个问题。因此
+§1 结论矩阵里 Linux 那一行的「真机 GUI ❌」对它同样成立——Linux 上这条路
+仍然只能靠编译证明。
+
+已跑：Windows 11 / RX 7900 GRE，自动项全 PASS（58 fps、p95 17ms、
+`d3d11va-copy`）。macOS（#8）、Android（#9）未跑。

@@ -59,12 +59,21 @@ Linux 这边没有「证书颁发机构」这一层，来源校验靠发布者�
 |---|---|---|
 | `.rpm` | RPM 头部签名（`rpmsign --addsign`） | `dnf` / `rpm -K`，导入公钥后自动验 |
 | `.deb` | ar 归档里的 `_gpgorigin` 成员（`debsigs`） | `debsig-verify`，**需要本机配策略**，默认不验 |
-| `.AppImage` | ELF 的 `.sha256_sig` 段（`appimagetool --sign`） | `appimaged` / AppImageUpdate；双击运行**不验** |
+| `.AppImage` | **没有**（`appimagetool --sign` 会把包弄坏，见下） | — |
 | 四者全部 | `<文件名>.asc` 分离签名 + 签过名的 `SHA256SUMS` | 使用者手动 `gpg --verify`，或跑 `tool/verify-release-signatures.sh` |
 
 **分离签名才是实际最常被用到的那一条**：apt 验的是软件源的 `InRelease`，不是
 单个 `.deb`；AppImage 双击运行时也不校验签名。包内签名仍然要做——走包管理器
 安装的人能免费得到一道校验——但别指望它覆盖「从 Release 页点下载」的场景。
+
+**AppImage 刻意不做包内签名。** 2026-11-21 在 run 44875708097 上实测
+（appimagetool continuous build 370 / git `11d54c9`）：`--sign` 自己是成功的，
+日志里有 `[sign] Success`，连公钥都嵌进去了——但产出的 AppImage 只剩 944632
+字节，**正好等于它下载的 runtime 大小**，22.6MB 的 squashfs 被整段截掉。它往
+ELF 段里写签名时重写了整个 ELF，追加在后面的 squashfs 没被带上；同一份 AppDir
+不签名时是 21–24MB。是体积闸门拦下来的（PR #34 当初加它就是为这种事），
+`[sign] Success` 本身毫无保护作用。要恢复包内签名，得先钉一个确定能用的
+appimagetool 版本，并**重新实测产物体积**，而不是只看它说成功。
 
 ### 2.2 生成密钥（仓库所有者操作，一次性）
 
@@ -120,17 +129,15 @@ rm -rf "$GNUPGHOME"; unset GNUPGHOME
 
 1. **导入发布签名密钥**（构建之前，密钥有问题就不浪费十几分钟打包）：导入、
    取指纹、**空签一次**确认无口令、与 `assets/linux/signing-key.asc` 比对指纹。
-2. 打包时给 appimagetool 加 `--sign --sign-key <指纹>`（AppImage 的签名只能在
-   打包那一刻做，事后没有补签入口）。
-3. **包内签名**：`rpmsign --addsign`、`debsigs --sign=origin`，并导出公钥为
+2. **包内签名**：`rpmsign --addsign`、`debsigs --sign=origin`，并导出公钥为
    `KiliKili-linux-signing-key.asc` 一起发布。
-4. **生成 `SHA256SUMS`**（必须排在包内签名之后——rpmsign 与 debsigs 改写的是
+3. **生成 `SHA256SUMS`**（必须排在包内签名之后——rpmsign 与 debsigs 改写的是
    包本身，先算的哈希对不上最终发出去的文件）。
-5. **分离签名**：四个产物 + `SHA256SUMS` 各出一个 `.asc`。
-6. **校验签名**：逐个 `gpg --verify`、`sha256sum --check`、`rpm --checksig`，
-   deb 与 AppImage 则确认签名确实写进包里、且签它的是我们这把钥匙。
+4. **分离签名**：四个产物 + `SHA256SUMS` 各出一个 `.asc`。
+5. **校验签名**：逐个 `gpg --verify`、`sha256sum --check`、`rpm --checksig`，
+   deb 则确认 `_gpgorigin` 确实在包里、且签它的是我们这把钥匙。
 
-   这一步有个坑值得记下来：**实际签名的是子钥，包里写的是子钥的 key id，
+   第 5 步有个坑值得记下来：**实际签名的是子钥，包里写的是子钥的 key id，
    不是主钥指纹**。认签名者时要拿「主钥 + 全部子钥」的 key id 全集去比
    （`gpg --list-keys --with-colons` 里 `pub:` / `sub:` 行的第 5 栏），拿
    40 位指纹的后 16 位去比会把正确的签名判成别人签的——而且是在「签名
@@ -169,7 +176,7 @@ rm -rf "$GNUPGHOME"; unset GNUPGHOME
 | 首次使用的版本 | *待填：第一个带签名的正式发布* |
 
 子钥签名时包里写的是 `DA915DBC409585B0`，**不是**上面那个 40 位主钥指纹——
-这正是 §2.3 第 6 条那个坑的实例。
+这正是 §2.3 第 5 条那个坑的实例。
 
 ---
 
@@ -332,8 +339,8 @@ tool/verify-release-signatures.sh ~/Downloads/kilikili
 ```
 
 脚本把公钥导进一个临时钥匙环（不碰使用者的 `~/.gnupg`），验 `SHA256SUMS.asc`、
-核对哈希、再逐个验分离签名。它**刻意不验包内签名**：rpm / deb / AppImage 各要
-一套本机工具与配置，而它们证明的来源与这条链完全相同。
+核对哈希、再逐个验分离签名。它**刻意不验包内签名**：rpm 与 deb 各要一套本机
+工具与配置，而它们证明的来源与这条链完全相同。
 
 包管理器侧的校验（可选）：
 

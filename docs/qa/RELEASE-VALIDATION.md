@@ -218,7 +218,7 @@ CI 已经在打包时签名并当场复核一遍（`linux_x64.yml` 的「校验�
 | S01 | P0 | 全部 | 从 Release 页**按用户的路径**下载产物，按[发布签名](../release/SIGNING.md) §7 验一遍；指纹/证书主体与该文 §2.5、§3.4、§4.4 的记录表逐字一致。只看验证工具说「通过」不够——换一把钥匙签也会通过 |
 | S02 | P0 | Android / Linux / Windows / macOS | **同身份原地升级**：用上一个正式版安装，再用候选版覆盖安装，不得要求先卸载，设置与登录态保留。这正是「身份可复用」的唯一硬证据，签名验过不等于升级路径通 |
 | S03 | P0 | macOS / Windows | 在**没装过开发工具的干净系统**上双击打开：macOS 不应出现「无法验证开发者」；Windows SmartScreen 的拦截框如仍出现，记录下来并在发布说明里说明。开发机上装过证书会让这一条假通过 |
-| S04 | P1 | Linux | `rpm --checksig`（导入公钥后）与 `dnf install` 本地包不报签名错误；AppImage 在装了 `appimaged` 的环境里不被判为未签名 |
+| S04 | P1 | Linux | `rpm --checksig`（导入公钥后）与 `dnf install` 本地包不报签名错误。AppImage 没有包内签名（`appimagetool --sign` 会把包截断，见 [发布签名](../release/SIGNING.md) §2.1），只验 `.asc` |
 
 未签名的平台把对应行记 `N/A` 并写明原因（iOS 的理由见 SIGNING.md §5），
 不要记 `PASS`。

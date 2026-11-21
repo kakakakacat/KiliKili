@@ -351,15 +351,21 @@ jobs:
           sed -i 's|Exec=kilikili|Exec=kilikili|g' "$APPDIR/io.github.kakacat.kilikili.desktop"
           sed -i 's|Icon=kilikili|Icon=kilikili|g' "$APPDIR/io.github.kakacat.kilikili.desktop"
 
-          # AppImage 的签名只能在打包时做：appimagetool 把签名写进产物的
-          # .sha256_sig 这个 ELF section，事后没有补签的入口。
-          SIGN_ARGS=()
-          if [ "${{ steps.signing.outputs.signing }}" = "true" ]; then
-            SIGN_ARGS=(--sign --sign-key "${{ steps.signing.outputs.fingerprint }}")
-          fi
-
+          # 刻意**不**用 appimagetool 的 --sign：它会把包弄坏。
+          #
+          # 2026-11-21 在 run 44875708097 上实测（appimagetool continuous
+          # build 370 / git 11d54c9）：签名本身成功（日志里 `[sign] Success`，
+          # 连公钥都嵌进去了），但产出的 AppImage 只剩 944632 字节——正好等于
+          # 它下载的 runtime 大小，22.6MB 的 squashfs 被整段截掉。它往 ELF 段里
+          # 写签名时重写了整个 ELF，追加在后面的 squashfs 没有被带上。
+          # 同一份 AppDir 不签名时是 21–24MB。体积闸门拦下了这一次（正是
+          # PR #34 当初加它的理由）。
+          #
+          # AppImage 的来源校验因此只靠分离签名 .asc 与 SHA256SUMS。要恢复包内
+          # 签名，得钉一个确定能用的 appimagetool 版本，并重新实测产物体积——
+          # 别只看 `[sign] Success`。
           printf "打包 AppImage...\n"
-          ARCH=x86_64 ./appimagetool-x86_64.AppImage "${SIGN_ARGS[@]}" "$APPDIR" "KiliKili_linux_${{ env.version }}_amd64.AppImage"
+          ARCH=x86_64 ./appimagetool-x86_64.AppImage "$APPDIR" "KiliKili_linux_${{ env.version }}_amd64.AppImage"
 
           printf "完成: KiliKili_linux_%s_amd64.AppImage\n" "${{ env.version }}"
         shell: bash
@@ -461,30 +467,18 @@ jobs:
           fi
           grep -qi 'Signature.*OK' /tmp/checksig.txt
 
-          # deb 与 AppImage 的包内签名都没法在这里做「端到端」校验：
-          #   - deb 要 debsig-verify 加 /etc/debsig 下的策略文件（装法见 SIGNING.md）；
-          #   - AppImage 签的是「把签名段清零后的自身摘要」，复核要用 AppImage
-          #     运行时自己那套逻辑。
-          # 在此只确认两件事：签名确实写进去了，而且签它的是我们这把钥匙。
-          # 这正好拦住最容易发生的两种失败——根本没签，和签到别的 key 上。
-          # 端到端校验放在人工发布验证里（docs/qa/RELEASE-VALIDATION.md）。
-
+          # deb 的包内签名没法在这里做「端到端」校验：要 debsig-verify 加
+          # /etc/debsig 下的策略文件（装法见 SIGNING.md）。在此只确认两件事：
+          # 签名确实写进去了，而且签它的是我们这把钥匙——这正好拦住最容易
+          # 发生的两种失败：根本没签，和签到别的 key 上。端到端校验放在人工
+          # 发布验证里（docs/qa/RELEASE-VALIDATION.md）。
           printf "校验 deb 包内签名...\n"
           ar t "$DEB" | grep -qx '_gpgorigin'
           ar p "$DEB" _gpgorigin > /tmp/deb.sig
           gpg --list-packets /tmp/deb.sig | grep -Eqi "keyid ($KEYIDS)"
 
-          printf "校验 AppImage 包内签名...\n"
-          if ! objcopy --dump-section .sha256_sig=/tmp/appimage.sig "$APPIMAGE" 2> /tmp/objcopy.err; then
-            printf 'AppImage 里没有 .sha256_sig 段，appimagetool 没有签名：\n'
-            cat /tmp/objcopy.err
-            exit 1
-          fi
-          if [ ! -s /tmp/appimage.sig ]; then
-            printf 'AppImage 的 .sha256_sig 是空的：appimagetool 没有真的签名\n'
-            exit 1
-          fi
-          gpg --list-packets /tmp/appimage.sig | grep -Eqi "keyid ($KEYIDS)"
+          # AppImage 没有包内签名，理由见上面「打包 AppImage」那一步的注释。
+          # 它的来源校验靠 .asc，已在上面逐个验过。
 
           printf '全部校验通过，签名身份 %s\n' "$FPR"
         shell: bash

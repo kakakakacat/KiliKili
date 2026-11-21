@@ -20,7 +20,13 @@ if (!isBuiltInKotlinEnabled) {
 android {
     namespace = "io.github.kakacat.kilikili"
     compileSdk = 37
-    ndkVersion = flutter.ndkVersion
+    // 显式钉版本，不跟 `flutter.ndkVersion` 走（#184）。
+    //
+    // 跟着走的代价是「本机装哪个 NDK」被 Flutter SDK 的版本单方面决定：
+    // Flutter 3.47.9 的 `gradle_utils.dart` 里写死 28.2.13676358，升级
+    // Flutter 会悄悄换掉编译 `libbridge_flutter.so` 的那套工具链，而我们
+    // 对此一无所知。钉死之后，换 NDK 是一次有记录、要跑一遍构建的改动。
+    ndkVersion = "30.0.16248370"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

@@ -565,6 +565,24 @@ runner 一样都没有；编译成功与「视频能不能垫在 UI 底下」是
 已跑：Windows 11 / RX 7900 GRE，自动项全 PASS（58 fps、p95 17ms、
 `d3d11va-copy`）。macOS（#8）、Android（#9）未跑。
 
+### Android 真机的 Slint/libmpv 实测能力（#9，2026-11-21）
+
+上面那条「Slint + libmpv 的 GUI/性能实测能力」说的是桌面。Android 这边本轮
+也打通了，用的是另一条路：`spikes/slint-mpv` 多出一个 cdylib 入口
+（`android_main`），cargo-apk 打包，装到真机上跑，证据走 logcat + mpv 日志 +
+**进程内回读帧缓冲**（`glReadPixels` 存 PNG），记录见
+[SPIKE-002-android.md](spikes/SPIKE-002-android.md)。
+
+**CI 替不了这一条**：GitHub 的 runner 没有 Android 真机，模拟器走 SwiftShader
+软渲染——而这次要问的恰恰是「真 GPU 上 Slint 的渲染回调给不给 OpenGL
+上下文」，软渲染给出的答案没有意义。这台开发机连着一台 Android 14 /
+Adreno 740 的真机，所以能验；换一台没有真机的机器，这一格就回到「不能」。
+
+**本轮验到的**：GL 上下文可用、mpv 的 render context 能建、视频画进同一个
+FBO 且画面正确、UI 压在视频之上、`hwdec-current=mediacodec`（零拷贝）。
+**没验的**：surface 生命周期、旋转、后台音频、PiP、Media3 对照——范围是
+所有者当天定的，#9 仍然开着。
+
 ### 发布包签名（#121，2026-11-21）
 
 约定与材料在[发布签名](../release/SIGNING.md)，这里只记**验证能力的边界**。

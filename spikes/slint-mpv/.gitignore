@@ -1,0 +1,6 @@
+# 运行期要加载的 libmpv.so（14MB），按 ABI 放在这里给 cargo-apk 打进 APK。
+# 不进 git：取法见 README「Android（SPIKE-002）」一节，带 sha256 校验。
+/android-libs/
+
+# cargo-apk 的调试签名用，不是发布身份（见 Cargo.toml 里的说明）。
+/debug.keystore

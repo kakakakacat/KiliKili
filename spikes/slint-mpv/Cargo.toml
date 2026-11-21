@@ -46,3 +46,40 @@ slint-build = "1.19"
 opt-level = 3
 lto = "thin"
 codegen-units = 1
+
+# Android 入口是 cdylib 里导出的 `android_main`，没有 bin。桌面照旧走 src/main.rs。
+[lib]
+name = "slint_mpv_spike"
+crate-type = ["cdylib"]
+path = "src/lib.rs"
+
+[target.'cfg(target_os = "android")'.dependencies]
+# 与上面的 slint 同一个依赖，这里只是**追加 feature**（cargo 对 feature 取并集）。
+slint = { version = "1.19", features = ["backend-android-activity-06"] }
+# Android 上没有终端，println 进不了 logcat。探针的结论必须能被
+# `adb logcat -s kk-spike` 脚本化取走，所以要一个 log 后端。
+android_logger = "0.15"
+log = "0.4"
+
+# cargo-apk 用这一段生成 AndroidManifest 并打包。
+[package.metadata.android]
+package = "io.github.kakacat.kilikili.spike"
+build_targets = ["aarch64-linux-android"]
+# 这个目录按 ABI 放运行期要加载的 .so（libmpv.so）。**不进 git**：
+# 14MB 的二进制不该躺在仓库里，取法见 README。
+runtime_libs = "android-libs"
+
+[package.metadata.android.sdk]
+min_sdk_version = 24
+target_sdk_version = 35
+
+[package.metadata.android.application]
+label = "KiliKili SPIKE-002"
+
+# cargo-apk 的 release 包必须有 keystore，否则只打到一半就停。这里指向
+# Android 的标准调试 keystore（口令固定是 android）：**探针不对外分发**，
+# 它要的是 release 的优化等级，不是一个可发布的签名身份。
+# 正式包的签名约定见 docs/release/SIGNING.md，与这里无关。
+[package.metadata.android.signing.release]
+path = "debug.keystore"
+keystore_password = "android"

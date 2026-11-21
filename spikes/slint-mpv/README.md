@@ -79,6 +79,62 @@ cargo run --release -- --video <...>
 没有 `--video` 就是 no-video 模式：只跑弹幕层，用来拿**弹幕自己的帧率基线**。
 有视频那次掉帧时，只有和它对照才知道是文本渲染还是视频合成的锅。
 
+## Android（SPIKE-002 / issue #9）
+
+Android 上入口不是 `main` 而是 cdylib 导出的 `android_main`（`src/lib.rs` +
+`src/android_probe.rs`），用 cargo-apk 打包。**这一轮只回答一个问题**：Slint
+的渲染回调给不给 OpenGL 上下文、libmpv 能不能把视频画进同一个 framebuffer。
+旋转、后台音频、PiP、Media3 对照都不做。
+
+为什么桌面的结论不能直接推广：**Android 上 Slint 用 skia，不是桌面那条
+femtovg**（slint 1.19 把 femtovg 挂在 `cfg(not(target_os = "android"))` 下），
+而 skia 有 OpenGL / wgpu / software 三种 surface，只有 OpenGL 那种会交出
+`GraphicsAPI::NativeOpenGL`。
+
+### 取 libmpv.so（不进仓库）
+
+用 app 已经在用的那一份（media_kit 的 Android 依赖，带校验和）：
+
+```sh
+curl -L -o /tmp/mpv.jar   https://github.com/My-Responsitories/libmpv-android-video-build/releases/download/20260906/default-arm64-v8a.jar
+sha256sum /tmp/mpv.jar   # 98df6410375cc7a4be7e6eff56f9ccd88fa52678973cc23bcf7e934ab8c8682d
+unzip -j /tmp/mpv.jar lib/arm64-v8a/libmpv.so -d android-libs/arm64-v8a/
+```
+
+URL 与 sha256 的出处是
+`libs/android/media_kit_libs_android_video/android/build.gradle`，换 media_kit
+版本时跟着它改。`android-libs/` 已被 `.gitignore`——14MB 的二进制不该进仓库。
+
+### 构建与运行
+
+```sh
+cargo install cargo-apk
+
+export JAVA_HOME=<JDK>              # slint 的 android 后端 build.rs 要 javac
+export ANDROID_HOME=<SDK>
+export ANDROID_NDK_ROOT="$ANDROID_HOME/ndk/30.0.16248370"
+export ANDROID_PLATFORM=android-37.0   # 不设的话 build.rs 自己猜，猜错就编不过
+
+cargo apk run --release --lib
+```
+
+媒体文件放应用自己的外部数据目录（不需要任何存储权限）：
+
+```sh
+adb push probe.mp4 /sdcard/Android/data/io.github.kakacat.kilikili.spike/files/probe.mp4
+```
+
+没有这个文件时探针**照样跑**，只验 GL 上下文那一半，mpv 那一半记 BLOCKED。
+
+### 看结论
+
+```sh
+adb logcat -s kk-spike
+```
+
+同样的内容也会显示在屏幕 HUD 上——前者能脚本化取，后者能截图留证，
+实验记录里两样都要。
+
 ## 已知偏差（看数字之前先读这个）
 
 - **文本宽度是估算的**（CJK 按一个字宽、其余 0.55），没问字体引擎。只影响
@@ -118,6 +174,9 @@ src/metrics.rs   帧耗时分位数、CPU、RSS
 src/gl.rs        三个 GL 函数 + 截图
 src/record.rs    实验记录（含路径脱敏）
 ui/spike.slint   只负责画
+
+src/lib.rs           Android 的 cdylib（桌面上是空的）
+src/android_probe.rs SPIKE-002 的探针：GL 上下文 + mpv 画进同一 FBO
 ```
 
 `cargo test` 跑的是其中的纯逻辑部分（34 条），不需要 libmpv，也不开窗口。

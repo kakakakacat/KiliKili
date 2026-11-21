@@ -26,6 +26,79 @@ jobs:
           sudo apt-get install -y libgtk-3-dev webkit2gtk-4.1 libasound2-dev libmpv-dev elfutils
         shell: bash
 
+      # Linux 侧的发布身份是一把 GPG 密钥（约定见 docs/release/SIGNING.md）。
+      # 没配 secret 时整条签名链路跳过，产物与以前逐字节同构，但每一步都会在
+      # 日志里写明「未签名」——#146 的教训是 `if [ ! -z "${{ secrets.X }}" ]`
+      # 这种写法失败时毫无动静，看日志根本看不出来签名没发生。
+      #
+      # 放在构建之前：密钥有问题要在十几分钟的打包之前就红，而不是在最后一步。
+      - name: 导入发布签名密钥
+        id: signing
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.LINUX_GPG_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GPG_PRIVATE_KEY:-}" ]; then
+            printf '未配置 LINUX_GPG_PRIVATE_KEY：本次 Linux 产物不签名。\n'
+            printf '包可以安装，但使用者无法校验来源，也无法确认与上一版同源。\n'
+            printf 'signing=false\n' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          GNUPGHOME="$RUNNER_TEMP/gnupg"
+          mkdir -p "$GNUPGHOME"
+          chmod 700 "$GNUPGHOME"
+          export GNUPGHOME
+          printf '%s\n' "$GPG_PRIVATE_KEY" | gpg --batch --quiet --import
+
+          FPR="$(gpg --list-secret-keys --with-colons | awk -F: '/^fpr:/ { print $10; exit }')"
+          if [ -z "$FPR" ]; then
+            printf '导入成功但钥匙环里没有私钥：secret 里多半放的是公钥。\n'
+            exit 1
+          fi
+          printf '签名身份: %s\n' "$FPR"
+
+          # CI 用的子钥必须无口令。rpmsign / debsigs / appimagetool 各自去调
+          # gpg，没有统一的口令传递口子：有口令时它们要么卡在 pinentry 上，
+          # 要么直接产出未签名的包。先空签一次，把这种情况挡在构建之前。
+          if ! printf 'kilikili' | gpg --batch --yes --detach-sign --armor -u "$FPR" -o /dev/null; then
+            printf '试签失败。CI 的签名子钥必须是无口令的，导出方式见 docs/release/SIGNING.md。\n'
+            exit 1
+          fi
+
+          gpg --batch --yes --armor --export "$FPR" > "$RUNNER_TEMP/signing-key.asc"
+
+          # 身份复用的硬约束：仓库里钉着一份公钥，secret 换了而文件没换，
+          # 说明有人在不知情的情况下换了发布身份——老用户的校验会从此失败。
+          PINNED="assets/linux/signing-key.asc"
+          if [ -f "$PINNED" ]; then
+            PINNED_FPR="$(gpg --batch --with-colons --import-options show-only --import < "$PINNED" \
+              | awk -F: '/^fpr:/ { print $10; exit }')"
+            if [ "$PINNED_FPR" != "$FPR" ]; then
+              printf '指纹与仓库里钉住的公钥不一致：\n'
+              printf '  secret: %s\n  仓库:   %s\n' "$FPR" "$PINNED_FPR"
+              printf '同一平台的后续版本必须沿用同一身份。确实要轮换时，先按\n'
+              printf 'docs/release/SIGNING.md 的轮换步骤更新 %s。\n' "$PINNED"
+              exit 1
+            fi
+            printf '指纹与 %s 一致。\n' "$PINNED"
+          else
+            printf '仓库里还没有 %s。请把下面这把公钥提交进去，以后每次构建都会比对指纹：\n' "$PINNED"
+            cat "$RUNNER_TEMP/signing-key.asc"
+          fi
+
+          # 实际签名的是**子钥**，签出来的包里写的是子钥的 key id，不是上面
+          # 这个主钥指纹。下游认签名者时必须拿这一串（主钥 + 全部子钥）去比，
+          # 拿指纹比会把正确的签名判成别人签的。
+          KEYIDS="$(gpg --list-keys --with-colons | awk -F: '/^(pub|sub):/ { print $5 }' | paste -sd'|' -)"
+          printf '可用 key id: %s\n' "$KEYIDS"
+
+          printf 'GNUPGHOME=%s\n' "$GNUPGHOME" >> "$GITHUB_ENV"
+          printf 'signing=true\n' >> "$GITHUB_OUTPUT"
+          printf 'fingerprint=%s\n' "$FPR" >> "$GITHUB_OUTPUT"
+          printf 'keyids=%s\n' "$KEYIDS" >> "$GITHUB_OUTPUT"
+        shell: bash
+
       - name: Setup flutter
         uses: subosito/flutter-action@v2
         with:
@@ -278,10 +351,144 @@ jobs:
           sed -i 's|Exec=kilikili|Exec=kilikili|g' "$APPDIR/io.github.kakacat.kilikili.desktop"
           sed -i 's|Icon=kilikili|Icon=kilikili|g' "$APPDIR/io.github.kakacat.kilikili.desktop"
 
+          # 刻意**不**用 appimagetool 的 --sign：它会把包弄坏。
+          #
+          # 2026-11-21 在 run 44875708097 上实测（appimagetool continuous
+          # build 370 / git 11d54c9）：签名本身成功（日志里 `[sign] Success`，
+          # 连公钥都嵌进去了），但产出的 AppImage 只剩 944632 字节——正好等于
+          # 它下载的 runtime 大小，22.6MB 的 squashfs 被整段截掉。它往 ELF 段里
+          # 写签名时重写了整个 ELF，追加在后面的 squashfs 没有被带上。
+          # 同一份 AppDir 不签名时是 21–24MB。体积闸门拦下了这一次（正是
+          # PR #34 当初加它的理由）。
+          #
+          # AppImage 的来源校验因此只靠分离签名 .asc 与 SHA256SUMS。要恢复包内
+          # 签名，得钉一个确定能用的 appimagetool 版本，并重新实测产物体积——
+          # 别只看 `[sign] Success`。
           printf "打包 AppImage...\n"
           ARCH=x86_64 ./appimagetool-x86_64.AppImage "$APPDIR" "KiliKili_linux_${{ env.version }}_amd64.AppImage"
 
           printf "完成: KiliKili_linux_%s_amd64.AppImage\n" "${{ env.version }}"
+        shell: bash
+
+      # 签名分两类，缺一不可：
+      #   - 包内签名（rpm 头、deb 的 _gpgorigin 成员、AppImage 的 ELF section）
+      #     让包管理器和 AppImage 运行时自己就能判断来源；
+      #   - 分离签名（.asc）与 SHA256SUMS 让从 Release 页直接下载 tar.gz 的人
+      #     也能校验——tar.gz 没有包内签名这回事。
+      - name: 包内签名
+        if: ${{ steps.signing.outputs.signing == 'true' }}
+        env:
+          FPR: ${{ steps.signing.outputs.fingerprint }}
+        run: |
+          set -euo pipefail
+          V="${{ env.version }}"
+
+          printf "签名 RPM...\n"
+          # rpmsign 只认 ~/.rpmmacros 里的 %_gpg_name，没有等价的命令行参数。
+          printf '%%_signature gpg\n%%_gpg_name %s\n' "$FPR" > "$HOME/.rpmmacros"
+          if ! command -v rpmsign > /dev/null; then
+            sudo apt-get install -y rpm
+          fi
+          rpmsign --addsign "KiliKili_linux_${V}_amd64.rpm"
+
+          printf "签名 deb...\n"
+          sudo apt-get install -y debsigs
+          debsigs --sign=origin --default-key="$FPR" "KiliKili_linux_${V}_amd64.deb"
+
+          printf "导出公钥...\n"
+          cp "$RUNNER_TEMP/signing-key.asc" KiliKili-linux-signing-key.asc
+        shell: bash
+
+      # 必须排在包内签名之后：rpmsign 与 debsigs 改写的是包本身，先算的校验和
+      # 对不上最终发出去的文件。未签名的构建也要有这一份——它至少能回答
+      # 「我下到的包是不是这次构建产出的那个」。
+      - name: 生成 SHA256SUMS
+        run: |
+          set -euo pipefail
+          V="${{ env.version }}"
+          sha256sum \
+            "KiliKili_linux_${V}_amd64.tar.gz" \
+            "KiliKili_linux_${V}_amd64.deb" \
+            "KiliKili_linux_${V}_amd64.rpm" \
+            "KiliKili_linux_${V}_amd64.AppImage" > SHA256SUMS
+          cat SHA256SUMS
+        shell: bash
+
+      - name: 生成分离签名
+        if: ${{ steps.signing.outputs.signing == 'true' }}
+        env:
+          FPR: ${{ steps.signing.outputs.fingerprint }}
+        run: |
+          set -euo pipefail
+          V="${{ env.version }}"
+          for f in \
+            "KiliKili_linux_${V}_amd64.tar.gz" \
+            "KiliKili_linux_${V}_amd64.deb" \
+            "KiliKili_linux_${V}_amd64.rpm" \
+            "KiliKili_linux_${V}_amd64.AppImage" \
+            SHA256SUMS; do
+            gpg --batch --yes --armor --detach-sign -u "$FPR" -o "$f.asc" "$f"
+            printf '已签名: %s.asc\n' "$f"
+          done
+        shell: bash
+
+      # 签完立刻验一遍。签名步骤「成功」不等于产物真的带上了签名——
+      # appimagetool 在签名失败时只打一行 warning 就继续，rpmsign 的宏写错
+      # 也可能签到别的 key 上去。这一步按使用者的视角重新校验一次。
+      - name: 校验签名
+        if: ${{ steps.signing.outputs.signing == 'true' }}
+        env:
+          FPR: ${{ steps.signing.outputs.fingerprint }}
+          KEYIDS: ${{ steps.signing.outputs.keyids }}
+        run: |
+          set -euo pipefail
+          V="${{ env.version }}"
+          TARGZ="KiliKili_linux_${V}_amd64.tar.gz"
+          DEB="KiliKili_linux_${V}_amd64.deb"
+          RPM="KiliKili_linux_${V}_amd64.rpm"
+          APPIMAGE="KiliKili_linux_${V}_amd64.AppImage"
+
+          printf "校验分离签名...\n"
+          for f in "$TARGZ" "$DEB" "$RPM" "$APPIMAGE" SHA256SUMS; do
+            gpg --batch --verify "$f.asc" "$f"
+          done
+
+          printf "校验 SHA256SUMS...\n"
+          sha256sum --check SHA256SUMS
+
+          printf "校验 RPM 包内签名...\n"
+          sudo rpm --import KiliKili-linux-signing-key.asc
+          rpm --checksig -v "$RPM" | tee /tmp/checksig.txt
+          # 只看 rpm 的退出码不够：缺公钥时它照样可能返回 0，只在文字里写
+          # NOT OK / MISSING KEYS。
+          if grep -qi 'NOT OK\|MISSING KEYS' /tmp/checksig.txt; then
+            printf 'RPM 签名校验未通过\n'
+            exit 1
+          fi
+          grep -qi 'Signature.*OK' /tmp/checksig.txt
+
+          # deb 的包内签名没法在这里做「端到端」校验：要 debsig-verify 加
+          # /etc/debsig 下的策略文件（装法见 SIGNING.md）。在此只确认两件事：
+          # 签名确实写进去了，而且签它的是我们这把钥匙——这正好拦住最容易
+          # 发生的两种失败：根本没签，和签到别的 key 上。端到端校验放在人工
+          # 发布验证里（docs/qa/RELEASE-VALIDATION.md）。
+          printf "校验 deb 包内签名...\n"
+          ar t "$DEB" | grep -qx '_gpgorigin'
+          ar p "$DEB" _gpgorigin > /tmp/deb.sig
+          gpg --list-packets /tmp/deb.sig | grep -Eqi "keyid ($KEYIDS)"
+
+          # AppImage 没有包内签名，理由见上面「打包 AppImage」那一步的注释。
+          # 它的来源校验靠 .asc，已在上面逐个验过。
+
+          printf '全部校验通过，签名身份 %s\n' "$FPR"
+        shell: bash
+
+      - name: 未签名时的提示
+        if: ${{ steps.signing.outputs.signing != 'true' }}
+        run: |
+          printf '本次 Linux 产物没有签名（未配置 LINUX_GPG_PRIVATE_KEY）。\n'
+          printf '这些包不应作为正式发布分发：使用者无法确认来源，也无法确认与上一版同源。\n'
+          printf '配置步骤见 docs/release/SIGNING.md。\n'
         shell: bash
 
       # 上传前统一核对产物体积。CI 的 status check 覆盖不到产物内容：
@@ -323,6 +530,22 @@ jobs:
             KiliKili_linux_*.deb
             KiliKili_linux_*.rpm
             KiliKili_linux_*.AppImage
+            KiliKili_linux_*.asc
+            KiliKili-linux-signing-key.asc
+            SHA256SUMS
+            SHA256SUMS.asc
+
+      # 未签名时 .asc 与公钥不存在，这里只会少传几个文件：
+      # softprops/action-gh-release 的 fail_on_unmatched_files 默认为 false。
+      - name: Upload linux checksums and signatures
+        uses: actions/upload-artifact@v7
+        with:
+          name: Linux_checksums
+          path: |
+            KiliKili_linux_*.asc
+            KiliKili-linux-signing-key.asc
+            SHA256SUMS
+            SHA256SUMS.asc
 
       - name: Upload linux targz package
         uses: actions/upload-artifact@v7

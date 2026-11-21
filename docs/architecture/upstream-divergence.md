@@ -369,6 +369,13 @@ video/reply_search_item,main_reply,my_reply,common/dyn,setting/models}` 下
 （颜色、间距、用哪个 widget），照上游解；若是**判定**（哪一段算链接、占位
 父评论挂在哪），要改的是 `bili_domain::reply_richtext` /
 `bili_domain::reply_thread`，Dart 侧已经没有那段实现了。
+修订：2026-11-21（五端发布包签名，#121，为本次）—— 实质改动
+354 → **356**，仅重命名波及 480 → **478**，「修改」总数仍为 834；新增文件
+713 → **715**（`docs/release/SIGNING.md`、`tool/verify-release-signatures.sh`），
+删除文件不变。`.github/workflows/build.yml` 与 `ios.yml` 从「仅包名重命名」
+转入有实质改动——前者给四个可复用工作流补 `secrets: inherit`，后者写下
+「iOS 侧载没有仓库侧发布身份」这个结论。`linux_x64.yml` / `mac.yml` /
+`win_x64.yml` 本来就在实质改动里，这次只是加签名链路，计数不变。
 
 ## 1. 基准
 
@@ -388,9 +395,9 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 类别 | 数量 |
 | --- | ---: |
 | 修改的上游既有文件 | **834** |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | **480** |
-| &nbsp;&nbsp;其中：有实质改动 | **354** |
-| 新增文件 | **713** |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | **478** |
+| &nbsp;&nbsp;其中：有实质改动 | **356** |
+| 新增文件 | **715** |
 | 删除文件 | **271** |
 
 「修改」总数一路下降（935 → 909 → 897 → 891 → 887），部分文件是因迁移被
@@ -508,9 +515,11 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | `lib/pages/video/introduction/local/controller.dart` | 本次（issue #89） | 单集列表循环播放改走 `PlPlayerController.seekTo`，不再直接调 `videoPlayerController.seek` |
 | `test/utils/accounts/deleted_account_test.dart` | `83244c723` | 适配 CI 上打补丁后的 Flutter |
 | `assets/linux/DEBIAN/control` | `5ecebd8f8` 及本次 | 依赖声明改由构建期生成（见 §5） |
-| `.github/workflows/linux_x64.yml` | `d9b23ba4e` `45cfe832c` `6d35ee6e9` 及本次 | RPM 选包修复、产物体积闸门、依赖自动生成 |
-| `.github/workflows/mac.yml` | `6d35ee6e9` | 产物体积闸门 |
-| `.github/workflows/win_x64.yml` | `6d35ee6e9` | 产物体积闸门 |
+| `.github/workflows/linux_x64.yml` | `d9b23ba4e` `45cfe832c` `6d35ee6e9` 及本次 | RPM 选包修复、产物体积闸门、依赖自动生成、GPG 签名与校验（#121） |
+| `.github/workflows/mac.yml` | `6d35ee6e9` 及本次 | 产物体积闸门、Developer ID 签名与公证（#121） |
+| `.github/workflows/win_x64.yml` | `6d35ee6e9` 及本次 | 产物体积闸门、signtool 代码签名（#121） |
+| `.github/workflows/build.yml` | 本次（#121） | 四个可复用工作流补 `secrets: inherit`，否则签名 secret 传不进去 |
+| `.github/workflows/ios.yml` | 本次（#121） | 注释写明侧载没有仓库侧发布身份；构建行为未变 |
 
 `lib/plugin/pl_player/controller.dart` 不在这张表里，它已经由 §4.1 的 S3 一行
 覆盖；issue #89 又给它加了 seek 代际 `_seekEpoch`，这里不重复计数。那条代际
@@ -518,8 +527,8 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 代际，弹幕会把它当成回跳而整段不再显示。同步上游时若引入新的
 `videoPlayerController.seek(...)` 调用点，要一并改掉。
 
-`.github/workflows/build.yml` 与 `ios.yml` 也在分叉面里，但**只有包名重命名**，
-没有逻辑改动。
+`.github/workflows/build.yml` 与 `ios.yml` 在 #121 之前只有包名重命名，
+现已进入上表。
 
 ### 4.4 封面卡片改版触及的上游文件
 
@@ -573,7 +582,7 @@ Column 顺序、文字层级），丢弃——那一层我们已经整个换掉�
 
 ## 5. 新增文件
 
-712 个，不与上游冲突，按区域分布：
+714 个，不与上游冲突，按区域分布：
 
 | 区域 | 文件数 | 内容 |
 | --- | ---: | --- |
@@ -582,7 +591,7 @@ Column 顺序、文字层级），丢弃——那一层我们已经整个换掉�
 | `lib/services/` | 45 | 各切片的 typed 取数封装、会话寿命与传输适配 |
 | `test/` | 39 | parity 测试与桥接层集成测试 |
 | `lib/rust/` | 34 | FRB 生成的 Dart 绑定 |
-| `tool/` | 23 | 构建准备、FRB 生成、proto 生成、README 统计、产物核对、fixture 生成 |
+| `tool/` | 24 | 构建准备、FRB 生成、proto 生成、README 统计、产物核对、fixture 生成 |
 | `docs/` | 22 | RFC、ADR、M0 记录、QA 清单 |
 | `shaders/` | 1 | Liquid Glass 背板折射着色器 |
 | `lib/common/` | 3 | 封面大卡片、统计药丸与直播卡共用的文案行（issue #108） |

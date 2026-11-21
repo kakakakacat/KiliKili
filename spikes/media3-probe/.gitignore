@@ -1,0 +1,5 @@
+# Gradle 的产物与本机路径，不进仓库。
+/.gradle/
+/build/
+/app/build/
+/local.properties

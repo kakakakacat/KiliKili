@@ -82,9 +82,16 @@ cargo run --release -- --video <...>
 ## Android（SPIKE-002 / issue #9）
 
 Android 上入口不是 `main` 而是 cdylib 导出的 `android_main`（`src/lib.rs` +
-`src/android_probe.rs`），用 cargo-apk 打包。**这一轮只回答一个问题**：Slint
-的渲染回调给不给 OpenGL 上下文、libmpv 能不能把视频画进同一个 framebuffer。
-旋转、后台音频、PiP、Media3 对照都不做。
+`src/android_probe.rs`），用 cargo-apk 打包。
+
+探针分两轮做完了 #9 的全部范围：
+
+- 第一轮（PR #185）：Slint 的渲染回调给不给 OpenGL 上下文、libmpv 能不能把
+  视频画进同一个 framebuffer。这是其余所有项的前提。
+- 第二轮：surface 生命周期、旋转、后台音频、PiP、触摸分发，外加
+  `spikes/media3-probe` 那个 Media3 回退对照。
+
+结论与证据都在 `docs/m0/spikes/SPIKE-002-android.md`。
 
 为什么桌面的结论不能直接推广：**Android 上 Slint 用 skia，不是桌面那条
 femtovg**（slint 1.19 把 femtovg 挂在 `cfg(not(target_os = "android"))` 下），
@@ -115,22 +122,85 @@ export ANDROID_HOME=<SDK>
 export ANDROID_NDK_ROOT="$ANDROID_HOME/ndk/30.0.16248370"
 export ANDROID_PLATFORM=android-37.0   # 不设的话 build.rs 自己猜，猜错就编不过
 
-cargo apk run --release --lib
+cargo apk build --release --lib
+./android-repack.sh                 # 换 manifest（PiP 要用），见下
+adb install -r target/release/apk/spike-pip.apk
 ```
+
+**PiP 那一项必须走 `android-repack.sh`。** `android:supportsPictureInPicture`
+是系统的硬门槛，没有它 `enterPictureInPictureMode` 直接抛异常；而 cargo-apk
+0.10 用的 ndk-build 0.10 的 manifest 模型里没有这个字段，Cargo.toml 怎么写都
+生成不出来。脚本的做法是打完包把 manifest 换掉（`aapt2 link` 编译一份新的，
+替换进 APK，再 `zipalign` + `apksigner`）。理由写在脚本开头。
+
+`./android-repack.sh --recreate` 打的是**对照包**：去掉 `configChanges`，
+于是转屏时系统会重建 activity。两种行为都要测过，才知道 Phase 2 该选哪种。
 
 媒体文件放应用自己的外部数据目录（不需要任何存储权限）：
 
 ```sh
-adb push probe.mp4 /sdcard/Android/data/io.github.kakacat.kilikili.spike/files/probe.mp4
+D=/sdcard/Android/data/io.github.kakacat.kilikili.spike/files
+adb push probe.mp4 $D/probe.mp4
+python make-probe-audio.py probe-audio.wav && adb push probe-audio.wav $D/
 ```
 
-没有这个文件时探针**照样跑**，只验 GL 上下文那一半，mpv 那一半记 BLOCKED。
+**音轨是单独一条。** 手上那份 probe.mp4 没有音频轨，拿它测「后台还出不出声」
+等于拿默片证明音响好不好。`make-probe-audio.py` 用标准库合成一条带节拍的
+WAV（本机没有 ffmpeg），探针看到它就按 `MediaSource::Dash` 分轨开——跟真实的
+B 站取流是同一条路径。
+
+没有 probe.mp4 时探针**照样跑**，只验 GL 上下文那一半，mpv 那一半记 BLOCKED。
+
+### 跑完整的一轮
+
+```sh
+./android-drive.sh [输出目录]        # 默认 target/android-evidence
+```
+
+它把 #9 剩下那五项按固定顺序跑一遍：触摸分发 → 旋转 → PiP → 后台音频（原样）
+→ 后台音频（带后台策略），每一步都留系统截图、帧缓冲回读与 `dumpsys` 片段，
+最后把 logcat 和设备上的 PNG 一起拉回来。**手机必须解着锁**——锁屏时 activity
+不可见，Slint 不渲染，什么都测不到。
+
+### 探针的命令通道
+
+驱动脚本靠往应用外部数据目录里写一行命令来指挥探针（NativeActivity 收不到
+intent，而 `adb shell` 本来就写得进那个目录）：
+
+```sh
+adb shell "echo 'pip' > $D/cmd.txt"
+```
+
+| 命令 | 作用 |
+|---|---|
+| `note <文字>` | 往 logcat 里打一个阶段标记，事后对时间轴 |
+| `pip` / `pip noparams` | 进画中画（带宽高比参数 / 无参的老接口） |
+| `pip-auto on\|off` | API 31 的自动进入：上滑回桌面时直接变小窗 |
+| `bg` / `fg` | 下发 `SetLifecycle`，手动切后台策略 |
+| `auto-lifecycle on\|off` | 让探针在 Pause/重建时自动走上面那条策略 |
+| `reopen` | 重新 `Open + Play`（surface 重建之后救画面唯一有效的办法） |
+| `prop <名> <值>` | 直接写 mpv 属性，排查用（`hwdec`、`vid`…） |
+| `shot <名>` / `shot-pair <名>` | 回读一帧 / 回读一对（mpv 画完、整帧合成完各一张） |
+| `quit` | 退出进程 |
+
+`shot-pair` 是分层定位用的：两张一比就知道画面是在 mpv 那一层没出来，还是被
+Slint 这一层盖掉了。
 
 ### 看结论
 
 ```sh
 adb logcat -s kk-spike
 ```
+
+结论行都带固定前缀，驱动脚本按前缀取：
+
+| 前缀 | 含义 |
+|---|---|
+| `EV` | android-activity 的 `MainEvent`（生命周期第一手证据） |
+| `STATUS` | 每秒一条的播放状态，由**独立线程**打——UI 停了它还在，后台音频靠它作证 |
+| `SURFACE` | setup / teardown 与 render context 的生死 |
+| `SIZE` / `BUTTONS` | 窗口尺寸与按钮的物理坐标（驱动脚本点按钮要用） |
+| `TOUCH` / `PIP` / `SHOT` / `CMD` | 同名的那几项 |
 
 同样的内容也会显示在屏幕 HUD 上——前者能脚本化取，后者能截图留证，
 实验记录里两样都要。
@@ -176,7 +246,13 @@ src/record.rs    实验记录（含路径脱敏）
 ui/spike.slint   只负责画
 
 src/lib.rs           Android 的 cdylib（桌面上是空的）
-src/android_probe.rs SPIKE-002 的探针：GL 上下文 + mpv 画进同一 FBO
+src/android_probe.rs SPIKE-002 的探针：GL 上下文、surface 生命周期、旋转、
+                     后台音频、PiP、触摸分发
+android-repack.sh    换 manifest（PiP 的 supportsPictureInPicture）
+android-drive.sh     整轮实验的驱动脚本
+make-probe-audio.py  合成一条带节拍的 WAV（后台音频要有声音才测得出来）
 ```
+
+Media3 的回退对照是另一个工程：`spikes/media3-probe`（Kotlin + Gradle）。
 
 `cargo test` 跑的是其中的纯逻辑部分（34 条），不需要 libmpv，也不开窗口。

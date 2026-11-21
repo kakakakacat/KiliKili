@@ -245,6 +245,19 @@ impl MpvPlayer {
         unsafe { MpvRender::new(Arc::clone(&self.lib), self.handle, loader) }
     }
 
+    /// 直接写一个 mpv 属性。
+    ///
+    /// 只给探针用：`PlayerPort` 的命令集是**领域层**的词汇（ADR-003），不该为了
+    /// 调一次 `hwdec` 就往里加一个「随便写属性」的口子。探针要的恰恰是那种
+    /// 口子——它在问「mpv 这边到底怎么回事」，不是在实现播放语义。
+    ///
+    /// 桌面那条路（`src/main.rs`）不用它，所以在非 Android 目标上它是死代码——
+    /// 这个模块被两个 target 各编一遍（见 `src/lib.rs` 的说明）。
+    #[cfg_attr(not(target_os = "android"), allow(dead_code))]
+    pub fn debug_set_property(&self, name: &str, value: &str) -> Result<()> {
+        self.set_property_string(name, value)
+    }
+
     /// 发命令。**一律走异步版本**，哪怕调用方并不需要结果。
     ///
     /// 这不是图省事，是绕开一个真实踩到的死锁：`mpv_command` 是同步的，

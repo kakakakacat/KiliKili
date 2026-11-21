@@ -578,10 +578,27 @@ runner 一样都没有；编译成功与「视频能不能垫在 UI 底下」是
 上下文」，软渲染给出的答案没有意义。这台开发机连着一台 Android 14 /
 Adreno 740 的真机，所以能验；换一台没有真机的机器，这一格就回到「不能」。
 
-**本轮验到的**：GL 上下文可用、mpv 的 render context 能建、视频画进同一个
+**第一轮验到的**：GL 上下文可用、mpv 的 render context 能建、视频画进同一个
 FBO 且画面正确、UI 压在视频之上、`hwdec-current=mediacodec`（零拷贝）。
-**没验的**：surface 生命周期、旋转、后台音频、PiP、Media3 对照——范围是
-所有者当天定的，#9 仍然开着。
+
+**第二轮（同日）把 #9 的范围补完了**，并且把这条能力从「能手动跑一次」变成
+**脚本化的一整轮**：`spikes/slint-mpv/android-drive.sh` 依次驱动触摸、转屏、
+PiP、切后台，每一步留系统截图、帧缓冲回读与 `dumpsys` 片段；探针那边多了一条
+命令通道（往应用外部数据目录写一行，4Hz 轮询），所以实验顺序由脚本定，不靠
+手点。新增两样配套：
+
+- `make-probe-audio.py`——本机没有 ffmpeg，用标准库合成一条带节拍的 WAV。
+  没有它「后台还出不出声」测不了（手上那份 probe.mp4 没有音频轨）。
+- `android-repack.sh`——cargo-apk 的 manifest 模型里没有
+  `supportsPictureInPicture`，PiP 那一项要靠打完包换 manifest 才测得了。
+  顺带能打一个「不声明 configChanges」的对照包，用来测转屏重建 activity 的
+  那条路。
+
+**Media3 的回退对照**另起一个 Kotlin/Gradle 工程 `spikes/media3-probe`，
+阶段与上面一一对应、素材同一份。它也是本仓库第一个独立的 Android 原生工程，
+AGP/Gradle 版本跟 `android/` 对齐。
+
+**仍然替不了 CI 的部分没变**：所有这些都要真机，GitHub runner 上做不到。
 
 ### 发布包签名（#121，2026-11-21）
 

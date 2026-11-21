@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  对照组的 manifest 跟 Slint 那个探针**声明的东西一模一样**：
+  supportsPictureInPicture、resizeableActivity、同一串 configChanges。
+  两边只能差在实现上，不能差在声明上，否则比的是 manifest 不是方案。
+
+  差别只有一处，而且正是结论的一部分：这边的 activity 是**自己的 Java 类**，
+  所以 PiP 的回调（onPictureInPictureModeChanged）、onUserLeaveHint 这些都收
+  得到；Slint 那边用的是系统的 android.app.NativeActivity，收不到。
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:allowBackup="false"
+        android:label="KiliKili MEDIA3 对照"
+        android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|screenLayout|uiMode|density"
+            android:exported="true"
+            android:resizeableActivity="true"
+            android:supportsPictureInPicture="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

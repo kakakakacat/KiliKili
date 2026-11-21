@@ -24,8 +24,23 @@ export component SpikeWindow inherits Window {
     // 不画，否则会把底下的视频盖掉——这正是本次要验的东西。
     in property <bool> video-active: false;
     in property <string> watermark;
+    // 下面这一组只有 Android 探针用（SPIKE-002 的触摸分发与 PiP 两项）。
+    // 桌面那条路（src/main.rs）不打开它，免得实验台多出两个按钮，
+    // 把 SPIKE-001 量的帧耗时也一起改了。
+    in property <bool> controls-visible: false;
+    // 按钮中心的**绝对坐标**（逻辑像素）。驱动脚本要 `adb shell input tap`
+    // 点中它，就得知道点哪儿；窗口尺寸会随旋转和 PiP 变，所以这个值必须由
+    // 布局算出来再读回 Rust，不能在 Rust 里按常数猜。
+    out property <length> pip-cx: pip-button.x + pip-button.width / 2;
+    out property <length> pip-cy: pip-button.y + pip-button.height / 2;
+    out property <length> shot-cx: shot-button.x + shot-button.width / 2;
+    out property <length> shot-cy: shot-button.y + shot-button.height / 2;
 
     callback key(string);
+    // kind 是 "down" / "up" / "move" / "cancel"，坐标是逻辑像素。
+    callback touch(string, length, length);
+    callback pip-pressed();
+    callback shot-pressed();
 
     title: "KiliKili SPIKE-001 · Slint + libmpv";
     // 透明背景是整个方案的前提：femtovg 用它清屏，mpv 在 BeforeRendering
@@ -36,6 +51,26 @@ export component SpikeWindow inherits Window {
 
     if !root.video-active: Rectangle {
         background: @linear-gradient(180deg, #10141c 0%, #1d2430 100%);
+    }
+
+    // 铺满整个窗口的触摸层，**放在最底下**：它只接没有被上面的按钮抢走的
+    // 事件。两者区分得开，才说明命中测试真的在工作——而不是「反正都报一次」。
+    //
+    // 它在视频之上（视频是 BeforeRendering 里画进同一个 FBO 的，根本不在
+    // Slint 的元素树里），所以这一层能收到事件，本身就是 #9 要的那个答案：
+    // 视频垫在底下不会吃掉触摸。
+    if root.controls-visible: surface-touch := TouchArea {
+        width: parent.width;
+        height: parent.height;
+        pointer-event(e) => {
+            root.touch(
+                e.kind == PointerEventKind.down ? "down"
+                    : e.kind == PointerEventKind.up ? "up"
+                    : e.kind == PointerEventKind.move ? "move"
+                    : "cancel",
+                surface-touch.mouse-x,
+                surface-touch.mouse-y);
+        }
     }
 
     // 描边：Slint 的 Text 没有 stroke，用一层偏移的黑字顶替。代价是文本
@@ -91,6 +126,62 @@ export component SpikeWindow inherits Window {
         key-pressed(event) => {
             root.key(event.text);
             accept
+        }
+    }
+
+    // 两个按钮**无条件存在**（只是隐藏）：`pip-cx` 这些 out property 要引用
+    // 它们的几何，而 Slint 的 `if` 里的元素在外面取不到 id。隐藏的元素不收
+    // 触摸事件，所以桌面那条路上它们既不画也不挡。
+    // 宽度刻意小：手机竖屏按逻辑像素只有 400 出头（1116 物理 / 2.75），
+    // 两个 240px 的按钮会在中间**叠起来**，后面那个盖住前面那个——第一轮实跑
+    // 就是这么把「点 PiP 按钮」点成了「点 SHOT 按钮」。
+    pip-button := Rectangle {
+        visible: root.controls-visible;
+        x: 24px;
+        y: parent.height - self.height - 24px;
+        width: 150px;
+        height: 110px;
+        background: pip-touch.pressed ? #2b6cb0 : #1a365dcc;
+        border-radius: 12px;
+        border-width: 2px;
+        border-color: #63b3ed;
+
+        Text {
+            text: "PiP";
+            font-size: 34px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        pip-touch := TouchArea {
+            clicked => {
+                root.pip-pressed();
+            }
+        }
+    }
+
+    shot-button := Rectangle {
+        visible: root.controls-visible;
+        x: parent.width - self.width - 24px;
+        y: parent.height - self.height - 24px;
+        width: 150px;
+        height: 110px;
+        background: shot-touch.pressed ? #2f855a : #1c4532cc;
+        border-radius: 12px;
+        border-width: 2px;
+        border-color: #68d391;
+
+        Text {
+            text: "SHOT";
+            font-size: 34px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        shot-touch := TouchArea {
+            clicked => {
+                root.shot-pressed();
+            }
         }
     }
 

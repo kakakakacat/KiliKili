@@ -5091,6 +5091,7 @@ dependencies = [
  "bili-danmaku",
  "bili-domain",
  "clap",
+ "jni 0.22.4",
  "libloading 0.9.1",
  "log",
  "png",

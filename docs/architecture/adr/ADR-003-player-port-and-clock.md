@@ -1,6 +1,6 @@
 # ADR-003: Player Port, Ownership, and Danmaku Clock
 
-Status: **Contract implemented — first native-adapter runtime evidence collected (Windows, 2026-11-21); macOS/Android pending**
+Status: **Contract implemented — native-adapter runtime evidence collected on Windows and Android (2026-11-21); macOS pending**
 Date: 2026-11-10  
 Related: RFC-0001 v0.2, ADR-004
 
@@ -104,5 +104,25 @@ Continue shipping Flutter + Rust Core with the current media-kit backend if nati
   契约里的 `AttachSurface` 因此不是可选步骤：适配器要么等表面就绪再接受
   `Open`，要么在表面就绪时自行重开。
 
-第 3 条（前后台与路由销毁）与第 5 条（两种适配器行为一致）仍未验：前者要
-移动端（#9），后者要等 Flutter 侧也跑同一组脚本。
+## 第 3 条（前后台与表面销毁）：Android 真机实测，2026-11-21
+
+SPIKE-002 第二轮在小米 13 Ultra / Android 14 上把这条验完了，记录与证据在
+[SPIKE-002-android](../../m0/spikes/SPIKE-002-android.md)。契约本身不用改，
+但多了三条**对适配器的硬约束**，都是实测撞出来的：
+
+- **`SetLifecycle(Background)` 必须赶在表面销毁之前生效。** Android 上
+  `Pause` 比 `TerminateWindow` 早到，而 `PlayerPort::dispatch` 是异步受理，
+  下发不等于落地。原型的做法是在销毁渲染上下文之前确认 `vid` 已经变成 `no`。
+  不这么做的后果不是「画面多画了几帧」：render context 一没，mpv 的 VO 跟着
+  死，**整个文件会被卸掉**（`EOF code: 6`，连音频一起停）——在没有音频轨的
+  素材上百分之百复现。
+- **`Pause` 不等于「进了后台」。** 进画中画同样走 `Pause`。适配器要能区分，
+  否则一进小窗就把视频轨自己关掉了。契约这边的含义是：`Lifecycle` 的切换点
+  由平台适配器判断，领域层给的只是两种状态。
+- **表面重建之后，零拷贝硬解这条路要靠一次完整重载才接得回来。** Android +
+  `hwdec=mediacodec` 下，新的渲染上下文建好、`vid` 重选、`hwdec` 重写都不出
+  画面（软解则没事），只有重新 `Open` 才行。所以 `AttachSurface` 在这类后端上
+  不只是「接一个新表面」，而是**要带着「记住位置 → 重开 → seek 回去」这套
+  恢复动作**。这条与上面「渲染表面必须先于 `Open` 就绪」是同一件事的两面。
+
+第 5 条（两种适配器行为一致）仍未验：要等 Flutter 侧也跑同一组脚本。

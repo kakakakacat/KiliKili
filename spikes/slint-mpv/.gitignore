@@ -4,3 +4,6 @@
 
 # cargo-apk 的调试签名用，不是发布身份（见 Cargo.toml 里的说明）。
 /debug.keystore
+
+# make-probe-audio.py 合成出来的音轨（8MB）。README 里写了怎么现造，不进仓库。
+/probe-audio.wav

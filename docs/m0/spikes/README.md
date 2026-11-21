@@ -9,12 +9,14 @@
 
 **Android 那份是手写的例外**：那边没有命令行，入口是 `android_main`，
 证据来自 logcat、mpv 自己的日志与帧缓冲回读，不是 `--record` 产出的。
+跑法本身仍然是脚本化的（`spikes/slint-mpv/android-drive.sh` 驱动真机，
+`spikes/media3-probe/drive.sh` 跑对照组），只是结论要人来写。
 
 | 文件 | 平台 | 结论 |
 |---|---|---|
 | [2026-11-21-windows-dryrun.md](2026-11-21-windows-dryrun.md) | Windows 11 / RX 7900 GRE | 自动项全 PASS。**这是实验台自检，不是 SPIKE-001 的交付** |
 | [SPIKE-001-macos.md](SPIKE-001-macos.md) | macOS | **未跑**，等一台 mac（issue #8） |
-| [SPIKE-002-android.md](SPIKE-002-android.md) | Android 14 / Adreno 740 真机 | 决定性问题 **PASS**：Slint 给得出 GL 上下文，mpv 画得进同一个 FBO（issue #9） |
+| [SPIKE-002-android.md](SPIKE-002-android.md) | Android 14 / Adreno 740 真机 | **#9 全部范围已答，PASS**：GL 上下文、触摸、旋转、surface 生命周期、后台音频、PiP，外加 Media3 回退对照。带一条代价：表面重建后零拷贝硬解要靠完整重载才接得回来 |
 
 ## 为什么先有一份 Windows 的
 
@@ -61,7 +63,15 @@ Windows 这一跑同时附带回答了 [VALIDATION-CAPABILITY](../VALIDATION-CAP
 记录里列的 PNG **不提交**：一次实验六张 4K 截图近 3MB，而它们随时可以用记录
 开头那行命令原样重跑出来。需要留存时自己归档，别往仓库里塞。
 
-**`assets/` 下的 Android 那一张是刻意的例外。** 这条规矩成立的前提是「随时
-能重跑出来」——Android 这张不满足：要一台连着线的真机、要人把锁屏解开，
-而它恰恰是 #9 这个 Go/No-Go 门槛唯一能证明「视频真的出现在 UI 之下」的东西。
-破例的代价压到最小：只裁视频那一带、缩到 720 宽、300KB。
+**`assets/` 下的 Android 那几张是刻意的例外。** 这条规矩成立的前提是「随时
+能重跑出来」——Android 这些不满足：要一台连着线的真机、要人把锁屏解开，
+而它们恰恰是 #9 这个 Go/No-Go 门槛上唯一能证明「画面到底长什么样」的东西。
+破例的代价压到最小：每张都缩过，五张加起来 1.4MB。
+
+| 图 | 它证明什么 | 不留就没法说清的事 |
+|---|---|---|
+| `-fbo-readback` | 视频真的出现在 UI 之下 | 第一轮的决定性结论 |
+| `-landscape` | 转屏之后画面与布局都跟上了 | 「旋转 PASS」不能只靠一行尺寸日志 |
+| `-pip` | 小窗里视频还在画 | 日志只能说「进了 PiP」，说不了「小窗里有画面」 |
+| `-resume-recover` | 回前台后画面没了、跑完恢复配方又回来 | 整份记录里最贵的那个发现，一句话说不清 |
+| `-media3-layers` | 回退路线的三层（视频 / GL 覆盖层 / 普通 View）叠得住 | 「回退可行」否则只是一句断言 |

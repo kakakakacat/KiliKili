@@ -1,0 +1,100 @@
+// SPIKE-001 的 UI 层。**这里只负责画**：位置、透明度、是否显示角标全部由
+// Rust 算好传进来（AGENTS.md §2 的铁律——换掉宿主框架时这段不该重写）。
+//
+// 这一层要验证的是三件事：
+//   1. Window 背景透明时，底下用 mpv 的 OpenGL render API 画的视频能否透出来；
+//   2. 几百条文本叠在视频上还能不能保持帧率；
+//   3. 层级是否稳定（弹幕永远在视频之上、HUD 永远在弹幕之上）。
+
+export struct DanmakuItem {
+    // 文本已含合并角标（Rust 侧拼好，见 overlay.rs）
+    text: string,
+    x: length,
+    y: length,
+    size: length,
+    color: color,
+    alpha: float,
+}
+
+export component SpikeWindow inherits Window {
+    in property <[DanmakuItem]> items;
+    in property <string> hud;
+    in property <bool> hud-visible: true;
+    // 没有 mpv 时铺一层底色，好让弹幕层自己也能看清；有 mpv 时**必须**保持
+    // 不画，否则会把底下的视频盖掉——这正是本次要验的东西。
+    in property <bool> video-active: false;
+    in property <string> watermark;
+
+    callback key(string);
+
+    title: "KiliKili SPIKE-001 · Slint + libmpv";
+    // 透明背景是整个方案的前提：femtovg 用它清屏，mpv 在 BeforeRendering
+    // 里已经把这一帧的视频画进同一个 framebuffer 了。
+    background: transparent;
+    preferred-width: 1280px;
+    preferred-height: 720px;
+
+    if !root.video-active: Rectangle {
+        background: @linear-gradient(180deg, #10141c 0%, #1d2430 100%);
+    }
+
+    // 描边：Slint 的 Text 没有 stroke，用一层偏移的黑字顶替。代价是文本
+    // 绘制次数翻倍——这是**故意**算进帧率里的，真实弹幕必须有描边，不然
+    // 亮底上看不见。
+    for item in root.items: Text {
+        x: item.x + 1.5px;
+        y: item.y + 1.5px;
+        text: item.text;
+        font-size: item.size;
+        font-weight: 700;
+        color: #000000;
+        opacity: item.alpha * 0.55;
+    }
+
+    for item in root.items: Text {
+        x: item.x;
+        y: item.y;
+        text: item.text;
+        font-size: item.size;
+        font-weight: 700;
+        color: item.color;
+        opacity: item.alpha;
+    }
+
+    if root.watermark != "": Text {
+        x: 16px;
+        y: parent.height - self.height - 16px;
+        text: root.watermark;
+        font-size: 13px;
+        color: #ffffffcc;
+    }
+
+    if root.hud-visible: Rectangle {
+        x: parent.width - self.width - 12px;
+        y: 12px;
+        width: hud-text.width + 20px;
+        height: hud-text.height + 16px;
+        background: #000000b4;
+        border-radius: 8px;
+
+        hud-text := Text {
+            x: 10px;
+            y: 8px;
+            text: root.hud;
+            font-family: "Consolas";
+            font-size: 12px;
+            color: #aef6c5;
+        }
+    }
+
+    fs := FocusScope {
+        key-pressed(event) => {
+            root.key(event.text);
+            accept
+        }
+    }
+
+    init => {
+        fs.focus();
+    }
+}

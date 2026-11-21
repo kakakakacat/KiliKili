@@ -155,6 +155,10 @@ test*
 
 # Rust
 /rust/target/
+# M0 的实验台自成 workspace（spikes/slint-mpv/Cargo.toml 里写了为什么），
+# 产物同样不进仓库；`Cargo.lock` 要进——实验记录里写着依赖版本，
+# 没有锁文件那一栏就没法复现。
+/spikes/*/target/
 **/*.rs.bk
 # 上面宽泛的 `test*` 规则会静默吞掉 Rust 的集成测试目录
 # （cargo 约定为 <crate>/tests/），导致测试在本地通过却从未进入仓库与 CI。

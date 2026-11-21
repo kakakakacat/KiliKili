@@ -1,6 +1,6 @@
 # ADR-003: Player Port, Ownership, and Danmaku Clock
 
-Status: **Contract implemented — adapter review and runtime evidence pending**
+Status: **Contract implemented — first native-adapter runtime evidence collected (Windows, 2026-11-21); macOS/Android pending**
 Date: 2026-11-10  
 Related: RFC-0001 v0.2, ADR-004
 
@@ -69,3 +69,40 @@ The Rust Core receives a unified player state model but must accommodate platfor
 ## Fallback
 
 Continue shipping Flutter + Rust Core with the current media-kit backend if native playback or Slint compositor tests fail.
+
+## 原生适配器的首批实测（2026-11-21）
+
+`spikes/slint-mpv/src/mpv/mod.rs` 是 `NativeMpvAdapter` 的原型：libmpv 包成
+同一个 `PlayerPort`，事件经 `PlayerEventSink` 过 channel 回 UI 线程。
+在 Windows 上按脚本跑了一次（记录见
+[docs/m0/spikes/2026-11-21-windows-dryrun.md](../../m0/spikes/2026-11-21-windows-dryrun.md)），
+上面「Validation requirements」的第 1、2、4 条拿到了第一批真实数据：
+
+- **暂停不推进位置**：暂停 1.4 秒后两次采样都是 4866ms。
+- **Seek 完成是事实事件**：收到一次 `SeekCompleted`，位置与目标相差 0ms；
+  seek 期间有 2 条旧代际事件被 `Stamped::accept` 丢掉，没有进 UI。
+- **事件被合并而非逐帧过桥**：`time-pos` 在适配器里合并成最多每 40ms 一个
+  快照，25.7 秒的运行共 458 条事件（渲染了 1506 帧）。
+
+实现上有一处值得写进 ADR：**代际不能在事件泵里用「当前值」盖章**。
+调用方 bump 闸门的那一刻，旧事件还在 mpv 的队列里；用当前代际盖章会把它们
+一并盖成新代际，闸门就白做了。原型的做法是拿 mpv 自己的确认点分段——
+发出 Seek/Open 后事件泵**继续用旧代际盖章**，直到 `PLAYBACK_RESTART`
+（seek）或 `FILE_LOADED`（open）到达才切到新代际并发出 `SeekCompleted`。
+「发了 Seek 不等于 seek 完成了」这句话在实现里就是这段状态机，任何后端的
+适配器都要给出等价的确认点。
+
+另外两条给未来适配器的硬约束，是实测撞出来的，不是推演：
+
+- **命令不能用同步 API 从渲染线程发出。** `mpv_command` 等核心处理完，
+  核心又会等渲染线程画完一帧；UI 线程同时承担两者时必然有互等的时机，
+  表现为整个窗口冻死。原型改用 `mpv_command_async` /
+  `mpv_set_property_async`。注意这和「命令必须是异步的」在契约层已经一致：
+  `PlayerPort::dispatch` 返回的本来就只是「已受理」，不是「已完成」。
+- **渲染表面必须先于 `Open` 就绪。** 渲染上下文还没建好就 `loadfile`，
+  mpv 会照常解码、走进度、出声，但画面永远是黑的，且不报任何错误。
+  契约里的 `AttachSurface` 因此不是可选步骤：适配器要么等表面就绪再接受
+  `Open`，要么在表面就绪时自行重开。
+
+第 3 条（前后台与路由销毁）与第 5 条（两种适配器行为一致）仍未验：前者要
+移动端（#9），后者要等 Flutter 侧也跑同一组脚本。

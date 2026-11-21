@@ -1,0 +1,6 @@
+# 与 rust/rust-toolchain.toml 同版本：两台开发机（macOS / Windows）跑出来的
+# 数字要可比，工具链漂移会同时改掉优化行为和 clippy 结论。
+# 这里不列 targets——spike 只在本机跑，不交叉编译。
+[toolchain]
+channel = "1.100.0"
+components = ["rustfmt", "clippy"]

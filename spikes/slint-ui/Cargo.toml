@@ -10,6 +10,10 @@
 name = "slint-ui-spike"
 version = "0.0.0"
 edition = "2024"
+# 两个 bin（实验台与对照程序 frame-floor）并存，不指定的话 `cargo run` 不知道
+# 该跑哪个，README 里那行命令直接报错。2026-11-22 复跑 Windows 那一轮时才发现
+# ——此前都是直接跑 target/release 下的 exe，没人走过 README 写的那条路。
+default-run = "slint-ui-spike"
 publish = false
 license = "GPL-3.0-or-later"
 

@@ -15,10 +15,21 @@
 ## 跑
 
 ```sh
-cargo run --release -- --scripted --rows 20000 \
+cargo build --release
+./target/release/slint-ui-spike --scripted --rows 20000 \
     --record ../../docs/m0/spikes/2026-11-22-slint-ui-windows.md \
     --shots /tmp/shots
 ```
+
+**两条都不是洁癖**：
+
+- **先 `cargo build --release` 再跑**。`cargo test` 建的是测试壳，不会刷新
+  `target/release/` 下的 exe——曾经整整一轮跑的是旧二进制。
+- **直接跑 exe，不要用 `cargo run`**。2026-11-22 复跑时 2/2 复现：经
+  `cargo run` 跑出来的那一轮，按键 / Tab / IME 三项全 FAIL（焦点序列只剩
+  `[1]`、输入框全空），而外部驱动照常报 `activate=true`。机制没查清，但
+  **失败的样子像结论**——记录上会写着「Slint 收不到键盘输入」。详见那份
+  notes 的 §5。
 
 `--scripted` 会跑完整条时间线并自动退出；不加就是手动模式，自己点。
 其他常用参数：`--rows`（列表条数）、`--keys`（英文那段打什么）、

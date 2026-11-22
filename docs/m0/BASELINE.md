@@ -115,7 +115,14 @@ The getter 'popGestureEnabled_' isn't defined for the type 'PageRoute<T>'.
 
 - **锁定 Flutter 版本**不只是锁 3.47.9，而是锁 **3.47.9 + 对应平台补丁集**。升级 Flutter 时每个补丁都可能冲突。
 - **本地五端构建必须串行**：补丁集按平台不同且共用同一份 SDK，切换平台需 `git reset --hard` 复位后重新打补丁。CI 各 job 有独立 runner 与独立 SDK，反而可并行——这是本机相对 CI 的实际劣势。
-- **对 Phase 2 影响重大**：这些补丁代表上游 Flutter 满足不了、作者改框架才实现的交互行为（底部弹窗手势、TabBar 指示器、可拖拽面板、文本选择、滚动边界与手势识别）。换 Slint 后不会自动存在，需全部重新实现。RFC 风险 R9 低估了此项。详见 issue #11。
+- **对 Phase 2 影响重大**：这些补丁代表上游 Flutter 满足不了、作者改框架才实现的交互行为（底部弹窗手势、TabBar 指示器、可拖拽面板、文本选择、滚动边界与手势识别）。换 Slint 后不会自动存在。详见 issue #11。
+
+  **逐项评估已完成**（2026-11-22，issue #10），结论修正了上面这句话的两处：
+  [`docs/m0/spikes/2026-11-22-flutter-patches-slint-eval.md`](spikes/2026-11-22-flutter-patches-slint-eval.md)。
+  一是「需全部重新实现」不成立——去重后是 26 个独立问题（9 个 material 补丁里
+  8 个是框架补丁的同形复制），其中 4 个随 Flutter 一起消失、3 个是 Slint 的
+  默认行为；二是真正的工作量不在补丁，在它们服务的 `lib/common/widgets/flutter/`
+  那 2.9 万行自写控件。RFC 风险 R9 / R11 已据此改写。
 
 ## 4. 源码审计结论
 

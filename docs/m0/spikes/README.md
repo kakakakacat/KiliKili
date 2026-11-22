@@ -10,6 +10,10 @@ SPIKE-001/002）与 `spikes/slint-ui`（界面，SPIKE-003），记录格式同�
 要补充人看出来的结论，写在本目录下另一份同名 `-notes.md`，或者直接写进
 对应的 issue。
 
+**手写的有两份例外**，它们不是 `--record` 产出的，可以也必须手工编辑：
+`2026-11-22-flutter-patches-slint-eval.md`（读 diff 与 Slint 源码写出来的
+评估，根本没有程序可跑），以及下面这份 Android 的。
+
 **Android 那份是手写的例外**：那边没有命令行，入口是 `android_main`，
 证据来自 logcat、mpv 自己的日志与帧缓冲回读，不是 `--record` 产出的。
 跑法本身仍然是脚本化的（`spikes/slint-mpv/android-drive.sh` 驱动真机，
@@ -21,6 +25,7 @@ SPIKE-001/002）与 `spikes/slint-ui`（界面，SPIKE-003），记录格式同�
 | [SPIKE-001-macos.md](SPIKE-001-macos.md) | macOS | **未跑**，等一台 mac（issue #8） |
 | [SPIKE-002-android.md](SPIKE-002-android.md) | Android 14 / Adreno 740 真机 | **#9 全部范围已答，PASS**：GL 上下文、触摸、旋转、surface 生命周期、后台音频、PiP，外加 Media3 回退对照。带一条代价：表面重建后零拷贝硬解要靠完整重载才接得回来 |
 | [2026-11-22-slint-ui-windows.md](2026-11-22-slint-ui-windows.md)（＋[notes](2026-11-22-slint-ui-windows-notes.md)） | Windows 11 / RX 7900 GRE | **SPIKE-003（#10）前四项，自动项全 PASS**：两万行滚动单帧 0.9ms（p95）、Tab/IME 正常、UIA 读得出 List/ListItem。一条确定的额外工作量：`StyledText` 不支持行内图片，图文混排要自己排版，而 Slint 不给文本测量 API。**#10 未完**，见 notes §6 |
+| [2026-11-22-flutter-patches-slint-eval.md](2026-11-22-flutter-patches-slint-eval.md) | 不涉及（读 diff 与 Slint 源码） | **SPIKE-003（#10）后半边：34 个 Flutter 补丁逐项评估**。去重后是 26 个独立问题：原生支持 3 / 不适用 4 / 需自写 12 / 做不到 7。做不到的归成四件事，**跨元素文本选择**与**嵌套滚动的手势消歧**是 Phase 2 No-Go 候选 |
 
 ## 为什么先有一份 Windows 的
 

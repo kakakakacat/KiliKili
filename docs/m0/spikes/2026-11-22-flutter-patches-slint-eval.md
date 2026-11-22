@@ -230,7 +230,27 @@ Slint 这一侧：测量函数存在，但**不在应用够得着的地方**。
 量出来的断行位置与 Slint 实际画出来的不一致，省略号会错位。一旦自己排版，
 `StyledText` 就用不上了，富文本那条路要整条自己走。
 
-### 2.4 选区高亮的合并绘制（#11）
+### 2.4 无障碍：Android 上根本没接（2026-11-22 真机补充）
+
+这一条不在 34 个补丁里，是跑 Android 那一轮时撞出来的，但它和 §2 其余三条是
+同一级别的东西，所以记在这里。
+
+`uiautomator dump` 抓到的树里，这个应用的内容部分是**一个空的
+`android.view.View`**：没有子节点、没有名字、没有角色。
+`i-slint-backend-android-activity` 1.19.0 整个 crate 没有一处无障碍代码，
+`cargo tree -i accesskit` 在 Android 的依赖图里一个都找不到（Windows 的图里
+是完整的 `accesskit → accesskit_windows → accesskit_winit`）。
+
+**`accessible-role` / `accessible-label` 在 `.slint` 里照写不误、编译不报错、
+桌面上 UIA 读得出来，到了 Android 安静地什么都不做。**
+
+和另外三条的区别是：**这一条绕不过去**。无障碍树必须由框架在 JNI 那一侧实现
+`AccessibilityNodeProvider`，应用层给不出来。要么给 Slint 上游提 PR，要么
+Android 上放弃无障碍。
+
+详见 [2026-11-22-slint-ui-android-notes.md](2026-11-22-slint-ui-android-notes.md) §0。
+
+### 2.5 选区高亮的合并绘制（#11）
 
 `editable_text.patch` 把选区高亮从「每个 TextBox 一个矩形」改成「同一行合并
 成一个矩形，选到行尾时延伸到控件宽度」，就是中文换行时选区不再是一截一截的
@@ -295,6 +315,9 @@ R9 原文是「Slint 列表虚拟化、富文本、IME、无障碍及移动端�
 2. 嵌套滚动的手势消歧；
 3. 文本测量 / 自排版。
 
+**2026-11-22 真机之后要加第 4 条：Android 上的无障碍**（见 §2.4）。它比前三条
+更硬——前三条是「自己写一个更大的东西能绕过去」，这一条应用层绕不过去。
+
 修订随本次改动落到
 [`RFC-0001`](../../architecture/RFC-0001-rust-slint-migration.md) 的风险表。
 
@@ -309,9 +332,9 @@ R9 原文是「Slint 列表虚拟化、富文本、IME、无障碍及移动端�
 |---|---|
 | 自写选择层的**可行性**（命中测试能不能落到字形级） | `text_size` 不可达是确定的，但 Skia 渲染器在 `TextInput` 里怎么做命中测试、有没有能借的口子，要试 |
 | 嵌套 `Flickable` 的实际表现 | 常量写死是确定的，但 8px / 500ms / 100ms 这组值在真实的「竖列表 + 横 Tab」里够不够用，只有搭一个双层列表才知道 |
-| 触控惯性与下拉刷新的手感 | 这台机器没有触摸屏。`rubber_band` 的参数是 Slint 定的，手感要真机 |
+| ~~触控惯性~~ **已验**（2026-11-22 真机）：手指驱动 122fps、渲染 p95 6.0ms，惯性是 `Flickable` 自带的。下拉刷新仍没验 | 下拉刷新要先自己写一个控件才谈得上手感 |
 | `StyledText` + 自排版混用的代价 | 要真写一版才知道「一半交给 Slint、一半自己排」会不会打架 |
-| macOS / Android 上的同一轮 | IME 三个平台三套机制；VoiceOver / TalkBack 都没验（#8、真机） |
+| ~~Android 那一轮~~ **已跑**（2026-11-22）；macOS 仍没跑 | Android 的结论见 §2.4 与那份 notes。IME 三个平台三套机制，Android 上的中文组字仍没驱动得了；VoiceOver 要 mac（#8） |
 
 **建议**：如果只能再做一个实验，做表里第二行那个——双层嵌套滚动。它是四条
 「做不到」里唯一**可能**靠改 Slint 几个常量解决的，验明白了能把 Phase 2 的
@@ -326,5 +349,5 @@ R9 原文是「Slint 列表虚拟化、富文本、IME、无障碍及移动端�
 
 - 触控惯性与下拉刷新（没有触摸屏）；
 - VoiceOver（mac，#8）与 TalkBack（Android 真机）实读；
-- macOS 与 Android 上再跑一轮前四项；
+- macOS 上再跑一轮前四项（Android 已跑，见 §2.4）；
 - §6 建议的那个嵌套滚动实验（可选，但它决定 §2.2 的最终档位）。

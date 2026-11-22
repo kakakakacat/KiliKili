@@ -38,3 +38,50 @@ slint-build = "1.19"
 opt-level = 3
 lto = "thin"
 codegen-units = 1
+
+# Android 入口是 cdylib 里导出的 `android_main`，桌面照旧是 src/main.rs。
+# 多留一个 rlib 是为了让 bin 直接链这个 lib——不留的话 `main.rs` 只能用
+# `#[path]` 把模块再编一遍，两份目标文件的优化结果未必一致，而这个 spike
+# 报的就是性能数字。
+[lib]
+name = "slint_ui_spike"
+crate-type = ["cdylib", "rlib"]
+path = "src/lib.rs"
+
+[[bin]]
+name = "slint-ui-spike"
+path = "src/main.rs"
+
+[target.'cfg(target_os = "android")'.dependencies]
+# 与上面的 slint 同一个依赖，这里只追加 feature（cargo 对 feature 取并集）。
+slint = { version = "1.19", features = ["backend-android-activity-06"] }
+# Android 上没有终端：println 进不了 logcat，而记录的进度与失败原因必须能被
+# `adb logcat -s kk-spike` 脚本化取走。
+android_logger = "0.15"
+log = "0.4"
+
+# cargo-apk 用这一段生成 AndroidManifest 并打包。
+[package.metadata.android]
+package = "io.github.kakacat.kilikili.spike.ui"
+build_targets = ["aarch64-linux-android"]
+
+[package.metadata.android.sdk]
+min_sdk_version = 24
+target_sdk_version = 35
+
+# 转屏不重建 activity：重建会让 `android_main` 重跑一遍，脚本化流程从头开始，
+# 而记录里的分段时间轴就断了。真实应用也是自己处理这些变化的。
+[package.metadata.android.application.activity]
+config_changes = "orientation|keyboardHidden|screenSize|smallestScreenSize|screenLayout|uiMode|density"
+
+[package.metadata.android.application]
+label = "KiliKili SPIKE-003"
+# 记录与截图写到外部数据目录，`adb pull` 不需要 run-as。
+debuggable = true
+
+# cargo-apk 的 release 包必须有 keystore，否则打到一半就停。指向 Android 的
+# 标准调试 keystore（口令固定 android）：探针不对外分发，它要的是 release 的
+# 优化等级，不是一个可发布的签名身份。正式签名的约定见 docs/release/SIGNING.md。
+[package.metadata.android.signing.release]
+path = "debug.keystore"
+keystore_password = "android"

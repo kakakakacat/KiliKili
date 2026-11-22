@@ -42,6 +42,18 @@ Apple 与 Android 改为手动 dispatch（理由见 §2.1）；「成本约束�
 
 对应 RFC §16.7 的修订：Slint 首批验收目标从「macOS + Android」扩大为 **macOS + Android + Windows**，iOS 紧随，Linux 单独降级。
 
+**2026-11-22 补充：Android 真机上的 Slint GUI 实验现在是脚本化的。**
+`spikes/slint-ui/android-drive.sh` 从宿主机经 adb 驱动一轮完整实验并把证据
+收回来（帧耗时、截图、触摸、软键盘状态、无障碍树）。两条能力边界要写清楚，
+否则下次会把「没做」当成「做过了」：
+
+- **无障碍只能抓树，不能实读。** `uiautomator dump` 导出的是
+  AccessibilityNodeInfo 树，TalkBack 读的也是它，但「树里有这个节点」与
+  「读屏软件念出这句话」是两件事，后者本机答不了。
+- **中文组字驱动不了。** `adb input text` 直接上屏，走的不是输入法的组字
+  路径；候选栏要在屏幕上点，脚本点不了。要验这一项得有带硬件键盘的设备或
+  一个测试用 IME。
+
 ## 2. 构建与验证的分工
 
 编译打包全部放 GitHub Actions，本机只做 CI 证明不了的事。上游已配好五端 workflow，可直接继承：

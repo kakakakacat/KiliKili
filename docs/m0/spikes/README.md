@@ -25,6 +25,7 @@ SPIKE-001/002）与 `spikes/slint-ui`（界面，SPIKE-003），记录格式同�
 | [SPIKE-001-macos.md](SPIKE-001-macos.md) | macOS | **未跑**，等一台 mac（issue #8） |
 | [SPIKE-002-android.md](SPIKE-002-android.md) | Android 14 / Adreno 740 真机 | **#9 全部范围已答，PASS**：GL 上下文、触摸、旋转、surface 生命周期、后台音频、PiP，外加 Media3 回退对照。带一条代价：表面重建后零拷贝硬解要靠完整重载才接得回来 |
 | [2026-11-22-slint-ui-windows.md](2026-11-22-slint-ui-windows.md)（＋[notes](2026-11-22-slint-ui-windows-notes.md)） | Windows 11 / RX 7900 GRE | **SPIKE-003（#10）前四项，自动项全 PASS**：两万行滚动单帧 0.9ms（p95）、Tab/IME 正常、UIA 读得出 List/ListItem。一条确定的额外工作量：`StyledText` 不支持行内图片，图文混排要自己排版，而 Slint 不给文本测量 API。**#10 未完**，见 notes §6 |
+| [2026-11-22-slint-ui-android.md](2026-11-22-slint-ui-android.md)（＋[notes](2026-11-22-slint-ui-android-notes.md)） | Android 14 / Adreno 740 真机 | **SPIKE-003（#10）在真机上的同一轮**：长列表过（滚动 p95 10.5ms，但余量只剩 37%）、**触控惯性过**（手指驱动 122fps，`Flickable` 自带）。最贵的结论是**无障碍树是空的**——Slint 的 Android 后端根本没接，TalkBack 一个节点都读不到 |
 | [2026-11-22-flutter-patches-slint-eval.md](2026-11-22-flutter-patches-slint-eval.md) | 不涉及（读 diff 与 Slint 源码） | **SPIKE-003（#10）后半边：34 个 Flutter 补丁逐项评估**。去重后是 26 个独立问题：原生支持 3 / 不适用 4 / 需自写 12 / 做不到 7。做不到的归成四件事，**跨元素文本选择**与**嵌套滚动的手势消歧**是 Phase 2 No-Go 候选 |
 
 ## 为什么先有一份 Windows 的
@@ -77,6 +78,10 @@ Windows 这一跑同时附带回答了 [VALIDATION-CAPABILITY](../VALIDATION-CAP
 （列表根本没动），而记录里每一个数都自洽——详见
 [2026-11-22 的 notes](2026-11-22-slint-ui-windows-notes.md) §0。**跑完务必
 自己翻一遍截图，别只读记录。**
+
+**`assets/2026-11-22-slint-ui-android-a11y.xml` 也是例外，理由同上**：3.6 KB
+的一棵无障碍树，是「Slint 在 Android 上什么都没暴露给 TalkBack」这条结论的
+全部证据，而重跑它要一台连着线的真机。
 
 **`assets/` 下的 Android 那几张是刻意的例外。** 这条规矩成立的前提是「随时
 能重跑出来」——Android 这些不满足：要一台连着线的真机、要人把锁屏解开，

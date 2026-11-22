@@ -38,6 +38,7 @@ pub mod fav;
 pub mod follow;
 pub mod grpc;
 pub mod grpc_danmaku;
+pub mod grpc_im;
 pub mod grpc_metadata;
 pub mod grpc_reply;
 pub mod grpc_space;

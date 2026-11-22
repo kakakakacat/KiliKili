@@ -30,6 +30,48 @@ const ROOTS: &[&str] = &[
     ".bilibili.main.community.reply.v1.SearchItemReply",
     ".bilibili.main.community.reply.v1.TranslateReplyReq",
     ".bilibili.main.community.reply.v1.TranslateReplyResp",
+    // ── IM（S12 续单 / issue #63）───────────────────────────────────
+    // 注意：**服务路径与消息 package 不一样**。路径是
+    // `/bilibili.im.interface.v1.ImInterface`（interface，单数），而描述符
+    // 来自 `bilibili/im/interfaces/v1.proto`，package 是
+    // `bilibili.im.interfaces.v1`（复数）。service 定义不在描述符里
+    // （ADR-012 决策四），路径照抄 `lib/grpc/url.dart`，别拿 package 去拼。
+    ".bilibili.im.interfaces.v1.ReqSendMsg",
+    ".bilibili.im.interfaces.v1.RspSendMsg",
+    ".bilibili.im.interfaces.v1.ReqShareList",
+    ".bilibili.im.interfaces.v1.RspShareList",
+    ".bilibili.im.interfaces.v1.ReqSessionMsg",
+    ".bilibili.im.interfaces.v1.RspSessionMsg",
+    ".bilibili.im.interfaces.v1.ReqTotalUnread",
+    ".bilibili.im.interfaces.v1.RspTotalUnread",
+    ".bilibili.im.interfaces.v1.ReqSessionDetail",
+    // SessionDetail 的**响应**是 im.type.SessionInfo，不是 interfaces 里的
+    // 某个 Rsp。响应类型不在请求的依赖闭包里，得单列一条根。
+    ".bilibili.im.type.SessionInfo",
+    ".bilibili.app.im.v1.SessionMainReq",
+    ".bilibili.app.im.v1.SessionMainReply",
+    ".bilibili.app.im.v1.SessionSecondaryReq",
+    ".bilibili.app.im.v1.SessionSecondaryReply",
+    ".bilibili.app.im.v1.ClearUnreadReq",
+    ".bilibili.app.im.v1.ClearUnreadReply",
+    ".bilibili.app.im.v1.SessionUpdateReq",
+    ".bilibili.app.im.v1.SessionUpdateReply",
+    ".bilibili.app.im.v1.PinSessionReq",
+    ".bilibili.app.im.v1.PinSessionReply",
+    ".bilibili.app.im.v1.UnPinSessionReq",
+    ".bilibili.app.im.v1.UnPinSessionReply",
+    ".bilibili.app.im.v1.DeleteSessionListReq",
+    ".bilibili.app.im.v1.DeleteSessionListReply",
+    ".bilibili.app.im.v1.GetImSettingsReq",
+    ".bilibili.app.im.v1.GetImSettingsReply",
+    ".bilibili.app.im.v1.SetImSettingsReq",
+    ".bilibili.app.im.v1.SetImSettingsReply",
+    ".bilibili.app.im.v1.KeywordBlockingListReq",
+    ".bilibili.app.im.v1.KeywordBlockingListReply",
+    ".bilibili.app.im.v1.KeywordBlockingAddReq",
+    ".bilibili.app.im.v1.KeywordBlockingAddReply",
+    ".bilibili.app.im.v1.KeywordBlockingDeleteReq",
+    ".bilibili.app.im.v1.KeywordBlockingDeleteReply",
 ];
 
 /// 每条消息**只保留界面真的读的那些字段**，写成
@@ -247,6 +289,122 @@ const KEEP: &[(&str, &[&str])] = &[
     // `CM.source_content` 是 `google.protobuf.Any`，没有消费者。留着它就要把
     // `prost-types` 链进发布产物，换来一个谁都不读的字段。
     (".bilibili.main.community.reply.v1.CM", &[]),
+    // ── IM（S12 续单 / issue #63）──────────────────────────────────
+    // 这一片不裁的话会拖进三棵别的树：`app/dynamic/v2`（富文本段落，
+    // 还引用 `google.protobuf.Any`，生成器直接报 unknown type）、
+    // `account/service/v1`（名片的 name_render）与 `dagw/component/avatar`
+    // 的全部。界面读的只有下面这些。
+    (
+        ".bilibili.im.type.Msg",
+        &[
+            "sender_uid",
+            "receiver_type",
+            "receiver_id",
+            "msg_type",
+            "content",
+            "msg_seqno",
+            "timestamp",
+            "msg_key",
+            "msg_status",
+            "msg_source",
+            "new_face_version",
+        ],
+    ),
+    // 发送的响应**界面一个字段都不读**（只看 isSuccess）。留 msg_key 与
+    // seqno 是为了出问题时日志里有个可对的标识；`rich_text_msg_content`
+    // 正是拖进 `app/dynamic/v2` 的那根线。
+    (
+        ".bilibili.im.interfaces.v1.RspSendMsg",
+        &["msg_key", "seqno"],
+    ),
+    // 会话详情只为取 ack_seqno（「标为已读」要拿它当位点）。
+    (
+        ".bilibili.im.type.SessionInfo",
+        &["talker_id", "session_type", "ack_seqno", "max_seqno", "unread_count"],
+    ),
+    // 未读数只读 msg_feed_unread 那张表；另外几棵（会话单条未读、系统
+    // 消息摘要、新版总未读）一个消费者都没有。
+    (
+        ".bilibili.im.interfaces.v1.RspTotalUnread",
+        &["msg_feed_unread"],
+    ),
+    // ── 头像树：界面只走一条路径 ──────────────────────────────────
+    //
+    // `dagw/component/avatar` 整棵有 694 行，而私信列表只画三样东西：
+    // 主头像、挂件、认证标。它们全在
+    // `fallback_layers.layers[i].resource` 这一条线上：
+    // `layers[0]` 是主头像、`layers[1]` 是挂件、`last` 是认证标
+    // （基线 `lib/pages/whisper/widgets/item.dart` 就是这么取的）。
+    //
+    // 于是 `layers`（分组版，与 fallback 并列的那个）、各种 spec/mask/
+    // config 全部不要——它们是给「按层渲染头像」用的，而我们只取 url。
+    (
+        ".bilibili.dagw.component.avatar.v1.AvatarItem",
+        &["fallback_layers", "mid"],
+    ),
+    (".bilibili.dagw.component.avatar.v1.LayerGroup", &["layers"]),
+    (".bilibili.dagw.component.avatar.v1.Layer", &["resource"]),
+    // `res_type` 不要：界面判的是 oneof 哪一支有值（基线的
+    // `hasResImage()`），不是这个枚举。
+    (
+        ".bilibili.dagw.component.avatar.v1.BasicLayerResource",
+        &["res_image", "res_animation", "res_native_draw"],
+    ),
+    // `remote` 给 url；`local_value` 是认证标的那两个枚举值
+    // （3 个人认证 / 4 机构认证，见 `LocalRes`）。
+    //
+    // `draw` 那一支**不要**，别被名字骗了：它是
+    // `common.NativeDrawRes`——一份颜色/描边的绘制规格，没有 url。
+    // 主头像的第三种形态走的是 `v1.ResNativeDraw.draw_src`，那是另一个
+    // 同名不同物的消息，字段类型还是 `ResourceSource`，绕回这里。
+    (
+        ".bilibili.dagw.component.avatar.common.ResourceSource",
+        // `placeholder` **界面不读**，留着是为了让 `LocalRes` 这个枚举活
+        // 下来——`local_value` 那一支是裸 int32，没有字段引用枚举的话它
+        // 会被裁掉，而认证标的 3 / 4 两个魔数就没有任何锚了
+        // （`bili_api::grpc_im` 里有条测试拿它钉住）。按维护约定「留一个
+        // 字段要说得出谁读它」：读它的是那条测试。
+        &["remote", "local_value", "placeholder"],
+    ),
+    (".bilibili.dagw.component.avatar.common.RemoteRes", &["url"]),
+    // 名片的渲染方案：私信列表不用它，昵称颜色走 `vip_info` 那段 JSON。
+    (
+        ".bilibili.app.im.v1.SessionInfo",
+        &["session_name", "avatar", "vip_info", "user_label", "is_live"],
+    ),
+    // ── 会话列表：三个响应里真正有消费者的就这么几项 ──────────────
+    //
+    // 剔掉的都是整棵子树：快捷入口（`quick_link_config`）、筛选器
+    // （`filter_config` / `restricted_mode`）、自动回复与反骚扰弹窗
+    // （`extra_info`）、增量更新参数（`update_session_params`）、每条
+    // 会话的操作菜单配置（`Session.operation`——菜单项是基线写死的，
+    // 不读服务端给的文案）。它们各自还拖着一串 label/toast 消息。
+    (
+        ".bilibili.app.im.v1.SessionMainReply",
+        &["pagination_params", "sessions", "three_dot_items", "outside_item"],
+    ),
+    (
+        ".bilibili.app.im.v1.SessionSecondaryReply",
+        &["pagination_params", "sessions", "three_dot_items"],
+    ),
+    (
+        ".bilibili.app.im.v1.Session",
+        &[
+            "id",
+            "session_info",
+            "unread",
+            "msg_summary",
+            "timestamp",
+            "is_pinned",
+            "is_muted",
+        ],
+    ),
+    // 摘要只画 `raw_msg` 那一行。前缀类型与「是群主」没有落点。
+    (".bilibili.app.im.v1.MsgSummary", &["raw_msg"]),
+    // 用户标签只画描边那一种（`BorderedLabel.text`）。另外三种
+    // （填充、图片、还有一种）界面没有分支。
+    (".bilibili.app.im.v1.UserLabelStyle", &["bordered_label"]),
+    (".bilibili.app.im.v1.BorderedLabel", &["text"]),
 ];
 
 /// 按 [`KEEP`] 裁字段；有规则没命中、或规则点名的字段不存在就失败。
@@ -542,6 +700,16 @@ fn generate(repo: &Path, output: &Path) -> Result<(), String> {
         for message in &mut descriptor.message_type {
             preserve_presence(message);
         }
+    }
+    // 先清空再生成：生成器只写它这一轮产出的文件，**不会删上一轮的**。
+    // 裁掉一个字段把某棵子树整个踢出闭包时（这次就踢掉了
+    // `account/service/v1` 与 `avatar/v1/plugin`），旧文件会留在原地，
+    // `mod.rs` 里已经没有它们，于是成了谁都不引用的孤儿。
+    //
+    // CI 的 `--check` 跑的是 `diff -ru`，确实会报「Only in ...」把它挡下来
+    // ——但那条报错读起来像「生成器少生成了东西」，与真实原因正好相反。
+    if output.exists() {
+        fs::remove_dir_all(output).map_err(|e| e.to_string())?;
     }
     fs::create_dir_all(output).map_err(|e| e.to_string())?;
     prost_build::Config::new()

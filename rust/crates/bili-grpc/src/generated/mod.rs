@@ -13,6 +13,11 @@ pub mod bilibili {
                 include!("bilibili.app.dynamic.v2.rs");
             }
         }
+        pub mod im {
+            pub mod v1 {
+                include!("bilibili.app.im.v1.rs");
+            }
+        }
         pub mod interfaces {
             pub mod v1 {
                 include!("bilibili.app.interfaces.v1.rs");
@@ -26,6 +31,28 @@ pub mod bilibili {
                     include!("bilibili.community.service.dm.v1.rs");
                 }
             }
+        }
+    }
+    pub mod dagw {
+        pub mod component {
+            pub mod avatar {
+                pub mod common {
+                    include!("bilibili.dagw.component.avatar.common.rs");
+                }
+                pub mod v1 {
+                    include!("bilibili.dagw.component.avatar.v1.rs");
+                }
+            }
+        }
+    }
+    pub mod im {
+        pub mod interfaces {
+            pub mod v1 {
+                include!("bilibili.im.interfaces.v1.rs");
+            }
+        }
+        pub mod r#type {
+            include!("bilibili.im.r#type.rs");
         }
     }
     pub mod main {

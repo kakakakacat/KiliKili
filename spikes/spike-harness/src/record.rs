@@ -12,6 +12,24 @@ use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
 
+/// 「这份记录是在什么系统上跑出来的」。
+///
+/// **不要用 `cmd /c ver` 这类子进程取它**：Windows 的控制台输出走 OEM
+/// 代码页（本机是 936），按 UTF-8 解出来是乱码，而乱码会原样进到提交的
+/// 记录里——曾经写进去的是「Microsoft Windows [?汾 10.0.26300.9974]」。
+/// sysinfo 走系统 API，中间没有这一层代码页转换。
+#[must_use]
+pub fn system_label() -> String {
+    let name = sysinfo::System::name().unwrap_or_default();
+    let version = sysinfo::System::os_version().unwrap_or_default();
+    let kernel = sysinfo::System::kernel_version().unwrap_or_default();
+    format!(
+        "{} {} / {name} {version}（内核 {kernel}）",
+        std::env::consts::OS,
+        std::env::consts::ARCH,
+    )
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Verdict {
     Pass,
@@ -105,9 +123,16 @@ impl Evidence {
     pub fn to_markdown(&self) -> String {
         let mut out = String::new();
         let _ = writeln!(out, "# {}\n", self.title);
+        // 产出方的名字要现问可执行文件，**不能写死**：这份 harness 现在
+        // 被 slint-mpv 与 slint-ui 两个 spike 共用，写死的那个名字会让
+        // 另一份记录指错工具，后来人按它去重跑会扑空。
+        let producer = std::env::current_exe()
+            .ok()
+            .and_then(|p| p.file_stem().map(|s| s.to_string_lossy().into_owned()))
+            .unwrap_or_else(|| "<未知>".to_owned());
         let _ = writeln!(
             out,
-            "自动产出于 `slint-mpv-spike`，不要手工编辑：重跑一次会整份覆盖。\n"
+            "自动产出于 `{producer}`，不要手工编辑：重跑一次会整份覆盖。\n"
         );
         let _ = writeln!(out, "命令行：`{}`\n", self.command_line);
         let _ = writeln!(

@@ -1,0 +1,432 @@
+// SPIKE-003（issue #10）的界面。四个场景，一次跑完：
+//
+//   0 长列表    虚拟化到底发没发生、滚动还剩多少帧
+//   1 富文本    同一条真实评论的三种画法并排：纯文本 / StyledText / 手写排布
+//   2 输入      焦点轮转与中文 IME 组字
+//   3 无障碍    带 role/label/value 的控件，供 UIA 抓树
+//
+// 为什么是四个场景而不是四个程序：记录要可比，而帧耗时、CPU、RSS 这些
+// 只有在同一个进程、同一块 GPU 上下文里量出来才对得上。
+
+import { ListView, LineEdit, Button, CheckBox, Slider } from "std-widgets.slint";
+
+// 列表里的一行。正文是**纯文本**：这一场景量的是「两万行带换行的文本
+// 能不能滚得动」，富文本的代价单独在场景 1 里量，混在一起就分不清了。
+export struct RowItem {
+    id: int,
+    name: string,
+    meta: string,
+    message: string,
+    likes: string,
+    replies: string,
+    pictures: int,
+    highlight: bool,
+    a11y: string,
+}
+
+// 手写排布产出的一段。x/y 是列内绝对坐标，断行在 Rust 里算完了——
+// Slint 不暴露文本测量 API，这正是本场景要量的代价之一。
+export struct RunItem {
+    text: string,
+    x: length,
+    y: length,
+    w: length,
+    h: length,
+    font-size: length,
+    color: color,
+    is-emote: bool,
+    emote: image,
+    underline: bool,
+}
+
+export global Probe {
+    // 每实例化一行调一次。虚拟化有没有发生，看这个计数对不对得上可见行数。
+    callback row-created(int);
+    // 哪个输入框拿到了焦点（1/2/3，0 表示都没有）。
+    callback focus-changed(int);
+    // ListView 的内容高度变化时回传：脚本要按它算最大滚动量。
+    callback content-height-changed(length, length);
+}
+
+component Avatar inherits Rectangle {
+    in property <int> seed;
+    width: 34px;
+    height: 34px;
+    border-radius: 17px;
+    // 头像不走网络：spike 不该为了一张图引入 HTTP 栈，而「圆角头像 + 文本」
+    // 的渲染代价本来就不在图片解码上。
+    background: @linear-gradient(140deg,
+        Colors.rgb(60 + mod(seed * 37, 150), 90, 160),
+        Colors.rgb(40, 70 + mod(seed * 53, 130), 150));
+}
+
+component CommentRow inherits Rectangle {
+    in property <RowItem> item;
+    height: body.preferred-height;
+    background: item.highlight ? #1b2432 : transparent;
+
+    // 虚拟化的证据就在这一行：它每被实例化一次就记一次。
+    init => {
+        Probe.row-created(item.id);
+    }
+
+    // 屏幕阅读器看到的是这一条，不是下面那堆 Text 的拼接。
+    accessible-role: list-item;
+    accessible-label: item.a11y;
+    accessible-item-index: item.id;
+
+    body := VerticalLayout {
+        padding: 10px;
+        spacing: 6px;
+
+        HorizontalLayout {
+            spacing: 8px;
+            Avatar {
+                seed: item.id;
+            }
+
+            VerticalLayout {
+                alignment: center;
+                spacing: 2px;
+                Text {
+                    text: item.name;
+                    color: #8bb3ff;
+                    font-size: 13px;
+                }
+
+                Text {
+                    text: item.meta;
+                    color: #6b7480;
+                    font-size: 11px;
+                }
+            }
+        }
+
+        Text {
+            text: item.message;
+            color: #e6e9ee;
+            wrap: word-wrap;
+        }
+
+        if item.pictures > 0: HorizontalLayout {
+            spacing: 6px;
+            alignment: start;
+            for p in item.pictures: Rectangle {
+                width: 84px;
+                height: 60px;
+                border-radius: 4px;
+                background: #2b323c;
+                Text {
+                    text: "图";
+                    color: #59616d;
+                    font-size: 11px;
+                }
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 18px;
+            alignment: start;
+            Text {
+                text: item.likes;
+                color: #6b7480;
+                font-size: 12px;
+            }
+
+            Text {
+                text: item.replies;
+                color: #6b7480;
+                font-size: 12px;
+            }
+        }
+
+        Rectangle {
+            height: 1px;
+            background: #232833;
+        }
+    }
+}
+
+export component UiSpikeWindow inherits Window {
+    title: "KiliKili SPIKE-003 · Slint UI";
+    background: #15181c;
+    default-font-size: 15px;
+    preferred-width: 1280px;
+    preferred-height: 800px;
+
+    in property <int> scene: 0;
+    in property <string> hud: "";
+    in property <string> scene-title: "";
+
+    // 场景 0
+    in property <[RowItem]> rows;
+    // 脚本按它推进滚动。ListView 的 content-y 向下滚是负的，这里用正值。
+    in-out property <length> scroll-y: 0px;
+    // 真正接到 ListView 上的那个值。**必须是双向绑定**，不能写成
+    // `content-y: -root.scroll-y` 这种单向绑定：Flickable 自己也会命令式
+    // 地写 content-y（布局、滚轮、键盘都会），而 Slint 里一次命令式赋值
+    // 会把该属性上的声明式绑定**永久**摘掉。单向写法的后果是列表从此
+    // 一动不动，而且完全静默——截图里是第 0 行，帧数、"只实例化 7 行"
+    // 这些数看上去全都正常，很容易被当成「虚拟化很好、滚动很卡」。
+    // 2026-11-22 查出来之前，这个 spike 的滚动结论整段是假的。
+    in-out property <length> list-content-y: 0px;
+    changed scroll-y => {
+        root.list-content-y = -root.scroll-y;
+    }
+
+    // 场景 1：同一条评论的三种画法。三个模型平行，下标一一对应。
+    in property <[string]> rich-plain;
+    in property <[styled-text]> rich-styled;
+    in property <[RunItem]> rich-runs;
+    in property <length> rich-column-width: 380px;
+    in property <length> rich-flow-height: 0px;
+
+    // 场景 2
+    in-out property <string> input-a: "";
+    in-out property <string> input-b: "";
+    in-out property <string> input-c: "";
+
+    // 场景 3
+    in-out property <bool> toggle-on: false;
+    in-out property <float> slider-value: 30;
+    in property <string> live-text: "";
+
+    VerticalLayout {
+        padding: 0px;
+
+        Rectangle {
+            height: 34px;
+            background: #0f1216;
+            HorizontalLayout {
+                padding-left: 10px;
+                padding-right: 10px;
+                spacing: 12px;
+                Text {
+                    text: root.scene-title;
+                    color: #d7dde6;
+                    font-size: 13px;
+                    vertical-alignment: center;
+                }
+
+                Text {
+                    text: root.hud;
+                    color: #74d99f;
+                    font-size: 12px;
+                    horizontal-alignment: right;
+                    vertical-alignment: center;
+                }
+            }
+        }
+
+        if root.scene == 0: ListView {
+            // 一次性把所有行交给它，不分页：要验的就是「两万条摆在这里
+            // 还剩多少帧」。
+            content-y <=> root.list-content-y;
+            accessible-role: list;
+            accessible-label: "评论列表";
+            accessible-item-count: root.rows.length;
+
+            changed content-height => {
+                Probe.content-height-changed(self.content-height, self.height);
+            }
+
+            for row in root.rows: CommentRow {
+                item: row;
+            }
+        }
+
+        if root.scene == 1: HorizontalLayout {
+            padding: 12px;
+            spacing: 12px;
+
+            // ① 纯 Text：基线画法，没有任何行内样式。
+            VerticalLayout {
+                width: root.rich-column-width;
+                spacing: 8px;
+                Text {
+                    text: "① Text（无样式）";
+                    color: #74d99f;
+                    font-size: 13px;
+                }
+
+                for line in root.rich-plain: Text {
+                    text: line;
+                    color: #e6e9ee;
+                    wrap: word-wrap;
+                }
+
+                Rectangle { }
+            }
+
+            // ② StyledText：1.19 自带的行内样式（颜色、链接、可选中）。
+            VerticalLayout {
+                width: root.rich-column-width;
+                spacing: 8px;
+                Text {
+                    text: "② StyledText（原生行内样式）";
+                    color: #74d99f;
+                    font-size: 13px;
+                }
+
+                for st in root.rich-styled: StyledText {
+                    text: st;
+                    default-color: #e6e9ee;
+                    link-color: #8bb3ff;
+                    selectable: true;
+                }
+
+                Rectangle { }
+            }
+
+            // ③ 手写排布：表情是真图，断行与定位在 Rust 里算。
+            VerticalLayout {
+                width: root.rich-column-width;
+                spacing: 8px;
+                Text {
+                    text: "③ 手写排布（表情为图）";
+                    color: #74d99f;
+                    font-size: 13px;
+                }
+
+                Rectangle {
+                    height: root.rich-flow-height;
+                    clip: true;
+                    for run in root.rich-runs: Rectangle {
+                        x: run.x;
+                        y: run.y;
+                        width: run.w;
+                        height: run.h;
+                        if run.is-emote: Image {
+                            width: parent.width;
+                            height: parent.height;
+                            source: run.emote;
+                            image-fit: contain;
+                        }
+                        if !run.is-emote: Text {
+                            text: run.text;
+                            color: run.color;
+                            font-size: run.font-size;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+
+                Rectangle { }
+            }
+        }
+
+        if root.scene == 2: VerticalLayout {
+            padding: 24px;
+            spacing: 14px;
+            alignment: start;
+
+            Text {
+                text: "Tab 轮转焦点；第一个框用中文输入法打字，组字串应当就地显示。";
+                color: #9aa4b1;
+                font-size: 13px;
+            }
+
+            first-input := LineEdit {
+                placeholder-text: "① 中文 IME";
+                // 外部驱动发按键之前要先有收件人。场景一建出来就自己要焦点，
+                // 而不是从外面调一个函数——`if` 块里的元素在窗口的作用域外，
+                // 拿不到它的 id。
+                init => {
+                    self.focus();
+                    // **`init` 里的这次 focus 不会触发下面的 `changed`**：
+                    // 变化发生在初始化过程中，那时还没开始跟踪。不补这一
+                    // 句的话焦点序列是空的，看起来像「焦点探针坏了」，
+                    // 和「Tab 轮转不了」分不开。
+                    Probe.focus-changed(1);
+                }
+                text <=> root.input-a;
+                // 得失都报：只报「拿到焦点」的话，焦点飞到控件外面时序列
+                // 不动，看不出是没动还是丢了。
+                changed has-focus => {
+                    Probe.focus-changed(self.has-focus ? 1 : 0);
+                }
+            }
+
+            b := LineEdit {
+                placeholder-text: "② 英文";
+                text <=> root.input-b;
+                changed has-focus => {
+                    Probe.focus-changed(self.has-focus ? 2 : 0);
+                }
+            }
+
+            c := LineEdit {
+                placeholder-text: "③ 多行/长文本";
+                text <=> root.input-c;
+                changed has-focus => {
+                    Probe.focus-changed(self.has-focus ? 3 : 0);
+                }
+            }
+
+            HorizontalLayout {
+                spacing: 10px;
+                alignment: start;
+                Text {
+                    text: "① " + root.input-a;
+                    color: #74d99f;
+                }
+
+                Text {
+                    text: "② " + root.input-b;
+                    color: #74d99f;
+                }
+
+                Text {
+                    text: "③ " + root.input-c;
+                    color: #74d99f;
+                }
+            }
+        }
+
+        if root.scene == 3: VerticalLayout {
+            padding: 24px;
+            spacing: 14px;
+            alignment: start;
+
+            Text {
+                text: "无障碍：下列控件各自声明了 role / label / value，供屏幕阅读器读取。";
+                color: #9aa4b1;
+                font-size: 13px;
+                accessible-role: text;
+                accessible-label: "说明";
+            }
+
+            Button {
+                text: "点赞 1024";
+                accessible-label: "点赞，当前 1024";
+            }
+
+            CheckBox {
+                text: "只看楼主";
+                checked <=> root.toggle-on;
+            }
+
+            Slider {
+                width: 240px;
+                minimum: 0;
+                maximum: 100;
+                value <=> root.slider-value;
+                accessible-label: "播放进度";
+            }
+
+            LineEdit {
+                placeholder-text: "搜索评论";
+                accessible-label: "搜索评论";
+            }
+
+            // 动态区域：屏幕阅读器应当在内容变化时播报。
+            Text {
+                text: root.live-text;
+                color: #74d99f;
+                accessible-role: text;
+                accessible-label: root.live-text;
+                accessible-live-region: AccessibleLiveness.polite;
+            }
+        }
+    }
+}

@@ -5094,9 +5094,9 @@ dependencies = [
  "jni 0.22.4",
  "libloading 0.9.1",
  "log",
- "png",
  "slint",
  "slint-build",
+ "spike-harness",
  "sysinfo",
 ]
 
@@ -5257,6 +5257,16 @@ dependencies = [
  "web-sys",
  "windows-sys 0.61.2",
  "x11rb",
+]
+
+[[package]]
+name = "spike-harness"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "libloading 0.9.1",
+ "png",
+ "sysinfo",
 ]
 
 [[package]]

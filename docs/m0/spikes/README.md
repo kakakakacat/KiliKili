@@ -3,9 +3,12 @@
 [SPIKE-PLAN.md](../SPIKE-PLAN.md) 规定了要跑哪些实验、按什么模板留证据；
 这个目录放**跑出来的记录本身**。
 
-记录由 `spikes/slint-mpv` 自动产出（`--record <文件>`），**不要手工编辑**：
-重跑一次会整份覆盖。要补充人看出来的结论，写在本目录下另一份同名
-`-notes.md`，或者直接写进对应的 issue。
+记录由 spike 的实验台自动产出（`--record <文件>`），**不要手工编辑**：
+重跑一次会整份覆盖。目前有两个产出方——`spikes/slint-mpv`（播放，
+SPIKE-001/002）与 `spikes/slint-ui`（界面，SPIKE-003），记录格式同出一份
+[`spikes/spike-harness`](../../../spikes/spike-harness)，所以能逐行对照。
+要补充人看出来的结论，写在本目录下另一份同名 `-notes.md`，或者直接写进
+对应的 issue。
 
 **Android 那份是手写的例外**：那边没有命令行，入口是 `android_main`，
 证据来自 logcat、mpv 自己的日志与帧缓冲回读，不是 `--record` 产出的。
@@ -17,6 +20,7 @@
 | [2026-11-21-windows-dryrun.md](2026-11-21-windows-dryrun.md) | Windows 11 / RX 7900 GRE | 自动项全 PASS。**这是实验台自检，不是 SPIKE-001 的交付** |
 | [SPIKE-001-macos.md](SPIKE-001-macos.md) | macOS | **未跑**，等一台 mac（issue #8） |
 | [SPIKE-002-android.md](SPIKE-002-android.md) | Android 14 / Adreno 740 真机 | **#9 全部范围已答，PASS**：GL 上下文、触摸、旋转、surface 生命周期、后台音频、PiP，外加 Media3 回退对照。带一条代价：表面重建后零拷贝硬解要靠完整重载才接得回来 |
+| [2026-11-22-slint-ui-windows.md](2026-11-22-slint-ui-windows.md)（＋[notes](2026-11-22-slint-ui-windows-notes.md)） | Windows 11 / RX 7900 GRE | **SPIKE-003（#10）前四项，自动项全 PASS**：两万行滚动单帧 0.9ms（p95）、Tab/IME 正常、UIA 读得出 List/ListItem。一条确定的额外工作量：`StyledText` 不支持行内图片，图文混排要自己排版，而 Slint 不给文本测量 API。**#10 未完**，见 notes §6 |
 
 ## 为什么先有一份 Windows 的
 
@@ -62,6 +66,12 @@ Windows 这一跑同时附带回答了 [VALIDATION-CAPABILITY](../VALIDATION-CAP
 
 记录里列的 PNG **不提交**：一次实验六张 4K 截图近 3MB，而它们随时可以用记录
 开头那行命令原样重跑出来。需要留存时自己归档，别往仓库里塞。
+
+**这条规矩有一个代价，SPIKE-003 撞上了**：截图不提交，于是「数都对、画面
+不对」这种 bug 只能靠跑的人当场看一眼。#10 第一轮的滚动结论整段是假的
+（列表根本没动），而记录里每一个数都自洽——详见
+[2026-11-22 的 notes](2026-11-22-slint-ui-windows-notes.md) §0。**跑完务必
+自己翻一遍截图，别只读记录。**
 
 **`assets/` 下的 Android 那几张是刻意的例外。** 这条规矩成立的前提是「随时
 能重跑出来」——Android 这些不满足：要一台连着线的真机、要人把锁屏解开，

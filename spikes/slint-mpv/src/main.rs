@@ -19,13 +19,13 @@
 //! spike 要量的东西。
 
 mod fake;
-mod gl;
-mod metrics;
 mod mpv;
 mod overlay;
-mod record;
 mod scenario;
 mod source;
+
+// 记录 / 采样 / 截图三件套在 ../spike-harness，与 SPIKE-003 共用。
+use spike_harness::{gl, metrics, record};
 
 use std::cell::RefCell;
 use std::collections::BTreeMap;

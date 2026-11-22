@@ -240,10 +240,13 @@ src/mpv/mod.rs   NativeMpvAdapter 原型：PlayerPort + render context
 src/fake.rs      不带视频的同契约后端
 src/overlay.rs   弹幕分轨与轨迹（纯逻辑，有单测）
 src/source.rs    golden fixture → DanmakuSession
-src/metrics.rs   帧耗时分位数、CPU、RSS
-src/gl.rs        三个 GL 函数 + 截图
-src/record.rs    实验记录（含路径脱敏）
 ui/spike.slint   只负责画
+
+../spike-harness/  帧耗时分位数与 CPU/RSS、GL 截图、实验记录（含路径脱敏）。
+                   原先是本工程的 src/metrics.rs、src/gl.rs、src/record.rs，
+                   SPIKE-003（`spikes/slint-ui`）要量同样的东西时抽出来共用——
+                   复制一份的话两边的记录格式迟早分叉，而跨平台逐行对照正是
+                   这套模板存在的理由
 
 src/lib.rs           Android 的 cdylib（桌面上是空的）
 src/android_probe.rs SPIKE-002 的探针：GL 上下文、surface 生命周期、旋转、
@@ -255,4 +258,5 @@ make-probe-audio.py  合成一条带节拍的 WAV（后台音频要有声音才�
 
 Media3 的回退对照是另一个工程：`spikes/media3-probe`（Kotlin + Gradle）。
 
-`cargo test` 跑的是其中的纯逻辑部分（34 条），不需要 libmpv，也不开窗口。
+`cargo test` 跑的是其中的纯逻辑部分（25 条），不需要 libmpv，也不开窗口。
+另外 10 条随记录与分位数一起搬到了 `../spike-harness`，在那边跑。

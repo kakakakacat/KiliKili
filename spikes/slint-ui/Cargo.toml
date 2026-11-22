@@ -1,0 +1,40 @@
+# SPIKE-003（issue #10）的实验台。见 README.md 与 docs/m0/spikes/。
+#
+# 和 `slint-mpv` 同样的理由**自成一个 workspace**：`rust.yml` 按 `rust/**`
+# 触发，spike 要链 GPU 栈、要开窗口、要调系统的无障碍接口，进了那个
+# workspace 等于给所有 CI 作业加一堆它们装不了的依赖。它是证据产出工具，
+# Go/No-Go 结论下来之后可以整个删掉。
+[workspace]
+
+[package]
+name = "slint-ui-spike"
+version = "0.0.0"
+edition = "2024"
+publish = false
+license = "GPL-3.0-or-later"
+
+[dependencies]
+# 列表里的每一行都来自**生产投影**：pb 字节 → `grpc_reply::project_main_list`
+# → `ReplyEntity` → `reply_richtext::segment`。用假结构问不出「真实评论的
+# 段数与配图能不能撑住 60fps」。密度（行数）是合成的，记录里会写明。
+bili-api = { path = "../../rust/crates/bili-api" }
+bili-domain = { path = "../../rust/crates/bili-domain" }
+bili-grpc = { path = "../../rust/crates/bili-grpc" }
+
+anyhow = "1"
+clap = { version = "4", features = ["derive", "env"] }
+prost = "0.14"
+serde_json = "1"
+slint = "1.19"
+# 实验记录 / 帧耗时与 CPU/RSS 采样 / GL 截图，与 SPIKE-001/002 共用同一份。
+spike-harness = { path = "../spike-harness" }
+
+[build-dependencies]
+slint-build = "1.19"
+
+[profile.release]
+# 与 `rust/Cargo.toml` 的 release profile 对齐：报告里的数字要代表 Phase 2
+# 的真实形态，不能用 dev 构建的数字。
+opt-level = 3
+lto = "thin"
+codegen-units = 1

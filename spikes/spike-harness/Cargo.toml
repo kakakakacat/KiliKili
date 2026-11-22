@@ -1,0 +1,23 @@
+# M0 几个 spike 共用的「证据产出」底座。见 src/lib.rs 的说明。
+#
+# 和 `slint-mpv` 一样**刻意自成一个 workspace**：它不是产品代码，
+# `rust.yml` 不该碰它，Go/No-Go 结论下来之后它可以随 spike 一起删掉。
+# 两个 spike 各自是独立 workspace，各自按 path 依赖这一份——path 依赖
+# 不要求在同一个 workspace 里。
+[workspace]
+
+[package]
+name = "spike-harness"
+version = "0.0.0"
+edition = "2024"
+publish = false
+license = "GPL-3.0-or-later"
+
+[dependencies]
+anyhow = "1"
+# 截图：读回像素写 PNG。
+png = "0.18"
+# 取 GL 函数指针（Windows 上还要从 opengl32.dll 兜底）。
+libloading = "0.9"
+# CPU / RSS 采样。
+sysinfo = "0.40"

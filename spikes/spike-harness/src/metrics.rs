@@ -109,6 +109,74 @@ impl FrameMeter {
     }
 }
 
+/// 一组毫秒数的分位数。和 `FrameMeter` 的区别是**它量的是时长本身**，
+/// 不是两次事件之间的间隔。
+///
+/// 为什么要单独有它：帧间隔把「这一帧画得慢」和「这一帧根本没画」混成
+/// 同一个数。界面空闲时 Slint 不重绘是**正确行为**，但帧间隔会把它记成
+/// 一个 500ms 的长帧，报告里读起来就是「Slint 卡了半秒」。两个数摆在
+/// 一起才判得出是哪一种：渲染耗时小、帧间隔大 = 没触发重绘。
+#[derive(Debug)]
+pub struct Durations {
+    samples: Vec<f32>,
+    cursor: usize,
+    filled: usize,
+    count: u64,
+    max: f32,
+}
+
+impl Default for Durations {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Durations {
+    #[must_use]
+    pub fn new() -> Self {
+        Self {
+            samples: vec![0.0; CAPACITY],
+            cursor: 0,
+            filled: 0,
+            count: 0,
+            max: 0.0,
+        }
+    }
+
+    pub fn push(&mut self, ms: f32) {
+        self.samples[self.cursor] = ms;
+        self.cursor = (self.cursor + 1) % CAPACITY;
+        self.filled = (self.filled + 1).min(CAPACITY);
+        self.count += 1;
+        if ms > self.max {
+            self.max = ms;
+        }
+    }
+
+    #[must_use]
+    pub const fn count(&self) -> u64 {
+        self.count
+    }
+
+    /// 整段运行的最大值。**不受环形缓冲区限制**：最坏的那一帧正是要找的
+    /// 东西，被挤出窗口就白测了。
+    #[must_use]
+    pub const fn max(&self) -> f32 {
+        self.max
+    }
+
+    #[must_use]
+    pub fn percentile(&self, q: f32) -> Option<f32> {
+        if self.filled == 0 {
+            return None;
+        }
+        let mut window: Vec<f32> = self.samples[..self.filled].to_vec();
+        window.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+        let idx = ((window.len() - 1) as f32 * q).round() as usize;
+        window.get(idx).copied()
+    }
+}
+
 /// 本进程的 CPU 与常驻内存。
 #[derive(Debug)]
 pub struct ProcSampler {
@@ -224,5 +292,18 @@ mod tests {
         let p95 = meter.percentile(0.95).expect("应当有样本");
         assert!(p95 < 20.0, "旧的慢帧没有被挤出窗口：p95={p95}");
         assert_eq!(meter.frames(), (CAPACITY * 2 + 1) as u64);
+    }
+
+    #[test]
+    fn the_worst_duration_survives_the_ring_buffer() {
+        // 最坏的那一帧不许被挤出去：报告里「最慢画了多久」就是它。
+        let mut durations = Durations::new();
+        durations.push(900.0);
+        for _ in 0..(CAPACITY * 2) {
+            durations.push(5.0);
+        }
+        assert_eq!(durations.max(), 900.0);
+        assert_eq!(durations.percentile(0.95), Some(5.0));
+        assert_eq!(durations.count(), (CAPACITY * 2 + 1) as u64);
     }
 }

@@ -1,0 +1,32 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "cursor": { "is_end": true, "id": 1700000000000000010, "time": 1731000010 },
+    "items": [
+      {
+        "id": 1700000000000000011,
+        "user": { "mid": 100003, "nickname": "示例用户丙", "avatar": "https://example.invalid/face-c.jpg" },
+        "item": {
+          "subject_id": 900020,
+          "business_id": 1,
+          "business": "评论",
+          "title": "",
+          "image": "https://example.invalid/pic.jpg",
+          "uri": "https://example.invalid/video/BV1yy411c7mD",
+          "native_uri": "bilibili://video/900020",
+          "source_content": "在评论里 @ 了我",
+          "at_details": []
+        },
+        "at_time": 1731000011
+      },
+      {
+        "id": 1700000000000000012,
+        "user": { "mid": 100004 },
+        "item": { "business": "动态" },
+        "at_time": 1731000012
+      }
+    ]
+  }
+}

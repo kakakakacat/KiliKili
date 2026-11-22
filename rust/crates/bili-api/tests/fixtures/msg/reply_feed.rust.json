@@ -1,0 +1,50 @@
+{
+  "cursor": {
+    "id": 1700000000000000000,
+    "is_end": false,
+    "time": 1731000000
+  },
+  "items": [
+    {
+      "counts": 3,
+      "id": 1700000000000000001,
+      "is_multi": 1,
+      "item": {
+        "business": "评论",
+        "business_id": 1,
+        "native_uri": "bilibili://video/900001",
+        "root_reply_content": "根评论的内容",
+        "source_content": "回复我的那句话",
+        "subject_id": 900001,
+        "target_reply_content": "被回复的那一条"
+      },
+      "reply_time": 1731000001,
+      "user": {
+        "avatar": "https://example.invalid/face-a.jpg",
+        "mid": 100001,
+        "nickname": "示例用户甲"
+      }
+    },
+    {
+      "counts": 1,
+      "id": 1700000000000000002,
+      "is_multi": 0,
+      "item": {
+        "business": "动态",
+        "business_id": null,
+        "native_uri": "bilibili://dynamic/900010",
+        "root_reply_content": null,
+        "source_content": "只有部分字段的一条",
+        "subject_id": 900010,
+        "target_reply_content": null
+      },
+      "reply_time": 1731000002,
+      "user": {
+        "avatar": "https://example.invalid/face-b.jpg",
+        "mid": 100002,
+        "nickname": "示例用户乙"
+      }
+    }
+  ],
+  "last_view_at": 1730999999
+}

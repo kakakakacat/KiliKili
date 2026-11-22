@@ -1,0 +1,27 @@
+{
+  "code": 0,
+  "msg": "0",
+  "message": "0",
+  "ttl": 1,
+  "data": [
+    {
+      "mid": 100009,
+      "name": "示例年度会员",
+      "face": "https://example.invalid/face-h.jpg",
+      "sign": "这是一段个性签名",
+      "rank": 10000,
+      "vip": { "type": 2, "status": 1, "due_date": 0, "nickname_color": "#FB7299" },
+      "pendant": { "pid": 1, "name": "示例挂件", "image": "https://example.invalid/pendant.png" },
+      "official": { "role": 1, "title": "示例认证", "desc": "示例认证说明", "type": 1 }
+    },
+    {
+      "mid": 100010,
+      "name": "示例普通用户",
+      "face": "https://example.invalid/face-i.jpg",
+      "sign": "",
+      "vip": { "type": 0, "status": 0 },
+      "pendant": { "pid": 0, "name": "", "image": "" },
+      "official": { "role": 0, "title": "", "desc": "", "type": -1 }
+    }
+  ]
+}

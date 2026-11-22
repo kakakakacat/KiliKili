@@ -2,8 +2,8 @@ import 'package:kilikili/grpc/bilibili/app/im/v1.pb.dart'
     show SessionPageType, SessionId, Session;
 import 'package:kilikili/grpc/im.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/msg.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_msg.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -13,7 +13,7 @@ abstract class CommonWhisperController<R>
   SessionPageType get sessionPageType;
 
   Future<void> onRemove(int index, int talkerId) async {
-    final res = await MsgHttp.removeMsg(talkerId);
+    final res = await RustMsg.removeMsg(talkerId);
     if (res.isSuccess) {
       loadingState
         ..value.data!.removeAt(index)
@@ -48,10 +48,10 @@ abstract class CommonWhisperController<R>
   }
 
   Future<void> onSetMute(Session item, bool isMuted, Int64 talkerUid) async {
-    final res = await MsgHttp.setMsgDnd(
+    final res = await RustMsg.setMsgDnd(
       uid: Accounts.main.mid,
       setting: isMuted ? 0 : 1,
-      dndUid: talkerUid,
+      dndUid: talkerUid.toInt(),
     );
     if (res.isSuccess) {
       item.isMuted = !isMuted;

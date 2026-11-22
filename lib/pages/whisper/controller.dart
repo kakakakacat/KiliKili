@@ -2,7 +2,7 @@ import 'package:kilikili/grpc/bilibili/app/im/v1.pb.dart'
     show Offset, Session, SessionMainReply, SessionPageType, ThreeDotItem;
 import 'package:kilikili/grpc/im.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/msg/msgfeed_unread.dart';
+import 'package:kilikili/models_new/msg/im_total_unread.dart';
 import 'package:kilikili/pages/common/common_whisper_controller.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart';
@@ -67,7 +67,7 @@ class WhisperController extends CommonWhisperController<SessionMainReply> {
   Future<void> queryMsgFeedUnread() async {
     final res = await ImGrpc.getTotalUnread(unreadType: 2);
     if (res case Success(:final response)) {
-      final data = MsgFeedUnread.fromJson(response.msgFeedUnread.unread);
+      final data = ImTotalUnread.fromJson(response.msgFeedUnread.unread);
       final unreadCounts = [
         data.reply,
         data.at,

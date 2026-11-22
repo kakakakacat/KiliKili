@@ -12,6 +12,7 @@ pub mod live_danmaku;
 pub mod login;
 pub mod media_select;
 pub mod misc;
+pub mod msg;
 pub mod pgc;
 pub mod play_url;
 pub mod play_url_fetch;

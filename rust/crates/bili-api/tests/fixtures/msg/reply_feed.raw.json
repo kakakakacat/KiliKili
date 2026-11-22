@@ -1,0 +1,50 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "cursor": { "is_end": false, "id": 1700000000000000000, "time": 1731000000 },
+    "items": [
+      {
+        "id": 1700000000000000001,
+        "user": { "mid": 100001, "nickname": "示例用户甲", "avatar": "https://example.invalid/face-a.jpg" },
+        "item": {
+          "subject_id": 900001,
+          "source_id": 900002,
+          "target_id": 900003,
+          "root_id": 0,
+          "type": "reply",
+          "business_id": 1,
+          "business": "评论",
+          "title": "示例稿件标题",
+          "desc": "",
+          "image": "",
+          "uri": "https://example.invalid/video/BV1xx411c7mD",
+          "native_uri": "bilibili://video/900001",
+          "detail_title": "",
+          "root_reply_content": "根评论的内容",
+          "source_content": "回复我的那句话",
+          "target_reply_content": "被回复的那一条",
+          "at_details": null
+        },
+        "counts": 3,
+        "is_multi": 1,
+        "reply_time": 1731000001
+      },
+      {
+        "id": 1700000000000000002,
+        "user": { "mid": 100002, "nickname": "示例用户乙", "avatar": "https://example.invalid/face-b.jpg" },
+        "item": {
+          "subject_id": 900010,
+          "business": "动态",
+          "native_uri": "bilibili://dynamic/900010",
+          "source_content": "只有部分字段的一条"
+        },
+        "counts": 1,
+        "is_multi": 0,
+        "reply_time": 1731000002
+      }
+    ],
+    "last_view_at": 1730999999
+  }
+}

@@ -15,6 +15,7 @@ import 'package:kilikili/rust/api/live_danmaku.dart';
 import 'package:kilikili/rust/api/login.dart';
 import 'package:kilikili/rust/api/media_select.dart';
 import 'package:kilikili/rust/api/misc.dart';
+import 'package:kilikili/rust/api/msg.dart';
 import 'package:kilikili/rust/api/pgc.dart';
 import 'package:kilikili/rust/api/play_url.dart';
 import 'package:kilikili/rust/api/play_url_fetch.dart';
@@ -86,6 +87,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Artist dco_decode_artist(dynamic raw);
 
   @protected
+  AtFeed dco_decode_at_feed(dynamic raw);
+
+  @protected
+  AtFeedContent dco_decode_at_feed_content(dynamic raw);
+
+  @protected
+  AtFeedItem dco_decode_at_feed_item(dynamic raw);
+
+  @protected
+  AtFeedResult dco_decode_at_feed_result(dynamic raw);
+
+  @protected
   AudioSelectionResult dco_decode_audio_selection_result(dynamic raw);
 
   @protected
@@ -111,6 +124,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   AppWriteContext dco_decode_box_autoadd_app_write_context(dynamic raw);
+
+  @protected
+  AtFeed dco_decode_box_autoadd_at_feed(dynamic raw);
+
+  @protected
+  AtFeedContent dco_decode_box_autoadd_at_feed_content(dynamic raw);
 
   @protected
   BlackList dco_decode_box_autoadd_black_list(dynamic raw);
@@ -180,7 +199,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   FavTopicList dco_decode_box_autoadd_fav_topic_list(dynamic raw);
 
   @protected
+  FeedBadgeSelection dco_decode_box_autoadd_feed_badge_selection(dynamic raw);
+
+  @protected
   FeedContext dco_decode_box_autoadd_feed_context(dynamic raw);
+
+  @protected
+  FeedCursor dco_decode_box_autoadd_feed_cursor(dynamic raw);
+
+  @protected
+  FeedUser dco_decode_box_autoadd_feed_user(dynamic raw);
 
   @protected
   FilterRule dco_decode_box_autoadd_filter_rule(dynamic raw);
@@ -225,7 +253,28 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LevelInfo dco_decode_box_autoadd_level_info(dynamic raw);
 
   @protected
+  LikeDetail dco_decode_box_autoadd_like_detail(dynamic raw);
+
+  @protected
+  LikeDetailCard dco_decode_box_autoadd_like_detail_card(dynamic raw);
+
+  @protected
+  LikeDetailPage dco_decode_box_autoadd_like_detail_page(dynamic raw);
+
+  @protected
+  LikeFeed dco_decode_box_autoadd_like_feed(dynamic raw);
+
+  @protected
+  LikeFeedContent dco_decode_box_autoadd_like_feed_content(dynamic raw);
+
+  @protected
+  LikeLatest dco_decode_box_autoadd_like_latest(dynamic raw);
+
+  @protected
   LikeListPage dco_decode_box_autoadd_like_list_page(dynamic raw);
+
+  @protected
+  LikeTotal dco_decode_box_autoadd_like_total(dynamic raw);
 
   @protected
   LiveAppIdentity dco_decode_box_autoadd_live_app_identity(dynamic raw);
@@ -342,6 +391,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MiscContext dco_decode_box_autoadd_misc_context(dynamic raw);
 
   @protected
+  MsgContext dco_decode_box_autoadd_msg_context(dynamic raw);
+
+  @protected
+  MsgFeedUnread dco_decode_box_autoadd_msg_feed_unread(dynamic raw);
+
+  @protected
   MusicComment dco_decode_box_autoadd_music_comment(dynamic raw);
 
   @protected
@@ -450,6 +505,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReplyEntity dco_decode_box_autoadd_reply_entity(dynamic raw);
 
   @protected
+  ReplyFeed dco_decode_box_autoadd_reply_feed(dynamic raw);
+
+  @protected
+  ReplyFeedContent dco_decode_box_autoadd_reply_feed_content(dynamic raw);
+
+  @protected
   ReplyFilterInput dco_decode_box_autoadd_reply_filter_input(dynamic raw);
 
   @protected
@@ -528,6 +589,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SegmentBase dco_decode_box_autoadd_segment_base(dynamic raw);
+
+  @protected
+  SessionSs dco_decode_box_autoadd_session_ss(dynamic raw);
+
+  @protected
+  SingleUnread dco_decode_box_autoadd_single_unread(dynamic raw);
 
   @protected
   SmsSendState dco_decode_box_autoadd_sms_send_state(dynamic raw);
@@ -883,7 +950,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   FavTopicListResult dco_decode_fav_topic_list_result(dynamic raw);
 
   @protected
+  FeedBadgeSelection dco_decode_feed_badge_selection(dynamic raw);
+
+  @protected
   FeedContext dco_decode_feed_context(dynamic raw);
+
+  @protected
+  FeedCursor dco_decode_feed_cursor(dynamic raw);
 
   @protected
   FeedFilterSettings dco_decode_feed_filter_settings(dynamic raw);
@@ -893,6 +966,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FeedStat dco_decode_feed_stat(dynamic raw);
+
+  @protected
+  FeedUser dco_decode_feed_user(dynamic raw);
 
   @protected
   FeedVideoItem dco_decode_feed_video_item(dynamic raw);
@@ -979,6 +1055,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64 dco_decode_i_64(dynamic raw);
 
   @protected
+  ImUserInfo dco_decode_im_user_info(dynamic raw);
+
+  @protected
+  ImUserInfosResult dco_decode_im_user_infos_result(dynamic raw);
+
+  @protected
   InteractStatus dco_decode_interact_status(dynamic raw);
 
   @protected
@@ -1003,10 +1085,43 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LevelInfo dco_decode_level_info(dynamic raw);
 
   @protected
+  LikeDetail dco_decode_like_detail(dynamic raw);
+
+  @protected
+  LikeDetailCard dco_decode_like_detail_card(dynamic raw);
+
+  @protected
+  LikeDetailItem dco_decode_like_detail_item(dynamic raw);
+
+  @protected
+  LikeDetailPage dco_decode_like_detail_page(dynamic raw);
+
+  @protected
+  LikeDetailResult dco_decode_like_detail_result(dynamic raw);
+
+  @protected
+  LikeFeed dco_decode_like_feed(dynamic raw);
+
+  @protected
+  LikeFeedContent dco_decode_like_feed_content(dynamic raw);
+
+  @protected
+  LikeFeedItem dco_decode_like_feed_item(dynamic raw);
+
+  @protected
+  LikeFeedResult dco_decode_like_feed_result(dynamic raw);
+
+  @protected
+  LikeLatest dco_decode_like_latest(dynamic raw);
+
+  @protected
   LikeListPage dco_decode_like_list_page(dynamic raw);
 
   @protected
   LikeListResult dco_decode_like_list_result(dynamic raw);
+
+  @protected
+  LikeTotal dco_decode_like_total(dynamic raw);
 
   @protected
   List<String> dco_decode_list_String(dynamic raw);
@@ -1019,6 +1134,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<Artist> dco_decode_list_artist(dynamic raw);
+
+  @protected
+  List<AtFeedItem> dco_decode_list_at_feed_item(dynamic raw);
 
   @protected
   List<BgmRecommend> dco_decode_list_bgm_recommend(dynamic raw);
@@ -1081,6 +1199,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<FavTopicItem> dco_decode_list_fav_topic_item(dynamic raw);
 
   @protected
+  List<FeedUser> dco_decode_list_feed_user(dynamic raw);
+
+  @protected
   List<FeedVideoItem> dco_decode_list_feed_video_item(dynamic raw);
 
   @protected
@@ -1113,10 +1234,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<HistoryTab> dco_decode_list_history_tab(dynamic raw);
 
   @protected
+  List<ImUserInfo> dco_decode_list_im_user_info(dynamic raw);
+
+  @protected
   List<LanguageItem> dco_decode_list_language_item(dynamic raw);
 
   @protected
   List<LaterItem> dco_decode_list_later_item(dynamic raw);
+
+  @protected
+  List<LikeDetailItem> dco_decode_list_like_detail_item(dynamic raw);
+
+  @protected
+  List<LikeFeedItem> dco_decode_list_like_feed_item(dynamic raw);
 
   @protected
   List<Uint8List> dco_decode_list_list_prim_u_8_strict(dynamic raw);
@@ -1219,6 +1349,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<MediaStream> dco_decode_list_media_stream(dynamic raw);
 
   @protected
+  List<MsgDndSetting> dco_decode_list_msg_dnd_setting(dynamic raw);
+
+  @protected
   List<NoteItem> dco_decode_list_note_item(dynamic raw);
 
   @protected
@@ -1304,6 +1437,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<ReplyEntity> dco_decode_list_reply_entity(dynamic raw);
+
+  @protected
+  List<ReplyFeedItem> dco_decode_list_reply_feed_item(dynamic raw);
 
   @protected
   List<ReplyImportEntry> dco_decode_list_reply_import_entry(dynamic raw);
@@ -1419,6 +1555,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SubItem> dco_decode_list_sub_item(dynamic raw);
+
+  @protected
+  List<SysMsgItem> dco_decode_list_sys_msg_item(dynamic raw);
 
   @protected
   List<TimelineDay> dco_decode_list_timeline_day(dynamic raw);
@@ -1740,6 +1879,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MiscContext dco_decode_misc_context(dynamic raw);
 
   @protected
+  MsgContext dco_decode_msg_context(dynamic raw);
+
+  @protected
+  MsgDndResult dco_decode_msg_dnd_result(dynamic raw);
+
+  @protected
+  MsgDndSetting dco_decode_msg_dnd_setting(dynamic raw);
+
+  @protected
+  MsgFeedUnread dco_decode_msg_feed_unread(dynamic raw);
+
+  @protected
+  MsgFeedUnreadResult dco_decode_msg_feed_unread_result(dynamic raw);
+
+  @protected
   MusicComment dco_decode_music_comment(dynamic raw);
 
   @protected
@@ -1771,6 +1925,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   AiConclusion? dco_decode_opt_box_autoadd_ai_conclusion(dynamic raw);
+
+  @protected
+  AtFeed? dco_decode_opt_box_autoadd_at_feed(dynamic raw);
+
+  @protected
+  AtFeedContent? dco_decode_opt_box_autoadd_at_feed_content(dynamic raw);
 
   @protected
   BlackList? dco_decode_opt_box_autoadd_black_list(dynamic raw);
@@ -1823,6 +1983,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   FavTopicList? dco_decode_opt_box_autoadd_fav_topic_list(dynamic raw);
 
   @protected
+  FeedCursor? dco_decode_opt_box_autoadd_feed_cursor(dynamic raw);
+
+  @protected
+  FeedUser? dco_decode_opt_box_autoadd_feed_user(dynamic raw);
+
+  @protected
   FilterRule? dco_decode_opt_box_autoadd_filter_rule(dynamic raw);
 
   @protected
@@ -1856,7 +2022,28 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LevelInfo? dco_decode_opt_box_autoadd_level_info(dynamic raw);
 
   @protected
+  LikeDetail? dco_decode_opt_box_autoadd_like_detail(dynamic raw);
+
+  @protected
+  LikeDetailCard? dco_decode_opt_box_autoadd_like_detail_card(dynamic raw);
+
+  @protected
+  LikeDetailPage? dco_decode_opt_box_autoadd_like_detail_page(dynamic raw);
+
+  @protected
+  LikeFeed? dco_decode_opt_box_autoadd_like_feed(dynamic raw);
+
+  @protected
+  LikeFeedContent? dco_decode_opt_box_autoadd_like_feed_content(dynamic raw);
+
+  @protected
+  LikeLatest? dco_decode_opt_box_autoadd_like_latest(dynamic raw);
+
+  @protected
   LikeListPage? dco_decode_opt_box_autoadd_like_list_page(dynamic raw);
+
+  @protected
+  LikeTotal? dco_decode_opt_box_autoadd_like_total(dynamic raw);
 
   @protected
   LiveDanmakuEmote? dco_decode_opt_box_autoadd_live_danmaku_emote(dynamic raw);
@@ -1952,6 +2139,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MemberUpStat? dco_decode_opt_box_autoadd_member_up_stat(dynamic raw);
+
+  @protected
+  MsgFeedUnread? dco_decode_opt_box_autoadd_msg_feed_unread(dynamic raw);
 
   @protected
   MusicComment? dco_decode_opt_box_autoadd_music_comment(dynamic raw);
@@ -2050,6 +2240,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReplyEntity? dco_decode_opt_box_autoadd_reply_entity(dynamic raw);
 
   @protected
+  ReplyFeed? dco_decode_opt_box_autoadd_reply_feed(dynamic raw);
+
+  @protected
+  ReplyFeedContent? dco_decode_opt_box_autoadd_reply_feed_content(dynamic raw);
+
+  @protected
   ReplyFlatPage? dco_decode_opt_box_autoadd_reply_flat_page(dynamic raw);
 
   @protected
@@ -2125,6 +2321,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SegmentBase? dco_decode_opt_box_autoadd_segment_base(dynamic raw);
+
+  @protected
+  SessionSs? dco_decode_opt_box_autoadd_session_ss(dynamic raw);
+
+  @protected
+  SingleUnread? dco_decode_opt_box_autoadd_single_unread(dynamic raw);
 
   @protected
   SmsSendState? dco_decode_opt_box_autoadd_sms_send_state(dynamic raw);
@@ -2336,6 +2538,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<GrpcSubtitle>? dco_decode_opt_list_grpc_subtitle(dynamic raw);
 
   @protected
+  List<ImUserInfo>? dco_decode_opt_list_im_user_info(dynamic raw);
+
+  @protected
   List<LanguageItem>? dco_decode_opt_list_language_item(dynamic raw);
 
   @protected
@@ -2367,6 +2572,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<MediaStream>? dco_decode_opt_list_media_stream(dynamic raw);
+
+  @protected
+  List<MsgDndSetting>? dco_decode_opt_list_msg_dnd_setting(dynamic raw);
 
   @protected
   List<NoteItem>? dco_decode_opt_list_note_item(dynamic raw);
@@ -2425,6 +2633,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SpaceFavGroup>? dco_decode_opt_list_space_fav_group(dynamic raw);
+
+  @protected
+  List<SysMsgItem>? dco_decode_opt_list_sys_msg_item(dynamic raw);
 
   @protected
   List<TimelineDay>? dco_decode_opt_list_timeline_day(dynamic raw);
@@ -2655,6 +2866,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReplyEntityResult dco_decode_reply_entity_result(dynamic raw);
 
   @protected
+  ReplyFeed dco_decode_reply_feed(dynamic raw);
+
+  @protected
+  ReplyFeedContent dco_decode_reply_feed_content(dynamic raw);
+
+  @protected
+  ReplyFeedItem dco_decode_reply_feed_item(dynamic raw);
+
+  @protected
+  ReplyFeedResult dco_decode_reply_feed_result(dynamic raw);
+
+  @protected
   ReplyFilterInput dco_decode_reply_filter_input(dynamic raw);
 
   @protected
@@ -2872,6 +3095,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SegmentBase dco_decode_segment_base(dynamic raw);
+
+  @protected
+  SessionSs dco_decode_session_ss(dynamic raw);
+
+  @protected
+  SessionSsResult dco_decode_session_ss_result(dynamic raw);
+
+  @protected
+  SingleUnread dco_decode_single_unread(dynamic raw);
+
+  @protected
+  SingleUnreadResult dco_decode_single_unread_result(dynamic raw);
 
   @protected
   SkipSegment dco_decode_skip_segment(dynamic raw);
@@ -3131,6 +3366,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SubtitleConvert dco_decode_subtitle_convert(dynamic raw);
 
   @protected
+  SysMsgItem dco_decode_sys_msg_item(dynamic raw);
+
+  @protected
+  SysNotifyResult dco_decode_sys_notify_result(dynamic raw);
+
+  @protected
   TimelineDay dco_decode_timeline_day(dynamic raw);
 
   @protected
@@ -3297,6 +3538,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Artist sse_decode_artist(SseDeserializer deserializer);
 
   @protected
+  AtFeed sse_decode_at_feed(SseDeserializer deserializer);
+
+  @protected
+  AtFeedContent sse_decode_at_feed_content(SseDeserializer deserializer);
+
+  @protected
+  AtFeedItem sse_decode_at_feed_item(SseDeserializer deserializer);
+
+  @protected
+  AtFeedResult sse_decode_at_feed_result(SseDeserializer deserializer);
+
+  @protected
   AudioSelectionResult sse_decode_audio_selection_result(
     SseDeserializer deserializer,
   );
@@ -3328,6 +3581,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   AppWriteContext sse_decode_box_autoadd_app_write_context(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  AtFeed sse_decode_box_autoadd_at_feed(SseDeserializer deserializer);
+
+  @protected
+  AtFeedContent sse_decode_box_autoadd_at_feed_content(
     SseDeserializer deserializer,
   );
 
@@ -3419,7 +3680,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  FeedBadgeSelection sse_decode_box_autoadd_feed_badge_selection(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   FeedContext sse_decode_box_autoadd_feed_context(SseDeserializer deserializer);
+
+  @protected
+  FeedCursor sse_decode_box_autoadd_feed_cursor(SseDeserializer deserializer);
+
+  @protected
+  FeedUser sse_decode_box_autoadd_feed_user(SseDeserializer deserializer);
 
   @protected
   FilterRule sse_decode_box_autoadd_filter_rule(SseDeserializer deserializer);
@@ -3472,9 +3744,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LevelInfo sse_decode_box_autoadd_level_info(SseDeserializer deserializer);
 
   @protected
+  LikeDetail sse_decode_box_autoadd_like_detail(SseDeserializer deserializer);
+
+  @protected
+  LikeDetailCard sse_decode_box_autoadd_like_detail_card(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LikeDetailPage sse_decode_box_autoadd_like_detail_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LikeFeed sse_decode_box_autoadd_like_feed(SseDeserializer deserializer);
+
+  @protected
+  LikeFeedContent sse_decode_box_autoadd_like_feed_content(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LikeLatest sse_decode_box_autoadd_like_latest(SseDeserializer deserializer);
+
+  @protected
   LikeListPage sse_decode_box_autoadd_like_list_page(
     SseDeserializer deserializer,
   );
+
+  @protected
+  LikeTotal sse_decode_box_autoadd_like_total(SseDeserializer deserializer);
 
   @protected
   LiveAppIdentity sse_decode_box_autoadd_live_app_identity(
@@ -3643,6 +3942,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MiscContext sse_decode_box_autoadd_misc_context(SseDeserializer deserializer);
 
   @protected
+  MsgContext sse_decode_box_autoadd_msg_context(SseDeserializer deserializer);
+
+  @protected
+  MsgFeedUnread sse_decode_box_autoadd_msg_feed_unread(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   MusicComment sse_decode_box_autoadd_music_comment(
     SseDeserializer deserializer,
   );
@@ -3795,6 +4102,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReplyEntity sse_decode_box_autoadd_reply_entity(SseDeserializer deserializer);
 
   @protected
+  ReplyFeed sse_decode_box_autoadd_reply_feed(SseDeserializer deserializer);
+
+  @protected
+  ReplyFeedContent sse_decode_box_autoadd_reply_feed_content(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   ReplyFilterInput sse_decode_box_autoadd_reply_filter_input(
     SseDeserializer deserializer,
   );
@@ -3903,6 +4218,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SegmentBase sse_decode_box_autoadd_segment_base(SseDeserializer deserializer);
+
+  @protected
+  SessionSs sse_decode_box_autoadd_session_ss(SseDeserializer deserializer);
+
+  @protected
+  SingleUnread sse_decode_box_autoadd_single_unread(
+    SseDeserializer deserializer,
+  );
 
   @protected
   SmsSendState sse_decode_box_autoadd_sms_send_state(
@@ -4358,7 +4681,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  FeedBadgeSelection sse_decode_feed_badge_selection(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   FeedContext sse_decode_feed_context(SseDeserializer deserializer);
+
+  @protected
+  FeedCursor sse_decode_feed_cursor(SseDeserializer deserializer);
 
   @protected
   FeedFilterSettings sse_decode_feed_filter_settings(
@@ -4370,6 +4701,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FeedStat sse_decode_feed_stat(SseDeserializer deserializer);
+
+  @protected
+  FeedUser sse_decode_feed_user(SseDeserializer deserializer);
 
   @protected
   FeedVideoItem sse_decode_feed_video_item(SseDeserializer deserializer);
@@ -4466,6 +4800,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
 
   @protected
+  ImUserInfo sse_decode_im_user_info(SseDeserializer deserializer);
+
+  @protected
+  ImUserInfosResult sse_decode_im_user_infos_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   InteractStatus sse_decode_interact_status(SseDeserializer deserializer);
 
   @protected
@@ -4490,10 +4832,43 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LevelInfo sse_decode_level_info(SseDeserializer deserializer);
 
   @protected
+  LikeDetail sse_decode_like_detail(SseDeserializer deserializer);
+
+  @protected
+  LikeDetailCard sse_decode_like_detail_card(SseDeserializer deserializer);
+
+  @protected
+  LikeDetailItem sse_decode_like_detail_item(SseDeserializer deserializer);
+
+  @protected
+  LikeDetailPage sse_decode_like_detail_page(SseDeserializer deserializer);
+
+  @protected
+  LikeDetailResult sse_decode_like_detail_result(SseDeserializer deserializer);
+
+  @protected
+  LikeFeed sse_decode_like_feed(SseDeserializer deserializer);
+
+  @protected
+  LikeFeedContent sse_decode_like_feed_content(SseDeserializer deserializer);
+
+  @protected
+  LikeFeedItem sse_decode_like_feed_item(SseDeserializer deserializer);
+
+  @protected
+  LikeFeedResult sse_decode_like_feed_result(SseDeserializer deserializer);
+
+  @protected
+  LikeLatest sse_decode_like_latest(SseDeserializer deserializer);
+
+  @protected
   LikeListPage sse_decode_like_list_page(SseDeserializer deserializer);
 
   @protected
   LikeListResult sse_decode_like_list_result(SseDeserializer deserializer);
+
+  @protected
+  LikeTotal sse_decode_like_total(SseDeserializer deserializer);
 
   @protected
   List<String> sse_decode_list_String(SseDeserializer deserializer);
@@ -4508,6 +4883,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<Artist> sse_decode_list_artist(SseDeserializer deserializer);
+
+  @protected
+  List<AtFeedItem> sse_decode_list_at_feed_item(SseDeserializer deserializer);
 
   @protected
   List<BgmRecommend> sse_decode_list_bgm_recommend(
@@ -4590,6 +4968,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<FeedUser> sse_decode_list_feed_user(SseDeserializer deserializer);
+
+  @protected
   List<FeedVideoItem> sse_decode_list_feed_video_item(
     SseDeserializer deserializer,
   );
@@ -4628,12 +5009,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<HistoryTab> sse_decode_list_history_tab(SseDeserializer deserializer);
 
   @protected
+  List<ImUserInfo> sse_decode_list_im_user_info(SseDeserializer deserializer);
+
+  @protected
   List<LanguageItem> sse_decode_list_language_item(
     SseDeserializer deserializer,
   );
 
   @protected
   List<LaterItem> sse_decode_list_later_item(SseDeserializer deserializer);
+
+  @protected
+  List<LikeDetailItem> sse_decode_list_like_detail_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<LikeFeedItem> sse_decode_list_like_feed_item(
+    SseDeserializer deserializer,
+  );
 
   @protected
   List<Uint8List> sse_decode_list_list_prim_u_8_strict(
@@ -4780,6 +5174,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<MediaStream> sse_decode_list_media_stream(SseDeserializer deserializer);
 
   @protected
+  List<MsgDndSetting> sse_decode_list_msg_dnd_setting(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<NoteItem> sse_decode_list_note_item(SseDeserializer deserializer);
 
   @protected
@@ -4891,6 +5290,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<ReplyEntity> sse_decode_list_reply_entity(SseDeserializer deserializer);
+
+  @protected
+  List<ReplyFeedItem> sse_decode_list_reply_feed_item(
+    SseDeserializer deserializer,
+  );
 
   @protected
   List<ReplyImportEntry> sse_decode_list_reply_import_entry(
@@ -5066,6 +5470,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SubItem> sse_decode_list_sub_item(SseDeserializer deserializer);
+
+  @protected
+  List<SysMsgItem> sse_decode_list_sys_msg_item(SseDeserializer deserializer);
 
   @protected
   List<TimelineDay> sse_decode_list_timeline_day(SseDeserializer deserializer);
@@ -5451,6 +5858,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MiscContext sse_decode_misc_context(SseDeserializer deserializer);
 
   @protected
+  MsgContext sse_decode_msg_context(SseDeserializer deserializer);
+
+  @protected
+  MsgDndResult sse_decode_msg_dnd_result(SseDeserializer deserializer);
+
+  @protected
+  MsgDndSetting sse_decode_msg_dnd_setting(SseDeserializer deserializer);
+
+  @protected
+  MsgFeedUnread sse_decode_msg_feed_unread(SseDeserializer deserializer);
+
+  @protected
+  MsgFeedUnreadResult sse_decode_msg_feed_unread_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   MusicComment sse_decode_music_comment(SseDeserializer deserializer);
 
   @protected
@@ -5484,6 +5908,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   AiConclusion? sse_decode_opt_box_autoadd_ai_conclusion(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  AtFeed? sse_decode_opt_box_autoadd_at_feed(SseDeserializer deserializer);
+
+  @protected
+  AtFeedContent? sse_decode_opt_box_autoadd_at_feed_content(
     SseDeserializer deserializer,
   );
 
@@ -5562,6 +5994,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  FeedCursor? sse_decode_opt_box_autoadd_feed_cursor(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FeedUser? sse_decode_opt_box_autoadd_feed_user(SseDeserializer deserializer);
+
+  @protected
   FilterRule? sse_decode_opt_box_autoadd_filter_rule(
     SseDeserializer deserializer,
   );
@@ -5613,7 +6053,40 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  LikeDetail? sse_decode_opt_box_autoadd_like_detail(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LikeDetailCard? sse_decode_opt_box_autoadd_like_detail_card(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LikeDetailPage? sse_decode_opt_box_autoadd_like_detail_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LikeFeed? sse_decode_opt_box_autoadd_like_feed(SseDeserializer deserializer);
+
+  @protected
+  LikeFeedContent? sse_decode_opt_box_autoadd_like_feed_content(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LikeLatest? sse_decode_opt_box_autoadd_like_latest(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   LikeListPage? sse_decode_opt_box_autoadd_like_list_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  LikeTotal? sse_decode_opt_box_autoadd_like_total(
     SseDeserializer deserializer,
   );
 
@@ -5763,6 +6236,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  MsgFeedUnread? sse_decode_opt_box_autoadd_msg_feed_unread(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   MusicComment? sse_decode_opt_box_autoadd_music_comment(
     SseDeserializer deserializer,
   );
@@ -5905,6 +6383,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  ReplyFeed? sse_decode_opt_box_autoadd_reply_feed(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ReplyFeedContent? sse_decode_opt_box_autoadd_reply_feed_content(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   ReplyFlatPage? sse_decode_opt_box_autoadd_reply_flat_page(
     SseDeserializer deserializer,
   );
@@ -6016,6 +6504,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SegmentBase? sse_decode_opt_box_autoadd_segment_base(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SessionSs? sse_decode_opt_box_autoadd_session_ss(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SingleUnread? sse_decode_opt_box_autoadd_single_unread(
     SseDeserializer deserializer,
   );
 
@@ -6305,6 +6803,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<ImUserInfo>? sse_decode_opt_list_im_user_info(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<LanguageItem>? sse_decode_opt_list_language_item(
     SseDeserializer deserializer,
   );
@@ -6348,6 +6851,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<MediaStream>? sse_decode_opt_list_media_stream(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<MsgDndSetting>? sse_decode_opt_list_msg_dnd_setting(
     SseDeserializer deserializer,
   );
 
@@ -6430,6 +6938,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SpaceFavGroup>? sse_decode_opt_list_space_fav_group(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SysMsgItem>? sse_decode_opt_list_sys_msg_item(
     SseDeserializer deserializer,
   );
 
@@ -6708,6 +7221,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  ReplyFeed sse_decode_reply_feed(SseDeserializer deserializer);
+
+  @protected
+  ReplyFeedContent sse_decode_reply_feed_content(SseDeserializer deserializer);
+
+  @protected
+  ReplyFeedItem sse_decode_reply_feed_item(SseDeserializer deserializer);
+
+  @protected
+  ReplyFeedResult sse_decode_reply_feed_result(SseDeserializer deserializer);
+
+  @protected
   ReplyFilterInput sse_decode_reply_filter_input(SseDeserializer deserializer);
 
   @protected
@@ -6971,6 +7496,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SegmentBase sse_decode_segment_base(SseDeserializer deserializer);
+
+  @protected
+  SessionSs sse_decode_session_ss(SseDeserializer deserializer);
+
+  @protected
+  SessionSsResult sse_decode_session_ss_result(SseDeserializer deserializer);
+
+  @protected
+  SingleUnread sse_decode_single_unread(SseDeserializer deserializer);
+
+  @protected
+  SingleUnreadResult sse_decode_single_unread_result(
+    SseDeserializer deserializer,
+  );
 
   @protected
   SkipSegment sse_decode_skip_segment(SseDeserializer deserializer);
@@ -7288,6 +7827,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SubtitleConvert sse_decode_subtitle_convert(SseDeserializer deserializer);
 
   @protected
+  SysMsgItem sse_decode_sys_msg_item(SseDeserializer deserializer);
+
+  @protected
+  SysNotifyResult sse_decode_sys_notify_result(SseDeserializer deserializer);
+
+  @protected
   TimelineDay sse_decode_timeline_day(SseDeserializer deserializer);
 
   @protected
@@ -7474,6 +8019,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_artist(Artist self, SseSerializer serializer);
 
   @protected
+  void sse_encode_at_feed(AtFeed self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_at_feed_content(AtFeedContent self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_at_feed_item(AtFeedItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_at_feed_result(AtFeedResult self, SseSerializer serializer);
+
+  @protected
   void sse_encode_audio_selection_result(
     AudioSelectionResult self,
     SseSerializer serializer,
@@ -7512,6 +8069,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_app_write_context(
     AppWriteContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_at_feed(AtFeed self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_at_feed_content(
+    AtFeedContent self,
     SseSerializer serializer,
   );
 
@@ -7633,8 +8199,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_feed_badge_selection(
+    FeedBadgeSelection self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_feed_context(
     FeedContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_feed_cursor(
+    FeedCursor self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_feed_user(
+    FeedUser self,
     SseSerializer serializer,
   );
 
@@ -7720,8 +8304,50 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_like_detail(
+    LikeDetail self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_like_detail_card(
+    LikeDetailCard self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_like_detail_page(
+    LikeDetailPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_like_feed(
+    LikeFeed self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_like_feed_content(
+    LikeFeedContent self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_like_latest(
+    LikeLatest self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_like_list_page(
     LikeListPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_like_total(
+    LikeTotal self,
     SseSerializer serializer,
   );
 
@@ -7954,6 +8580,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_msg_context(
+    MsgContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_msg_feed_unread(
+    MsgFeedUnread self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_music_comment(
     MusicComment self,
     SseSerializer serializer,
@@ -8164,6 +8802,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_reply_feed(
+    ReplyFeed self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_reply_feed_content(
+    ReplyFeedContent self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_reply_filter_input(
     ReplyFilterInput self,
     SseSerializer serializer,
@@ -8316,6 +8966,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_segment_base(
     SegmentBase self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_session_ss(
+    SessionSs self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_single_unread(
+    SingleUnread self,
     SseSerializer serializer,
   );
 
@@ -8902,7 +9564,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_feed_badge_selection(
+    FeedBadgeSelection self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_feed_context(FeedContext self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_feed_cursor(FeedCursor self, SseSerializer serializer);
 
   @protected
   void sse_encode_feed_filter_settings(
@@ -8918,6 +9589,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_feed_stat(FeedStat self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_feed_user(FeedUser self, SseSerializer serializer);
 
   @protected
   void sse_encode_feed_video_item(FeedVideoItem self, SseSerializer serializer);
@@ -9037,6 +9711,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
 
   @protected
+  void sse_encode_im_user_info(ImUserInfo self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_im_user_infos_result(
+    ImUserInfosResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_interact_status(
     InteractStatus self,
     SseSerializer serializer,
@@ -9070,6 +9753,54 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_level_info(LevelInfo self, SseSerializer serializer);
 
   @protected
+  void sse_encode_like_detail(LikeDetail self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_like_detail_card(
+    LikeDetailCard self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_like_detail_item(
+    LikeDetailItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_like_detail_page(
+    LikeDetailPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_like_detail_result(
+    LikeDetailResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_like_feed(LikeFeed self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_like_feed_content(
+    LikeFeedContent self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_like_feed_item(LikeFeedItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_like_feed_result(
+    LikeFeedResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_like_latest(LikeLatest self, SseSerializer serializer);
+
+  @protected
   void sse_encode_like_list_page(LikeListPage self, SseSerializer serializer);
 
   @protected
@@ -9077,6 +9808,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     LikeListResult self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_like_total(LikeTotal self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_String(List<String> self, SseSerializer serializer);
@@ -9095,6 +9829,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_list_artist(List<Artist> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_at_feed_item(
+    List<AtFeedItem> self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_list_bgm_recommend(
@@ -9199,6 +9939,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_feed_user(List<FeedUser> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_feed_video_item(
     List<FeedVideoItem> self,
     SseSerializer serializer,
@@ -9259,6 +10002,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_im_user_info(
+    List<ImUserInfo> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_language_item(
     List<LanguageItem> self,
     SseSerializer serializer,
@@ -9267,6 +10016,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_later_item(
     List<LaterItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_like_detail_item(
+    List<LikeDetailItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_like_feed_item(
+    List<LikeFeedItem> self,
     SseSerializer serializer,
   );
 
@@ -9457,6 +10218,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_msg_dnd_setting(
+    List<MsgDndSetting> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_note_item(List<NoteItem> self, SseSerializer serializer);
 
   @protected
@@ -9609,6 +10376,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_reply_entity(
     List<ReplyEntity> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_reply_feed_item(
+    List<ReplyFeedItem> self,
     SseSerializer serializer,
   );
 
@@ -9827,6 +10600,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_list_sub_item(List<SubItem> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_sys_msg_item(
+    List<SysMsgItem> self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_list_timeline_day(
@@ -10354,6 +11133,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_misc_context(MiscContext self, SseSerializer serializer);
 
   @protected
+  void sse_encode_msg_context(MsgContext self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_msg_dnd_result(MsgDndResult self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_msg_dnd_setting(MsgDndSetting self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_msg_feed_unread(MsgFeedUnread self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_msg_feed_unread_result(
+    MsgFeedUnreadResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_music_comment(MusicComment self, SseSerializer serializer);
 
   @protected
@@ -10398,6 +11195,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_ai_conclusion(
     AiConclusion? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_at_feed(
+    AtFeed? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_at_feed_content(
+    AtFeedContent? self,
     SseSerializer serializer,
   );
 
@@ -10489,6 +11298,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_feed_cursor(
+    FeedCursor? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_feed_user(
+    FeedUser? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_filter_rule(
     FilterRule? self,
     SseSerializer serializer,
@@ -10552,8 +11373,50 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_like_detail(
+    LikeDetail? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_like_detail_card(
+    LikeDetailCard? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_like_detail_page(
+    LikeDetailPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_like_feed(
+    LikeFeed? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_like_feed_content(
+    LikeFeedContent? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_like_latest(
+    LikeLatest? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_like_list_page(
     LikeListPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_like_total(
+    LikeTotal? self,
     SseSerializer serializer,
   );
 
@@ -10728,6 +11591,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_member_up_stat(
     MemberUpStat? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_msg_feed_unread(
+    MsgFeedUnread? self,
     SseSerializer serializer,
   );
 
@@ -10912,6 +11781,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_reply_feed(
+    ReplyFeed? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_reply_feed_content(
+    ReplyFeedContent? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_reply_flat_page(
     ReplyFlatPage? self,
     SseSerializer serializer,
@@ -11046,6 +11927,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_segment_base(
     SegmentBase? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_session_ss(
+    SessionSs? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_single_unread(
+    SingleUnread? self,
     SseSerializer serializer,
   );
 
@@ -11410,6 +12303,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_list_im_user_info(
+    List<ImUserInfo>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_list_language_item(
     List<LanguageItem>? self,
     SseSerializer serializer,
@@ -11466,6 +12365,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_media_stream(
     List<MediaStream>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_msg_dnd_setting(
+    List<MsgDndSetting>? self,
     SseSerializer serializer,
   );
 
@@ -11574,6 +12479,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_space_fav_group(
     List<SpaceFavGroup>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_sys_msg_item(
+    List<SysMsgItem>? self,
     SseSerializer serializer,
   );
 
@@ -11925,6 +12836,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_reply_entity_result(
     ReplyEntityResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_reply_feed(ReplyFeed self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_reply_feed_content(
+    ReplyFeedContent self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_reply_feed_item(ReplyFeedItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_reply_feed_result(
+    ReplyFeedResult self,
     SseSerializer serializer,
   );
 
@@ -12281,6 +13210,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_segment_base(SegmentBase self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_session_ss(SessionSs self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_session_ss_result(
+    SessionSsResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_single_unread(SingleUnread self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_single_unread_result(
+    SingleUnreadResult self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_skip_segment(SkipSegment self, SseSerializer serializer);
@@ -12702,6 +13649,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_subtitle_convert(
     SubtitleConvert self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_sys_msg_item(SysMsgItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_sys_notify_result(
+    SysNotifyResult self,
     SseSerializer serializer,
   );
 

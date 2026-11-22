@@ -669,8 +669,6 @@ abstract final class Api {
   /// 我的订阅-合集详情
   static const favSeasonList = '/x/space/fav/season/list';
 
-  /// 发送私信
-  static const String sendMsg = '${HttpString.tUrl}/web_im/v1/web_im/send_msg';
 
   /// 排行榜
   static const String getRankApi = "/x/web-interface/ranking/v2";
@@ -694,11 +692,9 @@ abstract final class Api {
 
   static const String delMsgfeed = '/x/msgfeed/del';
 
-  static const String setTop = '/session_svr/v1/session_svr/set_top';
 
   static const String createDynamic = '/x/dynamic/feed/create/dyn';
 
-  static const String createTextDynamic = '/dynamic_svr/v1/dynamic_svr/create';
 
   // static const String removeDynamic = '${HttpString.tUrl}/dynamic_svr/v1/dynamic_svr/rm_dynamic';
 

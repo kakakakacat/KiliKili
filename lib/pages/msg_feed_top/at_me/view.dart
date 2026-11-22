@@ -10,7 +10,7 @@ import 'package:kilikili/grpc/bilibili/app/im/v1.pbenum.dart'
     show IMSettingType;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/image_type.dart';
-import 'package:kilikili/models_new/msg/msg_at/item.dart';
+import 'package:kilikili/services/rust/rust_msg.dart';
 import 'package:kilikili/pages/msg_feed_top/at_me/controller.dart';
 import 'package:kilikili/pages/whisper_settings/view.dart';
 import 'package:kilikili/utils/app_scheme.dart';
@@ -72,7 +72,7 @@ class _AtMePageState extends State<AtMePage> {
 
   Widget _buildBody(
     ThemeData theme,
-    LoadingState<List<MsgAtItem>?> loadingState,
+    LoadingState<List<AtFeedItem>?> loadingState,
   ) {
     switch (loadingState) {
       case Loading():

@@ -13,6 +13,7 @@ pub mod live;
 pub mod live_danmaku;
 pub mod login;
 pub mod match_info;
+pub mod msg;
 pub mod music;
 pub mod pgc;
 pub mod player;

@@ -1,0 +1,16 @@
+{
+  "code": 0,
+  "msg": "0",
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "unfollow_unread": 2,
+    "follow_unread": 3,
+    "unfollow_push_msg": 1,
+    "dustbin_push_msg": 7,
+    "dustbin_unread": 9,
+    "biz_msg_unfollow_unread": 4,
+    "biz_msg_follow_unread": 5,
+    "custom_unread": 6
+  }
+}

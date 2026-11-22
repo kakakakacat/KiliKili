@@ -1,0 +1,31 @@
+{
+  "card": {
+    "business": "评论",
+    "title": "被赞的那条评论"
+  },
+  "items": [
+    {
+      "like_time": 1731000020,
+      "user": {
+        "avatar": "https://example.invalid/face-d.jpg",
+        "mid": 100005,
+        "nickname": "示例用户丁"
+      }
+    },
+    {
+      "like_time": 1731000019,
+      "user": {
+        "avatar": "https://example.invalid/face-e.jpg",
+        "mid": 100006,
+        "nickname": "示例用户戊"
+      }
+    },
+    {
+      "like_time": 1731000018,
+      "user": null
+    }
+  ],
+  "page": {
+    "is_end": false
+  }
+}

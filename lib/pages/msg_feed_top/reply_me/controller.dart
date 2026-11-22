@@ -1,12 +1,9 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/msg.dart';
-import 'package:kilikili/models_new/msg/msg_reply/data.dart';
-import 'package:kilikili/models_new/msg/msg_reply/item.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_msg.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
-class ReplyMeController
-    extends CommonListController<MsgReplyData, MsgReplyItem> {
+class ReplyMeController extends CommonListController<ReplyFeed, ReplyFeedItem> {
   int? cursor;
   int? cursorTime;
 
@@ -17,7 +14,7 @@ class ReplyMeController
   }
 
   @override
-  List<MsgReplyItem>? getDataList(MsgReplyData response) {
+  List<ReplyFeedItem>? getDataList(ReplyFeed response) {
     if (response.cursor?.isEnd == true) {
       isEnd = true;
     }
@@ -34,12 +31,14 @@ class ReplyMeController
   }
 
   @override
-  Future<LoadingState<MsgReplyData>> customGetData() =>
-      MsgHttp.msgFeedReplyMe(cursor: cursor, cursorTime: cursorTime);
+  Future<LoadingState<ReplyFeed>> customGetData() =>
+      RustMsg.msgFeedReplyMe(cursor: cursor, cursorTime: cursorTime);
 
-  Future<void> onRemove(dynamic id, int index) async {
+  Future<void> onRemove(Object? id, int index) async {
     try {
-      final res = await MsgHttp.delMsgfeed(1, id);
+      // tp=1 是「回复我的」。id 按字符串过去：服务端对它既可能回整数也
+      // 可能回字符串（同类问题见 #166）。
+      final res = await RustMsg.delMsgfeed(1, '$id');
       if (res.isSuccess) {
         loadingState
           ..value.data!.removeAt(index)

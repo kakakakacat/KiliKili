@@ -1,11 +1,9 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/msg.dart';
-import 'package:kilikili/models_new/msg/msg_sys/data.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_msg.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
-class SysMsgController
-    extends CommonListController<List<MsgSysItem>?, MsgSysItem> {
+class SysMsgController extends CommonListController<List<SysMsgItem>, SysMsgItem> {
   int? cursor;
 
   @override
@@ -15,7 +13,7 @@ class SysMsgController
   }
 
   @override
-  void handleListResponse(List<MsgSysItem> dataList) {
+  void handleListResponse(List<SysMsgItem> dataList) {
     if (cursor == null) {
       msgSysUpdateCursor(dataList.first.cursor);
     }
@@ -24,7 +22,7 @@ class SysMsgController
 
   void msgSysUpdateCursor(int? cursor) {
     if (cursor != null) {
-      MsgHttp.msgSysUpdateCursor(cursor);
+      RustMsg.msgSysUpdateCursor(cursor);
     }
   }
 
@@ -34,9 +32,9 @@ class SysMsgController
     return super.onRefresh();
   }
 
-  Future<void> onRemove(dynamic id, int index) async {
+  Future<void> onRemove(Object? id, int index) async {
     try {
-      final res = await MsgHttp.delSysMsg(id);
+      final res = await RustMsg.delSysMsg('$id');
       if (res.isSuccess) {
         loadingState
           ..value.data!.removeAt(index)
@@ -49,6 +47,6 @@ class SysMsgController
   }
 
   @override
-  Future<LoadingState<List<MsgSysItem>?>> customGetData() =>
-      MsgHttp.msgFeedNotify(cursor: cursor);
+  Future<LoadingState<List<SysMsgItem>>> customGetData() =>
+      RustMsg.msgFeedNotify(cursor: cursor);
 }

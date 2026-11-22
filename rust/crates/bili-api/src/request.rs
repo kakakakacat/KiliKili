@@ -296,6 +296,22 @@ pub enum CsrfIn {
     Body,
     /// 补进查询串。例：`roomEntryAction`。
     Query,
+    /// 同时补入表单体的 `csrf` 与 `csrf_token`，不动查询串。
+    ///
+    /// 这是**消息中心一整片接口的形态**（`lib/http/msg.dart` 里的
+    /// `delMsgfeed`、`msgSetNotice`、`setMsgDnd`、`setPushSs`……）：同一个
+    /// token 在体里出现两次，字段名不同。看起来像冗余，但两个都得给——
+    /// 少了 `csrf_token` 服务端回 `-111`，与完全不带时的表现一样。
+    ///
+    /// 与 [`Self::BodyAndQueryWithToken`] 的区别只在**查询串动不动**：
+    /// 那条是动态投票接口，三个位置都要。合并成一个带参数的变体，等于
+    /// 让每个调用点答一遍「要不要带查询串」，而答案由接口定，不由调用点定。
+    BodyWithToken,
+    /// 同时补入请求体与查询串的 `csrf`，**不补 `csrf_token`**。
+    ///
+    /// 目前只有删除系统通知（`/x/sys-msg/del_notify_list`）这一条：它的体
+    /// 是 JSON，查询串里还要再带一份。
+    BodyAndQuery,
     /// 同时补入 JSON 体的 `csrf` 与 `csrf_token`，并补入查询串。动态投票
     /// 接口在三个位置重复校验同一 token。
     BodyAndQueryWithToken,

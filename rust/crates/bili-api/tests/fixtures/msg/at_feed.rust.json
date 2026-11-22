@@ -1,0 +1,39 @@
+{
+  "cursor": {
+    "id": 1700000000000000010,
+    "is_end": true,
+    "time": 1731000010
+  },
+  "items": [
+    {
+      "at_time": 1731000011,
+      "id": 1700000000000000011,
+      "item": {
+        "business": "评论",
+        "image": "https://example.invalid/pic.jpg",
+        "native_uri": "bilibili://video/900020",
+        "source_content": "在评论里 @ 了我"
+      },
+      "user": {
+        "avatar": "https://example.invalid/face-c.jpg",
+        "mid": 100003,
+        "nickname": "示例用户丙"
+      }
+    },
+    {
+      "at_time": 1731000012,
+      "id": 1700000000000000012,
+      "item": {
+        "business": "动态",
+        "image": null,
+        "native_uri": null,
+        "source_content": null
+      },
+      "user": {
+        "avatar": null,
+        "mid": 100004,
+        "nickname": null
+      }
+    }
+  ]
+}

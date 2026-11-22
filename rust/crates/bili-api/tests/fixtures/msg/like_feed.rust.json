@@ -1,0 +1,64 @@
+{
+  "latest": {
+    "items": [
+      {
+        "counts": 12,
+        "id": 1700000000000000020,
+        "item": {
+          "business": "评论",
+          "image": "https://example.invalid/cover.jpg",
+          "native_uri": "bilibili://video/900030",
+          "title": "被赞的那条评论"
+        },
+        "like_time": 1731000020,
+        "notice_state": 0,
+        "users": [
+          {
+            "avatar": "https://example.invalid/face-d.jpg",
+            "mid": 100005,
+            "nickname": "示例用户丁"
+          },
+          {
+            "avatar": "https://example.invalid/face-e.jpg",
+            "mid": 100006,
+            "nickname": "示例用户戊"
+          },
+          {
+            "avatar": "https://example.invalid/face-f.jpg",
+            "mid": 100007,
+            "nickname": "示例用户己"
+          }
+        ]
+      }
+    ],
+    "last_view_at": 1730999990
+  },
+  "total": {
+    "cursor": {
+      "id": 1700000000000000021,
+      "is_end": false,
+      "time": 1731000019
+    },
+    "items": [
+      {
+        "counts": 1,
+        "id": 1700000000000000022,
+        "item": {
+          "business": "动态",
+          "image": null,
+          "native_uri": "bilibili://dynamic/900031",
+          "title": "被赞的那条动态"
+        },
+        "like_time": 1731000018,
+        "notice_state": 1,
+        "users": [
+          {
+            "avatar": "https://example.invalid/face-g.jpg",
+            "mid": 100008,
+            "nickname": "示例用户庚"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -3,7 +3,6 @@ import 'dart:math' as math;
 
 import 'package:kilikili/common/widgets/view_safe_area.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/msg.dart';
 import 'package:kilikili/models/common/dynamic/dynamic_badge_mode.dart';
 import 'package:kilikili/models/common/home_tab_type.dart';
 import 'package:kilikili/models/common/msg/msg_unread_type.dart';
@@ -13,6 +12,7 @@ import 'package:kilikili/pages/home/controller.dart';
 import 'package:kilikili/pages/mine/view.dart';
 import 'package:kilikili/services/account_service.dart';
 import 'package:kilikili/services/rust/rust_dynamic.dart';
+import 'package:kilikili/services/rust/rust_msg.dart';
 import 'package:kilikili/utils/extension/get_ext.dart';
 import 'package:kilikili/utils/extension/iterable_ext.dart';
 import 'package:kilikili/utils/feed_back.dart';
@@ -118,49 +118,45 @@ class MainController extends GetxController
     }
   }
 
+  /// 私信那一项的红点。
+  ///
+  /// 加法本身（算哪几个桶、垃圾桶算不算）已经下沉到 Rust，这里只剩
+  /// 「用户勾没勾私信」这一个判断。
   Future<int> _msgUnread() async {
     if (msgUnReadTypes.contains(MsgUnReadType.pm)) {
-      final res = await MsgHttp.msgUnread();
+      final res = await RustMsg.msgUnread();
       if (res case Success(:final response)) {
-        return response.followUnread +
-            response.unfollowUnread +
-            response.bizMsgFollowUnread +
-            response.bizMsgUnfollowUnread +
-            response.unfollowPushMsg +
-            response.customUnread;
+        return response.badge;
       }
     }
     return 0;
   }
 
+  /// 消息中心四个 Tab 的红点。
+  ///
+  /// 勾选集在 Dart（它是本地设置），求和规则在 Rust。「赞」那一项是两级
+  /// 开关：勾了 like 且没开 disableLikeMsg 才算，合并成一个布尔传过去。
   Future<int> _msgFeedUnread() async {
-    int count = 0;
-    final remainTypes = Set<MsgUnReadType>.from(msgUnReadTypes)
-      ..remove(MsgUnReadType.pm);
-    if (remainTypes.isNotEmpty) {
-      final res = await MsgHttp.msgFeedUnread();
-      if (res case Success(:final response)) {
-        for (final item in remainTypes) {
-          switch (item) {
-            case MsgUnReadType.pm:
-              break;
-            case MsgUnReadType.reply:
-              count += response.reply;
-              break;
-            case MsgUnReadType.at:
-              count += response.at;
-              break;
-            case MsgUnReadType.like:
-              if (!disableLikeMsg) count += response.like;
-              break;
-            case MsgUnReadType.sysMsg:
-              count += response.sysMsg;
-              break;
-          }
-        }
-      }
+    final selection = FeedBadgeSelection(
+      reply: msgUnReadTypes.contains(MsgUnReadType.reply),
+      at: msgUnReadTypes.contains(MsgUnReadType.at),
+      like: msgUnReadTypes.contains(MsgUnReadType.like) && !disableLikeMsg,
+      sysMsg: msgUnReadTypes.contains(MsgUnReadType.sysMsg),
+    );
+    // 一项都不算就别发请求。基线判的是「除私信外还勾了别的没有」，所以
+    // 「只勾了赞 + 开了 disableLikeMsg」时它仍会发一次请求再加 0；这里
+    // 少发那一次，结果一样。
+    if (!selection.reply &&
+        !selection.at &&
+        !selection.like &&
+        !selection.sysMsg) {
+      return 0;
     }
-    return count;
+    final res = await RustMsg.msgFeedUnread(selection);
+    if (res case Success(:final response)) {
+      return response.badge;
+    }
+    return 0;
   }
 
   void clearUnreadMsg() {

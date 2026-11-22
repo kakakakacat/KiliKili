@@ -1,0 +1,11 @@
+{
+  "badge": 21,
+  "biz_msg_follow_unread": 5,
+  "biz_msg_unfollow_unread": 4,
+  "custom_unread": 6,
+  "dustbin_push_msg": 7,
+  "dustbin_unread": 9,
+  "follow_unread": 3,
+  "unfollow_push_msg": 1,
+  "unfollow_unread": 2
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "face": "https://example.invalid/face-h.jpg",
+    "mid": 100009,
+    "name": "示例年度会员",
+    "official_type": 1,
+    "pendant_image": "https://example.invalid/pendant.png",
+    "sign": "这是一段个性签名",
+    "vip_status": 1,
+    "vip_type": 2
+  },
+  {
+    "face": "https://example.invalid/face-i.jpg",
+    "mid": 100010,
+    "name": "示例普通用户",
+    "official_type": -1,
+    "pendant_image": null,
+    "sign": "",
+    "vip_status": 0,
+    "vip_type": 0
+  }
+]

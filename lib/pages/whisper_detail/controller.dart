@@ -6,8 +6,8 @@ import 'package:kilikili/grpc/bilibili/im/interfaces/v1.pb.dart'
 import 'package:kilikili/grpc/bilibili/im/type.pb.dart' show Msg, MsgType;
 import 'package:kilikili/grpc/im.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/msg.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_msg.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/extension/scroll_controller_ext.dart';
 import 'package:kilikili/utils/feed_back.dart';
@@ -63,7 +63,7 @@ class WhisperDetailController extends CommonListController<RspSessionMsg, Msg> {
 
   // 消息标记已读
   Future<void> ackSessionMsg(int msgSeqno) async {
-    final res = await MsgHttp.ackSessionMsg(
+    final res = await RustMsg.ackSessionMsg(
       talkerId: talkerId,
       ackSeqno: msgSeqno,
     );
@@ -165,7 +165,7 @@ class WhisperDetailController extends CommonListController<RspSessionMsg, Msg> {
       );
 
   Future<LoadingState> onReport(Msg item, int reasonType, String reasonDesc) {
-    return MsgHttp.imMsgReport(
+    return RustMsg.imMsgReport(
       accusedUid: item.senderUid.toInt(),
       reasonType: reasonType,
       reasonDesc: reasonDesc,

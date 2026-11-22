@@ -9,6 +9,7 @@ pub mod danmaku_filter;
 pub mod dynamic;
 pub mod error;
 pub mod fav;
+pub mod im;
 pub mod live;
 pub mod live_danmaku;
 pub mod login;

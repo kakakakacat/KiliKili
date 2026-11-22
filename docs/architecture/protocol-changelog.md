@@ -205,3 +205,38 @@ JSON 请求体及不带 csrf 的形状。小店虽用 POST，操作仍是幂等�
 
 私信的**收发**走 gRPC，不在本次范围；`MsgHttp.sendMsg` 那段早已被注释掉的
 REST 实现随本片删除。
+
+## 2026-11-22：私信（IM）的 gRPC 迁入 Rust（#63）
+
+`lib/grpc/im.dart` 那 17 个方法改由 Rust 构造请求、解帧与解码，方法路径、
+请求字段与固定常量沿用基线，不调整帧格式或协议版本。几处容易写错的形状，
+原样保留并有测试钉住：
+
+- **服务名与消息 package 对不上**，两组都有：`ImInterface` 这组的服务名是
+  `bilibili.im.interface.v1`（**单数**）而消息 package 是
+  `bilibili.im.interfaces.v1`（复数）；`im` 这组的服务名末段是**小写**的
+  `im`。service 定义不在描述符里（ADR-012 决策四），拼错的表现是 gRPC
+  状态 12，看着像「接口下线了」。十七条路径在
+  `test/bridge/im_bridge_test.dart` 里逐条钉住。
+- **拉会话消息的 `dev_id` 写死 `'1'`**，而发私信的 `dev_id` 是**每次一个
+  UUID**。前者只是占位，后者是服务端的去重键——两者同名不同义。
+- **私聊的 `session_type` 固定 1**，在五处出现；`receiver_type` 固定 1
+  （发给人不是群）；`new_face_version` 固定 1。
+- **首屏不发空的 `pagination_params`**。给一个 offsets 为空的分页参数与
+  「从头开始」不是一回事，所以没有游标时整个字段不发。
+- **会话时间戳是微秒**（`Session.timestamp`），而消息时间戳是**秒**
+  （`Msg.timestamp`）。同一片里两个单位，协议如此。
+- **`vip_info` 是一段 JSON 字符串**而不是子消息，昵称染色要先把它解开。
+- **三条投影规则下沉到 Rust**（AGENTS.md §2）：头像三件套按**图层位置**取
+  （第 0 层主图、第 1 层挂件、最后一层认证标，服务端没有任何字段标注）、
+  认证标的 `LocalRes` 3/4 映射成 0/1、折叠入口的会话类型映射成二级页
+  类型。**第三条的两个枚举数字几乎每行都不同**，拿会话类型直接当页面
+  类型用会打开另一个列表且不报错。
+
+写操作定级（gRPC 无 csrf，ADR-013 决策七）：`SendMsg` 是唯一的
+`Unsafe`，`KeywordBlockingAdd` 是 `Verifiable`，其余七条 `Idempotent`。
+
+请求形状由 `bili-api::grpc_im` 的单测、
+`rust/crates/bili-api/tests/grpc_im_golden.rs` 与
+`test/bridge/im_bridge_test.dart` 三头约束，真实账号与网关行为仍需
+Phase 2 验证。

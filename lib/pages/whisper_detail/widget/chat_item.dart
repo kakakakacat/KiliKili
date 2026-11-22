@@ -9,10 +9,8 @@ import 'package:kilikili/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/image_viewer/hero.dart';
 import 'package:kilikili/common/widgets/selection_text.dart';
-import 'package:kilikili/grpc/bilibili/im/interfaces/v1.pb.dart'
-    show EmotionInfo;
-import 'package:kilikili/grpc/bilibili/im/type.pb.dart' show Msg, MsgType;
 import 'package:kilikili/http/search.dart';
+import 'package:kilikili/services/rust/rust_im.dart';
 import 'package:kilikili/models/common/image_preview_type.dart';
 import 'package:kilikili/pages/article/view.dart';
 import 'package:kilikili/utils/app_scheme.dart';
@@ -27,10 +25,6 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:material_ui/material_ui.dart';
 
 class ChatItem extends StatelessWidget {
-  static MsgType msgTypeFromValue(int value) {
-    return MsgType.valueOf(value) ?? MsgType.EN_INVALID_MSG_TYPE;
-  }
-
   const ChatItem({
     super.key,
     required this.item,
@@ -40,8 +34,8 @@ class ChatItem extends StatelessWidget {
     required this.isOwner,
   });
 
-  final Msg item;
-  final List<EmotionInfo>? eInfos;
+  final ImMessage item;
+  final List<ImEmote>? eInfos;
   final VoidCallback onLongPress;
   final GestureTapUpCallback? onSecondaryTapUp;
   final bool isOwner;
@@ -55,8 +49,8 @@ class ChatItem extends StatelessWidget {
   // };
   @override
   Widget build(BuildContext context) {
-    final msgType = item.msgType;
-    // final isRevoke = msgType == MsgType.EN_MSG_TYPE_DRAW_BACK.value; // 撤回消息
+    final kind = item.kind;
+    // final isRevoke = kind == ImMsgKind.drawBack; // 撤回消息
     // if (isRevoke) {
     //   return const SizedBox.shrink();
     // }
@@ -74,15 +68,18 @@ class ChatItem extends StatelessWidget {
       textColor: textColor,
     );
 
-    final isSystem =
-        msgType == MsgType.EN_MSG_TYPE_VIDEO_CARD.value ||
-        msgType == MsgType.EN_MSG_TYPE_TIP_MESSAGE.value ||
-        msgType == MsgType.EN_MSG_TYPE_NOTIFY_MSG.value ||
-        msgType == MsgType.EN_MSG_TYPE_PICTURE_CARD.value ||
-        msgType == 16;
+    // 这几种不画成气泡，占整行。
+    const systemKinds = {
+      ImMsgKind.videoCard,
+      ImMsgKind.tipMessage,
+      ImMsgKind.notifyMsg,
+      ImMsgKind.pictureCard,
+      ImMsgKind.unnamed16,
+    };
+    final isSystem = systemKinds.contains(kind);
 
     if (!isSystem) {
-      final isPic = msgType == MsgType.EN_MSG_TYPE_PIC.value; // 图片
+      final isPic = kind == ImMsgKind.picture; // 图片与自定义表情
       child = Row(
         mainAxisAlignment: isOwner ? .end : .start,
         children: [
@@ -146,7 +143,7 @@ class ChatItem extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(top: 6, bottom: 18),
           child: Text(
-            DateFormatUtils.chatFormat(item.timestamp.toInt()),
+            DateFormatUtils.chatFormat(item.timestamp),
             textAlign: TextAlign.center,
             style: TextStyle(color: theme.colorScheme.outline),
           ),
@@ -168,29 +165,32 @@ class ChatItem extends StatelessWidget {
     required Color textColor,
   }) {
     try {
-      switch (msgTypeFromValue(item.msgType)) {
-        case MsgType.EN_MSG_TYPE_NOTIFY_MSG:
+      // 类型判定在 Rust（`bili_domain::im::msg_kind`），这里只按结果
+      // 分支。没有 default：协议加一种新消息时，这个 switch 会在编译期
+      // 缺分支，而不是悄悄掉进兜底。
+      switch (item.kind) {
+        case ImMsgKind.notifyMsg:
           return msgTypeNotifyMsg_10(theme, content);
-        case MsgType.EN_MSG_TYPE_PICTURE_CARD:
+        case ImMsgKind.pictureCard:
           return msgTypePictureCard_13(content);
-        case MsgType.EN_MSG_TYPE_TIP_MESSAGE:
+        case ImMsgKind.tipMessage:
           return msgTypeTipMessage_18(theme, content);
-        case MsgType.EN_MSG_TYPE_TEXT:
+        case ImMsgKind.text:
           return msgTypeText_1(theme, content: content, textColor: textColor);
-        case MsgType.EN_MSG_TYPE_PIC || MsgType.EN_MSG_TYPE_CUSTOM_FACE:
+        case ImMsgKind.picture:
           return msgTypePic_2(content);
-        case MsgType.EN_MSG_TYPE_SHARE_V2:
+        case ImMsgKind.shareV2:
           return msgTypeShareV2_7(content, textColor);
-        case MsgType.EN_MSG_TYPE_VIDEO_CARD:
+        case ImMsgKind.videoCard:
           return msgTypeVideoCard_11(theme, content, textColor);
-        case MsgType.EN_MSG_TYPE_ARTICLE_CARD:
+        case ImMsgKind.articleCard:
           return msgTypeArticleCard_12(content, textColor);
-        case MsgType.EN_MSG_TYPE_COMMON_SHARE_CARD:
+        case ImMsgKind.commonShareCard:
           return msgTypeCommonShareCard_14(content, textColor);
-        default:
-          if (item.msgType == 16) {
-            return msgType_16(theme, content, textColor);
-          }
+        case ImMsgKind.unnamed16:
+          return msgType_16(theme, content, textColor);
+        case ImMsgKind.drawBack:
+        case ImMsgKind.unsupported:
           return def(textColor);
       }
     } catch (err) {
@@ -671,7 +671,8 @@ class ChatItem extends StatelessWidget {
     if (eInfos != null) {
       for (final e in eInfos!) {
         emojiMap[e.text] ??= {
-          'url': e.hasGifUrl() ? e.gifUrl : e.url,
+          // 有 gif 就用 gif。Rust 侧已经把空串归一成 null。
+          'url': e.gifUrl ?? e.url,
           'size': e.size * 22.0,
         };
       }
@@ -829,7 +830,7 @@ class ChatItem extends StatelessWidget {
 
   Widget def(Color textColor, {err}) {
     return Text(
-      '${item.content}${err != null ? '\n\ntype: ${msgTypeFromValue(item.msgType)}\nerr: $err' : ''}',
+      '${item.content}${err != null ? '\n\ntype: ${item.kind.name}(${item.msgType})\nerr: $err' : ''}',
       style: TextStyle(
         letterSpacing: 0.6,
         height: 1.5,

@@ -1,0 +1,85 @@
+{
+  "emotes": [
+    {
+      "gif_url": null,
+      "size": 1,
+      "text": "[doge]",
+      "url": "https://example.invalid/doge.png"
+    }
+  ],
+  "has_more": true,
+  "messages": [
+    {
+      "content": "{\"content\":\"你好\"}",
+      "kind": "Text",
+      "msg_key": 10,
+      "msg_seqno": 1,
+      "msg_source": 0,
+      "msg_status": 0,
+      "msg_type": 1,
+      "receiver_id": 100002,
+      "sender_uid": 100001,
+      "timestamp": 1731000000
+    },
+    {
+      "content": "{\"url\":\"https://example.invalid/p.jpg\"}",
+      "kind": "Picture",
+      "msg_key": 20,
+      "msg_seqno": 2,
+      "msg_source": 0,
+      "msg_status": 0,
+      "msg_type": 2,
+      "receiver_id": 100002,
+      "sender_uid": 100001,
+      "timestamp": 1731000000
+    },
+    {
+      "content": "{\"url\":\"https://example.invalid/e.png\"}",
+      "kind": "Picture",
+      "msg_key": 30,
+      "msg_seqno": 3,
+      "msg_source": 0,
+      "msg_status": 0,
+      "msg_type": 6,
+      "receiver_id": 100002,
+      "sender_uid": 100001,
+      "timestamp": 1731000000
+    },
+    {
+      "content": "40",
+      "kind": "DrawBack",
+      "msg_key": 40,
+      "msg_seqno": 4,
+      "msg_source": 0,
+      "msg_status": 0,
+      "msg_type": 5,
+      "receiver_id": 100002,
+      "sender_uid": 100001,
+      "timestamp": 1731000000
+    },
+    {
+      "content": "{\"title\":\"没有名字的 16\"}",
+      "kind": "Unnamed16",
+      "msg_key": 50,
+      "msg_seqno": 5,
+      "msg_source": 0,
+      "msg_status": 0,
+      "msg_type": 16,
+      "receiver_id": 100002,
+      "sender_uid": 100001,
+      "timestamp": 1731000000
+    },
+    {
+      "content": "{\"x\":1}",
+      "kind": "Unsupported",
+      "msg_key": 60,
+      "msg_seqno": 6,
+      "msg_source": 0,
+      "msg_status": 0,
+      "msg_type": 12345,
+      "receiver_id": 100002,
+      "sender_uid": 100001,
+      "timestamp": 1731000000
+    }
+  ]
+}

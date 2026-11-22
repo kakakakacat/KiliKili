@@ -1,0 +1,109 @@
+{
+  "has_more": true,
+  "offsets": [
+    {
+      "key": 1,
+      "normal_offset": 4242,
+      "top_offset": 7
+    }
+  ],
+  "outside_items": [
+    {
+      "has_red_dot": false,
+      "icon": null,
+      "kind": "Contacts",
+      "title": "通讯录",
+      "url": null
+    }
+  ],
+  "sessions": [
+    {
+      "avatar_url": "https://example.invalid/face.jpg",
+      "is_live": true,
+      "is_muted": false,
+      "is_pinned": true,
+      "label_text": "已关注",
+      "mid": 100001,
+      "name": "示例年度会员",
+      "official_type": 1,
+      "pendant_url": "https://example.invalid/pendant.png",
+      "summary": "最后一条消息的摘要",
+      "target": {
+        "fold_page_type": null,
+        "kind": "Private",
+        "session_type": null,
+        "talker_uid": 100001,
+        "type_name": null
+      },
+      "timestamp_us": 1731000000000000,
+      "unread_number": 7,
+      "unread_style": "Number",
+      "vip_status": 1,
+      "vip_type": 2
+    },
+    {
+      "avatar_url": "https://example.invalid/ai.png",
+      "is_live": false,
+      "is_muted": false,
+      "is_pinned": false,
+      "label_text": null,
+      "mid": null,
+      "name": "AI 助手",
+      "official_type": null,
+      "pendant_url": null,
+      "summary": null,
+      "target": {
+        "fold_page_type": 7,
+        "kind": "Fold",
+        "session_type": 9,
+        "talker_uid": null,
+        "type_name": "SESSION_TYPE_AI_FOLD"
+      },
+      "timestamp_us": null,
+      "unread_number": 0,
+      "unread_style": "Dot",
+      "vip_status": null,
+      "vip_type": null
+    },
+    {
+      "avatar_url": null,
+      "is_live": false,
+      "is_muted": false,
+      "is_pinned": false,
+      "label_text": null,
+      "mid": null,
+      "name": "",
+      "official_type": null,
+      "pendant_url": null,
+      "summary": null,
+      "target": {
+        "fold_page_type": null,
+        "kind": "Fold",
+        "session_type": 1,
+        "talker_uid": null,
+        "type_name": "SESSION_TYPE_PRIVATE"
+      },
+      "timestamp_us": null,
+      "unread_number": 0,
+      "unread_style": "None",
+      "vip_status": null,
+      "vip_type": null
+    }
+  ],
+  "three_dot_items": [
+    {
+      "has_red_dot": false,
+      "icon": null,
+      "kind": "ReadAll",
+      "title": "一键已读",
+      "url": null
+    },
+    {
+      "has_red_dot": false,
+      "icon": null,
+      "kind": "Other",
+      "title": "上游新加的一种",
+      "url": null
+    }
+  ]
+}

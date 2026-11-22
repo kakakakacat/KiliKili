@@ -10,9 +10,9 @@ import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/scroll_physics.dart'
     show platformAlwaysClampingPhysics;
-import 'package:kilikili/grpc/bilibili/im/type.pb.dart' show Msg;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/http/msg.dart';
+import 'package:kilikili/services/rust/rust_im.dart';
 import 'package:kilikili/models/common/image_type.dart';
 import 'package:kilikili/pages/common/publish/common_rich_text_pub_page.dart';
 import 'package:kilikili/pages/emote/view.dart';
@@ -151,7 +151,7 @@ class _WhisperDetailPageState
     );
   }
 
-  Widget _buildBody(LoadingState<List<Msg>?> loadingState) {
+  Widget _buildBody(LoadingState<List<ImMessage>?> loadingState) {
     return switch (loadingState) {
       Loading() => m3eLoading,
       Success(:final response) =>
@@ -168,7 +168,7 @@ class _WhisperDetailPageState
                   }
                   final item = response[index];
                   final isOwner =
-                      item.senderUid.toInt() ==
+                      item.senderUid ==
                       _whisperDetailController.account.mid;
                   return ChatItem(
                     item: item,
@@ -192,7 +192,7 @@ class _WhisperDetailPageState
     };
   }
 
-  void _showMenu(Offset offset, int index, Msg item, bool isOwner) {
+  void _showMenu(Offset offset, int index, ImMessage item, bool isOwner) {
     showMenu(
       context: context,
       position: PageUtils.menuPosition(offset),
@@ -203,7 +203,7 @@ class _WhisperDetailPageState
             onTap: () => _whisperDetailController.sendMsg(
               message: '${item.msgKey}',
               onClearText: editController.clear,
-              msgType: .EN_MSG_TYPE_DRAW_BACK,
+              kind: ImMsgKind.drawBack,
               index: index,
             ),
             child: const Text('撤回', style: TextStyle(fontSize: 14)),
@@ -218,7 +218,7 @@ class _WhisperDetailPageState
     );
   }
 
-  void onReport(Msg item) {
+  void onReport(ImMessage item) {
     autoWrapReportDialog(
       context,
       ReportOptions.imMsgReport,
@@ -230,7 +230,7 @@ class _WhisperDetailPageState
     );
   }
 
-  void onLongPress(int index, Msg item, bool isOwner) {
+  void onLongPress(int index, ImMessage item, bool isOwner) {
     Feedback.forLongPress(context);
     showDialog(
       context: context,
@@ -244,7 +244,7 @@ class _WhisperDetailPageState
                   _whisperDetailController.sendMsg(
                     message: '${item.msgKey}',
                     onClearText: editController.clear,
-                    msgType: .EN_MSG_TYPE_DRAW_BACK,
+                    kind: ImMsgKind.drawBack,
                     index: index,
                   );
                 },

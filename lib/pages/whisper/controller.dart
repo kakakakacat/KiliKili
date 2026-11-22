@@ -1,14 +1,10 @@
-import 'package:kilikili/grpc/bilibili/app/im/v1.pb.dart'
-    show Offset, Session, SessionMainReply, SessionPageType, ThreeDotItem;
-import 'package:kilikili/grpc/im.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/msg/im_total_unread.dart';
 import 'package:kilikili/pages/common/common_whisper_controller.dart';
+import 'package:kilikili/services/rust/rust_im.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:protobuf/protobuf.dart' show PbMap;
 
 typedef MsgFeedTopItem = ({
   bool enabled,
@@ -17,18 +13,19 @@ typedef MsgFeedTopItem = ({
   String route,
 });
 
-class WhisperController extends CommonWhisperController<SessionMainReply> {
+class WhisperController extends CommonWhisperController<ImSessionPage> {
+  /// 主列表就是「首页」那一页。页面类型取 Rust 映射表里的 HOME（1）。
   @override
-  SessionPageType sessionPageType = SessionPageType.SESSION_PAGE_TYPE_HOME;
+  int sessionPageType = RustIm.sessionPageTypeHome;
 
   late final List<MsgFeedTopItem> msgFeedTopItems;
   final disableLikeMsg = Pref.disableLikeMsg;
   late final RxList<int> unreadCounts;
 
-  PbMap<int, Offset>? offset;
+  List<ImSessionOffset>? offsets;
 
-  Rx<List<ThreeDotItem>?> threeDotItems = Rx<List<ThreeDotItem>?>(null);
-  Rx<List<ThreeDotItem>?> outsideItem = Rx<List<ThreeDotItem>?>(null);
+  Rx<List<ImThreeDotItem>?> threeDotItems = Rx<List<ImThreeDotItem>?>(null);
+  Rx<List<ImThreeDotItem>?> outsideItem = Rx<List<ImThreeDotItem>?>(null);
 
   @override
   void onInit() {
@@ -65,14 +62,13 @@ class WhisperController extends CommonWhisperController<SessionMainReply> {
   }
 
   Future<void> queryMsgFeedUnread() async {
-    final res = await ImGrpc.getTotalUnread(unreadType: 2);
+    final res = await RustIm.totalUnread();
     if (res case Success(:final response)) {
-      final data = ImTotalUnread.fromJson(response.msgFeedUnread.unread);
       final unreadCounts = [
-        data.reply,
-        data.at,
-        disableLikeMsg ? 0 : data.like,
-        data.sysMsg,
+        response.reply,
+        response.at,
+        disableLikeMsg ? 0 : response.like,
+        response.sysMsg,
       ];
       if (!listEquals(this.unreadCounts, unreadCounts)) {
         this.unreadCounts.value = unreadCounts;
@@ -83,31 +79,28 @@ class WhisperController extends CommonWhisperController<SessionMainReply> {
   }
 
   @override
-  List<Session>? getDataList(SessionMainReply response) {
-    offset = response.paginationParams.offsets;
-    isEnd = !response.paginationParams.hasMore;
+  List<ImSession>? getDataList(ImSessionPage response) {
+    offsets = response.offsets;
+    isEnd = !response.hasMore;
     return response.sessions;
   }
 
   @override
-  bool customHandleResponse(
-    bool isRefresh,
-    Success<SessionMainReply> response,
-  ) {
+  bool customHandleResponse(bool isRefresh, Success<ImSessionPage> response) {
     if (isRefresh) {
       threeDotItems.value = response.response.threeDotItems;
-      outsideItem.value = response.response.outsideItem;
+      outsideItem.value = response.response.outsideItems;
     }
     return false;
   }
 
   @override
-  Future<LoadingState<SessionMainReply>> customGetData() =>
-      ImGrpc.sessionMain(offset: offset);
+  Future<LoadingState<ImSessionPage>> customGetData() =>
+      RustIm.sessionMain(offsets: offsets);
 
   @override
   Future<void> onRefresh() {
-    offset = null;
+    offsets = null;
     queryMsgFeedUnread();
     return super.onRefresh();
   }

@@ -9,6 +9,7 @@ import 'package:kilikili/rust/api/dynamic.dart';
 import 'package:kilikili/rust/api/fav.dart';
 import 'package:kilikili/rust/api/grpc.dart';
 import 'package:kilikili/rust/api/history.dart';
+import 'package:kilikili/rust/api/im.dart';
 import 'package:kilikili/rust/api/init.dart';
 import 'package:kilikili/rust/api/live.dart';
 import 'package:kilikili/rust/api/live_danmaku.dart';
@@ -239,6 +240,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PlatformInt64 dco_decode_box_autoadd_i_64(dynamic raw);
+
+  @protected
+  ImKeywordBlocking dco_decode_box_autoadd_im_keyword_blocking(dynamic raw);
+
+  @protected
+  ImMessagePage dco_decode_box_autoadd_im_message_page(dynamic raw);
+
+  @protected
+  ImSession dco_decode_box_autoadd_im_session(dynamic raw);
+
+  @protected
+  ImSessionPage dco_decode_box_autoadd_im_session_page(dynamic raw);
+
+  @protected
+  ImSettingRedirect dco_decode_box_autoadd_im_setting_redirect(dynamic raw);
+
+  @protected
+  ImSettingsSnapshot dco_decode_box_autoadd_im_settings_snapshot(dynamic raw);
+
+  @protected
+  ImTotalUnread dco_decode_box_autoadd_im_total_unread(dynamic raw);
 
   @protected
   Interaction dco_decode_box_autoadd_interaction(dynamic raw);
@@ -1055,6 +1077,90 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64 dco_decode_i_64(dynamic raw);
 
   @protected
+  ImAckSeqnoResult dco_decode_im_ack_seqno_result(dynamic raw);
+
+  @protected
+  ImEmote dco_decode_im_emote(dynamic raw);
+
+  @protected
+  ImKeywordBlocking dco_decode_im_keyword_blocking(dynamic raw);
+
+  @protected
+  ImKeywordBlockingResult dco_decode_im_keyword_blocking_result(dynamic raw);
+
+  @protected
+  ImMessage dco_decode_im_message(dynamic raw);
+
+  @protected
+  ImMessagePage dco_decode_im_message_page(dynamic raw);
+
+  @protected
+  ImMessagePageResult dco_decode_im_message_page_result(dynamic raw);
+
+  @protected
+  ImMsgKind dco_decode_im_msg_kind(dynamic raw);
+
+  @protected
+  ImSession dco_decode_im_session(dynamic raw);
+
+  @protected
+  ImSessionOffset dco_decode_im_session_offset(dynamic raw);
+
+  @protected
+  ImSessionPage dco_decode_im_session_page(dynamic raw);
+
+  @protected
+  ImSessionPageResult dco_decode_im_session_page_result(dynamic raw);
+
+  @protected
+  ImSessionResult dco_decode_im_session_result(dynamic raw);
+
+  @protected
+  ImSessionTarget dco_decode_im_session_target(dynamic raw);
+
+  @protected
+  ImSessionTargetKind dco_decode_im_session_target_kind(dynamic raw);
+
+  @protected
+  ImSetting dco_decode_im_setting(dynamic raw);
+
+  @protected
+  ImSettingOption dco_decode_im_setting_option(dynamic raw);
+
+  @protected
+  ImSettingPage dco_decode_im_setting_page(dynamic raw);
+
+  @protected
+  ImSettingRedirect dco_decode_im_setting_redirect(dynamic raw);
+
+  @protected
+  ImSettingsResult dco_decode_im_settings_result(dynamic raw);
+
+  @protected
+  ImSettingsSnapshot dco_decode_im_settings_snapshot(dynamic raw);
+
+  @protected
+  ImShareListResult dco_decode_im_share_list_result(dynamic raw);
+
+  @protected
+  ImShareTarget dco_decode_im_share_target(dynamic raw);
+
+  @protected
+  ImThreeDotItem dco_decode_im_three_dot_item(dynamic raw);
+
+  @protected
+  ImThreeDotKind dco_decode_im_three_dot_kind(dynamic raw);
+
+  @protected
+  ImTotalUnread dco_decode_im_total_unread(dynamic raw);
+
+  @protected
+  ImTotalUnreadResult dco_decode_im_total_unread_result(dynamic raw);
+
+  @protected
+  ImUnreadStyle dco_decode_im_unread_style(dynamic raw);
+
+  @protected
   ImUserInfo dco_decode_im_user_info(dynamic raw);
 
   @protected
@@ -1232,6 +1338,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<HistoryTab> dco_decode_list_history_tab(dynamic raw);
+
+  @protected
+  List<ImEmote> dco_decode_list_im_emote(dynamic raw);
+
+  @protected
+  List<ImMessage> dco_decode_list_im_message(dynamic raw);
+
+  @protected
+  List<ImSession> dco_decode_list_im_session(dynamic raw);
+
+  @protected
+  List<ImSessionOffset> dco_decode_list_im_session_offset(dynamic raw);
+
+  @protected
+  List<ImSetting> dco_decode_list_im_setting(dynamic raw);
+
+  @protected
+  List<ImSettingOption> dco_decode_list_im_setting_option(dynamic raw);
+
+  @protected
+  List<ImShareTarget> dco_decode_list_im_share_target(dynamic raw);
+
+  @protected
+  List<ImThreeDotItem> dco_decode_list_im_three_dot_item(dynamic raw);
 
   @protected
   List<ImUserInfo> dco_decode_list_im_user_info(dynamic raw);
@@ -2010,6 +2140,33 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64? dco_decode_opt_box_autoadd_i_64(dynamic raw);
 
   @protected
+  ImKeywordBlocking? dco_decode_opt_box_autoadd_im_keyword_blocking(
+    dynamic raw,
+  );
+
+  @protected
+  ImMessagePage? dco_decode_opt_box_autoadd_im_message_page(dynamic raw);
+
+  @protected
+  ImSession? dco_decode_opt_box_autoadd_im_session(dynamic raw);
+
+  @protected
+  ImSessionPage? dco_decode_opt_box_autoadd_im_session_page(dynamic raw);
+
+  @protected
+  ImSettingRedirect? dco_decode_opt_box_autoadd_im_setting_redirect(
+    dynamic raw,
+  );
+
+  @protected
+  ImSettingsSnapshot? dco_decode_opt_box_autoadd_im_settings_snapshot(
+    dynamic raw,
+  );
+
+  @protected
+  ImTotalUnread? dco_decode_opt_box_autoadd_im_total_unread(dynamic raw);
+
+  @protected
   Interaction? dco_decode_opt_box_autoadd_interaction(dynamic raw);
 
   @protected
@@ -2536,6 +2693,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<GrpcSubtitle>? dco_decode_opt_list_grpc_subtitle(dynamic raw);
+
+  @protected
+  List<ImShareTarget>? dco_decode_opt_list_im_share_target(dynamic raw);
 
   @protected
   List<ImUserInfo>? dco_decode_opt_list_im_user_info(dynamic raw);
@@ -3730,6 +3890,39 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64 sse_decode_box_autoadd_i_64(SseDeserializer deserializer);
 
   @protected
+  ImKeywordBlocking sse_decode_box_autoadd_im_keyword_blocking(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImMessagePage sse_decode_box_autoadd_im_message_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImSession sse_decode_box_autoadd_im_session(SseDeserializer deserializer);
+
+  @protected
+  ImSessionPage sse_decode_box_autoadd_im_session_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImSettingRedirect sse_decode_box_autoadd_im_setting_redirect(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImSettingsSnapshot sse_decode_box_autoadd_im_settings_snapshot(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImTotalUnread sse_decode_box_autoadd_im_total_unread(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   Interaction sse_decode_box_autoadd_interaction(SseDeserializer deserializer);
 
   @protected
@@ -4800,6 +4993,108 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
 
   @protected
+  ImAckSeqnoResult sse_decode_im_ack_seqno_result(SseDeserializer deserializer);
+
+  @protected
+  ImEmote sse_decode_im_emote(SseDeserializer deserializer);
+
+  @protected
+  ImKeywordBlocking sse_decode_im_keyword_blocking(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImKeywordBlockingResult sse_decode_im_keyword_blocking_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImMessage sse_decode_im_message(SseDeserializer deserializer);
+
+  @protected
+  ImMessagePage sse_decode_im_message_page(SseDeserializer deserializer);
+
+  @protected
+  ImMessagePageResult sse_decode_im_message_page_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImMsgKind sse_decode_im_msg_kind(SseDeserializer deserializer);
+
+  @protected
+  ImSession sse_decode_im_session(SseDeserializer deserializer);
+
+  @protected
+  ImSessionOffset sse_decode_im_session_offset(SseDeserializer deserializer);
+
+  @protected
+  ImSessionPage sse_decode_im_session_page(SseDeserializer deserializer);
+
+  @protected
+  ImSessionPageResult sse_decode_im_session_page_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImSessionResult sse_decode_im_session_result(SseDeserializer deserializer);
+
+  @protected
+  ImSessionTarget sse_decode_im_session_target(SseDeserializer deserializer);
+
+  @protected
+  ImSessionTargetKind sse_decode_im_session_target_kind(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImSetting sse_decode_im_setting(SseDeserializer deserializer);
+
+  @protected
+  ImSettingOption sse_decode_im_setting_option(SseDeserializer deserializer);
+
+  @protected
+  ImSettingPage sse_decode_im_setting_page(SseDeserializer deserializer);
+
+  @protected
+  ImSettingRedirect sse_decode_im_setting_redirect(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImSettingsResult sse_decode_im_settings_result(SseDeserializer deserializer);
+
+  @protected
+  ImSettingsSnapshot sse_decode_im_settings_snapshot(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImShareListResult sse_decode_im_share_list_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImShareTarget sse_decode_im_share_target(SseDeserializer deserializer);
+
+  @protected
+  ImThreeDotItem sse_decode_im_three_dot_item(SseDeserializer deserializer);
+
+  @protected
+  ImThreeDotKind sse_decode_im_three_dot_kind(SseDeserializer deserializer);
+
+  @protected
+  ImTotalUnread sse_decode_im_total_unread(SseDeserializer deserializer);
+
+  @protected
+  ImTotalUnreadResult sse_decode_im_total_unread_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImUnreadStyle sse_decode_im_unread_style(SseDeserializer deserializer);
+
+  @protected
   ImUserInfo sse_decode_im_user_info(SseDeserializer deserializer);
 
   @protected
@@ -5007,6 +5302,38 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<HistoryTab> sse_decode_list_history_tab(SseDeserializer deserializer);
+
+  @protected
+  List<ImEmote> sse_decode_list_im_emote(SseDeserializer deserializer);
+
+  @protected
+  List<ImMessage> sse_decode_list_im_message(SseDeserializer deserializer);
+
+  @protected
+  List<ImSession> sse_decode_list_im_session(SseDeserializer deserializer);
+
+  @protected
+  List<ImSessionOffset> sse_decode_list_im_session_offset(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<ImSetting> sse_decode_list_im_setting(SseDeserializer deserializer);
+
+  @protected
+  List<ImSettingOption> sse_decode_list_im_setting_option(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<ImShareTarget> sse_decode_list_im_share_target(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<ImThreeDotItem> sse_decode_list_im_three_dot_item(
+    SseDeserializer deserializer,
+  );
 
   @protected
   List<ImUserInfo> sse_decode_list_im_user_info(SseDeserializer deserializer);
@@ -6033,6 +6360,41 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64? sse_decode_opt_box_autoadd_i_64(SseDeserializer deserializer);
 
   @protected
+  ImKeywordBlocking? sse_decode_opt_box_autoadd_im_keyword_blocking(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImMessagePage? sse_decode_opt_box_autoadd_im_message_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImSession? sse_decode_opt_box_autoadd_im_session(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImSessionPage? sse_decode_opt_box_autoadd_im_session_page(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImSettingRedirect? sse_decode_opt_box_autoadd_im_setting_redirect(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImSettingsSnapshot? sse_decode_opt_box_autoadd_im_settings_snapshot(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ImTotalUnread? sse_decode_opt_box_autoadd_im_total_unread(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   Interaction? sse_decode_opt_box_autoadd_interaction(
     SseDeserializer deserializer,
   );
@@ -6799,6 +7161,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<GrpcSubtitle>? sse_decode_opt_list_grpc_subtitle(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<ImShareTarget>? sse_decode_opt_list_im_share_target(
     SseDeserializer deserializer,
   );
 
@@ -8280,6 +8647,48 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_im_keyword_blocking(
+    ImKeywordBlocking self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_im_message_page(
+    ImMessagePage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_im_session(
+    ImSession self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_im_session_page(
+    ImSessionPage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_im_setting_redirect(
+    ImSettingRedirect self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_im_settings_snapshot(
+    ImSettingsSnapshot self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_im_total_unread(
+    ImTotalUnread self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_interaction(
     Interaction self,
     SseSerializer serializer,
@@ -9711,6 +10120,141 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
 
   @protected
+  void sse_encode_im_ack_seqno_result(
+    ImAckSeqnoResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_im_emote(ImEmote self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_im_keyword_blocking(
+    ImKeywordBlocking self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_im_keyword_blocking_result(
+    ImKeywordBlockingResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_im_message(ImMessage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_im_message_page(ImMessagePage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_im_message_page_result(
+    ImMessagePageResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_im_msg_kind(ImMsgKind self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_im_session(ImSession self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_im_session_offset(
+    ImSessionOffset self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_im_session_page(ImSessionPage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_im_session_page_result(
+    ImSessionPageResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_im_session_result(
+    ImSessionResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_im_session_target(
+    ImSessionTarget self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_im_session_target_kind(
+    ImSessionTargetKind self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_im_setting(ImSetting self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_im_setting_option(
+    ImSettingOption self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_im_setting_page(ImSettingPage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_im_setting_redirect(
+    ImSettingRedirect self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_im_settings_result(
+    ImSettingsResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_im_settings_snapshot(
+    ImSettingsSnapshot self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_im_share_list_result(
+    ImShareListResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_im_share_target(ImShareTarget self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_im_three_dot_item(
+    ImThreeDotItem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_im_three_dot_kind(
+    ImThreeDotKind self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_im_total_unread(ImTotalUnread self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_im_total_unread_result(
+    ImTotalUnreadResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_im_unread_style(ImUnreadStyle self, SseSerializer serializer);
+
+  @protected
   void sse_encode_im_user_info(ImUserInfo self, SseSerializer serializer);
 
   @protected
@@ -9998,6 +10542,51 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_history_tab(
     List<HistoryTab> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_im_emote(List<ImEmote> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_im_message(
+    List<ImMessage> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_im_session(
+    List<ImSession> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_im_session_offset(
+    List<ImSessionOffset> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_im_setting(
+    List<ImSetting> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_im_setting_option(
+    List<ImSettingOption> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_im_share_target(
+    List<ImShareTarget> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_im_three_dot_item(
+    List<ImThreeDotItem> self,
     SseSerializer serializer,
   );
 
@@ -11349,6 +11938,48 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_im_keyword_blocking(
+    ImKeywordBlocking? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_im_message_page(
+    ImMessagePage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_im_session(
+    ImSession? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_im_session_page(
+    ImSessionPage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_im_setting_redirect(
+    ImSettingRedirect? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_im_settings_snapshot(
+    ImSettingsSnapshot? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_im_total_unread(
+    ImTotalUnread? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_interaction(
     Interaction? self,
     SseSerializer serializer,
@@ -12299,6 +12930,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_grpc_subtitle(
     List<GrpcSubtitle>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_im_share_target(
+    List<ImShareTarget>? self,
     SseSerializer serializer,
   );
 

@@ -512,3 +512,64 @@ protobuf 生成类做的（`writeToBuffer` / `toProto3Json`），pb 子树一删
 父评论的那段规则。理由与退出条件写在那个文件里：合成的触发时机与折叠
 状态是该视图自己的事，单独挪走只会让一个算法跨两边。它不在 #176 的范围
 （那里只有取数那一半），需要自己的切片。
+
+## IM 落地（S12 续单 #63，2026-11-22）
+
+私信那 17 个方法迁完，`lib/grpc/im.dart` 与
+`lib/grpc/bilibili/{app/im,im}/**`（三棵子树、16.6k 行生成的 Dart）整个
+删除。决策一到决策七原样成立，补四条经验。
+
+### 补充一：方法路径与消息 package 可以对不上，而且没人会告诉你
+
+这一片两组服务：
+
+| 服务路径 | 消息 package |
+| --- | --- |
+| `/bilibili.im.interface.v1.ImInterface/…`（interface，**单数**） | `bilibili.im.interfaces.v1`（**复数**） |
+| `/bilibili.app.im.v1.im/…`（末段**小写** `im`） | `bilibili.app.im.v1` |
+
+决策四已经写了「service 定义不在描述符里，路径照抄
+`lib/grpc/url.dart`」。这一片是那条结论代价最高的一次：路径拼错的表现是
+gRPC 状态 **12（UNIMPLEMENTED）**，读起来像「服务端下线了这个接口」，而
+不像「我们把 interfaces 写成了 interface」。
+
+落地形态：路径仍是 `bili-protocol::grpc` 的常量，外加
+`test/bridge/im_bridge_test.dart` 里一张**十七条全列**的表逐条钉住。那张
+表是那个文件最值钱的东西——它是唯一会在拼错时变红的东西。
+
+### 补充二：裁剪不是省体积，是躲开别的树
+
+决策四 4.1 说「按切片生成」。IM 的依赖闭包**一开始根本生成不出来**：
+`im.type.RichTextMsgContent` 引着 `app/dynamic/v2` 的段落树，那棵树用了
+`google.protobuf.Any`，而生成器的输入里没有 well-known types，直接报
+`unknown type .google.protobuf.Any`。
+
+顺着还会拖进 `account/service/v1`（名片的 `name_render`）与整棵
+`dagw/component/avatar`（694 行）。裁完整片是 1034 行。
+
+所以 `KEEP` 的用途要改写一句：它**首先**是「把别的树挡在外面」的工具，
+省体积只是副作用。遇到 `unknown type` 时第一反应应该是「哪个字段把别的
+子树引进来了」，而不是「生成器缺了输入」。
+
+### 补充三：裁剪会留下孤儿文件，而 CI 的报错方向是反的
+
+生成器只写自己这一轮的产物，**不删上一轮的**。裁掉一个字段把某棵子树整个
+踢出闭包时（这次踢掉了 `account/service/v1` 与 `avatar/v1/plugin`），旧
+文件留在原地、`mod.rs` 里已经没有它们，成了谁都不引用的孤儿。
+
+CI 的 `tool/proto-generate.sh --check` 跑的是 `diff -ru`，确实会报
+「Only in …」挡下来——但那条报错读起来像「生成器少生成了东西」，与真实
+原因（生成器**多留**了东西）正好相反。
+
+已改成生成前先清空输出目录。
+
+### 补充四：删掉 Dart 子树之前，先把描述符快照留下
+
+决策四 4.3 说描述符的真相源是仓库里的 `*.pbjson.dart`。那几个文件**就在
+要删的子树里**：删完之后生成器再跑就少了输入，而 CI 只会说「少生成了
+东西」。
+
+既有做法是把它们抄进 `tool/proto-generator/inputs/`（注释里写着「已删除
+Dart 子树从机械快照恢复」）。这次照做，但顺序值得写下来：**先抄快照、
+跑一次 `--check` 确认生成器自洽，再删子树。** 反过来做的话，快照只能从
+git 历史里捞，而那时你已经不确定该捞哪个版本了。

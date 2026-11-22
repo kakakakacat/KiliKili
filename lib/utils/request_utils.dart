@@ -4,10 +4,9 @@ import 'dart:math';
 import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:kilikili/common/widgets/selection_text.dart';
-import 'package:kilikili/grpc/bilibili/im/type.pbenum.dart';
-import 'package:kilikili/grpc/im.dart';
 import 'package:kilikili/http/dynamics.dart';
 import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/services/rust/rust_im.dart';
 import 'package:kilikili/http/validate.dart';
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/models/login/model.dart';
@@ -73,22 +72,25 @@ abstract final class RequestUtils {
     String? message,
   }) async {
     final ownerMid = Accounts.main.mid;
-    final contentRes = await ImGrpc.sendMsg(
+    // 两条消息各自是一次独立发送，各自生成自己的 devId——它们本来就是
+    // 两条不同的消息，共用去重键会让第二条被服务端吞掉。
+    final shareKind = content['source'] is String
+        ? ImMsgKind.commonShareCard
+        : ImMsgKind.shareV2;
+    final contentRes = await RustIm.sendMessage(
       senderUid: ownerMid,
       receiverId: receiverId,
+      msgType: RustIm.msgTypeOf(shareKind)!,
       content: jsonEncode(content),
-      msgType: content['source'] is String
-          ? MsgType.EN_MSG_TYPE_COMMON_SHARE_CARD
-          : MsgType.EN_MSG_TYPE_SHARE_V2,
     );
 
     if (contentRes.isSuccess) {
       if (message?.isNotEmpty == true) {
-        final msgRes = await ImGrpc.sendMsg(
+        final msgRes = await RustIm.sendMessage(
           senderUid: ownerMid,
           receiverId: receiverId,
+          msgType: RustIm.msgTypeOf(ImMsgKind.text)!,
           content: jsonEncode({"content": message}),
-          msgType: MsgType.EN_MSG_TYPE_TEXT,
         );
         return msgRes.isSuccess;
       } else {

@@ -1,21 +1,20 @@
-import 'package:kilikili/grpc/bilibili/app/im/v1.pb.dart'
-    show Offset, Session, SessionPageType, SessionSecondaryReply, ThreeDotItem;
-import 'package:kilikili/grpc/im.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/pages/common/common_whisper_controller.dart';
+import 'package:kilikili/services/rust/rust_im.dart';
 import 'package:get/get.dart';
-import 'package:protobuf/protobuf.dart' show PbMap;
 
-class WhisperSecController
-    extends CommonWhisperController<SessionSecondaryReply> {
+class WhisperSecController extends CommonWhisperController<ImSessionPage> {
   WhisperSecController({
     required this.sessionPageType,
   });
 
-  PbMap<int, Offset>? offset;
+  List<ImSessionOffset>? offsets;
+
+  /// 由 `ImSessionTarget.foldPageType` 给，Rust 已经映射过。
   @override
-  final SessionPageType sessionPageType;
-  Rx<List<ThreeDotItem>?> threeDotItems = Rx<List<ThreeDotItem>?>(null);
+  final int sessionPageType;
+
+  Rx<List<ImThreeDotItem>?> threeDotItems = Rx<List<ImThreeDotItem>?>(null);
 
   @override
   void onInit() {
@@ -25,25 +24,21 @@ class WhisperSecController
 
   @override
   Future<void> onRefresh() {
-    offset = null;
+    offsets = null;
     return super.onRefresh();
   }
 
   @override
-  List<Session>? getDataList(SessionSecondaryReply response) {
-    if (!response.paginationParams.hasMore) {
+  List<ImSession>? getDataList(ImSessionPage response) {
+    if (!response.hasMore) {
       isEnd = true;
     }
-    offset = response.paginationParams.offsets;
-
+    offsets = response.offsets;
     return response.sessions;
   }
 
   @override
-  bool customHandleResponse(
-    bool isRefresh,
-    Success<SessionSecondaryReply> response,
-  ) {
+  bool customHandleResponse(bool isRefresh, Success<ImSessionPage> response) {
     if (isRefresh) {
       threeDotItems.value = response.response.threeDotItems;
     }
@@ -51,9 +46,6 @@ class WhisperSecController
   }
 
   @override
-  Future<LoadingState<SessionSecondaryReply>> customGetData() =>
-      ImGrpc.sessionSecondary(
-        offset: offset,
-        pageType: sessionPageType,
-      );
+  Future<LoadingState<ImSessionPage>> customGetData() =>
+      RustIm.sessionSecondary(pageType: sessionPageType, offsets: offsets);
 }

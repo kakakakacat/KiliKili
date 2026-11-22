@@ -21,26 +21,8 @@ abstract final class GrpcUrl {
   // 评论的六条路径随取数一并迁到 Rust（`bili_protocol::grpc` 的
   // `REPLY_*`，见 issue #176），这里不再保留第二份。
 
-  // im
-  static const im = '/bilibili.im.interface.v1.ImInterface';
-  static const im2 = '/bilibili.app.im.v1.im';
-  static const sendMsg = '$im/SendMsg';
-  static const shareList = '$im/ShareList';
-  static const sessionMain = '$im2/SessionMain';
-  static const sessionSecondary = '$im2/SessionSecondary';
-  static const clearUnread = '$im2/ClearUnread';
-  static const sessionUpdate = '$im2/SessionUpdate';
-  static const pinSession = '$im2/PinSession';
-  static const unpinSession = '$im2/UnpinSession';
-  static const deleteSessionList = '$im2/DeleteSessionList';
-  static const getImSettings = '$im2/GetImSettings';
-  static const setImSettings = '$im2/SetImSettings';
-  static const keywordBlockingList = '$im2/KeywordBlockingList';
-  static const keywordBlockingAdd = '$im2/KeywordBlockingAdd';
-  static const keywordBlockingDelete = '$im2/KeywordBlockingDelete';
-  static const syncFetchSessionMsgs = '$im/SyncFetchSessionMsgs';
-  static const getTotalUnread = '$im/GetTotalUnread';
-  static const sessionDetail = '$im/SessionDetail';
+  // IM 的 17 条路径随取数一并迁到 Rust（`bili_protocol::grpc` 的
+  // `IM_*`，见 issue #63），这里不再保留第二份。
 
   // view
   static const viewunite = '/bilibili.app.viewunite.v1.View';

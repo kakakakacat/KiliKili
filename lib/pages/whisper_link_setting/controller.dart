@@ -2,13 +2,11 @@ import 'dart:async';
 
 import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/common/widgets/dialog/report_member.dart';
-import 'package:kilikili/grpc/bilibili/app/im/v1.pb.dart';
-import 'package:kilikili/grpc/im.dart';
 import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/services/rust/rust_im.dart';
 import 'package:kilikili/services/rust/rust_msg.dart';
 import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/utils/accounts.dart';
-import 'package:fixnum/fixnum.dart';
 import 'package:flutter/widgets.dart' show Text;
 import 'package:get/get.dart';
 
@@ -19,9 +17,6 @@ class WhisperLinkSettingController extends GetxController {
 
   final int talkerUid;
   RxBool isPinned = false.obs;
-  late final sessionId = SessionId(
-    privateId: PrivateId(talkerUid: Int64(talkerUid)),
-  );
 
   @override
   void onInit() {
@@ -52,9 +47,11 @@ class WhisperLinkSettingController extends GetxController {
   }
 
   Future<void> getIsPinned() async {
-    final res = await ImGrpc.sessionUpdate(sessionId: sessionId);
+    final res = await RustIm.session(talkerUid);
     if (res case Success(:final response)) {
-      isPinned.value = response.session.isPinned;
+      // 查不到这个会话时 response 为 null——那是「没有」，不是失败，
+      // 保持默认的未置顶。
+      isPinned.value = response?.isPinned ?? false;
     }
   }
 
@@ -85,9 +82,10 @@ class WhisperLinkSettingController extends GetxController {
   }
 
   Future<void> setPin() async {
-    final res = isPinned.value
-        ? await ImGrpc.unpinSession(sessionId: sessionId)
-        : await ImGrpc.pinSession(sessionId: sessionId);
+    final res = await RustIm.setPinned(
+      talkerUid: talkerUid,
+      pinned: !isPinned.value,
+    );
     if (res.isSuccess) {
       isPinned.toggle();
     } else {

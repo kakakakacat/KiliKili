@@ -1,0 +1,75 @@
+{
+  "page_title": "私信设置",
+  "settings": [
+    {
+      "key": 1,
+      "options": [],
+      "redirect": null,
+      "selected_index": null,
+      "subtitle": "关掉之后只有互关的人能私信你",
+      "switch_on": true,
+      "title": "接收陌生人私信"
+    },
+    {
+      "key": 2,
+      "options": [
+        {
+          "title": "所有人",
+          "value": 10
+        },
+        {
+          "title": "仅关注",
+          "value": 20
+        }
+      ],
+      "redirect": null,
+      "selected_index": 1,
+      "subtitle": null,
+      "switch_on": null,
+      "title": null
+    },
+    {
+      "key": 3,
+      "options": [],
+      "redirect": {
+        "other_url": null,
+        "page_url": null,
+        "parent_setting_type": 4,
+        "selected_summary": "不该用到这个",
+        "trailing_text": "开启",
+        "window_options": [],
+        "window_selected_index": null
+      },
+      "selected_index": null,
+      "subtitle": null,
+      "switch_on": null,
+      "title": "消息提醒"
+    },
+    {
+      "key": 4,
+      "options": [],
+      "redirect": {
+        "other_url": null,
+        "page_url": null,
+        "parent_setting_type": null,
+        "selected_summary": "折叠",
+        "trailing_text": "折叠",
+        "window_options": [
+          {
+            "title": "折叠",
+            "value": 1
+          },
+          {
+            "title": "不折叠",
+            "value": 2
+          }
+        ],
+        "window_selected_index": 0
+      },
+      "selected_index": null,
+      "subtitle": null,
+      "switch_on": null,
+      "title": "折叠设置"
+    }
+  ]
+}

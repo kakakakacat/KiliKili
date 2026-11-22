@@ -3,8 +3,8 @@ import 'package:kilikili/common/sliver_single_child_delegate.dart';
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:kilikili/grpc/bilibili/app/im/v1.pb.dart';
 import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/services/rust/rust_im.dart';
 import 'package:kilikili/pages/whisper/controller.dart';
 import 'package:kilikili/pages/whisper/widgets/item.dart';
 import 'package:kilikili/utils/extension/theme_ext.dart';
@@ -50,13 +50,13 @@ class _WhisperPageState extends State<WhisperPage> {
                 mainAxisSize: .min,
                 children: outsideItem.map((e) {
                   return IconButton(
-                    tooltip: e.hasTitle() ? e.title : null,
-                    onPressed: () => e.type.action(
+                    tooltip: e.title,
+                    onPressed: () => e.kind.action(
                       context: context,
                       controller: _controller,
                       item: e,
                     ),
-                    icon: e.type.icon,
+                    icon: e.kind.icon,
                   );
                 }).toList(),
               );
@@ -71,14 +71,14 @@ class _WhisperPageState extends State<WhisperPage> {
                   return threeDotItems
                       .map(
                         (e) => PopupMenuItem(
-                          onTap: () => e.type.action(
+                          onTap: () => e.kind.action(
                             context: context,
                             controller: _controller,
                             item: e,
                           ),
                           child: Row(
                             children: [
-                              e.type.icon,
+                              e.kind.icon,
                               Text('  ${e.title}'),
                             ],
                           ),
@@ -109,7 +109,7 @@ class _WhisperPageState extends State<WhisperPage> {
     );
   }
 
-  Widget _buildBody(LoadingState<List<Session>?> loadingState) {
+  Widget _buildBody(LoadingState<List<ImSession>?> loadingState) {
     switch (loadingState) {
       case Loading():
         return const SliverPrototypeExtentList(
@@ -136,11 +136,11 @@ class _WhisperPageState extends State<WhisperPage> {
               final item = response[index];
               return WhisperSessionItem(
                 item: item,
-                onSetTop: (isTop, id) =>
-                    _controller.onSetTop(item, index, isTop, id),
-                onSetMute: (isMuted, talkerUid) =>
-                    _controller.onSetMute(item, isMuted, talkerUid),
-                onRemove: (talkerId) => _controller.onRemove(index, talkerId),
+                index: index,
+                onSetTop: _controller.onSetTop,
+                onSetMute: _controller.onSetMute,
+                onRemove: (i) => _controller.onRemoveAt(i),
+                onAcked: _controller.onAcked,
               );
             },
             separatorBuilder: (context, index) => divider,

@@ -6,6 +6,7 @@ pub mod dynamic;
 pub mod fav;
 pub mod grpc;
 pub mod history;
+pub mod im;
 pub mod init;
 pub mod live;
 pub mod live_danmaku;

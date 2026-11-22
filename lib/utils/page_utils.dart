@@ -3,9 +3,9 @@ import 'dart:math';
 import 'package:kilikili/common/widgets/fractionally_sized_box.dart';
 import 'package:kilikili/common/widgets/image_viewer/gallery_viewer.dart';
 import 'package:kilikili/common/widgets/image_viewer/hero_dialog_route.dart';
-import 'package:kilikili/grpc/im.dart';
 import 'package:kilikili/http/dynamics.dart';
 import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/services/rust/rust_im.dart';
 import 'package:kilikili/http/search.dart';
 import 'package:kilikili/http/video.dart';
 import 'package:kilikili/models/common/image_preview_type.dart';
@@ -86,19 +86,20 @@ abstract final class PageUtils {
 
     List<UserModel> userList = <UserModel>[];
 
-    final res = await ImGrpc.shareList(size: 5);
+    final res = await RustIm.shareList();
     if (res case Success(:final response)) {
-      if (response.sessionList.isNotEmpty) {
-        userList.addAll(
-          response.sessionList.map<UserModel>(
-            (item) => UserModel(
-              mid: item.talkerId.toInt(),
-              name: item.talkerUname,
-              avatar: item.talkerIcon,
-            ),
+      userList.addAll(
+        response.map<UserModel>(
+          // 名字与头像在协议里可空，Rust 侧把空串也归一成了 null。
+          // `UserModel` 要非空，这里兜底成空串——基线拿的是 protobuf 的
+          // 默认值，也是空串。
+          (item) => UserModel(
+            mid: item.talkerId,
+            name: item.name ?? '',
+            avatar: item.avatar ?? '',
           ),
-        );
-      }
+        ),
+      );
     }
 
     if (userList.isEmpty && context.mounted) {

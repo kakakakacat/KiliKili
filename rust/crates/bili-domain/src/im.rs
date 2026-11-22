@@ -125,13 +125,30 @@ pub struct SessionOffset {
     pub top_offset: i64,
 }
 
+/// 「…」菜单里那一项是什么。
+///
+/// 只列**界面有分支的**那几种，其余一律 [`Self::Other`]——基线的 switch
+/// 也有 `_` 兜底，画一个圆点。做成枚举而不是透传 i32，是为了让「协议加
+/// 了一种新类型」在界面那边变成一个编译期的 switch 缺分支。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize)]
+pub enum ThreeDotKind {
+    ReadAll,
+    ClearList,
+    MsgSetting,
+    UpHelper,
+    Contacts,
+    FansGroupHelper,
+    #[default]
+    Other,
+}
+
 /// 会话列表顶部那个「…」菜单里的一项。
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct ThreeDotItem {
     pub title: Option<String>,
     pub icon: Option<String>,
     pub url: Option<String>,
-    pub item_type: Option<i32>,
+    pub kind: ThreeDotKind,
     pub has_red_dot: bool,
 }
 
@@ -159,6 +176,9 @@ pub struct ImMessage {
     pub sender_uid: i64,
     pub receiver_id: i64,
     pub msg_type: i32,
+    /// 按界面画法分的类型。原始 `msg_type` 也留着——基线在调试文案里
+    /// 显示它，而且 `Unsupported` 那一档需要它才能说清是哪一种。
+    pub kind: MsgKind,
     /// 消息来源。基线用 8..=11 这一段判「是不是分享来的」。
     pub msg_source: i32,
     /// 1 表示已撤回。
@@ -169,6 +189,79 @@ pub struct ImMessage {
     /// 协议如此。
     pub timestamp: i64,
     pub content: String,
+}
+
+/// 一条私信是哪一种，按界面的画法分。
+///
+/// 协议的 `MsgType` 有三十来个取值，界面只对下面这些有分支（基线
+/// `lib/pages/whisper_detail/widget/chat_item.dart` 的那个 switch），
+/// 其余一律 [`Self::Unsupported`]——那一档画「暂不支持的消息类型」。
+///
+/// 做成枚举而不是透传 i32：协议加一种新消息时，Dart 那边会变成一个
+/// 编译期的 switch 缺分支，而不是悄悄掉进兜底。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize)]
+pub enum MsgKind {
+    /// 纯文字。
+    Text,
+    /// 图片，以及自定义表情（两者共用同一种画法）。
+    Picture,
+    /// 已撤回。列表里会被整条滤掉。
+    DrawBack,
+    /// 分享卡（v2）。
+    ShareV2,
+    /// 系统通知样式的消息。
+    NotifyMsg,
+    /// 视频卡。
+    VideoCard,
+    /// 专栏卡。
+    ArticleCard,
+    /// 图片卡。
+    PictureCard,
+    /// 通用分享卡。
+    CommonShareCard,
+    /// 提示条（灰色小字）。
+    TipMessage,
+    /// 协议里**没有名字**的 16。基线按数字单独画一种卡片，照搬。
+    Unnamed16,
+    #[default]
+    Unsupported,
+}
+
+/// 协议 `MsgType` 里界面有分支的那些取值。见 [`session_type`] 的警告。
+pub mod msg_type {
+    pub const TEXT: i32 = 1;
+    pub const PIC: i32 = 2;
+    pub const DRAW_BACK: i32 = 5;
+    pub const CUSTOM_FACE: i32 = 6;
+    pub const SHARE_V2: i32 = 7;
+    pub const NOTIFY_MSG: i32 = 10;
+    pub const VIDEO_CARD: i32 = 11;
+    pub const ARTICLE_CARD: i32 = 12;
+    pub const PICTURE_CARD: i32 = 13;
+    pub const COMMON_SHARE_CARD: i32 = 14;
+    pub const TIP_MESSAGE: i32 = 18;
+    /// 协议里没有这个名字，基线按数字处理。
+    pub const UNNAMED_16: i32 = 16;
+}
+
+/// 把协议的 `MsgType` 取值映射成界面的画法。
+#[must_use]
+pub fn msg_kind(value: i32) -> MsgKind {
+    match value {
+        msg_type::TEXT => MsgKind::Text,
+        // 图片与自定义表情在基线里走同一个分支。
+        msg_type::PIC | msg_type::CUSTOM_FACE => MsgKind::Picture,
+        msg_type::DRAW_BACK => MsgKind::DrawBack,
+        msg_type::SHARE_V2 => MsgKind::ShareV2,
+        msg_type::NOTIFY_MSG => MsgKind::NotifyMsg,
+        msg_type::VIDEO_CARD => MsgKind::VideoCard,
+        msg_type::ARTICLE_CARD => MsgKind::ArticleCard,
+        msg_type::PICTURE_CARD => MsgKind::PictureCard,
+        msg_type::COMMON_SHARE_CARD => MsgKind::CommonShareCard,
+        msg_type::TIP_MESSAGE => MsgKind::TipMessage,
+        msg_type::UNNAMED_16 => MsgKind::Unnamed16,
+        _ => MsgKind::Unsupported,
+    }
 }
 
 /// 表情包里的一条：把正文里的 `[文字]` 换成图。
@@ -219,6 +312,38 @@ pub struct ImSetting {
     /// 选择型：当前选中项的下标与可选项。
     pub selected_index: Option<i32>,
     pub options: Vec<ImSettingOption>,
+    /// 跳转型的去向。其余形态为 `None`。
+    pub redirect: Option<ImSettingRedirect>,
+}
+
+/// 跳转型设置的去向。
+///
+/// 协议里它是个 oneof（子设置页 / 外部页 / 弹窗 / 弹窗选择），这里摊平成
+/// 几个 `Option`，按哪个有值分支——与基线的 `hasWindowSelect()` /
+/// `otherPage.hasUrl()` 一一对应，顺序也一样。
+///
+/// **没有把子设置树带过来。** 基线读 `sub_settings` 只为算一行 trailing
+/// 文字（第一个选中的选项，否则第一个打开着的开关的标题），那段计算在
+/// 投影时就做完了，结果是 [`Self::trailing_text`]。带整棵树过来要么让
+/// 导出面递归，要么让界面重新实现那段「算 trailing」的规则——后者正是
+/// AGENTS.md §2 要避免的。
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct ImSettingRedirect {
+    /// 子设置页的 `ImSettingType`，拿它开下一页。
+    pub parent_setting_type: Option<i32>,
+    /// 子设置页自己的 url。
+    pub page_url: Option<String>,
+    /// 跳外部页面的 url。
+    pub other_url: Option<String>,
+    /// 弹窗选择的可选项。非该形态时为空。
+    pub window_options: Vec<ImSettingOption>,
+    pub window_selected_index: Option<i32>,
+    /// 服务端给的「当前选的是什么」。
+    pub selected_summary: Option<String>,
+    /// 这一行右侧显示什么。已按基线的三级回退算好：
+    /// 子设置里第一个选中的选项 → 第一个打开着的开关的标题 →
+    /// `selected_summary`。
+    pub trailing_text: Option<String>,
 }
 
 /// 选择型设置的一个可选项。
@@ -323,6 +448,42 @@ pub mod session_type {
     pub const SYSTEM: i32 = 8;
     pub const AI_FOLD: i32 = 9;
     pub const CUSTOMER_ACCOUNT: i32 = 10;
+}
+
+/// 协议 `ThreeDotItemType` 的取值。见 [`session_type`] 的警告。
+pub mod three_dot_type {
+    pub const READ_ALL: i32 = 1;
+    pub const MSG_SETTING: i32 = 2;
+    pub const UP_HELPER: i32 = 4;
+    pub const FANS_GROUP_HELPER: i32 = 6;
+    pub const CONTACTS: i32 = 8;
+    pub const CLEAR_LIST: i32 = 9;
+}
+
+/// 协议 `ImSettingType` 里**界面会主动打开**的那四个。
+///
+/// 其余二十来个取值由 `ImSettingRedirect::parent_setting_type` 带过来，
+/// 不需要在这边列。这四个数字相邻且无规律（0、17、18、19），见
+/// [`session_type`] 的警告。
+pub mod setting_page_type {
+    pub const ALL: i32 = 0;
+    pub const OLD_REPLY_ME: i32 = 17;
+    pub const OLD_AT_ME: i32 = 18;
+    pub const OLD_RECEIVE_LIKE: i32 = 19;
+}
+
+/// 把协议的 `ThreeDotItemType` 取值映射成界面有分支的那几种。
+#[must_use]
+pub fn three_dot_kind(value: Option<i32>) -> ThreeDotKind {
+    match value {
+        Some(three_dot_type::READ_ALL) => ThreeDotKind::ReadAll,
+        Some(three_dot_type::CLEAR_LIST) => ThreeDotKind::ClearList,
+        Some(three_dot_type::MSG_SETTING) => ThreeDotKind::MsgSetting,
+        Some(three_dot_type::UP_HELPER) => ThreeDotKind::UpHelper,
+        Some(three_dot_type::CONTACTS) => ThreeDotKind::Contacts,
+        Some(three_dot_type::FANS_GROUP_HELPER) => ThreeDotKind::FansGroupHelper,
+        _ => ThreeDotKind::Other,
+    }
 }
 
 /// 协议 `SessionPageType` 的取值。见 [`session_type`] 的警告。

@@ -37,3 +37,253 @@ pub struct SessionInfo {
     #[prost(int64, optional, tag = "17")]
     pub max_seqno: ::core::option::Option<i64>,
 }
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+#[repr(i32)]
+pub enum MsgType {
+    EnInvalidMsgType = 0,
+    EnMsgTypeText = 1,
+    EnMsgTypePic = 2,
+    EnMsgTypeAudio = 3,
+    EnMsgTypeShare = 4,
+    EnMsgTypeDrawBack = 5,
+    EnMsgTypeCustomFace = 6,
+    EnMsgTypeShareV2 = 7,
+    EnMsgTypeSysCancel = 8,
+    EnMsgTypeMiniProgram = 9,
+    EnMsgTypeNotifyMsg = 10,
+    EnMsgTypeVideoCard = 11,
+    EnMsgTypeArticleCard = 12,
+    EnMsgTypePictureCard = 13,
+    EnMsgTypeCommonShareCard = 14,
+    EnMsgTypeTextShare = 15,
+    EnMsgTypeTipMessage = 18,
+    EnMsgTypeGptMessage = 19,
+    EnMsgTypeBizMsgType = 50,
+    EnMsgTypeModifyMsgType = 51,
+    EnMsgTypeGroupMemberChanged = 101,
+    EnMsgTypeGroupStatusChanged = 102,
+    EnMsgTypeGroupDynamicChanged = 103,
+    EnMsgTypeGroupListChanged = 104,
+    EmMsgTypeFriendListChanged = 105,
+    EnMsgTypeGroupDetailChanged = 106,
+    EnMsgTypeGroupMemberRoleChanged = 107,
+    EnMsgTypeNoticeWatchList = 108,
+    EnMsgTypeNotifyNewReplyRecieved = 109,
+    EnMsgTypeNotifyNewAtRecieved = 110,
+    EnMsgTypeNotifyNewPraiseRecieved = 111,
+    EnMsgTypeNotifyNewUpRecieved = 112,
+    EnMsgTypeNotifyNewReplyRecievedV2 = 113,
+    EnMsgTypeNotifyNewAtRecievedV2 = 114,
+    EnMsgTypeNotifyNewPraiseRecievedV2 = 115,
+    EnMsgTypeGroupDetailChangedMulti = 116,
+    EnMsgTypeGroupMemberRoleChangedMulti = 117,
+    EnMsgTypeNotifyAntiDisturb = 118,
+    EnMsgTypeSysGroupDissolved = 201,
+    EnMsgTypeSysGroupJoined = 202,
+    EnMsgTypeSysGroupMemberExited = 203,
+    EnMsgTypeSysGroupAdminFired = 204,
+    EnMsgTypeSysGroupMemberKicked = 205,
+    EnMsgTypeSysGroupAdminKickOff = 206,
+    EnMsgTypeSysGroupAdminDuty = 207,
+    EnMsgTypeSysGroupAutoCreated = 208,
+    EnMsgTypeSysFriendApply = 210,
+    EnMsgTypeSysFriendApplyAck = 211,
+    EnMsgTypeSysGroupApplyForJoining = 212,
+    EnMsgTypeSysGroupAdminAcceptedUserApply = 213,
+    EnMsgTypeChatMemberJoined = 301,
+    EnMsgTypeChatMemberExited = 302,
+    EnMsgTypeChatGroupFreezed = 303,
+    EnMsgTypeChatGroupDissolved = 304,
+    EnMsgTypeChatGroupCreated = 305,
+    EnMsgTypeChatPopupSession = 306,
+    EnMsgTypeCustomRankUpdate = 400,
+    EnMsgTypeCustomMsgNotice = 401,
+}
+impl MsgType {
+    /// String value of the enum field names used in the ProtoBuf definition.
+    ///
+    /// The values are not transformed in any way and thus are considered stable
+    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
+    pub fn as_str_name(&self) -> &'static str {
+        match self {
+            Self::EnInvalidMsgType => "EN_INVALID_MSG_TYPE",
+            Self::EnMsgTypeText => "EN_MSG_TYPE_TEXT",
+            Self::EnMsgTypePic => "EN_MSG_TYPE_PIC",
+            Self::EnMsgTypeAudio => "EN_MSG_TYPE_AUDIO",
+            Self::EnMsgTypeShare => "EN_MSG_TYPE_SHARE",
+            Self::EnMsgTypeDrawBack => "EN_MSG_TYPE_DRAW_BACK",
+            Self::EnMsgTypeCustomFace => "EN_MSG_TYPE_CUSTOM_FACE",
+            Self::EnMsgTypeShareV2 => "EN_MSG_TYPE_SHARE_V2",
+            Self::EnMsgTypeSysCancel => "EN_MSG_TYPE_SYS_CANCEL",
+            Self::EnMsgTypeMiniProgram => "EN_MSG_TYPE_MINI_PROGRAM",
+            Self::EnMsgTypeNotifyMsg => "EN_MSG_TYPE_NOTIFY_MSG",
+            Self::EnMsgTypeVideoCard => "EN_MSG_TYPE_VIDEO_CARD",
+            Self::EnMsgTypeArticleCard => "EN_MSG_TYPE_ARTICLE_CARD",
+            Self::EnMsgTypePictureCard => "EN_MSG_TYPE_PICTURE_CARD",
+            Self::EnMsgTypeCommonShareCard => "EN_MSG_TYPE_COMMON_SHARE_CARD",
+            Self::EnMsgTypeTextShare => "EN_MSG_TYPE_TEXT_SHARE",
+            Self::EnMsgTypeTipMessage => "EN_MSG_TYPE_TIP_MESSAGE",
+            Self::EnMsgTypeGptMessage => "EN_MSG_TYPE_GPT_MESSAGE",
+            Self::EnMsgTypeBizMsgType => "EN_MSG_TYPE_BIZ_MSG_TYPE",
+            Self::EnMsgTypeModifyMsgType => "EN_MSG_TYPE_MODIFY_MSG_TYPE",
+            Self::EnMsgTypeGroupMemberChanged => "EN_MSG_TYPE_GROUP_MEMBER_CHANGED",
+            Self::EnMsgTypeGroupStatusChanged => "EN_MSG_TYPE_GROUP_STATUS_CHANGED",
+            Self::EnMsgTypeGroupDynamicChanged => "EN_MSG_TYPE_GROUP_DYNAMIC_CHANGED",
+            Self::EnMsgTypeGroupListChanged => "EN_MSG_TYPE_GROUP_LIST_CHANGED",
+            Self::EmMsgTypeFriendListChanged => "EM_MSG_TYPE_FRIEND_LIST_CHANGED",
+            Self::EnMsgTypeGroupDetailChanged => "EN_MSG_TYPE_GROUP_DETAIL_CHANGED",
+            Self::EnMsgTypeGroupMemberRoleChanged => {
+                "EN_MSG_TYPE_GROUP_MEMBER_ROLE_CHANGED"
+            }
+            Self::EnMsgTypeNoticeWatchList => "EN_MSG_TYPE_NOTICE_WATCH_LIST",
+            Self::EnMsgTypeNotifyNewReplyRecieved => {
+                "EN_MSG_TYPE_NOTIFY_NEW_REPLY_RECIEVED"
+            }
+            Self::EnMsgTypeNotifyNewAtRecieved => "EN_MSG_TYPE_NOTIFY_NEW_AT_RECIEVED",
+            Self::EnMsgTypeNotifyNewPraiseRecieved => {
+                "EN_MSG_TYPE_NOTIFY_NEW_PRAISE_RECIEVED"
+            }
+            Self::EnMsgTypeNotifyNewUpRecieved => "EN_MSG_TYPE_NOTIFY_NEW_UP_RECIEVED",
+            Self::EnMsgTypeNotifyNewReplyRecievedV2 => {
+                "EN_MSG_TYPE_NOTIFY_NEW_REPLY_RECIEVED_V2"
+            }
+            Self::EnMsgTypeNotifyNewAtRecievedV2 => {
+                "EN_MSG_TYPE_NOTIFY_NEW_AT_RECIEVED_V2"
+            }
+            Self::EnMsgTypeNotifyNewPraiseRecievedV2 => {
+                "EN_MSG_TYPE_NOTIFY_NEW_PRAISE_RECIEVED_V2"
+            }
+            Self::EnMsgTypeGroupDetailChangedMulti => {
+                "EN_MSG_TYPE_GROUP_DETAIL_CHANGED_MULTI"
+            }
+            Self::EnMsgTypeGroupMemberRoleChangedMulti => {
+                "EN_MSG_TYPE_GROUP_MEMBER_ROLE_CHANGED_MULTI"
+            }
+            Self::EnMsgTypeNotifyAntiDisturb => "EN_MSG_TYPE_NOTIFY_ANTI_DISTURB",
+            Self::EnMsgTypeSysGroupDissolved => "EN_MSG_TYPE_SYS_GROUP_DISSOLVED",
+            Self::EnMsgTypeSysGroupJoined => "EN_MSG_TYPE_SYS_GROUP_JOINED",
+            Self::EnMsgTypeSysGroupMemberExited => "EN_MSG_TYPE_SYS_GROUP_MEMBER_EXITED",
+            Self::EnMsgTypeSysGroupAdminFired => "EN_MSG_TYPE_SYS_GROUP_ADMIN_FIRED",
+            Self::EnMsgTypeSysGroupMemberKicked => "EN_MSG_TYPE_SYS_GROUP_MEMBER_KICKED",
+            Self::EnMsgTypeSysGroupAdminKickOff => "EN_MSG_TYPE_SYS_GROUP_ADMIN_KICK_OFF",
+            Self::EnMsgTypeSysGroupAdminDuty => "EN_MSG_TYPE_SYS_GROUP_ADMIN_DUTY",
+            Self::EnMsgTypeSysGroupAutoCreated => "EN_MSG_TYPE_SYS_GROUP_AUTO_CREATED",
+            Self::EnMsgTypeSysFriendApply => "EN_MSG_TYPE_SYS_FRIEND_APPLY",
+            Self::EnMsgTypeSysFriendApplyAck => "EN_MSG_TYPE_SYS_FRIEND_APPLY_ACK",
+            Self::EnMsgTypeSysGroupApplyForJoining => {
+                "EN_MSG_TYPE_SYS_GROUP_APPLY_FOR_JOINING"
+            }
+            Self::EnMsgTypeSysGroupAdminAcceptedUserApply => {
+                "EN_MSG_TYPE_SYS_GROUP_ADMIN_ACCEPTED_USER_APPLY"
+            }
+            Self::EnMsgTypeChatMemberJoined => "EN_MSG_TYPE_CHAT_MEMBER_JOINED",
+            Self::EnMsgTypeChatMemberExited => "EN_MSG_TYPE_CHAT_MEMBER_EXITED",
+            Self::EnMsgTypeChatGroupFreezed => "EN_MSG_TYPE_CHAT_GROUP_FREEZED",
+            Self::EnMsgTypeChatGroupDissolved => "EN_MSG_TYPE_CHAT_GROUP_DISSOLVED",
+            Self::EnMsgTypeChatGroupCreated => "EN_MSG_TYPE_CHAT_GROUP_CREATED",
+            Self::EnMsgTypeChatPopupSession => "EN_MSG_TYPE_CHAT_POPUP_SESSION",
+            Self::EnMsgTypeCustomRankUpdate => "EN_MSG_TYPE_CUSTOM_RANK_UPDATE",
+            Self::EnMsgTypeCustomMsgNotice => "EN_MSG_TYPE_CUSTOM_MSG_NOTICE",
+        }
+    }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "EN_INVALID_MSG_TYPE" => Some(Self::EnInvalidMsgType),
+            "EN_MSG_TYPE_TEXT" => Some(Self::EnMsgTypeText),
+            "EN_MSG_TYPE_PIC" => Some(Self::EnMsgTypePic),
+            "EN_MSG_TYPE_AUDIO" => Some(Self::EnMsgTypeAudio),
+            "EN_MSG_TYPE_SHARE" => Some(Self::EnMsgTypeShare),
+            "EN_MSG_TYPE_DRAW_BACK" => Some(Self::EnMsgTypeDrawBack),
+            "EN_MSG_TYPE_CUSTOM_FACE" => Some(Self::EnMsgTypeCustomFace),
+            "EN_MSG_TYPE_SHARE_V2" => Some(Self::EnMsgTypeShareV2),
+            "EN_MSG_TYPE_SYS_CANCEL" => Some(Self::EnMsgTypeSysCancel),
+            "EN_MSG_TYPE_MINI_PROGRAM" => Some(Self::EnMsgTypeMiniProgram),
+            "EN_MSG_TYPE_NOTIFY_MSG" => Some(Self::EnMsgTypeNotifyMsg),
+            "EN_MSG_TYPE_VIDEO_CARD" => Some(Self::EnMsgTypeVideoCard),
+            "EN_MSG_TYPE_ARTICLE_CARD" => Some(Self::EnMsgTypeArticleCard),
+            "EN_MSG_TYPE_PICTURE_CARD" => Some(Self::EnMsgTypePictureCard),
+            "EN_MSG_TYPE_COMMON_SHARE_CARD" => Some(Self::EnMsgTypeCommonShareCard),
+            "EN_MSG_TYPE_TEXT_SHARE" => Some(Self::EnMsgTypeTextShare),
+            "EN_MSG_TYPE_TIP_MESSAGE" => Some(Self::EnMsgTypeTipMessage),
+            "EN_MSG_TYPE_GPT_MESSAGE" => Some(Self::EnMsgTypeGptMessage),
+            "EN_MSG_TYPE_BIZ_MSG_TYPE" => Some(Self::EnMsgTypeBizMsgType),
+            "EN_MSG_TYPE_MODIFY_MSG_TYPE" => Some(Self::EnMsgTypeModifyMsgType),
+            "EN_MSG_TYPE_GROUP_MEMBER_CHANGED" => Some(Self::EnMsgTypeGroupMemberChanged),
+            "EN_MSG_TYPE_GROUP_STATUS_CHANGED" => Some(Self::EnMsgTypeGroupStatusChanged),
+            "EN_MSG_TYPE_GROUP_DYNAMIC_CHANGED" => {
+                Some(Self::EnMsgTypeGroupDynamicChanged)
+            }
+            "EN_MSG_TYPE_GROUP_LIST_CHANGED" => Some(Self::EnMsgTypeGroupListChanged),
+            "EM_MSG_TYPE_FRIEND_LIST_CHANGED" => Some(Self::EmMsgTypeFriendListChanged),
+            "EN_MSG_TYPE_GROUP_DETAIL_CHANGED" => Some(Self::EnMsgTypeGroupDetailChanged),
+            "EN_MSG_TYPE_GROUP_MEMBER_ROLE_CHANGED" => {
+                Some(Self::EnMsgTypeGroupMemberRoleChanged)
+            }
+            "EN_MSG_TYPE_NOTICE_WATCH_LIST" => Some(Self::EnMsgTypeNoticeWatchList),
+            "EN_MSG_TYPE_NOTIFY_NEW_REPLY_RECIEVED" => {
+                Some(Self::EnMsgTypeNotifyNewReplyRecieved)
+            }
+            "EN_MSG_TYPE_NOTIFY_NEW_AT_RECIEVED" => {
+                Some(Self::EnMsgTypeNotifyNewAtRecieved)
+            }
+            "EN_MSG_TYPE_NOTIFY_NEW_PRAISE_RECIEVED" => {
+                Some(Self::EnMsgTypeNotifyNewPraiseRecieved)
+            }
+            "EN_MSG_TYPE_NOTIFY_NEW_UP_RECIEVED" => {
+                Some(Self::EnMsgTypeNotifyNewUpRecieved)
+            }
+            "EN_MSG_TYPE_NOTIFY_NEW_REPLY_RECIEVED_V2" => {
+                Some(Self::EnMsgTypeNotifyNewReplyRecievedV2)
+            }
+            "EN_MSG_TYPE_NOTIFY_NEW_AT_RECIEVED_V2" => {
+                Some(Self::EnMsgTypeNotifyNewAtRecievedV2)
+            }
+            "EN_MSG_TYPE_NOTIFY_NEW_PRAISE_RECIEVED_V2" => {
+                Some(Self::EnMsgTypeNotifyNewPraiseRecievedV2)
+            }
+            "EN_MSG_TYPE_GROUP_DETAIL_CHANGED_MULTI" => {
+                Some(Self::EnMsgTypeGroupDetailChangedMulti)
+            }
+            "EN_MSG_TYPE_GROUP_MEMBER_ROLE_CHANGED_MULTI" => {
+                Some(Self::EnMsgTypeGroupMemberRoleChangedMulti)
+            }
+            "EN_MSG_TYPE_NOTIFY_ANTI_DISTURB" => Some(Self::EnMsgTypeNotifyAntiDisturb),
+            "EN_MSG_TYPE_SYS_GROUP_DISSOLVED" => Some(Self::EnMsgTypeSysGroupDissolved),
+            "EN_MSG_TYPE_SYS_GROUP_JOINED" => Some(Self::EnMsgTypeSysGroupJoined),
+            "EN_MSG_TYPE_SYS_GROUP_MEMBER_EXITED" => {
+                Some(Self::EnMsgTypeSysGroupMemberExited)
+            }
+            "EN_MSG_TYPE_SYS_GROUP_ADMIN_FIRED" => {
+                Some(Self::EnMsgTypeSysGroupAdminFired)
+            }
+            "EN_MSG_TYPE_SYS_GROUP_MEMBER_KICKED" => {
+                Some(Self::EnMsgTypeSysGroupMemberKicked)
+            }
+            "EN_MSG_TYPE_SYS_GROUP_ADMIN_KICK_OFF" => {
+                Some(Self::EnMsgTypeSysGroupAdminKickOff)
+            }
+            "EN_MSG_TYPE_SYS_GROUP_ADMIN_DUTY" => Some(Self::EnMsgTypeSysGroupAdminDuty),
+            "EN_MSG_TYPE_SYS_GROUP_AUTO_CREATED" => {
+                Some(Self::EnMsgTypeSysGroupAutoCreated)
+            }
+            "EN_MSG_TYPE_SYS_FRIEND_APPLY" => Some(Self::EnMsgTypeSysFriendApply),
+            "EN_MSG_TYPE_SYS_FRIEND_APPLY_ACK" => Some(Self::EnMsgTypeSysFriendApplyAck),
+            "EN_MSG_TYPE_SYS_GROUP_APPLY_FOR_JOINING" => {
+                Some(Self::EnMsgTypeSysGroupApplyForJoining)
+            }
+            "EN_MSG_TYPE_SYS_GROUP_ADMIN_ACCEPTED_USER_APPLY" => {
+                Some(Self::EnMsgTypeSysGroupAdminAcceptedUserApply)
+            }
+            "EN_MSG_TYPE_CHAT_MEMBER_JOINED" => Some(Self::EnMsgTypeChatMemberJoined),
+            "EN_MSG_TYPE_CHAT_MEMBER_EXITED" => Some(Self::EnMsgTypeChatMemberExited),
+            "EN_MSG_TYPE_CHAT_GROUP_FREEZED" => Some(Self::EnMsgTypeChatGroupFreezed),
+            "EN_MSG_TYPE_CHAT_GROUP_DISSOLVED" => Some(Self::EnMsgTypeChatGroupDissolved),
+            "EN_MSG_TYPE_CHAT_GROUP_CREATED" => Some(Self::EnMsgTypeChatGroupCreated),
+            "EN_MSG_TYPE_CHAT_POPUP_SESSION" => Some(Self::EnMsgTypeChatPopupSession),
+            "EN_MSG_TYPE_CUSTOM_RANK_UPDATE" => Some(Self::EnMsgTypeCustomRankUpdate),
+            "EN_MSG_TYPE_CUSTOM_MSG_NOTICE" => Some(Self::EnMsgTypeCustomMsgNotice),
+            _ => None,
+        }
+    }
+}

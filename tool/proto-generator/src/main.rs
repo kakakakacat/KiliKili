@@ -48,6 +48,14 @@ const ROOTS: &[&str] = &[
     // SessionDetail 的**响应**是 im.type.SessionInfo，不是 interfaces 里的
     // 某个 Rsp。响应类型不在请求的依赖闭包里，得单列一条根。
     ".bilibili.im.type.SessionInfo",
+    // `Msg.msg_type` 在协议里是裸 int32，没有字段引用 `MsgType` 枚举，
+    // 于是它不在闭包里。单列一条根把它带进来——界面按十种消息类型分支
+    // 画不同的卡片，那十个数字需要一个锚（见 `bili_api::grpc_im` 的测试）。
+    ".bilibili.im.type.MsgType",
+    // `Msg.msg_type` 在协议里是裸 int32，没有字段引用 `MsgType` 枚举，
+    // 于是它不在闭包里。单列一条根把它带进来——界面按十种消息类型分支
+    // 画不同的卡片，那十个数字需要一个锚（见 `bili_api::grpc_im` 的测试）。
+    ".bilibili.im.type.MsgType",
     ".bilibili.app.im.v1.SessionMainReq",
     ".bilibili.app.im.v1.SessionMainReply",
     ".bilibili.app.im.v1.SessionSecondaryReq",

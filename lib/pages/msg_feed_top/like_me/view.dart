@@ -8,10 +8,9 @@ import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/pair.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:kilikili/grpc/bilibili/app/im/v1.pbenum.dart'
-    show IMSettingType;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/image_type.dart';
+import 'package:kilikili/services/rust/rust_im.dart';
 import 'package:kilikili/services/rust/rust_msg.dart';
 import 'package:kilikili/pages/msg_feed_top/like_me/controller.dart';
 import 'package:kilikili/pages/whisper_settings/view.dart';
@@ -40,9 +39,7 @@ class _LikeMePageState extends State<LikeMePage> {
         actions: [
           IconButton(
             onPressed: () => Get.to(
-              const WhisperSettingsPage(
-                imSettingType: IMSettingType.SETTING_TYPE_OLD_RECEIVE_LIKE,
-              ),
+              WhisperSettingsPage(imSettingType: RustIm.settingPageReceiveLike),
             ),
             icon: Icon(
               size: 20,

@@ -1,73 +1,69 @@
 import 'package:kilikili/common/widgets/dialog/dialog.dart';
-import 'package:kilikili/grpc/bilibili/app/im/v1.pb.dart'
-    show ThreeDotItem, ThreeDotItemType, IMSettingType;
 import 'package:kilikili/pages/common/common_whisper_controller.dart';
 import 'package:kilikili/pages/contact/view.dart';
 import 'package:kilikili/pages/whisper_settings/view.dart';
+import 'package:kilikili/services/rust/rust_im.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
-extension ThreeDotItemTypeExt on ThreeDotItemType {
+/// 私信列表顶部「…」菜单里那一项的图标与动作。
+///
+/// 类型从 protobuf 的 `ThreeDotItemType` 换成了 Rust 投影出来的
+/// [ImThreeDotKind]（S12 续单 / #63）。两边的分支一一对应，只是枚举里
+/// **只有界面真的有分支的那几种**，其余在 Rust 侧就收敛成了
+/// [ImThreeDotKind.other]——协议里那十种有四种基线从来没处理过。
+extension ImThreeDotKindExt on ImThreeDotKind {
   Icon get icon => switch (this) {
-    ThreeDotItemType.THREE_DOT_ITEM_TYPE_MSG_SETTING => const Icon(
-      Icons.settings,
-      size: 20,
-    ),
-    ThreeDotItemType.THREE_DOT_ITEM_TYPE_READ_ALL => const Icon(
-      Icons.cleaning_services,
-      size: 20,
-    ),
-    ThreeDotItemType.THREE_DOT_ITEM_TYPE_CLEAR_LIST => const Icon(
+    ImThreeDotKind.msgSetting => const Icon(Icons.settings, size: 20),
+    ImThreeDotKind.readAll => const Icon(Icons.cleaning_services, size: 20),
+    ImThreeDotKind.clearList => const Icon(
       Icons.delete_forever_outlined,
       size: 20,
     ),
-    ThreeDotItemType.THREE_DOT_ITEM_TYPE_UP_HELPER => const Icon(
-      Icons.live_tv,
-      size: 20,
-    ),
-    ThreeDotItemType.THREE_DOT_ITEM_TYPE_CONTACTS => const Icon(
+    ImThreeDotKind.upHelper => const Icon(Icons.live_tv, size: 20),
+    ImThreeDotKind.contacts => const Icon(
       Icons.account_box_outlined,
       size: 20,
     ),
-    ThreeDotItemType.THREE_DOT_ITEM_TYPE_FANS_GROUP_HELPER => const Icon(
+    ImThreeDotKind.fansGroupHelper => const Icon(
       Icons.notifications_none,
       size: 20,
     ),
-    _ => const Icon(MdiIcons.circleMedium, size: 20),
+    ImThreeDotKind.other => const Icon(MdiIcons.circleMedium, size: 20),
   };
 
   void action({
     required BuildContext context,
     required CommonWhisperController controller,
-    required ThreeDotItem item,
+    required ImThreeDotItem item,
   }) {
     switch (this) {
-      case ThreeDotItemType.THREE_DOT_ITEM_TYPE_READ_ALL:
+      case ImThreeDotKind.readAll:
         showConfirmDialog(
           context: context,
           title: const Text('一键已读'),
           content: const Text('是否清除全部新消息提醒？'),
           onConfirm: controller.onClearUnread,
         );
-      case ThreeDotItemType.THREE_DOT_ITEM_TYPE_CLEAR_LIST:
+      case ImThreeDotKind.clearList:
         showConfirmDialog(
           context: context,
           title: const Text('清空列表'),
           content: const Text('清空后所有消息将被删除，无法恢复'),
           onConfirm: controller.onDeleteList,
         );
-      case ThreeDotItemType.THREE_DOT_ITEM_TYPE_MSG_SETTING:
+      case ImThreeDotKind.msgSetting:
         Get.to(
-          const WhisperSettingsPage(
-            imSettingType: IMSettingType.SETTING_TYPE_NEED_ALL,
-          ),
+          WhisperSettingsPage(imSettingType: RustIm.settingPageAll),
         );
-      case ThreeDotItemType.THREE_DOT_ITEM_TYPE_UP_HELPER:
-        dynamic talkerId = RegExp(r'/(\d{3,})').firstMatch(item.url)?.group(1);
-        if (talkerId != null) {
-          talkerId = int.parse(talkerId);
+      case ImThreeDotKind.upHelper:
+        final matched = RegExp(
+          r'/(\d{3,})',
+        ).firstMatch(item.url ?? '')?.group(1);
+        if (matched != null) {
+          final talkerId = int.parse(matched);
           Get.toNamed(
             '/whisperDetail',
             arguments: {
@@ -81,10 +77,11 @@ extension ThreeDotItemTypeExt on ThreeDotItemType {
             },
           );
         }
-      case ThreeDotItemType.THREE_DOT_ITEM_TYPE_CONTACTS:
+      case ImThreeDotKind.contacts:
         Get.to(const ContactPage(isFromSelect: false));
-      default:
-        SmartDialog.showToast('TODO: $name');
+      case ImThreeDotKind.fansGroupHelper:
+      case ImThreeDotKind.other:
+        SmartDialog.showToast('TODO: ${item.title ?? name}');
     }
   }
 }

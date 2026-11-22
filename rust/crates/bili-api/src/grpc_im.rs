@@ -46,9 +46,9 @@
 use bili_domain::error::{DomainError, ErrorKind};
 use bili_domain::im::{
     ImEmote, ImMessage, ImMessagePage, ImSession, ImSessionPage, ImSetting, ImSettingOption,
-    ImSettingsPage, ImTotalUnread, KeywordBlockingList, SessionOffset, SessionTarget,
-    SessionTargetKind, ShareTarget, ThreeDotItem, UnreadStyle, fold_page_type,
-    official_type_from_local_res,
+    ImSettingRedirect, ImSettingsPage, ImTotalUnread, KeywordBlockingList, SessionOffset,
+    SessionTarget, SessionTargetKind, ShareTarget, ThreeDotItem, UnreadStyle, fold_page_type,
+    msg_kind, official_type_from_local_res, three_dot_kind,
 };
 use bili_grpc::bilibili::app::im::v1 as pb;
 use bili_grpc::bilibili::dagw::component::avatar::common as avatar_common;
@@ -341,7 +341,7 @@ fn project_three_dots(items: &[pb::ThreeDotItem]) -> Vec<ThreeDotItem> {
             title: i.title.clone(),
             icon: i.icon.clone(),
             url: i.url.clone(),
-            item_type: i.r#type,
+            kind: three_dot_kind(i.r#type),
             has_red_dot: i.has_red_dot.unwrap_or_default(),
         })
         .collect()
@@ -369,7 +369,19 @@ pub async fn session_main<T: HttpTransport>(
         RetryPolicy::Read,
     )
     .await?;
-    let reply: pb::SessionMainReply = decode(&bytes, "私信会话列表")?;
+    project_session_main(&bytes)
+}
+
+/// 把 `SessionMain` 的响应字节投影成一页会话。
+///
+/// 与发请求分开，是为了让投影规则能脱离网络被钉住
+/// （`tests/grpc_im_golden.rs`）——那几段按位置取头像、按表映射页面类型
+/// 的规则才是这一片真正会出错的地方。
+///
+/// # Errors
+/// 字节不是合法的 protobuf 时为 [`ErrorKind::Protocol`]。
+pub fn project_session_main(bytes: &[u8]) -> Result<ImSessionPage, DomainError> {
+    let reply: pb::SessionMainReply = decode(bytes, "私信会话列表")?;
     Ok(ImSessionPage {
         sessions: reply.sessions.iter().map(project_session).collect(),
         offsets: offsets_from(reply.pagination_params.as_ref()),
@@ -406,7 +418,16 @@ pub async fn session_secondary<T: HttpTransport>(
         RetryPolicy::Read,
     )
     .await?;
-    let reply: pb::SessionSecondaryReply = decode(&bytes, "二级私信会话列表")?;
+    project_session_secondary(&bytes)
+}
+
+/// 把 `SessionSecondary` 的响应字节投影成一页会话。见
+/// [`project_session_main`]。
+///
+/// # Errors
+/// 同上。
+pub fn project_session_secondary(bytes: &[u8]) -> Result<ImSessionPage, DomainError> {
+    let reply: pb::SessionSecondaryReply = decode(bytes, "二级私信会话列表")?;
     Ok(ImSessionPage {
         sessions: reply.sessions.iter().map(project_session).collect(),
         offsets: offsets_from(reply.pagination_params.as_ref()),
@@ -416,6 +437,7 @@ pub async fn session_secondary<T: HttpTransport>(
             .and_then(|p| p.has_more)
             .unwrap_or_default(),
         three_dot_items: project_three_dots(&reply.three_dot_items),
+        // 二级列表的响应里没有「菜单外」那一组。
         outside_items: Vec::new(),
     })
 }
@@ -556,6 +578,7 @@ fn project_message(msg: &tpb::Msg) -> ImMessage {
         sender_uid: msg.sender_uid.unwrap_or_default(),
         receiver_id: msg.receiver_id.unwrap_or_default(),
         msg_type: msg.msg_type.unwrap_or_default(),
+        kind: msg_kind(msg.msg_type.unwrap_or_default()),
         msg_source: msg.msg_source.unwrap_or_default(),
         msg_status: msg.msg_status.unwrap_or_default(),
         msg_key: msg.msg_key.unwrap_or_default(),
@@ -597,7 +620,16 @@ pub async fn fetch_session_msgs<T: HttpTransport>(
         RetryPolicy::Read,
     )
     .await?;
-    let reply: ipb::RspSessionMsg = decode(&bytes, "会话消息")?;
+    project_session_msgs(&bytes)
+}
+
+/// 把 `SyncFetchSessionMsgs` 的响应字节投影成一页消息。见
+/// [`project_session_main`]。
+///
+/// # Errors
+/// 同上。
+pub fn project_session_msgs(bytes: &[u8]) -> Result<ImMessagePage, DomainError> {
+    let reply: ipb::RspSessionMsg = decode(bytes, "会话消息")?;
     Ok(ImMessagePage {
         messages: reply.messages.iter().map(project_message).collect(),
         emotes: reply
@@ -806,6 +838,7 @@ fn project_setting(key: i32, setting: &pb::Setting) -> ImSetting {
         Some(Content::Redirect(r)) => {
             out.title = r.title.clone();
             out.subtitle = r.subtitle.clone();
+            out.redirect = Some(project_redirect(r));
         }
         Some(Content::Text(t)) => {
             out.title = t.text.clone();
@@ -813,6 +846,82 @@ fn project_setting(key: i32, setting: &pb::Setting) -> ImSetting {
         None => {}
     }
     out
+}
+
+/// 跳转型设置的去向，以及那一行右侧显示什么。
+fn project_redirect(r: &pb::SettingRedirect) -> ImSettingRedirect {
+    use pb::setting_redirect::Content;
+    let mut out = ImSettingRedirect {
+        selected_summary: r.selected_summary.clone().filter(|s| !s.is_empty()),
+        ..ImSettingRedirect::default()
+    };
+    match r.content.as_ref() {
+        Some(Content::SettingPage(p)) => {
+            out.parent_setting_type = p.parent_setting_type;
+            out.page_url = p.url.clone().filter(|u| !u.is_empty());
+            out.trailing_text = sub_setting_trailing(&p.sub_settings);
+        }
+        Some(Content::OtherPage(p)) => {
+            out.other_url = p.url.clone().filter(|u| !u.is_empty());
+        }
+        Some(Content::WindowSelect(w)) => {
+            out.window_options = w
+                .item
+                .iter()
+                .map(|i| ImSettingOption {
+                    title: i.text.clone(),
+                    value: i.item_type.unwrap_or_default(),
+                })
+                .collect();
+            out.window_selected_index = w
+                .item
+                .iter()
+                .position(|i| i.selected.unwrap_or_default())
+                .and_then(|i| i32::try_from(i).ok());
+        }
+        // 弹窗型界面没有分支，基线点了什么也不做。
+        Some(Content::Popup(_)) | None => {}
+    }
+    if out.trailing_text.is_none() {
+        out.trailing_text = out.selected_summary.clone();
+    }
+    out
+}
+
+/// 子设置里拿哪一条当这一行的 trailing 文字。
+///
+/// 照抄基线 `lib/pages/whisper_settings/widgets/item.dart` 的那段循环，
+/// **包括它的两处不对称**：
+///
+/// - 选择型取**第一个选中的选项**，找到之后 `break` 的是内层循环，外层
+///   还会继续看后面的子设置；
+/// - 开关型取**第一个打开着的**开关的标题，找到就 `break` 掉整个循环。
+///
+/// 于是「先遇到一个选中的选项、后面又有一个打开着的开关」时，结果是那个
+/// 选项（开关那一支的 `break` 轮不到）。看着像手滑，但它是既有行为，
+/// 照搬。
+fn sub_setting_trailing(subs: &std::collections::BTreeMap<i32, pb::Setting>) -> Option<String> {
+    let mut selected: Option<String> = None;
+    for setting in subs.values() {
+        match setting.content.as_ref() {
+            Some(pb::setting::Content::Select(s)) => {
+                if selected.is_none() {
+                    selected = s
+                        .item
+                        .iter()
+                        .find(|i| i.selected.unwrap_or_default())
+                        .and_then(|i| i.text.clone());
+                }
+            }
+            // 基线这里 break 掉整个循环，而且**不覆盖**已经找到的选项
+            // ——它用的是两个不同的变量。
+            Some(pb::setting::Content::Switch(sw)) if sw.switch_on.unwrap_or_default() => {
+                return selected.or_else(|| sw.title.clone());
+            }
+            _ => {}
+        }
+    }
+    selected
 }
 
 /// 一次设置读取的结果：给界面看的投影，外加**原样的响应字节**。
@@ -856,17 +965,26 @@ pub async fn get_settings<T: HttpTransport>(
         RetryPolicy::Read,
     )
     .await?;
-    let reply: pb::GetImSettingsReply = decode(&bytes, "私信设置")?;
     Ok(ImSettingsSnapshot {
-        page: ImSettingsPage {
-            page_title: reply.page_title.clone().unwrap_or_default(),
-            settings: reply
-                .settings
-                .iter()
-                .map(|(key, setting)| project_setting(*key, setting))
-                .collect(),
-        },
+        page: project_settings(&bytes)?,
         raw: bytes,
+    })
+}
+
+/// 把 `GetImSettings` 的响应字节投影成设置页。见
+/// [`project_session_main`]。
+///
+/// # Errors
+/// 同上。
+pub fn project_settings(bytes: &[u8]) -> Result<ImSettingsPage, DomainError> {
+    let reply: pb::GetImSettingsReply = decode(bytes, "私信设置")?;
+    Ok(ImSettingsPage {
+        page_title: reply.page_title.clone().unwrap_or_default(),
+        settings: reply
+            .settings
+            .iter()
+            .map(|(key, setting)| project_setting(*key, setting))
+            .collect(),
     })
 }
 
@@ -903,6 +1021,28 @@ pub async fn set_settings<T: HttpTransport>(
         (Some(pb::setting::Content::Select(s)), _, Some(value)) => {
             for item in &mut s.item {
                 item.selected = Some(item.item_type == Some(value));
+            }
+        }
+        // 跳转型里的弹窗选择：选项在 redirect 里，不在顶层。基线改完
+        // 还会把 `selected_summary` 同步成选中项的文字，一并照搬——
+        // 不然写回之后这一行右侧还显示着旧值。
+        (Some(pb::setting::Content::Redirect(r)), _, Some(value)) => {
+            let Some(pb::setting_redirect::Content::WindowSelect(w)) = r.content.as_mut() else {
+                return Err(DomainError::new(
+                    ErrorKind::Protocol,
+                    "这一项是跳转型，但不是弹窗选择",
+                ));
+            };
+            let mut picked = None;
+            for item in &mut w.item {
+                let hit = item.item_type == Some(value);
+                item.selected = Some(hit);
+                if hit {
+                    picked = item.text.clone();
+                }
+            }
+            if let Some(text) = picked {
+                r.selected_summary = Some(text);
             }
         }
         _ => {
@@ -1051,6 +1191,82 @@ mod tests {
         assert_eq!(page_type::HUA_HUO, pb::SessionPageType::HuaHuo as i32);
         assert_eq!(page_type::AI, pb::SessionPageType::Ai as i32);
         assert_eq!(page_type::CUSTOMER, pb::SessionPageType::Customer as i32);
+    }
+
+    /// 「…」菜单与设置页那两组常量同样是手写的，锚在这里。
+    #[test]
+    fn three_dot_and_setting_constants_match_the_generated_ones() {
+        use bili_domain::im::{setting_page_type, three_dot_type};
+        assert_eq!(
+            three_dot_type::READ_ALL,
+            pb::ThreeDotItemType::ReadAll as i32
+        );
+        assert_eq!(
+            three_dot_type::MSG_SETTING,
+            pb::ThreeDotItemType::MsgSetting as i32
+        );
+        assert_eq!(
+            three_dot_type::UP_HELPER,
+            pb::ThreeDotItemType::UpHelper as i32
+        );
+        assert_eq!(
+            three_dot_type::FANS_GROUP_HELPER,
+            pb::ThreeDotItemType::FansGroupHelper as i32
+        );
+        assert_eq!(
+            three_dot_type::CONTACTS,
+            pb::ThreeDotItemType::Contacts as i32
+        );
+        assert_eq!(
+            three_dot_type::CLEAR_LIST,
+            pb::ThreeDotItemType::ClearList as i32
+        );
+
+        assert_eq!(
+            setting_page_type::ALL,
+            pb::ImSettingType::SettingTypeNeedAll as i32
+        );
+        assert_eq!(
+            setting_page_type::OLD_REPLY_ME,
+            pb::ImSettingType::SettingTypeOldReplyMe as i32
+        );
+        assert_eq!(
+            setting_page_type::OLD_AT_ME,
+            pb::ImSettingType::SettingTypeOldAtMe as i32
+        );
+        assert_eq!(
+            setting_page_type::OLD_RECEIVE_LIKE,
+            pb::ImSettingType::SettingTypeOldReceiveLike as i32
+        );
+    }
+
+    /// 消息类型那十二个取值同样是手写的，锚在这里。
+    ///
+    /// 基线把数字编进了函数名（`msgTypeText_1`、`msgTypeShareV2_7`、
+    /// `msgTypeTipMessage_18`……），算是另一重交叉验证。16 是个例外：
+    /// 协议里**没有**这个名字，基线按数字单独画一种卡片。
+    #[test]
+    fn msg_type_constants_match_the_generated_enum() {
+        use bili_domain::im::msg_type as m;
+        use bili_grpc::bilibili::im::r#type::MsgType as T;
+        assert_eq!(m::TEXT, T::EnMsgTypeText as i32);
+        assert_eq!(m::PIC, T::EnMsgTypePic as i32);
+        assert_eq!(m::DRAW_BACK, T::EnMsgTypeDrawBack as i32);
+        assert_eq!(m::CUSTOM_FACE, T::EnMsgTypeCustomFace as i32);
+        assert_eq!(m::SHARE_V2, T::EnMsgTypeShareV2 as i32);
+        assert_eq!(m::NOTIFY_MSG, T::EnMsgTypeNotifyMsg as i32);
+        assert_eq!(m::VIDEO_CARD, T::EnMsgTypeVideoCard as i32);
+        assert_eq!(m::ARTICLE_CARD, T::EnMsgTypeArticleCard as i32);
+        assert_eq!(m::PICTURE_CARD, T::EnMsgTypePictureCard as i32);
+        assert_eq!(m::COMMON_SHARE_CARD, T::EnMsgTypeCommonShareCard as i32);
+        assert_eq!(m::TIP_MESSAGE, T::EnMsgTypeTipMessage as i32);
+        // 16 刻意不在枚举里：协议的 15 是 TextShare、18 是 TipMessage，
+        // 中间那个没有名字。确认它确实还没被占用——哪天上游补了名字，
+        // 这条分支要重新对一遍。
+        assert!(
+            T::try_from(m::UNNAMED_16).is_err(),
+            "16 一旦在协议里有了名字，按数字画的那条分支要重新对"
+        );
     }
 
     /// 认证标那两个值同样是手写的，锚在这里。

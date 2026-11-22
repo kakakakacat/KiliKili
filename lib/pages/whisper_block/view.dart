@@ -3,8 +3,6 @@ import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/view_insets_safe_area.dart';
-import 'package:kilikili/grpc/bilibili/app/im/v1.pb.dart'
-    show KeywordBlockingItem;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/pages/search/widgets/search_text.dart';
 import 'package:kilikili/pages/whisper_block/controller.dart';
@@ -36,7 +34,7 @@ class _WhisperBlockPageState extends State<WhisperBlockPage> {
 
   Widget _buildBody(
     ThemeData theme,
-    LoadingState<List<KeywordBlockingItem>?> loadingState,
+    LoadingState<List<String>?> loadingState,
   ) {
     return switch (loadingState) {
       Loading() => m3eLoading,
@@ -79,7 +77,7 @@ class _WhisperBlockPageState extends State<WhisperBlockPage> {
                         children: response
                             .map(
                               (e) => SearchText(
-                                text: e.keyword,
+                                text: e,
                                 onTap: (keyword) {
                                   showConfirmDialog(
                                     context: context,

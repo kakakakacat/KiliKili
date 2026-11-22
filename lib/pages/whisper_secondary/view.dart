@@ -3,8 +3,8 @@ import 'package:kilikili/common/sliver_single_child_delegate.dart';
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:kilikili/grpc/bilibili/app/im/v1.pb.dart';
 import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/services/rust/rust_im.dart';
 import 'package:kilikili/pages/whisper/widgets/item.dart';
 import 'package:kilikili/pages/whisper_secondary/controller.dart';
 import 'package:kilikili/utils/extension/three_dot_ext.dart';
@@ -19,7 +19,8 @@ class WhisperSecPage extends StatefulWidget {
   });
 
   final String name;
-  final SessionPageType sessionPageType;
+  /// Rust 映射好的页面类型（`ImSessionTarget.foldPageType`），不是会话类型。
+  final int sessionPageType;
 
   @override
   State<WhisperSecPage> createState() => _WhisperSecPageState();
@@ -33,7 +34,7 @@ class _WhisperSecPageState extends State<WhisperSecPage> {
     super.initState();
     _controller = Get.put(
       WhisperSecController(sessionPageType: widget.sessionPageType),
-      tag: widget.sessionPageType.name,
+      tag: '${widget.sessionPageType}',
     );
   }
 
@@ -51,14 +52,14 @@ class _WhisperSecPageState extends State<WhisperSecPage> {
                   return threeDotItems
                       .map(
                         (e) => PopupMenuItem(
-                          onTap: () => e.type.action(
+                          onTap: () => e.kind.action(
                             context: context,
                             controller: _controller,
                             item: e,
                           ),
                           child: Row(
                             children: [
-                              e.type.icon,
+                              e.kind.icon,
                               Text('  ${e.title}'),
                             ],
                           ),
@@ -89,7 +90,7 @@ class _WhisperSecPageState extends State<WhisperSecPage> {
     );
   }
 
-  Widget _buildBody(LoadingState<List<Session>?> loadingState) {
+  Widget _buildBody(LoadingState<List<ImSession>?> loadingState) {
     switch (loadingState) {
       case Loading():
         return const SliverPrototypeExtentList(
@@ -116,11 +117,11 @@ class _WhisperSecPageState extends State<WhisperSecPage> {
               final item = response[index];
               return WhisperSessionItem(
                 item: item,
-                onSetTop: (isTop, talkerId) =>
-                    _controller.onSetTop(item, index, isTop, talkerId),
-                onSetMute: (isMuted, talkerUid) =>
-                    _controller.onSetMute(item, isMuted, talkerUid),
-                onRemove: (talkerId) => _controller.onRemove(index, talkerId),
+                index: index,
+                onSetTop: _controller.onSetTop,
+                onSetMute: _controller.onSetMute,
+                onRemove: (i) => _controller.onRemoveAt(i),
+                onAcked: _controller.onAcked,
               );
             },
             separatorBuilder: (context, index) => divider,

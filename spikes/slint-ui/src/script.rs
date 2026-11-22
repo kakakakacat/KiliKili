@@ -58,14 +58,23 @@ pub struct Step {
     pub note: &'static str,
 }
 
+/// 在「回到顶部」之后、富文本场景之前，留给外部触摸的那个空窗的起点。
+const TOUCH_AT_MS: u64 = 14_000;
+
 /// 默认脚本。
+///
+/// `touch_ms` 大于 0 时，在列表场景末尾插一段**探针自己不滚**的空窗，单独
+/// 统计帧耗时，滚动全部由外部（Android 上是 adb 的 swipe）驱动。桌面传 0，
+/// 脚本与 2026-11-22 那一轮逐字相同——两份记录要能逐行对照，就不能顺手改
+/// 已经跑出过数字的时间轴。
 #[must_use]
 pub fn default_script(
     scroll_speed: f32,
     ime_keys: &'static str,
     typed_keys: &'static str,
+    touch_ms: u64,
 ) -> Vec<Step> {
-    vec![
+    let mut steps = vec![
         Step {
             at_ms: 0,
             action: Action::Scene(0, "长列表"),
@@ -249,7 +258,27 @@ pub fn default_script(
             action: Action::Quit,
             note: "写记录并退出",
         },
-    ]
+    ];
+
+    if touch_ms > 0 {
+        for step in steps.iter_mut().filter(|s| s.at_ms >= TOUCH_AT_MS) {
+            step.at_ms += touch_ms;
+        }
+        let pos = steps
+            .iter()
+            .position(|s| s.at_ms > TOUCH_AT_MS)
+            .unwrap_or(steps.len());
+        steps.insert(
+            pos,
+            Step {
+                at_ms: TOUCH_AT_MS,
+                action: Action::Phase("触控滚动"),
+                note: "这一段探针不自己滚：滚动由真实触摸驱动，量的是 Flickable 的惯性",
+            },
+        );
+    }
+
+    steps
 }
 
 #[cfg(test)]
@@ -258,7 +287,7 @@ mod tests {
 
     #[test]
     fn the_script_is_ordered_and_terminates() {
-        let script = default_script(2_400.0, "nihao ", "hello{TAB}world{TAB}1234567890");
+        let script = default_script(2_400.0, "nihao ", "hello{TAB}world{TAB}1234567890", 0);
         assert!(
             script.windows(2).all(|w| w[0].at_ms <= w[1].at_ms),
             "脚本的时间点必须单调不减，否则执行器会跳过步骤"
@@ -268,7 +297,7 @@ mod tests {
 
     #[test]
     fn every_shot_has_a_distinct_name() {
-        let script = default_script(2_400.0, "nihao ", "hello{TAB}world{TAB}1234567890");
+        let script = default_script(2_400.0, "nihao ", "hello{TAB}world{TAB}1234567890", 0);
         let mut names: Vec<&str> = script
             .iter()
             .filter_map(|s| match s.action {
@@ -286,7 +315,7 @@ mod tests {
     fn the_window_is_activated_before_the_first_metered_phase() {
         // 这条不是洁癖：窗口不在前台时 Windows 把合成降到两三帧每秒，
         // 于是「滚动 p95」量出来是 500ms，看着像 Slint 画不动。
-        let script = default_script(2_400.0, "nihao ", "hello{TAB}world{TAB}1234567890");
+        let script = default_script(2_400.0, "nihao ", "hello{TAB}world{TAB}1234567890", 0);
         let activate = script
             .iter()
             .position(|s| s.action == Action::Activate)
@@ -305,7 +334,7 @@ mod tests {
     fn the_scroll_segment_fits_inside_its_phase() {
         // 滚动必须整段落在「列表滚动」这个分段里，否则 p95 量到的是
         // 一半滚动一半静止。
-        let script = default_script(2_400.0, "nihao ", "hello{TAB}world{TAB}1234567890");
+        let script = default_script(2_400.0, "nihao ", "hello{TAB}world{TAB}1234567890", 0);
         let phase_at = |name: &str| {
             script
                 .iter()

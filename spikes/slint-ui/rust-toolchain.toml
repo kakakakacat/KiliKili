@@ -1,0 +1,10 @@
+# 与 `rust/rust-toolchain.toml`、`spikes/slint-mpv` 同版本。
+#
+# 2026-11-22 加这份的直接原因是 Android：默认 stable（本机 1.99.1）没装
+# `aarch64-linux-android`，而 1.100.0 装了。但真正的理由和 slint-mpv 写的一样
+# ——工具链漂移会同时改掉优化行为和 clippy 结论，而这个 spike 报的是性能数字，
+# 三个平台的记录必须用同一个 rustc 跑出来才可比。
+[toolchain]
+channel = "1.100.0"
+components = ["rustfmt", "clippy"]
+targets = ["aarch64-linux-android"]

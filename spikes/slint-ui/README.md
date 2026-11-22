@@ -15,10 +15,21 @@
 ## 跑
 
 ```sh
-cargo run --release -- --scripted --rows 20000 \
+cargo build --release
+./target/release/slint-ui-spike --scripted --rows 20000 \
     --record ../../docs/m0/spikes/2026-11-22-slint-ui-windows.md \
     --shots /tmp/shots
 ```
+
+**两条都不是洁癖**：
+
+- **先 `cargo build --release` 再跑**。`cargo test` 建的是测试壳，不会刷新
+  `target/release/` 下的 exe——曾经整整一轮跑的是旧二进制。
+- **直接跑 exe，不要用 `cargo run`**。2026-11-22 复跑时 2/2 复现：经
+  `cargo run` 跑出来的那一轮，按键 / Tab / IME 三项全 FAIL（焦点序列只剩
+  `[1]`、输入框全空），而外部驱动照常报 `activate=true`。机制没查清，但
+  **失败的样子像结论**——记录上会写着「Slint 收不到键盘输入」。详见那份
+  notes 的 §5。
 
 `--scripted` 会跑完整条时间线并自动退出；不加就是手动模式，自己点。
 其他常用参数：`--rows`（列表条数）、`--keys`（英文那段打什么）、
@@ -34,13 +45,45 @@ cargo run --release --bin frame-floor -- --mode scroll --rows 20000
 主实验台的帧数要先减掉这一层才算数。查「滚动只有 7fps」时就是它把
 「Slint 画不动」和「根本没触发重绘」分开的。
 
+## 在 Android 真机上跑
+
+同一个 `app::run`，不是另写的探针——两份记录要能逐行对照，流程就不能各写
+一份。Android 的入口是 cdylib 里导出的 `android_main`（`src/lib.rs`），它自己
+拼一份与上面那行命令等价的 `Args`。
+
+```sh
+export JAVA_HOME=<Android Studio 的 jbr>
+export ANDROID_HOME=<SDK>   ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/<版本>
+cargo apk build --release --lib
+adb install -r target/release/apk/slint_ui_spike.apk
+./android-drive.sh target/android-evidence
+```
+
+三件**跑之前必须做**的事，少一件就得到一份看不出错的脏数据：
+
+1. **把别的 spike 和 App 停掉**：`adb shell am force-stop <包名>`。SPIKE-002
+   的 mpv 探针会在后台继续解码放音，量到的就是两个程序抢 GPU 的结果；
+2. **解锁并常亮**：`adb shell svc power stayon true`。锁屏时 activity 不可见，
+   Slint 不渲染，看着像卡死；默认 60 秒熄屏而一轮要 50 秒；
+3. 驱动脚本靠 logcat 里的 `STEP` 行对时间轴，**别改成按绝对时间 sleep**：
+   真机冷启动能差好几秒，错位不会报错，只会让「对着列表发按键」这种事
+   静静发生。
+
+外部驱动在**宿主机**上（adb），不在进程里，所以 Android 这一轮按
+`--no-driver` 跑，按键 / 输入法 / 无障碍三项由 `android-drive.sh` 从外面做，
+结果追加在记录末尾的「宿主机侧证据」一节。
+
+`--touch-ms` 是 Android 专用的：它在列表场景末尾留一段**探针自己不滚**的空窗，
+滚动全部由 swipe 驱动，于是「触控惯性」有自己的帧耗时分段。桌面保持 0，脚本
+与 2026-11-22 那一轮逐字相同。
+
 ## 数据是真的，条数是假的
 
 列表里每一行都走**生产管线**：pb 字节 → `bili_api::grpc_reply::project_main_list`
 → `ReplyEntity` → `bili_domain::reply_richtext::segment`。用假结构问不出
 「真实评论的段数与配图能不能撑住 60fps」。**只有条数是合成的**，记录里写明。
 
-## 外部驱动（`win/`）
+## 外部驱动（Windows 是 `win/`，Android 是 `android-drive.sh`）
 
 IME 组字、Tab 轮转、最小化再回来、无障碍树这四项，**只能从窗口外面做**：
 程序自己 `set_text` 等于把被测的那一段跳过去了。所以起 `powershell.exe` 跑

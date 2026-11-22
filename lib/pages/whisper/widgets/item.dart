@@ -10,8 +10,8 @@ import 'package:kilikili/grpc/bilibili/app/im/v1.pb.dart'
     show Session, SessionId, SessionPageType;
 import 'package:kilikili/grpc/im.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/msg.dart';
 import 'package:kilikili/pages/whisper_secondary/view.dart';
+import 'package:kilikili/services/rust/rust_msg.dart';
 import 'package:kilikili/utils/date_utils.dart';
 import 'package:kilikili/utils/extension/num_ext.dart';
 import 'package:kilikili/utils/extension/theme_ext.dart';
@@ -41,7 +41,7 @@ class WhisperSessionItem extends StatelessWidget {
     final talkerUid = item.id.privateId.talkerUid;
     final res = await ImGrpc.sessionDetail(talkerId: talkerUid, sessionType: 1);
     if (res case Success(:final response)) {
-      final res = await MsgHttp.ackSessionMsg(
+      final res = await RustMsg.ackSessionMsg(
         talkerId: talkerUid.toInt(),
         ackSeqno: response.ackSeqno.toInt(),
       );

@@ -1,0 +1,6 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": { "at": 1, "chat": 0, "like": 2, "reply": 4, "sys_msg": 8, "up": 0 }
+}

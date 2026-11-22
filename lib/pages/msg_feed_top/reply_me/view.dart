@@ -10,7 +10,7 @@ import 'package:kilikili/grpc/bilibili/app/im/v1.pbenum.dart'
     show IMSettingType;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/image_type.dart';
-import 'package:kilikili/models_new/msg/msg_reply/item.dart';
+import 'package:kilikili/services/rust/rust_msg.dart';
 import 'package:kilikili/pages/msg_feed_top/reply_me/controller.dart';
 import 'package:kilikili/pages/whisper_settings/view.dart';
 import 'package:kilikili/utils/app_scheme.dart';
@@ -72,7 +72,7 @@ class _ReplyMePageState extends State<ReplyMePage> {
 
   Widget _buildBody(
     ThemeData theme,
-    LoadingState<List<MsgReplyItem>?> loadingState,
+    LoadingState<List<ReplyFeedItem>?> loadingState,
   ) {
     switch (loadingState) {
       case Loading():
@@ -98,7 +98,7 @@ class _ReplyMePageState extends State<ReplyMePage> {
                 _replyMeController.onLoadMore();
               }
 
-              MsgReplyItem item = response[index];
+              ReplyFeedItem item = response[index];
 
               void onLongPress() => showConfirmDialog(
                 context: context,

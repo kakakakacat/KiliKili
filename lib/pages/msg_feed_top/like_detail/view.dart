@@ -6,8 +6,7 @@ import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/image_type.dart';
-import 'package:kilikili/models_new/msg/msg_like_detail/card.dart';
-import 'package:kilikili/models_new/msg/msg_like_detail/item.dart';
+import 'package:kilikili/services/rust/rust_msg.dart';
 import 'package:kilikili/pages/msg_feed_top/like_detail/controller.dart';
 import 'package:kilikili/utils/app_scheme.dart';
 import 'package:kilikili/utils/date_utils.dart';
@@ -54,7 +53,7 @@ class _LikeDetailPageState extends State<LikeDetailPage> {
 
   Widget _buildBody(
     ThemeData theme,
-    LoadingState<List<MsgLikeDetailItem>?> loadingState,
+    LoadingState<List<LikeDetailItem>?> loadingState,
   ) {
     switch (loadingState) {
       case Loading():
@@ -103,7 +102,7 @@ class _LikeDetailPageState extends State<LikeDetailPage> {
     }
   }
 
-  Widget _buildCard(MsgLikeDetailCard card) {
+  Widget _buildCard(LikeDetailCard card) {
     return SliverToBoxAdapter(
       child: ListTile(
         onTap: () {
@@ -116,7 +115,7 @@ class _LikeDetailPageState extends State<LikeDetailPage> {
     );
   }
 
-  Widget _buildItem(ThemeData theme, MsgLikeDetailItem item) {
+  Widget _buildItem(ThemeData theme, LikeDetailItem item) {
     return ListTile(
       onTap: () => Get.toNamed('/member?mid=${item.user!.mid}'),
       leading: NetworkImgLayer(

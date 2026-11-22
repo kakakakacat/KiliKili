@@ -1,0 +1,14 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "page": { "is_end": false, "pn": 1, "ps": 20 },
+    "card": { "business": "评论", "title": "被赞的那条评论", "native_uri": "bilibili://video/900030" },
+    "items": [
+      { "user": { "mid": 100005, "nickname": "示例用户丁", "avatar": "https://example.invalid/face-d.jpg" }, "like_time": 1731000020 },
+      { "user": { "mid": 100006, "nickname": "示例用户戊", "avatar": "https://example.invalid/face-e.jpg" }, "like_time": 1731000019 },
+      { "user": null, "like_time": 1731000018 }
+    ]
+  }
+}

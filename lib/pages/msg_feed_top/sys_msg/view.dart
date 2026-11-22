@@ -7,7 +7,7 @@ import 'package:kilikili/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/msg/msg_sys/data.dart';
+import 'package:kilikili/services/rust/rust_msg.dart';
 import 'package:kilikili/pages/msg_feed_top/sys_msg/controller.dart';
 import 'package:kilikili/utils/app_scheme.dart';
 import 'package:kilikili/utils/id_utils.dart';
@@ -57,7 +57,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
 
   Widget _buildBody(
     ThemeData theme,
-    LoadingState<List<MsgSysItem>?> loadingState,
+    LoadingState<List<SysMsgItem>?> loadingState,
   ) {
     switch (loadingState) {
       case Loading():

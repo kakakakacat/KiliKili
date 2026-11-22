@@ -5,10 +5,7 @@ import 'package:kilikili/common/widgets/dialog/report_member.dart';
 import 'package:kilikili/grpc/bilibili/app/im/v1.pb.dart';
 import 'package:kilikili/grpc/im.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/msg.dart';
-import 'package:kilikili/models_new/msg/im_user_infos/datum.dart';
-import 'package:kilikili/models_new/msg/msg_dnd/uid_setting.dart';
-import 'package:kilikili/models_new/msg/session_ss/data.dart';
+import 'package:kilikili/services/rust/rust_msg.dart';
 import 'package:kilikili/services/rust/rust_video_write.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:fixnum/fixnum.dart';
@@ -35,23 +32,23 @@ class WhisperLinkSettingController extends GetxController {
     getIsPinned();
   }
 
-  final Rx<LoadingState<List<ImUserInfosData>?>> userState =
-      LoadingState<List<ImUserInfosData>?>.loading().obs;
-  final Rx<LoadingState<SessionSsData>> sessionSs =
-      LoadingState<SessionSsData>.loading().obs;
-  final Rx<LoadingState<List<UidSetting>?>> msgDnd =
-      LoadingState<List<UidSetting>?>.loading().obs;
+  final Rx<LoadingState<List<ImUserInfo>>> userState =
+      LoadingState<List<ImUserInfo>>.loading().obs;
+  final Rx<LoadingState<SessionSs>> sessionSs =
+      LoadingState<SessionSs>.loading().obs;
+  final Rx<LoadingState<List<MsgDndSetting>>> msgDnd =
+      LoadingState<List<MsgDndSetting>>.loading().obs;
 
   Future<void> getUserInfo() async {
-    userState.value = await MsgHttp.imUserInfos(uids: talkerUid.toString());
+    userState.value = await RustMsg.imUserInfos(uids: talkerUid.toString());
   }
 
   Future<void> getSessionSs() async {
-    sessionSs.value = await MsgHttp.getSessionSs(talkerUid: talkerUid);
+    sessionSs.value = await RustMsg.getSessionSs(talkerUid: talkerUid);
   }
 
   Future<void> getMsgDnd() async {
-    msgDnd.value = await MsgHttp.getMsgDnd(uidsStr: talkerUid);
+    msgDnd.value = await RustMsg.getMsgDnd(uidsStr: '$talkerUid');
   }
 
   Future<void> getIsPinned() async {
@@ -76,14 +73,12 @@ class WhisperLinkSettingController extends GetxController {
 
   Future<void> _setPush(bool isPush) async {
     int setting = isPush ? 1 : 0;
-    final res = await MsgHttp.setPushSs(
+    final res = await RustMsg.setPushSs(
       setting: setting,
       talkerUid: talkerUid,
     );
     if (res.isSuccess) {
-      sessionSs
-        ..value.data.pushSetting = setting
-        ..refresh();
+      _patchSessionSs(pushSetting: setting);
     } else {
       res.toast();
     }
@@ -102,15 +97,20 @@ class WhisperLinkSettingController extends GetxController {
 
   Future<void> setMute(bool isMuted) async {
     int setting = isMuted ? 0 : 1;
-    final res = await MsgHttp.setMsgDnd(
+    final res = await RustMsg.setMsgDnd(
       uid: Accounts.main.mid,
       setting: setting,
       dndUid: talkerUid,
     );
     if (res.isSuccess) {
-      msgDnd
-        ..value.data!.first.setting = setting
-        ..refresh();
+      // FRB 导出的类型不可变（字段全是 final），所以换一条新的而不是就地
+      // 改 setting。列表里那条本来就该是服务端状态的副本。
+      if (msgDnd.value case Success(:final response)) {
+        if (response.isNotEmpty) {
+          response[0] = MsgDndSetting(setting: setting);
+          msgDnd.refresh();
+        }
+      }
     } else {
       res.toast();
     }
@@ -124,9 +124,7 @@ class WhisperLinkSettingController extends GetxController {
         reSrc: 11,
       );
       if (res.isSuccess) {
-        sessionSs
-          ..value.data.followStatus = null
-          ..refresh();
+        _patchSessionSs(clearFollowStatus: true);
       } else {
         res.toast();
       }
@@ -142,14 +140,38 @@ class WhisperLinkSettingController extends GetxController {
             reSrc: 11,
           );
           if (res.isSuccess) {
-            sessionSs
-              ..value.data.followStatus = 128
-              ..refresh();
+            // 128 是「已拉黑」。
+            _patchSessionSs(followStatus: 128);
           } else {
             res.toast();
           }
         },
       );
+    }
+  }
+
+  /// 就地更新会话设置的一项。
+  ///
+  /// FRB 导出的 [SessionSs] 是不可变的，所以这里重建一份而不是改字段。
+  /// [clearFollowStatus] 单独给一个参数：`followStatus: null` 没法和「这次
+  /// 不改它」区分开，而「取消关注后清掉关系」正好要置空。
+  void _patchSessionSs({
+    int? pushSetting,
+    int? followStatus,
+    bool clearFollowStatus = false,
+  }) {
+    if (sessionSs.value case Success(:final response)) {
+      sessionSs
+        ..value = Success(
+          SessionSs(
+            followStatus: clearFollowStatus
+                ? null
+                : (followStatus ?? response.followStatus),
+            pushSetting: pushSetting ?? response.pushSetting,
+            showPushSetting: response.showPushSetting,
+          ),
+        )
+        ..refresh();
     }
   }
 

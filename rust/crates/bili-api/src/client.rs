@@ -185,6 +185,32 @@ pub(crate) async fn send_write<T: HttpTransport>(
                 obj.insert("csrf".to_owned(), serde_json::Value::String(csrf));
             }
             (CsrfIn::Query, _) => query.push(("csrf".to_owned(), csrf)),
+            (CsrfIn::BodyWithToken, WriteBody::Form(form)) => {
+                // 顺序与基线一致：`csrf_token` 在前。服务端不关心，但请求
+                // 快照钉住了它，换序只会让 diff 变成噪音。
+                form.push(("csrf_token".to_owned(), csrf.clone()));
+                form.push(("csrf".to_owned(), csrf));
+            }
+            (CsrfIn::BodyWithToken, WriteBody::Json(_)) => {
+                return Err(DomainError::new(
+                    bili_domain::error::ErrorKind::Protocol,
+                    "csrf + csrf_token 的双字段形态目前只出现在表单体上",
+                ));
+            }
+            (CsrfIn::BodyAndQuery, WriteBody::Json(value)) => {
+                let Some(obj) = value.as_object_mut() else {
+                    return Err(DomainError::new(
+                        bili_domain::error::ErrorKind::Protocol,
+                        "JSON 体不是对象，csrf 无处可放——构造处应改用 CsrfIn::Query",
+                    ));
+                };
+                obj.insert("csrf".to_owned(), serde_json::Value::String(csrf.clone()));
+                query.push(("csrf".to_owned(), csrf));
+            }
+            (CsrfIn::BodyAndQuery, WriteBody::Form(form)) => {
+                form.push(("csrf".to_owned(), csrf.clone()));
+                query.push(("csrf".to_owned(), csrf));
+            }
             (CsrfIn::BodyNamed(field), WriteBody::Form(form)) => {
                 form.push(((*field).to_owned(), csrf));
             }

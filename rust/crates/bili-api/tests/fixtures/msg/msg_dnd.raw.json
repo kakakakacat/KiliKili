@@ -1,0 +1,7 @@
+{
+  "code": 0,
+  "msg": "0",
+  "message": "0",
+  "ttl": 1,
+  "data": { "uid_settings": [{ "uid": 100009, "setting": 1 }, { "uid": 100010, "setting": 0 }] }
+}

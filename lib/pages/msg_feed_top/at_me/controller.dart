@@ -1,11 +1,9 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/msg.dart';
-import 'package:kilikili/models_new/msg/msg_at/data.dart';
-import 'package:kilikili/models_new/msg/msg_at/item.dart';
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_msg.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
-class AtMeController extends CommonListController<MsgAtData, MsgAtItem> {
+class AtMeController extends CommonListController<AtFeed, AtFeedItem> {
   int? cursor;
   int? cursorTime;
 
@@ -16,7 +14,7 @@ class AtMeController extends CommonListController<MsgAtData, MsgAtItem> {
   }
 
   @override
-  List<MsgAtItem>? getDataList(MsgAtData response) {
+  List<AtFeedItem>? getDataList(AtFeed response) {
     if (response.cursor?.isEnd == true) {
       isEnd = true;
     }
@@ -33,13 +31,14 @@ class AtMeController extends CommonListController<MsgAtData, MsgAtItem> {
   }
 
   @override
-  Future<LoadingState<MsgAtData>> customGetData() =>
-      MsgHttp.msgFeedAtMe(cursor: cursor, cursorTime: cursorTime);
+  Future<LoadingState<AtFeed>> customGetData() =>
+      RustMsg.msgFeedAtMe(cursor: cursor, cursorTime: cursorTime);
 
   @pragma('vm:notify-debugger-on-exception')
-  Future<void> onRemove(Object id, int index) async {
+  Future<void> onRemove(Object? id, int index) async {
     try {
-      final res = await MsgHttp.delMsgfeed(2, id);
+      // tp=2 是「@我的」。
+      final res = await RustMsg.delMsgfeed(2, '$id');
       if (res.isSuccess) {
         loadingState
           ..value.data!.removeAt(index)

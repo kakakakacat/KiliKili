@@ -49,6 +49,7 @@ pub mod live_danmaku;
 pub mod live_socket;
 pub mod login;
 pub mod match_info;
+pub mod msg;
 pub mod music;
 pub mod nav;
 pub mod pgc;

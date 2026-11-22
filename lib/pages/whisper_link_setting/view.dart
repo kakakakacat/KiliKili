@@ -1,10 +1,8 @@
 import 'package:kilikili/common/widgets/pendant_avatar.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/msg/im_user_infos/datum.dart';
-import 'package:kilikili/models_new/msg/msg_dnd/uid_setting.dart';
-import 'package:kilikili/models_new/msg/session_ss/data.dart';
 import 'package:kilikili/pages/whisper_link_setting/controller.dart';
+import 'package:kilikili/services/rust/rust_msg.dart';
 import 'package:kilikili/utils/extension/theme_ext.dart';
 import 'package:kilikili/utils/utils.dart';
 import 'package:get/get.dart';
@@ -109,37 +107,35 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
   Widget _buildUserInfo(
     ThemeData theme,
     Widget divider,
-    LoadingState<List<ImUserInfosData>?> loadingState,
+    LoadingState<List<ImUserInfo>> loadingState,
   ) {
     return switch (loadingState) {
       Loading() => const SizedBox.shrink(),
       Success(:final response) =>
-        response != null && response.isNotEmpty
+        response.isNotEmpty
             ? Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Builder(
                     builder: (context) {
-                      final ImUserInfosData item = response.first;
+                      final ImUserInfo item = response.first;
                       return ListTile(
                         onTap: () => Get.toNamed('/member?mid=${item.mid}'),
                         leading: PendantAvatar(
                           item.face,
                           size: 42,
                           badgeSize: 14,
-                          vipStatus: item.vip?.status,
-                          pendantImage: item.pendant?.image,
-                          officialType: item.official?.type,
+                          vipStatus: item.vipStatus,
+                          pendantImage: item.pendantImage,
+                          officialType: item.officialType,
                         ),
                         title: Text(
                           item.name!,
                           style: TextStyle(
                             fontSize: 14,
                             color:
-                                item.vip?.status != null &&
-                                    item.vip!.status > 0 &&
-                                    item.vip?.type == 2
+                                (item.vipStatus ?? 0) > 0 && item.vipType == 2
                                 ? theme.colorScheme.vipColor
                                 : null,
                           ),
@@ -173,7 +169,7 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
     ThemeData theme,
     Widget divider,
     Widget divider2,
-    LoadingState<SessionSsData> loadingState,
+    LoadingState<SessionSs> loadingState,
   ) {
     return switch (loadingState) {
       Loading() => const SizedBox.shrink(),
@@ -233,11 +229,11 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
     };
   }
 
-  Widget _buildMuteItem(LoadingState<List<UidSetting>?> loadingState) {
+  Widget _buildMuteItem(LoadingState<List<MsgDndSetting>> loadingState) {
     return switch (loadingState) {
       Loading() => const SizedBox.shrink(),
       Success(:final response) =>
-        response != null && response.isNotEmpty
+        response.isNotEmpty
             ? ListTile(
                 dense: true,
                 onTap: () => _controller.setMute(response.first.setting == 1),

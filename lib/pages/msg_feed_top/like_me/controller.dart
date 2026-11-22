@@ -1,17 +1,15 @@
 import 'package:kilikili/common/widgets/pair.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/msg.dart';
-import 'package:kilikili/models_new/msg/msg_like/data.dart';
-import 'package:kilikili/models_new/msg/msg_like/item.dart';
 import 'package:kilikili/pages/common/common_data_controller.dart';
+import 'package:kilikili/services/rust/rust_msg.dart';
 import 'package:kilikili/utils/extension/iterable_ext.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 class LikeMeController
     extends
         CommonDataController<
-          MsgLikeData,
-          Pair<List<MsgLikeItem>, List<MsgLikeItem>>
+          LikeFeed,
+          Pair<List<LikeFeedItem>, List<LikeFeedItem>>
         > {
   int? cursor;
   int? cursorTime;
@@ -33,16 +31,19 @@ class LikeMeController
   }
 
   @override
-  bool customHandleResponse(bool isRefresh, Success<MsgLikeData> response) {
-    MsgLikeData data = response.response;
+  bool customHandleResponse(bool isRefresh, Success<LikeFeed> response) {
+    LikeFeed data = response.response;
     if (data.total?.cursor?.isEnd == true ||
         data.total?.items.isNullOrEmpty == true) {
       isEnd = true;
     }
     cursor = data.total?.cursor?.id;
     cursorTime = data.total?.cursor?.time;
-    List<MsgLikeItem> latest = data.latest?.items ?? <MsgLikeItem>[];
-    List<MsgLikeItem> total = data.total?.items ?? <MsgLikeItem>[];
+    // `[...?x]` 一步做两件事：`latest`/`total` 整段可能缺（基线写的是
+    // `?? <MsgLikeItem>[]`），以及**不要就地改 FRB 刚解出来的那份列表**
+    // ——下面要往里 insertAll，删除时还要 removeAt。
+    List<LikeFeedItem> latest = [...?data.latest?.items];
+    List<LikeFeedItem> total = [...?data.total?.items];
     if (!isRefresh) {
       if (loadingState.value case Success(:final response)) {
         latest.insertAll(0, response.first);
@@ -61,14 +62,15 @@ class LikeMeController
   }
 
   @override
-  Future<LoadingState<MsgLikeData>> customGetData() =>
-      MsgHttp.msgFeedLikeMe(cursor: cursor, cursorTime: cursorTime);
+  Future<LoadingState<LikeFeed>> customGetData() =>
+      RustMsg.msgFeedLikeMe(cursor: cursor, cursorTime: cursorTime);
 
-  Future<void> onRemove(dynamic id, int index, bool isLatest) async {
+  Future<void> onRemove(Object? id, int index, bool isLatest) async {
     try {
-      final res = await MsgHttp.delMsgfeed(0, id);
+      // tp=0 是「收到的赞」。
+      final res = await RustMsg.delMsgfeed(0, '$id');
       if (res.isSuccess) {
-        Pair<List<MsgLikeItem>, List<MsgLikeItem>> pair =
+        Pair<List<LikeFeedItem>, List<LikeFeedItem>> pair =
             loadingState.value.data;
         if (isLatest) {
           pair.first.removeAt(index);
@@ -83,14 +85,34 @@ class LikeMeController
     } catch (_) {}
   }
 
-  Future<void> onSetNotice(MsgLikeItem item, bool isNotice) async {
-    int noticeState = isNotice ? 1 : 0;
-    final res = await MsgHttp.msgSetNotice(
-      id: item.id!,
+  /// 开关某条赞的通知。
+  ///
+  /// 基线在这里直接改 `item.noticeState`。FRB 导出的类型是不可变的
+  /// （字段全是 final），所以改成**按位置换一条新的**——这也更诚实：
+  /// 列表里的那条本来就该是服务端状态的副本，而不是一个可以被就地改写
+  /// 的可变对象。因此调用点要多给 [index] 与 [isLatest]。
+  Future<void> onSetNotice(
+    LikeFeedItem item,
+    int index,
+    bool isLatest,
+    bool isNotice,
+  ) async {
+    final int noticeState = isNotice ? 1 : 0;
+    final res = await RustMsg.msgSetNotice(
+      id: '${item.id}',
       noticeState: noticeState,
     );
     if (res.isSuccess) {
-      item.noticeState = noticeState;
+      final updated = LikeFeedItem(
+        id: item.id,
+        users: item.users,
+        item: item.item,
+        counts: item.counts,
+        likeTime: item.likeTime,
+        noticeState: noticeState,
+      );
+      final pair = loadingState.value.data;
+      (isLatest ? pair.first : pair.second)[index] = updated;
       loadingState.refresh();
       SmartDialog.showToast('设置成功');
     } else {

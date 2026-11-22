@@ -12,7 +12,7 @@ import 'package:kilikili/grpc/bilibili/app/im/v1.pbenum.dart'
     show IMSettingType;
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/image_type.dart';
-import 'package:kilikili/models_new/msg/msg_like/item.dart';
+import 'package:kilikili/services/rust/rust_msg.dart';
 import 'package:kilikili/pages/msg_feed_top/like_me/controller.dart';
 import 'package:kilikili/pages/whisper_settings/view.dart';
 import 'package:kilikili/utils/app_scheme.dart';
@@ -91,9 +91,9 @@ class _LikeMePageState extends State<LikeMePage> {
         );
         return Builder(
           builder: (context) {
-            Pair<List<MsgLikeItem>, List<MsgLikeItem>> pair = response;
-            List<MsgLikeItem> latest = pair.first;
-            List<MsgLikeItem> total = pair.second;
+            Pair<List<LikeFeedItem>, List<LikeFeedItem>> pair = response;
+            List<LikeFeedItem> latest = pair.first;
+            List<LikeFeedItem> total = pair.second;
             if (latest.isNotEmpty || total.isNotEmpty) {
               return SliverMainAxisGroup(
                 slivers: [
@@ -104,9 +104,7 @@ class _LikeMePageState extends State<LikeMePage> {
                         if (total.isEmpty && index == latest.length - 1) {
                           _likeMeController.onLoadMore();
                         }
-                        return _buildItem(theme, latest[index], (id) {
-                          _likeMeController.onRemove(id, index, true);
-                        });
+                        return _buildItem(theme, latest[index], index, true);
                       },
                       itemCount: latest.length,
                       separatorBuilder: (context, index) => divider,
@@ -119,9 +117,7 @@ class _LikeMePageState extends State<LikeMePage> {
                         if (index == total.length - 1) {
                           _likeMeController.onLoadMore();
                         }
-                        return _buildItem(theme, total[index], (id) {
-                          _likeMeController.onRemove(id, index, false);
-                        });
+                        return _buildItem(theme, total[index], index, false);
                       },
                       itemCount: total.length,
                       separatorBuilder: (context, index) => divider,
@@ -159,14 +155,19 @@ class _LikeMePageState extends State<LikeMePage> {
     );
   }
 
+  /// [index] 与 [isLatest] 要一路传到底。
+  ///
+  /// 删除和「不再通知」都要按位置改列表：FRB 导出的条目是不可变的，改不了
+  /// 它的字段，只能换掉列表里的那一条（见控制器的 `onSetNotice`）。
   Widget _buildItem(
     ThemeData theme,
-    MsgLikeItem item,
-    ValueChanged<int?> onRemove,
+    LikeFeedItem item,
+    int index,
+    bool isLatest,
   ) {
-    final firstUser = item.users!.first;
+    final firstUser = item.users.first;
     Widget avatar;
-    if (item.users!.length == 1) {
+    if (item.users.length == 1) {
       avatar = GestureDetector(
         onTap: () => Get.toNamed('/member?mid=${firstUser.mid}'),
         child: NetworkImgLayer(
@@ -183,7 +184,7 @@ class _LikeMePageState extends State<LikeMePage> {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            for (var j = 0; j < item.users!.length && j < 4; j++) ...[
+            for (var j = 0; j < item.users.length && j < 4; j++) ...[
               Positioned(
                 left: 15.0 * (j % 2),
                 top: 15.0 * (j ~/ 2),
@@ -191,7 +192,7 @@ class _LikeMePageState extends State<LikeMePage> {
                   width: 30,
                   height: 30,
                   type: ImageType.avatar,
-                  src: item.users![j].avatar,
+                  src: item.users[j].avatar,
                 ),
               ),
             ],
@@ -214,7 +215,8 @@ class _LikeMePageState extends State<LikeMePage> {
                   context: context,
                   title: const Text('删除'),
                   content: const Text('该条通知删除后，当有新点赞时会重新出现在列表，是否继续？'),
-                  onConfirm: () => onRemove(item.id),
+                  onConfirm: () =>
+                      _likeMeController.onRemove(item.id, index, isLatest),
                 );
               },
               child: const Text('删除', style: TextStyle(fontSize: 14)),
@@ -227,11 +229,20 @@ class _LikeMePageState extends State<LikeMePage> {
                     context: context,
                     title: const Text('不再通知'),
                     content: const Text('这条内容的点赞将不再通知，但仍可在列表内查看，是否继续？'),
-                    onConfirm: () =>
-                        _likeMeController.onSetNotice(item, isNotice),
+                    onConfirm: () => _likeMeController.onSetNotice(
+                      item,
+                      index,
+                      isLatest,
+                      isNotice,
+                    ),
                   );
                 } else {
-                  _likeMeController.onSetNotice(item, isNotice);
+                  _likeMeController.onSetNotice(
+                    item,
+                    index,
+                    isLatest,
+                    isNotice,
+                  );
                 }
               },
               child: Text(

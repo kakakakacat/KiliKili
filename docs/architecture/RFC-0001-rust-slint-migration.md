@@ -420,8 +420,8 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 | R6 | 上游 Bilibili API 变化频繁 | 高/中 | 版本化 Protocol Adapter 和 fixtures | 否 |
 | R7 | 五平台发布/签名/依赖问题 | 中/高 | 早期 CI、逐平台验收 | 是（发布） |
 | R8 | GPL/平台分发条款不满足 | 中/高 | 发布前许可证与合规 Review | 是（发布） |
-| R9 | Slint 列表虚拟化、富文本、IME、无障碍及移动端成熟度 | 高/高 | M0 Spike，Flutter + Rust Core 为回退 | **是（Phase 2）** |
-| R11 | **基线给 Flutter 框架打 34–37 个补丁**（按平台不同），代表上游框架满足不了、改框架才实现的交互；Slint 需全部重新实现 | 高/高 | SPIKE-003 逐项评估补丁对应交互的 Slint 可行性，归类为原生支持/需自实现/做不到 | **是（Phase 2）** |
+| R9 | ~~Slint 列表虚拟化、富文本、IME、无障碍及移动端成熟度~~ → 收敛为三条：**跨元素文本选择**（含表情参与复制）、**嵌套滚动的手势消歧**、**文本测量/自排版**。虚拟化、IME、无障碍在 Windows 上已验过 | 高/高 | SPIKE-003 前四项已跑（Windows），三条新风险见 `docs/m0/spikes/2026-11-22-flutter-patches-slint-eval.md` §2；macOS/Android 未跑；Flutter + Rust Core 为回退 | **是（Phase 2）** |
+| R11 | ~~基线给 Flutter 框架打 34–37 个补丁，Slint 需全部重新实现~~ → 逐项评估完毕：去重后是 **26 个独立问题**（9 个 material 补丁里 8 个是框架补丁的同形复制），其中 4 个不适用、3 个 Slint 原生、12 个需自写、7 个做不到。**真正的工作量不在补丁，在它们服务的 `lib/common/widgets/flutter/` 那 2.9 万行自写控件** | 高/高 | 评估见 `docs/m0/spikes/2026-11-22-flutter-patches-slint-eval.md`；要排期的清单在该文 §4 | **是（Phase 2）** |
 | R12 | media-kit 系插件未适配 Swift Package Manager，Flutter 将来版本会报错；该 fork 上游不会适配 | 中/中 | 跟踪 Flutter SPM 强制时间点，必要时自行适配 | 否 |
 | R10 | 过早追求纯 Rust 导致过度重写 | 高/中 | 以可验证价值为前提，硬解保留原生 | 否 |
 

@@ -244,9 +244,16 @@ Slint 这一侧：测量函数存在，但**不在应用够得着的地方**。
 **`accessible-role` / `accessible-label` 在 `.slint` 里照写不误、编译不报错、
 桌面上 UIA 读得出来，到了 Android 安静地什么都不做。**
 
-和另外三条的区别是：**这一条绕不过去**。无障碍树必须由框架在 JNI 那一侧实现
-`AccessibilityNodeProvider`，应用层给不出来。要么给 Slint 上游提 PR，要么
-Android 上放弃无障碍。
+和另外三条的区别是：**这一条绕不过去**——无障碍树必须由框架实现，应用层给不
+出来。
+
+**但 2026-11-22 查了上游之后，语气要改**：`slint-ui/slint` 上有一组 7 个 PR
+（`[a11y n/7]`，作者 fidderr）正在给 Android 接 AccessKit，1/7 已合、6/7 就是
+Android 那一块，按 Slint 约两个月一个小版本的节奏，最早出现在 1.20。所以这条
+从「做不到」降为「**等上游，并且要自己验**」——7 个里只合了 1 个，PR 下面那份
+第三方实测还列着 ComboBox、空 LineEdit 没标签等一串缺口。细节与风险（包括
+`accessibility` 开着会拖慢大列表的 slint#3867）见
+[2026-11-22-slint-ui-android-notes.md](2026-11-22-slint-ui-android-notes.md) §0.1、§0.2。
 
 详见 [2026-11-22-slint-ui-android-notes.md](2026-11-22-slint-ui-android-notes.md) §0。
 

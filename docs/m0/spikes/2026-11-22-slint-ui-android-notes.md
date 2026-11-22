@@ -44,8 +44,62 @@
 对 Phase 2 的意义：这是第四件「做不到」，而且和另外三件不同——
 [补丁评估](2026-11-22-flutter-patches-slint-eval.md) §2 那三件都是「自己写一个
 更大的东西能绕过去」，这一件绕不过去：无障碍树必须由**框架**在 JNI 那一侧
-实现 `AccessibilityNodeProvider`，应用层给不出来。要么给 Slint 上游提 PR，
-要么 Android 上放弃无障碍。后者对一个内容型 App 不是可选项。
+实现，应用层给不出来。
+
+### 0.1 但上游正在做，而且做得很完整（2026-11-22 查）
+
+查完上游之后这条结论要改一次语气：**不是「要么自己提 PR 要么放弃」，是「等」。**
+
+`slint-ui/slint` 上有一组 7 个 PR 的系列，作者 `fidderr`，标题前缀
+`[a11y n/7]`，就是在给 Android 接 AccessKit：
+
+| PR | 内容 | 状态（2026-11-22 查） |
+|---|---|---|
+| [#15055](https://github.com/slint-ui/slint/pull/15055) | 1/7 把 AccessKit 的树代码在各后端之间共用 | **已合** |
+| [#15056](https://github.com/slint-ui/slint/pull/15056) | 2/7 让辅助技术能滚动 `Flickable` 的内容 | 待评审 |
+| [#15057](https://github.com/slint-ui/slint/pull/15057) | 3/7 popup 打开时把窗口其余部分藏起来 | 待评审 |
+| [#14977](https://github.com/slint-ui/slint/pull/14977) | 4/7 加 `accessible-modal` 属性 | 待评审 |
+| [#15058](https://github.com/slint-ui/slint/pull/15058) | 5/7 不要立刻复用已释放的组件 id | 待评审 |
+| [#14976](https://github.com/slint-ui/slint/pull/14976) | **6/7 android: 通过 AccessKit 支持无障碍**（+744/-7，13 个文件） | 待评审 |
+| [#15059](https://github.com/slint-ui/slint/pull/15059) | 7/7 给 NativeActivity 画无障碍焦点框 | 草稿，等 6/7 |
+
+6/7 的描述里那句话和本文 §0 是同一件事：「Slint apps on Android are invisible
+to TalkBack, Switch Access and UI test tools: they only see a single view.」
+它走的正是 `accesskit_android`，**支持 NativeActivity**——也就是我们这个形态。
+
+PR 下面有一份 2026-11-21 的第三方实测（Android 13 模拟器，`uiautomator` +
+`UiAutomation`），结论值得抄过来，因为它正好接着我们这一轮：
+
+- **打补丁前**：「the app is one opaque view, 8 nodes with the window
+  decoration」——**和我们抓到的 10 个节点是同一个现象**，互相印证；
+- 打补丁后：`EditText` / `Button` / `CheckBox` / `ListView` / `Spinner` /
+  `SeekBar` 都出现在树里，带标签与状态，`ACTION_CLICK`、`ACTION_SET_PROGRESS`
+  可用，缩放 1.875 / 2.756 / 3.75 与横屏下 bounds 都对得上；
+- 仍有缺口：`ComboBox` 不能靠 action 操作、`LineEdit` 没有 `ACTION_SET_TEXT`
+  且空框没有标签、禁用的按钮 `performAction` 也返回 true、服务刚连上的头
+  一次查询拿到占位树（9 次里有 3 次 `uiautomator dump` 抓不到 Slint 节点）。
+
+Slint 的发版节奏是约两个月一个小版本（1.17 六月 / 1.18 九月 /
+**1.19 2026-11-16**），所以这一串如果在接下来几周合掉，**最早出现在 1.20**。
+
+> **结论改成**：Android 无障碍从「做不到」降为「**等上游，并且要自己验**」。
+> 但 Phase 2 的计划里不能把它当成已经有了——7 个 PR 里只合了 1 个，而且合进
+> 去之后上面那一串缺口要按我们自己的界面再验一遍。
+
+### 0.2 顺带查到一个会反过来咬性能的东西
+
+[slint#3867](https://github.com/slint-ui/slint/issues/3867)「`accessibility`
+feature have big performance impact on big listview」**2023 年开到现在还开着**
+（最后更新 2026-10-11）。
+
+这条对我们特别要紧，因为两件事叠在一起：
+
+- 本轮 Android 的帧耗时（滚动 p95 10.5ms）是在**完全没有无障碍树**的情况下
+  量的——后端根本没接，一行树都没建；
+- 我们的列表是**两万行**，正是那个 issue 抱怨的形状。
+
+也就是说，等上游把 Android 无障碍合进来之后，**这一轮的性能数字要重新量**。
+别把「10.5ms，还有余量」当成接上无障碍之后仍然成立。
 
 ---
 

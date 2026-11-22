@@ -11,9 +11,10 @@
 
 // 桌面上这个 lib 是空的——它只为 Android 存在。不加这层 cfg 的话，
 // `cargo clippy` 在 Windows 上会为了一个用不到的 lib 把 mpv 模块再编一遍。
+// `gl` 现在来自 ../spike-harness（与 SPIKE-003 共用），用 `use` 接回
+// `crate::gl`，android_probe 那边的路径不变。
 #[cfg(target_os = "android")]
-#[path = "gl.rs"]
-mod gl;
+pub(crate) use spike_harness::gl;
 
 #[cfg(target_os = "android")]
 #[path = "mpv/mod.rs"]

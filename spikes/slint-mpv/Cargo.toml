@@ -25,6 +25,9 @@ license = "GPL-3.0-or-later"
 bili-api = { path = "../../rust/crates/bili-api" }
 bili-danmaku = { path = "../../rust/crates/bili-danmaku" }
 bili-domain = { path = "../../rust/crates/bili-domain" }
+# 实验记录、帧耗时/CPU/RSS 采样、GL 截图。SPIKE-003 要用同一套模板，
+# 所以这三个模块抽去了 ../spike-harness，不在本 package 里。
+spike-harness = { path = "../spike-harness" }
 
 anyhow = "1"
 clap = { version = "4", features = ["derive", "env"] }
@@ -33,7 +36,6 @@ clap = { version = "4", features = ["derive", "env"] }
 # pkg-config、不需要 bindgen/libclang。代价是那些 extern 声明要自己维护，
 # 见 src/mpv/sys.rs 的说明。
 libloading = "0.9"
-png = "0.18"
 slint = "1.19"
 sysinfo = "0.40"
 

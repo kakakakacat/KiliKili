@@ -98,6 +98,13 @@ pub struct Args {
     /// 2026-11-22 那一轮逐字相同。
     #[arg(long, default_value_t = 0)]
     touch_ms: u64,
+
+    /// 手动模式停在哪个场景：0 长列表 / 1 富文本 / 2 输入与焦点 / 3 无障碍。
+    ///
+    /// 给屏幕阅读器实读用（VoiceOver / TalkBack）：脚本化一轮 40 秒切完
+    /// 四个场景，人跟着读来不及。`--scripted` 时忽略。
+    #[arg(long, default_value_t = 0, value_parser = clap::value_parser!(i32).range(0..=3))]
+    scene: i32,
 }
 
 /// 帧耗时按分段统计：滚动的代价不能被静止的帧平均掉。
@@ -224,6 +231,11 @@ pub fn run(args: Args, command_line: Vec<String>) -> Result<()> {
     };
 
     let ui = UiSpikeWindow::new().context("建不了 Slint 窗口")?;
+    if !args.scripted {
+        const TITLES: [&str; 4] = ["长列表", "富文本", "输入与焦点", "无障碍"];
+        ui.set_scene(args.scene);
+        ui.set_scene_title(SharedString::from(TITLES[args.scene as usize]));
+    }
     ui.window().set_size(slint::LogicalSize::new(
         args.width as f32,
         args.height as f32,
@@ -357,7 +369,11 @@ pub fn run(args: Args, command_line: Vec<String>) -> Result<()> {
         .unwrap_or_else(|| PathBuf::from("."));
     let driver = Rc::new(RefCell::new(drive::Driver::new(
         !args.no_driver && args.scripted,
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("win"),
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(if cfg!(target_os = "macos") {
+            "mac"
+        } else {
+            "win"
+        }),
         work_dir,
         std::process::id(),
     )));
@@ -379,7 +395,7 @@ pub fn run(args: Args, command_line: Vec<String>) -> Result<()> {
         created_marks: Vec::new(),
         frame_marks: Vec::new(),
         notes: Vec::new(),
-        scene: 0,
+        scene: if args.scripted { 0 } else { args.scene },
         quit: false,
     }));
 

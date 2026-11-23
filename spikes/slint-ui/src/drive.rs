@@ -8,6 +8,10 @@
 //!
 //! 实现方式是起 `powershell.exe` 跑 `win/*.ps1`（用 Windows PowerShell 而
 //! 不是 pwsh：UIAutomationClient 是 WPF 的程序集，pwsh 7 不一定加载得到）。
+//! macOS 上起 `sh mac/drive.sh`，动作一一对应（System Events 发键、
+//! Carbon 切输入源、AX 抓树），抓出来的树写成同一份 JSON 格式。
+//! macOS 的 `ime` 切的是**全局**输入源，所以 [`Driver::drain`] 收尾时会
+//! 切回实验之前的那个。
 //!
 //! **`win/*.ps1` 必须存成带 BOM 的 UTF-8**，别让编辑器把 BOM 去掉。
 //! Windows PowerShell 5.1 对没有 BOM 的文件按本机 ANSI 代码页读（这台机器
@@ -33,6 +37,15 @@ pub enum Kind {
     Ime,
     Window,
     Uia,
+}
+
+/// 一次外部动作。两个平台的脚本参数长得不一样，在 [`Driver::spawn`] 里各自拼。
+enum Op<'a> {
+    /// 空串表示只切前台。
+    Keys(&'a str),
+    Ime(&'a str),
+    Window(&'static str),
+    Uia(&'a Path),
 }
 
 struct Pending {
@@ -95,7 +108,8 @@ pub struct Driver {
 }
 
 impl Driver {
-    /// `dir` 是 `win/` 目录，`out_dir` 放 UIA 的 JSON。
+    /// `dir` 是 `win/` 或 `mac/` 目录，`out_dir` 放 UIA 的 JSON（macOS 上还放
+    /// 「实验前的输入源」）。
     #[must_use]
     pub fn new(enabled: bool, dir: PathBuf, out_dir: PathBuf, pid: u32) -> Self {
         // 开跑之前先确认两份脚本还带着 BOM。少了 BOM 的失败**是静默的**：
@@ -115,8 +129,24 @@ impl Driver {
                 }
             }
         }
+        // macOS 的两个 Swift 小工具在这里**同步**编好：第一次编要好几秒，
+        // 放到异步那条路上的话，第一次抓树会晚到列表场景已经切走之后。
+        if enabled && cfg!(target_os = "macos") {
+            match Command::new("sh")
+                .arg(dir.join("drive.sh"))
+                .arg("build")
+                .output()
+            {
+                Ok(output) if output.status.success() => {}
+                Ok(output) => log.push(format!(
+                    "mac/drive.sh build 失败：{}",
+                    String::from_utf8_lossy(&output.stderr).trim()
+                )),
+                Err(err) => log.push(format!("起不了 mac/drive.sh：{err}")),
+            }
+        }
         Self {
-            enabled: enabled && cfg!(windows),
+            enabled: enabled && (cfg!(windows) || cfg!(target_os = "macos")),
             dir,
             out_dir,
             pid,
@@ -132,37 +162,28 @@ impl Driver {
         self.enabled
     }
 
-    /// 只切前台。`drive.ps1` 的 `keys` 分支在 `-Keys` 为空时不发按键。
+    /// 只切前台。两边的 `keys` 动作在按键为空时都不发按键。
     pub fn activate(&mut self) {
-        self.spawn(
-            Kind::Keys,
-            "切到前台".to_owned(),
-            &["-Action", "keys"],
-            None,
-        );
+        self.spawn(Kind::Keys, "切到前台".to_owned(), &Op::Keys(""), None);
     }
 
     pub fn keys(&mut self, keys: &str) {
-        self.spawn(
-            Kind::Keys,
-            keys.to_owned(),
-            &["-Action", "keys", "-Keys", keys],
-            None,
-        );
+        self.spawn(Kind::Keys, keys.to_owned(), &Op::Keys(keys), None);
     }
 
     /// `klid` 是键盘布局 id：`00000409` 美式英文、`00000804` 简体中文。
+    /// macOS 上映射成 ABC / 简体拼音两个输入源（见 `mac/drive.sh`）。
     pub fn ime(&mut self, klid: &str, label: &str) {
         self.spawn(
             Kind::Ime,
             format!("{label}（{klid}）"),
-            &["-Action", "ime", "-Klid", klid],
+            &Op::Ime(klid),
             None,
         );
     }
 
     pub fn window(&mut self, action: &'static str) {
-        self.spawn(Kind::Window, action.to_owned(), &["-Action", action], None);
+        self.spawn(Kind::Window, action.to_owned(), &Op::Window(action), None);
     }
 
     pub fn uia(&mut self, label: &str) {
@@ -173,28 +194,62 @@ impl Driver {
         let out = self
             .out_dir
             .join(format!("uia-{}-{}.json", self.uia_seq, sanitize(label)));
-        let out_str = out.to_string_lossy().into_owned();
         self.spawn(
             Kind::Uia,
             label.to_owned(),
-            &["-Out", &out_str],
+            &Op::Uia(&out),
             Some(out.clone()),
         );
     }
 
-    fn spawn(&mut self, kind: Kind, label: String, extra: &[&str], out: Option<PathBuf>) {
+    fn spawn(&mut self, kind: Kind, label: String, op: &Op<'_>, out: Option<PathBuf>) {
         if !self.enabled {
             self.log
                 .push(format!("跳过外部驱动（未启用）：{kind:?} {label}"));
             return;
         }
-        let script = match kind {
-            Kind::Uia => self.dir.join("uia-dump.ps1"),
-            _ => self.dir.join("drive.ps1"),
-        };
         if let Some(parent) = out.as_ref().and_then(|p| p.parent()) {
             std::fs::create_dir_all(parent).ok();
         }
+        let mut command = if cfg!(target_os = "macos") {
+            self.mac_command(op)
+        } else {
+            self.win_command(op)
+        };
+        command.stdout(Stdio::piped()).stderr(Stdio::piped());
+        match command.spawn() {
+            Ok(child) => self.pending.push(Pending {
+                kind,
+                label,
+                child,
+                out,
+                started: Instant::now(),
+            }),
+            Err(err) => self
+                .log
+                .push(format!("起不了外部驱动（{kind:?} {label}）：{err}")),
+        }
+    }
+
+    fn mac_command(&self, op: &Op<'_>) -> Command {
+        let mut command = Command::new("sh");
+        command
+            .arg(self.dir.join("drive.sh"))
+            .arg(self.pid.to_string());
+        match op {
+            Op::Keys(keys) => command.arg("keys").arg(keys),
+            Op::Ime(klid) => command.arg("ime").arg(klid).arg(&self.out_dir),
+            Op::Window(action) => command.arg(action),
+            Op::Uia(out) => command.arg("uia").arg(out),
+        };
+        command
+    }
+
+    fn win_command(&self, op: &Op<'_>) -> Command {
+        let script = match op {
+            Op::Uia(_) => self.dir.join("uia-dump.ps1"),
+            _ => self.dir.join("drive.ps1"),
+        };
         let mut command = Command::new("powershell");
         #[cfg(windows)]
         {
@@ -213,22 +268,15 @@ impl Driver {
             .arg("-File")
             .arg(&script)
             .arg("-ProcessId")
-            .arg(self.pid.to_string())
-            .args(extra)
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped());
-        match command.spawn() {
-            Ok(child) => self.pending.push(Pending {
-                kind,
-                label,
-                child,
-                out,
-                started: Instant::now(),
-            }),
-            Err(err) => self
-                .log
-                .push(format!("起不了 PowerShell（{kind:?} {label}）：{err}")),
-        }
+            .arg(self.pid.to_string());
+        match op {
+            Op::Keys("") => command.args(["-Action", "keys"]),
+            Op::Keys(keys) => command.args(["-Action", "keys", "-Keys", keys]),
+            Op::Ime(klid) => command.args(["-Action", "ime", "-Klid", klid]),
+            Op::Window(action) => command.args(["-Action", action]),
+            Op::Uia(out) => command.arg("-Out").arg(out),
+        };
+        command
     }
 
     /// 每帧调一次，收走已经结束的外部进程。
@@ -251,7 +299,28 @@ impl Driver {
     }
 
     /// 实验结束时还有没收完的就等一下——UIA 那次可能正好压在退出前。
+    /// macOS 上还要把全局输入源切回实验之前的那个。
     pub fn drain(&mut self) {
+        self.drain_pending();
+        if self.enabled && cfg!(target_os = "macos") {
+            match Command::new("sh")
+                .arg(self.dir.join("drive.sh"))
+                .arg(self.pid.to_string())
+                .arg("ime-restore")
+                .arg("-")
+                .arg(&self.out_dir)
+                .output()
+            {
+                Ok(output) => self.log.push(format!(
+                    "收尾切回输入源：{}",
+                    String::from_utf8_lossy(&output.stdout).trim()
+                )),
+                Err(err) => self.log.push(format!("切不回输入源：{err}")),
+            }
+        }
+    }
+
+    fn drain_pending(&mut self) {
         while !self.pending.is_empty() {
             let pending = self.pending.remove(0);
             let _ = pending.child.wait_with_output().map(|output| {

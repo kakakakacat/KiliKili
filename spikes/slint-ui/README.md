@@ -41,10 +41,12 @@ cargo build --release
 
 ## 在 macOS 上跑
 
-外部驱动只有 Windows 版，所以 macOS 按 `--no-driver` 跑，Tab / IME / 最小化
-三项是 NOT TESTED。无障碍走另一条路：`mac/vo-drive.sh` 驱动真实的旁白
-（VoiceOver）并读回它念的话，`mac/ax-dump.swift` 抓 AX 树。四个必须先开的
-开关写在 `vo-drive.sh` 开头，缺一个都静默失败。结论见
+命令同上（不加 `--no-driver`）。外部驱动是 `mac/drive.sh`：System Events 发键、
+Carbon 切输入源、AX 抓树，第一次跑会编两个 Swift 小工具。终端要在「辅助功能」里
+打开；系统里要装着简体拼音输入法。切的是**全局**输入源，实验结束会切回原来的。
+
+旁白（VoiceOver）实读是另一条路，不在脚本化那一轮里：`mac/vo-drive.sh` 驱动
+真实的旁白并读回它念的话。四个必须先开的开关写在它开头，缺一个都静默失败。结论见
 `docs/m0/spikes/2026-11-23-slint-ui-macos-notes.md`。
 
 另有一个对照程序 `frame-floor`，用来量**这台机器上 Slint 的呈现上限**：

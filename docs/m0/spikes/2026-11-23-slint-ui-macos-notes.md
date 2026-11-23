@@ -3,7 +3,7 @@
 配套的机器记录是 [2026-11-23-slint-ui-macos.md](2026-11-23-slint-ui-macos.md)，
 实验台是 [`spikes/slint-ui`](../../../spikes/slint-ui)。那份由程序整份覆盖，
 这份放它写不出来的东西：**旁白（VoiceOver）实际念了什么**、一个只在 macOS
-上出现的布局约束，以及这一轮为什么有三项是 NOT TESTED。
+上出现的布局约束，以及 macOS 版外部驱动是怎么做的。
 
 机器：Apple M4 / macOS 27.3（中文界面，VoiceOver 在系统里叫「旁白」）。
 
@@ -14,10 +14,13 @@
 | 项 | macOS | 对照 Windows |
 |---|---|---|
 | 长列表虚拟化 | PASS，累计实例化 299 行 | PASS，332 行 |
-| 滚动渲染 | PASS，p95 **0.7ms** | PASS，p95 1.6ms |
-| 跳到末尾 | PASS，最慢一帧 9.7ms | PASS，10.0ms |
+| 滚动渲染 | PASS，p95 **0.6ms** | PASS，p95 1.6ms |
+| 跳到末尾 | PASS，最慢一帧 11.4ms | PASS，10.0ms |
 | 富文本 | 同 Windows：`StyledText` 不支持行内图片，图文混排要自己排 | 同 |
-| Tab / 英文输入 / 中文 IME / 最小化 | **NOT TESTED**，见 §3 | PASS |
+| Tab 轮转 | PASS，焦点序列 `[1, 2, 0, 3, 0]`，与 Windows 逐项相同 | PASS |
+| 英文输入 | PASS，「hello」「world」「1234567890」 | PASS |
+| 中文 IME | **PASS**：简体拼音打 `nihao` 上屏成「你好」，见 §3 | PASS（微软拼音） |
+| 最小化 / 还原 | PASS，最小化 1.5 秒里画了 1 帧 | PASS |
 | 旁白：控件 | **PASS**，见 §1.1 | UIA 取树 PASS |
 | 旁白：长列表 | **一行读得对，但读不到第 8 行以后**，见 §1.2 | UIA 只取了树，没有实读 |
 | 窗口缩放 / 全屏 | PASS，**前提是避开 §2 的约束** | PASS |
@@ -100,20 +103,40 @@ AccessKit 在 macOS 上是懒初始化的：第一次查询只拿到一个没有
 > **Phase 2 记这一条**：根布局里任何一个固定宽/高的子元素，都可能在 macOS 上变成
 > 窗口的尺寸上限，而 Windows 上看不出来。固定尺寸的控件要包一层不设上限的布局。
 
-## 3. 为什么 Tab / 输入 / IME / 最小化是 NOT TESTED
+## 3. macOS 版外部驱动
 
-这四项要从窗口**外面**发按键、切输入法，Windows 用的是 `win/drive.ps1`。macOS
-这边还没写对应的驱动，本轮按 `--no-driver` 跑。旁白那套脚本（System Events 发键）
-证明了外部按键这条路在 macOS 上走得通，写一个 `mac/drive.sh` 不难；中文 IME 要用
-`TISSelectInputSource` 切输入源，是其中最麻烦的。要不要补，等仓库所有者定。
+Tab / 输入 / IME / 最小化 / 抓树这几项要从窗口**外面**做，Windows 用的是
+`win/drive.ps1`。macOS 对应的是 [`mac/drive.sh`](../../../spikes/slint-ui/mac/drive.sh)，
+`src/drive.rs` 按平台选，动作一一对应：
+
+| 动作 | Windows | macOS |
+|---|---|---|
+| 切前台 + 发键 | `AppActivate` + `SendKeys` | System Events 设 frontmost，**核对前台进程确实是它**，再逐键 `keystroke` / `key code` |
+| 切输入法 | `LoadKeyboardLayout` + `WM_INPUTLANGCHANGEREQUEST` | Carbon `TISSelectInputSource`（`mac/input-source.swift`）。00000409 → ABC，00000804 → 简体拼音 |
+| 最小化 / 还原 | `ShowWindow` | 窗口的 `AXMinimized` 属性 |
+| 抓树 | UIA（`uia-dump.ps1`） | AX（`mac/ax-dump.swift --json`），写同一份 JSON |
+
+三个和 Windows 不一样的地方：
+
+1. **输入源是全局的。** 切到拼音会影响整台机器，所以第一次切之前记下原来的
+   输入源，实验结束时 `Driver::drain` 切回去。这一轮跑完已核对：恢复成了跑之前的
+   简体拼音。
+2. **AX 角色名和 UIA 不同**，而判定是按 UIA 的名字写的（`ListItem`、`Edit`…）。
+   JSON 里的控件类型写成「AX 原名.UIA 名」，例如 `AXTextField.Edit`。列表的直接子元素
+   一律记成 `.ListItem`——Slint 给行的角色其实是 `AXStaticText`，但旁白把它们当列表项念
+   （「1/7」），判定跟着旁白的行为走。所以记录里「无障碍树（长列表）」的 PASS 是在
+   这个映射下得出的，**它和 §1.2 的「读不到第一屏以外」并不矛盾**：树里那 7 项确实是
+   带名字的列表项，问题在于只有 7 项。
+3. **AccessKit 懒初始化**（§1.3）：抓树前先碰一下、等 1.5 秒再抓，否则拿到的是占位。
 
 记录里「VoiceOver / TalkBack」那一行仍写着 NOT TESTED，那是实验台的固定文案，
 实读结果以本文 §1 为准。
 
-## 4. 实验台自己的一个问题：「缩放后」那张截图截的是全屏
+## 4. 实验台自己的一个问题：「缩放后」那张截图有时截的是全屏
 
-`07-resized` 是 3024x1898（全屏尺寸），不是 980x620。截图排在「下一次重绘」时做，
-而这一页是静止的，缩放之后没有立刻重绘，下一帧要到切全屏时才画——于是截到的是
-全屏之后的画面。缩放本身生效了：退出全屏后窗口回到 980x620（`09-back-to-list`，
-以及记录里的「窗口」一行）。Windows 那边没撞上，是因为那边的缩放会立刻触发重绘。
-改法是截图时主动请求一次重绘，没在本轮做。
+**偶发**：不带外部驱动的那一轮里，`07-resized` 是 3024x1898（全屏尺寸），不是
+980x620；带驱动重跑的这一轮是正常的 1960x1240。截图排在「下一次重绘」时做，
+而这一页是静止的，缩放之后不一定立刻重绘，下一帧可能要到切全屏时才画——于是
+截到全屏之后的画面。驱动那一轮的窗口事件恰好补了一次重绘。缩放本身两轮都生效了
+（退出全屏后都回到 980x620）。改法是截图时主动请求一次重绘，没在本轮做；
+在那之前，看到 `07` 尺寸不对先别当成缩放失败。

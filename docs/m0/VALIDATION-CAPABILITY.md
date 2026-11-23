@@ -636,9 +636,9 @@ Tab 焦点轮转、外部按键与中文 IME 上屏、UIA 无障碍树（角色/
 1. **UIA ≠ 读屏实读。** 树里有的，VoiceOver 与 TalkBack 怎么念是另一回事。
    ~~mac 卡在 #8~~ macOS 已能**脚本化实读**（见下面的补充）；TalkBack 仍只能
    抓树。
-2. ~~**只有 Windows。**~~ macOS 也跑了一轮（2026-11-23），但 Tab / IME /
-   最小化在 mac 上没有外部驱动；IME 三个平台三套机制，Android 与 macOS 的
-   中文组字都还没验。
+2. ~~**只有 Windows。**~~ macOS 也跑了一轮（2026-11-23），外部驱动
+   `mac/drive.sh` 与 Windows 一一对应，四项自动判定（含简体拼音组字）全过。
+   **Android 的中文组字仍没验。**
 3. **没有触摸屏**，惯性与下拉刷新这一类测不了。
 
 **它同样不进 CI**：要 GPU 合成、显示输出，还要系统的无障碍接口，runner
@@ -648,7 +648,9 @@ Tab 焦点轮转、外部按键与中文 IME 上屏、UIA 无障碍树（角色/
 `spikes/slint-ui/mac/vo-drive.sh` 用 System Events 发真实的 VO 键，再通过
 AppleScript 读回旁白**刚念的那句话**（`last phrase`），所以记下来的是「念出
 了什么」，不只是「树里有什么」——这是三个平台里唯一能做到这一步的。
-`mac/ax-dump.swift` 抓 AX 树，对应 Windows 的 `uia-dump.ps1`。边界：
+`mac/ax-dump.swift` 抓 AX 树，对应 Windows 的 `uia-dump.ps1`；按键、切输入源
+（Carbon `TISSelectInputSource`）、最小化由 `mac/drive.sh` 做，实验台在 macOS
+上自动调它。边界：
 
 - 要本机手动开四个开关（辅助功能、旁白实用工具里的「允许使用 AppleScript
   控制旁白」、自动化授权、旁白本身），缺一个都静默失败，见脚本开头；

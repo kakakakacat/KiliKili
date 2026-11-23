@@ -369,7 +369,11 @@ pub fn run(args: Args, command_line: Vec<String>) -> Result<()> {
         .unwrap_or_else(|| PathBuf::from("."));
     let driver = Rc::new(RefCell::new(drive::Driver::new(
         !args.no_driver && args.scripted,
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("win"),
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(if cfg!(target_os = "macos") {
+            "mac"
+        } else {
+            "win"
+        }),
         work_dir,
         std::process::id(),
     )));

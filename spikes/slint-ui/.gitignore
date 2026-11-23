@@ -4,3 +4,4 @@
 /shots/
 # mac/ax-dump.swift 编出来的二进制，vo-drive.sh 按需重编。
 /mac/ax-dump
+/mac/input-source

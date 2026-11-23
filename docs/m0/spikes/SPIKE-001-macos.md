@@ -1,78 +1,86 @@
-# SPIKE-001 · macOS：Slint + libmpv 视频与弹幕覆盖
+# SPIKE-001 实验记录 · macos · 2026-11-23 08:49:36 UTC
 
-状态：**NOT TESTED**（实验台已就绪，等一台 mac）
-对应 issue：[#8](https://github.com/kakakakacat/KiliKili/issues/8)
-最后更新：2026-11-21
+自动产出于 `slint-mpv-spike`，不要手工编辑：重跑一次会整份覆盖。
 
-这份是**待填的记录位**，不是结论。真正的记录由实验台自己写出来覆盖本文件
-下半部分；在那之前，这里只说明「要跑什么、跑完算不算数」。
+命令行：`./target/release/slint-mpv-spike --video https://xy58x222x25x142xy.mcdn.bilivideo.cn:8082/v1/resource/upgcxcode/17/52/43787355217/43787355217-1-30032.m4s?<已脱敏> --audio https://xy183x234x98x153xy.mcdn.bilivideo.cn:8082/v1/resource/upgcxcode/17/52/43787355217/43787355217-1-30280.m4s?<已脱敏> --user-agent Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36 --referer https://www.bilibili.com --hwdec videotoolbox --flip-y --scripted --seek-to 30000 --danmaku-rate 30 --shots /private/tmp/claude-501/-Users-dm-KiliKili/02306e06-3383-487c-aa3b-cd251f002fe5/scratchpad/shots8b --record ../../docs/m0/spikes/SPIKE-001-macos.md`
 
-## 为什么还没跑
+**自动项结论：PASS**（人工项见下表）
 
-实验台在一台 Windows 开发机上写成并跑通（见
-[2026-11-21-windows-dryrun.md](2026-11-21-windows-dryrun.md)），那台机器上
-没有 macOS。[VALIDATION-CAPABILITY](../VALIDATION-CAPABILITY.md) §1 记着
-macOS 的真机 GUI 验证在**本机 M4** 上做——这一步只能在那台机器上完成，
-CI 替不了：GitHub 的 macOS runner 没有可用的 GPU 合成与显示输出，
-编译成功与「视频能不能垫在 UI 底下」是两个问题。
+## 环境
 
-## 怎么跑
-
-```sh
-brew install mpv                     # 提供 libmpv.2.dylib
-cd spikes/slint-mpv
-cargo run --release -- \
-    --video <DASH 视频 URL> --audio <DASH 音频 URL> \
-    --user-agent <UA> --referer https://www.bilibili.com \
-    --scripted --seek-to 30000 --danmaku-rate 30 \
-    --hwdec videotoolbox \
-    --shots ../../target/spike-shots \
-    --record ../../docs/m0/spikes/SPIKE-001-macos.md
-```
-
-跑完把生成的文件**连同截图一起**看一遍，再按下面「人工项」逐条判。
-
-取流 URL 从哪来：`rust/crates/bili-api` 的取流路径已经迁完（issue #79），
-用真实账号取一次 DASH 的音视频地址即可；URL 带签名和时效，**不要写进记录**
-（记录会脱敏主目录，但不会脱敏 URL，自己别粘上去）。手边没有取流条件时，
-先用本地文件把前七项跑出来，DASH 分轨那项标 BLOCKED，别空着。
-
-## 这次要额外盯的三件事（Windows 上问不出来的）
-
-1. **FBO 方向**。Windows + femtovg 上实测需要 `--flip-y`，macOS 上未知。
-   画面上下颠倒就加这个开关，并把结论记进本文件——两端不一致的话，
-   Phase 2 的适配器里得按平台分支。
-2. **OpenGL 在 macOS 上已废弃**。mpv 的 render API 走的是 CGL，能用，但
-   Apple 随时可能把它拿掉。如果这条路在 macOS 上就已经吃力（掉帧、色彩
-   不对、HiDPI 下模糊），那 ADR-004 要认真考虑 `MPV_RENDER_PARAM_SW_*`
-   或者 Metal 层的方案，而不是把问题留到 Phase 2 再撞。
-3. **videotoolbox 是不是真的开了**。记录里的「hwdec 实际」若是
-   `videotoolbox-copy`，说明每帧还在 GPU→CPU→GPU 走一趟（Windows 这次就是
-   `d3d11va-copy`），CPU 占用与功耗都要重新看——这正是 #9 里写的
-   「避免每帧 CPU RGBA 拷贝」在桌面端的同一个问题。
-
-## 人工项怎么判
-
-实验台只敢判机器能判的（帧率、暂停是否冻结位置、SeekCompleted 是否真的来过、
-hwdec 字符串）。剩下这些对着截图和屏幕自己判，判完写进本文件：
-
-| 项 | 怎么算过 |
+| 项 | 值 |
 |---|---|
-| 层级 | 视频在最下、弹幕在视频之上、HUD 在最上；弹幕不被视频盖住，也不糊成一片 |
-| 画面 | 颜色正常、不颠倒、不拉伸；窗口缩放与全屏切换后比例仍对 |
-| HiDPI | Retina 下文字边缘锐利，不是放大的模糊位图；FBO 像素尺寸 = 逻辑尺寸 × 缩放 |
-| 音画同步 | 有声音，且和画面对得上（DASH 分轨时尤其要听） |
-| 暂停 | 画面与弹幕同时静止，恢复后不跳帧 |
-| Seek | 跳转后旧弹幕不残留，新位置的弹幕在一两秒内出来 |
+| 平台 | macos |
+| 系统 | Darwin 27.3 |
+| 内核 | 27.3.0 |
+| CPU | Apple M4 |
+| 内存 | 32.0 GiB |
+| rustc | rustc 1.100.0 (0ef1bc386 2026-11-09) |
+| commit | 101417a68 |
+| 工作区是否干净 | 否（记录里的 commit 不足以复现，见备注） |
+| slint | 1.19.0 |
+| libmpv | /opt/homebrew/lib/libmpv.2.dylib |
+| mpv client API | 2.6 |
 
-## Go / No-Go 的判据
+## 媒体与渲染
 
-[SPIKE-PLAN](../SPIKE-PLAN.md) 写的是：视频合成/覆盖、移动端生命周期、长列表、
-必要富文本、IME、无障碍达不到可接受质量就 NO-GO。本条只覆盖**视频合成与覆盖**
-这一项，它过了不代表 Phase 2 可以走——还要 #9、#10、#11。
+| 项 | 值 |
+|---|---|
+| 模式 | 视频 + 弹幕 |
+| 视频源 | https://xy58x222x25x142xy.mcdn.bilivideo.cn:8082/v1/resource/upgcxcode/17/52/43787355217/43787355217-1-30032.m4s?<已脱敏> |
+| 音频源 | DASH 外挂音轨 |
+| hwdec 设置 | videotoolbox |
+| OpenGL | Apple \| Apple M4 \| 4.1 Metal - 91.7 |
+| FBO 尺寸 | 2560x1440 |
+| 弹幕 | 形状取自 typical + rich · 密度 30 条/秒（合成）· 入桶 18182 条 |
+| hwdec 实际 | videotoolbox |
+| 视频编码 | H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10 |
+| 视频格式 | h264 |
+| 音频编码 | aac |
+| 视频分辨率 | 852x480 |
 
----
+## 测量
 
-## 实验记录（跑完由工具覆盖写入）
+| 项 | 值 |
+|---|---|
+| mpv 丢帧 | 0 |
+| 视频帧率 | 25.00 |
+| 运行时长 | 25.5s |
+| 总帧数 | 1483 |
+| 平均 fps | 58.0 |
+| 帧耗时 p50 / p95 / p99 | 16.72 / 19.98 / 23.59 ms |
+| 掉帧（>33ms） | 6 |
+| CPU / RSS（结束时） | 36.1% / 619.5 MiB（峰值 619.5 MiB） |
+| 弹幕 累计 / 丢弃 | 437 条上屏，0 条因同屏上限丢弃，6 条因无空轨丢弃，221 条高级弹幕跳过 |
+| 事件 | 采纳 487，因代际过期丢弃 1 |
 
-**NOT TESTED** —— 本节在 mac 上跑一次 `--record` 即被整段替换。
+## 验证项
+
+| 项 | 预期 | 实际 | 结论 |
+|---|---|---|---|
+| 帧率 | 平均 ≥ 55 fps | 58.0 fps | PASS |
+| 帧耗时 p95 | ≤ 20ms | 19.98 ms | PASS |
+| 暂停冻结位置 | 暂停 1.4 秒后位置不变 | 4440ms → 4440ms | PASS |
+| Seek 完成是事实事件 | 收到 SeekCompleted 且位置接近 30000ms | 收到 1 次，最后一次 30000ms（差 0ms） | PASS |
+| 旧代际事件被丢弃 | seek 期间旧快照不被采纳 | 丢弃 1 条 | PASS |
+| 硬件解码 | hwdec-current 不是 no | videotoolbox | PASS |
+| DASH 音视频分轨 | 音频来自第二个源，且解得出编码 | aac（视频与音频各走一个 demuxer） | PASS |
+| 视频与弹幕的层级 | 视频在下、弹幕在上、HUD 在最上 | 见截图 6 张 | 人工确认 |
+| HiDPI | FBO 像素尺寸 = 逻辑尺寸 × 缩放 | 2560x1440 | 人工确认 |
+| 全屏 | 能进能出且不崩 | 脚本切换过两次 | 人工确认 |
+| 窗口缩放 | 缩放后视频与弹幕都跟着变 | [(960, 540), (1280, 720)] | 人工确认 |
+| 播放失败事件 | 没有 Failed / SurfaceLost | 无 | PASS |
+
+## 截图
+
+- `01-playing.png`
+- `02-paused.png`
+- `03-after-seek.png`
+- `04-fullscreen.png`
+- `05-resized.png`
+- `06-final.png`
+
+## 备注
+
+- 弹幕密度是合成的（形状取自 golden fixture），不代表线上真实弹幕量；高级弹幕（mode 7/9）未渲染。
+

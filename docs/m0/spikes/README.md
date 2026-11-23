@@ -22,7 +22,7 @@ SPIKE-001/002）与 `spikes/slint-ui`（界面，SPIKE-003），记录格式同�
 | 文件 | 平台 | 结论 |
 |---|---|---|
 | [2026-11-21-windows-dryrun.md](2026-11-21-windows-dryrun.md) | Windows 11 / RX 7900 GRE | 自动项全 PASS。**这是实验台自检，不是 SPIKE-001 的交付** |
-| [SPIKE-001-macos.md](SPIKE-001-macos.md) | macOS | **未跑**，等一台 mac（issue #8） |
+| [SPIKE-001-macos.md](SPIKE-001-macos.md)（＋[notes](2026-11-23-slint-mpv-macos-notes.md)） | macOS 27.3 / Apple M4 | **#8 PASS**：真实 DASH 480p，58 fps、p95 19.98ms，`videotoolbox` 零拷贝硬解，人工项（层级/方向/HiDPI/音画同步）全过。要 `--flip-y`——三个平台一致，适配器不必分支。顺带修掉两个实验台 bug：外挂音轨在 Unix 上被 `:` 拆碎、记录里写进带签名的 URL |
 | [SPIKE-002-android.md](SPIKE-002-android.md) | Android 14 / Adreno 740 真机 | **#9 全部范围已答，PASS**：GL 上下文、触摸、旋转、surface 生命周期、后台音频、PiP，外加 Media3 回退对照。带一条代价：表面重建后零拷贝硬解要靠完整重载才接得回来 |
 | [2026-11-22-slint-ui-windows.md](2026-11-22-slint-ui-windows.md)（＋[notes](2026-11-22-slint-ui-windows-notes.md)） | Windows 11 / RX 7900 GRE | **SPIKE-003（#10）前四项，自动项全 PASS**：两万行滚动单帧 0.9ms（p95）、Tab/IME 正常、UIA 读得出 List/ListItem。一条确定的额外工作量：`StyledText` 不支持行内图片，图文混排要自己排版，而 Slint 不给文本测量 API。**#10 未完**，见 notes §6 |
 | [2026-11-22-slint-ui-android.md](2026-11-22-slint-ui-android.md)（＋[notes](2026-11-22-slint-ui-android-notes.md)） | Android 14 / Adreno 740 真机 | **SPIKE-003（#10）在真机上的同一轮**：长列表过（滚动 p95 10.5ms，但余量只剩 37%）、**触控惯性过**（手指驱动 122fps，`Flickable` 自带）。最贵的结论是**无障碍树是空的**——Slint 的 Android 后端根本没接，TalkBack 一个节点都读不到 |

@@ -179,7 +179,7 @@ impl Evidence {
             }
             let _ = writeln!(out);
         }
-        redact_home(&out)
+        redact_urls(&redact_home(&out))
     }
 
     pub fn write(&self, path: &Path) -> Result<()> {
@@ -214,6 +214,41 @@ fn redact_home(text: &str) -> String {
         out = replace_ignore_case(&out, &variant, "~");
     }
     out
+}
+
+/// 去掉 URL 的查询串。
+///
+/// 取流地址的查询串里带着签名、时效与客户端 IP（B 站的 `oi=`、`upsig=`），
+/// 而命令行和「视频源」两处都会原样写进记录。主机与路径留着：看得出是
+/// 哪个 CDN、哪一路流，又不泄露凭据。URL 到空白、反引号或竖线为止——
+/// 这三个是 Markdown 记录里 URL 可能的右边界。
+fn redact_urls(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut rest = text;
+    loop {
+        let next = ["https://", "http://"]
+            .iter()
+            .filter_map(|scheme| rest.find(scheme))
+            .min();
+        let Some(start) = next else {
+            out.push_str(rest);
+            return out;
+        };
+        out.push_str(&rest[..start]);
+        let url_and_after = &rest[start..];
+        let end = url_and_after
+            .find(|c: char| c.is_whitespace() || c == '`' || c == '|')
+            .unwrap_or(url_and_after.len());
+        let url = &url_and_after[..end];
+        match url.find('?') {
+            Some(q) => {
+                out.push_str(&url[..q]);
+                out.push_str("?<已脱敏>");
+            }
+            None => out.push_str(url),
+        }
+        rest = &url_and_after[end..];
+    }
 }
 
 fn replace_ignore_case(haystack: &str, needle: &str, with: &str) -> String {
@@ -371,5 +406,27 @@ mod tests {
         assert!(md.contains("# 标题"));
         assert!(md.contains("d3d11va"));
         assert!(md.contains("PASS"));
+    }
+}
+
+#[cfg(test)]
+mod redact_url_tests {
+    use super::redact_urls;
+
+    #[test]
+    fn strips_query_keeps_host_and_path() {
+        let text = "命令行：`spike --video https://a.cdn/x/1-30032.m4s?oi=1&upsig=z --referer https://www.bilibili.com`";
+        assert_eq!(
+            redact_urls(text),
+            "命令行：`spike --video https://a.cdn/x/1-30032.m4s?<已脱敏> --referer https://www.bilibili.com`"
+        );
+    }
+
+    #[test]
+    fn stops_at_table_pipe() {
+        assert_eq!(
+            redact_urls("| 视频源 | http://h/p?s=1 |"),
+            "| 视频源 | http://h/p?<已脱敏> |"
+        );
     }
 }

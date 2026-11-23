@@ -227,7 +227,7 @@ PiliPlus-Rust/
 ### 5.3 对齐旧行为的策略
 
 - `golden fixtures`：对 API 响应脱敏并固定，Rust 与 Dart 使用同一输入数据校验规范化输出。
-- `shadow mode`：早期仅对非敏感只读功能同时执行 Dart/Rust 解析并比对，结果仍用 Dart 显示；禁止对写操作重复执行。
+- ~~`shadow mode`~~：早期仅对非敏感只读功能同时执行 Dart/Rust 解析并比对，结果仍用 Dart 显示；禁止对写操作重复执行。**已于 2026-11-23 删除**，见下方修订。
 - `feature flags`：按功能、按平台切换实现；发生故障可降级回 Dart。
 - `upgrade tests`：复制旧版用户数据，验证首次启动、数据库迁移、登录状态、下载任务和缓存兼容性。
 - 重要外部 API 的变化通过协议适配层修复，避免污染 Domain。
@@ -242,6 +242,16 @@ PiliPlus-Rust/
 > 逐行转写进测试文件）。代价是失去运行时兜底，补偿措施是
 > [QA-001 §2.1](../qa/RELEASE-VALIDATION.md) 的真机待确认项清单与 Phase 2
 > 的统一回归。取流（playurl）那条的 typed 化单独跟踪在 issue #79。
+
+> **2026-11-23 修订（issue #24）**：`shadow mode` 的**运行时比对已经删除**。
+> 它只在 videoDetail 一条路径上存在过，而决策五的一次性 parity 在所有维度
+> 上都更强——在 CI 里跑、覆盖确定、可重复、零线上成本；shadow 要等真机碰上
+> 差异才显形，还得先解脱敏与采样两道难题（#24 原本要的就是这个）。给一个
+> 已被取代的机制建上报通道，是在往要删的东西上投入。
+>
+> **留下来的是 `video_detail_normalize.dart`**：它仍是 fixture 生成器
+> （`tool/fixture-gen/video_detail_fixture.dart`）与 parity 测试的 oracle。
+> 删掉的只是「运行时拿两份实现对一遍」这一层，不是对照本身。
 
 ### 5.4 阶段 1 定义完成（DoD）
 

@@ -363,7 +363,7 @@ abstract final class RustDynamic {
       timeoutMs: BigInt.from(10000),
       transport: RustTransport.current(),
       mixinKey: mixinKey,
-      wts: BigInt.from(DateTime.now().millisecondsSinceEpoch ~/ 1000),
+      wts: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
   }
 

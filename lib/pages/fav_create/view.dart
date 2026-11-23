@@ -7,7 +7,7 @@ import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/view_insets_safe_area.dart';
 import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/msg.dart';
+import 'package:kilikili/services/rust/rust_upload.dart';
 import 'package:kilikili/utils/bili_utils.dart';
 import 'package:kilikili/utils/extension/file_ext.dart';
 import 'package:kilikili/utils/extension/theme_ext.dart';
@@ -160,16 +160,16 @@ class _CreateFavPageState extends State<CreateFavPage> {
             imgPath = croppedFile.path;
           }
         }
-        MsgHttp.uploadImage(
+        RustUpload.beginImage(
           path: imgPath,
           bucket: 'medialist',
           dir: 'cover',
-        ).then((res) {
+        ).then(RustUpload.awaitImage).then((res) {
           if (context.mounted) {
             if (res case Success(:final response)) {
-              _cover = response['location'];
+              _cover = response;
               (context as Element).markNeedsBuild();
-            } else {
+            } else if (!RustUpload.isCancelled(res)) {
               res.toast();
             }
           }

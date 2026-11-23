@@ -31,6 +31,7 @@ pub mod session;
 pub mod space;
 pub mod sponsor_block;
 pub mod subtitle;
+pub mod upload;
 pub mod user;
 pub mod user_list;
 pub mod video;

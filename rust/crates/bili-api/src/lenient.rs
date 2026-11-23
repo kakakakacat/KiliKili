@@ -99,7 +99,20 @@ fn from_value(value: Option<&Value>) -> Option<i64> {
             #[allow(clippy::cast_possible_truncation)]
             n.as_f64().map(|f| f as i64)
         }),
-        Value::String(s) => s.trim().parse().ok(),
+        Value::String(s) => {
+            let s = s.trim();
+            // 先按整数，再按浮点截断。两步是因为**同一个值写成串和写成数字
+            // 必须得到同一个结果**：`204.8` 会截断成 204，而 `"204.8"` 若
+            // 只试整数就会落到 None。这种不一致最难查——两台机器上服务端
+            // 给的形态不同，界面就一个有数字一个没有。
+            s.parse::<i64>().ok().or_else(|| {
+                #[allow(clippy::cast_possible_truncation)]
+                s.parse::<f64>()
+                    .ok()
+                    .filter(|f| f.is_finite())
+                    .map(|f| f as i64)
+            })
+        }
         _ => None,
     }
 }
@@ -134,6 +147,13 @@ mod tests {
     fn floats_are_truncated_not_rounded() {
         assert_eq!(probe(r#"{"n": 1.0}"#), Some(1));
         assert_eq!(probe(r#"{"n": 1.9}"#), Some(1));
+        // 同一个值写成串必须得到同一个结果，否则就成了「换台机器数字就没了」。
+        assert_eq!(probe(r#"{"n": "1.0"}"#), Some(1));
+        assert_eq!(probe(r#"{"n": "204.8"}"#), Some(204));
+        assert_eq!(probe(r#"{"n": "-1.9"}"#), Some(-1));
+        // NaN / inf 的串不是数字，落 None 而不是一个垃圾整数。
+        assert_eq!(probe(r#"{"n": "NaN"}"#), None);
+        assert_eq!(probe(r#"{"n": "inf"}"#), None);
     }
 
     /// 真机上把整条 nav 判成协议错误的那个形状（#161）。

@@ -241,6 +241,17 @@ pub(crate) async fn send_write<T: HttpTransport>(
                 ));
             }
             (CsrfIn::None, _) => {}
+            // multipart 的 csrf 一律进表单字段：两条上传接口都是这个形态。
+            // 其余位置真出现了再加，别先写上去——没有调用点的分支没人验。
+            (CsrfIn::Body, WriteBody::Multipart { fields, .. }) => {
+                fields.push(("csrf".to_owned(), csrf));
+            }
+            (_, WriteBody::Multipart { .. }) => {
+                return Err(DomainError::new(
+                    bili_domain::error::ErrorKind::Protocol,
+                    "multipart 体目前只支持 CsrfIn::Body",
+                ));
+            }
         }
     }
 
@@ -254,6 +265,11 @@ pub(crate) async fn send_write<T: HttpTransport>(
     let post_body = match body {
         WriteBody::Form(form) => PostBody::Form(form),
         WriteBody::Json(value) => PostBody::Json(value.to_string()),
+        WriteBody::Multipart { fields, file } => PostBody::Multipart {
+            fields,
+            file_field: file.field.to_owned(),
+            file_path: file.path,
+        },
     };
 
     // 只记 path 与幂等级别：体里有业务标识符，csrf 更是凭据。

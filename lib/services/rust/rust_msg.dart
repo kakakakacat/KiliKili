@@ -58,11 +58,13 @@ export 'package:kilikili/rust/api/msg.dart'
 /// 这些接口在 `ApiType.apiTypeSet` 里都没有登记，因此与基线拦截器一样走
 /// `main` 账号。
 ///
-/// ## 刻意留在 Dart 的四条
+/// ## `msg.dart` 剩下的那几条后来怎么了
 ///
-/// `uploadImage` / `uploadBfs`（multipart 上传 + 取消）属于一项还没有决策的
-/// 传输能力，见 **issue #193**；`removeDynamic` 属于动态域，归 S5 续单
-/// #150。三条仍在 `MsgHttp` 里。
+/// `uploadImage` / `uploadBfs` 当时卡在「multipart 与上传取消是一项还没有
+/// 决策的传输能力」上，后来由 **ADR-015 / #193** 决策并迁走，现在在
+/// `lib/services/rust/rust_upload.dart`。`createTextDynamic` 无调用点，随
+/// S12 删除。只剩 `removeDynamic` 仍在 `MsgHttp` 里——它属于动态域，归
+/// S5 续单 **#150**。
 abstract final class RustMsg {
   /// 与基线 `BaseOptions` 一致的超时（`lib/http/init.dart`）。
   static const int _timeoutMs = 10000;

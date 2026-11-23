@@ -22,6 +22,10 @@ reqwest = { version = "0.12", default-features = false, features = [
     "gzip",
     "brotli",
     "charset",
+    # 图片上传（ADR-015）。multipart 要分段编码与 boundary；stream 是为了
+    # 让文件**流式**进请求体——一张 4K 截图十几 MB，整读会在低端机上 OOM。
+    "multipart",
+    "stream",
 ] }
 # 弹幕过滤规则来自用户配置，必须按条编译、失败即降级回 Dart
 # （见 bili-danmaku::rule 与 ADR-010）。
@@ -31,7 +35,8 @@ regex = "1"
 url = "2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
-tokio = { version = "1", features = ["rt-multi-thread", "sync", "time", "macros"] }
+# "fs" 是上传要的：文件流式读进 multipart 体（ADR-015 决策五）。
+tokio = { version = "1", features = ["rt-multi-thread", "sync", "time", "macros", "fs"] }
 
 [workspace.lints.rust]
 unsafe_code = "warn"

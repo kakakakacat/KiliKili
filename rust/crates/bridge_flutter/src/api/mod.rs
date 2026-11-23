@@ -27,6 +27,7 @@ pub mod space;
 pub mod sponsor_block;
 pub mod subtitle;
 pub mod transport;
+pub mod upload;
 pub mod user;
 pub mod video_detail;
 pub mod video_detail_fetch;

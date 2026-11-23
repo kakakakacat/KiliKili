@@ -102,6 +102,11 @@ Rust 维护可取消会话、有界消息队列和 typed 事件，宿主每约 1
 通过 `session_id` / `generation` 丢弃过期结果；token、历史预取和醒目留言
 同属该网络边界，宿主不解析协议。
 
+图片上传见 [ADR-015](adr/ADR-015-uploads.md)，取消沿用的是同一套形状：
+`begin` 同步返回 id，宿主拿着它 `await` 或 `cancel`，连接未建立也能取消。
+文件由宿主给**真实路径**、Rust 流式读进 multipart 体——让宿主先读成字节
+会在跨 FFI 之前就把十几 MB 装进内存，流式也就无从谈起。
+
 ### 2.3 宿主可替换：逻辑归属的判据
 
 Stage 2 会把 Flutter 换成 Slint（也可能是别的跨平台框架）；**Rust 这一层

@@ -30,6 +30,7 @@ fixture（它们带有同一个版本号，对不上时 golden 测试会失败�
 | BV 号 ↔ av 号编码（58 进制字母表、两次换位、异或掩码） | 2026-11-13，S4 / issue #54 | `tool/fixture-gen/bvid_fixture.dart` | `bili-protocol/tests/bvid_golden.rs` |
 | 直播取流请求面（`protocol`/`format`/`codec`/`ptype`/`dolby`/`panorama`/`web_location`） | 2026-11-11，S11a 第二批 / issue #61 | 无独立生成器，核对方向相反，见下 | `bili-api/tests/live_golden.rs::room_play_info_request_matches_the_frozen_snapshot` |
 | 直播剩余三条签名接口的请求面（搜索的 APP 参数集；屏蔽设置与贡献榜的 WBI 参数集，各带一个 `web_location=444.8`） | 2026-11-11，S11a 第三批 / issue #61 | 同上 | `bili-api/tests/live_golden.rs::signed_requests_match_the_frozen_snapshot` |
+| 图片上传的 multipart 请求面（两条接口的文件字段名不同：`file` / `file_up`；`category`/`biz` 可省时整条不发；csrf 进表单字段） | 2026-11-23，ADR-015 / issue #193 | 无独立生成器，核对方向相反，见下 | `bili-api/src/upload.rs` 的六条单测 |
 | 专栏计数的 WBI 参数集（`mobi_app=pc`、`from=web`、`gaia_source=main_web` 三个固定参数一并进签名） | 2026-11-23，S5 续单第一批 / issue #150 | 无独立生成器，核对方向相反，见下 | `bili-api/src/dynamic.rs` 的 `article_info_request_signs_the_three_fixed_params` |
 | 登录请求面：设备号（16 随机字节 + 7 字节 BCD 本地时间 + 8 随机字节 + 和校验）、`login_session_id`（md5(buvid+毫秒)）、密码与 `dt` 的 RSA PKCS#1 v1.5 加密及 `dt` 多出的一层百分号编码 | 2026-11-16，S14 / issue #65 | 无独立生成器，核对方向相反，见下 | `bili-protocol/src/login_ids.rs`、`login_crypto.rs` 的单测，`bili-api/tests/login_golden.rs`，`test/services/rust/login_parity_test.dart` |
 

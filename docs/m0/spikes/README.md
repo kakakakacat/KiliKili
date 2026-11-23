@@ -26,6 +26,7 @@ SPIKE-001/002）与 `spikes/slint-ui`（界面，SPIKE-003），记录格式同�
 | [SPIKE-002-android.md](SPIKE-002-android.md) | Android 14 / Adreno 740 真机 | **#9 全部范围已答，PASS**：GL 上下文、触摸、旋转、surface 生命周期、后台音频、PiP，外加 Media3 回退对照。带一条代价：表面重建后零拷贝硬解要靠完整重载才接得回来 |
 | [2026-11-22-slint-ui-windows.md](2026-11-22-slint-ui-windows.md)（＋[notes](2026-11-22-slint-ui-windows-notes.md)） | Windows 11 / RX 7900 GRE | **SPIKE-003（#10）前四项，自动项全 PASS**：两万行滚动单帧 0.9ms（p95）、Tab/IME 正常、UIA 读得出 List/ListItem。一条确定的额外工作量：`StyledText` 不支持行内图片，图文混排要自己排版，而 Slint 不给文本测量 API。**#10 未完**，见 notes §6 |
 | [2026-11-22-slint-ui-android.md](2026-11-22-slint-ui-android.md)（＋[notes](2026-11-22-slint-ui-android-notes.md)） | Android 14 / Adreno 740 真机 | **SPIKE-003（#10）在真机上的同一轮**：长列表过（滚动 p95 10.5ms，但余量只剩 37%）、**触控惯性过**（手指驱动 122fps，`Flickable` 自带）。最贵的结论是**无障碍树是空的**——Slint 的 Android 后端根本没接，TalkBack 一个节点都读不到 |
+| [2026-11-23-slint-ui-macos.md](2026-11-23-slint-ui-macos.md)（＋[notes](2026-11-23-slint-ui-macos-notes.md)） | macOS 27.3 / Apple M4 | **SPIKE-003（#10）的 macOS 一轮＋旁白实读**：列表与富文本同 Windows（滚动 p95 0.7ms）。旁白控件全 PASS；**长列表只读得到第一屏**——虚拟化对无障碍不透明，旁白报「1/7」、翻页滚不动。另撞出一条 macOS 独有的：固定宽度的子元素会把窗口最大宽度钉死。Tab/IME/最小化没有 mac 驱动，NOT TESTED |
 | [2026-11-22-flutter-patches-slint-eval.md](2026-11-22-flutter-patches-slint-eval.md) | 不涉及（读 diff 与 Slint 源码） | **SPIKE-003（#10）后半边：34 个 Flutter 补丁逐项评估**。去重后是 26 个独立问题：原生支持 3 / 不适用 4 / 需自写 12 / 做不到 7。做不到的归成四件事，**跨元素文本选择**与**嵌套滚动的手势消歧**是 Phase 2 No-Go 候选 |
 
 ## 为什么先有一份 Windows 的
@@ -95,3 +96,4 @@ Windows 这一跑同时附带回答了 [VALIDATION-CAPABILITY](../VALIDATION-CAP
 | `-pip` | 小窗里视频还在画 | 日志只能说「进了 PiP」，说不了「小窗里有画面」 |
 | `-resume-recover` | 回前台后画面没了、跑完恢复配方又回来 | 整份记录里最贵的那个发现，一句话说不清 |
 | `-media3-layers` | 回退路线的三层（视频 / GL 覆盖层 / 普通 View）叠得住 | 「回退可行」否则只是一句断言 |
+| `2026-11-23-macos-no-flip` / `-flip-y` | macOS 上 FBO 也是倒的，加 `--flip-y` 之后才对（#8） | 「三端都要翻转」这条结论；重跑要那台 M4，理由与 Android 相同。两张合计 0.4MB |

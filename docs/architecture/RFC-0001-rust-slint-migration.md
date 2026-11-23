@@ -420,7 +420,7 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 | R6 | 上游 Bilibili API 变化频繁 | 高/中 | 版本化 Protocol Adapter 和 fixtures | 否 |
 | R7 | 五平台发布/签名/依赖问题 | 中/高 | 早期 CI、逐平台验收 | 是（发布） |
 | R8 | GPL/平台分发条款不满足 | 中/高 | 发布前许可证与合规 Review | 是（发布） |
-| R9 | ~~Slint 列表虚拟化、富文本、IME、无障碍及移动端成熟度~~ → 收敛为四条：**跨元素文本选择**（含表情参与复制）、**嵌套滚动的手势消歧**、**文本测量/自排版**、**Android 上的无障碍**。虚拟化与触控惯性在 Windows + Android 真机上都已验过，不是风险 | 高/高 | SPIKE-003 已跑 Windows 与 Android 真机，macOS 仍欠（#8）。前三条见 `2026-11-22-flutter-patches-slint-eval.md` §2；第四条是真机撞出来的：Slint 的 Android 后端**根本没接无障碍**（依赖图里没有 accesskit，TalkBack 读不到任何节点），**应用层绕不过去**，要么给上游提 PR 要么放弃——见 `2026-11-22-slint-ui-android-notes.md` §0。Flutter + Rust Core 为回退 | **是（Phase 2）** |
+| R9 | ~~Slint 列表虚拟化、富文本、IME、无障碍及移动端成熟度~~ → 收敛为四条：**跨元素文本选择**（含表情参与复制）、**嵌套滚动的手势消歧**、**文本测量/自排版**、**Android 上的无障碍**。虚拟化与触控惯性在 Windows + Android 真机上都已验过，不是风险 | 高/高 | SPIKE-003 已跑 Windows、Android 真机与 macOS（含旁白实读）。macOS 那一轮另撞出一条：**`ListView` 的虚拟化对无障碍不透明**，旁白只读得到第一屏（报「1/7」、翻页滚不动），见 `2026-11-23-slint-ui-macos-notes.md` §1.2。前三条见 `2026-11-22-flutter-patches-slint-eval.md` §2；第四条是真机撞出来的：Slint 的 Android 后端**根本没接无障碍**（依赖图里没有 accesskit，TalkBack 读不到任何节点），**应用层绕不过去**，要么给上游提 PR 要么放弃——见 `2026-11-22-slint-ui-android-notes.md` §0。Flutter + Rust Core 为回退 | **是（Phase 2）** |
 | R11 | ~~基线给 Flutter 框架打 34–37 个补丁，Slint 需全部重新实现~~ → 逐项评估完毕：去重后是 **26 个独立问题**（9 个 material 补丁里 8 个是框架补丁的同形复制），其中 4 个不适用、3 个 Slint 原生、12 个需自写、7 个做不到。**真正的工作量不在补丁，在它们服务的 `lib/common/widgets/flutter/` 那 2.9 万行自写控件** | 高/高 | 评估见 `docs/m0/spikes/2026-11-22-flutter-patches-slint-eval.md`；要排期的清单在该文 §4 | **是（Phase 2）** |
 | R12 | media-kit 系插件未适配 Swift Package Manager，Flutter 将来版本会报错；该 fork 上游不会适配 | 中/中 | 跟踪 Flutter SPM 强制时间点，必要时自行适配 | 否 |
 | R10 | 过早追求纯 Rust 导致过度重写 | 高/中 | 以可验证价值为前提，硬解保留原生 | 否 |

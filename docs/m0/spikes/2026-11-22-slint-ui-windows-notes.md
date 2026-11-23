@@ -165,11 +165,12 @@ UIA 树里：列表是 `List`，可见行是 `ListItem` 且各自带名字，`Is
 - ~~**触控手势 / 惯性**~~ **已验**（2026-11-22 真机）：手指驱动 122fps、
   渲染 p95 6.0ms，惯性是 `Flickable` 自带的。**下拉刷新仍没验**——Slint 没有
   这个控件，要先自己写一个。
-- **VoiceOver（mac，#8）实读**仍然欠着。**TalkBack 这一项已经有答案，而且
+- ~~**VoiceOver（mac，#8）实读**~~ **已做**（2026-11-23）：控件全 PASS，长列表只读得到
+  第一屏，见 [2026-11-23-slint-ui-macos-notes.md](2026-11-23-slint-ui-macos-notes.md) §1。**TalkBack 这一项已经有答案，而且
   推翻了本文 §4 的预期**：不是「另一套 API 没验」，是 Slint 的 Android 后端
   **根本没接无障碍**，树里一个节点都没有。见
   [2026-11-22-slint-ui-android-notes.md](2026-11-22-slint-ui-android-notes.md) §0。
-- **其他平台**：~~Android~~ 已跑（同上），**macOS 仍没跑**。IME 这一项尤其要
+- **其他平台**：~~Android~~ 已跑（同上），~~macOS~~ 已跑（2026-11-23，Tab/IME/最小化没有 mac 驱动，未测）。IME 这一项尤其要
   各跑一遍——三个平台是三套机制，Android 上的中文组字这一轮也还没驱动得了。
 
 ## 7. 截图不提交

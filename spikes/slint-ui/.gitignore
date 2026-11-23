@@ -2,3 +2,5 @@
 # 记录开头那行命令随时能重跑出来，不进仓库——理由见
 # docs/m0/spikes/README.md「截图去哪了」。
 /shots/
+# mac/ax-dump.swift 编出来的二进制，vo-drive.sh 按需重编。
+/mac/ax-dump

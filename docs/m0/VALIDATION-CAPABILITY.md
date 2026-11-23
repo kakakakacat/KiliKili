@@ -633,14 +633,29 @@ Tab 焦点轮转、外部按键与中文 IME 上屏、UIA 无障碍树（角色/
 
 **三条边界，不写明就会被当成已验**：
 
-1. **UIA ≠ 读屏实读。** 树里有的，VoiceOver 与 TalkBack 怎么念是另一回事，
-   而那两套 API 都没碰——mac 卡在 #8，Android 要真机。
-2. **只有 Windows。** IME 三个平台三套机制，`ListView` 与 `StyledText` 的
-   平台差异也没验。
+1. **UIA ≠ 读屏实读。** 树里有的，VoiceOver 与 TalkBack 怎么念是另一回事。
+   ~~mac 卡在 #8~~ macOS 已能**脚本化实读**（见下面的补充）；TalkBack 仍只能
+   抓树。
+2. ~~**只有 Windows。**~~ macOS 也跑了一轮（2026-11-23），但 Tab / IME /
+   最小化在 mac 上没有外部驱动；IME 三个平台三套机制，Android 与 macOS 的
+   中文组字都还没验。
 3. **没有触摸屏**，惯性与下拉刷新这一类测不了。
 
 **它同样不进 CI**：要 GPU 合成、显示输出，还要系统的无障碍接口，runner
 一样都没有。
+
+**2026-11-23 补充：macOS 上旁白（VoiceOver）可以脚本化实读。**
+`spikes/slint-ui/mac/vo-drive.sh` 用 System Events 发真实的 VO 键，再通过
+AppleScript 读回旁白**刚念的那句话**（`last phrase`），所以记下来的是「念出
+了什么」，不只是「树里有什么」——这是三个平台里唯一能做到这一步的。
+`mac/ax-dump.swift` 抓 AX 树，对应 Windows 的 `uia-dump.ps1`。边界：
+
+- 要本机手动开四个开关（辅助功能、旁白实用工具里的「允许使用 AppleScript
+  控制旁白」、自动化授权、旁白本身），缺一个都静默失败，见脚本开头；
+- 旁白自己的 `move` 命令在 27.3 上不动光标，只能发按键；
+- 记录由人整理进 notes，不是实验台自动产出的。
+
+结论见 [2026-11-23-slint-ui-macos-notes.md](spikes/2026-11-23-slint-ui-macos-notes.md)。
 
 **一条教训写进本文而不是只留在 spike 里**：记录里每个数都自洽，不等于
 实验是对的。#10 第一轮「虚拟化极好 + 滚动极卡」两条结论来自同一个 bug

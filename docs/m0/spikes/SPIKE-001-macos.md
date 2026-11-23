@@ -2,7 +2,7 @@
 
 自动产出于 `slint-mpv-spike`，不要手工编辑：重跑一次会整份覆盖。
 
-命令行：`./target/release/slint-mpv-spike --video https://xy58x222x25x142xy.mcdn.bilivideo.cn:8082/v1/resource/upgcxcode/17/52/43787355217/43787355217-1-30032.m4s?<已脱敏> --audio https://xy183x234x98x153xy.mcdn.bilivideo.cn:8082/v1/resource/upgcxcode/17/52/43787355217/43787355217-1-30280.m4s?<已脱敏> --user-agent Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36 --referer https://www.bilibili.com --hwdec videotoolbox --flip-y --scripted --seek-to 30000 --danmaku-rate 30 --shots /private/tmp/claude-501/-Users-dm-KiliKili/02306e06-3383-487c-aa3b-cd251f002fe5/scratchpad/shots8b --record ../../docs/m0/spikes/SPIKE-001-macos.md`
+命令行：`./target/release/slint-mpv-spike --video https://xy58x222x25x142xy.mcdn.bilivideo.cn:8082/v1/resource/upgcxcode/17/52/43787355217/43787355217-1-30032.m4s?<已脱敏> --audio https://xy183x234x98x153xy.mcdn.bilivideo.cn:8082/v1/resource/upgcxcode/17/52/43787355217/43787355217-1-30280.m4s?<已脱敏> --user-agent Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36 --referer https://www.bilibili.com --hwdec videotoolbox --flip-y --scripted --seek-to 30000 --danmaku-rate 30 --shots <scratchpad>/shots8b --record ../../docs/m0/spikes/SPIKE-001-macos.md`
 
 **自动项结论：PASS**（人工项见下表）
 

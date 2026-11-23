@@ -36,6 +36,17 @@ cargo build --release
 `--ime-keys`（拼音）、`--scale`（覆盖 HiDPI 缩放）、`--no-driver`（不起外部
 驱动，于是按键 / IME / 最小化 / 无障碍四项变 NOT TESTED）。
 
+手动模式下 `--scene <0-3>` 直接停在某个场景（0 长列表 / 1 富文本 / 2 输入 /
+3 无障碍），给屏幕阅读器实读用——脚本化一轮 40 秒切完四个场景，人跟不上。
+
+## 在 macOS 上跑
+
+外部驱动只有 Windows 版，所以 macOS 按 `--no-driver` 跑，Tab / IME / 最小化
+三项是 NOT TESTED。无障碍走另一条路：`mac/vo-drive.sh` 驱动真实的旁白
+（VoiceOver）并读回它念的话，`mac/ax-dump.swift` 抓 AX 树。四个必须先开的
+开关写在 `vo-drive.sh` 开头，缺一个都静默失败。结论见
+`docs/m0/spikes/2026-11-23-slint-ui-macos-notes.md`。
+
 另有一个对照程序 `frame-floor`，用来量**这台机器上 Slint 的呈现上限**：
 
 ```sh

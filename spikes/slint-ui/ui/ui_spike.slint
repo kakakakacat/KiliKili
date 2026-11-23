@@ -406,12 +406,19 @@ export component UiSpikeWindow inherits Window {
                 checked <=> root.toggle-on;
             }
 
-            Slider {
-                width: 240px;
-                minimum: 0;
-                maximum: 100;
-                value <=> root.slider-value;
-                accessible-label: "播放进度";
+            // 包一层是 macOS 撞出来的：固定宽度的子元素会把整个布局的
+            // max-width 一起钉死，而 macOS（winit）把它设成窗口的硬上限——
+            // 拉不宽、全屏也只有这么宽。Windows 不受影响。外层
+            // HorizontalLayout 自己不设上限，约束就不往上传。
+            HorizontalLayout {
+                alignment: start;
+                Slider {
+                    width: 240px;
+                    minimum: 0;
+                    maximum: 100;
+                    value <=> root.slider-value;
+                    accessible-label: "播放进度";
+                }
             }
 
             LineEdit {

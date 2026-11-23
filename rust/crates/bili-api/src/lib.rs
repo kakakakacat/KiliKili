@@ -69,6 +69,7 @@ pub mod sponsor_block;
 pub mod subtitle;
 #[cfg(feature = "reqwest-transport")]
 pub mod transport_reqwest;
+pub mod upload;
 pub mod user;
 pub mod user_list;
 pub mod video_detail;

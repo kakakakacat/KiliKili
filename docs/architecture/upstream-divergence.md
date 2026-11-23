@@ -427,8 +427,8 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 修改的上游既有文件 | **787** |
 | &nbsp;&nbsp;其中：仅因包名重命名而改动 | **348** |
 | &nbsp;&nbsp;其中：有实质改动 | **439** |
-| 新增文件 | **908** |
-| 删除文件 | **365** |
+| 新增文件 | **915** |
+| 删除文件 | **366** |
 
 「修改」总数一路下降（935 → 909 → 897 → 891 → 887），部分文件是因迁移被
 删除，从 M 转到了 D。#108 的界面改动一度把它顶回 892；合入 #111 的关注/
@@ -449,6 +449,11 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 （6 个）、`dynamic/dyn_topic_top` 与 `dyn_topic_pub_search`（5 个）、
 `dynamic/dyn_reaction`（2 个，全仓库零调用点）整目录删除。新增主要是 Rust
 侧与 M0 的 spike 代码。
+
+同日再记一次（ADR-015 / #193 的图片上传）：**787 / 915 / 366**。「修改」没
+变（`lib/http/msg.dart` 还剩 `removeDynamic`，归 #150，所以它仍是 M 而不是
+D），删除多一个（`models_new/upload_bfs/`），新增七个是 Rust 侧的 upload
+模块、桥接、ADR-015 与两份测试。
 
 新增来源主要是 Rust 侧的 crate 与测试；删除来源是各切片迁完后删掉的上游模型，
 到 S12 为止删得最多的是 `lib/models_new/` 下的 live、pgc 与 msg 三块。

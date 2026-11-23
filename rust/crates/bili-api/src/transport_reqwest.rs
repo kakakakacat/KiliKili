@@ -169,6 +169,39 @@ impl HttpTransport for ReqwestTransport {
     async fn post(&self, request: HttpPost) -> Result<HttpResponse, DomainError> {
         let client = client(&self.config)?;
 
+        // multipart 走单独一条路：它要先碰文件系统（打开、量大小），那类
+        // 失败不是 `reqwest::Error`，塞不进下面那个重试循环的错误类型。
+        //
+        // 不进重试循环也**正好是对的**：上传一律 `Idempotency::Unsafe`
+        // （ADR-015 决策四），而 `Unsafe` 的 `RetryPolicy` 本来就是一律不
+        // 重试（ADR-013 决策一）。顺带把 #193 担心的「取消过的请求被重试
+        // 补发」在结构上消掉——这里根本没有重发那条路。
+        if let PostBody::Multipart {
+            fields,
+            file_field,
+            file_path,
+        } = &request.body
+        {
+            debug_assert_eq!(
+                request.retry_policy,
+                RetryPolicy::Write(crate::http::Idempotency::Unsafe),
+                "上传必须定级 Unsafe"
+            );
+            let form = multipart_form(fields, file_field, file_path).await?;
+            let mut builder = client.post(&request.url).timeout(request.timeout);
+            for (k, v) in &request.headers {
+                builder = builder.header(k, v);
+            }
+            let resp = builder
+                .multipart(form)
+                .send()
+                .await
+                .map_err(|e| map_reqwest_error(&e))?;
+            let status = resp.status().as_u16();
+            let body = resp.text().await.map_err(|e| map_reqwest_error(&e))?;
+            return Ok(HttpResponse { status, body });
+        }
+
         // 与 GET 唯一的区别就在这个 policy 上：写请求按它自己的幂等级别
         // 决定能不能重发，**不要**改成 RetryPolicy::Read（ADR-013 决策一）。
         let policy = request.retry_policy;
@@ -209,6 +242,8 @@ async fn send_bytes_once(
         PostBody::Bytes { content_type, data } => builder
             .header("content-type", content_type)
             .body(data.clone()),
+        // 二进制 POST 只给 gRPC 用，上传不会走到这里。
+        PostBody::Multipart { .. } => builder.body(Vec::new()),
     };
     let response = builder.send().await?;
     let status = response.status().as_u16();
@@ -249,6 +284,9 @@ async fn send_post_once(
         PostBody::Bytes { content_type, data } => builder
             .header("content-type", content_type)
             .body(data.clone()),
+        // multipart 在 `post()` 里就返回了，到不了这里。保留分支是为了
+        // 穷尽匹配——加新变体时编译器会在这里再提醒一次。
+        PostBody::Multipart { .. } => builder.body(Vec::new()),
     };
 
     let resp = builder.send().await?;
@@ -344,6 +382,94 @@ fn map_reqwest_error(e: &reqwest::Error) -> DomainError {
         None => what.to_owned(),
     };
     DomainError::new(kind, detail)
+}
+
+/// 单文件上传的本地上限（ADR-015 决策五）。
+///
+/// 这是**客户端自己的护栏**，不是服务端的限制（那个没有公开文档，且可能
+/// 更严）。取 32 MiB 的理由：比任何一张手机截图或相机原图都宽裕，又不至于
+/// 让一次失手选中的视频文件把流量跑光。
+///
+/// 超限在**开始传之前**按文件元数据判掉，文案要说明是本地限制——否则用户
+/// 会以为是服务端拒绝的，查错方向就偏了。
+const MAX_UPLOAD_BYTES: u64 = 32 * 1024 * 1024;
+
+/// 把 multipart 的文件**流式**拼进请求体。
+///
+/// 不用 `Part::bytes`：一张 4K 截图十几 MB，整读会在低端机上直接 OOM
+/// （ADR-015 决策五）。这里拿 `tokio::fs::File` 分块读，每块 64 KiB。
+///
+/// # Errors
+/// 文件打不开、不是普通文件、或超过 [`MAX_UPLOAD_BYTES`]。三者都在真正
+/// 发请求之前判掉。
+async fn multipart_form(
+    fields: &[(String, String)],
+    file_field: &str,
+    file_path: &str,
+) -> Result<reqwest::multipart::Form, DomainError> {
+    use tokio::io::AsyncReadExt as _;
+
+    let meta = tokio::fs::metadata(file_path).await.map_err(|e| {
+        // 不把路径写进 detail：它带着用户的目录结构，而诊断只需要知道
+        // 「是打不开」还是「太大了」。
+        DomainError::new(
+            ErrorKind::Protocol,
+            format!("上传的文件打不开: {}", e.kind()),
+        )
+    })?;
+    if !meta.is_file() {
+        return Err(DomainError::new(
+            ErrorKind::Protocol,
+            "上传的路径不是一个普通文件",
+        ));
+    }
+    let len = meta.len();
+    if len > MAX_UPLOAD_BYTES {
+        return Err(DomainError::new(
+            ErrorKind::Protocol,
+            format!(
+                "文件 {} MiB 超过本地上传上限 {} MiB（客户端限制，不是服务端拒绝）",
+                len / 1024 / 1024,
+                MAX_UPLOAD_BYTES / 1024 / 1024
+            ),
+        ));
+    }
+
+    let file = tokio::fs::File::open(file_path).await.map_err(|e| {
+        DomainError::new(
+            ErrorKind::Protocol,
+            format!("上传的文件打不开: {}", e.kind()),
+        )
+    })?;
+
+    // 分块读成一个流。没有引入 tokio-util（只为一个 ReaderStream 多一个
+    // 依赖不划算），用 try_unfold 手写。
+    let stream = futures_util::stream::try_unfold(file, |mut f| async move {
+        let mut buf = vec![0_u8; 64 * 1024];
+        let n = f.read(&mut buf).await?;
+        if n == 0 {
+            Ok::<_, std::io::Error>(None)
+        } else {
+            buf.truncate(n);
+            Ok(Some((buf, f)))
+        }
+    });
+
+    // 文件名只给一个固定值：服务端不按它判类型（两条上传接口都看内容），
+    // 而真实文件名会带上用户的相册命名。
+    let part =
+        reqwest::multipart::Part::stream_with_length(reqwest::Body::wrap_stream(stream), len)
+            .file_name("upload")
+            .mime_str("application/octet-stream")
+            .map_err(|e| {
+                DomainError::new(ErrorKind::Protocol, format!("构造 multipart 失败: {e}"))
+            })?;
+
+    let mut form = reqwest::multipart::Form::new();
+    for (k, v) in fields {
+        form = form.text(k.clone(), v.clone());
+    }
+    Ok(form.part(file_field.to_owned(), part))
 }
 
 #[cfg(test)]

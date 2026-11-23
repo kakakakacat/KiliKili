@@ -30,6 +30,7 @@ import 'package:kilikili/rust/api/space.dart';
 import 'package:kilikili/rust/api/sponsor_block.dart';
 import 'package:kilikili/rust/api/subtitle.dart';
 import 'package:kilikili/rust/api/transport.dart';
+import 'package:kilikili/rust/api/upload.dart';
 import 'package:kilikili/rust/api/user.dart';
 import 'package:kilikili/rust/api/video_detail.dart';
 import 'package:kilikili/rust/api/video_detail_fetch.dart';
@@ -825,6 +826,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int dco_decode_box_autoadd_u_32(dynamic raw);
+
+  @protected
+  UploadContext dco_decode_box_autoadd_upload_context(dynamic raw);
+
+  @protected
+  UploadedImageData dco_decode_box_autoadd_uploaded_image_data(dynamic raw);
 
   @protected
   UpowerRank dco_decode_box_autoadd_upower_rank(dynamic raw);
@@ -2789,6 +2796,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
 
   @protected
+  UploadedImageData? dco_decode_opt_box_autoadd_uploaded_image_data(
+    dynamic raw,
+  );
+
+  @protected
   UpowerRank? dco_decode_opt_box_autoadd_upower_rank(dynamic raw);
 
   @protected
@@ -3749,6 +3761,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void dco_decode_unit(dynamic raw);
+
+  @protected
+  UploadBfsResult dco_decode_upload_bfs_result(dynamic raw);
+
+  @protected
+  UploadContext dco_decode_upload_context(dynamic raw);
+
+  @protected
+  UploadImageResult dco_decode_upload_image_result(dynamic raw);
+
+  @protected
+  UploadedImageData dco_decode_uploaded_image_data(dynamic raw);
 
   @protected
   UpowerLevel dco_decode_upower_level(dynamic raw);
@@ -4903,6 +4927,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
+
+  @protected
+  UploadContext sse_decode_box_autoadd_upload_context(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  UploadedImageData sse_decode_box_autoadd_uploaded_image_data(
+    SseDeserializer deserializer,
+  );
 
   @protected
   UpowerRank sse_decode_box_autoadd_upower_rank(SseDeserializer deserializer);
@@ -7491,6 +7525,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
+  UploadedImageData? sse_decode_opt_box_autoadd_uploaded_image_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   UpowerRank? sse_decode_opt_box_autoadd_upower_rank(
     SseDeserializer deserializer,
   );
@@ -8679,6 +8718,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_decode_unit(SseDeserializer deserializer);
+
+  @protected
+  UploadBfsResult sse_decode_upload_bfs_result(SseDeserializer deserializer);
+
+  @protected
+  UploadContext sse_decode_upload_context(SseDeserializer deserializer);
+
+  @protected
+  UploadImageResult sse_decode_upload_image_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  UploadedImageData sse_decode_uploaded_image_data(
+    SseDeserializer deserializer,
+  );
 
   @protected
   UpowerLevel sse_decode_upower_level(SseDeserializer deserializer);
@@ -10215,6 +10270,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_upload_context(
+    UploadContext self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_uploaded_image_data(
+    UploadedImageData self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_box_autoadd_upower_rank(
@@ -13541,6 +13608,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
 
   @protected
+  void sse_encode_opt_box_autoadd_uploaded_image_data(
+    UploadedImageData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_upower_rank(
     UpowerRank? self,
     SseSerializer serializer,
@@ -15114,6 +15187,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_unit(void self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_upload_bfs_result(
+    UploadBfsResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_upload_context(UploadContext self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_upload_image_result(
+    UploadImageResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_uploaded_image_data(
+    UploadedImageData self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_upower_level(UpowerLevel self, SseSerializer serializer);

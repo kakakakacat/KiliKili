@@ -1,11 +1,10 @@
-import 'dart:io' show File, HttpException;
+import 'dart:io' show File;
 
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/button/icon_button.dart';
 import 'package:kilikili/common/widgets/button/toolbar_icon_button.dart';
 import 'package:kilikili/common/widgets/flutter/text_field/controller.dart';
 import 'package:kilikili/common/widgets/flutter/text_field/text_field.dart';
-import 'package:kilikili/http/msg.dart';
 import 'package:kilikili/models/common/image_preview_type.dart';
 import 'package:kilikili/models/common/publish_panel_type.dart';
 import 'package:kilikili/models/dynamics/result.dart'
@@ -15,6 +14,7 @@ import 'package:kilikili/services/rust/rust_live.dart' show LiveEmoticon;
 import 'package:kilikili/pages/common/publish/common_publish_page.dart';
 import 'package:kilikili/pages/dynamics_mention/view.dart';
 import 'package:kilikili/services/rust/rust_reply.dart' as e;
+import 'package:kilikili/services/rust/rust_upload.dart';
 import 'package:kilikili/utils/cache_manager.dart';
 import 'package:kilikili/utils/extension/file_ext.dart';
 import 'package:kilikili/utils/extension/num_ext.dart';
@@ -26,7 +26,6 @@ import 'package:kilikili/utils/page_utils.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart'
     hide CacheManager;
-import 'package:dio/dio.dart' show CancelToken;
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/services.dart';
@@ -505,40 +504,66 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
     feedBack();
     List<Map<String, dynamic>>? pictures;
     if (imageList.isNotEmpty) {
-      SmartDialog.showLoading(msg: '正在上传图片...');
-      final cancelToken = CancelToken();
-      try {
-        pictures = await Future.wait<Map<String, dynamic>>(
-          imageList.map((img) async {
-            switch (img) {
-              case FilePicModel e:
-                final result = await MsgHttp.uploadBfs(
-                  path: e.path,
-                  category: 'daily',
-                  biz: 'new_dyn',
-                  cancelToken: cancelToken,
-                );
-                final data = result.data;
-                return {
-                  'img_width': data.imageWidth,
-                  'img_height': data.imageHeight,
-                  'img_size': data.imgSize,
-                  'img_src': data.imageUrl,
-                };
-              case OpusPicModel e:
-                return e.toJson();
-            }
-          }),
-          eagerError: true,
-        );
-        SmartDialog.dismiss();
-      } on HttpException catch (e) {
-        cancelToken.cancel();
-        SmartDialog.dismiss();
-        SmartDialog.showToast(e.message);
-        return;
-      }
+      pictures = await _uploadPictures();
+      // null 表示失败或被取消，toast 已经发过（或刻意不发）。
+      if (pictures == null) return;
     }
     return onCustomPublish(pictures: pictures);
+  }
+
+  /// 把本地图片传上去，和已有的网络图拼成发布要的那串描述。
+  ///
+  /// 失败返回 `null`。**先全部 begin 再逐个 await**：基线用
+  /// `Future.wait(eagerError: true)` 并发传，同时拿一个 `CancelToken` 在出错
+  /// 时把其余几张一起停掉。Rust 侧的取消是显式 id（ADR-015 决策三），所以
+  /// 这里自己收着那串 id——并发度不变，出错时的行为也不变。
+  Future<List<Map<String, dynamic>>?> _uploadPictures() async {
+    SmartDialog.showLoading(msg: '正在上传图片...');
+    // 与 imageList 一一对应：网络图那几位是 null。
+    final ids = <int?>[];
+    for (final img in imageList) {
+      ids.add(
+        switch (img) {
+          FilePicModel e => await RustUpload.beginBfs(
+            path: e.path,
+            category: 'daily',
+            biz: 'new_dyn',
+          ),
+          OpusPicModel _ => null,
+        },
+      );
+    }
+
+    final pictures = <Map<String, dynamic>>[];
+    for (var i = 0; i < imageList.length; i++) {
+      final img = imageList[i];
+      if (img is OpusPicModel) {
+        pictures.add(img.toJson());
+        continue;
+      }
+      final state = await RustUpload.awaitBfs(ids[i]);
+      if (state case Success(:final response)) {
+        pictures.add({
+          'img_width': response.width?.toInt(),
+          'img_height': response.height?.toInt(),
+          // 这里**不要** toInt()：基线收的就是 double，而且这个值原样
+          // 发回发布接口，截断等于悄悄改了一个发给服务端的字段。
+          'img_size': response.size,
+          'img_src': response.url,
+        });
+        continue;
+      }
+      // 一张失败就把还没传完的几张停掉，与基线 eagerError + cancelToken
+      // 的行为一致。已经传完的那几张在服务端留着——没有删除接口，基线
+      // 也是这样，不要假装能回滚。
+      for (final id in ids.skip(i + 1)) {
+        RustUpload.cancel(id);
+      }
+      SmartDialog.dismiss();
+      if (!RustUpload.isCancelled(state)) state.toast();
+      return null;
+    }
+    SmartDialog.dismiss();
+    return pictures;
   }
 }

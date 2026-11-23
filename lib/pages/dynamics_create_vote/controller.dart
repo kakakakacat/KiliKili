@@ -1,6 +1,6 @@
 import 'package:kilikili/common/widgets/dialog/dialog.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/msg.dart';
+import 'package:kilikili/services/rust/rust_upload.dart';
 import 'package:kilikili/rust/api/dynamic.dart' as rust;
 import 'package:kilikili/services/rust/rust_dynamic.dart';
 import 'package:kilikili/utils/accounts.dart';
@@ -160,14 +160,12 @@ class CreateVoteController extends GetxController {
   }
 
   Future<void> onUpload(int index, String path) async {
-    final res = await MsgHttp.uploadBfs(
-      path: path,
-      category: 'daily',
-      biz: 'vote',
+    final res = await RustUpload.awaitBfs(
+      await RustUpload.beginBfs(path: path, category: 'daily', biz: 'vote'),
     );
     if (res case Success(:final response)) {
-      updateOption(index, imageUrl: response.imageUrl);
-    } else {
+      updateOption(index, imageUrl: response.url);
+    } else if (!RustUpload.isCancelled(res)) {
       res.toast();
     }
   }

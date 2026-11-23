@@ -1687,7 +1687,7 @@ mod tests {
     fn form_of(w: &PreparedWrite) -> Vec<(String, String)> {
         match &w.body {
             WriteBody::Form(f) => f.clone(),
-            WriteBody::Json(_) => panic!("登录接口一律用表单"),
+            WriteBody::Json(_) | WriteBody::Multipart { .. } => panic!("登录接口一律用表单"),
         }
     }
 

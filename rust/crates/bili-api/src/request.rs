@@ -282,6 +282,37 @@ pub enum WriteBody {
     /// `application/json`。用 [`serde_json::Value`] 而不是已序列化的字符串：
     /// csrf 要能被注入进去，而往一段字符串里插字段只能靠拼接。
     Json(serde_json::Value),
+    /// `multipart/form-data`，用于图片上传（ADR-015 决策一）。
+    ///
+    /// 文件放的是**引用**而不是字节，两个原因：
+    ///
+    /// - 整读会 OOM。一张 4K 截图十几 MB，低端机上扛不住；放引用才能让
+    ///   传输层流式读（决策五）。
+    /// - 本结构要能原样写进请求面快照（ADR-013 决策六），而文件内容显然
+    ///   不能进快照。放引用之后快照记的是「这里有一个文件，字段名
+    ///   `file_up`」——那正是请求**形状**，文件内容不是形状的一部分。
+    Multipart {
+        /// 普通表单字段。csrf 由 [`crate::client::send_write`] 追加到这里。
+        fields: Vec<(String, String)>,
+        file: UploadFile,
+    },
+}
+
+/// multipart 里的那个文件。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UploadFile {
+    /// 表单里的字段名。两条上传接口**不一样**：`/x/upload/web/image` 是
+    /// `file`，`/x/dynamic/feed/draw/upload_bfs` 是 `file_up`。给错的表现是
+    /// 服务端回 `code 0` 却没有 url，不报错。
+    pub field: &'static str,
+    /// 本地文件路径。
+    ///
+    /// **必须是真实路径，不能是 Android 的 SAF uri**（`content://...`）。
+    /// 这不是本次新增的约束：基线 `MultipartFile.fromFile(path)` 要的同样是
+    /// 真实路径。当前四个调用点的路径都来自 `image_picker` /
+    /// `image_cropper`，两者都会先把选中的内容复制到应用缓存目录。将来若有
+    /// 调用点直接拿到 uri，由**它**负责先落成文件（ADR-015 决策二）。
+    pub path: String,
 }
 
 /// csrf 补在请求的哪个位置。
@@ -349,6 +380,8 @@ impl PreparedWrite {
     pub fn form_fields(&self) -> Option<&[(String, String)]> {
         match &self.body {
             WriteBody::Form(f) => Some(f),
+            // multipart 的普通字段也是表单字段，请求快照要钉住它们。
+            WriteBody::Multipart { fields, .. } => Some(fields),
             WriteBody::Json(_) => None,
         }
     }
@@ -364,6 +397,14 @@ impl PreparedWrite {
                 .collect::<Vec<_>>()
                 .join("&"),
             WriteBody::Json(v) => v.to_string(),
+            // 文件只记字段名与一个占位，**不记路径**：路径带着作者机器的
+            // 目录结构，写进 fixture 之后换台机器就对不上（ADR-015 决策一）。
+            WriteBody::Multipart { fields, file } => {
+                let mut parts: Vec<String> =
+                    fields.iter().map(|(k, v)| format!("{k}={v}")).collect();
+                parts.push(format!("{}=<file>", file.field));
+                parts.join("&")
+            }
         }
     }
 }

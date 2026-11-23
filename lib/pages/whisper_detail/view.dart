@@ -11,7 +11,7 @@ import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/scroll_physics.dart'
     show platformAlwaysClampingPhysics;
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/msg.dart';
+import 'package:kilikili/services/rust/rust_upload.dart';
 import 'package:kilikili/services/rust/rust_im.dart';
 import 'package:kilikili/models/common/image_type.dart';
 import 'package:kilikili/pages/common/publish/common_rich_text_pub_page.dart';
@@ -326,9 +326,8 @@ class _WhisperDetailPageState
                       if (pickedFile != null) {
                         final path = pickedFile.path;
                         SmartDialog.showLoading(msg: '正在上传图片');
-                        final result = await MsgHttp.uploadBfs(
-                          path: path,
-                          biz: 'im',
+                        final result = await RustUpload.awaitBfs(
+                          await RustUpload.beginBfs(path: path, biz: 'im'),
                         );
                         if (result case Success(:final response)) {
                           final mimeType =
@@ -337,12 +336,12 @@ class _WhisperDetailPageState
                               )?.split('/').elementAtOrNull(1) ??
                               'jpg';
                           final picMsg = {
-                            'url': response.imageUrl,
-                            'height': response.imageHeight,
-                            'width': response.imageWidth,
+                            'url': response.url,
+                            'height': response.height?.toInt(),
+                            'width': response.width?.toInt(),
                             'imageType': mimeType,
                             'original': 1,
-                            'size': response.imgSize,
+                            'size': response.size,
                           };
                           SmartDialog.showLoading(msg: '正在发送');
                           await _whisperDetailController
@@ -357,7 +356,7 @@ class _WhisperDetailPageState
                               });
                         } else {
                           SmartDialog.dismiss();
-                          result.toast();
+                          if (!RustUpload.isCancelled(result)) result.toast();
                           return;
                         }
                       }

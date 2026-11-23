@@ -97,6 +97,16 @@ pub enum PostBody {
     Json(String),
     /// 原始二进制；帧内压缩与 HTTP 压缩分别处理。
     Bytes { content_type: String, data: Vec<u8> },
+    /// `multipart/form-data`（ADR-015）。文件给路径，由传输层**流式**读入，
+    /// 不整读进内存。boundary 由传输层生成。
+    ///
+    /// 只有上传用它。传输桩如果不支持，应当明确失败而不是静默当成空体
+    /// ——后者会让一次上传「成功」却没有文件。
+    Multipart {
+        fields: Vec<(String, String)>,
+        file_field: String,
+        file_path: String,
+    },
 }
 
 /// 待发送的 POST 请求（包括只读 gRPC）。

@@ -30,6 +30,7 @@ import 'package:kilikili/rust/api/space.dart';
 import 'package:kilikili/rust/api/sponsor_block.dart';
 import 'package:kilikili/rust/api/subtitle.dart';
 import 'package:kilikili/rust/api/transport.dart';
+import 'package:kilikili/rust/api/upload.dart';
 import 'package:kilikili/rust/api/user.dart';
 import 'package:kilikili/rust/api/video_detail.dart';
 import 'package:kilikili/rust/api/video_detail_fetch.dart';
@@ -104,7 +105,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -583747792;
+  int get rustContentHash => -1764538550;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -1907,6 +1908,30 @@ abstract class RustLibApi extends BaseApi {
     required MiscContext context,
     required String musicId,
     required bool wish,
+  });
+
+  Future<UploadBfsResult> crateApiUploadUploadBfsAwait({
+    required PlatformInt64 uploadId,
+  });
+
+  PlatformInt64 crateApiUploadUploadBfsBegin({
+    required UploadContext context,
+    required String filePath,
+    String? category,
+    String? biz,
+  });
+
+  void crateApiUploadUploadCancel({required PlatformInt64 uploadId});
+
+  Future<UploadImageResult> crateApiUploadUploadImageAwait({
+    required PlatformInt64 uploadId,
+  });
+
+  PlatformInt64 crateApiUploadUploadImageBegin({
+    required UploadContext context,
+    required String filePath,
+    required String bucket,
+    required String dir,
   });
 
   UserInfo crateApiUserUserInfoWithProfile({
@@ -13473,6 +13498,177 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
+  Future<UploadBfsResult> crateApiUploadUploadBfsAwait({
+    required PlatformInt64 uploadId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_i_64(uploadId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 315,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_upload_bfs_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiUploadUploadBfsAwaitConstMeta,
+        argValues: [uploadId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiUploadUploadBfsAwaitConstMeta =>
+      const TaskConstMeta(
+        debugName: "upload_bfs_await",
+        argNames: ["uploadId"],
+      );
+
+  @override
+  PlatformInt64 crateApiUploadUploadBfsBegin({
+    required UploadContext context,
+    required String filePath,
+    String? category,
+    String? biz,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_upload_context(context, serializer);
+          sse_encode_String(filePath, serializer);
+          sse_encode_opt_String(category, serializer);
+          sse_encode_opt_String(biz, serializer);
+          return pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 316,
+          )!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_i_64,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiUploadUploadBfsBeginConstMeta,
+        argValues: [context, filePath, category, biz],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiUploadUploadBfsBeginConstMeta =>
+      const TaskConstMeta(
+        debugName: "upload_bfs_begin",
+        argNames: ["context", "filePath", "category", "biz"],
+      );
+
+  @override
+  void crateApiUploadUploadCancel({required PlatformInt64 uploadId}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_i_64(uploadId, serializer);
+          return pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 317,
+          )!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiUploadUploadCancelConstMeta,
+        argValues: [uploadId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiUploadUploadCancelConstMeta => const TaskConstMeta(
+    debugName: "upload_cancel",
+    argNames: ["uploadId"],
+  );
+
+  @override
+  Future<UploadImageResult> crateApiUploadUploadImageAwait({
+    required PlatformInt64 uploadId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_i_64(uploadId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 318,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_upload_image_result,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiUploadUploadImageAwaitConstMeta,
+        argValues: [uploadId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiUploadUploadImageAwaitConstMeta =>
+      const TaskConstMeta(
+        debugName: "upload_image_await",
+        argNames: ["uploadId"],
+      );
+
+  @override
+  PlatformInt64 crateApiUploadUploadImageBegin({
+    required UploadContext context,
+    required String filePath,
+    required String bucket,
+    required String dir,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_upload_context(context, serializer);
+          sse_encode_String(filePath, serializer);
+          sse_encode_String(bucket, serializer);
+          sse_encode_String(dir, serializer);
+          return pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 319,
+          )!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_i_64,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiUploadUploadImageBeginConstMeta,
+        argValues: [context, filePath, bucket, dir],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiUploadUploadImageBeginConstMeta =>
+      const TaskConstMeta(
+        debugName: "upload_image_begin",
+        argNames: ["context", "filePath", "bucket", "dir"],
+      );
+
+  @override
   UserInfo crateApiUserUserInfoWithProfile({
     required UserInfo info,
     String? uname,
@@ -13488,7 +13684,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           return pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 315,
+            funcId: 320,
           )!;
         },
         codec: SseCodec(
@@ -13522,7 +13718,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 316,
+            funcId: 321,
             port: port_,
           );
         },
@@ -13556,7 +13752,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 317,
+            funcId: 322,
             port: port_,
           );
         },
@@ -13590,7 +13786,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 318,
+            funcId: 323,
             port: port_,
           );
         },
@@ -13624,7 +13820,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 319,
+            funcId: 324,
             port: port_,
           );
         },
@@ -15387,6 +15583,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   int dco_decode_box_autoadd_u_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as int;
+  }
+
+  @protected
+  UploadContext dco_decode_box_autoadd_upload_context(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_upload_context(raw);
+  }
+
+  @protected
+  UploadedImageData dco_decode_box_autoadd_uploaded_image_data(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_uploaded_image_data(raw);
   }
 
   @protected
@@ -21534,6 +21742,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  UploadedImageData? dco_decode_opt_box_autoadd_uploaded_image_data(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_uploaded_image_data(raw);
+  }
+
+  @protected
   UpowerRank? dco_decode_opt_box_autoadd_upower_rank(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_upower_rank(raw);
@@ -25677,6 +25893,64 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  UploadBfsResult dco_decode_upload_bfs_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return UploadBfsResult(
+      data: dco_decode_opt_box_autoadd_uploaded_image_data(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  UploadContext dco_decode_upload_context(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return UploadContext(
+      baseUrl: dco_decode_String(arr[0]),
+      cookie: dco_decode_opt_String(arr[1]),
+      csrf: dco_decode_opt_String(arr[2]),
+      headers: dco_decode_list_record_string_string(arr[3]),
+      timeoutMs: dco_decode_u_64(arr[4]),
+      transport: dco_decode_transport_settings(arr[5]),
+    );
+  }
+
+  @protected
+  UploadImageResult dco_decode_upload_image_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return UploadImageResult(
+      data: dco_decode_opt_String(arr[0]),
+      errorKind: dco_decode_opt_String(arr[1]),
+      errorDetail: dco_decode_opt_String(arr[2]),
+      errorCode: dco_decode_opt_box_autoadd_i_64(arr[3]),
+    );
+  }
+
+  @protected
+  UploadedImageData dco_decode_uploaded_image_data(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return UploadedImageData(
+      url: dco_decode_String(arr[0]),
+      width: dco_decode_opt_box_autoadd_i_64(arr[1]),
+      height: dco_decode_opt_box_autoadd_i_64(arr[2]),
+      size: dco_decode_opt_box_autoadd_f_64(arr[3]),
+    );
+  }
+
+  @protected
   UpowerLevel dco_decode_upower_level(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -28187,6 +28461,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   int sse_decode_box_autoadd_u_32(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_u_32(deserializer));
+  }
+
+  @protected
+  UploadContext sse_decode_box_autoadd_upload_context(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_upload_context(deserializer));
+  }
+
+  @protected
+  UploadedImageData sse_decode_box_autoadd_uploaded_image_data(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_uploaded_image_data(deserializer));
   }
 
   @protected
@@ -37063,6 +37353,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  UploadedImageData? sse_decode_opt_box_autoadd_uploaded_image_data(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_uploaded_image_data(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   UpowerRank? sse_decode_opt_box_autoadd_upower_rank(
     SseDeserializer deserializer,
   ) {
@@ -42177,6 +42480,74 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  UploadBfsResult sse_decode_upload_bfs_result(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_box_autoadd_uploaded_image_data(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return UploadBfsResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  UploadContext sse_decode_upload_context(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_baseUrl = sse_decode_String(deserializer);
+    var var_cookie = sse_decode_opt_String(deserializer);
+    var var_csrf = sse_decode_opt_String(deserializer);
+    var var_headers = sse_decode_list_record_string_string(deserializer);
+    var var_timeoutMs = sse_decode_u_64(deserializer);
+    var var_transport = sse_decode_transport_settings(deserializer);
+    return UploadContext(
+      baseUrl: var_baseUrl,
+      cookie: var_cookie,
+      csrf: var_csrf,
+      headers: var_headers,
+      timeoutMs: var_timeoutMs,
+      transport: var_transport,
+    );
+  }
+
+  @protected
+  UploadImageResult sse_decode_upload_image_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_data = sse_decode_opt_String(deserializer);
+    var var_errorKind = sse_decode_opt_String(deserializer);
+    var var_errorDetail = sse_decode_opt_String(deserializer);
+    var var_errorCode = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return UploadImageResult(
+      data: var_data,
+      errorKind: var_errorKind,
+      errorDetail: var_errorDetail,
+      errorCode: var_errorCode,
+    );
+  }
+
+  @protected
+  UploadedImageData sse_decode_uploaded_image_data(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_url = sse_decode_String(deserializer);
+    var var_width = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_height = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_size = sse_decode_opt_box_autoadd_f_64(deserializer);
+    return UploadedImageData(
+      url: var_url,
+      width: var_width,
+      height: var_height,
+      size: var_size,
+    );
+  }
+
+  @protected
   UpowerLevel sse_decode_upower_level(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_privilegeType = sse_decode_opt_box_autoadd_i_64(deserializer);
@@ -44973,6 +45344,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_u_32(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_upload_context(
+    UploadContext self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_upload_context(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_uploaded_image_data(
+    UploadedImageData self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_uploaded_image_data(self, serializer);
   }
 
   @protected
@@ -52456,6 +52845,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_uploaded_image_data(
+    UploadedImageData? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_uploaded_image_data(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_box_autoadd_upower_rank(
     UpowerRank? self,
     SseSerializer serializer,
@@ -56341,6 +56743,53 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   void sse_encode_unit(void self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
+  }
+
+  @protected
+  void sse_encode_upload_bfs_result(
+    UploadBfsResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_uploaded_image_data(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_upload_context(UploadContext self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.baseUrl, serializer);
+    sse_encode_opt_String(self.cookie, serializer);
+    sse_encode_opt_String(self.csrf, serializer);
+    sse_encode_list_record_string_string(self.headers, serializer);
+    sse_encode_u_64(self.timeoutMs, serializer);
+    sse_encode_transport_settings(self.transport, serializer);
+  }
+
+  @protected
+  void sse_encode_upload_image_result(
+    UploadImageResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.data, serializer);
+    sse_encode_opt_String(self.errorKind, serializer);
+    sse_encode_opt_String(self.errorDetail, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.errorCode, serializer);
+  }
+
+  @protected
+  void sse_encode_uploaded_image_data(
+    UploadedImageData self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.url, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.width, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.height, serializer);
+    sse_encode_opt_box_autoadd_f_64(self.size, serializer);
   }
 
   @protected

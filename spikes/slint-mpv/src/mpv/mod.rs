@@ -325,7 +325,14 @@ impl PlayerPort for MpvPlayer {
                         // 不用 edl:// —— 领域层刻意不编码 mpv 的语法
                         // （见 player.rs 的注释），拼 edl 等于把那条边界
                         // 又移回领域层。
-                        self.set_property_string("audio-files", audio.expose())?;
+                        //
+                        // 不能 `set_property_string("audio-files", url)`：
+                        // 它是路径列表，按平台分隔符拆——Unix 上是 `:`，
+                        // `https://…` 会被拆碎，结果「有音频源但没有音轨」；
+                        // Windows 的分隔符是 `;`，所以那边没暴露。
+                        // `change-list … append` 只追加一项，不做拆分。
+                        self.command(&["change-list", "audio-files", "clr", ""])?;
+                        self.command(&["change-list", "audio-files", "append", audio.expose()])?;
                         video.expose().clone()
                     }
                     MediaSource::Segments(parts) => {

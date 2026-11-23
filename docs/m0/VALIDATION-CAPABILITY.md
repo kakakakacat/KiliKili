@@ -577,7 +577,10 @@ runner 一样都没有；编译成功与「视频能不能垫在 UI 底下」是
 仍然只能靠编译证明。
 
 已跑：Windows 11 / RX 7900 GRE，自动项全 PASS（58 fps、p95 17ms、
-`d3d11va-copy`）。macOS（#8）、Android（#9）未跑。
+`d3d11va-copy`）；macOS 27.3 / M4，真实 DASH 480p，自动项与人工项全 PASS
+（58 fps、p95 19.98ms、`videotoolbox` 零拷贝），见
+[2026-11-23-slint-mpv-macos-notes.md](spikes/2026-11-23-slint-mpv-macos-notes.md)。
+Android（#9）走的是下面那条路。
 
 ### Android 真机的 Slint/libmpv 实测能力（#9，2026-11-21）
 

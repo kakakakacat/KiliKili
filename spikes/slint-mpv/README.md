@@ -70,7 +70,7 @@ cargo run --release -- --video <...>
 常用开关：
 
 - `--flip-y`：视频上下颠倒时加上。**不同平台/驱动给的 FBO 方向不一样**，
-  Windows + femtovg 上实测需要它，macOS 上是什么样要跑了才知道。
+  Windows + femtovg、Android 真机、macOS（M4）上实测都需要它。
 - `--loop-file`：样片比脚本短时必须加，否则后半段测的是「已经播完」。
 - `--hwdec`：默认 `auto-safe`；要对照软解就 `--hwdec no`。
 - `--danmaku-rate 0`：只放 fixture 自带的那几条。

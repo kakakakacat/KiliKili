@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:kilikili/common/constants.dart';
@@ -14,7 +13,6 @@ import 'package:kilikili/models_new/video/video_relation/data.dart';
 import 'package:kilikili/services/rust/rust_flags.dart';
 import 'package:kilikili/services/rust/rust_subtitle.dart';
 import 'package:kilikili/services/rust/rust_video_detail.dart';
-import 'package:kilikili/services/rust/video_detail_shadow.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/app_sign.dart';
 import 'package:kilikili/utils/extension/string_ext.dart';
@@ -204,10 +202,6 @@ abstract final class VideoHttp {
       queryParameters: await WbiSign.makSign({'bvid': bvid}),
     );
     if (res.data['code'] == 0) {
-      // shadow mode：Dart 与 Rust 对同一份响应各自规范化后比对，显示仍
-      // 用下面这行 Dart 的结果（RFC-0001 §5.3）。开关默认只在 debug 开启，
-      // 比对不等待、不抛出，详见 VideoDetailShadow。
-      unawaited(VideoDetailShadow.compare(res.data));
       return Success(VideoDetailData.fromJson(res.data['data']));
     } else {
       return Error(res.data['message']);

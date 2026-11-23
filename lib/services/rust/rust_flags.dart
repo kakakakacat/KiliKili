@@ -1,6 +1,5 @@
 import 'package:kilikili/services/rust_core.dart';
 import 'package:kilikili/utils/storage.dart';
-import 'package:flutter/foundation.dart';
 import 'package:hive_ce/hive.dart';
 
 /// Rust 迁移的功能开关（RFC-0001 §5.3「发生故障可降级回 Dart」）。
@@ -15,23 +14,6 @@ import 'package:hive_ce/hive.dart';
 /// `rust.*`，共用 `setting` box 但不碰上游的键表。
 abstract final class RustFlags {
   static Box get _box => GStorage.setting;
-
-  /// 视频详情 shadow mode：Dart 与 Rust 对**同一份响应**各自规范化后比对，
-  /// 显示仍然用 Dart 的结果。
-  ///
-  /// debug 构建默认开启，release 默认关闭：比对本身只是一次额外解析，
-  /// 开销可忽略，但差异日志对普通用户毫无意义。需要在 release 排查时，
-  /// 用 [setShadowVideoDetail] 打开。
-  static const String shadowVideoDetailKey = 'rust.shadow.videoDetail';
-
-  static bool get shadowVideoDetail =>
-      // Rust 没起来时整个开关无意义——这一条同时就是降级路径：
-      // 原生库没打进产物、init 失败，Dart 照常跑。
-      RustCore.isReady &&
-      (_box.get(shadowVideoDetailKey, defaultValue: kDebugMode) as bool);
-
-  static Future<void> setShadowVideoDetail(bool value) =>
-      _box.put(shadowVideoDetailKey, value);
 
   /// 视频详情**取数**走 Rust：请求由 Rust 发出、Rust 解析，结果进入 UI。
   ///

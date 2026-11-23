@@ -4,8 +4,7 @@ import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/image_type.dart';
-import 'package:kilikili/models_new/article/article_list/article.dart';
-import 'package:kilikili/models_new/article/article_list/list.dart';
+import 'package:kilikili/rust/api/dynamic.dart' as rust;
 import 'package:kilikili/pages/article_list/controller.dart';
 import 'package:kilikili/pages/article_list/widgets/item.dart';
 import 'package:kilikili/utils/date_utils.dart';
@@ -68,7 +67,7 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
 
   Widget _buildBody(
     ThemeData theme,
-    LoadingState<List<ArticleListItemModel>?> loadingState,
+    LoadingState<List<rust.ArticleListItemData>?> loadingState,
   ) {
     return switch (loadingState) {
       Loading() => gridSkeleton,
@@ -88,7 +87,7 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
     };
   }
 
-  Widget _buildHeader(ThemeData theme, ArticleListInfo? item) {
+  Widget _buildHeader(ThemeData theme, rust.ArticleListInfoData? item) {
     if (item == null) {
       return const SliverToBoxAdapter();
     }
@@ -135,12 +134,13 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  if (_controller.author != null) ...[
+                  if (_controller.authorMid != null) ...[
                     const SizedBox(height: 10),
                     GestureDetector(
                       behavior: HitTestBehavior.opaque,
-                      onTap: () =>
-                          Get.toNamed('/member?mid=${_controller.author!.mid}'),
+                      onTap: () => Get.toNamed(
+                        '/member?mid=${_controller.authorMid}',
+                      ),
                       child: Row(
                         spacing: 10,
                         mainAxisSize: MainAxisSize.min,
@@ -148,10 +148,10 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
                           NetworkImgLayer(
                             width: 30,
                             height: 30,
-                            src: _controller.author!.face,
+                            src: _controller.authorFace,
                             type: ImageType.avatar,
                           ),
-                          Flexible(child: Text(_controller.author!.name!)),
+                          Flexible(child: Text(_controller.authorName ?? '')),
                         ],
                       ),
                     ),
@@ -161,12 +161,12 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
                     TextSpan(
                       children: [
                         TextSpan(
-                          text: '${NumUtils.numFormat(item.articlesCount)}篇专栏',
+                          text: '${NumUtils.numFormat(item.articlesCount?.toInt())}篇专栏',
                         ),
                         divider,
-                        TextSpan(text: '${NumUtils.numFormat(item.words)}个字'),
+                        TextSpan(text: '${NumUtils.numFormat(item.words?.toInt())}个字'),
                         divider,
-                        TextSpan(text: '${NumUtils.numFormat(item.read)}次阅读'),
+                        TextSpan(text: '${NumUtils.numFormat(item.read?.toInt())}次阅读'),
                       ],
                       style: style,
                     ),
@@ -176,7 +176,7 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
                       children: [
                         TextSpan(
                           text:
-                              '${DateFormatUtils.dateFormat(item.updateTime)}更新',
+                              '${DateFormatUtils.dateFormat(item.updateTime?.toInt())}更新',
                         ),
                         divider,
                         TextSpan(text: '文集号: ${item.id}'),

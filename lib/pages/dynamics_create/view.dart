@@ -17,7 +17,6 @@ import 'package:kilikili/models/common/reply/reply_option_type.dart';
 import 'package:kilikili/models/dynamics/result.dart' show PicModel;
 import 'package:kilikili/rust/api/dynamic.dart' as rust;
 import 'package:kilikili/rust/api/dynamic.dart' show ReserveCard;
-import 'package:kilikili/models_new/dynamic/dyn_topic_top/topic_item.dart';
 import 'package:kilikili/pages/common/publish/common_rich_text_pub_page.dart';
 import 'package:kilikili/pages/dynamics_create_reserve/view.dart';
 import 'package:kilikili/pages/dynamics_create_vote/view.dart';
@@ -796,7 +795,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
 
   double _topicOffset = 0;
   Future<void> _onSelectTopic() async {
-    TopicItem? res = await SelectTopicPanel.onSelectTopic(
+    rust.TopicItemData? res = await SelectTopicPanel.onSelectTopic(
       context,
       offset: _topicOffset,
       onCachePos: (offset) => _topicOffset = offset,

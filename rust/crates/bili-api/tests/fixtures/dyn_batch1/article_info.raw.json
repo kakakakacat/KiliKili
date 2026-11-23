@@ -1,0 +1,25 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "favorite": true,
+    "title": "示例专栏标题",
+    "origin_image_urls": [
+      "https://example.invalid/bfs/article/a1.jpg",
+      "https://example.invalid/bfs/article/a2.jpg"
+    ],
+    "stats": {
+      "view": 12345,
+      "favorite": 678,
+      "like": "901",
+      "reply": 23,
+      "share": 4,
+      "coin": 56,
+      "dynamic": 7
+    },
+    "attention": false,
+    "author_name": "示例作者",
+    "words": 3200
+  }
+}

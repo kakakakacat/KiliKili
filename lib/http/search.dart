@@ -2,7 +2,6 @@ import 'package:kilikili/http/api.dart';
 import 'package:kilikili/http/init.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/search/suggest.dart';
-import 'package:kilikili/models_new/dynamic/dyn_topic_pub_search/data.dart';
 import 'package:kilikili/models_new/pagelist/page_item.dart';
 import 'package:kilikili/services/rust/rust_search_suggest.dart';
 import 'package:kilikili/services/rust/search_suggest_result.dart';
@@ -91,31 +90,6 @@ abstract final class SearchHttp {
     } else {
       SmartDialog.showToast("ab2c error: ${res.data['message']}");
       return null;
-    }
-  }
-
-  static Future<LoadingState<TopicPubSearchData>> topicPubSearch({
-    required String keywords,
-    String content = '',
-    required int pageNum,
-  }) async {
-    final res = await Request().get(
-      Api.topicPubSearch,
-      queryParameters: {
-        'keywords': keywords,
-        'content': content,
-        if (pageNum == 1) ...{
-          'page_size': 20,
-          'page_num': 1,
-        } else
-          'offset': 20 * (pageNum - 1),
-        'web_location': 333.1365,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(TopicPubSearchData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
     }
   }
 }

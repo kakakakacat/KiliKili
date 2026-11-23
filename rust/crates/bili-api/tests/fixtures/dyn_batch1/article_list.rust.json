@@ -1,0 +1,50 @@
+{
+  "articles": [
+    {
+      "dyn_id_str": "900000000000000001",
+      "id": 31000001,
+      "image_urls": [
+        "https://example.invalid/bfs/article/p1.jpg"
+      ],
+      "stats": {
+        "like": 20,
+        "reply": 30,
+        "view": 1000
+      },
+      "summary": "摘要一",
+      "title": "第一篇"
+    },
+    {
+      "dyn_id_str": "900000000000000002",
+      "id": 31000002,
+      "image_urls": [],
+      "stats": {
+        "like": 40,
+        "reply": 50,
+        "view": 2000
+      },
+      "summary": "",
+      "title": "第二篇"
+    },
+    {
+      "dyn_id_str": null,
+      "id": 31000003,
+      "image_urls": [],
+      "stats": null,
+      "summary": null,
+      "title": "第三篇没有 stats"
+    }
+  ],
+  "author_face": "https://example.invalid/bfs/face/author.jpg",
+  "author_mid": 800000601,
+  "author_name": "示例作者",
+  "info": {
+    "articles_count": 3,
+    "id": 540001,
+    "image_url": "https://example.invalid/bfs/article/cover.jpg",
+    "name": "示例文集",
+    "read": 98765,
+    "update_time": 1800000000,
+    "words": 12000
+  }
+}

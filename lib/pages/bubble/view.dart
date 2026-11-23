@@ -6,7 +6,7 @@ import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/bubble/dyn_list.dart';
+import 'package:kilikili/rust/api/dynamic.dart' as rust;
 import 'package:kilikili/pages/article/view.dart';
 import 'package:kilikili/pages/bubble/controller.dart';
 import 'package:kilikili/utils/extension/scroll_controller_ext.dart';
@@ -85,7 +85,7 @@ class _BubblePageState extends State<BubblePage>
               if (sortInfo == null || sortInfo.showSort != true) {
                 return const SizedBox.shrink();
               }
-              final item = sortInfo.sortItems?.firstWhereOrNull(
+              final item = sortInfo.items.firstWhereOrNull(
                 (e) => e.sortType == sortInfo.curSortType,
               );
               if (item != null) {
@@ -96,7 +96,7 @@ class _BubblePageState extends State<BubblePage>
                     builder: (context) => SimpleDialog(
                       clipBehavior: .hardEdge,
                       contentPadding: const .symmetric(vertical: 12),
-                      children: sortInfo.sortItems!.map(
+                      children: sortInfo.items.map(
                         (e) {
                           final isSelected = item.sortType == e.sortType;
                           return ListTile(
@@ -159,7 +159,7 @@ class _BubblePageState extends State<BubblePage>
                     currCtr().scrollController.animToTop();
                   }
                 },
-                tabs: tabs.map((item) => Tab(text: item.name!)).toList(),
+                tabs: tabs.map((item) => Tab(text: item.name ?? '')).toList(),
               ),
               Expanded(
                 child: tabBarView(
@@ -184,7 +184,7 @@ class _BubblePageState extends State<BubblePage>
     maxCrossAxisExtent: 2 * Grid.smallCardWidth,
   );
 
-  Widget _buildBody(LoadingState<List<DynList>?> loadingState) {
+  Widget _buildBody(LoadingState<List<rust.BubbleDynData>?> loadingState) {
     switch (loadingState) {
       case Loading():
         return const SliverFillRemaining(child: m3eLoading);
@@ -210,10 +210,10 @@ class _BubblePageState extends State<BubblePage>
                     maxLines: 1,
                     overflow: .ellipsis,
                   ),
-                  trailing: item.meta?.timeText == null
+                  trailing: item.timeText == null
                       ? null
                       : Text(
-                          item.meta!.timeText!,
+                          item.timeText!,
                           style: const TextStyle(fontSize: 13),
                         ),
                 ),

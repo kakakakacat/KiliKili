@@ -1,5 +1,5 @@
 import 'package:kilikili/common/widgets/custom_icon.dart';
-import 'package:kilikili/models_new/dynamic/dyn_topic_top/topic_item.dart';
+import 'package:kilikili/rust/api/dynamic.dart' as rust;
 import 'package:kilikili/utils/num_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -10,8 +10,8 @@ class DynTopicItem extends StatelessWidget {
     required this.onTap,
   });
 
-  final TopicItem item;
-  final ValueChanged<TopicItem> onTap;
+  final rust.TopicItemData item;
+  final ValueChanged<rust.TopicItemData> onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +43,7 @@ class DynTopicItem extends StatelessWidget {
         subtitle: Padding(
           padding: const EdgeInsets.only(left: 23),
           child: Text(
-            '${NumUtils.numFormat(item.view)}浏览 · ${NumUtils.numFormat(item.discuss)}讨论',
+            '${NumUtils.numFormat(item.view.toInt())}浏览 · ${NumUtils.numFormat(item.discuss.toInt())}讨论',
             style: TextStyle(color: Theme.of(context).colorScheme.outline),
           ),
         ),

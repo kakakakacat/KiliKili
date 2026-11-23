@@ -146,21 +146,23 @@ class ArticleController extends CommonDynController
 
   // stats
   Future<bool> getArticleInfo([bool isGetCover = false]) async {
-    final res = await DynamicsHttp.articleInfo(cvId: commentId);
+    final res = await RustDynamic.articleInfo(cvId: commentId.toString());
     if (res case Success(:final response)) {
       summary
-        ..cover ??= response.originImageUrls?.firstOrNull
+        ..cover ??= response.originImageUrls.firstOrNull
         ..title ??= response.title;
 
       stats.value ??= ModuleStatModel(
-        comment: DynamicStat(count: response.stats?.reply),
-        forward: DynamicStat(count: response.stats?.share),
+        comment: DynamicStat(count: response.stats?.reply?.toInt()),
+        forward: DynamicStat(count: response.stats?.share?.toInt()),
         like: DynamicStat(
-          count: response.stats?.like,
-          status: response.stats?.like == 1,
+          count: response.stats?.like?.toInt(),
+          // 基线这里拿 like 的**计数**与 1 相比当作「已点赞」。看着像 bug，
+          // 但它是上游的行为，这一批只迁解析、不改语义（#150）。
+          status: response.stats?.like?.toInt() == 1,
         ),
         favorite: DynamicStat(
-          count: response.stats?.favorite,
+          count: response.stats?.favorite?.toInt(),
           status: response.favorite,
         ),
       );

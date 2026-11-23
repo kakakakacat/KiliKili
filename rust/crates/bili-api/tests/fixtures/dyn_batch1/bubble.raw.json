@@ -1,0 +1,51 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "base_info": {
+      "tribee_info": {
+        "id": "7001",
+        "title": "示例部落",
+        "sub_title": "副标题",
+        "face_url": "https://example.invalid/bfs/tribe/face.jpg",
+        "jump_uri": "bilibili://tribe/7001",
+        "summary": "部落简介"
+      },
+      "is_joined": true
+    },
+    "content": {
+      "count": "1.2万",
+      "dyn_list": [
+        {
+          "dyn_id": "900000000000000011",
+          "title": "部落动态一",
+          "meta": {
+            "author": "示例作者甲",
+            "time_text": "3 小时前",
+            "reply_count": "128",
+            "view_stat": "4.5万"
+          }
+        },
+        {
+          "dyn_id": "900000000000000012",
+          "title": "部落动态二：没有 meta"
+        }
+      ]
+    },
+    "category": {
+      "category_list": [
+        { "id": "0", "name": "全部", "type": 0 },
+        { "id": "11", "name": "讨论", "type": 1 }
+      ]
+    },
+    "sort_info": {
+      "show_sort": true,
+      "cur_sort_type": 0,
+      "sort_items": [
+        { "sort_type": 0, "text": "最新" },
+        { "sort_type": 1, "text": "最热" }
+      ]
+    }
+  }
+}

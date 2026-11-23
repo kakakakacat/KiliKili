@@ -1,10 +1,10 @@
-import 'package:kilikili/http/dynamics.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/dynamic/dyn_topic_top/topic_item.dart';
+import 'package:kilikili/rust/api/dynamic.dart' as rust;
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_dynamic.dart';
 
 class DynTopicRcmdController
-    extends CommonListController<List<TopicItem>?, TopicItem> {
+    extends CommonListController<List<rust.TopicItemData>, rust.TopicItemData> {
   @override
   void onInit() {
     super.onInit();
@@ -12,6 +12,6 @@ class DynTopicRcmdController
   }
 
   @override
-  Future<LoadingState<List<TopicItem>?>> customGetData() =>
-      DynamicsHttp.dynTopicRcmd();
+  Future<LoadingState<List<rust.TopicItemData>>> customGetData() =>
+      RustDynamic.topicRcmd();
 }

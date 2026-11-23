@@ -74,8 +74,23 @@ jobs:
           export FLUTTER_ROOT="$(dirname "$(dirname "$(command -v flutter)")")"
           tool/prepare-build.sh android
 
-      - name: Build unsigned development APKs
+      - name: Configure stable Android validation signing
+        env:
+          ANDROID_SIGNING_KEYSTORE_BASE64: ${{ secrets.ANDROID_CI_KEYSTORE_BASE64 }}
+          ANDROID_SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_CI_STORE_PASSWORD }}
+          ANDROID_SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_CI_KEY_ALIAS }}
+          ANDROID_SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_CI_KEY_PASSWORD }}
+          ANDROID_SIGNING_CERT_SHA256: ${{ vars.ANDROID_CI_CERT_SHA256 }}
+        run: python3 tool/android-signing.py configure
+
+      - name: Build signed development APKs
         run: flutter build apk --release --split-per-abi --android-project-arg dev=1 --no-pub
+
+      - name: Verify development APK signing
+        env:
+          ANDROID_SIGNING_CERT_SHA256: ${{ vars.ANDROID_CI_CERT_SHA256 }}
+          ANDROID_EXPECTED_PACKAGE: io.github.kakacat.kilikili.dev
+        run: python3 tool/android-signing.py verify build/app/outputs/flutter-apk/app-*-release.apk
 
       - name: Inspect packaged Rust library
         shell: bash

@@ -20,7 +20,7 @@
 | Windows | GitHub Release 的 setup.exe / 便携版 zip | 代码签名证书 | 未签名，接入点已留 | OV/EV 证书（见 §3 的硬件存储约束） |
 | macOS | GitHub Release 的 dmg | Developer ID Application + 公证 | 未签名未公证，接入点已留 | Apple 证书 p12 + 公证 API key |
 | iOS | 侧载（AltStore / Sideloadly 等） | **没有，也不该有**（§5） | 故意未签名 | — |
-| Android | GitHub Release 的 apk | `kilikili-release.jks` | 本机有、CI 没有（#146） | JKS，**只用于 Android** |
+| Android | GitHub Release 的 apk | 独立的 Android 发布证书 | 尚未建立发布身份（#146） | JKS/PKCS12，**只用于 Android** |
 
 一条贯穿全文的规矩：**同一平台的后续版本必须沿用同一身份**。换身份的代价
 按平台不同——Android 换签名等于无法原地升级，Linux 换 GPG 键等于所有老用户
@@ -37,11 +37,10 @@ CI 里钉了指纹，不一致就直接红（见 §2.4、§3.3）。
 2. **CI 只拿到够用的那一份。** Linux 传进 CI 的是**签名子钥**，主钥（能签发/
    吊销子钥的那把）留在离线备份里；Apple 传的是证书 p12，不是开发者账号密码。
    CI 的材料泄露时，能补救的范围越小越好。
-3. **secret 配好之后要有人确认它真的生效了。** 这几个 workflow 的签名步骤在
-   secret 缺失时会跳过——这正是 #146 的形状：`if [ ! -z "${{ secrets.X }}" ]`
-   失败时毫无动静。所以每条链路都在未签名时**显式打出一段提示**，并在签名
-   之后**当场重新校验一遍**；配好 secret 的第一次构建，要去日志里看到
-   「签名身份: …」那行才算数。
+3. **secret 配好之后要有人确认它真的生效了。** Android 的 #146 修复把密钥
+   缺失改为直接失败，并在构建前后核对证书指纹。其他平台缺失 secret 时仍会
+   显式提示未签名；配好 secret 的第一次构建，要去日志里看到「签名身份: …」
+   那行才算数。
 4. **可复用工作流默认拿不到调用方的 secrets。** `build.yml` 调 `ios.yml` /
    `mac.yml` / `win_x64.yml` / `linux_x64.yml` 时必须带 `secrets: inherit`，
    少这一行的话，Secrets 配好了签名也照样跳过，而且一声不吭。
@@ -319,14 +318,44 @@ Secrets：
 
 ---
 
-## 6. Android：与本篇的关系
+## 6. Android：验证身份与发布身份
 
-Android 的身份是 `android/app/kilikili-release.jks`，**只用于 Android**，
-不拿去签别的平台。当前状态与修复在 [#146](https://github.com/kakakakacat/KiliKili/issues/146)：
-仓库一个 Actions secret 都没有，`build.yml` 的写 key 步骤永远不执行，CI 构出来
-的 APK 落到 runner 当场生成的 debug 签名上——包与包之间不能覆盖安装，也不能
-对外分发。本次改动**没有动 Android 的签名路径**：#121 的范围是「Android 以外
-的平台」，而且 AGENTS §8 写了「现有正式包的签名身份在核对指纹前不自动替换」。
+历史上的 CI APK 使用 runner 临时 debug 签名，无法作为升级起点。#146 把身份
+分成两套：`build.yml` 留空 `tag` 与 `ci.yml` 构建的是 `.dev` 应用，用固定的
+**验证密钥**；`build.yml` 带 `tag` 才构建无后缀的正式应用，必须用独立的
+**发布密钥**。验证密钥的 APK 不用于对外分发，也不能升级正式应用。
+
+`tool/android-signing.py` 在构建前验证 keystore 的证书 SHA-256 是否等于 Actions
+variable，构建后用 `apksigner verify --print-certs` 核对每个 APK，并用 `aapt`
+确认应用 ID。任一 secret、
+variable 缺失或不匹配时构建失败；发布步骤因此不会上传错误身份的 APK。
+仓库不保存私钥、口令或 JKS。仓库所有者须在自己的机器上分别生成两把密钥，
+离线加密备份，再设置下表；**正式密钥绝不能复用验证密钥**。
+
+| 用途 | Actions secrets | Actions variable |
+|---|---|---|
+| 验证包 `.dev` | `ANDROID_CI_KEYSTORE_BASE64`、`ANDROID_CI_STORE_PASSWORD`、`ANDROID_CI_KEY_ALIAS`、`ANDROID_CI_KEY_PASSWORD` | `ANDROID_CI_CERT_SHA256` |
+| 正式包 | `SIGN_KEYSTORE_BASE64`、`KEYSTORE_PASSWORD`、`KEY_ALIAS`、`KEY_PASSWORD` | `ANDROID_RELEASE_CERT_SHA256` |
+
+所有者操作步骤：
+
+1. 在本机用 `keytool -genkeypair -keystore <独立路径>.jks -alias <别名>
+   -keyalg RSA -keysize 3072 -validity 10000` 分别生成验证与发布密钥；密码由
+   `keytool` 交互读取，不写进命令行或仓库。用 `keytool -list -v -keystore ...`
+   记下 `SHA256` 证书指纹。
+2. 把各自 JKS 的 base64 全文存入对应 secret，密码与别名也存入对应 secret；
+   把**公开**指纹存入对应 variable。GitHub Actions 密钥不能读回，必须先给
+   两把 JKS 和密码做至少两份加密离线备份。
+3. 在验证分支上连续手动运行两次 `build.yml`，仅启用 Android、`tag` 留空；
+   下载同一架构 APK，在同一设备上先装第一包再覆盖装第二包，确认数据保留。
+   随后用带 `tag` 的**候选发布**验证正式包指纹及下一版覆盖升级；触发带
+   `tag` 的工作流会创建 GitHub Release，须按发布流程执行。
+
+| 身份记录 | 验证包 | 正式包 |
+|---|---|---|
+| 证书 SHA-256 | *所有者配置后填入* | *所有者配置后填入* |
+| 首次使用版本 / run | *实跑后填入* | *首次正式发布后填入* |
+| 备份状态 | *所有者确认* | *所有者确认* |
 
 ---
 
@@ -383,6 +412,7 @@ xcrun stapler validate KiliKili_macos_*.dmg
       `WINDOWS_CERT_PASSWORD` / `WINDOWS_CERT_SHA1`，填 §3.4。
 - [ ] **macOS**：开 Apple Developer Program → 建 Developer ID Application
       证书与公证 API key → 设 §4.2 的五个 secret → 填 §4.4。
-- [ ] **Android**：按 #146 处理，不在本篇范围内。
+- [ ] **Android**：按 §6 建立两套身份与加密备份，设置 secrets / vars，
+      连续两次验证包覆盖安装，再核对首次正式发布的证书与升级路径（#146）。
 - [ ] 每个平台首次签名发布后，按 [发布验证](../qa/RELEASE-VALIDATION.md)
       在真实系统上验一次安装与**原地升级**（同身份覆盖安装不应要求先卸载）。

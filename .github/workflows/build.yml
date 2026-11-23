@@ -82,16 +82,26 @@ jobs:
               shell: pwsh
               run: lib/scripts/patch.ps1 android
 
-            - name: Write key
-              if: github.event_name == 'workflow_dispatch'
-              run: |
-                  if [ ! -z "${{ secrets.SIGN_KEYSTORE_BASE64 }}" ]; then
-                    echo "${{ secrets.SIGN_KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
-                    echo storeFile='key.jks' >> android/key.properties
-                    echo storePassword='${{ secrets.KEYSTORE_PASSWORD }}' >> android/key.properties
-                    echo keyAlias='${{ secrets.KEY_ALIAS }}' >> android/key.properties
-                    echo keyPassword='${{ secrets.KEY_PASSWORD }}' >> android/key.properties
-                  fi
+            # 验证包固定用 CI 身份；带 tag 的正式包只能用单独的发布身份。
+            - name: 配置 Android 验证签名
+              if: github.event.inputs.tag == ''
+              env:
+                  ANDROID_SIGNING_KEYSTORE_BASE64: ${{ secrets.ANDROID_CI_KEYSTORE_BASE64 }}
+                  ANDROID_SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_CI_STORE_PASSWORD }}
+                  ANDROID_SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_CI_KEY_ALIAS }}
+                  ANDROID_SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_CI_KEY_PASSWORD }}
+                  ANDROID_SIGNING_CERT_SHA256: ${{ vars.ANDROID_CI_CERT_SHA256 }}
+              run: python3 tool/android-signing.py configure
+
+            - name: 配置 Android 发布签名
+              if: github.event.inputs.tag != ''
+              env:
+                  ANDROID_SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGN_KEYSTORE_BASE64 }}
+                  ANDROID_SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+                  ANDROID_SIGNING_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+                  ANDROID_SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+                  ANDROID_SIGNING_CERT_SHA256: ${{ vars.ANDROID_RELEASE_CERT_SHA256 }}
+              run: python3 tool/android-signing.py configure
 
             - name: Set and Extract version
               if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -99,13 +109,23 @@ jobs:
               run: lib/scripts/build.ps1 android
 
             - name: Flutter Build Release Apk
-              if: ${{ github.event_name == 'workflow_dispatch' }}
+              if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' }}
               run: flutter build apk --release --split-per-abi --dart-define-from-file=pili_release.json --no-pub
+
+            - name: Flutter Build Validation Apk
+              if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag == '' }}
+              run: flutter build apk --release --split-per-abi --android-project-arg dev=1 --dart-define-from-file=pili_release.json --no-pub
 
             - name: Flutter Build Dev Apk
               if: ${{ github.event_name == 'pull_request' }}
               run: |
                   flutter build apk --release --split-per-abi --android-project-arg dev=1 --no-pub
+
+            - name: 核对 Android APK 签名
+              env:
+                  ANDROID_SIGNING_CERT_SHA256: ${{ github.event.inputs.tag != '' && vars.ANDROID_RELEASE_CERT_SHA256 || vars.ANDROID_CI_CERT_SHA256 }}
+                  ANDROID_EXPECTED_PACKAGE: ${{ github.event.inputs.tag != '' && 'io.github.kakacat.kilikili' || 'io.github.kakacat.kilikili.dev' }}
+              run: python3 tool/android-signing.py verify build/app/outputs/flutter-apk/app-*-release.apk
 
             - name: Rename
               run: |

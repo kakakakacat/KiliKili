@@ -328,7 +328,13 @@ const KEEP: &[(&str, &[&str])] = &[
     // 会话详情只为取 ack_seqno（「标为已读」要拿它当位点）。
     (
         ".bilibili.im.type.SessionInfo",
-        &["talker_id", "session_type", "ack_seqno", "max_seqno", "unread_count"],
+        &[
+            "talker_id",
+            "session_type",
+            "ack_seqno",
+            "max_seqno",
+            "unread_count",
+        ],
     ),
     // 未读数只读 msg_feed_unread 那张表；另外几棵（会话单条未读、系统
     // 消息摘要、新版总未读）一个消费者都没有。
@@ -378,7 +384,13 @@ const KEEP: &[(&str, &[&str])] = &[
     // 名片的渲染方案：私信列表不用它，昵称颜色走 `vip_info` 那段 JSON。
     (
         ".bilibili.app.im.v1.SessionInfo",
-        &["session_name", "avatar", "vip_info", "user_label", "is_live"],
+        &[
+            "session_name",
+            "avatar",
+            "vip_info",
+            "user_label",
+            "is_live",
+        ],
     ),
     // ── 会话列表：三个响应里真正有消费者的就这么几项 ──────────────
     //
@@ -389,7 +401,12 @@ const KEEP: &[(&str, &[&str])] = &[
     // 不读服务端给的文案）。它们各自还拖着一串 label/toast 消息。
     (
         ".bilibili.app.im.v1.SessionMainReply",
-        &["pagination_params", "sessions", "three_dot_items", "outside_item"],
+        &[
+            "pagination_params",
+            "sessions",
+            "three_dot_items",
+            "outside_item",
+        ],
     ),
     (
         ".bilibili.app.im.v1.SessionSecondaryReply",

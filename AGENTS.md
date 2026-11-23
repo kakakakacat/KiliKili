@@ -110,6 +110,15 @@ cargo clippy --workspace --all-targets
 cargo test --workspace
 ```
 
+动了 `tool/proto-generator`（加/改 proto 消息表时一定会动）再补一条。它是
+独立的 cargo 工程，上面那条 `cargo fmt --check` **管不到它**，而 CI 的
+`proto.yml` 会查——#176、#198 两次都是合进 main 之后才红：
+
+```sh
+cd rust
+cargo fmt --manifest-path ../tool/proto-generator/Cargo.toml --check
+```
+
 Dart：
 
 ```sh

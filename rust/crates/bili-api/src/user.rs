@@ -73,6 +73,19 @@ pub fn user_stat_owner_request() -> PreparedRequest {
     }
 }
 
+/// #166 的逐字段核对结论（nav / `/x/web-interface/nav`）：
+///
+/// - `mid` 是**标识符**，不放宽：它要拿去发后续请求，解不出来静默当没有
+///   只会把一条打不通的链路伪装成一个空页面。基线也是 `int? mid`。
+/// - `money` 是**金额**，不放宽：基线 `json['money'] is int ? .toDouble()`，
+///   只在 int/double 之间换，没见过字符串形态。
+/// - `vipStatus` / `vipType` / `is_senior_member` 是**判别用的状态值**，
+///   界面拿它们选分支，不放宽。
+/// - 等级那四个在 [`LevelInfoDto`] 里，全部放宽，理由见那里。
+///
+/// 基线 `UserInfoData.fromJson` 读 25 个字段，这里只映射九个；其余 17 个
+/// 全 `lib/` 没有消费者（见 #57 的迁移说明）。「基线读过、Rust 没映射」
+/// 不构成类型风险——没映射的字段 serde 根本不碰。
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
 struct UserInfoDto {
@@ -90,41 +103,26 @@ struct UserInfoDto {
     is_senior_member: Option<i64>,
 }
 
-/// 收「数字或字符串」，两种都当整数；再不行就当没有这个值。
+/// 等级四件套**整组放宽**，见 [`crate::lenient`]。
 ///
-/// 满级账号的 `level_info.next_exp` 服务端发的是字符串 `"--"`（issue #161
-/// 实测），不是数字。基线从来读不到这个形状——`LevelInfo.fromJson` 在
-/// `current_level == 6` 时改取 `current_exp`，压根没碰 `next_exp`，所以
-/// 迁移时照抄语义的同时把类型写成了整数。
+/// 它们全是展示用的数字（界面拿 `current_exp`/`next_exp` 当进度条的分子
+/// 分母），解不出来最多少显示一条进度条。满级账号的 `next_exp` 服务端实际
+/// 发的是字符串 `"--"`（#161 真机实测），而基线从来读不到这个形状——
+/// `LevelInfo.fromJson` 在 `current_level == 6` 时改取 `current_exp`。
 ///
-/// 而 serde 是**先把整个 DTO 解出来，再轮到那条分支**：一个用不上的字段
-/// 于是把整条 nav 响应判成协议错误，登录走不完、「我的」页也打不开。
-/// 等级那几个字段一律走这里：它们全是展示用的数字，解不出来最多少显示一个
-/// 进度条，远好过整个响应作废。
-fn lenient_i64<'de, D>(deserializer: D) -> Result<Option<i64>, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    use serde::Deserialize as _;
-    Ok(
-        match Option::<serde_json::Value>::deserialize(deserializer)? {
-            Some(serde_json::Value::Number(n)) => n.as_i64(),
-            Some(serde_json::Value::String(s)) => s.parse().ok(),
-            _ => None,
-        },
-    )
-}
-
+/// `current_level` 也放宽：它虽然参与「是不是满级」的判断，但那条分支选错
+/// 的后果只是进度条分母取错，不会让页面打不开；而它和另外三个来自同一个
+/// 对象、同一套服务端序列化，单独收紧没有依据。
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
 struct LevelInfoDto {
-    #[serde(deserialize_with = "lenient_i64")]
+    #[serde(deserialize_with = "crate::lenient::opt_i64")]
     current_level: Option<i64>,
-    #[serde(deserialize_with = "lenient_i64")]
+    #[serde(deserialize_with = "crate::lenient::opt_i64")]
     current_min: Option<i64>,
-    #[serde(deserialize_with = "lenient_i64")]
+    #[serde(deserialize_with = "crate::lenient::opt_i64")]
     current_exp: Option<i64>,
-    #[serde(deserialize_with = "lenient_i64")]
+    #[serde(deserialize_with = "crate::lenient::opt_i64")]
     next_exp: Option<i64>,
 }
 
@@ -160,11 +158,16 @@ pub fn parse_user_info(body: &str) -> Result<UserInfo, DomainError> {
     })
 }
 
+/// 三个计数全是展示用的，整组放宽（#166）。关注数在大 V 账号上曾见过
+/// 字符串形态；三个字段同源，单独放宽一个没有依据。
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
 struct UserStatDto {
+    #[serde(deserialize_with = "crate::lenient::opt_i64")]
     following: Option<i64>,
+    #[serde(deserialize_with = "crate::lenient::opt_i64")]
     follower: Option<i64>,
+    #[serde(deserialize_with = "crate::lenient::opt_i64")]
     dynamic_count: Option<i64>,
 }
 
@@ -559,14 +562,29 @@ pub fn user_sub_folder_request(up_mid: i64, page: i64, page_size: i64) -> Prepar
     }
 }
 
+/// `count` 是列表总数，展示用，放宽（#166）。
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
 struct SubListDto {
+    #[serde(deserialize_with = "crate::lenient::opt_i64")]
     count: Option<i64>,
     has_more: Option<bool>,
     list: Option<Vec<SubItemDto>>,
 }
 
+/// #166 的逐字段核对结论（订阅的收藏夹/合集）：
+///
+/// - **不放宽**：`id` / `fid` / `mid` 是标识符（点进去要拿它们请求详情）；
+///   `attr` / `cover_type` / `state` / `fav_state` / `type` 是判别用的
+///   状态与枚举（`type` 决定这一项显示成「收藏夹」还是「合集」，也决定点
+///   进去走哪条路由）。
+/// - **放宽**：`media_count` / `view_count` 两个计数，以及 `cnt_info` 里的
+///   两个，见 [`CntInfoDto`]。
+/// - `ctime` / `mtime` 两个时间戳**不放宽**：虽然当前只拿去格式化显示，
+///   但基线 `as int?` 也没放宽，没有实测依据就不单方面改口径。
+///
+/// 基线 `SubItemModel.fromJson` 读的字段与这里一一对应（全是 `as int?`），
+/// 没有「基线没读过」的字段。
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
 struct SubItemDto {
@@ -583,7 +601,9 @@ struct SubItemDto {
     mtime: Option<i64>,
     state: Option<i64>,
     fav_state: Option<i64>,
+    #[serde(deserialize_with = "crate::lenient::opt_i64")]
     media_count: Option<i64>,
+    #[serde(deserialize_with = "crate::lenient::opt_i64")]
     view_count: Option<i64>,
     #[serde(rename = "type")]
     kind: Option<i64>,
@@ -593,15 +613,20 @@ struct SubItemDto {
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
 struct UpperDto {
+    /// 标识符，**不放宽**（#166）：头像点进去要拿它跳空间页。
     mid: Option<i64>,
     name: Option<String>,
     face: Option<String>,
 }
 
+/// 两个纯展示计数，放宽（#166）。收藏夹那一族的同名字段在搜索接口上
+/// 已经实测见过字符串形态（见 [`crate::search`] 对 `safeToInt` 的注释）。
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
 struct CntInfoDto {
+    #[serde(deserialize_with = "crate::lenient::opt_i64")]
     play: Option<i64>,
+    #[serde(deserialize_with = "crate::lenient::opt_i64")]
     danmaku: Option<i64>,
 }
 
@@ -681,6 +706,7 @@ pub fn video_tags_request(bvid: &str, cid: Option<i64>) -> PreparedRequest {
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
 struct VideoTagDto {
+    /// 标识符，**不放宽**（#166）：点标签要拿它请求标签页。
     tag_id: Option<i64>,
     tag_name: Option<String>,
     tag_type: Option<String>,
@@ -860,11 +886,13 @@ pub async fn space_reserve<T: HttpTransport>(
 mod tests {
     use super::{
         coin_log_request, dynamic_report_request, exp_log_request, parse_coin, parse_coin_log,
-        parse_space_setting, parse_user_info, parse_video_tags, path, space_reserve_request,
-        user_real_name_request, video_tags_request, vip_exp_add_request,
+        parse_space_setting, parse_sub_list, parse_user_info, parse_user_stat, parse_video_tags,
+        path, space_reserve_request, user_real_name_request, video_tags_request,
+        vip_exp_add_request,
     };
     use crate::http::Idempotency;
     use crate::request::CsrfIn;
+    use bili_domain::error::ErrorKind;
 
     /// issue #161 的回归：满级账号的 `next_exp` 服务端发的是字符串
     /// `"--"`，整条 nav 响应不能因此作废。
@@ -1045,5 +1073,45 @@ mod tests {
             space_reserve_request(7, false).path,
             path::SPACE_RESERVE_CANCEL
         );
+    }
+
+    /// #166：三个计数是展示用的，字符串形态照收，不能因此判整条失败。
+    #[test]
+    fn user_stat_counts_accept_the_string_form() {
+        let stat = parse_user_stat(
+            r#"{"code":0,"message":"0","data":{"following":"120","follower":1048576,"dynamic_count":"--"}}"#,
+        )
+        .expect("计数的写法不该让整条响应作废");
+        assert_eq!(stat.following, Some(120));
+        assert_eq!(stat.follower, Some(1_048_576));
+        assert_eq!(stat.dynamic_count, None, "解不出来当没有，而不是报错");
+    }
+
+    /// #166：订阅列表的计数同样放宽，而标识符与判别字段**仍然收紧**。
+    #[test]
+    fn sub_list_loosens_counts_but_not_identifiers() {
+        let list = parse_sub_list(
+            r#"{"code":0,"message":"0","data":{"count":"2","list":[
+                 {"id":11,"fid":12,"mid":13,"type":21,"title":"合集",
+                  "media_count":"37","view_count":"1200",
+                  "upper":{"mid":14,"name":"up"},
+                  "cnt_info":{"play":"9000","danmaku":"8"}}]}}"#,
+        )
+        .expect("应解析成功");
+        assert_eq!(list.count, Some(2));
+        let item = &list.list[0];
+        assert_eq!(item.media_count, Some(37));
+        assert_eq!(item.view_count, Some(1200));
+        assert_eq!(item.play_count, Some(9000));
+        assert_eq!(item.collect_count, Some(8));
+        assert_eq!(item.id, Some(11), "标识符仍按数字收");
+        assert_eq!(item.kind, Some(21), "判别字段仍按数字收");
+
+        // 标识符给成字符串时**整条失败**，这是刻意的：静默当没有会把一条
+        // 打不通的链路伪装成一个空页面，比报错难查得多（#166）。
+        let err =
+            parse_sub_list(r#"{"code":0,"message":"0","data":{"count":1,"list":[{"id":"11"}]}}"#)
+                .expect_err("标识符不放宽");
+        assert_eq!(err.kind(), ErrorKind::Protocol);
     }
 }

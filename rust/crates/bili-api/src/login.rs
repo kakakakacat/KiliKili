@@ -218,6 +218,9 @@ fn with_header(ctx: &RequestContext, name: &str, value: &str) -> RequestContext 
 /// 失败**。二维码未扫（86039）、密码登录要人机验证（-105）、短信发送被
 /// 风控拦（也是 -105）都带着有用的 `data`，基线正是靠它们继续走流程。
 /// 这里把三者统一成「code + message + data」，由各接口自己判定。
+/// #166 的核对结论：`code` **不放宽，也不改成 `Option`**。它是信封本身，
+/// 读不出来就没有任何可依据的结论可下；把它变成 `None` 只会让后面每一条
+/// 分支都在猜。当前没有把 `code` 发成字符串的实测样本，有了再议。
 #[derive(Debug)]
 struct Envelope {
     code: i64,
@@ -293,6 +296,11 @@ struct CookieInfoDto {
 struct TokenInfoDto {
     access_token: Option<String>,
     refresh_token: Option<String>,
+    /// **放宽**（#166）。这个字段整个 `lib/` 没有任何消费者：它跨 FFI 传到
+    /// `LoginTokens.expiresIn` 就没人再读了（续期靠 refresh_token，不靠它
+    /// 算时间）。一个没人用的字段如果类型猜错，代价是**整条登录响应**判成
+    /// 协议错误、用户登不进去——#161 的 `next_exp` 就是这个形状。
+    #[serde(deserialize_with = "crate::lenient::opt_i64")]
     expires_in: Option<i64>,
 }
 
@@ -302,6 +310,8 @@ struct TokenInfoDto {
 struct QrPollDto {
     access_token: Option<String>,
     refresh_token: Option<String>,
+    /// 同 [`TokenInfoDto::expires_in`]：没有消费者，放宽（#166）。
+    #[serde(deserialize_with = "crate::lenient::opt_i64")]
     expires_in: Option<i64>,
     cookie_info: Option<CookieInfoDto>,
 }
@@ -311,6 +321,10 @@ struct QrPollDto {
 #[serde(default)]
 struct LoginDto {
     /// 2 表示风控要求验证手机号。
+    ///
+    /// **不放宽**（#166）：它决定走哪条分支——继续登录，还是跳验证手机号的
+    /// 页面。分支选错比报错难查得多，这种字段宁可让整条响应失败。缺失本身
+    /// 是合法的（普通登录成功时就没有），`Option` 已经表达了这一点。
     status: Option<i64>,
     message: Option<String>,
     url: Option<String>,
@@ -1817,6 +1831,32 @@ mod tests {
         let body = r#"{"code":86039,"message":"二维码尚未确认"}"#;
         let envelope = split_envelope(body).expect("信封");
         assert_eq!(envelope.code, 86_039);
+    }
+
+    /// #166：`expires_in` 全 `lib/` 没有消费者，它的写法不该拦住登录。
+    ///
+    /// 收紧成只认数字的话，服务端哪天把它发成 `"2592000"`，用户就直接登不
+    /// 进去——而那个值本来就没人读。
+    #[test]
+    fn a_string_expires_in_does_not_block_the_login() {
+        let poll = parse_qr_poll(
+            r#"{"code":0,"message":"0","data":{"access_token":"at","refresh_token":"rt","expires_in":"2592000","cookie_info":{"cookies":[{"name":"SESSDATA","value":"v"}]}}}"#,
+        )
+        .expect("这个字段的写法不该让整条扫码响应作废");
+        let QrPoll::Confirmed(tokens) = poll else {
+            panic!("确认后应拿到身份");
+        };
+        assert_eq!(tokens.expires_in, 2_592_000);
+
+        // 解不出来的形状落到 0，登录照样走得完。
+        let poll = parse_qr_poll(
+            r#"{"code":0,"message":"0","data":{"access_token":"at","refresh_token":"rt","expires_in":"--","cookie_info":{"cookies":[{"name":"SESSDATA","value":"v"}]}}}"#,
+        )
+        .expect("同上");
+        let QrPoll::Confirmed(tokens) = poll else {
+            panic!("有身份");
+        };
+        assert_eq!(tokens.expires_in, 0);
     }
 
     #[test]

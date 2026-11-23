@@ -9,7 +9,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:kilikili/rust/api/transport.dart';
 import 'package:kilikili/rust/api/write.dart';
 
-// These functions are ignored because they are not marked as `pub`: `flatten`, `from_result`, `from_result`, `from_result`, `from_result`, `from_result`, `from_result`, `from_result`, `from_result`, `message_page_from`, `offsets_into`, `options_from`, `page_from`, `session_from`, `settings_from`, `target_from`, `three_dots_from`
+// These functions are ignored because they are not marked as `pub`: `flatten`, `from_result`, `from_result`, `from_result`, `from_result`, `from_result`, `from_result`, `from_result`, `message_page_from`, `offsets_into`, `options_from`, `page_from`, `session_from`, `settings_from`, `target_from`, `three_dots_from`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// 把 [`ImSettingPage`] 换成协议的 `ImSettingType` 取值。
@@ -686,6 +686,9 @@ class ImSessionPageResult {
           errorCode == other.errorCode;
 }
 
+/// 单个会话的结果。**不用 `result_type!`**：`data` 为空在这里不表示失败，
+/// 而是「服务端查不到这个会话」。宏生成的那个 `from_result` 会把两者混为
+/// 一谈。
 class ImSessionResult {
   final ImSession? data;
   final String? errorKind;

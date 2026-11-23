@@ -1,0 +1,58 @@
+{
+  "base_info": {
+    "face_url": "https://example.invalid/bfs/tribe/face.jpg",
+    "id": "7001",
+    "is_joined": true,
+    "jump_uri": "bilibili://tribe/7001",
+    "sub_title": "副标题",
+    "summary": "部落简介",
+    "title": "示例部落"
+  },
+  "categories": [
+    {
+      "id": "0",
+      "kind": 0,
+      "name": "全部"
+    },
+    {
+      "id": "11",
+      "kind": 1,
+      "name": "讨论"
+    }
+  ],
+  "content": {
+    "count": "1.2万",
+    "items": [
+      {
+        "author": "示例作者甲",
+        "dyn_id": "900000000000000011",
+        "reply_count": "128",
+        "time_text": "3 小时前",
+        "title": "部落动态一",
+        "view_stat": "4.5万"
+      },
+      {
+        "author": null,
+        "dyn_id": "900000000000000012",
+        "reply_count": null,
+        "time_text": null,
+        "title": "部落动态二：没有 meta",
+        "view_stat": null
+      }
+    ]
+  },
+  "sort_info": {
+    "cur_sort_type": 0,
+    "items": [
+      {
+        "sort_type": 0,
+        "text": "最新"
+      },
+      {
+        "sort_type": 1,
+        "text": "最热"
+      }
+    ],
+    "show_sort": true
+  }
+}

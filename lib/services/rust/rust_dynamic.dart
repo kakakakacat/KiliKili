@@ -1,11 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:kilikili/http/api.dart';
 import 'package:kilikili/http/constants.dart';
+import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/rust/api/dynamic.dart' as api;
 import 'package:kilikili/rust/api/write.dart' show WriteResult;
 import 'package:kilikili/services/rust/rust_grpc.dart';
 import 'package:kilikili/services/rust/rust_request.dart';
 import 'package:kilikili/services/rust/rust_transport.dart';
 import 'package:kilikili/services/rust_core.dart';
+import 'package:kilikili/utils/wbi_sign.dart';
 
 /// 动态接口的 typed Rust 入口。gRPC 凭据只在请求时传入 Rust。
 abstract final class RustDynamic {
@@ -341,5 +344,161 @@ abstract final class RustDynamic {
         errorDetail: '动态红点请求未完成',
       );
     }
+  }
+
+  // ======================================== S5 续单第一批（issue #150）
+
+  /// 本批几条只读接口的上下文。与 [_writeContext] 分开：它们一个 csrf
+  /// 都不要，合用一个等于每个调用点都要答一遍「这里要不要传 csrf」。
+  static Future<api.DynamicReadContext> _readContext(
+    String endpoint, {
+    String? baseUrl,
+    String mixinKey = '',
+  }) async {
+    final account = RustRequest.accountFor(endpoint);
+    return api.DynamicReadContext(
+      baseUrl: baseUrl ?? HttpString.apiBaseUrl,
+      cookie: await RustRequest.cookieFor(account, endpoint),
+      headers: RustRequest.headersFor(account),
+      timeoutMs: BigInt.from(10000),
+      transport: RustTransport.current(),
+      mixinKey: mixinKey,
+      wts: BigInt.from(DateTime.now().millisecondsSinceEpoch ~/ 1000),
+    );
+  }
+
+  /// 取 WBI mixin key。拿不到就别发请求——基线会用空串继续签名并换回一个
+  /// 业务错误码，那只是把失败推后，还更难诊断。
+  static Future<String?> _mixinKey() async {
+    final key = await WbiSign.getWbiKeys();
+    return key.isEmpty ? null : key;
+  }
+
+  /// 专栏阅读页的计数与收藏态。
+  static Future<LoadingState<api.ArticleInfoData>> articleInfo({
+    required String cvId,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    final mixinKey = await _mixinKey();
+    if (mixinKey == null) return const Error('WBI 签名密钥获取失败');
+    try {
+      final result = await api.articleInfo(
+        context: await _readContext(Api.articleInfo, mixinKey: mixinKey),
+        cvId: cvId,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('专栏信息', e, st);
+    }
+  }
+
+  /// 文集。
+  static Future<LoadingState<api.ArticleListData>> articleList({
+    required String id,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await api.articleList(
+        context: await _readContext(Api.articleList),
+        id: id,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('文集', e, st);
+    }
+  }
+
+  /// 话题页顶部。**走 app 网关**，与其余几条不同域名。
+  static Future<LoadingState<api.TopicTopData>> topicTop({
+    required String topicId,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await api.topicTop(
+        context: await _readContext(
+          Api.topicTop,
+          baseUrl: HttpString.appBaseUrl,
+        ),
+        topicId: topicId,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('话题顶部', e, st);
+    }
+  }
+
+  /// 推荐话题。
+  static Future<LoadingState<List<api.TopicItemData>>> topicRcmd({
+    int pageSize = 25,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await api.topicRcmd(
+        context: await _readContext(Api.dynTopicRcmd),
+        pageSize: pageSize,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('推荐话题', e, st);
+    }
+  }
+
+  /// 动态页顶部的部落气泡。
+  static Future<LoadingState<api.BubbleData>> bubble({
+    required String tribeId,
+    String? categoryId,
+    int? sortType,
+    required int page,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await api.bubble(
+        context: await _readContext(Api.bubble),
+        tribeId: tribeId,
+        categoryId: categoryId,
+        sortType: sortType,
+        page: page,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('部落气泡', e, st);
+    }
+  }
+
+  /// 发布页的话题搜索。**走 app 网关。**
+  ///
+  /// 本属搜索那一族，拉进本批是因为它是 `TopicItem` 的第二个生产者，
+  /// 见 Rust 侧注释（#150 / ADR-011 补充十二）。
+  static Future<LoadingState<api.TopicPubSearchData>> topicPubSearch({
+    required String keywords,
+    String content = '',
+    required int pageNum,
+  }) async {
+    if (!RustCore.isReady) return const Error(_notReady);
+    try {
+      final result = await api.topicPubSearch(
+        context: await _readContext(
+          Api.topicPubSearch,
+          baseUrl: HttpString.appBaseUrl,
+        ),
+        keywords: keywords,
+        content: content,
+        pageNum: pageNum,
+      );
+      return _unwrap(result.data, result.errorDetail, result.errorCode);
+    } catch (e, st) {
+      return _crashed('话题搜索', e, st);
+    }
+  }
+
+  static const String _notReady = 'Rust Core 未就绪';
+
+  static LoadingState<T> _unwrap<T>(T? data, String? detail, int? code) =>
+      data == null ? Error(detail ?? '请求失败', code: code) : Success(data);
+
+  /// 桥接层自身出错（未就绪、参数编码失败等）。不抛给 UI。
+  static LoadingState<T> _crashed<T>(String what, Object e, StackTrace st) {
+    if (kDebugMode) debugPrint('[rust] $what 出错: $e\n$st');
+    return Error('$e');
   }
 }

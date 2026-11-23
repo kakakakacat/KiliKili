@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/dynamic/dyn_topic_top/topic_item.dart';
+import 'package:kilikili/rust/api/dynamic.dart' as rust;
 import 'package:kilikili/pages/dynamics_select_topic/controller.dart';
 import 'package:kilikili/pages/dynamics_select_topic/widgets/item.dart';
 import 'package:kilikili/pages/search/controller.dart' show DebounceStreamState;
@@ -22,12 +22,12 @@ class SelectTopicPanel extends StatefulWidget {
   final ScrollController? scrollController;
   final ValueChanged<double>? onCachePos;
 
-  static Future<TopicItem?> onSelectTopic(
+  static Future<rust.TopicItemData?> onSelectTopic(
     BuildContext context, {
     double offset = 0,
     ValueChanged<double>? onCachePos,
   }) {
-    return showModalBottomSheet<TopicItem?>(
+    return showModalBottomSheet<rust.TopicItemData?>(
       context: Get.context!,
       useSafeArea: true,
       isScrollControlled: true,
@@ -183,11 +183,11 @@ class _SelectTopicPanelState
 
   Widget _buildBody(
     ThemeData theme,
-    LoadingState<List<TopicItem>?> loadingState,
+    LoadingState<List<rust.TopicItemData>?> loadingState,
   ) {
     return switch (loadingState) {
       Loading() => m3eLoading,
-      Success<List<TopicItem>?>(:final response) =>
+      Success<List<rust.TopicItemData>?>(:final response) =>
         response != null && response.isNotEmpty
             ? ListView.builder(
                 padding: EdgeInsets.only(

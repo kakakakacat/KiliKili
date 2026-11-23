@@ -1,13 +1,13 @@
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/http/search.dart';
-import 'package:kilikili/models_new/dynamic/dyn_topic_pub_search/data.dart';
-import 'package:kilikili/models_new/dynamic/dyn_topic_top/topic_item.dart';
+import 'package:kilikili/rust/api/dynamic.dart' as rust;
 import 'package:kilikili/pages/common/common_list_controller.dart';
+import 'package:kilikili/services/rust/rust_dynamic.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 class SelectTopicController
-    extends CommonListController<TopicPubSearchData, TopicItem> {
+    extends
+        CommonListController<rust.TopicPubSearchData, rust.TopicItemData> {
   final focusNode = FocusNode();
   final controller = TextEditingController();
 
@@ -20,16 +20,16 @@ class SelectTopicController
   }
 
   @override
-  List<TopicItem>? getDataList(TopicPubSearchData response) {
-    if (response.pageInfo?.hasMore == false) {
+  List<rust.TopicItemData>? getDataList(rust.TopicPubSearchData response) {
+    if (response.hasMore == false) {
       isEnd = true;
     }
-    return response.topicItems;
+    return response.items;
   }
 
   @override
-  Future<LoadingState<TopicPubSearchData>> customGetData() =>
-      SearchHttp.topicPubSearch(
+  Future<LoadingState<rust.TopicPubSearchData>> customGetData() =>
+      RustDynamic.topicPubSearch(
         keywords: controller.text,
         pageNum: page,
       );

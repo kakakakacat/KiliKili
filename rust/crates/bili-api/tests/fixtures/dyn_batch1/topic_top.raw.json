@@ -1,0 +1,30 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "top_details": {
+      "topic_item": {
+        "id": 10001,
+        "name": "示例话题",
+        "description": "话题简介",
+        "view": 1234567,
+        "discuss": "890",
+        "fav": 456,
+        "like": 78,
+        "is_fav": true,
+        "is_like": false,
+        "share": 9,
+        "topic_type": 1
+      },
+      "topic_creator": {
+        "uid": 800000602,
+        "face": "https://example.invalid/bfs/face/creator.jpg",
+        "name": "话题创建者",
+        "is_followed": false
+      },
+      "topic_label": { "text": "", "bg_color": "" }
+    },
+    "version": "1"
+  }
+}

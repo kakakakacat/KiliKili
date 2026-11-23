@@ -13,7 +13,7 @@ import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/image_type.dart';
 import 'package:kilikili/models_new/dynamic/dyn_topic_feed/fold_card_item.dart';
 import 'package:kilikili/models_new/dynamic/dyn_topic_feed/item.dart';
-import 'package:kilikili/models_new/dynamic/dyn_topic_top/top_details.dart';
+import 'package:kilikili/rust/api/dynamic.dart' as rust;
 import 'package:kilikili/pages/common/fab_mixin.dart';
 import 'package:kilikili/pages/dynamics/widgets/dynamic_panel.dart';
 import 'package:kilikili/pages/dynamics_create/view.dart';
@@ -172,14 +172,15 @@ class _DynTopicPageState extends State<DynTopicPage>
   Widget _buildAppBar(
     ColorScheme colorScheme,
     EdgeInsets padding,
-    LoadingState<TopDetails?> topState,
+    LoadingState<rust.TopicTopData> topState,
   ) {
     return switch (topState) {
       Loading() => const SliverAppBar(),
-      Success(:final response) when response != null => DynamicSliverAppBar.medium(
+      Success(:final response) when response.topic != null =>
+        DynamicSliverAppBar.medium(
         onPerformLayout: (value) => _controller.appbarOffset =
             value.height - kToolbarHeight - padding.top,
-        title: IgnorePointer(child: Text(response.topicItem!.name)),
+        title: IgnorePointer(child: Text(response.topic!.name)),
         flexibleSpace: Container(
           decoration: BoxDecoration(
             image: DecorationImage(
@@ -206,7 +207,7 @@ class _DynTopicPageState extends State<DynTopicPage>
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () => Get.toNamed(
-                    '/member?mid=${response.topicCreator!.uid}',
+                    '/member?mid=${response.creator?.uid}',
                   ),
                   child: Row(
                     spacing: 10,
@@ -215,12 +216,12 @@ class _DynTopicPageState extends State<DynTopicPage>
                       NetworkImgLayer(
                         width: 28,
                         height: 28,
-                        src: response.topicCreator!.face!,
+                        src: response.creator?.face,
                         type: ImageType.avatar,
                       ),
                       Flexible(
                         child: Text(
-                          response.topicCreator!.name!,
+                          response.creator?.name ?? '',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -234,7 +235,7 @@ class _DynTopicPageState extends State<DynTopicPage>
                 ),
               ),
               Text(
-                response.topicItem!.name,
+                response.topic!.name,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -242,14 +243,14 @@ class _DynTopicPageState extends State<DynTopicPage>
               ),
               const SizedBox(height: 6),
               SelectionText(
-                response.topicItem!.description!,
+                response.topic!.description ?? '',
                 style: TextStyle(color: colorScheme.onSurfaceVariant),
               ),
               const SizedBox(height: 10),
               Row(
                 children: [
                   Text(
-                    '${NumUtils.numFormat(response.topicItem!.view)}浏览 · ${NumUtils.numFormat(response.topicItem!.discuss)}讨论',
+                    '${NumUtils.numFormat(response.topic!.view.toInt())}浏览 · ${NumUtils.numFormat(response.topic!.discuss.toInt())}讨论',
                     style: TextStyle(
                       fontSize: 13,
                       color: colorScheme.outline,
@@ -277,7 +278,7 @@ class _DynTopicPageState extends State<DynTopicPage>
                         ? const Icon(FontAwesomeIcons.solidThumbsUp, size: 13)
                         : const Icon(FontAwesomeIcons.thumbsUp, size: 13),
                     label: Text(
-                      NumUtils.numFormat(response.topicItem!.like),
+                      NumUtils.numFormat(_controller.likeCount.value),
                       style: const TextStyle(fontSize: 13),
                       textScaler: TextScaler.noScaling,
                     ),
@@ -301,7 +302,7 @@ class _DynTopicPageState extends State<DynTopicPage>
                         ? const Icon(FontAwesomeIcons.solidStar, size: 13)
                         : const Icon(FontAwesomeIcons.star, size: 13),
                     label: Text(
-                      NumUtils.numFormat(response.topicItem!.fav),
+                      NumUtils.numFormat(_controller.favCount.value),
                       style: const TextStyle(fontSize: 13),
                       textScaler: TextScaler.noScaling,
                     ),

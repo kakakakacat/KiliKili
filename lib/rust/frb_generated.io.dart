@@ -85,6 +85,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AppWriteContext dco_decode_app_write_context(dynamic raw);
 
   @protected
+  ArticleInfoData dco_decode_article_info_data(dynamic raw);
+
+  @protected
+  ArticleInfoResult dco_decode_article_info_result(dynamic raw);
+
+  @protected
+  ArticleListData dco_decode_article_list_data(dynamic raw);
+
+  @protected
+  ArticleListInfoData dco_decode_article_list_info_data(dynamic raw);
+
+  @protected
+  ArticleListItemData dco_decode_article_list_item_data(dynamic raw);
+
+  @protected
+  ArticleListItemStatsData dco_decode_article_list_item_stats_data(dynamic raw);
+
+  @protected
+  ArticleListResult dco_decode_article_list_result(dynamic raw);
+
+  @protected
+  ArticleStatsData dco_decode_article_stats_data(dynamic raw);
+
+  @protected
   Artist dco_decode_artist(dynamic raw);
 
   @protected
@@ -127,6 +151,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AppWriteContext dco_decode_box_autoadd_app_write_context(dynamic raw);
 
   @protected
+  ArticleInfoData dco_decode_box_autoadd_article_info_data(dynamic raw);
+
+  @protected
+  ArticleListData dco_decode_box_autoadd_article_list_data(dynamic raw);
+
+  @protected
+  ArticleListInfoData dco_decode_box_autoadd_article_list_info_data(
+    dynamic raw,
+  );
+
+  @protected
+  ArticleListItemStatsData dco_decode_box_autoadd_article_list_item_stats_data(
+    dynamic raw,
+  );
+
+  @protected
+  ArticleStatsData dco_decode_box_autoadd_article_stats_data(dynamic raw);
+
+  @protected
   AtFeed dco_decode_box_autoadd_at_feed(dynamic raw);
 
   @protected
@@ -137,6 +180,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   bool dco_decode_box_autoadd_bool(dynamic raw);
+
+  @protected
+  BubbleBaseInfoData dco_decode_box_autoadd_bubble_base_info_data(dynamic raw);
+
+  @protected
+  BubbleContentData dco_decode_box_autoadd_bubble_content_data(dynamic raw);
+
+  @protected
+  BubbleData dco_decode_box_autoadd_bubble_data(dynamic raw);
+
+  @protected
+  BubbleSortInfoData dco_decode_box_autoadd_bubble_sort_info_data(dynamic raw);
 
   @protected
   CaptchaRegistrationData dco_decode_box_autoadd_captcha_registration_data(
@@ -159,6 +214,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Dash dco_decode_box_autoadd_dash(dynamic raw);
+
+  @protected
+  DynamicReadContext dco_decode_box_autoadd_dynamic_read_context(dynamic raw);
 
   @protected
   DynamicWriteContext dco_decode_box_autoadd_dynamic_write_context(dynamic raw);
@@ -748,6 +806,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SubList dco_decode_box_autoadd_sub_list(dynamic raw);
 
   @protected
+  TopicCreatorData dco_decode_box_autoadd_topic_creator_data(dynamic raw);
+
+  @protected
+  TopicItemData dco_decode_box_autoadd_topic_item_data(dynamic raw);
+
+  @protected
+  TopicPubSearchData dco_decode_box_autoadd_topic_pub_search_data(dynamic raw);
+
+  @protected
+  TopicTopData dco_decode_box_autoadd_topic_top_data(dynamic raw);
+
+  @protected
   TransportSettings dco_decode_box_autoadd_transport_settings(dynamic raw);
 
   @protected
@@ -790,6 +860,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   VoteInfoData dco_decode_box_autoadd_vote_info_data(dynamic raw);
+
+  @protected
+  BubbleBaseInfoData dco_decode_bubble_base_info_data(dynamic raw);
+
+  @protected
+  BubbleCategoryData dco_decode_bubble_category_data(dynamic raw);
+
+  @protected
+  BubbleContentData dco_decode_bubble_content_data(dynamic raw);
+
+  @protected
+  BubbleData dco_decode_bubble_data(dynamic raw);
+
+  @protected
+  BubbleDynData dco_decode_bubble_dyn_data(dynamic raw);
+
+  @protected
+  BubbleResult dco_decode_bubble_result(dynamic raw);
+
+  @protected
+  BubbleSortInfoData dco_decode_bubble_sort_info_data(dynamic raw);
+
+  @protected
+  BubbleSortItemData dco_decode_bubble_sort_item_data(dynamic raw);
 
   @protected
   CaptchaKeyResult dco_decode_captcha_key_result(dynamic raw);
@@ -865,6 +959,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   DynamicAuthor dco_decode_dynamic_author(dynamic raw);
+
+  @protected
+  DynamicReadContext dco_decode_dynamic_read_context(dynamic raw);
 
   @protected
   DynamicWriteContext dco_decode_dynamic_write_context(dynamic raw);
@@ -1239,6 +1336,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<AiOutlinePart> dco_decode_list_ai_outline_part(dynamic raw);
 
   @protected
+  List<ArticleListItemData> dco_decode_list_article_list_item_data(dynamic raw);
+
+  @protected
   List<Artist> dco_decode_list_artist(dynamic raw);
 
   @protected
@@ -1252,6 +1352,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<bool> dco_decode_list_bool(dynamic raw);
+
+  @protected
+  List<BubbleCategoryData> dco_decode_list_bubble_category_data(dynamic raw);
+
+  @protected
+  List<BubbleDynData> dco_decode_list_bubble_dyn_data(dynamic raw);
+
+  @protected
+  List<BubbleSortItemData> dco_decode_list_bubble_sort_item_data(dynamic raw);
 
   @protected
   List<CdnServiceEntry> dco_decode_list_cdn_service_entry(dynamic raw);
@@ -1699,6 +1808,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<TitleSpan> dco_decode_list_title_span(dynamic raw);
 
   @protected
+  List<TopicItemData> dco_decode_list_topic_item_data(dynamic raw);
+
+  @protected
   List<UpowerLevel> dco_decode_list_upower_level(dynamic raw);
 
   @protected
@@ -2057,6 +2169,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AiConclusion? dco_decode_opt_box_autoadd_ai_conclusion(dynamic raw);
 
   @protected
+  ArticleInfoData? dco_decode_opt_box_autoadd_article_info_data(dynamic raw);
+
+  @protected
+  ArticleListData? dco_decode_opt_box_autoadd_article_list_data(dynamic raw);
+
+  @protected
+  ArticleListInfoData? dco_decode_opt_box_autoadd_article_list_info_data(
+    dynamic raw,
+  );
+
+  @protected
+  ArticleListItemStatsData?
+  dco_decode_opt_box_autoadd_article_list_item_stats_data(dynamic raw);
+
+  @protected
+  ArticleStatsData? dco_decode_opt_box_autoadd_article_stats_data(dynamic raw);
+
+  @protected
   AtFeed? dco_decode_opt_box_autoadd_at_feed(dynamic raw);
 
   @protected
@@ -2067,6 +2197,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   bool? dco_decode_opt_box_autoadd_bool(dynamic raw);
+
+  @protected
+  BubbleBaseInfoData? dco_decode_opt_box_autoadd_bubble_base_info_data(
+    dynamic raw,
+  );
+
+  @protected
+  BubbleContentData? dco_decode_opt_box_autoadd_bubble_content_data(
+    dynamic raw,
+  );
+
+  @protected
+  BubbleData? dco_decode_opt_box_autoadd_bubble_data(dynamic raw);
+
+  @protected
+  BubbleSortInfoData? dco_decode_opt_box_autoadd_bubble_sort_info_data(
+    dynamic raw,
+  );
 
   @protected
   CaptchaRegistrationData? dco_decode_opt_box_autoadd_captcha_registration_data(
@@ -2621,6 +2769,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SubList? dco_decode_opt_box_autoadd_sub_list(dynamic raw);
 
   @protected
+  TopicCreatorData? dco_decode_opt_box_autoadd_topic_creator_data(dynamic raw);
+
+  @protected
+  TopicItemData? dco_decode_opt_box_autoadd_topic_item_data(dynamic raw);
+
+  @protected
+  TopicPubSearchData? dco_decode_opt_box_autoadd_topic_pub_search_data(
+    dynamic raw,
+  );
+
+  @protected
+  TopicTopData? dco_decode_opt_box_autoadd_topic_top_data(dynamic raw);
+
+  @protected
   int? dco_decode_opt_box_autoadd_u_16(dynamic raw);
 
   @protected
@@ -2799,6 +2961,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<TimelineDay>? dco_decode_opt_list_timeline_day(dynamic raw);
+
+  @protected
+  List<TopicItemData>? dco_decode_opt_list_topic_item_data(dynamic raw);
 
   @protected
   List<VideoTag>? dco_decode_opt_list_video_tag(dynamic raw);
@@ -3544,6 +3709,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ToastResult dco_decode_toast_result(dynamic raw);
 
   @protected
+  TopicCreatorData dco_decode_topic_creator_data(dynamic raw);
+
+  @protected
+  TopicItemData dco_decode_topic_item_data(dynamic raw);
+
+  @protected
+  TopicItemsResult dco_decode_topic_items_result(dynamic raw);
+
+  @protected
+  TopicPubSearchData dco_decode_topic_pub_search_data(dynamic raw);
+
+  @protected
+  TopicPubSearchResult dco_decode_topic_pub_search_result(dynamic raw);
+
+  @protected
+  TopicTopData dco_decode_topic_top_data(dynamic raw);
+
+  @protected
+  TopicTopResult dco_decode_topic_top_result(dynamic raw);
+
+  @protected
   TransportSettings dco_decode_transport_settings(dynamic raw);
 
   @protected
@@ -3695,6 +3881,40 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AppWriteContext sse_decode_app_write_context(SseDeserializer deserializer);
 
   @protected
+  ArticleInfoData sse_decode_article_info_data(SseDeserializer deserializer);
+
+  @protected
+  ArticleInfoResult sse_decode_article_info_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ArticleListData sse_decode_article_list_data(SseDeserializer deserializer);
+
+  @protected
+  ArticleListInfoData sse_decode_article_list_info_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ArticleListItemData sse_decode_article_list_item_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ArticleListItemStatsData sse_decode_article_list_item_stats_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ArticleListResult sse_decode_article_list_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ArticleStatsData sse_decode_article_stats_data(SseDeserializer deserializer);
+
+  @protected
   Artist sse_decode_artist(SseDeserializer deserializer);
 
   @protected
@@ -3745,6 +3965,31 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  ArticleInfoData sse_decode_box_autoadd_article_info_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ArticleListData sse_decode_box_autoadd_article_list_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ArticleListInfoData sse_decode_box_autoadd_article_list_info_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ArticleListItemStatsData sse_decode_box_autoadd_article_list_item_stats_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ArticleStatsData sse_decode_box_autoadd_article_stats_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   AtFeed sse_decode_box_autoadd_at_feed(SseDeserializer deserializer);
 
   @protected
@@ -3757,6 +4002,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   bool sse_decode_box_autoadd_bool(SseDeserializer deserializer);
+
+  @protected
+  BubbleBaseInfoData sse_decode_box_autoadd_bubble_base_info_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  BubbleContentData sse_decode_box_autoadd_bubble_content_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  BubbleData sse_decode_box_autoadd_bubble_data(SseDeserializer deserializer);
+
+  @protected
+  BubbleSortInfoData sse_decode_box_autoadd_bubble_sort_info_data(
+    SseDeserializer deserializer,
+  );
 
   @protected
   CaptchaRegistrationData sse_decode_box_autoadd_captcha_registration_data(
@@ -3785,6 +4048,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Dash sse_decode_box_autoadd_dash(SseDeserializer deserializer);
+
+  @protected
+  DynamicReadContext sse_decode_box_autoadd_dynamic_read_context(
+    SseDeserializer deserializer,
+  );
 
   @protected
   DynamicWriteContext sse_decode_box_autoadd_dynamic_write_context(
@@ -4606,6 +4874,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SubList sse_decode_box_autoadd_sub_list(SseDeserializer deserializer);
 
   @protected
+  TopicCreatorData sse_decode_box_autoadd_topic_creator_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  TopicItemData sse_decode_box_autoadd_topic_item_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  TopicPubSearchData sse_decode_box_autoadd_topic_pub_search_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  TopicTopData sse_decode_box_autoadd_topic_top_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   TransportSettings sse_decode_box_autoadd_transport_settings(
     SseDeserializer deserializer,
   );
@@ -4656,6 +4944,40 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   VoteInfoData sse_decode_box_autoadd_vote_info_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  BubbleBaseInfoData sse_decode_bubble_base_info_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  BubbleCategoryData sse_decode_bubble_category_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  BubbleContentData sse_decode_bubble_content_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  BubbleData sse_decode_bubble_data(SseDeserializer deserializer);
+
+  @protected
+  BubbleDynData sse_decode_bubble_dyn_data(SseDeserializer deserializer);
+
+  @protected
+  BubbleResult sse_decode_bubble_result(SseDeserializer deserializer);
+
+  @protected
+  BubbleSortInfoData sse_decode_bubble_sort_info_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  BubbleSortItemData sse_decode_bubble_sort_item_data(
     SseDeserializer deserializer,
   );
 
@@ -4753,6 +5075,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   DynamicAuthor sse_decode_dynamic_author(SseDeserializer deserializer);
+
+  @protected
+  DynamicReadContext sse_decode_dynamic_read_context(
+    SseDeserializer deserializer,
+  );
 
   @protected
   DynamicWriteContext sse_decode_dynamic_write_context(
@@ -5177,6 +5504,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<ArticleListItemData> sse_decode_list_article_list_item_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<Artist> sse_decode_list_artist(SseDeserializer deserializer);
 
   @protected
@@ -5194,6 +5526,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<bool> sse_decode_list_bool(SseDeserializer deserializer);
+
+  @protected
+  List<BubbleCategoryData> sse_decode_list_bubble_category_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<BubbleDynData> sse_decode_list_bubble_dyn_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<BubbleSortItemData> sse_decode_list_bubble_sort_item_data(
+    SseDeserializer deserializer,
+  );
 
   @protected
   List<CdnServiceEntry> sse_decode_list_cdn_service_entry(
@@ -5813,6 +6160,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<TitleSpan> sse_decode_list_title_span(SseDeserializer deserializer);
 
   @protected
+  List<TopicItemData> sse_decode_list_topic_item_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<UpowerLevel> sse_decode_list_upower_level(SseDeserializer deserializer);
 
   @protected
@@ -6239,6 +6591,32 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  ArticleInfoData? sse_decode_opt_box_autoadd_article_info_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ArticleListData? sse_decode_opt_box_autoadd_article_list_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ArticleListInfoData? sse_decode_opt_box_autoadd_article_list_info_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ArticleListItemStatsData?
+  sse_decode_opt_box_autoadd_article_list_item_stats_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ArticleStatsData? sse_decode_opt_box_autoadd_article_stats_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   AtFeed? sse_decode_opt_box_autoadd_at_feed(SseDeserializer deserializer);
 
   @protected
@@ -6253,6 +6631,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   bool? sse_decode_opt_box_autoadd_bool(SseDeserializer deserializer);
+
+  @protected
+  BubbleBaseInfoData? sse_decode_opt_box_autoadd_bubble_base_info_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  BubbleContentData? sse_decode_opt_box_autoadd_bubble_content_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  BubbleData? sse_decode_opt_box_autoadd_bubble_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  BubbleSortInfoData? sse_decode_opt_box_autoadd_bubble_sort_info_data(
+    SseDeserializer deserializer,
+  );
 
   @protected
   CaptchaRegistrationData? sse_decode_opt_box_autoadd_captcha_registration_data(
@@ -7067,6 +7465,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SubList? sse_decode_opt_box_autoadd_sub_list(SseDeserializer deserializer);
 
   @protected
+  TopicCreatorData? sse_decode_opt_box_autoadd_topic_creator_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  TopicItemData? sse_decode_opt_box_autoadd_topic_item_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  TopicPubSearchData? sse_decode_opt_box_autoadd_topic_pub_search_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  TopicTopData? sse_decode_opt_box_autoadd_topic_top_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   int? sse_decode_opt_box_autoadd_u_16(SseDeserializer deserializer);
 
   @protected
@@ -7315,6 +7733,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<TimelineDay>? sse_decode_opt_list_timeline_day(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<TopicItemData>? sse_decode_opt_list_topic_item_data(
     SseDeserializer deserializer,
   );
 
@@ -8212,6 +8635,31 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ToastResult sse_decode_toast_result(SseDeserializer deserializer);
 
   @protected
+  TopicCreatorData sse_decode_topic_creator_data(SseDeserializer deserializer);
+
+  @protected
+  TopicItemData sse_decode_topic_item_data(SseDeserializer deserializer);
+
+  @protected
+  TopicItemsResult sse_decode_topic_items_result(SseDeserializer deserializer);
+
+  @protected
+  TopicPubSearchData sse_decode_topic_pub_search_data(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  TopicPubSearchResult sse_decode_topic_pub_search_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  TopicTopData sse_decode_topic_top_data(SseDeserializer deserializer);
+
+  @protected
+  TopicTopResult sse_decode_topic_top_result(SseDeserializer deserializer);
+
+  @protected
   TransportSettings sse_decode_transport_settings(SseDeserializer deserializer);
 
   @protected
@@ -8383,6 +8831,54 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_article_info_data(
+    ArticleInfoData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_article_info_result(
+    ArticleInfoResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_article_list_data(
+    ArticleListData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_article_list_info_data(
+    ArticleListInfoData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_article_list_item_data(
+    ArticleListItemData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_article_list_item_stats_data(
+    ArticleListItemStatsData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_article_list_result(
+    ArticleListResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_article_stats_data(
+    ArticleStatsData self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_artist(Artist self, SseSerializer serializer);
 
   @protected
@@ -8440,6 +8936,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_article_info_data(
+    ArticleInfoData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_article_list_data(
+    ArticleListData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_article_list_info_data(
+    ArticleListInfoData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_article_list_item_stats_data(
+    ArticleListItemStatsData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_article_stats_data(
+    ArticleStatsData self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_at_feed(AtFeed self, SseSerializer serializer);
 
   @protected
@@ -8456,6 +8982,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_box_autoadd_bool(bool self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_bubble_base_info_data(
+    BubbleBaseInfoData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_bubble_content_data(
+    BubbleContentData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_bubble_data(
+    BubbleData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_bubble_sort_info_data(
+    BubbleSortInfoData self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_box_autoadd_captcha_registration_data(
@@ -8489,6 +9039,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_box_autoadd_dash(Dash self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_dynamic_read_context(
+    DynamicReadContext self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_box_autoadd_dynamic_write_context(
@@ -9625,6 +10181,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_box_autoadd_sub_list(SubList self, SseSerializer serializer);
 
   @protected
+  void sse_encode_box_autoadd_topic_creator_data(
+    TopicCreatorData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_topic_item_data(
+    TopicItemData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_topic_pub_search_data(
+    TopicPubSearchData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_topic_top_data(
+    TopicTopData self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_transport_settings(
     TransportSettings self,
     SseSerializer serializer,
@@ -9696,6 +10276,45 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_vote_info_data(
     VoteInfoData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_bubble_base_info_data(
+    BubbleBaseInfoData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_bubble_category_data(
+    BubbleCategoryData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_bubble_content_data(
+    BubbleContentData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_bubble_data(BubbleData self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_bubble_dyn_data(BubbleDynData self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_bubble_result(BubbleResult self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_bubble_sort_info_data(
+    BubbleSortInfoData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_bubble_sort_item_data(
+    BubbleSortItemData self,
     SseSerializer serializer,
   );
 
@@ -9821,6 +10440,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_dynamic_author(DynamicAuthor self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_dynamic_read_context(
+    DynamicReadContext self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_dynamic_write_context(
@@ -10372,6 +10997,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_article_list_item_data(
+    List<ArticleListItemData> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_artist(List<Artist> self, SseSerializer serializer);
 
   @protected
@@ -10394,6 +11025,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_list_bool(List<bool> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_bubble_category_data(
+    List<BubbleCategoryData> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_bubble_dyn_data(
+    List<BubbleDynData> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_bubble_sort_item_data(
+    List<BubbleSortItemData> self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_list_cdn_service_entry(
@@ -11215,6 +11864,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_topic_item_data(
+    List<TopicItemData> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_upower_level(
     List<UpowerLevel> self,
     SseSerializer serializer,
@@ -11788,6 +12443,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_article_info_data(
+    ArticleInfoData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_article_list_data(
+    ArticleListData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_article_list_info_data(
+    ArticleListInfoData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_article_list_item_stats_data(
+    ArticleListItemStatsData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_article_stats_data(
+    ArticleStatsData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_at_feed(
     AtFeed? self,
     SseSerializer serializer,
@@ -11807,6 +12492,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_opt_box_autoadd_bool(bool? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_bubble_base_info_data(
+    BubbleBaseInfoData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_bubble_content_data(
+    BubbleContentData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_bubble_data(
+    BubbleData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_bubble_sort_info_data(
+    BubbleSortInfoData? self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_opt_box_autoadd_captcha_registration_data(
@@ -12802,6 +13511,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_topic_creator_data(
+    TopicCreatorData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_topic_item_data(
+    TopicItemData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_topic_pub_search_data(
+    TopicPubSearchData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_topic_top_data(
+    TopicTopData? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_u_16(int? self, SseSerializer serializer);
 
   @protected
@@ -13128,6 +13861,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_timeline_day(
     List<TimelineDay>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_topic_item_data(
+    List<TopicItemData>? self,
     SseSerializer serializer,
   );
 
@@ -14312,6 +15051,42 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_toast_result(ToastResult self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_topic_creator_data(
+    TopicCreatorData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_topic_item_data(TopicItemData self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_topic_items_result(
+    TopicItemsResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_topic_pub_search_data(
+    TopicPubSearchData self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_topic_pub_search_result(
+    TopicPubSearchResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_topic_top_data(TopicTopData self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_topic_top_result(
+    TopicTopResult self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_transport_settings(

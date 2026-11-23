@@ -9,8 +9,8 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:kilikili/rust/api/transport.dart';
 import 'package:kilikili/rust/api/write.dart';
 
-// These functions are ignored because they are not marked as `pub`: `into_vote_data`, `into_vote_domain`, `split`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These functions are ignored because they are not marked as `pub`: `into_topic_item`, `into_vote_data`, `into_vote_domain`, `split`, `split`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 Future<WriteResult> thumbDynamic({
   required DynamicWriteContext context,
@@ -151,6 +151,563 @@ Future<LikeListResult> fetchLikeList({
 Future<DynRedResult> fetchDynRed({required GrpcContext context}) =>
     RustLib.instance.api.crateApiDynamicFetchDynRed(context: context);
 
+/// 取专栏阅读页的计数与收藏态。
+Future<ArticleInfoResult> articleInfo({
+  required DynamicReadContext context,
+  required String cvId,
+}) => RustLib.instance.api.crateApiDynamicArticleInfo(
+  context: context,
+  cvId: cvId,
+);
+
+/// 取文集。
+Future<ArticleListResult> articleList({
+  required DynamicReadContext context,
+  required String id,
+}) => RustLib.instance.api.crateApiDynamicArticleList(context: context, id: id);
+
+/// 取话题页顶部。`base_url` 要给 app 网关。
+Future<TopicTopResult> topicTop({
+  required DynamicReadContext context,
+  required String topicId,
+}) => RustLib.instance.api.crateApiDynamicTopicTop(
+  context: context,
+  topicId: topicId,
+);
+
+/// 取推荐话题。
+Future<TopicItemsResult> topicRcmd({
+  required DynamicReadContext context,
+  required PlatformInt64 pageSize,
+}) => RustLib.instance.api.crateApiDynamicTopicRcmd(
+  context: context,
+  pageSize: pageSize,
+);
+
+/// 取动态页顶部的部落气泡。
+Future<BubbleResult> bubble({
+  required DynamicReadContext context,
+  required String tribeId,
+  String? categoryId,
+  PlatformInt64? sortType,
+  required PlatformInt64 page,
+}) => RustLib.instance.api.crateApiDynamicBubble(
+  context: context,
+  tribeId: tribeId,
+  categoryId: categoryId,
+  sortType: sortType,
+  page: page,
+);
+
+/// 发布页的话题搜索。`base_url` 要给 app 网关。
+Future<TopicPubSearchResult> topicPubSearch({
+  required DynamicReadContext context,
+  required String keywords,
+  required String content,
+  required PlatformInt64 pageNum,
+}) => RustLib.instance.api.crateApiDynamicTopicPubSearch(
+  context: context,
+  keywords: keywords,
+  content: content,
+  pageNum: pageNum,
+);
+
+class ArticleInfoData {
+  final bool? favorite;
+  final String? title;
+  final List<String> originImageUrls;
+  final ArticleStatsData? stats;
+
+  const ArticleInfoData({
+    this.favorite,
+    this.title,
+    required this.originImageUrls,
+    this.stats,
+  });
+
+  @override
+  int get hashCode =>
+      favorite.hashCode ^
+      title.hashCode ^
+      originImageUrls.hashCode ^
+      stats.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ArticleInfoData &&
+          runtimeType == other.runtimeType &&
+          favorite == other.favorite &&
+          title == other.title &&
+          originImageUrls == other.originImageUrls &&
+          stats == other.stats;
+}
+
+class ArticleInfoResult {
+  final ArticleInfoData? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const ArticleInfoResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ArticleInfoResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+class ArticleListData {
+  final ArticleListInfoData? info;
+  final List<ArticleListItemData> articles;
+  final PlatformInt64? authorMid;
+  final String? authorName;
+  final String? authorFace;
+
+  const ArticleListData({
+    this.info,
+    required this.articles,
+    this.authorMid,
+    this.authorName,
+    this.authorFace,
+  });
+
+  @override
+  int get hashCode =>
+      info.hashCode ^
+      articles.hashCode ^
+      authorMid.hashCode ^
+      authorName.hashCode ^
+      authorFace.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ArticleListData &&
+          runtimeType == other.runtimeType &&
+          info == other.info &&
+          articles == other.articles &&
+          authorMid == other.authorMid &&
+          authorName == other.authorName &&
+          authorFace == other.authorFace;
+}
+
+class ArticleListInfoData {
+  final PlatformInt64? id;
+  final String? name;
+  final String? imageUrl;
+  final PlatformInt64? updateTime;
+  final PlatformInt64? words;
+  final PlatformInt64? read;
+  final PlatformInt64? articlesCount;
+
+  const ArticleListInfoData({
+    this.id,
+    this.name,
+    this.imageUrl,
+    this.updateTime,
+    this.words,
+    this.read,
+    this.articlesCount,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      name.hashCode ^
+      imageUrl.hashCode ^
+      updateTime.hashCode ^
+      words.hashCode ^
+      read.hashCode ^
+      articlesCount.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ArticleListInfoData &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name &&
+          imageUrl == other.imageUrl &&
+          updateTime == other.updateTime &&
+          words == other.words &&
+          read == other.read &&
+          articlesCount == other.articlesCount;
+}
+
+class ArticleListItemData {
+  final PlatformInt64? id;
+  final String? title;
+  final List<String> imageUrls;
+  final String? summary;
+  final String? dynIdStr;
+  final ArticleListItemStatsData? stats;
+
+  const ArticleListItemData({
+    this.id,
+    this.title,
+    required this.imageUrls,
+    this.summary,
+    this.dynIdStr,
+    this.stats,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      title.hashCode ^
+      imageUrls.hashCode ^
+      summary.hashCode ^
+      dynIdStr.hashCode ^
+      stats.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ArticleListItemData &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          title == other.title &&
+          imageUrls == other.imageUrls &&
+          summary == other.summary &&
+          dynIdStr == other.dynIdStr &&
+          stats == other.stats;
+}
+
+class ArticleListItemStatsData {
+  final PlatformInt64? view;
+  final PlatformInt64? like;
+  final PlatformInt64? reply;
+
+  const ArticleListItemStatsData({
+    this.view,
+    this.like,
+    this.reply,
+  });
+
+  @override
+  int get hashCode => view.hashCode ^ like.hashCode ^ reply.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ArticleListItemStatsData &&
+          runtimeType == other.runtimeType &&
+          view == other.view &&
+          like == other.like &&
+          reply == other.reply;
+}
+
+class ArticleListResult {
+  final ArticleListData? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const ArticleListResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ArticleListResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+class ArticleStatsData {
+  final PlatformInt64? favorite;
+  final PlatformInt64? like;
+  final PlatformInt64? reply;
+  final PlatformInt64? share;
+
+  const ArticleStatsData({
+    this.favorite,
+    this.like,
+    this.reply,
+    this.share,
+  });
+
+  @override
+  int get hashCode =>
+      favorite.hashCode ^ like.hashCode ^ reply.hashCode ^ share.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ArticleStatsData &&
+          runtimeType == other.runtimeType &&
+          favorite == other.favorite &&
+          like == other.like &&
+          reply == other.reply &&
+          share == other.share;
+}
+
+class BubbleBaseInfoData {
+  final bool? isJoined;
+  final String? id;
+  final String? title;
+  final String? subTitle;
+  final String? faceUrl;
+  final String? jumpUri;
+  final String? summary;
+
+  const BubbleBaseInfoData({
+    this.isJoined,
+    this.id,
+    this.title,
+    this.subTitle,
+    this.faceUrl,
+    this.jumpUri,
+    this.summary,
+  });
+
+  @override
+  int get hashCode =>
+      isJoined.hashCode ^
+      id.hashCode ^
+      title.hashCode ^
+      subTitle.hashCode ^
+      faceUrl.hashCode ^
+      jumpUri.hashCode ^
+      summary.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BubbleBaseInfoData &&
+          runtimeType == other.runtimeType &&
+          isJoined == other.isJoined &&
+          id == other.id &&
+          title == other.title &&
+          subTitle == other.subTitle &&
+          faceUrl == other.faceUrl &&
+          jumpUri == other.jumpUri &&
+          summary == other.summary;
+}
+
+class BubbleCategoryData {
+  final String? id;
+  final String? name;
+  final PlatformInt64? kind;
+
+  const BubbleCategoryData({
+    this.id,
+    this.name,
+    this.kind,
+  });
+
+  @override
+  int get hashCode => id.hashCode ^ name.hashCode ^ kind.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BubbleCategoryData &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name &&
+          kind == other.kind;
+}
+
+class BubbleContentData {
+  final String? count;
+  final List<BubbleDynData> items;
+
+  const BubbleContentData({
+    this.count,
+    required this.items,
+  });
+
+  @override
+  int get hashCode => count.hashCode ^ items.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BubbleContentData &&
+          runtimeType == other.runtimeType &&
+          count == other.count &&
+          items == other.items;
+}
+
+class BubbleData {
+  final BubbleBaseInfoData? baseInfo;
+  final BubbleContentData? content;
+  final List<BubbleCategoryData> categories;
+  final BubbleSortInfoData? sortInfo;
+
+  const BubbleData({
+    this.baseInfo,
+    this.content,
+    required this.categories,
+    this.sortInfo,
+  });
+
+  @override
+  int get hashCode =>
+      baseInfo.hashCode ^
+      content.hashCode ^
+      categories.hashCode ^
+      sortInfo.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BubbleData &&
+          runtimeType == other.runtimeType &&
+          baseInfo == other.baseInfo &&
+          content == other.content &&
+          categories == other.categories &&
+          sortInfo == other.sortInfo;
+}
+
+class BubbleDynData {
+  final String? dynId;
+  final String? title;
+  final String? author;
+  final String? timeText;
+  final String? replyCount;
+  final String? viewStat;
+
+  const BubbleDynData({
+    this.dynId,
+    this.title,
+    this.author,
+    this.timeText,
+    this.replyCount,
+    this.viewStat,
+  });
+
+  @override
+  int get hashCode =>
+      dynId.hashCode ^
+      title.hashCode ^
+      author.hashCode ^
+      timeText.hashCode ^
+      replyCount.hashCode ^
+      viewStat.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BubbleDynData &&
+          runtimeType == other.runtimeType &&
+          dynId == other.dynId &&
+          title == other.title &&
+          author == other.author &&
+          timeText == other.timeText &&
+          replyCount == other.replyCount &&
+          viewStat == other.viewStat;
+}
+
+class BubbleResult {
+  final BubbleData? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const BubbleResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BubbleResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+class BubbleSortInfoData {
+  final bool? showSort;
+  final PlatformInt64? curSortType;
+  final List<BubbleSortItemData> items;
+
+  const BubbleSortInfoData({
+    this.showSort,
+    this.curSortType,
+    required this.items,
+  });
+
+  @override
+  int get hashCode => showSort.hashCode ^ curSortType.hashCode ^ items.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BubbleSortInfoData &&
+          runtimeType == other.runtimeType &&
+          showSort == other.showSort &&
+          curSortType == other.curSortType &&
+          items == other.items;
+}
+
+class BubbleSortItemData {
+  final PlatformInt64? sortType;
+  final String? text;
+
+  const BubbleSortItemData({
+    this.sortType,
+    this.text,
+  });
+
+  @override
+  int get hashCode => sortType.hashCode ^ text.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BubbleSortItemData &&
+          runtimeType == other.runtimeType &&
+          sortType == other.sortType &&
+          text == other.text;
+}
+
 class DynRedResult {
   final PlatformInt64? data;
   final String? errorKind;
@@ -235,6 +792,60 @@ class DynamicAuthor {
           vipStatus == other.vipStatus &&
           vipType == other.vipType &&
           officialType == other.officialType;
+}
+
+/// 本批几条只读接口的公共参数。
+///
+/// 与 [`DynamicWriteContext`] **分开**：这几条一个 csrf 都不要，合用一个
+/// 结构等于每个调用点都要答一遍「这里要不要传 csrf」，而答案由接口定。
+///
+/// `base_url` 由 Dart 给：[`topic_top`] 挂在 app 网关上，与其余几条不同
+/// 域名（基线的 `HttpString.appBaseUrl`）。
+class DynamicReadContext {
+  final String baseUrl;
+  final String? cookie;
+  final List<(String, String)> headers;
+  final BigInt timeoutMs;
+  final TransportSettings transport;
+
+  /// WBI mixin key。只有 [`article_info`] 要签名，其余传空串即可。
+  final String mixinKey;
+
+  /// Unix 秒，由 Dart 注入，使请求构造保持纯函数、可被快照钉住。
+  final PlatformInt64 wts;
+
+  const DynamicReadContext({
+    required this.baseUrl,
+    this.cookie,
+    required this.headers,
+    required this.timeoutMs,
+    required this.transport,
+    required this.mixinKey,
+    required this.wts,
+  });
+
+  @override
+  int get hashCode =>
+      baseUrl.hashCode ^
+      cookie.hashCode ^
+      headers.hashCode ^
+      timeoutMs.hashCode ^
+      transport.hashCode ^
+      mixinKey.hashCode ^
+      wts.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DynamicReadContext &&
+          runtimeType == other.runtimeType &&
+          baseUrl == other.baseUrl &&
+          cookie == other.cookie &&
+          headers == other.headers &&
+          timeoutMs == other.timeoutMs &&
+          transport == other.transport &&
+          mixinKey == other.mixinKey &&
+          wts == other.wts;
 }
 
 class DynamicWriteContext {
@@ -532,6 +1143,221 @@ class ReserveInfoResult {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is ReserveInfoResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+class TopicCreatorData {
+  final PlatformInt64? uid;
+  final String? face;
+  final String? name;
+
+  const TopicCreatorData({
+    this.uid,
+    this.face,
+    this.name,
+  });
+
+  @override
+  int get hashCode => uid.hashCode ^ face.hashCode ^ name.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TopicCreatorData &&
+          runtimeType == other.runtimeType &&
+          uid == other.uid &&
+          face == other.face &&
+          name == other.name;
+}
+
+class TopicItemData {
+  final PlatformInt64 id;
+  final String name;
+  final PlatformInt64 view;
+  final PlatformInt64 discuss;
+  final PlatformInt64 fav;
+  final PlatformInt64 like;
+  final String? description;
+  final bool? isFav;
+  final bool? isLike;
+
+  const TopicItemData({
+    required this.id,
+    required this.name,
+    required this.view,
+    required this.discuss,
+    required this.fav,
+    required this.like,
+    this.description,
+    this.isFav,
+    this.isLike,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      name.hashCode ^
+      view.hashCode ^
+      discuss.hashCode ^
+      fav.hashCode ^
+      like.hashCode ^
+      description.hashCode ^
+      isFav.hashCode ^
+      isLike.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TopicItemData &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name &&
+          view == other.view &&
+          discuss == other.discuss &&
+          fav == other.fav &&
+          like == other.like &&
+          description == other.description &&
+          isFav == other.isFav &&
+          isLike == other.isLike;
+}
+
+class TopicItemsResult {
+  final List<TopicItemData>? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const TopicItemsResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TopicItemsResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+class TopicPubSearchData {
+  final List<TopicItemData> items;
+  final bool? hasMore;
+
+  const TopicPubSearchData({
+    required this.items,
+    this.hasMore,
+  });
+
+  @override
+  int get hashCode => items.hashCode ^ hasMore.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TopicPubSearchData &&
+          runtimeType == other.runtimeType &&
+          items == other.items &&
+          hasMore == other.hasMore;
+}
+
+class TopicPubSearchResult {
+  final TopicPubSearchData? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const TopicPubSearchResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TopicPubSearchResult &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          errorKind == other.errorKind &&
+          errorDetail == other.errorDetail &&
+          errorCode == other.errorCode;
+}
+
+/// 话题页顶部。
+///
+/// 两个字段都为空表示「这个话题没有顶部信息」，不是错误——基线在这里给的
+/// 是 `null`，界面据此不渲染。没有再套一层 `Option`，因为 FRB 的 codegen
+/// 碰到 `Option<Option<T>>` 会直接 panic（AGENTS.md §4）。
+class TopicTopData {
+  final TopicItemData? topic;
+  final TopicCreatorData? creator;
+
+  const TopicTopData({
+    this.topic,
+    this.creator,
+  });
+
+  @override
+  int get hashCode => topic.hashCode ^ creator.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TopicTopData &&
+          runtimeType == other.runtimeType &&
+          topic == other.topic &&
+          creator == other.creator;
+}
+
+class TopicTopResult {
+  final TopicTopData? data;
+  final String? errorKind;
+  final String? errorDetail;
+  final PlatformInt64? errorCode;
+
+  const TopicTopResult({
+    this.data,
+    this.errorKind,
+    this.errorDetail,
+    this.errorCode,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^
+      errorKind.hashCode ^
+      errorDetail.hashCode ^
+      errorCode.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TopicTopResult &&
           runtimeType == other.runtimeType &&
           data == other.data &&
           errorKind == other.errorKind &&

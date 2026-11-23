@@ -8,16 +8,10 @@ import 'package:kilikili/models/common/dynamic/dynamics_type.dart';
 import 'package:kilikili/models/common/reply/reply_option_type.dart';
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/models/dynamics/up.dart';
-import 'package:kilikili/models_new/article/article_info/data.dart';
-import 'package:kilikili/models_new/article/article_list/data.dart';
 import 'package:kilikili/models_new/article/article_view/data.dart';
-import 'package:kilikili/models_new/bubble/data.dart';
 import 'package:kilikili/models_new/dynamic/dyn_mention/data.dart';
 import 'package:kilikili/models_new/dynamic/dyn_mention/group.dart';
-import 'package:kilikili/models_new/dynamic/dyn_reaction/data.dart';
 import 'package:kilikili/models_new/dynamic/dyn_topic_feed/topic_card_list.dart';
-import 'package:kilikili/models_new/dynamic/dyn_topic_top/top_details.dart';
-import 'package:kilikili/models_new/dynamic/dyn_topic_top/topic_item.dart';
 import 'package:kilikili/services/rust/follow_compat.dart';
 import 'package:kilikili/services/rust/rust_misc.dart';
 import 'package:kilikili/utils/accounts.dart';
@@ -25,6 +19,34 @@ import 'package:kilikili/utils/utils.dart';
 import 'package:kilikili/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 
+/// 动态域剩下还在 Dart 的接口。**S5 续单（#150）第一批之后还剩 13 条。**
+///
+/// 已迁到 Rust（见 `lib/services/rust/rust_dynamic.dart`）：专栏信息、文集、
+/// 话题顶部、推荐话题、部落气泡，以及发布页的话题搜索（那条原在
+/// `lib/http/search.dart`，因为是 `TopicItem` 的第二个生产者而一并迁走）。
+/// 对应的 `lib/models_new/{bubble,article/article_info,article/article_list,
+/// dynamic/dyn_topic_top,dynamic/dyn_topic_pub_search}` 已在同一个 PR 里
+/// 删除（ADR-011 决策四）。`dynReaction` 全仓库零调用点，直接删掉。
+///
+/// 剩下这些留在 Dart 是**刻意的**，分两类，别顺手一起迁：
+///
+/// 1. **经过枢纽模型的**——`followDynamic`、`dynamicDetail`、`opusDetail`、
+///    `topicFeed`、`topicFold`、`dynPic`。它们全部产出或消费
+///    `lib/models/dynamics/result.dart` 里的 `DynamicItemModel`（1426 行的
+///    多态卡片树）。那棵树必须整棵一次迁完，否则两边会同时持有半棵；
+///    它是 #150 的下一批，也是最大的一批。
+/// 2. **各有一处独立障碍的**：
+///    - `articleView`：`opus.content.paragraphs` 挂着 `ArticleContentModel`
+///      （492 行的富文本树），与卡片树同量级；
+///    - `dynMention`：`MentionItem with MultiSelectData` 掺着 widget 层的
+///      多选 mixin，要连同选择页一起改；
+///    - `createDynamic` / `editDyn`：发布与编辑，参数面大且与图片上传
+///      耦合，等 ADR-015（multipart 与上传取消，#193）落地后再迁；
+///    - `followUp` / `dynUpList` / `followings`：`UpItem` 还有第二个生产者
+///      （`RustMisc.followings` 经 `follow_compat`），按共享模型的生产者
+///      分批。
+///
+/// 去向都在 **issue #150**，迁完之后这个文件整个删掉。
 abstract final class DynamicsHttp {
   @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<DynamicsDataModel>> followDynamic({
@@ -260,25 +282,6 @@ abstract final class DynamicsHttp {
     }
   }
 
-  static Future<LoadingState<ArticleInfoData>> articleInfo({
-    required Object cvId,
-  }) async {
-    final res = await Request().get(
-      Api.articleInfo,
-      queryParameters: await WbiSign.makSign({
-        'id': cvId,
-        'mobi_app': 'pc',
-        'from': 'web',
-        'gaia_source': 'main_web',
-      }),
-    );
-    if (res.data['code'] == 0) {
-      return Success(ArticleInfoData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   static Future<LoadingState<ArticleViewData>> articleView({
     required dynamic cvId,
   }) async {
@@ -310,26 +313,6 @@ abstract final class DynamicsHttp {
     );
     if (res.data['code'] == 0) {
       return Success(DynamicItemModel.fromOpusJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<TopDetails?>> topicTop({
-    required Object topicId,
-  }) async {
-    final res = await Request().get(
-      Api.topicTop,
-      queryParameters: {
-        'topic_id': topicId,
-        'source': 'Web',
-      },
-    );
-    if (res.data['code'] == 0) {
-      TopDetails? data = res.data['data']?['top_details'] == null
-          ? null
-          : TopDetails.fromJson(res.data['data']['top_details']);
-      return Success(data);
     } else {
       return Error(res.data['message']);
     }
@@ -381,45 +364,6 @@ abstract final class DynamicsHttp {
       } else {
         return Success(TopicCardList.fromJson(list));
       }
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<ArticleListData>> articleList({
-    required Object id,
-  }) async {
-    final res = await Request().get(
-      Api.articleList,
-      queryParameters: {
-        'id': id,
-        'web_location': 333.1400,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(ArticleListData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<List<TopicItem>?>> dynTopicRcmd({
-    int ps = 25,
-  }) async {
-    final res = await Request().get(
-      Api.dynTopicRcmd,
-      queryParameters: {
-        'source': 'Web',
-        'page_size': ps,
-        'web_location': 333.1365,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(
-        (res.data['data']?['topic_items'] as List?)
-            ?.map((e) => TopicItem.fromJson(e))
-            .toList(),
-      );
     } else {
       return Error(res.data['message']);
     }
@@ -537,51 +481,6 @@ abstract final class DynamicsHttp {
     );
     if (res.data['code'] == 0) {
       return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<BubbleData>> bubble({
-    required Object tribeId,
-    Object? categoryId,
-    int? sortType,
-    required int page,
-  }) async {
-    final res = await Request().get(
-      Api.bubble,
-      queryParameters: {
-        'tribee_id': tribeId,
-        'category_id': ?categoryId,
-        'sort_type': ?sortType,
-        'page_size': 20,
-        'page_num': page,
-        'web_location': 333.40165,
-        'x-bili-device-req-json':
-            '{"platform":"web","device":"pc","spmid":"333.40165"}',
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(BubbleData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
-  static Future<LoadingState<DynReactionData>> dynReaction({
-    required Object id,
-    String? offset,
-  }) async {
-    final res = await Request().get(
-      Api.dynReaction,
-      queryParameters: {
-        'id': id,
-        'offset': ?offset,
-        'web_location': 333.1369,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(DynReactionData.fromJson(res.data['data']));
     } else {
       return Error(res.data['message']);
     }

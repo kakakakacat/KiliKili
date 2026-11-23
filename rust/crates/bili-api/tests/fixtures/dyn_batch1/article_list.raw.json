@@ -1,0 +1,66 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "list": {
+      "id": 540001,
+      "mid": 800000601,
+      "name": "示例文集",
+      "image_url": "https://example.invalid/bfs/article/cover.jpg",
+      "update_time": 1800000000,
+      "ctime": 1700000000,
+      "publish_time": 1700000000,
+      "summary": "这段没有消费者，留着证明会被忽略",
+      "words": 12000,
+      "read": "98765",
+      "articles_count": 3,
+      "state": 1,
+      "reason": "",
+      "apply_time": "",
+      "check_time": ""
+    },
+    "articles": [
+      {
+        "id": 31000001,
+        "title": "第一篇",
+        "image_urls": ["https://example.invalid/bfs/article/p1.jpg"],
+        "summary": "摘要一",
+        "dyn_id_str": "900000000000000001",
+        "stats": {
+          "view": 1000,
+          "favorite": 10,
+          "like": 20,
+          "reply": "30",
+          "share": 4,
+          "coin": 5,
+          "dynamic": 6
+        }
+      },
+      {
+        "id": 31000002,
+        "title": "第二篇",
+        "image_urls": [],
+        "summary": "",
+        "dyn_id_str": "900000000000000002",
+        "stats": {
+          "view": 2000,
+          "like": 40,
+          "reply": 50
+        }
+      },
+      {
+        "id": 31000003,
+        "title": "第三篇没有 stats"
+      }
+    ],
+    "author": {
+      "mid": 800000601,
+      "name": "示例作者",
+      "face": "https://example.invalid/bfs/face/author.jpg",
+      "pendant": { "pid": 0, "name": "", "image": "" },
+      "official_verify": { "type": -1, "desc": "" },
+      "vip": { "type": 2, "status": 1 }
+    }
+  }
+}

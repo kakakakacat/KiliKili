@@ -1,0 +1,18 @@
+{
+  "creator": {
+    "face": "https://example.invalid/bfs/face/creator.jpg",
+    "name": "话题创建者",
+    "uid": 800000602
+  },
+  "topic": {
+    "description": "话题简介",
+    "discuss": 890,
+    "fav": 456,
+    "id": 10001,
+    "is_fav": true,
+    "is_like": false,
+    "like": 78,
+    "name": "示例话题",
+    "view": 1234567
+  }
+}

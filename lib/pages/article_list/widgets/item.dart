@@ -2,7 +2,7 @@ import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/stat/stat.dart';
 import 'package:kilikili/models/common/stat_type.dart';
-import 'package:kilikili/models_new/article/article_list/article.dart';
+import 'package:kilikili/rust/api/dynamic.dart' as rust;
 import 'package:kilikili/pages/article/view.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -12,7 +12,7 @@ class ArticleListItem extends StatelessWidget {
     required this.item,
   });
 
-  final ArticleListItemModel item;
+  final rust.ArticleListItemData item;
 
   @override
   Widget build(BuildContext context) {
@@ -36,13 +36,13 @@ class ArticleListItem extends StatelessWidget {
             spacing: 10,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (item.imageUrls?.isNotEmpty == true)
+              if (item.imageUrls.isNotEmpty)
                 AspectRatio(
                   aspectRatio: Style.aspectRatio,
                   child: LayoutBuilder(
                     builder: (context, boxConstraints) {
                       return NetworkImgLayer(
-                        src: item.imageUrls!.first,
+                        src: item.imageUrls.first,
                         width: boxConstraints.maxWidth,
                         height: boxConstraints.maxHeight,
                       );
@@ -80,18 +80,18 @@ class ArticleListItem extends StatelessWidget {
                       spacing: 16,
                       children: [
                         StatWidget(
-                          value: item.stats?.view,
+                          value: item.stats?.view?.toInt(),
                           color: theme.colorScheme.outline,
                           type: StatType.view,
                         ),
                         StatWidget(
                           type: StatType.like,
-                          value: item.stats?.like,
+                          value: item.stats?.like?.toInt(),
                           color: theme.colorScheme.outline,
                         ),
                         StatWidget(
                           type: StatType.reply,
-                          value: item.stats?.reply,
+                          value: item.stats?.reply?.toInt(),
                           color: theme.colorScheme.outline,
                         ),
                       ],

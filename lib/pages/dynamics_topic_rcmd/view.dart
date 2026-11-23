@@ -4,7 +4,7 @@ import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/view_sliver_safe_area.dart';
 import 'package:kilikili/http/loading_state.dart';
-import 'package:kilikili/models_new/dynamic/dyn_topic_top/topic_item.dart';
+import 'package:kilikili/rust/api/dynamic.dart' as rust;
 import 'package:kilikili/pages/dynamics_select_topic/widgets/item.dart';
 import 'package:kilikili/pages/dynamics_topic_rcmd/controller.dart';
 import 'package:get/get.dart';
@@ -38,7 +38,7 @@ class _DynTopicRcmdPageState extends State<DynTopicRcmdPage> {
     );
   }
 
-  Widget _buildBody(LoadingState<List<TopicItem>?> loadingState) {
+  Widget _buildBody(LoadingState<List<rust.TopicItemData>?> loadingState) {
     return switch (loadingState) {
       Loading() => linearLoading,
       Success(:final response) =>

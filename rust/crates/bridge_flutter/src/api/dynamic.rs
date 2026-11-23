@@ -3,6 +3,7 @@
 use std::{fmt, time::Duration};
 
 use bili_api::{dynamic, http::RequestContext, transport_reqwest::ReqwestTransport};
+use bili_domain::dynamic as domain;
 use bili_domain::error::{DomainError, ErrorKind};
 use bili_domain::redact::Redacted;
 
@@ -668,6 +669,532 @@ pub async fn fetch_dyn_red(context: GrpcContext) -> DynRedResult {
             error_code: None,
         },
         Err(error) => DynRedResult {
+            data: None,
+            error_kind: Some(error.kind().to_string()),
+            error_detail: Some(error.detail().into()),
+            error_code: error.code(),
+        },
+    }
+}
+
+// ============================================ S5 续单第一批（issue #150）
+
+/// 本批几条只读接口的公共参数。
+///
+/// 与 [`DynamicWriteContext`] **分开**：这几条一个 csrf 都不要，合用一个
+/// 结构等于每个调用点都要答一遍「这里要不要传 csrf」，而答案由接口定。
+///
+/// `base_url` 由 Dart 给：[`topic_top`] 挂在 app 网关上，与其余几条不同
+/// 域名（基线的 `HttpString.appBaseUrl`）。
+#[derive(Debug, Clone)]
+pub struct DynamicReadContext {
+    pub base_url: String,
+    pub cookie: Option<String>,
+    pub headers: Vec<(String, String)>,
+    pub timeout_ms: u64,
+    pub transport: TransportSettings,
+    /// WBI mixin key。只有 [`article_info`] 要签名，其余传空串即可。
+    pub mixin_key: String,
+    /// Unix 秒，由 Dart 注入，使请求构造保持纯函数、可被快照钉住。
+    pub wts: i64,
+}
+
+impl DynamicReadContext {
+    fn split(self) -> (RequestContext, ReqwestTransport, String, i64) {
+        let transport = ReqwestTransport::new(self.transport.to_config());
+        let ctx = RequestContext {
+            base_url: self.base_url,
+            cookie: self.cookie.map(Redacted::new),
+            csrf: None,
+            headers: self.headers,
+            timeout: Duration::from_millis(self.timeout_ms),
+        };
+        (ctx, transport, self.mixin_key, self.wts)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ArticleStatsData {
+    pub favorite: Option<i64>,
+    pub like: Option<i64>,
+    pub reply: Option<i64>,
+    pub share: Option<i64>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ArticleInfoData {
+    pub favorite: Option<bool>,
+    pub title: Option<String>,
+    pub origin_image_urls: Vec<String>,
+    pub stats: Option<ArticleStatsData>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ArticleInfoResult {
+    pub data: Option<ArticleInfoData>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ArticleListInfoData {
+    pub id: Option<i64>,
+    pub name: Option<String>,
+    pub image_url: Option<String>,
+    pub update_time: Option<i64>,
+    pub words: Option<i64>,
+    pub read: Option<i64>,
+    pub articles_count: Option<i64>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ArticleListItemStatsData {
+    pub view: Option<i64>,
+    pub like: Option<i64>,
+    pub reply: Option<i64>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ArticleListItemData {
+    pub id: Option<i64>,
+    pub title: Option<String>,
+    pub image_urls: Vec<String>,
+    pub summary: Option<String>,
+    pub dyn_id_str: Option<String>,
+    pub stats: Option<ArticleListItemStatsData>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ArticleListData {
+    pub info: Option<ArticleListInfoData>,
+    pub articles: Vec<ArticleListItemData>,
+    pub author_mid: Option<i64>,
+    pub author_name: Option<String>,
+    pub author_face: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ArticleListResult {
+    pub data: Option<ArticleListData>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+#[derive(Debug, Clone)]
+pub struct TopicItemData {
+    pub id: i64,
+    pub name: String,
+    pub view: i64,
+    pub discuss: i64,
+    pub fav: i64,
+    pub like: i64,
+    pub description: Option<String>,
+    pub is_fav: Option<bool>,
+    pub is_like: Option<bool>,
+}
+
+#[derive(Debug, Clone)]
+pub struct TopicCreatorData {
+    pub uid: Option<i64>,
+    pub face: Option<String>,
+    pub name: Option<String>,
+}
+
+/// 话题页顶部。
+///
+/// 两个字段都为空表示「这个话题没有顶部信息」，不是错误——基线在这里给的
+/// 是 `null`，界面据此不渲染。没有再套一层 `Option`，因为 FRB 的 codegen
+/// 碰到 `Option<Option<T>>` 会直接 panic（AGENTS.md §4）。
+#[derive(Debug, Clone)]
+pub struct TopicTopData {
+    pub topic: Option<TopicItemData>,
+    pub creator: Option<TopicCreatorData>,
+}
+
+#[derive(Debug, Clone)]
+pub struct TopicTopResult {
+    pub data: Option<TopicTopData>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+#[derive(Debug, Clone)]
+pub struct TopicItemsResult {
+    pub data: Option<Vec<TopicItemData>>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+#[derive(Debug, Clone)]
+pub struct BubbleBaseInfoData {
+    pub is_joined: Option<bool>,
+    pub id: Option<String>,
+    pub title: Option<String>,
+    pub sub_title: Option<String>,
+    pub face_url: Option<String>,
+    pub jump_uri: Option<String>,
+    pub summary: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct BubbleDynData {
+    pub dyn_id: Option<String>,
+    pub title: Option<String>,
+    pub author: Option<String>,
+    pub time_text: Option<String>,
+    pub reply_count: Option<String>,
+    pub view_stat: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct BubbleContentData {
+    pub count: Option<String>,
+    pub items: Vec<BubbleDynData>,
+}
+
+#[derive(Debug, Clone)]
+pub struct BubbleCategoryData {
+    pub id: Option<String>,
+    pub name: Option<String>,
+    pub kind: Option<i64>,
+}
+
+#[derive(Debug, Clone)]
+pub struct BubbleSortItemData {
+    pub sort_type: Option<i64>,
+    pub text: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct BubbleSortInfoData {
+    pub show_sort: Option<bool>,
+    pub cur_sort_type: Option<i64>,
+    pub items: Vec<BubbleSortItemData>,
+}
+
+#[derive(Debug, Clone)]
+pub struct BubbleData {
+    pub base_info: Option<BubbleBaseInfoData>,
+    pub content: Option<BubbleContentData>,
+    pub categories: Vec<BubbleCategoryData>,
+    pub sort_info: Option<BubbleSortInfoData>,
+}
+
+#[derive(Debug, Clone)]
+pub struct BubbleResult {
+    pub data: Option<BubbleData>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+fn into_topic_item(item: domain::TopicItem) -> TopicItemData {
+    TopicItemData {
+        id: item.id,
+        name: item.name,
+        view: item.view,
+        discuss: item.discuss,
+        fav: item.fav,
+        like: item.like,
+        description: item.description,
+        is_fav: item.is_fav,
+        is_like: item.is_like,
+    }
+}
+
+/// 取专栏阅读页的计数与收藏态。
+pub async fn article_info(context: DynamicReadContext, cv_id: String) -> ArticleInfoResult {
+    let (ctx, transport, mixin_key, wts) = context.split();
+    let result = init::runtime()
+        .spawn(async move {
+            dynamic::fetch_article_info(&transport, &ctx, &cv_id, &mixin_key, wts).await
+        })
+        .await
+        .unwrap_or_else(|_| {
+            Err(DomainError::new(
+                ErrorKind::Protocol,
+                "专栏信息工作任务未完成",
+            ))
+        });
+    match result {
+        Ok(info) => ArticleInfoResult {
+            data: Some(ArticleInfoData {
+                favorite: info.favorite,
+                title: info.title,
+                origin_image_urls: info.origin_image_urls,
+                stats: info.stats.map(|s| ArticleStatsData {
+                    favorite: s.favorite,
+                    like: s.like,
+                    reply: s.reply,
+                    share: s.share,
+                }),
+            }),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(error) => ArticleInfoResult {
+            data: None,
+            error_kind: Some(error.kind().to_string()),
+            error_detail: Some(error.detail().into()),
+            error_code: error.code(),
+        },
+    }
+}
+
+/// 取文集。
+pub async fn article_list(context: DynamicReadContext, id: String) -> ArticleListResult {
+    let (ctx, transport, _, _) = context.split();
+    let result = init::runtime()
+        .spawn(async move { dynamic::fetch_article_list(&transport, &ctx, &id).await })
+        .await
+        .unwrap_or_else(|_| Err(DomainError::new(ErrorKind::Protocol, "文集工作任务未完成")));
+    match result {
+        Ok(list) => ArticleListResult {
+            data: Some(ArticleListData {
+                info: list.info.map(|i| ArticleListInfoData {
+                    id: i.id,
+                    name: i.name,
+                    image_url: i.image_url,
+                    update_time: i.update_time,
+                    words: i.words,
+                    read: i.read,
+                    articles_count: i.articles_count,
+                }),
+                articles: list
+                    .articles
+                    .into_iter()
+                    .map(|a| ArticleListItemData {
+                        id: a.id,
+                        title: a.title,
+                        image_urls: a.image_urls,
+                        summary: a.summary,
+                        dyn_id_str: a.dyn_id_str,
+                        stats: a.stats.map(|s| ArticleListItemStatsData {
+                            view: s.view,
+                            like: s.like,
+                            reply: s.reply,
+                        }),
+                    })
+                    .collect(),
+                author_mid: list.author_mid,
+                author_name: list.author_name,
+                author_face: list.author_face,
+            }),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(error) => ArticleListResult {
+            data: None,
+            error_kind: Some(error.kind().to_string()),
+            error_detail: Some(error.detail().into()),
+            error_code: error.code(),
+        },
+    }
+}
+
+/// 取话题页顶部。`base_url` 要给 app 网关。
+pub async fn topic_top(context: DynamicReadContext, topic_id: String) -> TopicTopResult {
+    let (ctx, transport, _, _) = context.split();
+    let result = init::runtime()
+        .spawn(async move { dynamic::fetch_topic_top(&transport, &ctx, &topic_id).await })
+        .await
+        .unwrap_or_else(|_| {
+            Err(DomainError::new(
+                ErrorKind::Protocol,
+                "话题顶部工作任务未完成",
+            ))
+        });
+    match result {
+        Ok(top) => TopicTopResult {
+            data: Some(TopicTopData {
+                topic: top.topic.map(into_topic_item),
+                creator: top.creator.map(|c| TopicCreatorData {
+                    uid: c.uid,
+                    face: c.face,
+                    name: c.name,
+                }),
+            }),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(error) => TopicTopResult {
+            data: None,
+            error_kind: Some(error.kind().to_string()),
+            error_detail: Some(error.detail().into()),
+            error_code: error.code(),
+        },
+    }
+}
+
+/// 取推荐话题。
+pub async fn topic_rcmd(context: DynamicReadContext, page_size: i64) -> TopicItemsResult {
+    let (ctx, transport, _, _) = context.split();
+    let result = init::runtime()
+        .spawn(async move { dynamic::fetch_topic_rcmd(&transport, &ctx, page_size).await })
+        .await
+        .unwrap_or_else(|_| {
+            Err(DomainError::new(
+                ErrorKind::Protocol,
+                "推荐话题工作任务未完成",
+            ))
+        });
+    match result {
+        Ok(items) => TopicItemsResult {
+            data: Some(items.into_iter().map(into_topic_item).collect()),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(error) => TopicItemsResult {
+            data: None,
+            error_kind: Some(error.kind().to_string()),
+            error_detail: Some(error.detail().into()),
+            error_code: error.code(),
+        },
+    }
+}
+
+/// 取动态页顶部的部落气泡。
+pub async fn bubble(
+    context: DynamicReadContext,
+    tribe_id: String,
+    category_id: Option<String>,
+    sort_type: Option<i64>,
+    page: i64,
+) -> BubbleResult {
+    let (ctx, transport, _, _) = context.split();
+    let result = init::runtime()
+        .spawn(async move {
+            dynamic::fetch_bubble(
+                &transport,
+                &ctx,
+                &tribe_id,
+                category_id.as_deref(),
+                sort_type,
+                page,
+            )
+            .await
+        })
+        .await
+        .unwrap_or_else(|_| {
+            Err(DomainError::new(
+                ErrorKind::Protocol,
+                "部落气泡工作任务未完成",
+            ))
+        });
+    match result {
+        Ok(data) => BubbleResult {
+            data: Some(BubbleData {
+                base_info: data.base_info.map(|b| BubbleBaseInfoData {
+                    is_joined: b.is_joined,
+                    id: b.id,
+                    title: b.title,
+                    sub_title: b.sub_title,
+                    face_url: b.face_url,
+                    jump_uri: b.jump_uri,
+                    summary: b.summary,
+                }),
+                content: data.content.map(|c| BubbleContentData {
+                    count: c.count,
+                    items: c
+                        .items
+                        .into_iter()
+                        .map(|d| BubbleDynData {
+                            dyn_id: d.dyn_id,
+                            title: d.title,
+                            author: d.author,
+                            time_text: d.time_text,
+                            reply_count: d.reply_count,
+                            view_stat: d.view_stat,
+                        })
+                        .collect(),
+                }),
+                categories: data
+                    .categories
+                    .into_iter()
+                    .map(|c| BubbleCategoryData {
+                        id: c.id,
+                        name: c.name,
+                        kind: c.kind,
+                    })
+                    .collect(),
+                sort_info: data.sort_info.map(|s| BubbleSortInfoData {
+                    show_sort: s.show_sort,
+                    cur_sort_type: s.cur_sort_type,
+                    items: s
+                        .items
+                        .into_iter()
+                        .map(|i| BubbleSortItemData {
+                            sort_type: i.sort_type,
+                            text: i.text,
+                        })
+                        .collect(),
+                }),
+            }),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(error) => BubbleResult {
+            data: None,
+            error_kind: Some(error.kind().to_string()),
+            error_detail: Some(error.detail().into()),
+            error_code: error.code(),
+        },
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct TopicPubSearchData {
+    pub items: Vec<TopicItemData>,
+    pub has_more: Option<bool>,
+}
+
+#[derive(Debug, Clone)]
+pub struct TopicPubSearchResult {
+    pub data: Option<TopicPubSearchData>,
+    pub error_kind: Option<String>,
+    pub error_detail: Option<String>,
+    pub error_code: Option<i64>,
+}
+
+/// 发布页的话题搜索。`base_url` 要给 app 网关。
+pub async fn topic_pub_search(
+    context: DynamicReadContext,
+    keywords: String,
+    content: String,
+    page_num: i64,
+) -> TopicPubSearchResult {
+    let (ctx, transport, _, _) = context.split();
+    let result = init::runtime()
+        .spawn(async move {
+            dynamic::fetch_topic_pub_search(&transport, &ctx, &keywords, &content, page_num).await
+        })
+        .await
+        .unwrap_or_else(|_| {
+            Err(DomainError::new(
+                ErrorKind::Protocol,
+                "话题搜索工作任务未完成",
+            ))
+        });
+    match result {
+        Ok(found) => TopicPubSearchResult {
+            data: Some(TopicPubSearchData {
+                items: found.items.into_iter().map(into_topic_item).collect(),
+                has_more: found.has_more,
+            }),
+            error_kind: None,
+            error_detail: None,
+            error_code: None,
+        },
+        Err(error) => TopicPubSearchResult {
             data: None,
             error_kind: Some(error.kind().to_string()),
             error_detail: Some(error.detail().into()),

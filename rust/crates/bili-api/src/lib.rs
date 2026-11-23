@@ -44,6 +44,7 @@ pub mod grpc_reply;
 pub mod grpc_space;
 pub mod history;
 pub mod http;
+pub mod lenient;
 pub mod live;
 pub mod live_danmaku;
 #[cfg(feature = "reqwest-transport")]

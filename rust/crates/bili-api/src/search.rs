@@ -649,12 +649,13 @@ fn i64_field(value: &Value, key: &str) -> Option<i64> {
 
 /// 数字或数字字符串都认。对应基线的 `safeToInt`：搜索接口的统计字段
 /// 偶尔会给成字符串，收紧成只认数字会让那一条的播放量变成空。
+///
+/// 实现已于 #166 提到 [`crate::lenient`]，与 DTO 侧的
+/// [`crate::lenient::opt_i64`] 共用同一套「什么算数字」的判断；这里留一层
+/// 同名薄封装，是因为搜索这一族的取值全是手工遍历 [`Value`]，调用点密集，
+/// 改成全限定路径只会让那几行更难读。
 fn lenient_i64(value: &Value, key: &str) -> Option<i64> {
-    match value.get(key)? {
-        Value::Number(n) => n.as_i64().or_else(|| n.as_f64().map(|f| f as i64)),
-        Value::String(s) => s.parse().ok(),
-        _ => None,
-    }
+    crate::lenient::i64_at(value, key)
 }
 
 #[cfg(test)]

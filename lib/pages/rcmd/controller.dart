@@ -26,6 +26,11 @@ class RcmdController extends CommonListController with RefreshImplMixin {
     queryData();
   }
 
+  bool get _hasData => switch (loadingState.value) {
+    Success(:final List response) => response.isNotEmpty,
+    _ => false,
+  };
+
   @override
   Future<LoadingState> customGetData() {
     return switch (rcmdSource) {
@@ -40,9 +45,11 @@ class RcmdController extends CommonListController with RefreshImplMixin {
     };
   }
 
+  /// 「保留上次数据」只在已有数据时吞掉错误。首屏没有数据时吞掉，
+  /// 页面会一直停在骨架屏，既不显示错误也没有重试按钮。
   @override
   bool handleError(String? errMsg) {
-    return enableSaveLastData;
+    return enableSaveLastData && _hasData;
   }
 
   @override

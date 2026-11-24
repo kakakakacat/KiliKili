@@ -1,3 +1,4 @@
+import 'package:kilikili/common/widgets/network_permission_gate.dart';
 import 'package:kilikili/pages/article/view.dart';
 import 'package:kilikili/pages/article_list/view.dart';
 import 'package:kilikili/pages/audio/view.dart';
@@ -72,7 +73,11 @@ import 'package:get/get.dart';
 
 class Routes {
   static final List<GetPage<dynamic>> getPages = [
-    GetPage(name: '/', page: () => const MainApp()),
+    // iOS 拿到联网授权前不加载任何页面，见 NetworkPermissionGate。
+    GetPage(
+      name: '/',
+      page: () => const NetworkPermissionGate(child: MainApp()),
+    ),
     // 首页(推荐)
     GetPage(name: '/home', page: () => const HomePage()),
     // 热门

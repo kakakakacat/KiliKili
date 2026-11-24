@@ -26,9 +26,11 @@ Apple 与 Android 改为手动 dispatch（理由见 §2.1）；「成本约束�
 也不改动上表任何一格的结论
 修订：2026-11-22 — 界面侧的实验台（`spikes/slint-ui`，#10）落地并在 Windows
 上实跑，本文末尾新增一节。同样**不进 CI**，同样不改动上表任何一格
-修订：2026-11-24 — Liquid Glass 的实验台骨架（`spikes/slint-glass`，#130）落地，
-**但一行都没有编译过**，本文末尾新增一节记它将来能验到什么、以及为什么它
-和前两个 spike 一样**连进 CI 都不该考虑**。上表任何一格不变
+修订：2026-11-24 — Liquid Glass 的实验台（`spikes/slint-glass`，#130）落地并在
+Windows 上实跑一轮：**`backdrop-blur` 在 FemtoVG 上生效**（官方文档滞后），
+但**帧代价被 vsync 掩盖、量不出来**。本文末尾新增一节分「已验 / 试过没测出来 /
+还没跑」三栏，并记下为什么它和前两个 spike 一样**连进 CI 都不该考虑**。
+上表任何一格不变
 关联：RFC-0001 §9.3 / §16.7，ADR-004
 
 本文回答一个 RFC 里此前含糊带过的问题：五个目标平台，**哪些能做真机验收、哪些只能做编译验证、哪些根本没覆盖**。结论直接影响 M4/M5 的准入范围，以及 ADR-004 能拿到多少实测数据。
@@ -790,22 +792,27 @@ MpvPlayer，含暂停、前后 Seek、倍速、分辨率和受控缓冲恢复。
 它们是手动能力，没有新增 CI job/触发条件。
 ### Liquid Glass 的实测能力（#130，2026-11-24）
 
-**这一节记的是「将来能验到什么」，不是「已经验到了什么」**：
-`spikes/slint-glass` 这一轮只落地了骨架，**一行都没有编译过**，所以下面
-每一条都还没有产出过任何证据。评估见
-[2026-11-24-glass-wgpu-eval.md](spikes/2026-11-24-glass-wgpu-eval.md)。
+纸面评估见 [2026-11-24-glass-wgpu-eval.md](spikes/2026-11-24-glass-wgpu-eval.md)，
+第一轮实测见 [2026-11-24-glass-windows-notes.md](spikes/2026-11-24-glass-windows-notes.md)。
 
-**本机能验的**（桌面，Windows / macOS）：
+**已经验到的**（Windows 11 / RX 7900 GRE / Slint 1.19.1 / FemtoVG）：
 
-- Slint 1.19 原生 `Rectangle::backdrop-blur` 的观感，与 Flutter 版
-  `GlassNavigationSurface` 并排对照。**这一项的结论必须由人看截图判**，
-  不是程序判的——要比的就是观感。
-- 同一个二进制换 `SLINT_BACKEND=winit-skia` / `winit-femtovg` 各跑一次，
-  回答「`backdrop-blur` 到底是 Skia 独有还是 FemtoVG 也有」。官方参考页、
-  CHANGELOG 与 FemtoVG 源码三处说法对不上，只能跑一次定。
-- 动态背景（持续横移的条带）下的帧耗时，判 `backdrop-blur` 那条官方警告
-  （每次重绘都要重读并过滤矩形底下每个像素）的实际代价。与 #126 的首页
-  feed 滚动卡顿是同一类开销，可以互相参照。
+- **`backdrop-blur` 在 FemtoVG 上生效**，官方 Rectangle 参考页那句
+  「only supported by the Skia renderer」是过时的。多条玻璃各自独立模糊。
+- 构建开销：首次 6 min 01 s（零 error 零 warning），增量 12 s。
+
+**试过但没测出来的**（这一条要写清楚，否则会被当成已验）：
+
+- **`backdrop-blur` 的帧代价量不出来。** 1/5/10 组件 × 开关 blur 六组全是
+  144 fps，那是显示器刷新率；`SLINT_DEBUG_PERFORMANCE=refresh_full_speed`
+  绕不过 vsync，桌面 GPU 压不动。**这不是「不贵」，是「这个方法测不出」。**
+  要量它得绕 vsync、放大到 4K 全屏，或者直接上低端 Android。
+
+**本机还能验、但这一轮没跑的**（桌面，Windows / macOS）：
+
+- 与 Flutter 版 `GlassNavigationSurface` **并排对照**。第一轮只证明了
+  「糊得出来」，**没有证明「糊得像」**——并排要跑起 Flutter app，开销和这个
+  spike 不是一个量级。**这一项的结论必须由人看截图判**，不是程序判的。
 - 开 `wgpu-probe` feature 之后，`AfterRendering` 回调里到底拿不拿得到可写
   的 `TextureView`（评估文档 §2.1 的判据）。
 
@@ -820,6 +827,13 @@ MpvPlayer，含暂停、前后 Seek、倍速、分辨率和受控缓冲恢复。
 
 **它判不了、必须人看的**：玻璃观感本身——折射带宽、高光强度、模糊程度在
 不同背景下「像不像玻璃」。这些只出截图，结论栏写「人工确认」。
+
+**一条跨 spike 的教训，第一轮就撞上了**：`GLASS_COUNT=10` 的那组读数照常
+产出，而窗口高度只装得下 6 条，多出的 4 条被裁在窗口外——**场景根本不是
+记录上写的那个**。和 #10 那次「虚拟化极好 + 滚动极卡」同一个形状，同样是
+**只有截图戳破了它**。在这台机器上截 GUI 还有个 DPI 坑：缩放 1.5 时必须
+先调 `SetProcessDPIAware()`，否则 `GetWindowRect` 与 `CopyFromScreen` 差
+1.5 倍，截到的是旁边的桌面。两条都记在 notes §4。
 
 **它同样不进 CI，而且比前两个 spike 更没得商量**：前两个是「runner 没有
 GPU 合成与显示输出」，这个还要再加一条——#130 要的交付物就是帧时间、掉帧、

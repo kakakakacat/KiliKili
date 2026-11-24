@@ -98,6 +98,8 @@ export component GlassSpike inherits Window {
     // 模糊强度做成可调：对照时要能一眼看出「调模糊能不能补上折射的缺失」
     // ——答案大概率是不能，但这正是要给看的人确认的那一下。
     in-out property <length> blur-sigma: 10px;
+    // 同时摆几条玻璃。见下面 for 循环处的说明。
+    in-out property <int> glass-count: 1;
 
     Timer {
         interval: 16ms;
@@ -114,10 +116,14 @@ export component GlassSpike inherits Window {
         phase: root.phase;
     }
 
-    // 玻璃条。位置照首页：贴底悬浮。
-    GlassCapsule {
+    // 玻璃条。第一条照首页贴底悬浮，其余是加压用的。
+    //
+    // 为什么要能摆多个：#130 的质量表要求基准覆盖「单组件 / 5 组件 /
+    // 10 组件」。而且单个胶囊在这台机器上根本压不动——帧率被 vsync 钉在
+    // 刷新率上，开关 backdrop-blur 两边都是同一个数，测不出代价。
+    for k in root.glass-count: GlassCapsule {
         x: (root.width - self.width) / 2;
-        y: root.height - self.height - 28px;
+        y: root.height - self.height - 28px - k * 92px;
         width: Math.min(root.width - 48px, 430px);
         blur-sigma: root.blur-sigma;
 

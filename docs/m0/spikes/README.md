@@ -13,7 +13,8 @@ SPIKE-001/002）与 `spikes/slint-ui`（界面，SPIKE-003），记录格式同�
 **手写的有几份例外**，它们不是 `--record` 产出的，可以也必须手工编辑：
 `2026-11-22-flutter-patches-slint-eval.md` 与
 `2026-11-24-glass-wgpu-eval.md`（读 diff / 读 Slint 文档与源码写出来的
-评估，根本没有程序可跑）、下面这份 Android 的、iOS 的 `SPIKE-004-ios.md`、#210 的补测记录
+评估，根本没有程序可跑）、`2026-11-24-glass-windows-notes.md`（#130 的
+实验台还没接 `spike-harness`，结论要人看截图判）、下面这份 Android 的、iOS 的 `SPIKE-004-ios.md`、#210 的补测记录
 （理由同 Android：入口是 App，证据来自 `devicectl --console` 与真机截图），以及 #218 的
 插帧记录（汇总实验室模式、macOS、Android 与 iOS 真机几类运行）。
 
@@ -35,6 +36,7 @@ SPIKE-001/002）与 `spikes/slint-ui`（界面，SPIKE-003），记录格式同�
 | [2026-11-24-interp-218.md](2026-11-24-interp-218.md) | macOS 27.3 / M4；Android 14 / Adreno 610；iOS 27.3 / iPhone 16 Pro Max | **#218 插帧 spike**：mpv 的每张源帧都能识别并带上时间戳（`target_time` 实为纳秒）；mpv 最多提前交一张帧，双向插帧要把画面推迟一个源帧间隔并用 `audio-delay` 补偿。只用 fragment shader 的块匹配 + 运动补偿在 **Adreno 610 上 720p 30→60 稳定 60 fps**（运动估计 4.9 ms，连续 15 分钟不降频），iOS 同一份 GLSL 跑满（运动估计约 3 ms），BBB 真值对比 SSIM 0.958 对线性混合 0.906。三个会把低端机拖到 51 fps 的坑：渲染线程同步取 mpv 属性、`glReadPixels` 回读（改用 transform feedback）、着色器里的 uniform 循环与整数除法 |
 | [2026-11-22-flutter-patches-slint-eval.md](2026-11-22-flutter-patches-slint-eval.md) | 不涉及（读 diff 与 Slint 源码） | **SPIKE-003（#10）后半边：34 个 Flutter 补丁逐项评估**。去重后是 26 个独立问题：原生支持 3 / 不适用 4 / 需自写 12 / 做不到 7。做不到的归成四件事，**跨元素文本选择**与**嵌套滚动的手势消歧**是 Phase 2 No-Go 候选 |
 | [2026-11-24-glass-wgpu-eval.md](2026-11-24-glass-wgpu-eval.md) | 不涉及（读 Slint 1.19.1 的文档与源码） | **#130 的 Liquid Glass 预研，纸面部分**。最硬的一条：**立单前提已变**——Slint 1.19.0（立单后三天）给 `Rectangle` 加了 `backdrop-blur`，官方描述就是「for translucent glass effects」，#130 「必须自建 wgpu 管线才能拿到背板」的隐含假设不再成立。关口 1（wgpu 接口）已答，首轮不必 fork；关口 2 的三条候选里 **A 基本可判掉**（`AfterRendering` 拿不到渲染目标），**C 在 Android 上不存在**。没有任何一条同时满足「当前帧干净背景 + 自定义 shader + Android 可用」 |
+| [2026-11-24-glass-windows-notes.md](2026-11-24-glass-windows-notes.md) | Windows 11 / RX 7900 GRE | **#130 第一轮实测（Slint 1.19.1 / FemtoVG）**：骨架一次编过（首次 6 min 01 s、零 warning，增量 12 s）。**`backdrop-blur` 在 FemtoVG 上生效**——官方 Rectangle 参考页那句「only supported by the Skia renderer」是过时的，CHANGELOG 对，于是 Skia 那笔没人付过的账不用付。**帧率这项是「测不出」不是「不贵」**：1/5/10 组件 × 开关 blur 六组全 144 fps（= 刷新率），`refresh_full_speed` 绕不过 vsync。两个弄脏实验的毛病：`GLASS_COUNT=10` 实际只渲染 6 条、截图脚本的 DPI 偏移 |
 
 ## 为什么先有一份 Windows 的
 

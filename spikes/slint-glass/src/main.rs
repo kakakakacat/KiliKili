@@ -37,6 +37,28 @@ fn main() -> Result<(), slint::PlatformError> {
     // 没开 `skia` feature 就设 SLINT_BACKEND=winit-skia 的话，Slint 会静默
     // 退回默认渲染器，看起来像「Skia 也不支持」——这个坑会把结论弄反。
     let app = GlassSpike::new()?;
+
+    // 用环境变量关掉模糊，用来做开/关对照——`backdrop-blur` 的官方警告是
+    // 「每次重绘都要重读并过滤矩形底下每个像素」，那句话值多少毫秒，只有
+    // 同一个二进制、同一个场景、只差这一个属性地各跑一次才问得出来。
+    //
+    //   GLASS_BLUR=0 ./slint-glass-spike      # 关
+    //   ./slint-glass-spike                   # 开（默认 10px，对齐 Flutter 的回退档）
+    //
+    // 做成环境变量而不是命令行参数，是为了省掉 clap：这个 spike 还没到需要
+    // 参数解析的时候，多一个依赖就多一截首次编译时间。
+    if std::env::var("GLASS_BLUR").as_deref() == Ok("0") {
+        app.set_blur_sigma(0.0);
+    }
+    // 同时摆几条玻璃，给基准加压用（#130 质量表要的 1 / 5 / 10 组件）。
+    // 单条在桌面 GPU 上压不动：帧率被 vsync 钉在刷新率上，开关 blur 两边
+    // 读数一样，测不出代价。
+    if let Ok(n) = std::env::var("GLASS_COUNT")
+        && let Ok(n) = n.parse::<i32>()
+    {
+        app.set_glass_count(n);
+    }
+
     app.run()
 }
 

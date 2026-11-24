@@ -1,17 +1,19 @@
 # slint-glass — Liquid Glass 的实验台骨架（issue #130）
 
-> **这份骨架一行都没有编译过。**
+> **状态：Windows / FemtoVG 跑通了一轮，其余都没碰。**
 >
-> 不是疏忽，是刻意：写它的那一轮机器被占着。而
-> [docs/m0/spikes/README.md](../../docs/m0/spikes/README.md) 自己写过
-> 「**一份没跑过的 harness 不是交付，是一堆待调试的代码**」——所以在
-> `cargo build` 跑通并把这一段删掉之前，**不要拿它的任何结构当结论**，
-> 更不要照着它写第二个组件。
+> 2026-11-24 首次构建 6 min 01 s、零 error 零 warning，一次编过；增量
+> 12 秒。实测记录见
+> [2026-11-24-glass-windows-notes.md](../../docs/m0/spikes/2026-11-24-glass-windows-notes.md)。
 >
-> 它存在的价值只有一个：把
-> [2026-11-24-glass-wgpu-eval.md](../../docs/m0/spikes/2026-11-24-glass-wgpu-eval.md)
-> 的纸面结论落到具体的接线点上，让下一个人开机之后从「编译报错」开始，
-> 而不是从「Slint 的玻璃能力到底有哪些」开始。
+> 这**不等于它是交付**。跑到的只有一件事：**`backdrop-blur` 在 FemtoVG 上
+> 确实生效**（官方 Rectangle 参考页那句「only supported by the Skia
+> renderer」是过时的）。没跑的有：和 Flutter 版并排对照、Skia、wgpu、
+> Android——也就是说它证明了「糊得出来」，**没有证明「糊得像」**。
+>
+> 另外第一轮就撞出两个把实验弄脏的毛病（`GLASS_COUNT=10` 实际只渲染 6 条、
+> 截图脚本的 DPI 偏移），都记在 notes §4。**拿这里的数字下结论之前先读
+> 那一节。**
 
 ## 它要回答什么
 
@@ -33,17 +35,37 @@
 
 ```sh
 cd spikes/slint-glass
-cargo build                    # 预期：会报错。先让它编过，再谈别的
+cargo build                    # 首次约 6 min，之后增量约 12 s
 ./target/debug/slint-glass-spike
 ```
 
-**先只跑 FemtoVG，别一上来就开 Skia。** 官方的 Rectangle 参考页说
-`backdrop-blur`「Currently only supported by the Skia renderer」，CHANGELOG
-却写「Skia and FemtoVG only」，而 FemtoVG 的 wgpu 后端源码里确实有
-`BackdropBlur` 的约束说明。三处对不上——但**便宜的那条先试**：如果
-FemtoVG 这轮就糊了，CHANGELOG 是对的，Skia 那笔账根本不用付。
+两个环境变量用来做对照，都在 `src/main.rs` 里读：
 
-糊不了再开：
+```sh
+GLASS_BLUR=0  ./target/debug/slint-glass-spike   # 关掉 backdrop-blur
+GLASS_COUNT=5 ./target/debug/slint-glass-spike   # 同时摆几条玻璃
+```
+
+**`GLASS_COUNT` 有个坑**：窗口高度只装得下 6 条（间距 92px），填 10 的话
+多出来的 4 条 `y` 为负、被裁在窗口外，而帧率读数照样产出——第一轮就是这么
+把「10 组件」那一档记错的。**跑之前先截图数一遍实际可见条数。**
+
+量帧率用 Slint 自带的：
+
+```sh
+SLINT_DEBUG_PERFORMANCE=refresh_full_speed,console ./target/debug/slint-glass-spike
+```
+
+输出走 **stderr** 不是 stdout。注意它**绕不过 vsync**：这台机器上六组
+对照全是 144 fps（= 刷新率），量不出 `backdrop-blur` 的代价，见 notes §3。
+
+**FemtoVG 这轮已经糊了，所以 Skia 不用开。** 官方的 Rectangle 参考页说
+`backdrop-blur`「Currently only supported by the Skia renderer」，CHANGELOG
+却写「Skia and FemtoVG only」——2026-11-24 实测**CHANGELOG 对，参考页滞后**
+（notes §2）。下面这段留着，是给想交叉验证、或者将来 Android 那轮要用
+Skia 的人看的：
+
+想交叉验证时再开：
 
 ```sh
 cargo build --features skia
@@ -62,8 +84,8 @@ SLINT_BACKEND=winit-skia ./target/debug/slint-glass-spike
 
 用 debug 而不是 `--release`：Cargo.toml 里给依赖单独设了 `opt-level = 2`，
 所以 Slint 与 femtovg 仍然是优化过的（不然滚动卡，分不清是 backdrop-blur
-贵还是 debug 慢），而自己的代码改一行重编是秒级的。等到第三步真要报性能
-数字时再换 `--release`。
+贵还是 debug 慢），而自己的代码改一行重编是秒级的——实测 12 秒。等到第三步
+真要报性能数字时再换 `--release`。
 
 跑完和首页导航栏并排截图，结论写进
 `docs/m0/spikes/2026-11-24-glass-<平台>-notes.md`。**这一步的结论要人看，

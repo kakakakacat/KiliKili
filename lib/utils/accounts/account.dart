@@ -4,6 +4,7 @@ import 'package:kilikili/models/common/account_type.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/accounts/grpc_headers.dart';
 import 'package:kilikili/utils/id_utils.dart';
+import 'package:kilikili/utils/network_permission.dart';
 import 'package:kilikili/utils/storage.dart';
 import 'package:kilikili/utils/storage_key.dart';
 import 'package:kilikili/utils/storage_pref.dart';
@@ -200,6 +201,8 @@ class AnonymousAccount extends Account {
   }
 
   Future<void> _getBuvid() async {
+    // iOS 联网授权前请求必然失败，只会退回本地生成的 buvid3 并弹错误提示。
+    await NetworkPermission.ready;
     try {
       final res = await Request().get(
         '/x/frontend/finger/spi',

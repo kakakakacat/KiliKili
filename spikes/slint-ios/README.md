@@ -1,35 +1,53 @@
 # slint-ios — SPIKE-004 的实验台（issue #11）
 
-**进行中。** 一个跑在 iPhone 真机上的 Slint App，逐步回答 #11：
-iOS 上 Slint + libmpv 能不能走、PiP 与后台音频怎么做、AVPlayer 作为备选的代价。
+一个跑在 iPhone 真机上的 Slint App，回答 #11：iOS 上 Slint + libmpv 能不能走、
+PiP 与后台音频怎么做、AVPlayer 作为备选的代价。**结论在
+[docs/m0/spikes/SPIKE-004-ios.md](../../docs/m0/spikes/SPIKE-004-ios.md)**，这里只放跑法与代码地图。
 
 ## 跑
 
 ```sh
-cd spikes/slint-ios/ios
-./link-frameworks.sh            # 把 media_kit 的 iOS libmpv 软链进来（要先 flutter pub get）
-xcodegen generate               # brew install xcodegen
-xcodebuild -project SlintIosSpike.xcodeproj -scheme SlintIosSpike -configuration Release \
-  -destination 'id=<iPhone UDID>' -derivedDataPath ../target/xcode \
-  DEVELOPMENT_TEAM=<你的团队 ID> -allowProvisioningUpdates build
-xcrun devicectl device install app --device <UDID> ../target/xcode/Build/Products/Release-iphoneos/SlintIosSpike.app
-xcrun devicectl device process launch --device <UDID> --console --terminate-existing \
-  --environment-variables '{"SPIKE_VIDEO":"…","SPIKE_AUDIO":"…","SPIKE_UA":"…","SPIKE_REFERER":"https://www.bilibili.com"}' \
-  dev.kilikili.spike.slintios
+# 一次性：仓库根目录 flutter pub get（取 media_kit 的 iOS libmpv）、brew install xcodegen
+DEVELOPMENT_TEAM=<你的团队 ID> SPIKE_DEVICE=<iPhone UDID> \
+  spikes/slint-ios/build-run.sh <env.json> [秒数] [日志文件]
 ```
+
+`env.json` 是给 `devicectl --environment-variables` 的 JSON：
+
+| 变量 | 含义 |
+|---|---|
+| `SPIKE_VIDEO` / `SPIKE_AUDIO` | DASH 两路地址（playurl 的 `baseUrl`）；不给就只跑「Slint 能不能起来」 |
+| `SPIKE_UA` / `SPIKE_REFERER` | 请求头，B 站 CDN 要 |
+| `SPIKE_MODE` | `gl`（默认，零拷贝）/ `sw`（软件渲染基线）/ `avplayer`（对照组） |
+| `SPIKE_AVP` | avplayer 模式的喂法：`hls`（默认）/ `two`（两个播放器）/ `composition` |
+| `SPIKE_HWDEC` / `SPIKE_FLIP` / `SPIKE_GLFINISH` | 对照用：`videotoolbox-copy`、`1`（会倒）、`1` |
+| `SPIKE_PIP` / `SPIKE_BG_VIDNO` / `SPIKE_BG_RENDER` | 后台实验：`0` 不装 PiP、`0` 不关视频轨、`1` 后台也画 |
+
+**取流地址带签名与客户端 IP、约 2 小时过期**：`env.json` 放临时目录，别进仓库。
+从桌面图标直接点开 App 是没有视频的（没有环境变量）。
+
+切后台不用人：`xcrun devicectl device process launch --device <UDID> com.apple.Preferences`。
 
 团队 ID 不写进仓库。免费 Personal Team 可以用，但**一台设备最多装 3 个**用它签的 App，
 装满了会报「maximum number of installed apps using a free developer profile」。
 
-## 已经撞出来的（详细结论最后写进 docs/m0/spikes/）
+## 代码地图
+
+| 文件 | 内容 |
+|---|---|
+| `src/lib.rs` | 三种模式、每秒一行 HUD/日志、前后台与 PiP 状态机 |
+| `src/zerocopy.rs` | CVPixelBuffer → MTLTexture → `wgpu::Texture` → `slint::Image` |
+| `src/mpv.rs` | libmpv 最小绑定（sw 与 OpenGL 两种 render API） |
+| `ios/bridge.m` | 平台胶水：EAGL + IOSurface 目标、PiP、AVPlayer（含 DASH→HLS） |
+| `ios/project.yml` | xcodegen 工程描述（踩过的 Info.plist 坑都在注释里） |
+
+## 环境里踩过的坑
 
 - **iOS 27 SDK 要求 UIScene 生命周期**：Info.plist 不声明 scene delegate，App 一连上 scene
   就被 UIKit 断言掉。Slint 1.19 自带 `SlintWindowSceneDelegate`，要在清单里写上它。
-- **iOS 上 Slint 没有 OpenGL 渲染器**；winit 后端还**强制**链上 Skia（要 `-lc++`）。实际选中的是
-  femtovg-wgpu（Metal），`GraphicsAPI::WGPU30`。
-- **中文全是方块**（单开了 #206）：fontique 在 iOS 上看得到 361 个字体家族，但没有苹方，汉字的回退列表是空的。
-  Hiragino 能救大部分字，但缺简体专用字。要么 App 自带简体字体，要么修 fontique 的 iOS 后端。
-- **mpv 软件渲染不可行**：852x480 一帧 ~38ms，放在 UI 线程上界面掉到 5–7fps；挪走也要吃掉约一个核。
-- **后台音频**：声明 `UIBackgroundModes: audio` 后，退到后台约 2–3 秒停顿后继续播放。
-- **音频输出**：mpv 自己把 AVAudioSession 设成 `Playback` + `MoviePlayback`（不受静音键影响），
-  从扬声器出声，仓库所有者在真机上确认听到了。实验台每 5 秒打印一次会话类别、输出路由与音量。
+- **iOS 上 Slint 没有 OpenGL 渲染器**；winit 后端还**强制**链上 Skia（要 `-lc++`）。
+  不开 `unstable-wgpu-30` 时选中 femtovg-wgpu，开了以后选中 Skia（都是 Metal）。
+- **中文全是方块**（#206）：fontique 在 iOS 上看不到苹方，汉字回退列表是空的；
+  UI 暂用 Hiragino，缺简体专用字。
+- 嵌入 media_kit 的 framework 要 `STRIP_BITCODE_FROM_COPIED_FILES: NO`。
+- 免费 Personal Team 一台设备最多 3 个 App。

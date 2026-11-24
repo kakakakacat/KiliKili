@@ -307,7 +307,7 @@ Docker 27.3.1，已承载 6 个生产容器
 
 ## 4. 遗留缺口
 
-- **iOS 签名**：`ios/Runner.xcodeproj` 中 `DEVELOPMENT_TEAM = ""`，bundle id 仍为占位 `com.example.piliplus`。CI 与本机均只能 `--no-codesign` 构建；真机安装需配置 Apple Developer Team。（macOS 为 `CODE_SIGN_IDENTITY = "-"` ad-hoc 签名，不受影响。）这说的是**开发期真机安装**；对外分发的发布签名是另一件事，结论见[发布签名](../release/SIGNING.md) §5：iOS 侧载的签名身份属于使用者，仓库侧没有、也不该有可复用的发布身份。
+- **iOS 签名**：`ios/Runner.xcodeproj` 中 `DEVELOPMENT_TEAM = ""`，bundle id 仍为占位 `com.example.piliplus`。CI 与本机均只能 `--no-codesign` 构建；真机安装需配置 Apple Developer Team。（spike 不受此限：`spikes/slint-ios` 用免费 Personal Team 签名装上了真机，团队 ID 由构建命令传入、不进仓库；代价是**一台设备最多 3 个**这样签名的 App、7 天过期。见下面「iOS 真机的 Slint/libmpv 实测能力」。）（macOS 为 `CODE_SIGN_IDENTITY = "-"` ad-hoc 签名，不受影响。）这说的是**开发期真机安装**；对外分发的发布签名是另一件事，结论见[发布签名](../release/SIGNING.md) §5：iOS 侧载的签名身份属于使用者，仓库侧没有、也不该有可复用的发布身份。
 - **iOS 模拟器 runtime**：本机 `simctl list runtimes` 为空，模拟器冒烟测试需额外下载 runtime。
 - **Linux GPU/合成**：如后续确有必要，比 Docker 可靠得多的路径是在 Windows 设备上安装双系统，或使用支持 GPU 分区直通的 VM。当前判断为投入产出比不足，暂不投入。
 
@@ -616,6 +616,22 @@ PiP、切后台，每一步留系统截图、帧缓冲回读与 `dumpsys` 片段
 AGP/Gradle 版本跟 `android/` 对齐。
 
 **仍然替不了 CI 的部分没变**：所有这些都要真机，GitHub runner 上做不到。
+
+### iOS 真机的 Slint/libmpv 实测能力（#11，2026-11-24）
+
+`spikes/slint-ios` 是一个 Xcode 工程（xcodegen 生成）链 Rust staticlib 的 App，
+装到有线连接的 iPhone 上跑，证据走 `devicectl device process launch --console`
+收到的 `[spike]` 行 + mpv 日志 + `devicectl device capture screenshot`。
+构建、安装、启动一条命令：`spikes/slint-ios/build-run.sh`。
+
+**切后台不需要人手**：`devicectl device process launch com.apple.Preferences`
+把「设置」顶到前台，被测 App 随之退后台（自动 PiP 也由此触发）；再 launch
+一次被测 App 就回到前台。所以 PiP、后台音频、回前台恢复这几项都能脚本化，
+只有「耳朵听到没有」和「点 PiP 小窗上的按钮」还要人。
+
+**边界**：免费签名一台设备最多 3 个 App，AVPlayer 对照组因此做进了同一个 App
+（`SPIKE_MODE=avplayer`），没有再起一个探针工程。取流地址约 2 小时过期，
+每轮实验前重新取，地址带签名与客户端 IP，只放临时目录。
 
 ### Slint 界面侧的实测能力（#10，2026-11-22）
 

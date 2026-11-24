@@ -10,9 +10,10 @@ SPIKE-001/002）与 `spikes/slint-ui`（界面，SPIKE-003），记录格式同�
 要补充人看出来的结论，写在本目录下另一份同名 `-notes.md`，或者直接写进
 对应的 issue。
 
-**手写的有两份例外**，它们不是 `--record` 产出的，可以也必须手工编辑：
+**手写的有三份例外**，它们不是 `--record` 产出的，可以也必须手工编辑：
 `2026-11-22-flutter-patches-slint-eval.md`（读 diff 与 Slint 源码写出来的
-评估，根本没有程序可跑），以及下面这份 Android 的。
+评估，根本没有程序可跑）、下面这份 Android 的，以及 iOS 的 `SPIKE-004-ios.md`
+（理由同 Android：入口是 App，证据来自 `devicectl --console` 与真机截图）。
 
 **Android 那份是手写的例外**：那边没有命令行，入口是 `android_main`，
 证据来自 logcat、mpv 自己的日志与帧缓冲回读，不是 `--record` 产出的。
@@ -27,6 +28,7 @@ SPIKE-001/002）与 `spikes/slint-ui`（界面，SPIKE-003），记录格式同�
 | [2026-11-22-slint-ui-windows.md](2026-11-22-slint-ui-windows.md)（＋[notes](2026-11-22-slint-ui-windows-notes.md)） | Windows 11 / RX 7900 GRE | **SPIKE-003（#10）前四项，自动项全 PASS**：两万行滚动单帧 0.9ms（p95）、Tab/IME 正常、UIA 读得出 List/ListItem。一条确定的额外工作量：`StyledText` 不支持行内图片，图文混排要自己排版，而 Slint 不给文本测量 API。**#10 未完**，见 notes §6 |
 | [2026-11-22-slint-ui-android.md](2026-11-22-slint-ui-android.md)（＋[notes](2026-11-22-slint-ui-android-notes.md)） | Android 14 / Adreno 740 真机 | **SPIKE-003（#10）在真机上的同一轮**：长列表过（滚动 p95 10.5ms，但余量只剩 37%）、**触控惯性过**（手指驱动 122fps，`Flickable` 自带）。最贵的结论是**无障碍树是空的**——Slint 的 Android 后端根本没接，TalkBack 一个节点都读不到 |
 | [2026-11-23-slint-ui-macos.md](2026-11-23-slint-ui-macos.md)（＋[notes](2026-11-23-slint-ui-macos-notes.md)） | macOS 27.3 / Apple M4 | **SPIKE-003（#10）的 macOS 一轮＋旁白实读**：列表与富文本同 Windows（滚动 p95 0.6ms）。旁白控件全 PASS；**长列表只读得到第一屏**——虚拟化对无障碍不透明，旁白报「1/7」、翻页滚不动。另撞出一条 macOS 独有的：固定宽度的子元素会把窗口最大宽度钉死。新写了 mac 外部驱动，Tab / 英文 / 简体拼音组字 / 最小化全 PASS |
+| [SPIKE-004-ios.md](SPIKE-004-ios.md) | iOS 27.3 / iPhone 16 Pro Max 真机 | **#11 PASS**：mpv 经 GLES 画进 IOSurface、零拷贝进 Slint（Skia on Metal），60 fps、每帧 1.3ms、`videotoolbox` 非 copy；PiP 自动进入、小窗持续出帧；后台音频要在退后台前 `vid=no`，否则 VT 会话失效、永久退回软解。**iOS 上不翻转**（与三端相反）。AVPlayer 对照：m4s 自带 sidx，生成字节范围 HLS 即可 0.85 秒起播，不需要代理或转码 |
 | [2026-11-22-flutter-patches-slint-eval.md](2026-11-22-flutter-patches-slint-eval.md) | 不涉及（读 diff 与 Slint 源码） | **SPIKE-003（#10）后半边：34 个 Flutter 补丁逐项评估**。去重后是 26 个独立问题：原生支持 3 / 不适用 4 / 需自写 12 / 做不到 7。做不到的归成四件事，**跨元素文本选择**与**嵌套滚动的手势消歧**是 Phase 2 No-Go 候选 |
 
 ## 为什么先有一份 Windows 的
@@ -97,3 +99,4 @@ Windows 这一跑同时附带回答了 [VALIDATION-CAPABILITY](../VALIDATION-CAP
 | `-resume-recover` | 回前台后画面没了、跑完恢复配方又回来 | 整份记录里最贵的那个发现，一句话说不清 |
 | `-media3-layers` | 回退路线的三层（视频 / GL 覆盖层 / 普通 View）叠得住 | 「回退可行」否则只是一句断言 |
 | `2026-11-23-macos-no-flip` / `-flip-y` | macOS 上 FBO 也是倒的，加 `--flip-y` 之后才对（#8） | 「三端都要翻转」这条结论；重跑要那台 M4，理由与 Android 相同。两张合计 0.4MB |
+| `2026-11-24-ios-*`（四张） | iOS 零拷贝画面、`flip_y=1` 的倒像、PiP 小窗、AVPlayer + 弹幕叠加（#11） | 「iOS 上不翻转」与「PiP 小窗里有画面」；重跑要一台签过名的 iPhone，理由与 Android 相同。PiP 那张只裁了小窗，系统界面里有账号名。四张合计 0.26MB |

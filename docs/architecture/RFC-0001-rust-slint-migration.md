@@ -258,7 +258,7 @@ PiliPlus-Rust/
 
 - macOS：Slint 与 libmpv 视频输出如何同窗合成、是否支持硬解、弹幕层级与 HiDPI。
 - Android：优先 Slint + libmpv 视频表面/触摸分发；Media3 SurfaceView/TextureView 作为备选，避免每帧 CPU RGBA 拷贝。
-- iOS：优先验证 Slint + libmpv 合成、旋转、安全区、后台音频/画中画；AVPlayerLayer 为备选。
+- iOS：优先验证 Slint + libmpv 合成、旋转、安全区、后台音频/画中画；AVPlayerLayer 为备选。（合成、后台音频、画中画已由 SPIKE-004 验证；旋转、安全区未做。AVPlayer 备选实测时用的不是 AVPlayerLayer，而是 `AVPlayerItemVideoOutput` → 与 mpv 同一条零拷贝导入，以便叠加弹幕。）
 - Windows/Linux：窗口句柄、GPU 后端、视频表面、打包依赖；不能因为 macOS 通过就视为完成。
 
 **决策门槛**：若硬解、弹幕覆盖、全屏/输入、富文本、IME、长列表或无障碍不达标，则 Phase 2 No-Go；Phase 1 Flutter + Rust Core 保持独立可发布，并评估替代方案。
@@ -493,6 +493,7 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 ### 16.2 ADR-004：播放器后端选择（P0）
 - libmpv 为五端统一的首选验证方案，因现有 media-kit 已与 mpv 相关；不能预设它在移动端具备完整 PiP、后台音频、硬解和 Slint 表面合成能力。
 - AVPlayer 不直接支持常规分轨 DASH manifest，若用作 iOS fallback 必须评估 HLS 转换/本地代理的功能、性能和维护代价；Android Media3 作为另一个 fallback。
+  - **已实测（SPIKE-004，#11）**：不需要转码也不需要本地代理。B 站 m4s 自带 sidx，读开头 32KB 即可生成字节范围寻址的 fMP4 HLS 播放列表（`EXT-X-MAP` + `EXT-X-BYTERANGE`，分片直连 CDN），0.85 秒起播、CPU 低于 mpv；直接喂 m4s 则要 46 秒。剩余风险是设 Referer 只能用私有键 `AVURLAssetHTTPHeaderFieldsKey`，以及 HEVC/AV1/DV 未覆盖。libmpv 在 iOS 上零拷贝合成、PiP、后台音频均已走通，见 [SPIKE-004-ios.md](../m0/spikes/SPIKE-004-ios.md)。
 - 使用相同合法样本测量 DASH 分轨、Seek、倍速、请求头、清晰度、HDR/硬解、音画同步、弹幕叠加、CPU/GPU/内存、PiP、后台音频、包体与构建复杂度。记录设备、系统、版本与日志；据此决定。
 
 ### 16.3 Hive 数据兼容和回滚（P0）

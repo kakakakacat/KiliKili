@@ -39,7 +39,8 @@ Phase 2 Slint migration is **NO-GO** if video compositing/overlay, mobile lifecy
       （实验台与记录位就绪；macOS 实跑未做，见 [spikes/SPIKE-001-macos.md](spikes/SPIKE-001-macos.md)）
 - [ ] M0-SPIKE-02: Android surface/lifecycle + libmpv versus Media3 fallback
 - [ ] M0-SPIKE-03: Slint list virtualization, rich content, IME, accessibility
-- [ ] M0-SPIKE-04: iOS libmpv/AVPlayer feasibility and PiP/background-audio comparison
+- [x] M0-SPIKE-04: iOS libmpv/AVPlayer feasibility and PiP/background-audio comparison
+      （见 [spikes/SPIKE-004-ios.md](spikes/SPIKE-004-ios.md)）
 - [~] M0-SPIKE-05: collect real baseline CPU/RSS/video frame-time samples
       （采集手段就绪：帧耗时分位数 / 掉帧 / CPU / RSS 随每次实验自动入记录；
       目前只有 Windows 一组样本）

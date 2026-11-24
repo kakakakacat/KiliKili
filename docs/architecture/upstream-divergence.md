@@ -401,8 +401,8 @@ video/reply_search_item,main_reply,my_reply,common/dyn,setting/models}` 下
 修订：2026-11-24（Android CI 签名 #146）——`build.yml` 早在 #121 就属于
 「有实质改动」，`android/app/build.gradle.kts` 也早在 #184 属于该类，
 本次继续改它们不会让修改类目增加；`ci.yml` 是本 fork 新增的文件。
-新增 `tool/android-signing.py` 与签名解析回归测试，新增文件
-**915 → 917**，其余数量不变。实测发现 SDK 37 的 `apksigner` 使用按签名
+新增 `tool/android-signing.py` 与签名解析回归测试；本轮按工作树重新统计，
+新增文件 **916**，其余数量不变。实测发现 SDK 37 的 `apksigner` 使用按签名
 方案命名的输出，校验脚本兼容新旧格式；两个构建入口均运行回归测试。
 按 §6 的上游 tip 与当前工作树核对。
 
@@ -435,7 +435,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 修改的上游既有文件 | **787** |
 | &nbsp;&nbsp;其中：仅因包名重命名而改动 | **348** |
 | &nbsp;&nbsp;其中：有实质改动 | **439** |
-| 新增文件 | **917** |
+| 新增文件 | **916** |
 | 删除文件 | **366** |
 
 「修改」总数一路下降（935 → 909 → 897 → 891 → 887），部分文件是因迁移被

@@ -27,7 +27,9 @@ xcrun devicectl device process launch --device <UDID> --console --terminate-exis
   就被 UIKit 断言掉。Slint 1.19 自带 `SlintWindowSceneDelegate`，要在清单里写上它。
 - **iOS 上 Slint 没有 OpenGL 渲染器**；winit 后端还**强制**链上 Skia（要 `-lc++`）。实际选中的是
   femtovg-wgpu（Metal），`GraphicsAPI::WGPU30`。
-- **中文全是方块**：fontique 在 iOS 上看得到 361 个字体家族，但没有苹方，汉字的回退列表是空的。
+- **中文全是方块**（单开了 #206）：fontique 在 iOS 上看得到 361 个字体家族，但没有苹方，汉字的回退列表是空的。
   Hiragino 能救大部分字，但缺简体专用字。要么 App 自带简体字体，要么修 fontique 的 iOS 后端。
 - **mpv 软件渲染不可行**：852x480 一帧 ~38ms，放在 UI 线程上界面掉到 5–7fps；挪走也要吃掉约一个核。
 - **后台音频**：声明 `UIBackgroundModes: audio` 后，退到后台约 2–3 秒停顿后继续播放。
+- **音频输出**：mpv 自己把 AVAudioSession 设成 `Playback` + `MoviePlayback`（不受静音键影响），
+  从扬声器出声，仓库所有者在真机上确认听到了。实验台每 5 秒打印一次会话类别、输出路由与音量。

@@ -3771,6 +3771,7 @@ name = "slint-ios-spike"
 version = "0.0.0"
 dependencies = [
  "fontique",
+ "objc2 0.6.5",
  "slint",
  "slint-build",
 ]

@@ -102,6 +102,7 @@ targets:
       - framework: Frameworks/Xml2.xcframework
         embed: true
       - sdk: UIKit.framework
+      - sdk: AVFoundation.framework
       - sdk: Metal.framework
       - sdk: QuartzCore.framework
       - sdk: CoreGraphics.framework

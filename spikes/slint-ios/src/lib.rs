@@ -61,6 +61,46 @@ unsafe extern "C" {
     fn getrusage(who: i32, usage: *mut libc_rusage) -> i32;
 }
 
+/// AVAudioSession 的类别、输出路由、系统音量。「mpv 说 AO 开了但听不到」时，
+/// 先确认声音被送到了哪里。
+fn audio_session_summary() -> String {
+    use objc2::runtime::AnyObject;
+    use objc2::{class, msg_send};
+    fn ns(obj: *mut AnyObject) -> String {
+        if obj.is_null() {
+            return "<nil>".into();
+        }
+        // SAFETY: obj 是 NSObject，description/UTF8String 总是可用。
+        unsafe {
+            let desc: *mut AnyObject = msg_send![obj, description];
+            let utf8: *const std::ffi::c_char = msg_send![desc, UTF8String];
+            std::ffi::CStr::from_ptr(utf8).to_string_lossy().into_owned()
+        }
+    }
+    // SAFETY: AVAudioSession 是系统单例，这几个属性都是只读查询。
+    unsafe {
+        let session: *mut AnyObject = msg_send![class!(AVAudioSession), sharedInstance];
+        let category: *mut AnyObject = msg_send![session, category];
+        let mode: *mut AnyObject = msg_send![session, mode];
+        let volume: f32 = msg_send![session, outputVolume];
+        let route: *mut AnyObject = msg_send![session, currentRoute];
+        let outputs: *mut AnyObject = msg_send![route, outputs];
+        let count: usize = msg_send![outputs, count];
+        let mut ports = Vec::new();
+        for i in 0..count {
+            let port: *mut AnyObject = msg_send![outputs, objectAtIndex: i];
+            let kind: *mut AnyObject = msg_send![port, portType];
+            let name: *mut AnyObject = msg_send![port, portName];
+            ports.push(format!("{}({})", ns(kind), ns(name)));
+        }
+        format!(
+            "session category={} mode={} 系统音量={volume:.2} 输出={ports:?}",
+            ns(category),
+            ns(mode)
+        )
+    }
+}
+
 fn percentile(sorted: &[f32], p: f32) -> f32 {
     if sorted.is_empty() {
         return 0.0;
@@ -278,6 +318,17 @@ fn run() -> Result<(), slint::PlatformError> {
                         ));
                     }
                     log(&line);
+                    if ticks.get() % 600 < 130 {
+                        log(&audio_session_summary());
+                        if let Some(v) = video_ref.as_ref() {
+                            let p = |n: &str| v.mpv.property(n).unwrap_or_else(|| "<none>".into());
+                            log(&format!(
+                                "mpv audio: current-ao={} audio-codec-name={} audio-params={} volume={} mute={} ao-volume={} ao-mute={} aid={}",
+                                p("current-ao"), p("audio-codec-name"), p("audio-params"), p("volume"),
+                                p("mute"), p("ao-volume"), p("ao-mute"), p("aid")
+                            ));
+                        }
+                    }
                     ui.set_hud(line.into());
                     last.set((Instant::now(), now_frames, video_frames, cpu_now));
                 }

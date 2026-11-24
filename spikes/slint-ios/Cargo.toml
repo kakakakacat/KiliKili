@@ -36,6 +36,8 @@ slint = { version = "1.19", default-features = false, features = [
 # 只用来诊断字体：直接问 Slint 底下那份 fontique 看到了哪些系统字体。
 # 版本要与 i-slint-common 1.19 用的一致（0.12）。
 fontique = "0.12"
+# 只用来诊断音频：读 AVAudioSession 的类别、输出路由与系统音量。
+objc2 = "0.6"
 
 [build-dependencies]
 slint-build = "1.19"

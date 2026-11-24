@@ -54,6 +54,9 @@ pub struct MpvConfig {
     pub log_file: Option<String>,
     pub volume: i64,
     pub loop_file: bool,
+    /// 额外的 mpv 选项，按顺序在 initialize 之前设置（#218 插帧 spike 用它
+    /// 改 `video-sync`、`video-timing-offset`、`interpolation` 等）。
+    pub extra: Vec<(String, String)>,
 }
 
 impl Default for MpvConfig {
@@ -65,6 +68,7 @@ impl Default for MpvConfig {
             log_file: None,
             volume: 50,
             loop_file: false,
+            extra: Vec::new(),
         }
     }
 }
@@ -131,6 +135,9 @@ impl MpvPlayer {
         if let Some(path) = &config.log_file {
             options.push(("log-file", path.clone()));
             options.push(("msg-level", "all=v".to_owned()));
+        }
+        for (key, value) in &config.extra {
+            options.push((key.as_str(), value.clone()));
         }
         for (key, value) in &options {
             let k = cstr(key)?;
@@ -205,6 +212,7 @@ impl MpvPlayer {
     }
 
     #[must_use]
+    #[allow(dead_code)] // #218 的 interp 可执行文件不用
     pub fn property_f64(&self, name: &str) -> Option<f64> {
         let key = cstr(name).ok()?;
         let mut out: f64 = 0.0;
@@ -220,6 +228,7 @@ impl MpvPlayer {
     }
 
     #[must_use]
+    #[allow(dead_code)] // #218 的 interp 改用 spawn_size_watcher
     pub fn property_i64(&self, name: &str) -> Option<i64> {
         let key = cstr(name).ok()?;
         let mut out: i64 = 0;
@@ -234,6 +243,51 @@ impl MpvPlayer {
         (code >= 0).then_some(out)
     }
 
+    /// 后台线程每 200 ms 读一次 `dwidth` / `dheight`，渲染线程只读原子量。
+    ///
+    /// #218 在 Adreno 610 上实测：渲染线程每张新帧同步 `mpv_get_property`
+    /// 两次，`hold` 模式就从 59 fps 掉到 51 fps——同步取属性要排队等 mpv 的
+    /// core 线程，core 忙着解封装 / 解码时渲染线程跟着干等。
+    #[allow(dead_code)] // 只有 #218 的 interp 用
+    pub fn spawn_size_watcher(
+        &self,
+    ) -> Arc<(std::sync::atomic::AtomicI64, std::sync::atomic::AtomicI64)> {
+        let size = Arc::new((
+            std::sync::atomic::AtomicI64::new(0),
+            std::sync::atomic::AtomicI64::new(0),
+        ));
+        let lib = Arc::clone(&self.lib);
+        let handle = self.handle;
+        let stop = Arc::clone(&self.stop);
+        let out = Arc::clone(&size);
+        let _ = std::thread::Builder::new()
+            .name("mpv-size".to_owned())
+            .spawn(move || {
+                // 整体搬进来；只写 handle.0 的话闭包会按字段捕获裸指针，不 Send。
+                let handle = handle;
+                let read = |name: &std::ffi::CStr| {
+                    let mut v: i64 = 0;
+                    let code = unsafe {
+                        (lib.get_property)(
+                            handle.0,
+                            name.as_ptr(),
+                            format::INT64,
+                            (&raw mut v).cast::<c_void>(),
+                        )
+                    };
+                    (code >= 0).then_some(v)
+                };
+                while !stop.load(Ordering::Acquire) {
+                    if let (Some(w), Some(h)) = (read(c"dwidth"), read(c"dheight")) {
+                        out.0.store(w, Ordering::Release);
+                        out.1.store(h, Ordering::Release);
+                    }
+                    std::thread::sleep(Duration::from_millis(200));
+                }
+            });
+        size
+    }
+
     /// 在渲染线程上建 render context。必须在 GL 上下文 current 时调用。
     ///
     /// # Safety
@@ -243,6 +297,12 @@ impl MpvPlayer {
         loader: &dyn Fn(&std::ffi::CStr) -> *const c_void,
     ) -> Result<MpvRender> {
         unsafe { MpvRender::new(Arc::clone(&self.lib), self.handle, loader) }
+    }
+
+    /// mpv 的时钟（微秒），与 `mpv_render_frame_info::target_time` 同一时基。
+    #[allow(dead_code)] // 只有 #218 的 interp 可执行文件用
+    pub fn time_us(&self) -> i64 {
+        unsafe { (self.lib.get_time_us)(self.handle.0) }
     }
 
     /// 直接写一个 mpv 属性。
@@ -744,6 +804,26 @@ impl MpvRender {
     pub fn has_new_frame(&self) -> bool {
         let flags = unsafe { (self.lib.render_context_update)(self.ctx) };
         flags & sys::RENDER_UPDATE_FRAME != 0
+    }
+
+    /// `mpv_render_context_update` 的原始返回值。#218 的插帧路径每个 vsync
+    /// 调一次，用 [`sys::RENDER_UPDATE_FRAME`] 判断有没有帧待取。
+    #[allow(dead_code)] // 只有 #218 的 interp 可执行文件用
+    pub fn update_flags(&self) -> u64 {
+        unsafe { (self.lib.render_context_update)(self.ctx) }
+    }
+
+    /// 下一张要画的帧的信息（`MPV_RENDER_PARAM_NEXT_FRAME_INFO`）。取不到时
+    /// 返回 `None`（例如还没有帧排进队列）。
+    #[allow(dead_code)] // 只有 #218 的 interp 可执行文件用
+    pub fn next_frame_info(&self) -> Option<sys::MpvRenderFrameInfo> {
+        let mut info = sys::MpvRenderFrameInfo::default();
+        let param = sys::MpvRenderParam {
+            type_: sys::render_param::NEXT_FRAME_INFO,
+            data: (&raw mut info).cast::<c_void>(),
+        };
+        let code = unsafe { (self.lib.render_context_get_info)(self.ctx, param) };
+        (code >= 0).then_some(info)
     }
 
     /// 把当前帧画进给定的 FBO。

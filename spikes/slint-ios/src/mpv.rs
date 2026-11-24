@@ -42,6 +42,7 @@ const RENDER_PARAM_API_TYPE: c_int = 1;
 const RENDER_PARAM_OPENGL_INIT_PARAMS: c_int = 2;
 const RENDER_PARAM_OPENGL_FBO: c_int = 3;
 const RENDER_PARAM_FLIP_Y: c_int = 4;
+const RENDER_PARAM_NEXT_FRAME_INFO: c_int = 11;
 const RENDER_PARAM_BLOCK_FOR_TARGET_TIME: c_int = 12;
 const RENDER_PARAM_SW_SIZE: c_int = 17;
 const RENDER_PARAM_SW_FORMAT: c_int = 18;
@@ -81,7 +82,20 @@ unsafe extern "C" {
     fn mpv_render_context_update(ctx: *mut MpvRenderContext) -> u64;
     fn mpv_render_context_render(ctx: *mut MpvRenderContext, params: *mut RenderParam) -> c_int;
     fn mpv_render_context_free(ctx: *mut MpvRenderContext);
+    fn mpv_render_context_get_info(ctx: *mut MpvRenderContext, param: RenderParam) -> c_int;
+    fn mpv_get_time_us(ctx: *mut MpvHandle) -> i64;
 }
+
+/// `mpv_render_frame_info`（#218 插帧 spike 用）。
+#[repr(C)]
+#[derive(Default, Clone, Copy)]
+pub struct FrameInfo {
+    pub flags: u64,
+    /// mpv 0.42 实测是**纳秒**（render.h 注释说与 mpv_get_time_us 同为微秒）。
+    pub target_time: i64,
+}
+
+pub const FRAME_INFO_REDRAW: u64 = 1 << 1;
 
 fn check(code: c_int, what: &str) -> Result<(), String> {
     if code >= 0 {
@@ -253,6 +267,24 @@ impl Mpv {
 }
 
 impl Mpv {
+    /// 下一张要画的帧的信息；调用前先用 [`Mpv::wants_frame`] 确认有帧。
+    pub fn next_frame_info(&self) -> FrameInfo {
+        let mut info = FrameInfo::default();
+        let param = RenderParam {
+            kind: RENDER_PARAM_NEXT_FRAME_INFO,
+            data: (&raw mut info).cast(),
+        };
+        // SAFETY: info 在调用期间有效。
+        let _ = unsafe { mpv_render_context_get_info(self.render, param) };
+        info
+    }
+
+    /// mpv 时钟（微秒）。
+    pub fn time_us(&self) -> i64 {
+        // SAFETY: handle 有效。
+        unsafe { mpv_get_time_us(self.handle) }
+    }
+
     /// 画一帧到 `fbo`（调用方保证 EAGLContext 是当前）。
     ///
     /// `BLOCK_FOR_TARGET_TIME = 0`：默认值 1 会让 render 一直阻塞到这一帧的

@@ -20,5 +20,14 @@ pub(crate) use spike_harness::gl;
 #[path = "mpv/mod.rs"]
 mod mpv;
 
-#[cfg(target_os = "android")]
+// 默认打的是 SPIKE-002 探针；`--features interp` 换成 #218 插帧 spike 的入口。
+// 两者都导出 `android_main`，所以只能二选一。
+#[cfg(all(target_os = "android", not(feature = "interp")))]
 mod android_probe;
+
+#[cfg(all(target_os = "android", feature = "interp"))]
+#[path = "interp/mod.rs"]
+mod interp;
+
+#[cfg(all(target_os = "android", feature = "interp"))]
+mod interp_android;

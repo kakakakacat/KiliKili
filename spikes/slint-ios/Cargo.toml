@@ -45,6 +45,11 @@ fontique = "0.12"
 # 只用来诊断音频：读 AVAudioSession 的类别、输出路由与系统音量。
 objc2 = "0.6"
 
+# #218 插帧 spike：GPU 侧直接复用 spikes/slint-mpv/src/interp 的 gpu/sched/shaders
+# （见 src/interp.rs）。版本跟那边一致。
+glow = "0.18"
+anyhow = "1"
+
 [build-dependencies]
 slint-build = "1.19"
 

@@ -10,10 +10,11 @@ SPIKE-001/002）与 `spikes/slint-ui`（界面，SPIKE-003），记录格式同�
 要补充人看出来的结论，写在本目录下另一份同名 `-notes.md`，或者直接写进
 对应的 issue。
 
-**手写的有三份例外**，它们不是 `--record` 产出的，可以也必须手工编辑：
+**手写的有几份例外**，它们不是 `--record` 产出的，可以也必须手工编辑：
 `2026-11-22-flutter-patches-slint-eval.md`（读 diff 与 Slint 源码写出来的
-评估，根本没有程序可跑）、下面这份 Android 的、iOS 的 `SPIKE-004-ios.md`，以及 #210 的补测记录
-（理由同 Android：入口是 App，证据来自 `devicectl --console` 与真机截图）。
+评估，根本没有程序可跑）、下面这份 Android 的、iOS 的 `SPIKE-004-ios.md`、#210 的补测记录
+（理由同 Android：入口是 App，证据来自 `devicectl --console` 与真机截图），以及 #218 的
+插帧记录（汇总实验室模式、macOS、Android 与 iOS 真机几类运行）。
 
 **Android 那份是手写的例外**：那边没有命令行，入口是 `android_main`，
 证据来自 logcat、mpv 自己的日志与帧缓冲回读，不是 `--record` 产出的。
@@ -30,6 +31,7 @@ SPIKE-001/002）与 `spikes/slint-ui`（界面，SPIKE-003），记录格式同�
 | [2026-11-23-slint-ui-macos.md](2026-11-23-slint-ui-macos.md)（＋[notes](2026-11-23-slint-ui-macos-notes.md)） | macOS 27.3 / Apple M4 | **SPIKE-003（#10）的 macOS 一轮＋旁白实读**：列表与富文本同 Windows（滚动 p95 0.6ms）。旁白控件全 PASS；**长列表只读得到第一屏**——虚拟化对无障碍不透明，旁白报「1/7」、翻页滚不动。另撞出一条 macOS 独有的：固定宽度的子元素会把窗口最大宽度钉死。新写了 mac 外部驱动，Tab / 英文 / 简体拼音组字 / 最小化全 PASS |
 | [SPIKE-004-ios.md](SPIKE-004-ios.md) | iOS 27.3 / iPhone 16 Pro Max 真机 | **#11 PASS**：mpv 经 GLES 画进 IOSurface、零拷贝进 Slint（Skia on Metal），60 fps、每帧 1.3ms、`videotoolbox` 非 copy；PiP 自动进入、小窗持续出帧；后台音频要在退后台前 `vid=no`，否则 VT 会话失效、永久退回软解。**iOS 上不翻转**（与三端相反）。AVPlayer 对照：m4s 自带 sidx，生成字节范围 HLS 即可 0.85 秒起播，不需要代理或转码 |
 | [2026-11-24-adr004-measurements.md](2026-11-24-adr004-measurements.md) | macOS 27.3 / M4；iOS 27.3 / iPhone 16 Pro Max；Android 14 / Adreno 610 | **ADR-004 §6 补测（#210）**：HEVC、杜比视界两端硬解；AV1 在 iOS 上是软解。iOS seek / 倍速 / 切清晰度都通，音画差 ≤ 12ms。**发现 iOS 零拷贝偏绿**（mpv 的 nv12 interop 把 V 读成 U），修法 `hwdec-image-format=bgra`。**Android 低端机 4K 能力表说支持、实际 configure 失败，静默落到软解**，要按能力选清晰度。macOS p95 贴线是显示环境的读数。Windows 未测 |
+| [2026-11-24-interp-218.md](2026-11-24-interp-218.md) | macOS 27.3 / M4；Android 14 / Adreno 610；iOS 27.3 / iPhone 16 Pro Max | **#218 插帧 spike**：mpv 的每张源帧都能识别并带上时间戳（`target_time` 实为纳秒）；mpv 最多提前交一张帧，双向插帧要把画面推迟一个源帧间隔并用 `audio-delay` 补偿。只用 fragment shader 的块匹配 + 运动补偿在 **Adreno 610 上 720p 30→60 稳定 60 fps**（运动估计 4.9 ms，连续 15 分钟不降频），iOS 同一份 GLSL 跑满（运动估计约 3 ms），BBB 真值对比 SSIM 0.958 对线性混合 0.906。三个会把低端机拖到 51 fps 的坑：渲染线程同步取 mpv 属性、`glReadPixels` 回读（改用 transform feedback）、着色器里的 uniform 循环与整数除法 |
 | [2026-11-22-flutter-patches-slint-eval.md](2026-11-22-flutter-patches-slint-eval.md) | 不涉及（读 diff 与 Slint 源码） | **SPIKE-003（#10）后半边：34 个 Flutter 补丁逐项评估**。去重后是 26 个独立问题：原生支持 3 / 不适用 4 / 需自写 12 / 做不到 7。做不到的归成四件事，**跨元素文本选择**与**嵌套滚动的手势消歧**是 Phase 2 No-Go 候选 |
 
 ## 为什么先有一份 Windows 的

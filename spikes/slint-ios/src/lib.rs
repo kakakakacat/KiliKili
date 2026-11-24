@@ -13,11 +13,17 @@
 //!   `SPIKE_BG_RENDER`（默认 0：退到后台且没进 PiP 时不再画）、
 //!   `SPIKE_PIP`（默认 1；0 = 不装 PiP，用来测纯后台音频）、
 //!   `SPIKE_BG_VIDNO`（默认 1：退到后台且没进 PiP 时关掉视频轨，回前台再开）。
+//! - `SPIKE_INTERP`（#218）：`mc` / `blend` / `hold`，mpv 的新帧先画进纹理环，再按
+//!   `target_time` 排程、插帧后画进零拷贝目标（只在 gl 模式下有效）。配套：
+//!   `SPIKE_INTERP_DELAY_MS`（默认 50，同时设 mpv 的 `audio-delay`）、
+//!   `SPIKE_INTERP_R`（默认 4）、`SPIKE_INTERP_PRESENT_MS`（默认 8，输出时刻相对
+//!   now 的提前量）、`SPIKE_INTERP_FINISH=1`（运动估计前后 glFinish，量 GPU 耗时）。
 //! - `SPIKE_MPV_OPTS`：`k=v,k=v`，追加 mpv 选项（调色彩/格式问题时做对照）。
 //! - `SPIKE_SCRIPT`：定时动作，`秒=动作;秒=动作…`（秒从启动算）。动作是一条 mpv 命令
 //!   （空格分词，如 `seek 30 absolute`、`set speed 2`），或 `quality`：换到
 //!   `SPIKE_VIDEO2` / `SPIKE_AUDIO2` 这一对流并从当前位置续播（切清晰度）。
 
+mod interp;
 mod mpv;
 mod platform;
 mod zerocopy;
@@ -183,6 +189,75 @@ struct Video {
     skipped_bg: u64,
     bg_vidno: bool,
     vid_off: bool,
+    interp: Option<Interp>,
+}
+
+/// #218 插帧状态。GPU 侧是 slint-mpv 那份原样复用的代码（见 src/interp.rs）。
+struct Interp {
+    mode: interp::gpu::Mode,
+    params: interp::gpu::Params,
+    gpu: Option<interp::gpu::Gpu>,
+    ring: interp::sched::Ring,
+    delay_us: i64,
+    present_us: i64,
+    measure: bool,
+    video_size: (u32, u32),
+    since_size: u32,
+    /// 每秒清零的统计。
+    picks: [u64; 4],
+    me_ms: Vec<f32>,
+    src_frames: u64,
+}
+
+impl Interp {
+    fn from_env() -> Option<Self> {
+        let mode = match env("SPIKE_INTERP")?.as_str() {
+            "mc" => interp::gpu::Mode::Mc,
+            "blend" => interp::gpu::Mode::Blend,
+            "hold" => interp::gpu::Mode::Hold,
+            _ => return None,
+        };
+        let num =
+            |name: &str, default: i64| env(name).and_then(|v| v.parse().ok()).unwrap_or(default);
+        let params = interp::gpu::Params {
+            radius: num("SPIKE_INTERP_R", 4) as i32,
+            ..interp::gpu::Params::default()
+        };
+        Some(Self {
+            mode,
+            params,
+            gpu: None,
+            ring: interp::sched::Ring::new(8),
+            delay_us: num("SPIKE_INTERP_DELAY_MS", 50) * 1000,
+            present_us: num("SPIKE_INTERP_PRESENT_MS", 8) * 1000,
+            measure: env("SPIKE_INTERP_FINISH").is_some_and(|v| v == "1"),
+            video_size: (0, 0),
+            since_size: 0,
+            picks: [0; 4],
+            me_ms: Vec::new(),
+            src_frames: 0,
+        })
+    }
+
+    fn summary(&mut self) -> String {
+        let [pair, starved, early, empty] = std::mem::take(&mut self.picks);
+        let mut me = std::mem::take(&mut self.me_ms);
+        me.sort_by(f32::total_cmp);
+        let src = std::mem::take(&mut self.src_frames);
+        format!(
+            " · interp {:?} 源帧 {src} · pair {pair} starved {starved} early {early} empty {empty}{}",
+            self.mode,
+            if me.is_empty() {
+                String::new()
+            } else {
+                format!(
+                    " · ME(finish) p50 {:.2} / p95 {:.2} ms",
+                    percentile(&me, 0.5),
+                    percentile(&me, 0.95)
+                )
+            },
+        )
+    }
 }
 
 fn start_video(mode: Mode) -> Option<Video> {
@@ -207,6 +282,16 @@ fn start_video(mode: Mode) -> Option<Video> {
         skipped_bg: 0,
         bg_vidno: env("SPIKE_BG_VIDNO").is_none_or(|v| v != "0"),
         vid_off: false,
+        interp: if mode == Mode::Gl {
+            Interp::from_env()
+        } else {
+            None
+        },
+    };
+    // `~/` 开头的路径按 App 容器展开（视频用 devicectl copy 推进 Documents）。
+    let video = match video.strip_prefix("~/") {
+        Some(rest) => format!("{}/{rest}", std::env::var("HOME").unwrap_or_default()),
+        None => video,
     };
     if mode == Mode::AvPlayer {
         let c = |s: &str| CString::new(s).unwrap_or_default();
@@ -242,6 +327,14 @@ fn start_video(mode: Mode) -> Option<Video> {
     // SPIKE_MPV_OPTS=k=v,k=v：临时加 mpv 选项做对照（如 fbo-format、cscale）。
     let extra = env("SPIKE_MPV_OPTS").unwrap_or_default();
     options.extend(extra.split(',').filter_map(|kv| kv.split_once('=')));
+    // 插帧把画面推迟 delay，音频跟着推迟同样多（#218 的 macOS / Android 结论）。
+    let audio_delay = v
+        .interp
+        .as_ref()
+        .map(|i| format!("{}", i.delay_us as f64 / 1e6));
+    if let Some(delay) = audio_delay.as_deref() {
+        options.push(("audio-delay", delay));
+    }
     if !ua.is_empty() {
         options.push(("user-agent", ua.as_str()));
     }
@@ -340,6 +433,7 @@ impl Video {
                 self.size = (w, h);
                 Some((Image::from_rgba8(buffer), std::ptr::null_mut()))
             }
+            Mode::Gl if self.interp.is_some() => self.frame_interp(importer?, may_render),
             Mode::Gl => {
                 let importer = importer?;
                 let mpv = self.mpv.as_ref()?;
@@ -404,6 +498,170 @@ impl Video {
                 }
             }
         }
+    }
+
+    /// #218：mpv 的新帧画进纹理环；每个 tick 选一对源帧、插一张画进零拷贝目标。
+    fn frame_interp(
+        &mut self,
+        importer: &zerocopy::Importer,
+        may_render: bool,
+    ) -> Option<(Image, *mut c_void)> {
+        use interp::gpu::{Gpu, Mode as IMode};
+        use interp::sched::Pick;
+        if !may_render {
+            self.skipped_bg += 1;
+            return None;
+        }
+        // SAFETY: 主线程，同一个 EAGLContext。
+        unsafe { platform::spike_gl_make_current() };
+        let flip = self.flip;
+        let t0 = Instant::now();
+        {
+            let it = self.interp.as_mut()?;
+            if it.gpu.is_none() {
+                let loader = |name: &CStr| -> *const c_void {
+                    // SAFETY: 名字是 NUL 结尾的 C 串。
+                    unsafe { platform::spike_gl_proc(std::ptr::null_mut(), name.as_ptr()) }
+                        .cast_const()
+                };
+                // SAFETY: EAGLContext 是当前的。
+                match unsafe { Gpu::new(&loader, it.ring.capacity()) } {
+                    Ok(gpu) => {
+                        log(&format!("interp GPU：{}", gpu.renderer()));
+                        it.gpu = Some(gpu);
+                    }
+                    Err(err) => {
+                        log(&format!("interp GPU 初始化失败：{err:#}"));
+                        self.interp = None;
+                        return None;
+                    }
+                }
+            }
+        }
+        let mpv = self.mpv.as_ref()?;
+        let it = self.interp.as_mut()?;
+        let gpu = it.gpu.as_mut()?;
+        let now = mpv.time_us();
+
+        // 1. 收帧。尺寸每 30 张新帧才同步问一次 mpv（Android 上每帧同步取属性
+        //    会让渲染线程等 mpv 的 core 线程，掉 8 fps）。
+        for _ in 0..8 {
+            if !mpv.wants_frame() {
+                break;
+            }
+            let info = mpv.next_frame_info();
+            if it.video_size.0 == 0 || it.since_size >= 30 {
+                it.since_size = 0;
+                if let (Some(w), Some(h)) = (
+                    mpv.property("dwidth").and_then(|v| v.parse().ok()),
+                    mpv.property("dheight").and_then(|v| v.parse().ok()),
+                ) {
+                    it.video_size = (w, h);
+                }
+            }
+            it.since_size += 1;
+            let (w, h) = it.video_size;
+            if w == 0 {
+                break;
+            }
+            match gpu.ensure_size(w as i32, h as i32) {
+                Ok(true) => it.ring.clear(),
+                Ok(false) => {}
+                Err(err) => {
+                    log(&format!("interp ensure_size：{err:#}"));
+                    return None;
+                }
+            }
+            let redraw = info.flags & mpv::FRAME_INFO_REDRAW != 0 || info.target_time == 0;
+            let slot = match (redraw, it.ring.newest()) {
+                (true, Some(newest)) => newest.slot,
+                _ => it.ring.slot_for_next(),
+            };
+            if let Err(err) = mpv.render_gl(gpu.slot_fbo(slot) as u32, w, h, flip) {
+                log(&err);
+                return None;
+            }
+            gpu.prepare_slot(slot);
+            if redraw && it.ring.newest().is_some() {
+                continue;
+            }
+            // target_time 的单位按量级判（mpv 0.42 实测是 ns）。
+            let t = if info.target_time == 0 {
+                now
+            } else if (info.target_time / 1000 - now).abs() < (info.target_time - now).abs() {
+                info.target_time / 1000
+            } else {
+                info.target_time
+            };
+            it.ring.push(t, slot);
+            it.src_frames += 1;
+        }
+
+        // 2. 选帧并输出到下一张零拷贝目标。
+        let (w, h) = it.video_size;
+        if w == 0 {
+            return None;
+        }
+        let t_out = now + it.present_us - it.delay_us;
+        let pick = it.ring.pick(t_out, false);
+        let (a, b, p, mode) = match pick {
+            Pick::Pair { a, b, p } => {
+                it.picks[0] += 1;
+                (a, b, p, it.mode)
+            }
+            Pick::Starved { a } => {
+                it.picks[1] += 1;
+                (a, a, 0.0, IMode::Hold)
+            }
+            Pick::Early { a } => {
+                it.picks[2] += 1;
+                (a, a, 0.0, IMode::Hold)
+            }
+            Pick::Empty => {
+                it.picks[3] += 1;
+                return None;
+            }
+        };
+        if mode == IMode::Mc {
+            if it.measure {
+                gpu.finish();
+            }
+            let t = Instant::now();
+            gpu.ensure_field(&a, &b, &it.params);
+            if it.measure {
+                gpu.finish();
+                // 同一对的后续输出直接复用运动场，耗时≈0，不算进分布。
+                let ms = t.elapsed().as_secs_f32() * 1000.0;
+                if ms > 0.05 {
+                    it.me_ms.push(ms);
+                }
+            }
+        }
+        let _ = gpu.poll();
+        // 目标与源帧同尺寸（视频原始尺寸），Slint 负责缩放。
+        if let Err(err) = self.ensure_targets(w, h, importer) {
+            log(&err);
+            return None;
+        }
+        let it = self.interp.as_mut()?;
+        let gpu = it.gpu.as_mut()?;
+        let target = &self.targets[self.next % TARGETS];
+        gpu.present(
+            Gpu::framebuffer(target.fbo as i32),
+            (w as i32, h as i32),
+            &a,
+            &b,
+            p,
+            mode,
+            &it.params,
+        );
+        // SAFETY: 上下文是当前的。
+        unsafe { platform::spike_gl_flush(self.finish.into()) };
+        self.render_ms.push(t0.elapsed().as_secs_f32() * 1000.0);
+        self.size = (w, h);
+        let out = (target.image.clone(), target.pixbuf);
+        self.next += 1;
+        Some(out)
     }
 
     /// 退到后台（且没进 PiP）时 iOS 会让 VideoToolbox 会话失效：mpv 收到
@@ -761,6 +1019,9 @@ fn run() -> Result<(), slint::PlatformError> {
                             if paused { " 暂停" } else { "" },
                             if v.skipped_bg > 0 { format!(" · 后台跳过 {} 帧", v.skipped_bg) } else { String::new() },
                         ));
+                    }
+                    if let Some(it) = video_ref.as_mut().and_then(|v| v.interp.as_mut()) {
+                        line.push_str(&it.summary());
                     }
                     log(&line);
                     if ticks.get() % 600 < 130 {

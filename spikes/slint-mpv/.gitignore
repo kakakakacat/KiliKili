@@ -7,3 +7,6 @@
 
 # make-probe-audio.py 合成出来的音轨（8MB）。README 里写了怎么现造，不进仓库。
 /probe-audio.wav
+
+# #218 interp-android.sh 拉回来的记录。
+/android-out/

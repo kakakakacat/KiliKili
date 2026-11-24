@@ -159,12 +159,16 @@ Apple 的文档一直说后台的 App 不许提交 OpenGL ES 命令，违者被
 mpv 在 iOS 上没有别的渲染出口。若将来真的被禁，退路是 PiP 期间切到 AVPlayer
 那条（§5），它不碰 GL。
 
-### 3.3 没验到的
+### 3.3 人工确认（2026-11-24，仓库所有者在真机上操作）
 
-- PiP 小窗里的播放/暂停按钮、从小窗点回 App 的恢复：代码接好了
-  （`setPlaying:` → mpv 的 `pause`），但没人去点。
-- PiP 的进度条：`timeRangeForPlayback` 按 mpv 的 `time-pos`/`duration` 给，没看
-  显示得对不对。
+- 上滑回桌面自动进小窗，**小窗期间声音持续**。
+- 小窗上的**暂停 / 继续可用**（`setPlaying:` → mpv 的 `pause`）。
+- 点小窗的 × 关闭后**声音停止**。这是 AVKit 的惯例：关闭画中画即
+  `setPlaying:NO`，系统播放器与 Safari 也是关小窗即暂停。所以「后台继续放音频」
+  只在「从来没进小窗」那条路上成立，见 §4。
+
+没验到的：从小窗点回 App 的恢复、小窗进度条（`timeRangeForPlayback` 按 mpv 的
+`time-pos`/`duration` 给）显示得对不对。
 
 ## 4. 后台音频与 VideoToolbox 会话
 
@@ -211,7 +215,8 @@ vid → auto (Ok(()))
 
 mpv 自己把会话设成 `Playback` + `MoviePlayback`（第一阶段仓库所有者已在前台
 听到声音）。后台这一轮的证据是 `time-pos` 持续前进、
-会话类别不变；**后台是否真的一直有声，这一轮没人用耳朵确认**。
+会话类别不变；**人耳确认也过了**（2026-11-24，仓库所有者在真机上，`SPIKE_PIP=0`
+即走 §4.2 的 `vid=no` 那条路）：上滑回桌面后声音一直在，切换那一下没有卡顿。
 
 AVPlayer 不会替你设会话：默认 `SoloAmbient` 下 `isPictureInPicturePossible`
 恒为 NO（实测 `possible=0`），设成 `Playback` 之后才变成 1。

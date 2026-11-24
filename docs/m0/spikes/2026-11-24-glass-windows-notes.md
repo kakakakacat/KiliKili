@@ -118,5 +118,18 @@
 - **没开 wgpu**（`--features wgpu-probe` 没跑）。评估文档 §2.1 那个判据
   （`AfterRendering` 里拿不拿得到可写 `TextureView`）还没验。
 - **没测 Android。** 那是待跑清单里优先级最高的一项，决定五端能不能齐。
+  入口（`src/lib.rs` 的 `android_main`）与驱动脚本（`android-drive.sh`）
+  当天稍后写好了，但**一次都没构建、没装过机**。
+
+  摸前置条件时确认了两件会影响那一轮开销的事：
+
+  1. **Android 上没有 FemtoVG**，`backend-android-activity-06` 自带的是
+     Skia。所以**桌面这一轮的结论代替不了 Android**——两边是两个实现。
+  2. **Skia 在 android target 上是下载的预编译二进制**，不是源码构建：
+     slint-ui 的 `target/aarch64-linux-android/release/build/skia-bindings/`
+     下有 `skia-binaries-…-aarch64-linux-android-ganesh-gl-jpegd-jpege-pdf-vulkan.tar.gz`
+     与 `libskia.a`。桌面上躲掉的那笔账在 Android 躲不掉，但它可控。
+
+  真机（`fa392823`）、`cargo-apk`、`aarch64-linux-android` target 都就位。
 - 截图不进仓库（见 [README](README.md)「截图去哪了」），用 §1 的命令随时
   重跑得出来。

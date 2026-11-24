@@ -39,6 +39,65 @@ slint = { version = "~1.19", features = ["renderer-femtovg"] }
 [build-dependencies]
 slint-build = "~1.19"
 
+# Android 入口是 cdylib 里导出的 `android_main`，桌面照旧是 src/main.rs。
+# 多留一个 rlib 是为了让 bin 直接链这个 lib——不留的话 main.rs 只能用
+# `#[path]` 把模块再编一遍。照 slint-ui 的做法。
+[lib]
+name = "slint_glass_spike"
+crate-type = ["cdylib", "rlib"]
+path = "src/lib.rs"
+
+[[bin]]
+name = "slint-glass-spike"
+path = "src/main.rs"
+
+# ---------------------------------------------------------------------------
+# Android。**这一段没有构建过，一次都没有**——写它的那一轮机器不能占。
+#
+# 一条必须先说清楚的事：**Android 上没有 FemtoVG。**
+# `slint::platform::femtovg_renderer` 整个模块标着 `non-Android only`，
+# `backend-android-activity-06` 自带的是 **Skia**。所以：
+#
+# - 桌面那轮验的是「FemtoVG 的 backdrop-blur」，Android 这轮验的是
+#   「Skia 的 backdrop-blur」，**两边的结论不能互相代替**；
+# - 桌面上躲掉的那笔 Skia 账，在 Android 上躲不掉。好消息是它可控：
+#   slint-ui 的 `target/aarch64-linux-android/release/build/skia-bindings/`
+#   下有 `skia-binaries-…-aarch64-linux-android-ganesh-gl-jpegd-jpege-pdf-vulkan.tar.gz`
+#   和 libskia.a——**是下载的预编译二进制，不是源码构建**。
+#   （本 crate 的 target 不共享那份缓存，会重新下一次。）
+[target.'cfg(target_os = "android")'.dependencies]
+# 与上面的 slint 同一个依赖，这里只追加 feature（cargo 对 feature 取并集）。
+slint = { version = "~1.19", features = ["backend-android-activity-06"] }
+# Android 上没有终端：println 进不了 logcat，而「跑到哪了」「为什么失败」
+# 必须能被 `adb logcat -s kk-glass` 脚本化取走。
+android_logger = "0.15"
+log = "0.4"
+
+# cargo-apk 用这一段生成 AndroidManifest 并打包。
+[package.metadata.android]
+package = "io.github.kakacat.kilikili.spike.glass"
+build_targets = ["aarch64-linux-android"]
+
+[package.metadata.android.sdk]
+min_sdk_version = 24
+target_sdk_version = 35
+
+# 转屏不重建 activity：重建会让 `android_main` 重跑一遍，截图流程从头开始。
+[package.metadata.android.application.activity]
+config_changes = "orientation|keyboardHidden|screenSize|smallestScreenSize|screenLayout|uiMode|density"
+
+[package.metadata.android.application]
+label = "KiliKili Glass #130"
+# 截图写到外部数据目录，`adb pull` 不需要 run-as。
+debuggable = true
+
+# cargo-apk 的 release 包必须有 keystore，否则打到一半就停。指向 Android 的
+# 标准调试 keystore（口令固定 android）：探针不对外分发，它要的是 release 的
+# 优化等级，不是一个可发布的签名身份。正式签名的约定见 docs/release/SIGNING.md。
+[package.metadata.android.signing.release]
+path = "debug.keystore"
+keystore_password = "android"
+
 [features]
 # Skia 渲染器。只在 FemtoVG 那轮证明了它**不支持** `backdrop-blur` 之后才开
 # ——代价见上面 [dependencies] 里那段。开了之后用

@@ -11,6 +11,10 @@
 > renderer」是过时的）。没跑的有：和 Flutter 版并排对照、Skia、wgpu、
 > Android——也就是说它证明了「糊得出来」，**没有证明「糊得像」**。
 >
+> **Android 那一套（`src/lib.rs` 的 `android_main`、Cargo.toml 的
+> `[package.metadata.android]`、`android-drive.sh`）已经写好，但一次都没有
+> 构建、没有装过机。** 同一条规矩：跑通之前别拿它的结构当结论。
+>
 > 另外第一轮就撞出两个把实验弄脏的毛病（`GLASS_COUNT=10` 实际只渲染 6 条、
 > 截图脚本的 DPI 偏移），都记在 notes §4。**拿这里的数字下结论之前先读
 > 那一节。**
@@ -117,12 +121,46 @@ shaders/glass.wgsl     liquid_glass.frag 的逐行 WGSL 移植，第三步才接
 比前两个更硬：#130 要的是帧时间、掉帧、显存，托管 runner 上只有软件光栅器，
 那种数字写进 ADR 比没有更坏（评估文档 §4）。
 
+## Android
+
+**先读这条，它决定了结论怎么记**：Android 上**没有 FemtoVG**——
+`slint::platform::femtovg_renderer` 整个模块标着 `non-Android only`，
+`backend-android-activity-06` 自带的是 **Skia**。所以：
+
+- 桌面那轮验的是「FemtoVG 的 `backdrop-blur`」，Android 这轮验的是
+  「Skia 的 `backdrop-blur`」，**两边的结论不能互相代替**；
+- 桌面上躲掉的那笔 Skia 账，这里躲不掉。但它可控：slint-ui 的
+  `target/aarch64-linux-android/release/build/skia-bindings/` 下有
+  `skia-binaries-…-aarch64-linux-android-….tar.gz` 和 `libskia.a`，
+  **是下载的预编译二进制，不是源码构建**。本 crate 的 target 不共享那份
+  缓存，会重新下一次。
+
+前置：`aarch64-linux-android` target（1.100.0 下已装）、`cargo-apk`、
+`JAVA_HOME`（本机在 `D:/as/jbr`，slint 的 android 后端 build.rs 要 javac，
+少了它直接 panic）。
+
+```sh
+export JAVA_HOME="D:/as/jbr"
+cargo apk build --lib        # 别在别人用着机器的时候跑：要下 skia 再交叉编译几百个 crate
+./android-drive.sh           # 默认档：blur 开、一条玻璃
+./android-drive.sh --blur 0  # 对照档
+```
+
+`android-drive.sh` 管安装、配置、启动、截图、收 logcat，证据落在
+`target/android-evidence/`（不进仓库）。它靠 logcat 的 `GLASS STEP` 行对
+时间轴，不按固定秒数 sleep——真机冷启动能差好几秒，对不上的后果不是报错，
+是「截到一张黑图而记录照样产出」。
+
+**`adb shell am start` 传不了环境变量**，所以桌面那两个开关在真机上改从
+`$FILES/glass.conf` 读（`BLUR=` / `COUNT=` 两行），由 `android_main` 翻译成
+同样的环境变量——`run()` 那边一个字都不用改，两边跑的是同一组参数。
+
 ## 这一轮刻意没做的
 
 - **没接 `spike-harness`。** 第一步要的是「人看两张图」，不是帧耗时分位数。
   等第三步真要量 wgpu 管线开销时再接，那时候记录格式必须和另外两个 spike
   一致，否则跨实验没法逐行对照。
-- **没有 Android 入口。** Android 那一轮是评估文档 §6 的第 2 步，而且要先
-  决定用不用 cargo-apk。到时候照 `slint-ui/Cargo.toml` 补，别提前抄。
+- **Android 没有构建过、没有装过机。** 入口和驱动脚本都写好了（见上一节），
+  但 `cargo apk build` 一次都没跑——那一步要占机器十几二十分钟。
 - **没有多尺度模糊 / Fresnel / 动态光照。** P0 表里这些 Flutter 版也没有，
   先量差距再谈。

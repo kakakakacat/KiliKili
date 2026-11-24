@@ -588,6 +588,10 @@ class VideoDetailController extends GetxController
   @override
   Player? get player => plPlayerController.videoPlayerController;
   @override
+  Stream<Duration> get blockPositionStream => plPlayerController.positionStream;
+  @override
+  Stream<Duration> get blockBufferStream => plPlayerController.bufferStream;
+  @override
   bool get isFullScreen => plPlayerController.isFullScreen.value;
   @override
   bool get autoPlay => _autoPlay.value;
@@ -734,7 +738,9 @@ class VideoDetailController extends GetxController
     final currentVideoQa = this.currentVideoQa.value;
     if (currentVideoQa == null) return;
     _autoPlay.value = true;
-    playedTime = plPlayerController.videoPlayerController?.state.position;
+    playedTime = Duration(
+      milliseconds: plPlayerController.positionInMilliseconds,
+    );
     plPlayerController
       ..isBuffering.value = false
       ..buffered.value = 0;

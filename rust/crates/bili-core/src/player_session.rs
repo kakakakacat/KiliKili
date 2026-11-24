@@ -43,6 +43,17 @@ impl<P: PlayerPort> PlayerSession<P> {
     /// # Errors
     /// 返回底层适配器的命令错误；即使派发失败，旧代际也已作废。
     pub fn dispatch(&mut self, command: PlayerCommand) -> Result<(), P::Error> {
+        self.dispatch_stamped(command).map(|_| ())
+    }
+
+    /// 同时返回已派发的戳，供跨语言适配器执行对应意图。
+    ///
+    /// # Errors
+    /// 返回底层适配器的派发错误。
+    pub fn dispatch_stamped(
+        &mut self,
+        command: PlayerCommand,
+    ) -> Result<Stamped<PlayerCommand>, P::Error> {
         match command {
             PlayerCommand::Open { .. } => self.closed = false,
             PlayerCommand::Close => self.closed = true,
@@ -59,11 +70,9 @@ impl<P: PlayerPort> PlayerSession<P> {
             self.snapshot = None;
         }
 
-        self.port.dispatch(Stamped::new(
-            self.gate.session(),
-            self.gate.current(),
-            command,
-        ))
+        let stamped = Stamped::new(self.gate.session(), self.gate.current(), command);
+        self.port.dispatch(stamped.clone())?;
+        Ok(stamped)
     }
 
     /// 只采纳当前播放会话/代际的后端事件。位置来自后端快照本身。

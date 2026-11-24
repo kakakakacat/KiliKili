@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:kilikili/plugin/pl_player/controller.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:media_kit/media_kit.dart';
 
 class PlayOrPauseButton extends StatefulWidget {
   final PlPlayerController plPlayerController;
@@ -20,18 +19,16 @@ class PlayOrPauseButtonState extends State<PlayOrPauseButton>
     with SingleTickerProviderStateMixin {
   late final AnimationController controller;
   late final StreamSubscription<bool> subscription;
-  late Player player;
 
   @override
   void initState() {
     super.initState();
-    player = widget.plPlayerController.videoPlayerController!;
     controller = AnimationController(
       vsync: this,
-      value: player.state.playing ? 1 : 0,
+      value: widget.plPlayerController.playerStatus.isPlaying ? 1 : 0,
       duration: const Duration(milliseconds: 200),
     );
-    subscription = player.stream.playing.listen((playing) {
+    subscription = widget.plPlayerController.playingStream.listen((playing) {
       if (playing) {
         controller.forward();
       } else {
@@ -57,7 +54,9 @@ class PlayOrPauseButtonState extends State<PlayOrPauseButton>
         onTap: widget.plPlayerController.onDoubleTapCenter,
         child: Center(
           child: AnimatedIcon(
-            semanticLabel: player.state.playing ? '暂停' : '播放',
+            semanticLabel: widget.plPlayerController.playerStatus.isPlaying
+                ? '暂停'
+                : '播放',
             progress: controller,
             icon: AnimatedIcons.play_pause,
             color: Colors.white,

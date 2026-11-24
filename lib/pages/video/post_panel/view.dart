@@ -530,15 +530,23 @@ class _PostPanelState extends State<PostPanel>
                   return;
                 }
                 final seek = max(0, start - 2000);
-                await plPlayerController.seekTo(Duration(milliseconds: seek));
+                final seeking = plPlayerController.seekTo(
+                  Duration(milliseconds: seek),
+                );
+                final isCurrent = plPlayerController.capturePlaybackGuard();
+                await seeking;
+                if (!isCurrent()) return;
                 if (!player.state.playing) {
                   await plPlayerController.play();
                 }
                 if (start > seek) {
-                  final posSub = player.stream.position.listen(
-                    null,
-                    cancelOnError: true,
-                  );
+                  if (!isCurrent()) return;
+                  final posSub = plPlayerController.positionStream
+                      .where((_) => isCurrent())
+                      .listen(
+                        null,
+                        cancelOnError: true,
+                      );
                   final timer = Timer(
                     const Duration(seconds: 10),
                     posSub.cancel,

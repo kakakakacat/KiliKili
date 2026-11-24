@@ -717,3 +717,29 @@ AppleScript 读回旁白**刚念的那句话**（`last phrase`），所以记下
 一次性 debug 签名或把它挂到 Release。其余平台仍产出未签名的包，并在日志中
 显式提示。Android 密钥到位前，`regression gate` 的 Android job 会失败；
 这一步必须由仓库所有者先配置，不能把失败当作可忽略的红叉。
+
+### Player Port 的真实桥与无窗口播放器验证（#4，2026-11-24）
+
+新增 `test/bridge/player_port_bridge_test.dart`：在既有 bridge job 中随
+`KILIKILI_RUST_BRIDGE_TESTS=1` 加载真实原生库，验证 typed 播放命令、不可变采样
+代际、关闭、确认超时、过期命令、网络重建重试及初始化交接。不需要 Flutter SDK
+补丁、Pref 或 Widget 环境；没有新增 CI 触发条件。
+
+另有手动脚本 `tool/player-port-runtime-test.sh`，生成本地媒体并编译事件循环
+辅助库，运行 `test/player_port/media_kit_runtime_test.dart`。macOS 本机实跑
+media-kit/libmpv，覆盖暂停、前后 Seek、0.5×/2×、切资源、DASH 分轨、HTTP 请求头
+和实际选轨，并覆盖不同分辨率、受控 HTTP 缓冲冻结/恢复。Linux 分支尚未实跑；
+移动端与视频表面不在此无窗口脚本覆盖面。
+无窗口软件解码的结果不能用作画面合成、弹幕、硬解或 PiP 的通过证据。
+记录与完整五项缺口见 [Player Port 运行记录](../qa/player-port-2026-11-24.md)。
+
+
+`tool/player-port-benchmark.sh` 在 macOS 分别启动 raw media-kit / Player Port
+独立进程，交替顺序各三轮，输出播放窗口回调率、wall time、RSS 与命令耗时。
+`tool/player-port-native-runtime-test.sh` 使用同一素材，对照 Slint 原型的真实
+MpvPlayer，含暂停、前后 Seek、倍速、分辨率和受控缓冲恢复。
+
+另有 `tool/player_port_probe/` 独立 Flutter 宿主及设备驱动，复用生产适配器、
+视频纹理与真实弹幕 fixture。macOS 可见画面/弹幕，Android 14 与 iOS 27.3
+真机缓冲、前后台、PiP 和销毁重建已执行；两端小窗视频画面已复核。
+它们是手动能力，没有新增 CI job/触发条件。

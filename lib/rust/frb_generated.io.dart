@@ -21,6 +21,7 @@ import 'package:kilikili/rust/api/pgc.dart';
 import 'package:kilikili/rust/api/play_url.dart';
 import 'package:kilikili/rust/api/play_url_fetch.dart';
 import 'package:kilikili/rust/api/playback.dart';
+import 'package:kilikili/rust/api/player_port.dart';
 import 'package:kilikili/rust/api/relation.dart';
 import 'package:kilikili/rust/api/reply.dart';
 import 'package:kilikili/rust/api/reply_grpc.dart';
@@ -224,6 +225,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   EmoteMeta dco_decode_box_autoadd_emote_meta(dynamic raw);
+
+  @protected
+  double dco_decode_box_autoadd_f_32(dynamic raw);
 
   @protected
   double dco_decode_box_autoadd_f_64(dynamic raw);
@@ -538,6 +542,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlayUrlRequest dco_decode_box_autoadd_play_url_request(dynamic raw);
 
   @protected
+  PlayerCommandTicket dco_decode_box_autoadd_player_command_ticket(dynamic raw);
+
+  @protected
+  PlayerIntent dco_decode_box_autoadd_player_intent(dynamic raw);
+
+  @protected
+  PlayerPortBatch dco_decode_box_autoadd_player_port_batch(dynamic raw);
+
+  @protected
+  PlayerPortSnapshot dco_decode_box_autoadd_player_port_snapshot(dynamic raw);
+
+  @protected
   PopularPrecious dco_decode_box_autoadd_popular_precious(dynamic raw);
 
   @protected
@@ -828,6 +844,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int dco_decode_box_autoadd_u_32(dynamic raw);
 
   @protected
+  BigInt dco_decode_box_autoadd_u_64(dynamic raw);
+
+  @protected
   UploadContext dco_decode_box_autoadd_upload_context(dynamic raw);
 
   @protected
@@ -984,6 +1003,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   EmotePanelResult dco_decode_emote_panel_result(dynamic raw);
+
+  @protected
+  double dco_decode_f_32(dynamic raw);
 
   @protected
   double dco_decode_f_64(dynamic raw);
@@ -1640,6 +1662,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<PlaySubtitle> dco_decode_list_play_subtitle(dynamic raw);
 
   @protected
+  List<PlayerObservation> dco_decode_list_player_observation(dynamic raw);
+
+  @protected
+  List<PlayerPortFailureEvent> dco_decode_list_player_port_failure_event(
+    dynamic raw,
+  );
+
+  @protected
   List<PopularSeriesListItem> dco_decode_list_popular_series_list_item(
     dynamic raw,
   );
@@ -1652,6 +1682,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Int64List dco_decode_list_prim_i_64_strict(dynamic raw);
+
+  @protected
+  Uint64List dco_decode_list_prim_u_64_strict(dynamic raw);
 
   @protected
   List<int> dco_decode_list_prim_u_8_loose(dynamic raw);
@@ -2241,6 +2274,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   EmoteMeta? dco_decode_opt_box_autoadd_emote_meta(dynamic raw);
 
   @protected
+  double? dco_decode_opt_box_autoadd_f_32(dynamic raw);
+
+  @protected
   double? dco_decode_opt_box_autoadd_f_64(dynamic raw);
 
   @protected
@@ -2509,6 +2545,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PlayUrl? dco_decode_opt_box_autoadd_play_url(dynamic raw);
+
+  @protected
+  PlayerCommandTicket? dco_decode_opt_box_autoadd_player_command_ticket(
+    dynamic raw,
+  );
+
+  @protected
+  PlayerPortBatch? dco_decode_opt_box_autoadd_player_port_batch(dynamic raw);
+
+  @protected
+  PlayerPortSnapshot? dco_decode_opt_box_autoadd_player_port_snapshot(
+    dynamic raw,
+  );
 
   @protected
   PopularPrecious? dco_decode_opt_box_autoadd_popular_precious(dynamic raw);
@@ -2794,6 +2843,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
+
+  @protected
+  BigInt? dco_decode_opt_box_autoadd_u_64(dynamic raw);
 
   @protected
   UploadedImageData? dco_decode_opt_box_autoadd_uploaded_image_data(
@@ -3099,6 +3151,45 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PlayUrlResult dco_decode_play_url_result(dynamic raw);
+
+  @protected
+  PlayerBatchResult dco_decode_player_batch_result(dynamic raw);
+
+  @protected
+  PlayerCommandResult dco_decode_player_command_result(dynamic raw);
+
+  @protected
+  PlayerCommandTicket dco_decode_player_command_ticket(dynamic raw);
+
+  @protected
+  PlayerIntent dco_decode_player_intent(dynamic raw);
+
+  @protected
+  PlayerIntentKind dco_decode_player_intent_kind(dynamic raw);
+
+  @protected
+  PlayerObservation dco_decode_player_observation(dynamic raw);
+
+  @protected
+  PlayerObservationKind dco_decode_player_observation_kind(dynamic raw);
+
+  @protected
+  PlayerPortActionResult dco_decode_player_port_action_result(dynamic raw);
+
+  @protected
+  PlayerPortBatch dco_decode_player_port_batch(dynamic raw);
+
+  @protected
+  PlayerPortFailure dco_decode_player_port_failure(dynamic raw);
+
+  @protected
+  PlayerPortFailureEvent dco_decode_player_port_failure_event(dynamic raw);
+
+  @protected
+  PlayerPortSnapshot dco_decode_player_port_snapshot(dynamic raw);
+
+  @protected
+  PlayerPortState dco_decode_player_port_state(dynamic raw);
 
   @protected
   PopularPrecious dco_decode_popular_precious(dynamic raw);
@@ -3808,6 +3899,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   UserStatResult dco_decode_user_stat_result(dynamic raw);
 
   @protected
+  BigInt dco_decode_usize(dynamic raw);
+
+  @protected
   VideoCandidateInput dco_decode_video_candidate_input(dynamic raw);
 
   @protected
@@ -4085,6 +4179,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   EmoteMeta sse_decode_box_autoadd_emote_meta(SseDeserializer deserializer);
+
+  @protected
+  double sse_decode_box_autoadd_f_32(SseDeserializer deserializer);
 
   @protected
   double sse_decode_box_autoadd_f_64(SseDeserializer deserializer);
@@ -4521,6 +4618,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  PlayerCommandTicket sse_decode_box_autoadd_player_command_ticket(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PlayerIntent sse_decode_box_autoadd_player_intent(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PlayerPortBatch sse_decode_box_autoadd_player_port_batch(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PlayerPortSnapshot sse_decode_box_autoadd_player_port_snapshot(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   PopularPrecious sse_decode_box_autoadd_popular_precious(
     SseDeserializer deserializer,
   );
@@ -4929,6 +5046,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
+  BigInt sse_decode_box_autoadd_u_64(SseDeserializer deserializer);
+
+  @protected
   UploadContext sse_decode_box_autoadd_upload_context(
     SseDeserializer deserializer,
   );
@@ -5131,6 +5251,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   EmotePanelResult sse_decode_emote_panel_result(SseDeserializer deserializer);
+
+  @protected
+  double sse_decode_f_32(SseDeserializer deserializer);
 
   @protected
   double sse_decode_f_64(SseDeserializer deserializer);
@@ -5947,6 +6070,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<PlayerObservation> sse_decode_list_player_observation(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<PlayerPortFailureEvent> sse_decode_list_player_port_failure_event(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<PopularSeriesListItem> sse_decode_list_popular_series_list_item(
     SseDeserializer deserializer,
   );
@@ -5959,6 +6092,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Int64List sse_decode_list_prim_i_64_strict(SseDeserializer deserializer);
+
+  @protected
+  Uint64List sse_decode_list_prim_u_64_strict(SseDeserializer deserializer);
 
   @protected
   List<int> sse_decode_list_prim_u_8_loose(SseDeserializer deserializer);
@@ -6710,6 +6846,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  double? sse_decode_opt_box_autoadd_f_32(SseDeserializer deserializer);
+
+  @protected
   double? sse_decode_opt_box_autoadd_f_64(SseDeserializer deserializer);
 
   @protected
@@ -7112,6 +7251,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PlayUrl? sse_decode_opt_box_autoadd_play_url(SseDeserializer deserializer);
+
+  @protected
+  PlayerCommandTicket? sse_decode_opt_box_autoadd_player_command_ticket(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PlayerPortBatch? sse_decode_opt_box_autoadd_player_port_batch(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PlayerPortSnapshot? sse_decode_opt_box_autoadd_player_port_snapshot(
+    SseDeserializer deserializer,
+  );
 
   @protected
   PopularPrecious? sse_decode_opt_box_autoadd_popular_precious(
@@ -7525,6 +7679,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
+  BigInt? sse_decode_opt_box_autoadd_u_64(SseDeserializer deserializer);
+
+  @protected
   UploadedImageData? sse_decode_opt_box_autoadd_uploaded_image_data(
     SseDeserializer deserializer,
   );
@@ -7922,6 +8079,61 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PlayUrlResult sse_decode_play_url_result(SseDeserializer deserializer);
+
+  @protected
+  PlayerBatchResult sse_decode_player_batch_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PlayerCommandResult sse_decode_player_command_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PlayerCommandTicket sse_decode_player_command_ticket(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PlayerIntent sse_decode_player_intent(SseDeserializer deserializer);
+
+  @protected
+  PlayerIntentKind sse_decode_player_intent_kind(SseDeserializer deserializer);
+
+  @protected
+  PlayerObservation sse_decode_player_observation(SseDeserializer deserializer);
+
+  @protected
+  PlayerObservationKind sse_decode_player_observation_kind(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PlayerPortActionResult sse_decode_player_port_action_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PlayerPortBatch sse_decode_player_port_batch(SseDeserializer deserializer);
+
+  @protected
+  PlayerPortFailure sse_decode_player_port_failure(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PlayerPortFailureEvent sse_decode_player_port_failure_event(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PlayerPortSnapshot sse_decode_player_port_snapshot(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PlayerPortState sse_decode_player_port_state(SseDeserializer deserializer);
 
   @protected
   PopularPrecious sse_decode_popular_precious(SseDeserializer deserializer);
@@ -8771,6 +8983,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   UserStatResult sse_decode_user_stat_result(SseDeserializer deserializer);
 
   @protected
+  BigInt sse_decode_usize(SseDeserializer deserializer);
+
+  @protected
   VideoCandidateInput sse_decode_video_candidate_input(
     SseDeserializer deserializer,
   );
@@ -9112,6 +9327,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     EmoteMeta self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_box_autoadd_f_32(double self, SseSerializer serializer);
 
   @protected
   void sse_encode_box_autoadd_f_64(double self, SseSerializer serializer);
@@ -9729,6 +9947,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_player_command_ticket(
+    PlayerCommandTicket self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_player_intent(
+    PlayerIntent self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_player_port_batch(
+    PlayerPortBatch self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_player_port_snapshot(
+    PlayerPortSnapshot self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_popular_precious(
     PopularPrecious self,
     SseSerializer serializer,
@@ -10272,6 +10514,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
 
   @protected
+  void sse_encode_box_autoadd_u_64(BigInt self, SseSerializer serializer);
+
+  @protected
   void sse_encode_box_autoadd_upload_context(
     UploadContext self,
     SseSerializer serializer,
@@ -10534,6 +10779,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     EmotePanelResult self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_f_32(double self, SseSerializer serializer);
 
   @protected
   void sse_encode_f_64(double self, SseSerializer serializer);
@@ -11610,6 +11858,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_player_observation(
+    List<PlayerObservation> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_player_port_failure_event(
+    List<PlayerPortFailureEvent> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_popular_series_list_item(
     List<PopularSeriesListItem> self,
     SseSerializer serializer,
@@ -11630,6 +11890,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_prim_i_64_strict(
     Int64List self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_prim_u_64_strict(
+    Uint64List self,
     SseSerializer serializer,
   );
 
@@ -12612,6 +12878,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_f_32(double? self, SseSerializer serializer);
+
+  @protected
   void sse_encode_opt_box_autoadd_f_64(double? self, SseSerializer serializer);
 
   @protected
@@ -13106,6 +13375,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_play_url(
     PlayUrl? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_player_command_ticket(
+    PlayerCommandTicket? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_player_port_batch(
+    PlayerPortBatch? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_player_port_snapshot(
+    PlayerPortSnapshot? self,
     SseSerializer serializer,
   );
 
@@ -13606,6 +13893,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_u_64(BigInt? self, SseSerializer serializer);
 
   @protected
   void sse_encode_opt_box_autoadd_uploaded_image_data(
@@ -14125,6 +14415,81 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_play_url_result(PlayUrlResult self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_player_batch_result(
+    PlayerBatchResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_player_command_result(
+    PlayerCommandResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_player_command_ticket(
+    PlayerCommandTicket self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_player_intent(PlayerIntent self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_player_intent_kind(
+    PlayerIntentKind self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_player_observation(
+    PlayerObservation self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_player_observation_kind(
+    PlayerObservationKind self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_player_port_action_result(
+    PlayerPortActionResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_player_port_batch(
+    PlayerPortBatch self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_player_port_failure(
+    PlayerPortFailure self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_player_port_failure_event(
+    PlayerPortFailureEvent self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_player_port_snapshot(
+    PlayerPortSnapshot self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_player_port_state(
+    PlayerPortState self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_popular_precious(
@@ -15256,6 +15621,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     UserStatResult self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_usize(BigInt self, SseSerializer serializer);
 
   @protected
   void sse_encode_video_candidate_input(

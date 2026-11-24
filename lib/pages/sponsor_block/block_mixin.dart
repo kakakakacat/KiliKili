@@ -50,6 +50,8 @@ mixin BlockMixin on GetxController {
 
   RxString? get videoLabel => null;
   Player? get player;
+  Stream<Duration>? get blockPositionStream => player?.stream.position;
+  Stream<Duration>? get blockBufferStream => player?.stream.buffer;
   bool get autoPlay;
   int? get timeLength;
   bool get preInitPlayer;
@@ -84,9 +86,9 @@ mixin BlockMixin on GetxController {
     if (isClosed) return;
     if (_segmentList.isNotEmpty) {
       _blockListener?.cancel();
-      await player?.stream.buffer.first;
+      await blockBufferStream?.first;
       if (isClosed) return;
-      _blockListener = player?.stream.position.listen(_onPosChanged);
+      _blockListener = blockPositionStream?.listen(_onPosChanged);
     }
   }
 

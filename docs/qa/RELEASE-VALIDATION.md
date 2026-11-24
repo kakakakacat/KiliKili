@@ -244,6 +244,6 @@ Android/iOS 分别验证前后台、PiP 与纹理销毁恢复，普通暂停不�
 流量、wall time、RSS；无窗口自动化不能替代这些步骤。证据矩阵和复跑脚本见
 [ADR-003](../architecture/adr/ADR-003-player-port-and-clock.md)。
 
-#4 的本轮独立探针已覆盖 macOS 真实弹幕和 Android 前后台/PiP、受控缓冲、
+#4 的本轮独立探针已覆盖 macOS 真实弹幕和 Android/iOS 前后台/PiP、受控缓冲、
 分辨率切换与销毁重建；无窗口三轮基线及原生同素材契约对照也已补齐。
 这些可复跑证据见 [运行记录](player-port-2026-11-24.md)，不替代上述完整产品路径。

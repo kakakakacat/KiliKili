@@ -44,5 +44,5 @@
 - [x] 独立 Flutter 图形宿主：复用生产适配器、纹理、Rust/Canvas 真实弹幕。
 - [x] Android 真机前后台、PiP、缓冲、销毁重建及画面检查。
 - [x] 原生 MpvPlayer 同素材、同 Seek/倍速/分辨率/受控缓冲契约对照。
-- [ ] iOS 剩余前后台/PiP：profile 包已装、播放/弹幕/缓冲通过；等待首次网络提示处理。
+- [x] iOS profile 真机完整重跑：播放/弹幕/缓冲、前后台/PiP、销毁重建通过；复核小窗及 PASS 画面，旧回写 0。
 - [x] 增量复核：修复 Android 驱动重复读取旧 PASS 的运行边界问题。

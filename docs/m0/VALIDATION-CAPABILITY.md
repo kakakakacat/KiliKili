@@ -748,5 +748,6 @@ media-kit/libmpv，覆盖暂停、前后 Seek、0.5×/2×、切资源、DASH 分
 MpvPlayer，含暂停、前后 Seek、倍速、分辨率和受控缓冲恢复。
 
 另有 `tool/player_port_probe/` 独立 Flutter 宿主及设备驱动，复用生产适配器、
-视频纹理与真实弹幕 fixture。macOS 可见画面/弹幕、Android 14 真机缓冲、
-前后台、PiP 和销毁重建已执行。它们是手动能力，没有新增 CI job/触发条件。
+视频纹理与真实弹幕 fixture。macOS 可见画面/弹幕，Android 14 与 iOS 27.3
+真机缓冲、前后台、PiP 和销毁重建已执行；两端小窗视频画面已复核。
+它们是手动能力，没有新增 CI job/触发条件。

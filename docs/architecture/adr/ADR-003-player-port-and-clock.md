@@ -64,7 +64,7 @@ or the player backend is changed.
 
 ## Consequences
 
-The Rust Core receives a unified player state model but must accommodate platform-specific capabilities (PiP, background audio, hardware decoding and overlay). Platform-specific video rendering stays out of Domain. No claim is made that libmpv is production-ready on all platforms; ADR-004 will decide after tests.
+The Rust Core receives a unified player state model but must accommodate platform-specific capabilities (PiP, background audio, hardware decoding and overlay). Platform-specific video rendering stays out of Domain. No claim is made that libmpv is production-ready on all platforms; ADR-004 will decide after tests. (Update 2026-11-24: ADR-004 is accepted — libmpv on all five platforms, native players kept only as fallbacks; its decision 3 maps each platform's required glue onto this contract's surface/lifecycle events, so no change to the contract is needed.)
 
 ## Fallback
 

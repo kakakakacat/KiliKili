@@ -13,6 +13,10 @@ jobs:
   # Dart 原路径，以及所有纯算法测试与基线对照（golden 的裁判）。
   test:
     runs-on: ubuntu-latest
+    # 正常 3–4 分钟（2026-11-24 对最近 6 次定时跑的实测）。上限取一个明显高于
+    # 正常值、又远低于一小时的数：2026-11-11 装依赖那次没有上限，单个 job 挂到
+    # 56 分钟 / 1 小时 33 分，白占额度还堵住合并队列（issue #91）。
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
 
@@ -22,10 +26,14 @@ jobs:
           flutter-version-file: pubspec.yaml
           cache: true
 
+      # 带重试，失败时的注解写明是装依赖而不是测试挂了（issue #91）。
       - name: Install Linux native asset headers
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libx11-dev libxi-dev
+        timeout-minutes: 10
+        run: tool/ci-apt-install.sh libgtk-3-dev libx11-dev libxi-dev
+
+      # 约 1 秒，用假的 apt-get 验上一步那个脚本的重试与失败归因还活着。
+      - name: Test dependency install retry
+        run: tool/test-ci-apt-install.sh
 
       - name: Prepare patched Flutter SDK and packages
         run: |
@@ -43,6 +51,9 @@ jobs:
   bridge:
     name: bridge (FFI integration)
     runs-on: ubuntu-latest
+    # 比上面那个宽：这里要编 bridge_flutter 的 cdylib，Rust 缓存命中时 6–7
+    # 分钟，未命中时实测到过 15 分钟（issue #91）。
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
 
@@ -52,10 +63,10 @@ jobs:
           flutter-version-file: pubspec.yaml
           cache: true
 
+      # 带重试，失败时的注解写明是装依赖而不是测试挂了（issue #91）。
       - name: Install Linux native asset headers
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libx11-dev libxi-dev
+        timeout-minutes: 10
+        run: tool/ci-apt-install.sh libgtk-3-dev libx11-dev libxi-dev
 
       # 与 rust.yml 共用缓存键，无缓存时全量编译会使构建时间失控。
       - uses: Swatinem/rust-cache@v2

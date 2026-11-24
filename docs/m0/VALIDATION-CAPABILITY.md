@@ -259,6 +259,25 @@ native library`，`timeout-minutes: 60`），是全流程最慢的一项，实�
 不能合看 `mergeable=MERGEABLE` 且 `mergeStateStatus=CLEAN`；只要
 `regression gate` 还没上报就是 `BLOCKED`，那通常只代表 Android 那项还没跑完。
 
+**依赖安装失败长什么样**（2026-11-24 加，issue #91）：`flutter-test.yml` 的两个
+job 都要先 `apt-get install libgtk-3-dev libx11-dev libxi-dev`。runner 侧 DNS
+抖动时这一步会以 `exit 100` 结束，日志里是
+`Temporary failure resolving 'security.ubuntu.com'`——但它在 PR 页面上的呈现是
+**`Dart baseline and real FFI / test` 失败**，看着像测试挂了。2026-11-11 就是
+这样：纯文档的 PR #88 也红，单个 job 挂到 56 分钟、1 小时 33 分。
+
+现在这一步走 `tool/ci-apt-install.sh`：`update` + `install` 为一次尝试，最多 3
+次、每次间隔 15 秒；重试时打一条 `Dependency install retried` warning，三次都
+不成打一条 **`Dependency install failed`** error，注解里直说这是装依赖的问题、
+不是测试失败。所以**判断一次红是不是依赖问题，看运行页上有没有这两条注解**，
+不必再去翻日志。另加了上限：步骤 10 分钟，`test` job 20 分钟（正常 3–4 分钟）、
+`bridge` job 30 分钟（正常 6–15 分钟，取决于 Rust 缓存是否命中）。
+
+脚本刻意不加 `--fix-missing`——那会让 apt 跳过下不下来的包然后以 0 退出，依赖
+其实没装上，错误被推到后面的构建步骤。它的重试与失败归因由
+`tool/test-ci-apt-install.sh` 用假的 `apt-get` 验，`test` job 里每次跑一遍
+（约 1 秒），本机 `bash tool/test-ci-apt-install.sh` 也跑得过。
+
 ## 3. Linux：明确降级为 best-effort
 
 ### 3.1 保留的保障

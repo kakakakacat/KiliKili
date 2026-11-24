@@ -1,0 +1,11 @@
+# 与 `rust/rust-toolchain.toml`、`spikes/slint-mpv`、`spikes/slint-ui` 同版本。
+#
+# 理由和那两个一样：工具链漂移会同时改掉优化行为和 clippy 结论，而这个
+# spike 迟早要报性能数字，几个平台的记录必须用同一个 rustc 跑出来才可比。
+#
+# 这里**没有**列 `aarch64-linux-android`：Android 那一轮要等评估文档 §6 的
+# 第 2 步，而且那时候还要决定用不用 cargo-apk。到时候照 slint-ui 的
+# Cargo.toml 补，别提前抄。
+[toolchain]
+channel = "1.100.0"
+components = ["rustfmt", "clippy"]

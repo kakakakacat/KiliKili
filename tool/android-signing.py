@@ -111,9 +111,11 @@ def verify(apks: list[str]) -> None:
         )
         if result.returncode:
             raise ValueError(f"APK 签名无效：{apk}: {result.stderr.strip()}")
+        # SDK 37 按签名方案命名 signer；仍逐个计数，不能吞掉额外签名者。
         digests = [value.lower() for value in re.findall(
-            r"Signer #\d+ certificate SHA-256 digest: ([0-9a-fA-F]{64})",
-            result.stdout,
+            r"^(?:Signer #\d+|V\d(?:\.\d+)? Signer(?: #\d+)?:) "
+            r"certificate SHA-256 digest: ([0-9a-fA-F]{64})$",
+            result.stdout, re.MULTILINE,
         )]
         if digests != [expected]:
             raise ValueError(f"APK 证书与预期身份不符：{apk}，实际 {digests}")

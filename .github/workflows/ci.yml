@@ -74,6 +74,9 @@ jobs:
           export FLUTTER_ROOT="$(dirname "$(dirname "$(command -v flutter)")")"
           tool/prepare-build.sh android
 
+      - name: Test Android signing verification
+        run: python3 -m unittest discover -s tool -p test_android_signing.py
+
       - name: Configure stable Android validation signing
         env:
           ANDROID_SIGNING_KEYSTORE_BASE64: ${{ secrets.ANDROID_CI_KEYSTORE_BASE64 }}

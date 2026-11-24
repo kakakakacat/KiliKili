@@ -82,6 +82,9 @@ jobs:
               shell: pwsh
               run: lib/scripts/patch.ps1 android
 
+            - name: 验证 Android 签名校验脚本
+              run: python3 -m unittest discover -s tool -p test_android_signing.py
+
             # 验证包固定用 CI 身份；带 tag 的正式包只能用单独的发布身份。
             - name: 配置 Android 验证签名
               if: github.event.inputs.tag == ''

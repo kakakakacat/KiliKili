@@ -684,7 +684,10 @@ AppleScript 读回旁白**刚念的那句话**（`last phrase`），所以记下
 - Android（#146）：配置密钥后，构建前校验证书 SHA-256，构建后对每个 APK
   执行 `apksigner verify --print-certs` 并比对指纹；密钥缺失、指纹不符或
   APK 签名无效都会让构建失败。验证包使用固定身份与 `.dev` 应用 ID，
-  正式包使用另一把身份与正式应用 ID。尚未配置密钥时不能声称已实跑通过。
+  正式包使用另一把身份与正式应用 ID。指纹解析兼容旧版与 SDK 37 的
+  `apksigner` 输出；`python3 -m unittest discover -s tool -p test_android_signing.py`
+  覆盖两种格式及错误证书、多签名者、错误应用 ID 的拒绝路径。
+  尚未配置密钥时不能声称已实跑通过。
 
 **CI 验不了、必须人工的**（对应 [QA-001](../qa/RELEASE-VALIDATION.md) 的 S01–S04）：
 

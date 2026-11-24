@@ -202,6 +202,13 @@ PR**，不要只留在代码和 Issues 里：
   `gh workflow run "Regression CI" --ref <分支>`。
 - 回归仍在跑的地方：合并进 main 的 push、每日 02:17 定时、手动 dispatch。
   坏改动的发现点从「合并前」后移到「合并后」，合完顺手看一眼那次运行。
+- **定时回归红在 `ios` / `macos` 时，先看是不是没抢到 runner。** 托管 macOS
+  runner 容量紧张时 job 会在 15 分钟整处被取消——`steps` 为空、日志拉不到、
+  运行注解写着 `The job was not acquired by Runner of type hosted even after
+  multiple attempts`。那跟你的改动无关，重跑即可。2026-11-24 起 `gate` 不再
+  把平台打包的 `cancelled` 判红（issue #181），所以**反过来也要注意：这四项
+  绿着不等于它们真的编出了包**，扫一眼运行页上有没有「Platform package not
+  completed」那条 warning。rust / flutter / proto / android 不在放宽范围内。
 - 必需检查叫 **`regression gate`**（`.github/workflows/ci.yml` 的 `gate` job
   用 `needs:` 聚合 rust / flutter / proto / android 四项）。它只在上面那几种触发下
   运行。恢复 PR 触发后，每个 PR 会打一次 Android APK，11–15 分钟，是全流程

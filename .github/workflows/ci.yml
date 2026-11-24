@@ -149,11 +149,33 @@ jobs:
               exit 1
             fi
           done
-          if [[ "$FULL_PLATFORMS" == true ]]; then
-            for result in "$IOS_RESULT" "$MACOS_RESULT" "$WINDOWS_RESULT" "$LINUX_RESULT"; do
-              if [[ "$result" != success ]]; then
-                echo "Required platform build ended with: $result" >&2
-                exit 1
-              fi
-            done
+          if [[ "$FULL_PLATFORMS" != true ]]; then
+            exit 0
+          fi
+          # 平台打包这四项只把 failure 判红（issue #181）。托管 macOS runner 容量
+          # 紧张时 job 会在 15 分钟整处被取消：steps 为空、日志拉不到、注解写着
+          # "The job was not acquired by Runner of type hosted even after multiple
+          # attempts"——那不是构建失败，是根本没开始跑。把 cancelled 一并判红的
+          # 结果是定时回归一半时间红着，看久了就不看了，真失败反而被当成又一次
+          # 没抢到机器。代价：有人手动取消的那次也会被放过，所以仍留一条 warning。
+          platform_failed=0
+          for entry in "ios:$IOS_RESULT" "macos:$MACOS_RESULT" \
+                       "windows:$WINDOWS_RESULT" "linux:$LINUX_RESULT"; do
+            platform="${entry%%:*}"
+            result="${entry#*:}"
+            case "$result" in
+              success) ;;
+              cancelled)
+                echo "::warning title=Platform package not completed::${platform} ended with cancelled; not treated as a failure. Most likely the hosted runner was never acquired (issue #181), but it can also mean this run was cancelled manually."
+                echo "- :warning: \`${platform}\` cancelled, not treated as a failure (issue #181)" >> "$GITHUB_STEP_SUMMARY"
+                ;;
+              *)
+                echo "::error title=Platform package failed::${platform} ended with: ${result}"
+                platform_failed=1
+                ;;
+            esac
+          done
+          if (( platform_failed )); then
+            echo "Required platform build failed" >&2
+            exit 1
           fi

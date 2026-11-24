@@ -16,5 +16,8 @@ import UIKit
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "PipPlugin") {
       PipPlugin.register(with: registrar)
     }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "NetworkPermissionPlugin") {
+      NetworkPermissionPlugin.register(with: registrar)
+    }
   }
 }

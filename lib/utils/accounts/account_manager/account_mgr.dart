@@ -9,6 +9,7 @@ import 'package:kilikili/utils/accounts/account.dart';
 import 'package:kilikili/utils/accounts/api_type.dart';
 import 'package:kilikili/utils/app_sign.dart';
 import 'package:kilikili/utils/extension/string_ext.dart';
+import 'package:kilikili/utils/network_permission.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -174,7 +175,9 @@ class AccountManager extends Interceptor {
     ];
     String url = err.requestOptions.uri.toString();
     if (kDebugMode) debugPrint('🌹🌹ApiInterceptor: $url\n$err');
-    if (skipShow.any(url.contains) ||
+    // iOS 联网授权前的失败是预期内的，由启动门统一提示，不逐条弹 toast。
+    if (!NetworkPermission.isReady ||
+        skipShow.any(url.contains) ||
         (url.contains('skipSegments') && err.requestOptions.method == 'GET')) {
       // skip
     } else {

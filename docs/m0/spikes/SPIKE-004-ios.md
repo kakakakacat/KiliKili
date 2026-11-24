@@ -296,8 +296,10 @@ https 地址**，AVPlayer 自己发 Range 请求去 CDN，不经过 App，不起
 
 ## 7. 没覆盖的
 
-- 只到 480p（未登录）；1080p/4K、HEVC、AV1 都没量。
-- 内存/RSS 没量；电量与发热没量（只看了 CPU）。
+- ~~只到 480p（未登录）；1080p/4K、HEVC、AV1 都没量；内存/RSS 没量。~~ 已在 #210 补测，见
+  [2026-11-24-adr004-measurements.md](2026-11-24-adr004-measurements.md)。补测发现本文 §2 的零拷贝画面
+  **颜色是错的**（V 读成 U，偏绿），截图里也是；修法是 `hwdec-image-format=bgra`。
+- 电量与发热没量（只看了 CPU）。
 - 旋转、安全区（RFC §7.2 的 iOS 项，不在 #11 的范围里）。
 - 中文字体是方块，单开了 #206（截图里的 ☒ 就是它）。
 - 120Hz：UI 封顶 60 fps，Info.plist 的 `CADisableMinimumFrameDurationOnPhone` 没试。

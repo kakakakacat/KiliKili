@@ -26,12 +26,6 @@ KiliKili is based on [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus). It k
 
 Official builds are not out yet; watch [Releases](https://github.com/kakakakacat/KiliKili/releases).
 
-## Project activity
-
-![Recent commits](assets/stats/commits.svg)
-
-![Source-code changes](assets/stats/code-changes.svg)
-
 ## Long-term maintenance
 
 We will keep updating KiliKili. If you run into a problem, tell us in [Issues](https://github.com/kakakakacat/KiliKili/issues).

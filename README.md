@@ -26,12 +26,6 @@ KiliKili 基于 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus)，保留�
 
 正式安装包尚未发布，请关注 [Releases](https://github.com/kakakakacat/KiliKili/releases)。
 
-## 项目动态
-
-![最近提交记录](assets/stats/commits.svg)
-
-![代码行变更](assets/stats/code-changes.svg)
-
 ## 长期维护
 
 我们会长期更新 KiliKili。遇到问题欢迎在 [Issues](https://github.com/kakakakacat/KiliKili/issues) 反馈。

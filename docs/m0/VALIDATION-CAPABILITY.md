@@ -26,6 +26,9 @@ Apple 与 Android 改为手动 dispatch（理由见 §2.1）；「成本约束�
 也不改动上表任何一格的结论
 修订：2026-11-22 — 界面侧的实验台（`spikes/slint-ui`，#10）落地并在 Windows
 上实跑，本文末尾新增一节。同样**不进 CI**，同样不改动上表任何一格
+修订：2026-11-24 — Liquid Glass 的实验台骨架（`spikes/slint-glass`，#130）落地，
+**但一行都没有编译过**，本文末尾新增一节记它将来能验到什么、以及为什么它
+和前两个 spike 一样**连进 CI 都不该考虑**。上表任何一格不变
 关联：RFC-0001 §9.3 / §16.7，ADR-004
 
 本文回答一个 RFC 里此前含糊带过的问题：五个目标平台，**哪些能做真机验收、哪些只能做编译验证、哪些根本没覆盖**。结论直接影响 M4/M5 的准入范围，以及 ADR-004 能拿到多少实测数据。
@@ -238,15 +241,24 @@ windows, linux]`，再逐个核对 `needs.*.result`。真正的回归在被聚�
   windows / linux 带 `if: github.event_name == 'schedule' ||
   inputs.full_platforms`，平时是 skipped；门只在 `full_platforms` 为真时才
   核对这四项。
-- **平台打包那四项只把 `failure` 判红，`cancelled` 不判红**（2026-11-24，
-  issue #181）。托管 macOS runner 容量紧张时，job 会在 **15 分钟整**处被取消：
-  `steps` 为空、`gh run view --log-failed` 拉不到日志、运行注解写着
-  `The job was not acquired by Runner of type hosted even after multiple
-  attempts`——这不是构建失败，是这个 job 根本没开始跑。原先一律要求 `success`，
-  结果最近 8 次定时跑里有 4 次不是 success，其中两次就是这个（
+- **平台打包那四项只把 `failure` 判红，`abandoned` / `cancelled` 不判红**
+  （2026-11-24，issue #181）。托管 macOS runner 容量紧张时，job 会在
+  **15 分钟整**处结束：`steps` 为空、`gh run view --log-failed` 拉不到日志、
+  运行注解写着 `The job was not acquired by Runner of type hosted even after
+  multiple attempts`——这不是构建失败，是这个 job 根本没开始跑。原先一律要求
+  `success`，结果最近 8 次定时跑里有 4 次不是 success，其中两次就是这个（
   [44715385523](https://github.com/kakakakacat/KiliKili/actions/runs/44715385523) 的
   `ios`、[44282401120](https://github.com/kakakakacat/KiliKili/actions/runs/44282401120)
-  的 `macos`）。现在 `cancelled` 只打一条 `::warning::` 注解并写进 step summary。
+  的 `macos`）。现在这两种值各打一条 `::warning::` 注解并写进 step summary。
+
+  **这里有个坑，第一版就栽在上面**：运行页与 Jobs API 把这种 job 显示成
+  `conclusion: cancelled`，而 `gate` 读的 `needs.<job>.result` 给的是
+  **`abandoned`**。照着页面上看到的写 `cancelled)` 不管用——#223 合进来的第一版
+  就是这么写的，当天分支上那次完整回归
+  （[45401214363](https://github.com/kakakakacat/KiliKili/actions/runs/45401214363)）
+  照旧红，拉 gate 日志才看见 `IOS_RESULT: abandoned`。回查 11-18、11-20、11-24
+  三次定时失败，值全是 `abandoned`。**判断要照着 gate 日志里那几个
+  `*_RESULT:` 写，不是照着运行页。**
 
   **这是一处真实的验证能力下降，别当成没有**：有人手动取消那一次、以及
   `concurrency` 的 `cancel-in-progress` 掐掉的那一次，平台打包都会被放过而
@@ -776,3 +788,41 @@ MpvPlayer，含暂停、前后 Seek、倍速、分辨率和受控缓冲恢复。
 视频纹理与真实弹幕 fixture。macOS 可见画面/弹幕，Android 14 与 iOS 27.3
 真机缓冲、前后台、PiP 和销毁重建已执行；两端小窗视频画面已复核。
 它们是手动能力，没有新增 CI job/触发条件。
+### Liquid Glass 的实测能力（#130，2026-11-24）
+
+**这一节记的是「将来能验到什么」，不是「已经验到了什么」**：
+`spikes/slint-glass` 这一轮只落地了骨架，**一行都没有编译过**，所以下面
+每一条都还没有产出过任何证据。评估见
+[2026-11-24-glass-wgpu-eval.md](spikes/2026-11-24-glass-wgpu-eval.md)。
+
+**本机能验的**（桌面，Windows / macOS）：
+
+- Slint 1.19 原生 `Rectangle::backdrop-blur` 的观感，与 Flutter 版
+  `GlassNavigationSurface` 并排对照。**这一项的结论必须由人看截图判**，
+  不是程序判的——要比的就是观感。
+- 同一个二进制换 `SLINT_BACKEND=winit-skia` / `winit-femtovg` 各跑一次，
+  回答「`backdrop-blur` 到底是 Skia 独有还是 FemtoVG 也有」。官方参考页、
+  CHANGELOG 与 FemtoVG 源码三处说法对不上，只能跑一次定。
+- 动态背景（持续横移的条带）下的帧耗时，判 `backdrop-blur` 那条官方警告
+  （每次重绘都要重读并过滤矩形底下每个像素）的实际代价。与 #126 的首页
+  feed 滚动卡顿是同一类开销，可以互相参照。
+- 开 `wgpu-probe` feature 之后，`AfterRendering` 回调里到底拿不拿得到可写
+  的 `TextureView`（评估文档 §2.1 的判据）。
+
+**必须真机才能验的**：
+
+- Android 上 `backdrop-blur` 出不出效果、帧预算多少。Android 用 Skia，
+  按文档应当支持，但没实测过。**这一项决定 #130 的五端能不能齐**，优先级
+  高于任何桌面上的 wgpu 实验。
+- Android / iOS 上 Slint 能不能以 wgpu 渲染。`femtovg_renderer` 整个模块
+  标着 `non-Android only`，而仓库里已验证过的移动端 GPU 路径（#218 / #219
+  的插帧）走的是 GL，不是 wgpu。
+
+**它判不了、必须人看的**：玻璃观感本身——折射带宽、高光强度、模糊程度在
+不同背景下「像不像玻璃」。这些只出截图，结论栏写「人工确认」。
+
+**它同样不进 CI，而且比前两个 spike 更没得商量**：前两个是「runner 没有
+GPU 合成与显示输出」，这个还要再加一条——#130 要的交付物就是帧时间、掉帧、
+显存、功耗，而托管 runner 上只有软件光栅器（Linux 的 lavapipe、Windows 没
+GPU、macOS 的 Metal 设备历史上反复拿不到）。**软件光栅器上的性能数字写进
+ADR 比没有更坏**，因为它看起来像证据。

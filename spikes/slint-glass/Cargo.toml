@@ -1,0 +1,51 @@
+# Liquid Glass 的实验台（issue #130）。见 README.md 与
+# docs/m0/spikes/2026-11-24-glass-wgpu-eval.md。
+#
+# 和 `slint-mpv` / `slint-ui` 同样的理由**自成一个 workspace**：`rust.yml`
+# 按 `rust/**` 触发，spike 要链 GPU 栈、要开窗口，进那个 workspace 等于给
+# 所有 CI 作业加一堆它们装不了的依赖。它是证据产出工具，Go/No-Go 结论下来
+# 之后可以整个删掉，`rust/` 下的 crate 不行。
+#
+# 它**也不进 CI**，而且比前两个更没得商量：#130 要的是帧时间、掉帧、显存，
+# 托管 runner 上只有软件光栅器，那种数字写进 ADR 比没有更坏。
+[workspace]
+
+[package]
+name = "slint-glass-spike"
+version = "0.0.0"
+edition = "2024"
+publish = false
+license = "GPL-3.0-or-later"
+
+[dependencies]
+# 两个 renderer feature 同时开着是**故意的**：这个 spike 的第一个待答问题
+# 就是「`backdrop-blur` 到底是 Skia 独有，还是 FemtoVG 也有」——官方的
+# Rectangle 参考页说只有 Skia，CHANGELOG 说两个都有，FemtoVG 的 wgpu 源码里
+# 又确实有 BackdropBlur 的约束说明。三处对不上，只能同一个二进制换着
+# SLINT_BACKEND 各跑一次。
+#
+# 少开一个的话，选不到的那个会**静默退回默认渲染器**，看起来像是「支持」。
+slint = { version = "~1.19", features = ["renderer-skia", "renderer-femtovg"] }
+
+[build-dependencies]
+slint-build = "~1.19"
+
+[features]
+# wgpu 这一步**默认不开**，理由有两条，都不是省事：
+#
+# 1. 评估文档 §6 的顺序是先量「原生 backdrop-blur 差多少」，再决定 wgpu 要
+#    不要上。默认开着会诱导人跳过第一步。
+# 2. wgpu 30 一开就是几百个 crate 的首次编译。这个 spike 第一次被人跑起来
+#    的那台机器，大概率就是手边这台——没必要为了还没决定要走的路线先付
+#    一次全量编译。
+#
+# 开它的时机：第一步量完、确认折射/高光必须自己画之后，跑评估文档 §2.1
+# 那个十几行的判据（AfterRendering 里到底拿不拿得到可写的 TextureView）。
+wgpu-probe = ["slint/unstable-wgpu-30"]
+
+[profile.release]
+# 与 `rust/Cargo.toml` 的 release profile 对齐：报告里的数字要代表 Phase 2
+# 的真实形态，不能用 dev 构建的数字。
+opt-level = 3
+lto = "thin"
+codegen-units = 1

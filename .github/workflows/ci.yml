@@ -153,11 +153,15 @@ jobs:
             exit 0
           fi
           # 平台打包这四项只把 failure 判红（issue #181）。托管 macOS runner 容量
-          # 紧张时 job 会在 15 分钟整处被取消：steps 为空、日志拉不到、注解写着
+          # 紧张时 job 会在 15 分钟整处结束：steps 为空、日志拉不到、注解写着
           # "The job was not acquired by Runner of type hosted even after multiple
-          # attempts"——那不是构建失败，是根本没开始跑。把 cancelled 一并判红的
-          # 结果是定时回归一半时间红着，看久了就不看了，真失败反而被当成又一次
-          # 没抢到机器。代价：有人手动取消的那次也会被放过，所以仍留一条 warning。
+          # attempts"——那不是构建失败，是根本没开始跑。
+          #
+          # 注意这里的值：运行页与 Jobs API 把那种 job 显示成 conclusion
+          # "cancelled"，但 needs.<job>.result 给的是 **abandoned**。照着页面写
+          # cancelled 是不管用的（第一版就这么错过一次，见 #181 下的复盘）。
+          # 两个值都放过，但注解分开写，免得把「没抢到机器」和「有人按了取消」
+          # 混成一句。代价：手动取消的那次也会被放过。
           platform_failed=0
           for entry in "ios:$IOS_RESULT" "macos:$MACOS_RESULT" \
                        "windows:$WINDOWS_RESULT" "linux:$LINUX_RESULT"; do
@@ -165,8 +169,12 @@ jobs:
             result="${entry#*:}"
             case "$result" in
               success) ;;
+              abandoned)
+                echo "::warning title=Platform package never started::${platform} never acquired a hosted runner (result: abandoned), so it was not treated as a failure. This is runner capacity, not your change; see issue #181."
+                echo "- :warning: \`${platform}\` abandoned (no runner acquired), not treated as a failure (issue #181)" >> "$GITHUB_STEP_SUMMARY"
+                ;;
               cancelled)
-                echo "::warning title=Platform package not completed::${platform} ended with cancelled; not treated as a failure. Most likely the hosted runner was never acquired (issue #181), but it can also mean this run was cancelled manually."
+                echo "::warning title=Platform package cancelled::${platform} was cancelled, so it was not treated as a failure. Someone cancelled this run, or a newer run superseded it (concurrency cancel-in-progress). It did not produce a package; see issue #181."
                 echo "- :warning: \`${platform}\` cancelled, not treated as a failure (issue #181)" >> "$GITHUB_STEP_SUMMARY"
                 ;;
               *)

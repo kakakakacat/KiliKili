@@ -1,0 +1,148 @@
+// Liquid Glass 的第一个对照 Demo（issue #130，评估文档 §6 第 1 步）。
+//
+// **这份没有编译过。** Slint 的 .slint 语法错误只有 slint-build 能报，
+// 在 `cargo build` 跑通之前不要照着它写第二个组件。
+//
+// 它要回答的只有一个问题：
+//
+//   Slint 1.19 原生的 `Rectangle::backdrop-blur` + 渐变 + 边框 + 阴影，
+//   照着 Flutter 版 GlassNavigationSurface 的参数摆出来，和首页那条导航栏
+//   差多少？
+//
+// 如果差的只有「边缘折射」和「单点高光」两件事，那 #130 的 wgpu 管线就是
+// 在原生模糊之上补两个效果，而不是重做整条背景捕获链——这个差别足够大，
+// 大到应该在动手搭管线之前先量一次。
+//
+// 刻意**没有**用到的东西，别当成遗漏：
+// - 没有 wgpu、没有自定义 shader。这一步不需要，见 Cargo.toml 里 wgpu-probe
+//   feature 的说明。
+// - 没有多尺度模糊 / Fresnel / 动态光照。P0 表里这些 Flutter 版也没有，
+//   先量差距再谈。
+
+// 背景：一条持续横移的彩色条带。
+//
+// 必须是**动的**——#130 要求「在动态背景下」验证，而静态背景会把两类问题
+// 一起藏掉：背板是不是每帧都重新捕获，以及滚动时糊得跟不跟得上。
+component MovingBackdrop inherits Rectangle {
+    in property <float> phase;
+    background: #10131a;
+
+    for i in 14: Rectangle {
+        // 用 phase 推着走，走到头从另一侧回来。
+        x: Math.mod(i * 90px / 1px + root.phase * 240, root.width / 1px + 90) * 1px - 90px;
+        y: 0;
+        width: 56px;
+        height: root.height;
+        background: i.mod(3) == 0
+            ? #3b82f6
+            : (i.mod(3) == 1 ? #ec4899 : #22c55e);
+        opacity: 0.55;
+    }
+
+    Text {
+        x: 24px;
+        y: 24px;
+        text: "动态背景：条带持续横移。静态背景会同时藏掉「背板有没有每帧重捕获」和「滚动时糊得跟不跟得上」两个问题。";
+        wrap: word-wrap;
+        width: root.width - 48px;
+        color: white;
+        font-size: 15px;
+    }
+}
+
+// 玻璃胶囊。参数逐个对着 Flutter 侧抄，来源标在每一行后面。
+//
+// 对照源：
+//   lib/common/widgets/floating_navigation_bar.dart  （材质层：渐变/边框/阴影/尺寸）
+//   shaders/liquid_glass.frag                        （折射与 glint，这里做不到）
+component GlassCapsule inherits Rectangle {
+    in property <length> blur-sigma: 10px;
+
+    height: 80px;                      // _kNavigationHeight
+    border-radius: self.height / 2;    // _kBorderRadius = 高度 / 2，胶囊
+
+    // #130 的 P0「实时背景模糊」。Slint 1.19.0 新增，对应 CSS 的
+    // backdrop-filter: blur()。值是高斯标准差。
+    //
+    // 10px 这个初值不是拍的：Flutter 侧在后端不支持自定义 shader 时整体退到
+    // ImageFilter.blur(sigma 10)，那条回退路径就是 Low 档要对齐的目标。
+    backdrop-blur: root.blur-sigma;
+
+    // 表面渐变 topLeft → bottomRight，alpha 0.24 / 0.10 / 0.18。
+    // 这里用白色近似 Flutter 的 ColorScheme.surface——真正接进应用时换成
+    // 主题色，Demo 阶段固定值更好比对。
+    background: @linear-gradient(135deg,
+        #ffffff3d 0%,    // 0.24
+        #ffffff1a 50%,   // 0.10
+        #ffffff2e 100%); // 0.18
+
+    // 白色描边 alpha 0.36。
+    border-width: 1px;
+    border-color: #ffffff5c;
+
+    // 外层阴影：黑 alpha 0.22，blur 22，offset (0, 7)。
+    drop-shadow-color: #00000038;
+    drop-shadow-blur: 22px;
+    drop-shadow-offset-x: 0;
+    drop-shadow-offset-y: 7px;
+}
+
+export component GlassSpike inherits Window {
+    title: "KiliKili SPIKE — Liquid Glass 对照 (#130)";
+    preferred-width: 900px;
+    preferred-height: 560px;
+    background: #0b0d12;
+
+    // 背景动画的相位。Slint 的 animate 要有属性变化才会跑，所以用 Timer 推。
+    property <float> phase: 0;
+    // 模糊强度做成可调：对照时要能一眼看出「调模糊能不能补上折射的缺失」
+    // ——答案大概率是不能，但这正是要给看的人确认的那一下。
+    in-out property <length> blur-sigma: 10px;
+
+    Timer {
+        interval: 16ms;
+        running: true;
+        triggered => {
+            // 走满一圈回零，避免 f32 在长时间运行后丢精度。
+            root.phase = Math.mod(root.phase + 0.0025, 1.0);
+        }
+    }
+
+    MovingBackdrop {
+        width: 100%;
+        height: 100%;
+        phase: root.phase;
+    }
+
+    // 玻璃条。位置照首页：贴底悬浮。
+    GlassCapsule {
+        x: (root.width - self.width) / 2;
+        y: root.height - self.height - 28px;
+        width: Math.min(root.width - 48px, 430px);
+        blur-sigma: root.blur-sigma;
+
+        HorizontalLayout {
+            padding: 4px;   // _kIndicatorPaddingInt
+            spacing: 0;
+            for label in ["首页", "动态", "发现", "我的"]: Rectangle {
+                Text {
+                    text: label;
+                    color: white;
+                    font-size: 14px;
+                }
+            }
+        }
+    }
+
+    // 把「这一版缺什么」写在画面上。截图会进记录，而记录的读者未必记得
+    // 原生 backdrop-blur 做不到哪两件事。
+    Text {
+        x: 24px;
+        y: root.height - 24px - self.height;
+        text: "原生 backdrop-blur：没有边缘折射（liquid_glass.frag 的 rim 15px / 偏移 7px），没有单点高光（glint 0.18 / 带宽 4px）。";
+        wrap: word-wrap;
+        width: root.width - 48px;
+        color: #ffffff99;
+        font-size: 12px;
+    }
+}

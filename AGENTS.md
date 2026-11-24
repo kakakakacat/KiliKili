@@ -206,9 +206,15 @@ PR**，不要只留在代码和 Issues 里：
   runner 容量紧张时 job 会在 15 分钟整处被取消——`steps` 为空、日志拉不到、
   运行注解写着 `The job was not acquired by Runner of type hosted even after
   multiple attempts`。那跟你的改动无关，重跑即可。2026-11-24 起 `gate` 不再
-  把平台打包的 `cancelled` 判红（issue #181），所以**反过来也要注意：这四项
-  绿着不等于它们真的编出了包**，扫一眼运行页上有没有「Platform package not
-  completed」那条 warning。rust / flutter / proto / android 不在放宽范围内。
+  把平台打包的 `abandoned` / `cancelled` 判红（issue #181），所以**反过来也要
+  注意：这四项绿着不等于它们真的编出了包**，扫一眼运行页上有没有「Platform
+  package never started / cancelled」那两条 warning。rust / flutter / proto /
+  android 不在放宽范围内。
+
+  **写这类判断时别照着运行页抄状态词。** 没抢到 runner 的 job，运行页与
+  Jobs API 显示 `conclusion: cancelled`，而 `needs.<job>.result` 给的是
+  **`abandoned`**——#223 的第一版就是照着页面写了 `cancelled`，合完照旧红。
+  要看 `gate` 日志里那几个 `*_RESULT:` 的实际取值。
 - 必需检查叫 **`regression gate`**（`.github/workflows/ci.yml` 的 `gate` job
   用 `needs:` 聚合 rust / flutter / proto / android 四项）。它只在上面那几种触发下
   运行。恢复 PR 触发后，每个 PR 会打一次 Android APK，11–15 分钟，是全流程

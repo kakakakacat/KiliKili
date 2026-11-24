@@ -12,7 +12,7 @@ SPIKE-001/002）与 `spikes/slint-ui`（界面，SPIKE-003），记录格式同�
 
 **手写的有三份例外**，它们不是 `--record` 产出的，可以也必须手工编辑：
 `2026-11-22-flutter-patches-slint-eval.md`（读 diff 与 Slint 源码写出来的
-评估，根本没有程序可跑）、下面这份 Android 的，以及 iOS 的 `SPIKE-004-ios.md`
+评估，根本没有程序可跑）、下面这份 Android 的、iOS 的 `SPIKE-004-ios.md`，以及 #210 的补测记录
 （理由同 Android：入口是 App，证据来自 `devicectl --console` 与真机截图）。
 
 **Android 那份是手写的例外**：那边没有命令行，入口是 `android_main`，
@@ -29,6 +29,7 @@ SPIKE-001/002）与 `spikes/slint-ui`（界面，SPIKE-003），记录格式同�
 | [2026-11-22-slint-ui-android.md](2026-11-22-slint-ui-android.md)（＋[notes](2026-11-22-slint-ui-android-notes.md)） | Android 14 / Adreno 740 真机 | **SPIKE-003（#10）在真机上的同一轮**：长列表过（滚动 p95 10.5ms，但余量只剩 37%）、**触控惯性过**（手指驱动 122fps，`Flickable` 自带）。最贵的结论是**无障碍树是空的**——Slint 的 Android 后端根本没接，TalkBack 一个节点都读不到 |
 | [2026-11-23-slint-ui-macos.md](2026-11-23-slint-ui-macos.md)（＋[notes](2026-11-23-slint-ui-macos-notes.md)） | macOS 27.3 / Apple M4 | **SPIKE-003（#10）的 macOS 一轮＋旁白实读**：列表与富文本同 Windows（滚动 p95 0.6ms）。旁白控件全 PASS；**长列表只读得到第一屏**——虚拟化对无障碍不透明，旁白报「1/7」、翻页滚不动。另撞出一条 macOS 独有的：固定宽度的子元素会把窗口最大宽度钉死。新写了 mac 外部驱动，Tab / 英文 / 简体拼音组字 / 最小化全 PASS |
 | [SPIKE-004-ios.md](SPIKE-004-ios.md) | iOS 27.3 / iPhone 16 Pro Max 真机 | **#11 PASS**：mpv 经 GLES 画进 IOSurface、零拷贝进 Slint（Skia on Metal），60 fps、每帧 1.3ms、`videotoolbox` 非 copy；PiP 自动进入、小窗持续出帧；后台音频要在退后台前 `vid=no`，否则 VT 会话失效、永久退回软解。**iOS 上不翻转**（与三端相反）。AVPlayer 对照：m4s 自带 sidx，生成字节范围 HLS 即可 0.85 秒起播，不需要代理或转码 |
+| [2026-11-24-adr004-measurements.md](2026-11-24-adr004-measurements.md) | macOS 27.3 / M4；iOS 27.3 / iPhone 16 Pro Max | **ADR-004 §6 补测（#210）**：HEVC、杜比视界两端硬解；AV1 在 iOS 上是软解。iOS seek / 倍速 / 切清晰度都通，音画差 ≤ 12ms。**发现 iOS 零拷贝偏绿**（mpv 的 nv12 interop 把 V 读成 U），修法 `hwdec-image-format=bgra`。macOS p95 贴线是显示环境的读数。Android / Windows 未测 |
 | [2026-11-22-flutter-patches-slint-eval.md](2026-11-22-flutter-patches-slint-eval.md) | 不涉及（读 diff 与 Slint 源码） | **SPIKE-003（#10）后半边：34 个 Flutter 补丁逐项评估**。去重后是 26 个独立问题：原生支持 3 / 不适用 4 / 需自写 12 / 做不到 7。做不到的归成四件事，**跨元素文本选择**与**嵌套滚动的手势消歧**是 Phase 2 No-Go 候选 |
 
 ## 为什么先有一份 Windows 的

@@ -89,6 +89,7 @@ SPIKE-001 notes 里「三端都要翻转、适配器不必分支」那句对 iOS
 | Android / iOS | 退后台（且未进 PiP）前 `vid=no`，回前台 `vid=auto` | Android：后台还能不能出声取决于 mpv 碰巧的行为（VO 死掉后丢视频轨；片源没有音轨时整条播放被卸掉）；iOS：VT 会话失效（-12903），mpv **永久**退回软解、卡 3–4 秒 | SPIKE-002「后台音频」、SPIKE-004 §4 |
 | Android / iOS | PiP 期间不当作「进了后台」 | 小窗里没画面 | SPIKE-002 坑 6、SPIKE-004 §3 |
 | iOS | PiP 用 AVSampleBufferDisplayLayer + `contentSource:` 控制器，喂同一张 CVPixelBuffer | 没有 PiP | SPIKE-004 §3 |
+| iOS | `hwdec-image-format=bgra`（VT 直接出 BGRA） | 默认的 nv12 经 mpv 的 iOS interop 采样时 V 读成 U：肤色发绿、蓝色发紫，**HUD 一切正常** | #210 补测 §3 |
 | iOS | 后台且未进 PiP 时不提交 GLES 命令 | 文档规定会被系统杀（iOS 27 实测没杀，不能依赖） | SPIKE-004 §3.2 |
 
 ## 决策四：原生播放器不预先实现，只记下退路和代价
@@ -110,31 +111,41 @@ SPIKE-001 notes 里「三端都要翻转、适配器不必分支」那句对 iOS
 
 ## 决策五：已知风险，接受并盯住
 
-- **OpenGL 在 Apple 平台是废弃 API。** macOS 走的是 GL 4.1 on Metal，p95 19.98ms
-  贴着 20ms 预算线；iOS 走 GLES on Metal。两边今天都能工作。盯的信号：mpv 上游
+- **OpenGL 在 Apple 平台是废弃 API。** macOS 走的是 GL 4.1 on Metal；iOS 走 GLES on Metal。
+  （SPIKE-001 的「p95 19.98ms 贴线」后来查明是显示环境的读数：同一条片源换个时段就是
+  28ms，而且所有编码一样，见 #210 补测 §1.2。所以它不能当 GL 性能的预警信号。）两边今天都能工作。盯的信号：mpv 上游
   出现 Metal / Vulkan（MoltenVK）的 render API，或者 Apple 在新 SDK 里真正拿掉 GL。
   前者出现就迁，后者出现就启用决策四的 iOS 退路。
 - **Windows 是 `d3d11va-copy`。** 每帧多一次 GPU→CPU→GPU 拷贝，480p 下没造成问题，
   4K/HDR 下未知。零拷贝要走 D3D11 与 GL 的互操作（WGL_NV_DX_interop），没做。
+- **iOS 上 AV1 是软解。** media_kit 带的 ffmpeg 没走 VideoToolbox 的 AV1；4K AV1 软解
+  能跑满 24 fps，但要占一个 CPU 核（#210 补测 §2）。取流时 iOS 优先 HEVC，AV1 排后；
+  自编 ffmpeg 或换 libmpv 包时回来复测。
 - **错误恢复靠匹配 mpv / ffmpeg 的日志字符串**（RUST-002 #2）。Player Port 已定义
   自有错误分类（ADR-003），每一条字符串匹配都要有 fixture 回归，否则 mpv 升级会
   静默打断重连、软解回退这些逻辑。
 
-## 6. 批准时仍缺的测量（补测见 #210）
+## 6. 批准时缺的测量，及补测结果（#210）
 
-issue #12 要求的测量项里，下面这些**还没有任何平台的数据**：
+批准时 issue #12 要求的测量里有五项还没有数据（编码硬解、1080p/4K、seek/倍速/切清晰度、
+RSS、音画同步）。2026-11-24 在 macOS 与 iOS 上补测，结果见
+[`2026-11-24-adr004-measurements.md`](../../m0/spikes/2026-11-24-adr004-measurements.md)：
 
-| 项 | 为什么不能跳过 | 怎么补 |
+| 项 | macOS（M4） | iOS（iPhone 16 Pro Max） |
 |---|---|---|
-| HEVC / AV1 / 杜比视界的硬解 | `video_decode_type.dart` 的四种编码里，480p 未登录只拿到 `avc1`；HEVC 是 B 站主力 | 登录态取流，四端各跑一次，看 `hwdec-current` |
-| 1080p / 4K 下的帧耗时与 CPU | macOS p95 已经贴线；Windows 有拷贝 | 同上 |
-| Seek、倍速、切清晰度 | 弹幕时钟依赖它们（ADR-003），只在 Windows / macOS 的自动项里量过 seek | 在 Android、iOS 实验台补上这三个动作 |
-| 内存 / RSS | 移动端被系统杀的主要原因 | 实验台已有 CPU，补 RSS |
-| 音画同步 | 只在 macOS 人工听过 | 移动端各听一次，或者用 `avsync` 属性自动判定 |
+| HEVC / 杜比视界（P5） | 硬解 | 硬解 |
+| AV1 | 硬解 | **软解**（见决策五） |
+| 1080p / 4K | 55–59 fps，CPU 31–38% | 视频 24–25 fps 不掉帧，出帧稳态 < 2 ms，CPU 42–102% |
+| Seek / 倍速 / 切清晰度 | seek 自动项全过 | seek 0.3–0.8 s、切清晰度约 1 s 续播、2× 正常 |
+| 峰值 RSS | 450–670 MiB | 310–490 MiB |
+| 音画同步（`avsync`） | 人工（SPIKE-001） | 稳态 ≤ 12 ms |
 
-**这些缺口不改变决策一的方向**：它们问的是「mpv 在高码率、新编码下够不够快」，
-而原生播放器在这些项上同样没量过。若补测时某个平台出现硬伤，按决策四启用该
-平台的退路，并回来修订本 ADR。
+补测带出来的两件事已经并进上面的决策：iOS 的偏色与修法（决策三）；macOS p95 的读法，
+以及 iOS 上 AV1 软解（决策五）。
+
+**仍然没测的**：Android 与 Windows 的全部五项（这台机器上没有硬件），iOS 的电量与发热，
+以及 AVPlayer 退路在 HEVC / AV1 / DV 上的表现。#210 保持打开。方向不变：若某个平台补测
+出现硬伤，按决策四启用该平台的退路，并回来修订本 ADR。
 
 ## 后果
 

@@ -157,6 +157,13 @@ B 站取流是同一条路径。
 ./android-drive.sh [输出目录]        # 默认 target/android-evidence
 ```
 
+**放网络流（#210 补测）**：往 `/sdcard/Android/data/io.github.kakacat.kilikili.spike/files/`
+推一份 `source.txt`（`key=value` 每行一个：`video`、`audio`、`ua`、`referer`，可选
+`video2`、`audio2`），探针就不用 `probe.mp4`。里面是带签名的取流地址：**只临时推到设备，跑完删掉，
+不进仓库**。额外命令：`switch`（从当前位置换到 `video2`/`audio2`，即切清晰度）；seek、倍速用
+`prop time-pos 60`、`prop speed 2`。STATUS 行多了 `ui_fps`、mpv 渲染耗时、`cpu`、`rss`、`avsync`。
+注意 `cmd.txt` 是 4Hz 轮询、读完清空，两条命令间隔要大于 250ms，否则前一条会被覆盖。
+
 它把 #9 剩下那五项按固定顺序跑一遍：触摸分发 → 旋转 → PiP → 后台音频（原样）
 → 后台音频（带后台策略），每一步都留系统截图、帧缓冲回读与 `dumpsys` 片段，
 最后把 logcat 和设备上的 PNG 一起拉回来。**手机必须解着锁**——锁屏时 activity

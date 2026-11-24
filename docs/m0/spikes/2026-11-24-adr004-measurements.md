@@ -7,10 +7,13 @@
   （`--scripted --seek-to 30000 --danmaku-rate 30 --flip-y`）。
 - **iOS**：iPhone 16 Pro Max，iOS 27.3，`spikes/slint-ios` gl 模式（零拷贝），每组 40 秒，
   取第 4 秒以后的每秒 HUD 行。
+- **Android**：一台**低端**设备（Snapdragon 680 / SM6225、Adreno 610、Android 14、屏幕 640×960），
+  `spikes/slint-mpv` 的 Android 探针（`hwdec=mediacodec`，零拷贝），每组 30 秒，取第 5 秒以后的
+  每秒 STATUS 行。SPIKE-002 用过的 Adreno 740 旗舰机这次不在手边。
 - 片源：登录态取流。普通片源一条（H.264 / HEVC / AV1 各有 1080p，H.264 / HEVC 有 4K）；
   杜比视界另用一条带 `dvh1.05.07` 的 4K 片源（同一条也有 4K AV1）。
   记录里只写清晰度与 codec 串；登录态与带签名地址没有离开本机临时目录。
-- **Android、Windows 没有测**：这台机器上没有对应硬件，留在 #210。
+- **Windows 没有测**：这台机器上没有对应硬件，留在 #210。
 
 ## 0. 结论
 
@@ -26,7 +29,11 @@
 3. **seek / 倍速 / 切清晰度在 iOS 上都通**：seek 0.3–0.8 s 恢复出帧，切清晰度约 1 s 并从原位置
    续播，2 倍速实测位置走速 ≈ 2×。音画差（mpv `avsync`）稳态 ≤ 12 ms。
 4. **内存**：iOS 峰值 RSS 310–490 MiB（4K 含 3 张零拷贝目标），macOS 450–670 MiB。
-5. **macOS 帧耗时 p95 那条线跟显示环境有关，跟编码无关**：同一条 1080p H.264，上午
+5. **Android 低端机的 4K 会静默落到软解。** 解码器能力表写着最大 4096×2176，实际 `configure`
+   4K 就失败（`IllegalArgumentException`），mpv 退到软解：UI 10–19 fps、CPU 260–520%，完全不可看。
+   1080p 的 H.264 / HEVC 是 `mediacodec` 硬解，UI 58–59 fps；AV1 没有硬件解码器，1080p 软解仍能
+   58 fps（CPU 约 190%）。seek / 倍速 / 切清晰度在 Android 上同样都通。
+6. **macOS 帧耗时 p95 那条线跟显示环境有关，跟编码无关**：同一条 1080p H.264，上午
    19.87 ms，下午 28.48 ms；下午六组（含 H.264 基线）全在 28 ms 上下，p50 13.5 ms。
    20 ms 这道线实际量的是窗口在哪块屏、按什么刷新率合成（§1.2）。
 
@@ -93,6 +100,34 @@ p50 从 16.7 ms 变成 13.5 ms，说明下午窗口的合成节奏变了（这�
 切清晰度在这里的做法是 `start=<当前位置>` 加 `loadfile … replace`，是整条重载，不是无缝切换。
 无缝切换要 mpv 的 `edl` 或 DASH 自适应，不在这一轮的范围里。
 
+## 2.5 Android（SM6225 / Adreno 610，`hwdec=mediacodec`）
+
+| 片源 | 解码 | UI fps | mpv 渲染 均值 / 最大 | CPU 均值 | 峰值 RSS | \|avsync\| 最大 | 丢帧 |
+|---|---|---|---|---|---|---|---|
+| 1080p H.264 | mediacodec | 58.8 | 3.9 / 39 ms | 119% | 439 MiB | 0.000 s | 1 |
+| 1080p HEVC＋操作 | mediacodec（720p 后同） | 58.0 | 3.9 / 103 ms | 102% | 310 MiB | 0.003 s | 15（倍速时） |
+| 1080p AV1 | **软解**（没有硬件解码器） | 58.0 | 5.5 / 27 ms | 188% | 432 MiB | 0.000 s | 3 |
+| 4K H.264 | **软解**（configure 失败） | 19.1 | 14.0 / 82 ms | 262% | 611 MiB | 0.012 s | 23 → 208 |
+| 4K HEVC | **软解**（同上） | 16.2 | 20.0 / 110 ms | 393% | 733 MiB | 0.000 s | 52 → 281 |
+| 4K 杜比视界 | **软解**（同上） | 10.8 | 70.1 / 210 ms | 521% | 861 MiB | 5.978 s | 56 → 426 |
+
+- CPU 是整个进程，100% = 一个核（这台 8 核）。「mpv 渲染」是 `BeforeRendering` 里 mpv 往
+  Slint 的 FBO 画一帧的耗时；最大值都出在起播或换流那一秒。
+- 4K 失败的原文：`h264_mediacodec: Failed to configure codec c2.qti.avc.decoder ... MediaCodec failed
+  to start` → `Using software decoding`。`/vendor/etc/media_codecs*.xml` 里 `c2.qti.avc.decoder` 与
+  `c2.qti.hevc.decoder` 的 size 上限都写着 4096×2176，**只看尺寸会判断成支持**。
+- 杜比视界在这台机器上没有专门的解码器，按 HEVC 软解；画面颜色没有判定（不可看，没意义）。
+
+操作时间线（1080p HEVC，驱动脚本经 `cmd.txt` 下发）：
+
+| 动作 | 结果 |
+|---|---|
+| `prop time-pos 60`（pos 7.7） | 下一秒 pos 60.84、音频在走（< 1 s） |
+| `prop speed 2` | 每秒走 2.0 s，音画差 0 |
+| `prop speed 1` | 换回时一次性丢 15 帧，之后不再丢 |
+| `switch`：换到 720p HEVC，从 86.64 s 续播 | 1 s 内恢复，pos 86.96，仍是 mediacodec |
+| `prop time-pos 10` | < 1 s 恢复 |
+
 ## 3. 偏绿：定位过程
 
 同一帧（pos 11.1 s）在真机上截图对照：
@@ -124,8 +159,12 @@ p50 从 16.7 ms 变成 13.5 ms，说明下午窗口的合成节奏变了（这�
 
 ## 4. 对 ADR-004 的影响
 
-- 方向不变：没有哪个平台出现需要启用退路的硬伤。
+- 方向不变：没有哪个平台出现需要启用退路的硬伤。Android 4K 的问题看起来与播放器选型无关：
+  Media3 用的也是系统的 `c2.qti.*` 解码器（这台机器上 Media3 跑 4K **没有实测**）；该做的是选清晰度。
+- 决策三加一条 Android 必做项：按解码器的**尺寸＋帧率**能力
+  （`VideoCapabilities.areSizeAndRateSupported`）给清晰度上限；mediacodec 起不来时降一档重开，
+  不接受静默软解。
 - 决策三加一条 iOS 必做项：`hwdec-image-format=bgra`。不做的后果是**静默**偏色，HUD 一切正常。
 - 决策五改写 macOS p95 那条，并加一条风险：iOS 上 AV1 是软解。
-- 还没测的：Android、Windows 全部；iOS 的电量与发热；AVPlayer 在 HEVC / AV1 / DV 上的表现
+- 还没测的：Windows 全部；Android 旗舰机（Adreno 740）上的 4K / AV1；iOS 的电量与发热；AVPlayer 在 HEVC / AV1 / DV 上的表现
   （决策四的退路是否覆盖这些编码）。

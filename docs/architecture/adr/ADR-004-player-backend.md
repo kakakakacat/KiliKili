@@ -84,6 +84,7 @@ SPIKE-001 notes 里「三端都要翻转、适配器不必分支」那句对 iOS
 | 全部 | render context 在 `loadfile` 之前建好 | 有声无画，HUD 一切正常 | Windows dryrun 坑 2 |
 | 全部 | 外挂音轨用 `change-list audio-files append`，不用 `set audio-files` | Unix 上 URL 被 `:` 拆碎，悄悄没声音 | SPIKE-001 §3.1 |
 | Android | 把 JavaVM 交给 FFmpeg + 显式 `hwdec=mediacodec` | 静默退到 `-copy` | SPIKE-002 坑 1 |
+| Android | 清晰度上限按解码器的尺寸＋帧率能力定（`areSizeAndRateSupported`）；mediacodec 起不来时降一档重开 | 低端机 4K 能力表写着支持、`configure` 却失败，mpv **静默**退到软解：UI 10–19 fps、CPU 260–520% | #210 补测 §2.5 |
 | Android | 声明 configChanges | 转屏重建 activity，进度归零 | SPIKE-002「旋转」 |
 | Android | 表面重建后走恢复配方（记进度 → 重新 Open → seek） | 回前台黑屏 | SPIKE-002 坑 5 |
 | Android / iOS | 退后台（且未进 PiP）前 `vid=no`，回前台 `vid=auto` | Android：后台还能不能出声取决于 mpv 碰巧的行为（VO 死掉后丢视频轨；片源没有音轨时整条播放被卸掉）；iOS：VT 会话失效（-12903），mpv **永久**退回软解、卡 3–4 秒 | SPIKE-002「后台音频」、SPIKE-004 §4 |
@@ -128,22 +129,22 @@ SPIKE-001 notes 里「三端都要翻转、适配器不必分支」那句对 iOS
 ## 6. 批准时缺的测量，及补测结果（#210）
 
 批准时 issue #12 要求的测量里有五项还没有数据（编码硬解、1080p/4K、seek/倍速/切清晰度、
-RSS、音画同步）。2026-11-24 在 macOS 与 iOS 上补测，结果见
+RSS、音画同步）。2026-11-24 在 macOS、iOS 与一台 Android 低端机上补测，结果见
 [`2026-11-24-adr004-measurements.md`](../../m0/spikes/2026-11-24-adr004-measurements.md)：
 
-| 项 | macOS（M4） | iOS（iPhone 16 Pro Max） |
-|---|---|---|
-| HEVC / 杜比视界（P5） | 硬解 | 硬解 |
-| AV1 | 硬解 | **软解**（见决策五） |
-| 1080p / 4K | 55–59 fps，CPU 31–38% | 视频 24–25 fps 不掉帧，出帧稳态 < 2 ms，CPU 42–102% |
-| Seek / 倍速 / 切清晰度 | seek 自动项全过 | seek 0.3–0.8 s、切清晰度约 1 s 续播、2× 正常 |
-| 峰值 RSS | 450–670 MiB | 310–490 MiB |
-| 音画同步（`avsync`） | 人工（SPIKE-001） | 稳态 ≤ 12 ms |
+| 项 | macOS（M4） | iOS（iPhone 16 Pro Max） | Android（低端：SM6225 / Adreno 610） |
+|---|---|---|---|
+| HEVC / 杜比视界（P5） | 硬解 | 硬解 | 1080p HEVC 硬解；杜比视界无专用解码器 |
+| AV1 | 硬解 | **软解**（见决策五） | **软解**（无硬件解码器），1080p 仍 58 fps |
+| 1080p / 4K | 55–59 fps，CPU 31–38% | 视频 24–25 fps 不掉帧，出帧稳态 < 2 ms，CPU 42–102% | 1080p 58–59 fps；**4K 静默落到软解、不可看**（见决策三） |
+| Seek / 倍速 / 切清晰度 | seek 自动项全过 | seek 0.3–0.8 s、切清晰度约 1 s 续播、2× 正常 | seek < 1 s、切清晰度约 1 s 续播、2× 正常 |
+| 峰值 RSS | 450–670 MiB | 310–490 MiB | 1080p 310–440 MiB |
+| 音画同步（`avsync`） | 人工（SPIKE-001） | 稳态 ≤ 12 ms | 1080p 稳态 ≤ 3 ms |
 
-补测带出来的两件事已经并进上面的决策：iOS 的偏色与修法（决策三）；macOS p95 的读法，
+补测带出来的事已经并进上面的决策：iOS 的偏色与修法、Android 的清晰度上限（决策三）；macOS p95 的读法，
 以及 iOS 上 AV1 软解（决策五）。
 
-**仍然没测的**：Android 与 Windows 的全部五项（这台机器上没有硬件），iOS 的电量与发热，
+**仍然没测的**：Windows 的全部五项（这台机器上没有硬件），Android 旗舰机上的 4K / AV1，iOS 的电量与发热，
 以及 AVPlayer 退路在 HEVC / AV1 / DV 上的表现。#210 保持打开。方向不变：若某个平台补测
 出现硬伤，按决策四启用该平台的退路，并回来修订本 ADR。
 

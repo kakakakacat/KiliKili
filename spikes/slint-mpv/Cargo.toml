@@ -97,6 +97,10 @@ target_sdk_version = 35
 config_changes = "orientation|keyboardHidden|screenSize|smallestScreenSize|screenLayout|uiMode|density"
 resizeable_activity = true
 
+# #210 补测要放网络流（登录态取流），SPIKE-002 只放本地 probe.mp4 时用不到。
+[[package.metadata.android.uses_permission]]
+name = "android.permission.INTERNET"
+
 [package.metadata.android.application]
 label = "KiliKili SPIKE-002"
 

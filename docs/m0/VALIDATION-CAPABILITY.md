@@ -238,6 +238,20 @@ windows, linux]`，再逐个核对 `needs.*.result`。真正的回归在被聚�
   windows / linux 带 `if: github.event_name == 'schedule' ||
   inputs.full_platforms`，平时是 skipped；门只在 `full_platforms` 为真时才
   核对这四项。
+- **平台打包那四项只把 `failure` 判红，`cancelled` 不判红**（2026-11-24，
+  issue #181）。托管 macOS runner 容量紧张时，job 会在 **15 分钟整**处被取消：
+  `steps` 为空、`gh run view --log-failed` 拉不到日志、运行注解写着
+  `The job was not acquired by Runner of type hosted even after multiple
+  attempts`——这不是构建失败，是这个 job 根本没开始跑。原先一律要求 `success`，
+  结果最近 8 次定时跑里有 4 次不是 success，其中两次就是这个（
+  [44715385523](https://github.com/kakakakacat/KiliKili/actions/runs/44715385523) 的
+  `ios`、[44282401120](https://github.com/kakakakacat/KiliKili/actions/runs/44282401120)
+  的 `macos`）。现在 `cancelled` 只打一条 `::warning::` 注解并写进 step summary。
+
+  **这是一处真实的验证能力下降，别当成没有**：有人手动取消那一次、以及
+  `concurrency` 的 `cancel-in-progress` 掐掉的那一次，平台打包都会被放过而
+  整次跑仍然绿。所以**看定时回归不能只看红绿，要扫一眼有没有那条 warning**。
+  rust / flutter / proto / android 不在放宽范围内，它们任何非 `success` 仍判红。
 
 **等 CI 的时间尺度**（恢复 PR 触发后适用）：每个 PR 都会打一次 Android APK（`Android package and
 native library`，`timeout-minutes: 60`），是全流程最慢的一项，实测约 15

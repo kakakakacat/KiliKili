@@ -301,8 +301,8 @@ PiliPlus-Rust/
 
 | 平台 | 目标播放后端 | 关键问题 |
 |---|---|---|
-| iOS | libmpv（ADR-004 提案）；AVPlayer 为 GLES 被移除时的退路 | ~~DASH 音视频分轨、必要请求头、硬解、PiP、合成覆盖~~ 合成/硬解/PiP/后台音频已实测（SPIKE-004）；HEVC/AV1/DV 待测 |
-| Android | libmpv（ADR-004 提案）；Media3 为退路，启用即换宿主形态 | ~~DASH/分轨、Surface 生命周期、HDR、后台音频、PiP~~ 已实测（SPIKE-002），HDR 待测 |
+| iOS | libmpv（ADR-004）；AVPlayer 为 GLES 被移除时的退路 | ~~DASH 音视频分轨、必要请求头、硬解、PiP、合成覆盖~~ 合成/硬解/PiP/后台音频已实测（SPIKE-004）；HEVC/AV1/DV 待测 |
+| Android | libmpv（ADR-004）；Media3 为退路，启用即换宿主形态 | ~~DASH/分轨、Surface 生命周期、HDR、后台音频、PiP~~ 已实测（SPIKE-002），HDR 待测 |
 | macOS | libmpv（候选） | Video surface、硬解、全屏、HiDPI、沙盒签名 |
 | Windows | libmpv（候选） | GPU 视频输出、DPI、DLL 分发、驱动兼容 |
 | Linux | libmpv（候选） | Wayland/X11、视频输出、系统库兼容 |
@@ -405,7 +405,7 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 | ADR-001 | Domain/Application/Data 对应 crates | M1 |
 | ADR-002 | Flutter/Slint/Tokio 线程与生命周期 | M1 |
 | ADR-003 | Player Port、状态归属、弹幕时钟 | P1-04/P1-05 前 |
-| ADR-004 | libmpv 与 AVPlayer/Media3 比较、视频合成 | M0 提案（[已写](adr/ADR-004-player-backend.md)，2026-11-24），M4 准入前批准 |
+| ADR-004 | libmpv 与 AVPlayer/Media3 比较、视频合成 | [已批准](adr/ADR-004-player-backend.md)（2026-11-24）；§6 补测见 #210 |
 | ADR-005 | Hive Dart 导出 → Rust SQLite 导入与回滚 | P1-06 前 |
 | ADR-006 | DASH 分轨 mux、URLSession/WorkManager 后台下载 | P1-07 前 |
 | ADR-007 | Slint 视频/列表/富文本/IME/无障碍及失败回退 | M0/M4 |
@@ -459,7 +459,7 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 1. **项目关系**：Fork PiliPlus 继续公开协作，还是独立新仓库并保留来源与许可证？
 2. **第一阶段范围**：直播、下载、动态、字幕、番剧是否都要求进入 M3，还是允许按功能矩阵后移？
 3. **数据库策略**：沿用原版持久化格式，还是采取一次性导入 Rust SQLite + 回滚？
-4. **播放器策略**：接受移动端保留 AVPlayer/Media3 的原生桥接，还是为五端统一 mpv 承担额外集成成本？→ **提案：五端统一 mpv**，原生播放器只留退路，见 [ADR-004](adr/ADR-004-player-backend.md)（待 M4 准入前批准）。
+4. **播放器策略**：接受移动端保留 AVPlayer/Media3 的原生桥接，还是为五端统一 mpv 承担额外集成成本？→ **已定：五端统一 mpv**，原生播放器只留退路，见 [ADR-004](adr/ADR-004-player-backend.md)（2026-11-24 批准）。
 5. **Slint 失败回退**：播放器 Spike 不达标时，允许更换 UI/合成技术方案吗？
 6. **支持的 OS 最低版本**：iOS、Android、macOS、Windows、Linux 发行版和架构范围要明确。
 7. **交付发布**：仅 GitHub Releases 侧载，还是考虑 App Store / TestFlight / 各商店？
@@ -506,7 +506,7 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
   跑真正 `VideoUtils` 的 `test/utils/media_select_golden_test.dart`。
 
 ### 16.2 ADR-004：播放器后端选择（P0）
-> 已据下列要求写成 [ADR-004](adr/ADR-004-player-backend.md)（提案）：五端统一 libmpv，原生播放器只留退路；批准前缺的测量见该文 §6。
+> 已据下列要求写成 [ADR-004](adr/ADR-004-player-backend.md)（2026-11-24 批准）：五端统一 libmpv，原生播放器只留退路；批准时仍缺的测量见该文 §6，补测跟踪在 #210。
 
 - libmpv 为五端统一的首选验证方案，因现有 media-kit 已与 mpv 相关；不能预设它在移动端具备完整 PiP、后台音频、硬解和 Slint 表面合成能力。
 - AVPlayer 不直接支持常规分轨 DASH manifest，若用作 iOS fallback 必须评估 HLS 转换/本地代理的功能、性能和维护代价；Android Media3 作为另一个 fallback。
@@ -550,7 +550,7 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 |---|---|
 | Spike 阻断与 M4 排期冲突 | M0 限时 Spike，M4 审批/复核 |
 | 播放器所有权断层 | 真实时间归播放器，意图与快照归 Rust |
-| 移动端 AVPlayer/Media3 候选 | libmpv 优先实测，ADR-004 裁决 → 已实测，ADR-004 提案五端统一 libmpv |
+| 移动端 AVPlayer/Media3 候选 | libmpv 优先实测，ADR-004 裁决 → 已实测，ADR-004 定为五端统一 libmpv |
 | Hive 隐含迁移成本 | Dart 导出 + Rust 导入，保留回滚 |
 | DASH 下载/后台任务 | mux + URLSession/WorkManager |
 | Slint 长列表/富文本/IME/无障碍 | Phase 2 阻断风险，M3 可发布回退 |

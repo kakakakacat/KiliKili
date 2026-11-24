@@ -18,19 +18,34 @@ publish = false
 license = "GPL-3.0-or-later"
 
 [dependencies]
-# 两个 renderer feature 同时开着是**故意的**：这个 spike 的第一个待答问题
-# 就是「`backdrop-blur` 到底是 Skia 独有，还是 FemtoVG 也有」——官方的
-# Rectangle 参考页说只有 Skia，CHANGELOG 说两个都有，FemtoVG 的 wgpu 源码里
-# 又确实有 BackdropBlur 的约束说明。三处对不上，只能同一个二进制换着
-# SLINT_BACKEND 各跑一次。
+# **默认只开 FemtoVG，Skia 要显式开 `--features skia`。**
 #
-# 少开一个的话，选不到的那个会**静默退回默认渲染器**，看起来像是「支持」。
-slint = { version = "~1.19", features = ["renderer-skia", "renderer-femtovg"] }
+# 本来想两个一起开，好一次性回答「`backdrop-blur` 到底是 Skia 独有还是
+# FemtoVG 也有」（官方 Rectangle 参考页说只有 Skia，CHANGELOG 说两个都有，
+# FemtoVG 的 wgpu 源码里又确实有 BackdropBlur 的约束说明，三处对不上）。
+#
+# 改掉了，因为查了一下这台机器的实际状态：`slint-ui` / `slint-mpv` /
+# `slint-ios` 三个 spike 的 lockfile 里都有 `skia-bindings`，但
+# `target/release/build/skia-bindings/*/` 下**只有 build script 自己，没有
+# out 产物、没有下载下来的 skia-binaries、没有静态库**——也就是说
+# **Skia 在这台机器上从来没有真正构建过**，它一直只是依赖图里的一个名字。
+#
+# 那笔账的两种走向差一个数量级：下到预编译二进制是几分钟，下不到就要在
+# windows-gnu 上从源码构建 Skia（要 python3 + ninja + clang，几十分钟起步，
+# 失败也不稀奇）。**不该在第一步就付这笔账**——先用 FemtoVG 跑，如果
+# CHANGELOG 是对的、FemtoVG 也支持 backdrop-blur，那这笔账根本不用付。
+slint = { version = "~1.19", features = ["renderer-femtovg"] }
 
 [build-dependencies]
 slint-build = "~1.19"
 
 [features]
+# Skia 渲染器。只在 FemtoVG 那轮证明了它**不支持** `backdrop-blur` 之后才开
+# ——代价见上面 [dependencies] 里那段。开了之后用
+# `SLINT_BACKEND=winit-skia` 选它；**没开就换后端的话，选不到的那个会静默
+# 退回默认渲染器，看起来像是「支持」**，这是会把结论弄反的那种坑。
+skia = ["slint/renderer-skia"]
+
 # wgpu 这一步**默认不开**，理由有两条，都不是省事：
 #
 # 1. 评估文档 §6 的顺序是先量「原生 backdrop-blur 差多少」，再决定 wgpu 要
@@ -42,6 +57,17 @@ slint-build = "~1.19"
 # 开它的时机：第一步量完、确认折射/高光必须自己画之后，跑评估文档 §2.1
 # 那个十几行的判据（AfterRendering 里到底拿不拿得到可写的 TextureView）。
 wgpu-probe = ["slint/unstable-wgpu-30"]
+
+# 依赖按 opt-level=2 编，自己的代码不优化。
+#
+# 这不是微调：Slint 的渲染、布局与 femtovg 的光栅化全在依赖里，不优化的话
+# 连滚动都卡，而「卡」正是这个 spike 要量的东西之一，分不清是 backdrop-blur
+# 贵还是 debug 构建慢。反过来自己的代码保持 debug，改一行重编是秒级的。
+#
+# 代价是首次 `cargo build`（不带 --release）也要花接近 release 的时间，之后
+# 的增量才便宜。
+[profile.dev.package."*"]
+opt-level = 2
 
 [profile.release]
 # 与 `rust/Cargo.toml` 的 release profile 对齐：报告里的数字要代表 Phase 2

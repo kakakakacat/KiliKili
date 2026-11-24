@@ -27,12 +27,15 @@ fn main() -> Result<(), slint::PlatformError> {
     // §0 记的那处文档与 CHANGELOG 打架），而回答它的办法就是同一个二进制
     // 换着后端各跑一次。
     //
-    //   SLINT_BACKEND=winit-skia    ./glass-spike
-    //   SLINT_BACKEND=winit-femtovg ./glass-spike
+    //   ./glass-spike                                        # 默认 FemtoVG
+    //   cargo build --features skia && SLINT_BACKEND=winit-skia ./glass-spike
     //
-    // 两次截图一模一样（都糊）或者一糊一不糊，就是答案。注意 Cargo.toml 里
-    // 必须同时开着两个 renderer feature，否则选不到的那个会静默退回默认，
-    // 看起来像是「支持」。
+    // 两次截图一糊一不糊，就是答案。**先跑便宜的那个**：Skia 在这台机器上
+    // 从来没真正构建过（见 Cargo.toml 里那段），FemtoVG 这轮就糊了的话那笔
+    // 账不用付。
+    //
+    // 没开 `skia` feature 就设 SLINT_BACKEND=winit-skia 的话，Slint 会静默
+    // 退回默认渲染器，看起来像「Skia 也不支持」——这个坑会把结论弄反。
     let app = GlassSpike::new()?;
     app.run()
 }

@@ -33,17 +33,37 @@
 
 ```sh
 cd spikes/slint-glass
-cargo build --release          # 预期：会报错。先让它编过，再谈别的
-
-SLINT_BACKEND=winit-skia    ./target/release/slint-glass-spike
-SLINT_BACKEND=winit-femtovg ./target/release/slint-glass-spike
+cargo build                    # 预期：会报错。先让它编过，再谈别的
+./target/debug/slint-glass-spike
 ```
 
-**两个后端都要跑，这不是多此一举**：官方的 Rectangle 参考页说
+**先只跑 FemtoVG，别一上来就开 Skia。** 官方的 Rectangle 参考页说
 `backdrop-blur`「Currently only supported by the Skia renderer」，CHANGELOG
 却写「Skia and FemtoVG only」，而 FemtoVG 的 wgpu 后端源码里确实有
-`BackdropBlur` 的约束说明。三处对不上，只能跑一次定。两次截图一糊一不糊，
-就是答案。
+`BackdropBlur` 的约束说明。三处对不上——但**便宜的那条先试**：如果
+FemtoVG 这轮就糊了，CHANGELOG 是对的，Skia 那笔账根本不用付。
+
+糊不了再开：
+
+```sh
+cargo build --features skia
+SLINT_BACKEND=winit-skia ./target/debug/slint-glass-spike
+```
+
+**Skia 这笔账在这台机器上是未知的**：`slint-ui` / `slint-mpv` /
+`slint-ios` 的 lockfile 里都有 `skia-bindings`，但
+`target/release/build/skia-bindings/*/` 下只有 build script 自己，没有 out
+产物、没有下载下来的 skia-binaries、也没有静态库——**Skia 从来没有在这台
+机器上真正构建过**。下得到预编译二进制是几分钟，下不到就得在 windows-gnu
+上从源码编 Skia（python3 + ninja + clang，几十分钟起步）。
+
+另外注意：**没开 `skia` feature 就设 `SLINT_BACKEND=winit-skia`，Slint 会
+静默退回默认渲染器**，看起来像「Skia 也不支持」——这个坑会把结论弄反。
+
+用 debug 而不是 `--release`：Cargo.toml 里给依赖单独设了 `opt-level = 2`，
+所以 Slint 与 femtovg 仍然是优化过的（不然滚动卡，分不清是 backdrop-blur
+贵还是 debug 慢），而自己的代码改一行重编是秒级的。等到第三步真要报性能
+数字时再换 `--release`。
 
 跑完和首页导航栏并排截图，结论写进
 `docs/m0/spikes/2026-11-24-glass-<平台>-notes.md`。**这一步的结论要人看，

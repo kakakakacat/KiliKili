@@ -20,7 +20,7 @@
 | Windows | GitHub Release 的 setup.exe / 便携版 zip | 代码签名证书 | 未签名，接入点已留 | OV/EV 证书（见 §3 的硬件存储约束） |
 | macOS | GitHub Release 的 dmg | Developer ID Application + 公证 | 未签名未公证，接入点已留 | Apple 证书 p12 + 公证 API key |
 | iOS | 侧载（AltStore / Sideloadly 等） | **没有，也不该有**（§5） | 故意未签名 | — |
-| Android | GitHub Release 的 apk | 独立的 Android 发布证书 | 尚未建立发布身份（#146） | JKS/PKCS12，**只用于 Android** |
+| Android | GitHub Release 的 apk | 独立的 Android 发布证书 | 两套证书已建立，验证包覆盖安装通过；首次正式发布尚未验收（#146） | JKS/PKCS12，**只用于 Android** |
 
 一条贯穿全文的规矩：**同一平台的后续版本必须沿用同一身份**。换身份的代价
 按平台不同——Android 换签名等于无法原地升级，Linux 换 GPG 键等于所有老用户
@@ -356,7 +356,7 @@ release 构建在 `preReleaseBuild` 阶段失败，不在 Gradle 配置阶段阻
 | 身份记录 | 验证包 | 正式包 |
 |---|---|---|
 | 证书 SHA-256 | `9f4982e33fd0640f4b189bc0b98711e37defbb19493b2e0b0290c545f4763e44` | `a8b1ac2fda2f60ec01d29a8e4acbbff46e48a0b58fc50adc08ec12638b619e97` |
-| 首次使用版本 / run | *实跑后填入* | *首次正式发布后填入* |
+| 首次使用版本 / run | `2.2.1-10567a7fd+5914`；[run 45318556187](https://github.com/kakakakacat/KiliKili/actions/runs/45318556187)、[run 45318560355](https://github.com/kakakakacat/KiliKili/actions/runs/45318560355)，DN_ENG41 覆盖安装通过 | *首次正式发布后填入* |
 | 备份状态 | 本机加密包已做解密回读校验，待两份离线转存 | 本机加密包已做解密回读校验，待两份离线转存 |
 
 ---

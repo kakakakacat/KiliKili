@@ -687,7 +687,10 @@ AppleScript 读回旁白**刚念的那句话**（`last phrase`），所以记下
   正式包使用另一把身份与正式应用 ID。指纹解析兼容旧版与 SDK 37 的
   `apksigner` 输出；`python3 -m unittest discover -s tool -p test_android_signing.py`
   覆盖两种格式及错误证书、多签名者、错误应用 ID 的拒绝路径。
-  尚未配置密钥时不能声称已实跑通过。
+  验证包已在 [run 45318556187](https://github.com/kakakakacat/KiliKili/actions/runs/45318556187)
+  与 [run 45318560355](https://github.com/kakakakacat/KiliKili/actions/runs/45318560355)
+  实跑通过，并在 DN_ENG41 上验证覆盖安装和主题设置保留。该新装验证应用
+  没有登录账号或离线视频，登录态和真实离线缓存保留尚未实测。
 
 **CI 验不了、必须人工的**（对应 [QA-001](../qa/RELEASE-VALIDATION.md) 的 S01–S04）：
 

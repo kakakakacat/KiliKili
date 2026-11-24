@@ -37,8 +37,14 @@ DEVELOPMENT_TEAM=<你的团队 ID> SPIKE_DEVICE=<iPhone UDID> \
 ## 插帧（#218）
 
 gl 模式下设 `SPIKE_INTERP=mc|blend|hold` 就走插帧路径：mpv 的新帧先画进纹理环，每个 tick
-插一张画进零拷贝目标，后面的 Slint / PiP 路径不变。GPU 侧原样复用
-`spikes/slint-mpv/src/interp/` 的 `gpu.rs` / `sched.rs` / `shaders.rs`（见 `src/interp.rs`）。
+插一张画进零拷贝目标，后面的 Slint / PiP 路径不变。GPU 侧来自正式 crate
+`rust/crates/player-interp`（#219 之前是 `#[path]` 引 slint-mpv 的源文件）。
+
+**#219**：设 `SPIKE_INTERP_SETTING=off|45|60|follow` 改走 `player_interp::Interpolator`，
+出帧由 CADisplayLink 驱动、按档位请求帧率（`ios/bridge.m` 第 4 节），Info.plist 开了
+ProMotion（`CADisableMinimumFrameDurationOnPhone`）。`SPIKE_INTERP_FOLLOW_CAP=120` 放开
+「跟随」的上限，`SPIKE_INTERP_THERMAL` 盖掉系统温控读数。结论见
+[`docs/m0/spikes/2026-11-24-interp-219.md`](../../docs/m0/spikes/2026-11-24-interp-219.md)。
 其余开关见 `src/lib.rs` 开头。视频可以用 `devicectl device copy to --domain-type
 appDataContainer` 推进 `Documents/`，再用 `SPIKE_VIDEO=~/Documents/<文件>` 指过去。
 真机结果见

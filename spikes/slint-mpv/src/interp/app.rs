@@ -32,6 +32,8 @@ use bili_domain::session::{GenerationGate, SessionId, Stamped};
 use clap::Parser;
 use slint::ComponentHandle;
 
+use player_interp::{Event, Interpolator, Plan, Presented, Setting, Thermal};
+
 use super::sched::{Pick, Push, Ring};
 use super::{Gpu, Mode, Params, Stage};
 use crate::mpv;
@@ -183,10 +185,75 @@ pub struct Args {
     #[arg(long, default_value_t = 1)]
     lab_first: u32,
 
+    /// #219：走正式的 `player_interp::Interpolator`，按这个设置档位插帧。
+    /// 给了它，`--mode` / `--delay-ms` / `--skip-dups` 不再生效（档位、延迟、
+    /// 跳重复帧都由 Interpolator 决定）。
+    #[arg(long, value_enum)]
+    setting: Option<CliSetting>,
+
+    /// 不测了，直接当屏幕是这个刷新率（桌面用：macOS ProMotion 上 Slint 的
+    /// 回调不锁 vsync，测出来的间隔中位数是 13 ms 左右，见 #219 记录）。
+    /// 平台钩子报了刷新率时以平台为准。
+    #[arg(long)]
+    display_hz: Option<f32>,
+
+    /// 「跟随屏幕刷新率」的上限（默认 60，实测通过前不放开）。
+    #[arg(long, default_value_t = player_interp::policy::FOLLOW_CAP_UNVERIFIED)]
+    follow_cap: f32,
+
+    /// 定时注入生命周期 / 温控事件，`秒:事件`，可给多次。事件：seek（同时真的
+    /// seek 到 `--seek-to`）、bg、fg、pip、pipexit、source、thermal-nominal、
+    /// thermal-moderate、thermal-severe。用来在真机上走一遍状态机。
+    #[arg(long)]
+    event_at: Vec<String>,
+
     /// 原始参数串，写进记录。由入口填。
     #[arg(skip)]
     pub raw: String,
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, clap::ValueEnum)]
+pub enum CliSetting {
+    Off,
+    #[value(name = "45")]
+    Fps45,
+    #[value(name = "60")]
+    Fps60,
+    Follow,
+}
+
+impl From<CliSetting> for Setting {
+    fn from(s: CliSetting) -> Self {
+        match s {
+            CliSetting::Off => Self::Off,
+            CliSetting::Fps45 => Self::Fps45,
+            CliSetting::Fps60 => Self::Fps60,
+            CliSetting::Follow => Self::FollowDisplay,
+        }
+    }
+}
+
+/// 平台钩子（#219「刷新率」「回退」）：Android 在 `interp_android.rs` 里实现，
+/// 桌面上全是空的（按 vsync 间隔测刷新率、没有温控读数）。
+pub trait Platform {
+    /// 系统报告的当前刷新率。
+    fn refresh_hz(&self) -> Option<f32> {
+        None
+    }
+    /// 系统温控状态。
+    fn thermal(&self) -> Option<Thermal> {
+        None
+    }
+    /// 向系统请求内容帧率（`None` = 撤销请求）。返回给记录看的说明。
+    fn request_frame_rate(&mut self, _fps: Option<f32>) -> Option<String> {
+        None
+    }
+}
+
+/// 桌面：什么都不做。
+#[cfg_attr(target_os = "android", allow(dead_code))]
+pub struct NoPlatform;
+impl Platform for NoPlatform {}
 
 /// [`Mode`] 的命令行形态（`Mode` 本身在 gpu.rs，那里不能依赖 clap）。
 #[derive(Debug, Clone, Copy, PartialEq, Eq, clap::ValueEnum)]
@@ -314,6 +381,12 @@ struct Stats {
     shots: Vec<PathBuf>,
     /// 实测的 target_time 单位。
     target_unit: &'static str,
+    /// #219：Interpolator 每秒一行的状态。
+    status_log: Vec<String>,
+    /// #219：audio-delay 变化、刷新率请求、注入的事件。
+    engine_log: Vec<String>,
+    /// 用 `--event-at` 注入过温控，之后不再被平台读数覆盖。
+    thermal_override: bool,
 }
 
 struct Live {
@@ -335,10 +408,20 @@ struct Live {
     size_watch: Arc<(std::sync::atomic::AtomicI64, std::sync::atomic::AtomicI64)>,
     harness_gl: Option<spike_harness::gl::Gl>,
     frame_started: Option<Instant>,
+    /// `--setting` 给了才有。
+    engine: Option<Interpolator>,
+    platform: Box<dyn Platform>,
+    clock: Instant,
 }
 
 /// 跑一次，返回 Markdown 记录（同时按 `--record` 落盘）。
+#[cfg_attr(target_os = "android", allow(dead_code))]
 pub fn run(args: Args) -> Result<String> {
+    run_with(args, Box::new(NoPlatform))
+}
+
+/// 带平台钩子跑一次。
+pub fn run_with(args: Args, platform: Box<dyn Platform>) -> Result<String> {
     if args.lab.is_some() {
         return run_lab(&args);
     }
@@ -359,7 +442,7 @@ pub fn run(args: Args) -> Result<String> {
         extra.push(("interpolation".to_owned(), "yes".to_owned()));
         extra.push(("tscale".to_owned(), "oversample".to_owned()));
     }
-    if args.delay_ms != 0.0 {
+    if args.delay_ms != 0.0 && args.setting.is_none() {
         extra.push((
             "audio-delay".to_owned(),
             format!("{}", args.delay_ms / 1000.0),
@@ -418,6 +501,14 @@ pub fn run(args: Args) -> Result<String> {
         size_watch: player.borrow().spawn_size_watcher(),
         harness_gl: None,
         frame_started: None,
+        engine: args.setting.map(|setting| {
+            let mut engine = Interpolator::new();
+            engine.set_setting(setting.into());
+            engine.controller_mut().set_follow_cap(args.follow_cap);
+            engine
+        }),
+        platform,
+        clock: Instant::now(),
     }));
 
     install_notifier(&ui, &live)?;
@@ -431,6 +522,18 @@ pub fn run(args: Args) -> Result<String> {
         let mut next_seek = 0usize;
         let mut next_shot = 0usize;
         let mut last_hud = Instant::now();
+        let mut last_status = Instant::now();
+        let mut requested: Option<Option<f32>> = None;
+        let mut events: Vec<(f64, String)> = args
+            .event_at
+            .iter()
+            .filter_map(|e| {
+                let (t, name) = e.split_once(':')?;
+                Some((t.parse().ok()?, name.to_owned()))
+            })
+            .collect();
+        events.sort_by(|a, b| a.0.total_cmp(&b.0));
+        let mut next_event = 0usize;
         timer.start(
             slint::TimerMode::Repeated,
             Duration::from_millis(50),
@@ -446,6 +549,13 @@ pub fn run(args: Args) -> Result<String> {
                 }
                 let Some(started) = s.started else { return };
                 let t = started.elapsed().as_secs_f64();
+                s.engine_tick(t, &mut requested, &mut last_status);
+                while let Some((at, name)) = events.get(next_event).cloned()
+                    && t >= at
+                {
+                    next_event += 1;
+                    s.inject(t, &name);
+                }
                 if let Some(at) = s.args.seek_at.get(next_seek).copied()
                     && t >= at
                 {
@@ -538,18 +648,28 @@ fn install_notifier(ui: &SpikeWindow, live: &Rc<RefCell<Live>>) -> Result<()> {
             let mut s = live.borrow_mut();
             match state {
                 slint::RenderingState::RenderingSetup => {
-                    match unsafe { Gpu::new(&loader, s.ring.capacity()) } {
-                        Ok(mut gpu) => {
-                            if s.args.no_timers {
-                                gpu.disable_timers();
+                    if let Some(engine) = s.engine.as_mut() {
+                        let attached = unsafe { engine.attach_gl(&loader) };
+                        match attached {
+                            Ok(()) => {
+                                s.renderer = engine.gpu().map(Gpu::renderer).unwrap_or_default();
                             }
-                            if s.args.no_readback {
-                                gpu.disable_readback();
-                            }
-                            s.renderer = gpu.renderer();
-                            s.gpu = Some(gpu);
+                            Err(err) => s.stats.errors.push(format!("Interpolator GPU：{err}")),
                         }
-                        Err(err) => s.stats.errors.push(format!("GPU 初始化失败：{err:#}")),
+                    } else {
+                        match unsafe { Gpu::new(&loader, s.ring.capacity()) } {
+                            Ok(mut gpu) => {
+                                if s.args.no_timers {
+                                    gpu.disable_timers();
+                                }
+                                if s.args.no_readback {
+                                    gpu.disable_readback();
+                                }
+                                s.renderer = gpu.renderer();
+                                s.gpu = Some(gpu);
+                            }
+                            Err(err) => s.stats.errors.push(format!("GPU 初始化失败：{err:#}")),
+                        }
                     }
                     s.harness_gl = unsafe { spike_harness::gl::Gl::load(&loader) }.ok();
                     let created = unsafe { s.player.borrow().create_render(&loader) };
@@ -602,6 +722,9 @@ fn install_notifier(ui: &SpikeWindow, live: &Rc<RefCell<Live>>) -> Result<()> {
                 slint::RenderingState::RenderingTeardown => {
                     s.render = None;
                     s.gpu = None;
+                    if let Some(engine) = s.engine.as_mut() {
+                        engine.detach_gl();
+                    }
                 }
                 _ => {}
             }
@@ -632,6 +755,10 @@ impl Live {
             .harness_gl
             .as_ref()
             .map_or(0, spike_harness::gl::Gl::draw_framebuffer);
+
+        if self.engine.is_some() {
+            return self.vsync_engine(loader, target, slint_fbo, wall);
+        }
 
         if self.args.mode() == Mode::Direct {
             return unsafe {
@@ -815,6 +942,187 @@ impl Live {
     }
 }
 
+impl Live {
+    /// #219：走正式 `Interpolator` 的一帧。与正式接入的写法相同（见
+    /// `player_interp::engine` 的模块文档），外加记录。
+    fn vsync_engine(
+        &mut self,
+        loader: &dyn Fn(&std::ffi::CStr) -> *const std::ffi::c_void,
+        target: (i32, i32),
+        slint_fbo: i32,
+        wall: Instant,
+    ) -> Result<()> {
+        let Some(render) = self.render.as_ref() else {
+            return Ok(());
+        };
+        let Some(engine) = self.engine.as_mut() else {
+            return Ok(());
+        };
+        let started = Instant::now();
+        let wall_us = wall.duration_since(self.clock).as_micros() as i64;
+        let now = self.player.borrow().time_us();
+        let flip = self.args.flip_y;
+        let plan = engine.begin_vsync(wall_us);
+        {
+            let w = self.size_watch.0.load(std::sync::atomic::Ordering::Acquire) as i32;
+            let h = self.size_watch.1.load(std::sync::atomic::Ordering::Acquire) as i32;
+            if w > 0 && h > 0 {
+                self.video_size = (w, h);
+            }
+        }
+        let kind = match plan {
+            Plan::Direct => {
+                if render.update_flags() & mpv::sys::RENDER_UPDATE_FRAME != 0 {
+                    let info = render.next_frame_info().unwrap_or_default();
+                    if info.flags & mpv::sys::frame_info::REDRAW == 0 {
+                        engine.observe_direct(info.target_time, now);
+                        self.stats.src_frames += 1;
+                    }
+                }
+                unsafe { render.render(slint_fbo, target.0, target.1, flip, loader)? };
+                "direct"
+            }
+            Plan::Interp => {
+                for _ in 0..8 {
+                    if render.update_flags() & mpv::sys::RENDER_UPDATE_FRAME == 0 {
+                        break;
+                    }
+                    let info = render.next_frame_info().unwrap_or_default();
+                    let (w, h) = self.video_size;
+                    if w == 0 || h == 0 {
+                        unsafe { render.render(slint_fbo, target.0, target.1, flip, loader)? };
+                        break;
+                    }
+                    let redraw = info.flags & mpv::sys::frame_info::REDRAW != 0;
+                    let slot = engine.source_target((w, h), redraw)?;
+                    unsafe { render.render(slot.fbo, slot.width, slot.height, flip, loader)? };
+                    engine.commit_source(slot, info.target_time, now);
+                    if !redraw {
+                        self.stats.src_frames += 1;
+                    }
+                }
+                match engine.present(slint_fbo, target, now) {
+                    Presented::Frame => "interp",
+                    Presented::Nothing => {
+                        unsafe { render.render(slint_fbo, target.0, target.1, flip, loader)? };
+                        "interp-empty"
+                    }
+                }
+            }
+        };
+        *self.stats.picks.entry(kind).or_default() += 1;
+        let cost = started.elapsed();
+        engine.end_vsync(cost.as_micros() as i64);
+        if let Some(delay_us) = engine.take_av_delay_change() {
+            // 异步写（debug_set_property 走 mpv_set_property_async），渲染线程上可以发。
+            let secs = format!("{}", delay_us as f64 / 1e6);
+            if let Err(err) = self
+                .player
+                .borrow()
+                .debug_set_property("audio-delay", &secs)
+            {
+                self.stats.errors.push(format!("audio-delay：{err:#}"));
+            }
+            let t = self.started.map_or(0.0, |s| s.elapsed().as_secs_f64());
+            self.stats
+                .engine_log
+                .push(format!("{t:6.2}s audio-delay → {} ms", delay_us / 1000));
+        }
+        Ok(())
+    }
+
+    /// 计时器里调：平台读数喂给 Interpolator、按档位请求帧率、每秒记一行状态。
+    fn engine_tick(
+        &mut self,
+        t: f64,
+        requested: &mut Option<Option<f32>>,
+        last_status: &mut Instant,
+    ) {
+        let Some(engine) = self.engine.as_mut() else {
+            return;
+        };
+        engine.set_display_refresh(self.platform.refresh_hz().or(self.args.display_hz));
+        if let Some(thermal) = self.platform.thermal()
+            && !self.stats.thermal_override
+        {
+            engine.set_thermal(thermal);
+        }
+        let want = engine.controller().setting().preferred_display_rate();
+        if *requested != Some(want) {
+            *requested = Some(want);
+            if let Some(note) = self.platform.request_frame_rate(want) {
+                self.stats.engine_log.push(format!("{t:6.2}s {note}"));
+            }
+        }
+        if last_status.elapsed() >= Duration::from_secs(1) {
+            *last_status = Instant::now();
+            let st = engine.status();
+            let line = format!(
+                "{t:6.2}s {} · 屏幕 {} · 片源 {} · {:?} · 温控 {:?}（平台 {:?}）· 延迟 {} ms · 帧对 {} 重复 {}",
+                status_line(&st),
+                st.display_hz
+                    .map_or("?".to_owned(), |v| format!("{v:.1} Hz")),
+                st.source_fps
+                    .map_or("?".to_owned(), |v| format!("{v:.2} fps")),
+                st.decision,
+                st.thermal,
+                self.platform.thermal(),
+                st.av_delay_us / 1000,
+                st.pairs_measured,
+                st.dup_pairs,
+            );
+            self.stats.status_log.push(line);
+        }
+    }
+
+    fn inject(&mut self, t: f64, name: &str) {
+        let Some(engine) = self.engine.as_mut() else {
+            return;
+        };
+        let event = match name {
+            "seek" => {
+                let to = format!("{}", self.args.seek_to);
+                if let Err(err) = self.player.borrow().debug_set_property("time-pos", &to) {
+                    self.stats.errors.push(format!("seek 失败：{err:#}"));
+                }
+                Some(Event::Seek)
+            }
+            "bg" => Some(Event::Background),
+            "fg" => Some(Event::Foreground),
+            "pip" => Some(Event::PipEnter),
+            "pipexit" => Some(Event::PipExit),
+            "source" => Some(Event::SourceChanged),
+            _ => None,
+        };
+        let thermal = match name {
+            "thermal-nominal" => Some(Thermal::Nominal),
+            "thermal-moderate" => Some(Thermal::Moderate),
+            "thermal-severe" => Some(Thermal::Severe),
+            _ => None,
+        };
+        if let Some(event) = event {
+            engine.on_event(event);
+        }
+        if let Some(thermal) = thermal {
+            // 注入之后不再让平台读数覆盖它。
+            self.stats.thermal_override = true;
+            engine.set_thermal(thermal);
+        }
+        self.stats.engine_log.push(format!("{t:6.2}s 注入 {name}"));
+    }
+}
+
+/// 「目标 60 FPS · 当前 30 FPS」。界面文案按 AGENTS.md §2 留在宿主。
+fn status_line(st: &player_interp::Status) -> String {
+    let target = st
+        .requested_fps
+        .map_or("关闭".to_owned(), |v| format!("目标 {v:.0} FPS"));
+    let current = st
+        .output_fps
+        .map_or("当前 ?".to_owned(), |v| format!("当前 {v:.0} FPS"));
+    format!("{target} · {current}")
+}
+
 /// `writeln!` 需要 `fmt::Write`，CSV 是 `io::Write`。
 struct StringWriter<'a, W: std::io::Write>(&'a mut W);
 impl<W: std::io::Write> std::fmt::Write for StringWriter<'_, W> {
@@ -824,6 +1132,20 @@ impl<W: std::io::Write> std::fmt::Write for StringWriter<'_, W> {
 }
 
 fn hud(s: &Live) -> String {
+    if let Some(engine) = &s.engine {
+        let st = engine.status();
+        return format!(
+            "{}\n{:?} · 屏幕 {} · 片源 {} · 延迟 {} ms\n{}",
+            status_line(&st),
+            st.decision,
+            st.display_hz
+                .map_or("?".to_owned(), |v| format!("{v:.1} Hz")),
+            st.source_fps
+                .map_or("?".to_owned(), |v| format!("{v:.2} fps")),
+            st.av_delay_us / 1000,
+            s.renderer,
+        );
+    }
     let picks: Vec<String> = s
         .stats
         .picks
@@ -955,6 +1277,17 @@ fn report(s: &Live) -> String {
         st.cuts,
         st.pair_best.mean().unwrap_or(0.0)
     );
+    if !st.status_log.is_empty() || !st.engine_log.is_empty() {
+        let _ = writeln!(out, "\n### Interpolator（--setting {:?}）\n", a.setting);
+        let _ = writeln!(out, "```");
+        for line in &st.engine_log {
+            let _ = writeln!(out, "{line}");
+        }
+        for line in &st.status_log {
+            let _ = writeln!(out, "{line}");
+        }
+        let _ = writeln!(out, "```");
+    }
     if !st.shots.is_empty() {
         let shots: Vec<String> = st.shots.iter().map(|p| p.display().to_string()).collect();
         let _ = writeln!(out, "| 截图 | {} |", shots.join(" · "));

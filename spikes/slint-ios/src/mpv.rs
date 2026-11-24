@@ -64,6 +64,13 @@ unsafe extern "C" {
         data: *const c_char,
     ) -> c_int;
     fn mpv_command(ctx: *mut MpvHandle, args: *mut *const c_char) -> c_int;
+    fn mpv_set_property_async(
+        ctx: *mut MpvHandle,
+        reply_userdata: u64,
+        name: *const c_char,
+        format: c_int,
+        data: *mut c_void,
+    ) -> c_int;
     fn mpv_set_property_string(
         ctx: *mut MpvHandle,
         name: *const c_char,
@@ -328,6 +335,20 @@ impl Mpv {
         // SAFETY: 两个 C 字符串在调用期间有效。
         check(
             unsafe { mpv_set_property_string(self.handle, n.as_ptr(), v.as_ptr()) },
+            name,
+        )
+    }
+}
+
+impl Mpv {
+    /// 异步写属性：#219 每次换档都要改 `audio-delay`，而这时正在渲染回调里
+    /// （ADR-004 决策三：渲染线程不发同步的 mpv 命令）。
+    pub fn set_property_async(&self, name: &str, value: &str) -> Result<(), String> {
+        let (n, v) = (cstr(name), cstr(value));
+        let mut ptr = v.as_ptr();
+        // SAFETY: MPV_FORMAT_STRING（1）的 data 是 char**；异步版返回前就拷走了值。
+        check(
+            unsafe { mpv_set_property_async(self.handle, 0, n.as_ptr(), 1, (&raw mut ptr).cast()) },
             name,
         )
     }

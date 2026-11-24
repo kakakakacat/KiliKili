@@ -523,3 +523,59 @@ double spike_avp_av_offset(void) {
     if (!g_audio_player) return 0;
     return CMTimeGetSeconds(g_audio_player.currentTime) - CMTimeGetSeconds(g_player.currentTime);
 }
+
+// ---------------------------------------------------------------------------
+// 4. #219 插帧：显示刷新驱动、刷新率请求、温控
+// ---------------------------------------------------------------------------
+//
+// #218 的 iOS 实验台用 8 ms 的 NSTimer 出帧：每秒算 120 张，而 Slint 在
+// iPhone 上只以 60 fps 重绘（没开 ProMotion），一半白算，也不和 vsync 对齐。
+// 这里改成 CADisplayLink：每次显示刷新回调一次，按插帧档位请求帧率
+// （preferredFrameRateRange），回调里带上系统给的实际帧间隔。
+// ProMotion 还要 Info.plist 的 CADisableMinimumFrameDurationOnPhone（见 project.yml）。
+
+typedef void (*spike_tick_fn)(double timestamp, double target_timestamp);
+
+@interface SpikeTicker : NSObject
+@property(nonatomic) spike_tick_fn fn;
+@property(nonatomic, strong) CADisplayLink *link;
+@end
+
+@implementation SpikeTicker
+- (void)tick:(CADisplayLink *)link {
+    if (self.fn) self.fn(link.timestamp, link.targetTimestamp);
+}
+@end
+
+static SpikeTicker *g_ticker;
+
+/// 在主 run loop 上起一个 CADisplayLink，每次刷新调 `fn(timestamp, targetTimestamp)`
+/// （CACurrentMediaTime 时基，秒）。
+void spike_displaylink_start(spike_tick_fn fn) {
+    if (g_ticker) return;
+    g_ticker = [SpikeTicker new];
+    g_ticker.fn = fn;
+    g_ticker.link = [CADisplayLink displayLinkWithTarget:g_ticker selector:@selector(tick:)];
+    [g_ticker.link addToRunLoop:NSRunLoop.mainRunLoop forMode:NSRunLoopCommonModes];
+}
+
+/// 请求帧率。`preferred <= 0` 表示交还系统默认。
+void spike_displaylink_rate(float preferred) {
+    if (!g_ticker) return;
+    if (preferred <= 0) {
+        g_ticker.link.preferredFrameRateRange = CAFrameRateRangeDefault;
+    } else {
+        // 上下限都钉在 preferred。第一版给的是 (preferred/2, preferred)，iPhone 16 Pro Max
+        // 上系统时不时挑 40 Hz：刷新率在 40/60 之间来回跳，回退控制器把 40 Hz 的
+        // 间隔当成掉帧，几秒后就降到了直通。
+        g_ticker.link.preferredFrameRateRange = CAFrameRateRangeMake(preferred, preferred, preferred);
+    }
+    spike_log([NSString stringWithFormat:@"displaylink preferredFrameRateRange → %.0f", preferred]);
+}
+
+/// 屏幕的最高刷新率（ProMotion 机型 120；Info.plist 没开 ProMotion 时系统也报 120，
+/// 但 display link 会被限在 60——以回调里的实际间隔为准）。
+int spike_screen_max_fps(void) { return (int)UIScreen.mainScreen.maximumFramesPerSecond; }
+
+/// NSProcessInfo.thermalState：0 nominal、1 fair、2 serious、3 critical。
+int spike_thermal_state(void) { return (int)NSProcessInfo.processInfo.thermalState; }

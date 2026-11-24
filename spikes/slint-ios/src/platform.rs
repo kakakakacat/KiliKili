@@ -37,4 +37,9 @@ unsafe extern "C" {
     pub fn spike_avp_info(pos: *mut f64, dur: *mut f64, item_status: *mut c_int);
     pub fn spike_avp_set_playing(playing: c_int);
     pub fn spike_avp_av_offset() -> f64;
+
+    pub fn spike_displaylink_start(tick: extern "C" fn(f64, f64));
+    pub fn spike_displaylink_rate(preferred: f32);
+    pub fn spike_screen_max_fps() -> c_int;
+    pub fn spike_thermal_state() -> c_int;
 }

@@ -18,6 +18,7 @@ pub mod pgc;
 pub mod play_url;
 pub mod play_url_fetch;
 pub mod playback;
+pub mod player_port;
 pub mod relation;
 pub mod reply;
 pub mod reply_grpc;

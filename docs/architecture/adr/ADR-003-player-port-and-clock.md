@@ -1,6 +1,6 @@
 # ADR-003: Player Port, Ownership, and Danmaku Clock
 
-Status: **Contract implemented — native-adapter runtime evidence collected on Windows and Android (2026-11-21); macOS pending**
+Status: **契约与 Flutter 适配器已实现；桌面无窗口运行时验证通过，完整真机行为对照待补（2026-11-24）**
 Date: 2026-11-10  
 Related: RFC-0001 v0.2, ADR-004
 
@@ -125,4 +125,43 @@ SPIKE-002 第二轮在小米 13 Ultra / Android 14 上把这条验完了，记�
   不只是「接一个新表面」，而是**要带着「记住位置 → 重开 → seek 回去」这套
   恢复动作**。这条与上面「渲染表面必须先于 `Open` 就绪」是同一件事的两面。
 
-第 5 条（两种适配器行为一致）仍未验：要等 Flutter 侧也跑同一组脚本。
+第 5 条（两种适配器行为一致）仍未完整验收：Flutter 无窗口脚本的新增证据与缺项见下节。
+
+## Flutter media-kit 适配与自动化证据（2026-11-24，#4）
+
+`lib/plugin/pl_player/player_port/` 已接入 `PlPlayerController`，Open、刷新、
+Seek、播放/暂停、倍速以及主状态订阅统一经过 Player Port。暂停按钮、
+自动跳过与片段预览也使用权威快照流，播放器重建不会使 UI 订阅失效。
+`bili-core::media_kit_port` 复用 `PlayerSession`，拥有后端确认闸门、资源选择与
+EDL 编码、错误分类和网络重试决策。桥接只转换 typed DTO、管理会话表。
+Dart 只执行 media-kit 和平台 API，不再另存 `_seekEpoch` 或分类错误日志。
+
+media-kit 的公开流不提供完整的原生确认点，所以适配器为同一 mpv 核心创建
+独立 weak client；绝不在 media-kit 自己的 handle 上 `wait_event`。40ms 非阻塞
+排空事件，一批事实最多产生一个快照。属性通过异步请求取得，携带**请求发起时**
+的代际；旧请求的回复不能在 Seek 确认后盖成新代际。Open 要先收到 START_FILE
+再收到 FILE_LOADED，Seek 要先收到 SEEK 再收到 PLAYBACK_RESTART；确认之后还要
+等新代际的真实位置采样。切轨以采样到的实际轨道 ID 确认。
+
+超时或队列溢出后永久停用该后端，不能继续执行下一次 Seek；只有新建后端才可
+恢复。已确认网络失败可按 Rust 返回的重试许可重建，旧会话、旧资源的延迟重试
+不能恢复新视频。关闭时先立即删除 Rust 会话并移除观察端，再等待 media-kit
+内部已在途调用退出，最后物理销毁，避免 dispose 与 open 内部 continuation 并行。
+纹理、PiP、平台前后台策略仍由 Flutter VideoController 和平台插件管理，不套用
+Slint 的 `vid=no` 恢复配方。
+
+复跑：配置 Flutter/Rust 工具链、ffmpeg、C++ 编译器和带客户端头文件的 libmpv，
+执行 `tool/player-port-runtime-test.sh`（macOS 已实跑；Linux 脚本分支未实跑）。
+脚本编译 pub cache 中**已锁定版本**的事件循环辅助库到 `build/`，不修改缓存或 SDK；
+生成 15 秒视频与音频，通过真实 FRB、media-kit、libmpv 验证，不依赖账号或 CDN。
+详见 [运行记录](../../qa/player-port-2026-11-24.md)。
+
+| 原验收项 | 本轮证据 | 仍需设备补验 |
+|---|---|---|
+| 1 Seek 与弹幕 | 真实后端前/后 Seek、代际过滤；Rust/FRB 过期事件回归 | 含可见弹幕的同场景操作 |
+| 2 暂停/倍速/缓冲/清晰度 | 无窗口播放、暂停位置冻结、0.5×/2×、切资源、DASH 双轨及请求头、实际选轨 | 网络缓冲、实际切清晰度、UI 状态 |
+| 3 生命周期 | 关闭发生在 Open 等待期间、逻辑立即失效与物理延迟销毁回归 | Flutter 真机前后台、PiP、页面销毁与切视频 |
+| 4 事件流量 | 40ms 一批、单批合并最后位置；无逐帧跨 FRB | 同素材 baseline wall time/RSS 对照 |
+| 5 适配器一致 | Flutter 真实后端已有可复跑脚本；原生侧沿用既有 spike | 两适配器同一完整场景矩阵对照 |
+
+这些自动化证据不等于五项真机验收全部通过，ADR 的完整行为一致性验证继续保留。

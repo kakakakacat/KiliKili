@@ -16,6 +16,40 @@ KiliKili fork 自 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus)，继承
 
 后续会考虑用 Rust 的界面框架或各平台的原生代码重写 UI 层，让每个平台都获得最佳体验。
 
+## 运行截图
+
+<p align="center">
+  <img src="assets/screenshots/kilikili-home.png" width="300" alt="首页推荐流与玻璃胶囊底部导航">
+  &nbsp;&nbsp;
+  <img src="assets/screenshots/kilikili-video.png" width="300" alt="视频播放页：弹幕、字幕与简介">
+</p>
+
+<p align="center"><sub>Android 当前开发版（2026-11）：首页推荐流与玻璃胶囊导航 · 视频播放页</sub></p>
+
+## 即将到来
+
+### 跨平台 Liquid Glass
+
+首页底部导航已经换成玻璃胶囊（上图），目前在 Flutter 上实现了胶囊形边缘折射和高光。下一步要把材质做成一套**用 Rust + wgpu/WGSL 编写的共享玻璃引擎**，五端共用同一份材质参数和 Shader，不依赖各平台自带的玻璃组件：
+
+- 实时背景模糊、半透明材质、边缘折射、Fresnel 反射与高光；
+- 按压、拖动时的形变，以及组件靠近时的融合效果；
+- 按设备性能分为高、中、低三档，低端机自动降级，保证文字始终清晰可读。
+
+进度见 [#130](https://github.com/kakakakacat/KiliKili/issues/130)。
+
+### 视频补帧
+
+为点播加入 **GPU 视频插帧**，把 24/30 fps 的片源补到更高帧率，在高刷屏上播放更顺滑：
+
+- 可选**关闭 / 45 FPS / 60 FPS / 跟随屏幕刷新率**，默认关闭；
+- 先在 Android 和 iOS 上验证 720p、30 → 60 fps，再扩展到 Windows、macOS 和 Linux；
+- 弹幕和控件在补帧之后叠加，不会被插值糊掉；拖动、倍速、切清晰度后保持音画同步；遇到转场或设备发热时自动回退到原帧率。
+
+进度见 [#211](https://github.com/kakakakacat/KiliKili/issues/211)。
+
+> 两项目前都在预研阶段，最终效果和支持的机型以真机实测为准。
+
 ## 支持平台
 
 | 平台 | 状态 |

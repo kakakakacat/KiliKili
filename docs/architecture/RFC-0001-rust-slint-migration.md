@@ -170,6 +170,7 @@ PiliPlus-Rust/
 │       ├── bili-player/       # 播放控制抽象和事件
 │       ├── bili-platform/     # 文件、安全存储、系统能力traits
 │       ├── bridge-flutter/    # FRB 对外接口
+│       ├── player-interp/     # GPU 插帧层（#211），不依赖 mpv 与 UI 框架，已建立
 │       ├── player-mpv/        # 桌面适配
 │       ├── player-apple/      # AVPlayer FFI 适配
 │       └── player-android/    # JNI/Media3 适配

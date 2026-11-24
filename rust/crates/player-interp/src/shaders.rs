@@ -1,4 +1,4 @@
-//! #218 的着色器。**只用 fragment shader**：macOS 只有 GL 4.1、iOS 只有
+//! 插帧着色器（#218 定型）。**只用 fragment shader**：macOS 只有 GL 4.1、iOS 只有
 //! GLES 3.0，都没有 compute shader；同一份源码加不同的 `#version` 头就能在
 //! 五个平台上跑。
 //!

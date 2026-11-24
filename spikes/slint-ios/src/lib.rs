@@ -18,6 +18,11 @@
 //!   `SPIKE_INTERP_DELAY_MS`（默认 50，同时设 mpv 的 `audio-delay`）、
 //!   `SPIKE_INTERP_R`（默认 4）、`SPIKE_INTERP_PRESENT_MS`（默认 8，输出时刻相对
 //!   now 的提前量）、`SPIKE_INTERP_FINISH=1`（运动估计前后 glFinish，量 GPU 耗时）。
+//! - `SPIKE_INTERP_SETTING`（#219）：`off` / `45` / `60` / `follow`，走正式的
+//!   `player_interp::Interpolator`（档位、延迟、回退、生命周期都由它定），出帧改由
+//!   CADisplayLink 驱动并按档位请求帧率。给了它，`SPIKE_INTERP` 不生效。配套
+//!   `SPIKE_INTERP_FOLLOW_CAP`（默认 60）、`SPIKE_INTERP_THERMAL`（`nominal` 等，
+//!   盖掉系统读数）。
 //! - `SPIKE_MPV_OPTS`：`k=v,k=v`，追加 mpv 选项（调色彩/格式问题时做对照）。
 //! - `SPIKE_SCRIPT`：定时动作，`秒=动作;秒=动作…`（秒从启动算）。动作是一条 mpv 命令
 //!   （空格分词，如 `seek 30 absolute`、`set speed 2`），或 `quality`：换到
@@ -190,6 +195,87 @@ struct Video {
     bg_vidno: bool,
     vid_off: bool,
     interp: Option<Interp>,
+    engine: Option<Engine>,
+}
+
+/// #219：走正式 `Interpolator` 的插帧状态。
+struct Engine {
+    it: player_interp::Interpolator,
+    attached: bool,
+    video_size: (u32, u32),
+    since_size: u32,
+    src_frames: u64,
+    thermal_override: Option<player_interp::Thermal>,
+    /// 上一次的 (后台, PiP) 状态，变化时转成生命周期事件。
+    phase: (bool, bool),
+    produced: u64,
+}
+
+impl Engine {
+    fn from_env() -> Option<Self> {
+        use player_interp::{Setting, Thermal};
+        let setting = match env("SPIKE_INTERP_SETTING")?.as_str() {
+            "off" => Setting::Off,
+            "45" => Setting::Fps45,
+            "60" => Setting::Fps60,
+            "follow" => Setting::FollowDisplay,
+            _ => return None,
+        };
+        let mut it = player_interp::Interpolator::new();
+        it.set_setting(setting);
+        if let Some(cap) = env("SPIKE_INTERP_FOLLOW_CAP").and_then(|v| v.parse().ok()) {
+            it.controller_mut().set_follow_cap(cap);
+        }
+        let thermal_override = env("SPIKE_INTERP_THERMAL").and_then(|v| match v.as_str() {
+            "nominal" => Some(Thermal::Nominal),
+            "light" => Some(Thermal::Light),
+            "moderate" => Some(Thermal::Moderate),
+            "severe" => Some(Thermal::Severe),
+            "critical" => Some(Thermal::Critical),
+            _ => None,
+        });
+        Some(Self {
+            it,
+            attached: false,
+            video_size: (0, 0),
+            since_size: 0,
+            src_frames: 0,
+            thermal_override,
+            phase: (false, false),
+            produced: 0,
+        })
+    }
+
+    /// iOS 要给 display link 一个确定的速率（ProMotion 没有「系统默认」可跟）。
+    fn display_link_rate(&self) -> f32 {
+        // SAFETY: 只读 UIScreen。
+        let max = unsafe { platform::spike_screen_max_fps() } as f32;
+        let c = self.it.controller();
+        c.setting().display_link_rate(max, c.follow_cap())
+    }
+
+    fn summary(&mut self) -> String {
+        let st = self.it.status();
+        let src = std::mem::take(&mut self.src_frames);
+        let out = std::mem::take(&mut self.produced);
+        format!(
+            " · {} · 屏幕 {} · 片源 {} · {:?} · 温控 {:?} · 延迟 {} ms · 帧对 {} 重复 {} · 收帧 {src} 出帧 {out}",
+            match (st.requested_fps, st.output_fps) {
+                (Some(t), Some(c)) => format!("目标 {t:.0} FPS · 当前 {c:.0} FPS"),
+                (Some(t), None) => format!("目标 {t:.0} FPS · 当前 ?"),
+                (None, _) => "插帧关闭".to_owned(),
+            },
+            st.display_hz
+                .map_or("?".to_owned(), |v| format!("{v:.1} Hz")),
+            st.source_fps
+                .map_or("?".to_owned(), |v| format!("{v:.2} fps")),
+            st.decision,
+            st.thermal,
+            st.av_delay_us / 1000,
+            st.pairs_measured,
+            st.dup_pairs,
+        )
+    }
 }
 
 /// #218 插帧状态。GPU 侧是 slint-mpv 那份原样复用的代码（见 src/interp.rs）。
@@ -282,8 +368,13 @@ fn start_video(mode: Mode) -> Option<Video> {
         skipped_bg: 0,
         bg_vidno: env("SPIKE_BG_VIDNO").is_none_or(|v| v != "0"),
         vid_off: false,
-        interp: if mode == Mode::Gl {
+        interp: if mode == Mode::Gl && env("SPIKE_INTERP_SETTING").is_none() {
             Interp::from_env()
+        } else {
+            None
+        },
+        engine: if mode == Mode::Gl {
+            Engine::from_env()
         } else {
             None
         },
@@ -433,6 +524,8 @@ impl Video {
                 self.size = (w, h);
                 Some((Image::from_rgba8(buffer), std::ptr::null_mut()))
             }
+            // #219：出帧由 CADisplayLink 驱动（frame_engine），定时器这里不出。
+            Mode::Gl if self.engine.is_some() => None,
             Mode::Gl if self.interp.is_some() => self.frame_interp(importer?, may_render),
             Mode::Gl => {
                 let importer = importer?;
@@ -664,6 +757,192 @@ impl Video {
         Some(out)
     }
 
+    /// #219：每次显示刷新出一帧（CADisplayLink 回调里调）。写法与
+    /// `player_interp::engine` 模块文档里的宿主样板一致，只是目标是零拷贝的
+    /// IOSurface（视频原始尺寸），而不是 Slint 的 FBO。
+    fn frame_engine(
+        &mut self,
+        importer: &zerocopy::Importer,
+        may_render: bool,
+        timestamp: f64,
+        target_timestamp: f64,
+    ) -> Option<(Image, *mut c_void)> {
+        use player_interp::{Plan, Presented};
+        if !may_render {
+            self.skipped_bg += 1;
+            return None;
+        }
+        // SAFETY: 主线程，同一个 EAGLContext。
+        unsafe { platform::spike_gl_make_current() };
+        let t0 = Instant::now();
+        let flip = self.flip;
+        let mpv = self.mpv.as_ref()?;
+        let eng = self.engine.as_mut()?;
+        if !eng.attached {
+            eng.attached = true;
+            let loader = |name: &CStr| -> *const c_void {
+                // SAFETY: 名字是 NUL 结尾的 C 串。
+                unsafe { platform::spike_gl_proc(std::ptr::null_mut(), name.as_ptr()) }.cast_const()
+            };
+            // SAFETY: EAGLContext 是当前的。
+            match unsafe { eng.it.attach_gl(&loader) } {
+                Ok(()) => log(&format!(
+                    "interp GPU：{}",
+                    eng.it.gpu().map(|g| g.renderer()).unwrap_or_default()
+                )),
+                Err(err) => log(&format!("interp GPU 初始化失败：{err}")),
+            }
+        }
+        // 系统给的这一帧的实际间隔就是当前刷新率（平台读数，优先于按回调间隔测）。
+        let frame = target_timestamp - timestamp;
+        if frame > 0.001 {
+            let hz = player_interp::policy::snap_refresh_rate((1.0 / frame) as f32);
+            eng.it.set_display_refresh(Some(hz));
+        }
+        let now = mpv.time_us();
+        let plan = eng.it.begin_vsync((timestamp * 1e6) as i64);
+        if eng.video_size.0 == 0 || eng.since_size >= 30 {
+            eng.since_size = 0;
+            if let (Some(w), Some(h)) = (
+                mpv.property("dwidth").and_then(|v| v.parse().ok()),
+                mpv.property("dheight").and_then(|v| v.parse().ok()),
+            ) {
+                eng.video_size = (w, h);
+            }
+        }
+        eng.since_size += 1;
+        let (w, h) = eng.video_size;
+        if w == 0 {
+            return None;
+        }
+        if let Err(err) = self.ensure_targets(w, h, importer) {
+            log(&err);
+            return None;
+        }
+        let mpv = self.mpv.as_ref()?;
+        let eng = self.engine.as_mut()?;
+        let target = &self.targets[self.next % TARGETS];
+        let mut produced = false;
+        match plan {
+            Plan::Direct => {
+                if mpv.wants_frame() {
+                    let info = mpv.next_frame_info();
+                    if info.flags & mpv::FRAME_INFO_REDRAW == 0 {
+                        eng.it.observe_direct(info.target_time, now);
+                        eng.src_frames += 1;
+                    }
+                    if let Err(err) = mpv.render_gl(target.fbo, w, h, flip) {
+                        log(&err);
+                        return None;
+                    }
+                    produced = true;
+                }
+            }
+            Plan::Interp => {
+                for _ in 0..8 {
+                    if !mpv.wants_frame() {
+                        break;
+                    }
+                    let info = mpv.next_frame_info();
+                    let redraw = info.flags & mpv::FRAME_INFO_REDRAW != 0;
+                    let slot = match eng.it.source_target((w as i32, h as i32), redraw) {
+                        Ok(slot) => slot,
+                        Err(err) => {
+                            log(&format!("interp source_target：{err}"));
+                            return None;
+                        }
+                    };
+                    if let Err(err) =
+                        mpv.render_gl(slot.fbo as u32, slot.width as u32, slot.height as u32, flip)
+                    {
+                        log(&err);
+                        return None;
+                    }
+                    eng.it.commit_source(slot, info.target_time, now);
+                    if !redraw {
+                        eng.src_frames += 1;
+                    }
+                }
+                match eng.it.present(target.fbo as i32, (w as i32, h as i32), now) {
+                    Presented::Frame => produced = true,
+                    Presented::Nothing => {
+                        // 环还空着（刚从直通切过来）：照直通画，不黑屏。
+                        if mpv.render_gl(target.fbo, w, h, flip).is_ok() {
+                            produced = true;
+                        }
+                    }
+                }
+            }
+        }
+        eng.it.end_vsync(t0.elapsed().as_micros() as i64);
+        if let Some(delay_us) = eng.it.take_av_delay_change() {
+            let secs = format!("{}", delay_us as f64 / 1e6);
+            let r = mpv.set_property_async("audio-delay", &secs);
+            log(&format!("audio-delay → {} ms ({r:?})", delay_us / 1000));
+        }
+        if !produced {
+            return None;
+        }
+        eng.produced += 1;
+        // SAFETY: 上下文是当前的。
+        unsafe { platform::spike_gl_flush(self.finish.into()) };
+        self.render_ms.push(t0.elapsed().as_secs_f32() * 1000.0);
+        self.size = (w, h);
+        let out = (target.image.clone(), target.pixbuf);
+        self.next += 1;
+        Some(out)
+    }
+
+    /// #219：把 UIKit 的前后台 / PiP 状态转成插帧的生命周期事件。
+    fn engine_phase(&mut self, background: bool, pip: bool) {
+        use player_interp::Event;
+        let Some(eng) = self.engine.as_mut() else {
+            return;
+        };
+        let (was_bg, was_pip) = std::mem::replace(&mut eng.phase, (background, pip));
+        if pip != was_pip {
+            eng.it
+                .on_event(if pip { Event::PipEnter } else { Event::PipExit });
+            log(&format!(
+                "interp 事件：{}",
+                if pip { "PipEnter" } else { "PipExit" }
+            ));
+        }
+        if background != was_bg && !pip {
+            eng.it.on_event(if background {
+                Event::Background
+            } else {
+                Event::Foreground
+            });
+            log(&format!(
+                "interp 事件：{}",
+                if background {
+                    "Background"
+                } else {
+                    "Foreground"
+                }
+            ));
+        }
+    }
+
+    /// #219：温控读数（或环境变量覆盖）。
+    fn engine_thermal(&mut self) {
+        use player_interp::Thermal;
+        let Some(eng) = self.engine.as_mut() else {
+            return;
+        };
+        let thermal = eng.thermal_override.unwrap_or_else(|| {
+            // SAFETY: 只读 NSProcessInfo。
+            match unsafe { platform::spike_thermal_state() } {
+                0 => Thermal::Nominal,
+                1 => Thermal::Light,
+                2 => Thermal::Severe,
+                _ => Thermal::Critical,
+            }
+        });
+        eng.it.set_thermal(thermal);
+    }
+
     /// 退到后台（且没进 PiP）时 iOS 会让 VideoToolbox 会话失效：mpv 收到
     /// `invalid session (-12903)`，一次性退回软解，**回到前台也不会再切回
     /// 硬解**，而且切换那一下卡 2–3 秒（之前「退后台停 2–3 秒」的根因）。
@@ -716,6 +995,20 @@ impl Video {
             mpv.command(&args)
         };
         log(&format!("script「{action}」@pos {pos} → {result:?}"));
+    }
+
+    /// `SPIKE_SCRIPT` 的动作同时是插帧的生命周期事件：seek 要清帧环，换清晰度要
+    /// 重新估源帧率。
+    fn engine_action(&mut self, action: &str) {
+        use player_interp::Event;
+        let Some(eng) = self.engine.as_mut() else {
+            return;
+        };
+        if action.starts_with("seek") {
+            eng.it.on_event(Event::Seek);
+        } else if action == "quality" {
+            eng.it.on_event(Event::SourceChanged);
+        }
     }
 
     /// (位置, 时长, 暂停)
@@ -776,6 +1069,18 @@ impl Video {
 thread_local! {
     /// PiP 窗口上的播放/暂停按钮：回调在主线程，交给定时器去执行。
     static PENDING_PLAY: Cell<Option<bool>> = const { Cell::new(None) };
+    /// #219：CADisplayLink 回调要做的事（主线程）。
+    static ON_TICK: RefCell<Option<Box<dyn FnMut(f64, f64)>>> = const { RefCell::new(None) };
+    /// 定时器算好的「此刻能不能提交 GLES」，display link 回调直接用。
+    static MAY_RENDER: Cell<bool> = const { Cell::new(true) };
+}
+
+extern "C" fn on_display_tick(timestamp: f64, target_timestamp: f64) {
+    ON_TICK.with(|f| {
+        if let Some(f) = f.borrow_mut().as_mut() {
+            f(timestamp, target_timestamp);
+        }
+    });
 }
 
 extern "C" fn on_pip_set_playing(playing: c_int) {
@@ -869,6 +1174,47 @@ fn run() -> Result<(), slint::PlatformError> {
         });
     }
 
+    // #219：插帧路径的出帧挂在 CADisplayLink 上，每次显示刷新一帧。
+    let engine_rate = video
+        .borrow()
+        .as_ref()
+        .and_then(|v| v.engine.as_ref())
+        .map(Engine::display_link_rate);
+    if let Some(rate) = engine_rate {
+        let ui = ui.as_weak();
+        let video = Rc::clone(&video);
+        let importer = Rc::clone(&importer);
+        let pip_ready = Rc::clone(&pip_ready);
+        ON_TICK.with(|f| {
+            *f.borrow_mut() = Some(Box::new(move |ts, target| {
+                let Some(ui) = ui.upgrade() else { return };
+                let Ok(mut video_ref) = video.try_borrow_mut() else {
+                    return;
+                };
+                let Some(v) = video_ref.as_mut() else { return };
+                let importer = importer.borrow();
+                let Some(importer) = importer.as_ref() else {
+                    return;
+                };
+                let may_render = MAY_RENDER.with(Cell::get);
+                if let Some((image, pixbuf)) = v.frame_engine(importer, may_render, ts, target) {
+                    ui.set_video(image);
+                    ui.set_has_video(true);
+                    v.frames += 1;
+                    if !pixbuf.is_null() && pip_ready.get() {
+                        // SAFETY: pixbuf 属于常驻的零拷贝目标。
+                        unsafe { platform::spike_pip_enqueue(pixbuf) };
+                    }
+                }
+            }));
+        });
+        // SAFETY: 主线程；回调是 'static 的 extern "C" fn。
+        unsafe {
+            platform::spike_displaylink_start(on_display_tick);
+            platform::spike_displaylink_rate(rate);
+        }
+    }
+
     let script = RefCell::new(parse_script(&env("SPIKE_SCRIPT").unwrap_or_default()));
     let started = Instant::now();
     let timer = slint::Timer::default();
@@ -920,6 +1266,7 @@ fn run() -> Result<(), slint::PlatformError> {
                     if due {
                         let (_, action) = script.borrow_mut().remove(0);
                         v.run_action(&action);
+                        v.engine_action(&action);
                     }
                     if let Some(mpv) = &v.mpv {
                         for id in mpv.drain_events() {
@@ -939,6 +1286,8 @@ fn run() -> Result<(), slint::PlatformError> {
                     let leaving = if pip_ready.get() { state == 2 } else { state != 0 };
                     v.on_background(leaving && !pip_active);
                     let may_render = state == 0 || pip_active || v.bg_render;
+                    v.engine_phase(leaving, pip_active);
+                    MAY_RENDER.with(|m| m.set(may_render));
                     if let Some((image, pixbuf)) = v.frame(importer.borrow().as_ref(), may_render) {
                         ui.set_video(image);
                         ui.set_has_video(true);
@@ -1022,6 +1371,12 @@ fn run() -> Result<(), slint::PlatformError> {
                     }
                     if let Some(it) = video_ref.as_mut().and_then(|v| v.interp.as_mut()) {
                         line.push_str(&it.summary());
+                    }
+                    if let Some(v) = video_ref.as_mut() {
+                        v.engine_thermal();
+                        if let Some(eng) = v.engine.as_mut() {
+                            line.push_str(&eng.summary());
+                        }
                     }
                     log(&line);
                     if ticks.get() % 600 < 130 {

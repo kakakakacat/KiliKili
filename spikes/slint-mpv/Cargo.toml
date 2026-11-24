@@ -25,6 +25,8 @@ license = "GPL-3.0-or-later"
 bili-api = { path = "../../rust/crates/bili-api" }
 bili-danmaku = { path = "../../rust/crates/bili-danmaku" }
 bili-domain = { path = "../../rust/crates/bili-domain" }
+# #219：插帧的 GPU 侧、选帧、档位与回退（由 #218 的 src/interp/ 提成）。
+player-interp = { path = "../../rust/crates/player-interp" }
 # 实验记录、帧耗时/CPU/RSS 采样、GL 截图。SPIKE-003 要用同一套模板，
 # 所以这三个模块抽去了 ../spike-harness，不在本 package 里。
 spike-harness = { path = "../spike-harness" }

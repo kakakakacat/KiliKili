@@ -1,0 +1,26 @@
+[package]
+name = "player-interp"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "播放器的 GPU 插帧层（#211）：源帧环、块匹配运动补偿、档位与回退。不依赖 mpv 与 UI 框架。"
+
+# 刻意不依赖 libmpv、Slint 或任何平台 SDK：
+#
+# - 宿主（Slint 客户端、spike 实验台）负责让 mpv 把源帧画进这里给出的 FBO，
+#   以及刷新率请求、温控读数这些平台调用（AGENTS.md §2「平台 API 调用」）。
+# - 这样它能进 `rust/` workspace 跑 CI 的 fmt / clippy / test，而不给 CI
+#   加 libmpv 或 GPU 栈这类装不了的系统依赖（spikes/slint-mpv/Cargo.toml 开头
+#   写过同样的顾虑）。glow 只是一层函数指针表，不链接任何 GL 库。
+[dependencies]
+# 与 Slint 的 femtovg 渲染器同一个大版本，宿主里不会多编一份。
+glow = "0.18"
+thiserror.workspace = true
+# "log"：没装 tracing subscriber 的宿主（Android spike 用 android_logger）也能
+# 在 logcat 里看到着色器编译失败这类错误。
+tracing = { workspace = true, features = ["log"] }
+
+[lints]
+workspace = true

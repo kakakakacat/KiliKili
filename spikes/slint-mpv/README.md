@@ -218,10 +218,16 @@ adb logcat -s kk-spike
 `target_time` 排程，做块匹配 + 运动补偿后再画进 Slint 的 FBO。结论与数字见
 [`docs/m0/spikes/2026-11-24-interp-218.md`](../../docs/m0/spikes/2026-11-24-interp-218.md)。
 
-- 代码在 `src/interp/`：`gpu.rs`（纹理、着色器调度、计时、回读）、`sched.rs`（源帧环与
-  选帧，有单测）、`shaders.rs`（全部 GLSL，只用 fragment shader）、`app.rs`（参数、播放
-  循环、实验室模式、记录）。`gpu.rs` / `sched.rs` / `shaders.rs` 不依赖 clap、Slint 或 mpv，
-  `spikes/slint-ios` 用 `#[path]` 原样引用。
+- GPU 侧（纹理、着色器、计时、回读）、选帧、档位与回退在 #219 提成了正式 crate
+  `rust/crates/player-interp`，这里的 `src/interp/` 只剩 `app.rs`（参数、播放循环、实验室
+  模式、记录）。
+- **#219 的路径**：加 `--setting off|45|60|follow` 就改走 `player_interp::Interpolator`——
+  档位、`audio-delay`、回退、生命周期都由它决定，`--mode` / `--delay-ms` / `--skip-dups`
+  不再生效。`--event-at 秒:事件` 注入 seek / bg / fg / pip / pipexit / source /
+  thermal-*，记录末尾有每秒一行的「目标 · 当前」状态。Android 上还接了平台钩子
+  （`src/interp_android.rs`）：`ANativeWindow_setFrameRate`、Choreographer 刷新率回调、
+  `AThermal` 温控，都是 API 30 才有，运行期 dlsym。
+  接入结论见 [`docs/m0/spikes/2026-11-24-interp-219.md`](../../docs/m0/spikes/2026-11-24-interp-219.md)。
 - 桌面：`cargo run --release --bin interp -- --help`。`--mode direct|hold|blend|mc`；
   `--lab <PNG 目录>` 是实验室模式（用 60 fps 真值的第 k−1、k+1 帧插出第 k 帧）。
 - Android：`cargo apk build --release --lib --features interp`（换掉探针的 `android_main`），

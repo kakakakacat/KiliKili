@@ -1,17 +1,36 @@
-//! GPU 侧实现。模块说明见 `mod.rs`。
+//! GPU 侧：源帧环的纹理、亮度金字塔、运动场、输出合成，以及 GPU 计时。
 //!
-//! 这个文件只依赖 `super::sched` 与 `super::shaders`、glow 和 anyhow，
-//! iOS 实验台（`spikes/slint-ios`）用 `#[path]` 直接引用它，所以不能引入
-//! clap、Slint 或 mpv。
+//! 我们的 GL 调用夹在 mpv 和宿主 UI（Slint 的 femtovg）之间，所以进出都
+//! 保存 / 恢复会被改动的 GL 状态，免得宿主拿到一个被换掉的 VAO 或 program。
+//!
+//! 所有方法都要求创建它的那个 GL 上下文是 current 的——它们只会在宿主的
+//! 渲染回调里被调用。
 
 use std::collections::VecDeque;
 use std::ffi::{CStr, c_void};
 
-use anyhow::{Result, anyhow, bail};
 use glow::HasContext;
 
-use super::sched;
-use super::shaders::{self, BEST_SCALE, BS, DOWN};
+use crate::sched;
+use crate::shaders::{self, BEST_SCALE, BS, DOWN};
+
+/// GPU 侧的错误。都是初始化或分配期的问题（缺扩展、FBO 不完整、着色器
+/// 编不过），宿主遇到就该退回直通，不该重试。
+#[derive(Debug, thiserror::Error)]
+#[error("{0}")]
+pub struct GpuError(String);
+
+type Result<T, E = GpuError> = std::result::Result<T, E>;
+
+fn err(message: impl Into<String>) -> GpuError {
+    GpuError(message.into())
+}
+
+impl From<&str> for GpuError {
+    fn from(message: &str) -> Self {
+        err(message)
+    }
+}
 
 /// 输出模式。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -244,6 +263,17 @@ struct SavedState {
     pack_buffer: Option<glow::Buffer>,
 }
 
+impl std::fmt::Debug for Gpu {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Gpu")
+            .field("es", &self.es)
+            .field("size", &self.size)
+            .field("field_size", &self.fsize)
+            .field("capacity", &self.capacity)
+            .finish_non_exhaustive()
+    }
+}
+
 impl Gpu {
     /// # Safety
     /// GL 上下文必须是 current 的，`loader` 能解析当前上下文的函数。
@@ -261,13 +291,15 @@ impl Gpu {
             && !extensions.contains("GL_EXT_color_buffer_half_float")
             && !extensions.contains("GL_EXT_color_buffer_float")
         {
-            bail!("GLES 上缺 EXT_color_buffer_half_float，运动场的 RGBA16F 画不进去");
+            return Err(err(
+                "GLES 上缺 EXT_color_buffer_half_float，运动场的 RGBA16F 画不进去",
+            ));
         }
 
         let header = shaders::header(es);
         let build = |name: &str, fragment: &str| -> Result<glow::Program> {
             unsafe { compile(&gl, header, shaders::VERTEX, fragment) }
-                .map_err(|err| anyhow!("{name} 着色器：{err}"))
+                .map_err(|e| err(format!("{name} 着色器：{e}")))
         };
         let scale = format!("#define BEST_SCALE {BEST_SCALE:.1}\n");
         let progs = Programs {
@@ -275,7 +307,7 @@ impl Gpu {
             cost: None,
             smooth: build("smooth", shaders::SMOOTH)?,
             reduce: build("reduce", &format!("{scale}{}", shaders::REDUCE))?,
-            tf: unsafe { compile_tf(&gl, header) }.map_err(|err| anyhow!("tf 着色器：{err}"))?,
+            tf: unsafe { compile_tf(&gl, header) }.map_err(|e| err(format!("tf 着色器：{e}")))?,
             output: build(
                 "output",
                 &format!(
@@ -284,7 +316,7 @@ impl Gpu {
                 ),
             )?,
         };
-        let vao = unsafe { gl.create_vertex_array() }.map_err(|e| anyhow!(e))?;
+        let vao = unsafe { gl.create_vertex_array() }.map_err(err)?;
 
         Ok(Self {
             gl,
@@ -469,7 +501,8 @@ impl Gpu {
         self.slots[slot].fbo.0.get() as i32
     }
 
-    /// 实验室模式：直接往槽里上传一张 RGBA8 图（行序按 GL，从下往上）。
+    /// 实验室模式（与 60 fps 真值比画质）：直接往槽里上传一张 RGBA8 图
+    /// （行序按 GL，从下往上）。
     pub fn upload(&mut self, slot: usize, rgba: &[u8]) {
         let (w, h) = self.size;
         unsafe {
@@ -552,7 +585,10 @@ impl Gpu {
                 }
             }
         }
-        let (cost_tex, cost_fbo, _) = field.cost.expect("刚分配");
+        let Some((cost_tex, cost_fbo, _)) = field.cost else {
+            unsafe { restore(gl, &saved) };
+            return;
+        };
         let key = (params.radius, params.step, params.subpel);
         if self.progs.cost.as_ref().is_none_or(|c| c.0 != key) {
             unsafe {
@@ -570,15 +606,18 @@ impl Gpu {
                     compile(gl, &defs, shaders::VERTEX, shaders::ARGMIN),
                 ) {
                     (Ok(cost), Ok(argmin)) => self.progs.cost = Some((key, cost, argmin)),
-                    (Err(err), _) | (_, Err(err)) => {
-                        log_error(&format!("运动估计着色器编不过：{err}"));
+                    (Err(e), _) | (_, Err(e)) => {
+                        tracing::error!("运动估计着色器编不过：{e}");
                         restore(gl, &saved);
                         return;
                     }
                 }
             }
         }
-        let (_, cost_prog, argmin_prog) = *self.progs.cost.as_ref().expect("刚编好");
+        let Some((_, cost_prog, argmin_prog)) = self.progs.cost else {
+            unsafe { restore(gl, &saved) };
+            return;
+        };
         // TIME_ELAPSED 不能嵌套，所以不套总计时，分四段各计一次；总和由调用方加。
         let timers = &mut self.timers;
         unsafe {
@@ -735,7 +774,9 @@ impl Gpu {
             if status != glow::ALREADY_SIGNALED && status != glow::CONDITION_SATISFIED {
                 break;
             }
-            let rb = self.readbacks.pop_front().expect("刚看过");
+            let Some(rb) = self.readbacks.pop_front() else {
+                break;
+            };
             let mut bytes = [0u8; 16];
             unsafe {
                 gl.delete_sync(rb.fence);
@@ -752,8 +793,14 @@ impl Gpu {
             }
             self.free_bufs.push(rb.buf);
             // vec4 float，内容是 REDUCE 的 RGBA8 编码：(changed_hi, changed_lo, best_hi, best_lo) / 255。
-            let f =
-                |i: usize| f32::from_ne_bytes(bytes[i * 4..i * 4 + 4].try_into().expect("4 字节"));
+            let f = |i: usize| {
+                f32::from_ne_bytes([
+                    bytes[i * 4],
+                    bytes[i * 4 + 1],
+                    bytes[i * 4 + 2],
+                    bytes[i * 4 + 3],
+                ])
+            };
             let u16_of =
                 |hi: f32, lo: f32| ((hi * 255.0).round() * 256.0 + (lo * 255.0).round()) / 65535.0;
             stats.push(PairStats {
@@ -765,7 +812,8 @@ impl Gpu {
         (std::mem::take(&mut self.timers.done), stats)
     }
 
-    /// 调试：槽的低分辨率亮度之和（同步回读，只在排查时用）。
+    /// 调试：槽的低分辨率亮度之和（**同步回读**，只在排查时用：Adreno 上
+    /// `glReadPixels` 会让 CPU 等整条命令流，见 #218 §5）。
     pub fn luma_checksum(&self, slot: usize) -> u64 {
         let (w, h) = self.lsize;
         let mut buf = vec![0u8; (w * h * 4) as usize];
@@ -887,13 +935,6 @@ impl Drop for Gpu {
     }
 }
 
-fn log_error(message: &str) {
-    #[cfg(target_os = "android")]
-    log::error!("{message}");
-    #[cfg(not(target_os = "android"))]
-    eprintln!("{message}");
-}
-
 /// 视频按比例放进目标，居中。
 #[must_use]
 pub fn letterbox(video: (i32, i32), target: (i32, i32)) -> (i32, i32, i32, i32) {
@@ -977,7 +1018,7 @@ unsafe fn target(
     filter: u32,
 ) -> Result<(glow::Texture, glow::Framebuffer)> {
     unsafe {
-        let tex = gl.create_texture().map_err(|e| anyhow!(e))?;
+        let tex = gl.create_texture().map_err(err)?;
         gl.bind_texture(glow::TEXTURE_2D, Some(tex));
         gl.tex_image_2d(
             glow::TEXTURE_2D,
@@ -1003,7 +1044,7 @@ unsafe fn target(
             glow::CLAMP_TO_EDGE as i32,
         );
         gl.bind_texture(glow::TEXTURE_2D, None);
-        let fbo = gl.create_framebuffer().map_err(|e| anyhow!(e))?;
+        let fbo = gl.create_framebuffer().map_err(err)?;
         gl.bind_framebuffer(glow::FRAMEBUFFER, Some(fbo));
         gl.framebuffer_texture_2d(
             glow::FRAMEBUFFER,
@@ -1015,7 +1056,9 @@ unsafe fn target(
         let status = gl.check_framebuffer_status(glow::FRAMEBUFFER);
         gl.bind_framebuffer(glow::FRAMEBUFFER, None);
         if status != glow::FRAMEBUFFER_COMPLETE {
-            bail!("FBO 不完整（{w}×{h}，内部格式 0x{internal:X}）：0x{status:X}");
+            return Err(err(format!(
+                "FBO 不完整（{w}×{h}，内部格式 0x{internal:X}）：0x{status:X}"
+            )));
         }
         Ok((tex, fbo))
     }

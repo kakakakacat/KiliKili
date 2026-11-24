@@ -45,6 +45,9 @@ targets:
       path: Info.plist
       properties:
         CFBundleDisplayName: Slint Spike
+        # #219：ProMotion。不开的话 iPhone 上 CADisplayLink 与 Core Animation 都被
+        # 限在 60 Hz，preferredFrameRateRange 要 120 也拿不到。
+        CADisableMinimumFrameDurationOnPhone: true
         UILaunchScreen: {}
         # 后台音频：没有这一项，App 一退到后台进程就被挂起，mpv 跟着停。
         UIBackgroundModes:

@@ -259,7 +259,7 @@ native library`，`timeout-minutes: 60`），是全流程最慢的一项，实�
 | Linux 产物构建 | ⚠️ 手动 | `linux_x64.yml` 只有 `workflow_dispatch` / `workflow_call`，见 §2.1 |
 | Docker 多发行版矩阵（`ubuntu:22.04` / `ubuntu:24.04` / `debian:12` / `fedora:41`）验证 **glibc 版本与动态库符号兼容性** | ❌ 计划，尚未落地 | 仓库中没有对应 workflow 或 compose 文件。这是 Flutter Linux 最常见的发布事故（构建机能跑、用户机 glibc 过旧起不来），在该矩阵建起来之前，Linux 的兼容性保障实际为零 |
 
-上表只列已存在的 crate。弹幕的**解码**落在 `bili-api`、实体在 `bili-domain`，`bili-danmaku`（2026-11-11 建立）只装引擎——标记自己、合并、过滤、分桶（RFC §4 的注里记了这条分界线）。它们的单测与 golden 对照包含在上面第二行里，跨 FFI 的那一半在 `bridge` 那行。
+上表只列已存在的 crate。弹幕的**解码**落在 `bili-api`、实体在 `bili-domain`，`bili-danmaku`（2026-11-11 建立）只装引擎——标记自己、合并、过滤、分桶（RFC §4 的注里记了这条分界线）。它们的单测与 golden 对照包含在上面第二行里，跨 FFI 的那一半在 `bridge` 那行。`player-interp`（2026-11-24 建立，#219）在同一条 `cargo test --workspace` 里跑档位、回退、选帧与刷新率测量的单测；**它的 GPU 一半（GLSL、transform feedback 回读）CI 上不执行**——runner 没有 GL 上下文，只能在实验台与真机上验（`docs/m0/spikes/2026-11-24-interp-219.md`）。
 
 ### 3.2 放弃的保障
 vaapi/vdpau 硬解、Wayland 与 X11 合成行为、渲染性能与帧耗时、音频（PulseAudio/PipeWire）、HiDPI 缩放。

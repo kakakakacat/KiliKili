@@ -155,3 +155,8 @@ RSS、音画同步）。2026-11-24 在 macOS、iOS 与一台 Android 低端机�
   不包括原生播放器适配器。
 - ADR-003 不需要改：契约里已经有 surface attach/detach、前后台生命周期与
   分类错误，决策三的每一条都能映射到这些事件上。
+- 插帧（#211）是 `NativeMpvAdapter` 渲染回调里可选的一层，实现在
+  `rust/crates/player-interp`（#219）：适配器把源帧画进它给的 FBO，再让它合成输出。
+  它额外要的平台胶水——Android `ANativeWindow_setFrameRate` 与刷新率回调、iOS 用
+  CADisplayLink 驱动出帧并在 Info.plist 开 ProMotion、两端的温控读数——记在
+  `docs/m0/spikes/2026-11-24-interp-219.md`，不改变上面决策三那张表。

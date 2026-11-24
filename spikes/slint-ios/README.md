@@ -22,6 +22,9 @@ DEVELOPMENT_TEAM=<你的团队 ID> SPIKE_DEVICE=<iPhone UDID> \
 | `SPIKE_AVP` | avplayer 模式的喂法：`hls`（默认）/ `two`（两个播放器）/ `composition` |
 | `SPIKE_HWDEC` / `SPIKE_FLIP` / `SPIKE_GLFINISH` | 对照用：`videotoolbox-copy`、`1`（会倒）、`1` |
 | `SPIKE_PIP` / `SPIKE_BG_VIDNO` / `SPIKE_BG_RENDER` | 后台实验：`0` 不装 PiP、`0` 不关视频轨、`1` 后台也画 |
+| `SPIKE_SCRIPT` | 定时动作 `秒=动作;…`：mpv 命令（`seek 60 absolute`、`set speed 2`）或 `quality`（换到下一对流续播） |
+| `SPIKE_VIDEO2` / `SPIKE_AUDIO2` | `quality` 动作要换到的那一对流 |
+| `SPIKE_MPV_OPTS` | 追加 mpv 选项 `k=v,k=v`（值里不能有逗号）；gl 模式默认已带 `hwdec-image-format=bgra`，见 #210 |
 
 **取流地址带签名与客户端 IP、约 2 小时过期**：`env.json` 放临时目录，别进仓库。
 从桌面图标直接点开 App 是没有视频的（没有环境变量）。

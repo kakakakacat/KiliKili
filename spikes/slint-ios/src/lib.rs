@@ -13,6 +13,10 @@
 //!   `SPIKE_BG_RENDER`（默认 0：退到后台且没进 PiP 时不再画）、
 //!   `SPIKE_PIP`（默认 1；0 = 不装 PiP，用来测纯后台音频）、
 //!   `SPIKE_BG_VIDNO`（默认 1：退到后台且没进 PiP 时关掉视频轨，回前台再开）。
+//! - `SPIKE_MPV_OPTS`：`k=v,k=v`，追加 mpv 选项（调色彩/格式问题时做对照）。
+//! - `SPIKE_SCRIPT`：定时动作，`秒=动作;秒=动作…`（秒从启动算）。动作是一条 mpv 命令
+//!   （空格分词，如 `seek 30 absolute`、`set speed 2`），或 `quality`：换到
+//!   `SPIKE_VIDEO2` / `SPIKE_AUDIO2` 这一对流并从当前位置续播（切清晰度）。
 
 mod mpv;
 mod platform;
@@ -43,6 +47,29 @@ pub extern "C" fn slint_ios_main() {
 
 fn env(name: &str) -> Option<String> {
     std::env::var(name).ok().filter(|v| !v.is_empty())
+}
+
+/// 进程峰值常驻内存，MiB（Darwin 的 ru_maxrss 单位是字节）。
+fn peak_rss_mib() -> f64 {
+    // SAFETY: 同 cpu_seconds。
+    unsafe {
+        let mut usage: libc_rusage = std::mem::zeroed();
+        getrusage(0, &mut usage);
+        usage.rest[0] as f64 / 1048576.0
+    }
+}
+
+/// 解析 `SPIKE_SCRIPT`，按时间排好。
+fn parse_script(text: &str) -> Vec<(f32, String)> {
+    let mut steps: Vec<(f32, String)> = text
+        .split(';')
+        .filter_map(|step| {
+            let (t, action) = step.split_once('=')?;
+            Some((t.trim().parse().ok()?, action.trim().to_string()))
+        })
+        .collect();
+    steps.sort_by(|a, b| a.0.total_cmp(&b.0));
+    steps
 }
 
 /// 进程累计 CPU 时间（用户 + 内核），秒。
@@ -206,6 +233,15 @@ fn start_video(mode: Mode) -> Option<Video> {
         ("terminal", "yes"),
         ("msg-level", "all=info"),
     ];
+    if mode == Mode::Gl {
+        // VideoToolbox 默认吐 nv12，mpv 的 iOS 零拷贝 interop（CVOpenGLESTextureCache）
+        // 采样第二个平面时 V 读成了 U：肤色发绿、蓝色发紫（2026-11-24 真机对照 AVPlayer
+        // 与软解确认）。让 VT 直接出 BGRA：单平面、仍是零拷贝，颜色与 AVPlayer 一致。
+        options.push(("hwdec-image-format", "bgra"));
+    }
+    // SPIKE_MPV_OPTS=k=v,k=v：临时加 mpv 选项做对照（如 fbo-format、cscale）。
+    let extra = env("SPIKE_MPV_OPTS").unwrap_or_default();
+    options.extend(extra.split(',').filter_map(|kv| kv.split_once('=')));
     if !ua.is_empty() {
         options.push(("user-agent", ua.as_str()));
     }
@@ -400,6 +436,30 @@ impl Video {
         }
     }
 
+    /// 执行 `SPIKE_SCRIPT` 里的一步。
+    fn run_action(&self, action: &str) {
+        let Some(mpv) = &self.mpv else { return };
+        let pos = mpv.property("time-pos").unwrap_or_default();
+        let result = if action == "quality" {
+            match (env("SPIKE_VIDEO2"), env("SPIKE_AUDIO2")) {
+                (Some(video), audio) => (|| {
+                    mpv.set_property("start", &pos)?;
+                    // 同 start_video：URL 里有 `:`，只能 clr 再 append。
+                    mpv.command(&["change-list", "audio-files", "clr", ""])?;
+                    if let Some(audio) = audio {
+                        mpv.command(&["change-list", "audio-files", "append", &audio])?;
+                    }
+                    mpv.command(&["loadfile", &video, "replace"])
+                })(),
+                (None, _) => Err("没有 SPIKE_VIDEO2".into()),
+            }
+        } else {
+            let args: Vec<&str> = action.split_whitespace().collect();
+            mpv.command(&args)
+        };
+        log(&format!("script「{action}」@pos {pos} → {result:?}"));
+    }
+
     /// (位置, 时长, 暂停)
     fn timeline(&self) -> (f64, f64, bool) {
         match self.mode {
@@ -440,10 +500,15 @@ impl Video {
                 let Some(mpv) = &self.mpv else {
                     return String::new();
                 };
+                let p = |n: &str| mpv.property(n).unwrap_or_default();
                 format!(
-                    "hwdec {} · {}",
-                    mpv.property("hwdec-current").unwrap_or_default(),
-                    mpv.property("video-codec").unwrap_or_default()
+                    "hwdec {} · {} · speed {} · avsync {} · drop {}/{}",
+                    p("hwdec-current"),
+                    p("video-codec"),
+                    p("speed"),
+                    p("avsync"),
+                    p("frame-drop-count"),
+                    p("decoder-frame-drop-count"),
                 )
             }
         }
@@ -546,6 +611,7 @@ fn run() -> Result<(), slint::PlatformError> {
         });
     }
 
+    let script = RefCell::new(parse_script(&env("SPIKE_SCRIPT").unwrap_or_default()));
     let started = Instant::now();
     let timer = slint::Timer::default();
     {
@@ -592,11 +658,19 @@ fn run() -> Result<(), slint::PlatformError> {
                     if let Some(playing) = PENDING_PLAY.with(|p| p.take()) {
                         v.set_playing(playing);
                     }
+                    let due = script.borrow().first().is_some_and(|(at, _)| t >= *at);
+                    if due {
+                        let (_, action) = script.borrow_mut().remove(0);
+                        v.run_action(&action);
+                    }
                     if let Some(mpv) = &v.mpv {
                         for id in mpv.drain_events() {
                             match id {
                                 mpv::EVENT_FILE_LOADED => log("event FILE_LOADED"),
-                                mpv::EVENT_PLAYBACK_RESTART => log("event PLAYBACK_RESTART"),
+                                mpv::EVENT_PLAYBACK_RESTART => log(&format!(
+                                    "event PLAYBACK_RESTART @t {t:.2} pos {}",
+                                    mpv.property("time-pos").unwrap_or_default()
+                                )),
                                 mpv::EVENT_END_FILE => log("event END_FILE"),
                                 _ => {}
                             }
@@ -648,7 +722,8 @@ fn run() -> Result<(), slint::PlatformError> {
                     let cpu_now = cpu_seconds();
                     let cpu = (cpu_now - cpu_then) / secs as f64 * 100.0;
                     let mut line = format!(
-                        "[{mode:?}] ui {fps:.1} fps · CPU {cpu:.0}% · {}x{} scale {scale:.2} · app {state} · pip {}",
+                        "[{mode:?}] ui {fps:.1} fps · CPU {cpu:.0}% · RSS峰 {:.0} MiB · {}x{} scale {scale:.2} · app {state} · pip {}",
+                        peak_rss_mib(),
                         size.width,
                         size.height,
                         if !pip_ready.get() {

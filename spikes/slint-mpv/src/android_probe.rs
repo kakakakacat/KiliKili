@@ -28,8 +28,8 @@ use std::cell::RefCell;
 use std::ffi::c_void;
 use std::path::PathBuf;
 use std::rc::Rc;
-use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
+use std::sync::{Arc, Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
 use anyhow::{Result, anyhow};
@@ -51,6 +51,68 @@ slint::include_modules!();
 /// 「旋转到底有没有重建 activity」这一问，这是最硬的证据：NativeActivity 下
 /// 没有自己的 Java 代码，`onCreate` 那种日志压根不存在。
 static MAIN_RUNS: AtomicU32 = AtomicU32::new(0);
+
+/// #210 补测：外部数据目录里有 `source.txt`（`key=value` 每行一个：video、audio、
+/// ua、referer，可选 video2、audio2）就改放网络流，不用 probe.mp4。文件里是带签名的
+/// 取流地址，只由驱动脚本临时推进来，不进仓库。
+#[derive(Default)]
+struct NetSource {
+    video: String,
+    audio: String,
+    ua: String,
+    referer: String,
+    video2: String,
+    audio2: String,
+}
+static NET: OnceLock<NetSource> = OnceLock::new();
+
+fn load_net_source(path: &std::path::Path) -> Option<NetSource> {
+    let text = std::fs::read_to_string(path).ok()?;
+    let mut src = NetSource::default();
+    for line in text.lines() {
+        let Some((k, v)) = line.split_once('=') else { continue };
+        let v = v.trim().to_owned();
+        match k.trim() {
+            "video" => src.video = v,
+            "audio" => src.audio = v,
+            "ua" => src.ua = v,
+            "referer" => src.referer = v,
+            "video2" => src.video2 = v,
+            "audio2" => src.audio2 = v,
+            _ => {}
+        }
+    }
+    (!src.video.is_empty()).then_some(src)
+}
+
+/// 每秒一条 STATUS 用：UI 合成帧数、mpv 渲染耗时（本秒最大 / 累计）。
+static UI_FRAMES: AtomicU64 = AtomicU64::new(0);
+static RENDER_MAX_US: AtomicU64 = AtomicU64::new(0);
+static RENDER_SUM_US: AtomicU64 = AtomicU64::new(0);
+static RENDER_N: AtomicU64 = AtomicU64::new(0);
+static LAST_STATUS: Mutex<Option<(Instant, u64, f64)>> = Mutex::new(None);
+
+/// (CPU 累计秒, VmRSS MiB)，读 /proc/self。
+fn proc_usage() -> (f64, f64) {
+    let cpu = std::fs::read_to_string("/proc/self/stat")
+        .ok()
+        .and_then(|s| {
+            // comm 里可能有空格，从最后一个 ')' 之后数：utime 是第 14 列、stime 第 15 列。
+            let rest = &s[s.rfind(')')? + 2..];
+            let f: Vec<&str> = rest.split_whitespace().collect();
+            let ticks = f.get(11)?.parse::<f64>().ok()? + f.get(12)?.parse::<f64>().ok()?;
+            Some(ticks / 100.0)
+        })
+        .unwrap_or(0.0);
+    let rss = std::fs::read_to_string("/proc/self/status")
+        .ok()
+        .and_then(|s| {
+            let line = s.lines().find(|l| l.starts_with("VmRSS:"))?;
+            line.split_whitespace().nth(1)?.parse::<f64>().ok()
+        })
+        .map_or(0.0, |kb| kb / 1024.0);
+    (cpu, rss)
+}
 
 /// 探针观察到的事实。一行一条，顺序即发生顺序。
 #[derive(Default)]
@@ -328,9 +390,32 @@ impl Watch {
             .property_string("vid")
             .unwrap_or_else(|| "?".to_owned());
         let drops = player.property_i64("frame-drop-count").unwrap_or(-1);
+        let avsync = player.property_f64("avsync").unwrap_or(f64::NAN);
+        let speed = player.property_f64("speed").unwrap_or(f64::NAN);
+        let vfps = player.property_f64("estimated-display-fps").unwrap_or(f64::NAN);
+        let codec = player.property_string("video-codec").unwrap_or_default();
+        let (w, h) = (
+            player.property_i64("width").unwrap_or(0),
+            player.property_i64("height").unwrap_or(0),
+        );
+        let (cpu_now, rss) = proc_usage();
+        let frames_now = UI_FRAMES.load(Ordering::Relaxed);
+        let (ui_fps, cpu) = match LAST_STATUS.lock().ok().and_then(|mut g| g.replace((Instant::now(), frames_now, cpu_now))) {
+            Some((at, frames, cpu_then)) => {
+                let secs = at.elapsed().as_secs_f64().max(1e-3);
+                ((frames_now - frames) as f64 / secs, (cpu_now - cpu_then) / secs * 100.0)
+            }
+            None => (0.0, 0.0),
+        };
+        let rmax = RENDER_MAX_US.swap(0, Ordering::Relaxed) as f64 / 1000.0;
+        let rsum = RENDER_SUM_US.swap(0, Ordering::Relaxed) as f64 / 1000.0;
+        let rn = RENDER_N.swap(0, Ordering::Relaxed).max(1) as f64;
         log::info!(
             "STATUS t={position:.3} audio-pts={audio:.3} idle={idle} pause={paused} \
-             hwdec={hwdec} vid={vid} drop={drops}"
+             hwdec={hwdec} vid={vid} drop={drops} avsync={avsync:.4} speed={speed} \
+             src={w}x{h} codec={codec} ui_fps={ui_fps:.1} vo_fps={vfps:.1} \
+             render_avg={:.2}ms render_max={rmax:.2}ms cpu={cpu:.0}% rss={rss:.0}MiB",
+            rsum / rn
         );
     }
 
@@ -368,6 +453,8 @@ impl Watch {
                 Ok(())
             }
             "reopen" => self.cmd_reopen(),
+            // 切清晰度：从当前位置开 source.txt 里的 video2 / audio2。整条重载，不是无缝。
+            "switch" => self.cmd_switch(),
             "recover" => self.cmd_recover(),
             // 直接写 mpv 属性。排查「视频为什么没回来」时要能单独动
             // `hwdec` / `vid`，不然只能靠重编一次 APK 换一个常量。
@@ -449,6 +536,27 @@ impl Watch {
             .map_err(|_| anyhow!("player 锁被毒化"))?
             .debug_set_property(name, value)?;
         self.note(format!("prop {name}={value} 已下发"));
+        Ok(())
+    }
+
+    fn cmd_switch(&self) -> Result<()> {
+        let net = NET.get().ok_or_else(|| anyhow!("没有 source.txt"))?;
+        if net.video2.is_empty() {
+            return Err(anyhow!("source.txt 里没有 video2"));
+        }
+        let player = self.player.as_ref().ok_or_else(|| anyhow!("没有 player"))?;
+        let pos = player
+            .lock()
+            .map_err(|_| anyhow!("player 锁被毒化"))?
+            .property_f64("time-pos")
+            .unwrap_or(0.0);
+        player
+            .lock()
+            .map_err(|_| anyhow!("player 锁被毒化"))?
+            .debug_set_property("start", &format!("{pos:.3}"))?;
+        let audio = (!net.audio2.is_empty()).then(|| PathBuf::from(&net.audio2));
+        open(player, &self.gate, &PathBuf::from(&net.video2), audio.as_ref())?;
+        self.note(format!("switch 已下发，从 {pos:.3}s 续播"));
         Ok(())
     }
 
@@ -660,18 +768,31 @@ fn run_probe(app: slint::android::AndroidApp) -> Result<()> {
     // 媒体文件按 android-activity 给的外部数据目录找，不写死 /sdcard 路径：
     // 应用自己的 files 目录不需要任何存储权限，adb push 也够得着。
     let data_dir = app.external_data_path();
-    let media = data_dir
+    let net = data_dir
         .as_ref()
-        .map(|dir| dir.join("probe.mp4"))
-        .filter(|path| path.exists());
+        .and_then(|dir| load_net_source(&dir.join("source.txt")));
+    let net_media = net.as_ref().map(|n| (PathBuf::from(&n.video), (!n.audio.is_empty()).then(|| PathBuf::from(&n.audio))));
+    if let Some(net) = net {
+        let _ = NET.set(net);
+    }
+    let media = match &net_media {
+        Some((video, _)) => Some(video.clone()),
+        None => data_dir
+            .as_ref()
+            .map(|dir| dir.join("probe.mp4"))
+            .filter(|path| path.exists()),
+    };
     // 外挂音轨。probe.mp4 本身**没有音频**（mpv 日志里 `audio=eof`），拿它测
     // 后台音频等于拿默片去证明音响好不好。有这个文件就按 DASH 分轨开，
     // 顺带把 `MediaSource::Dash` 这条真实取流路径一起走一遍。
     // 造法见 make-probe-audio.py。
-    let audio = data_dir
-        .as_ref()
-        .map(|dir| dir.join("probe-audio.wav"))
-        .filter(|path| path.exists());
+    let audio = match net_media {
+        Some((_, audio)) => audio,
+        None => data_dir
+            .as_ref()
+            .map(|dir| dir.join("probe-audio.wav"))
+            .filter(|path| path.exists()),
+    };
 
     // 这两个句柄必须在 `slint::android::init*` **之前**取：init 会把 app 搬走。
     let java = JavaHandles {
@@ -1050,8 +1171,8 @@ fn open(
         PlayerCommand::Open {
             source,
             headers: MediaHeaders {
-                user_agent: String::new(),
-                referer: String::new(),
+                user_agent: NET.get().map(|n| n.ua.clone()).unwrap_or_default(),
+                referer: NET.get().map(|n| n.referer.clone()).unwrap_or_default(),
             },
         },
     ))?;
@@ -1202,11 +1323,16 @@ fn install_notifier(ui: &SpikeWindow, shared: &Rc<RefCell<Shared>>) -> Result<()
                             .findings
                             .say(format!("draw FBO = {fbo}，尺寸 {width}x{height}"));
                     }
+                    let render_started = Instant::now();
                     if let Some(render) = inner.render.as_ref() {
                         // flip_y：Android 这边实测要翻（第一轮的结论），桌面不用。
                         // 方向不照抄平台。
                         match unsafe { render.render(fbo, width, height, true, &loader) } {
                             Ok(()) => {
+                                let us = render_started.elapsed().as_micros() as u64;
+                                RENDER_MAX_US.fetch_max(us, Ordering::Relaxed);
+                                RENDER_SUM_US.fetch_add(us, Ordering::Relaxed);
+                                RENDER_N.fetch_add(1, Ordering::Relaxed);
                                 if inner.first_frame_at.is_none() {
                                     inner.first_frame_at = Some(Instant::now());
                                     inner.findings.say("mpv 已往这个 FBO 画了第一帧");
@@ -1224,6 +1350,7 @@ fn install_notifier(ui: &SpikeWindow, shared: &Rc<RefCell<Shared>>) -> Result<()
                 }
                 slint::RenderingState::AfterRendering => {
                     inner.frames += 1;
+                    UI_FRAMES.fetch_add(1, Ordering::Relaxed);
                     // 合成完之后把整帧读回来存成 PNG。
                     //
                     // 为什么不靠 `adb exec-out screencap`：那条路量的是**系统

@@ -18,13 +18,12 @@ Later on, we plan to rewrite the UI layer with a Rust UI framework or each platf
 
 ## Screenshots
 
-<p align="center">
-  <img src="assets/screenshots/kilikili-home.png" width="300" alt="Home feed with the glass capsule navigation bar">
-  &nbsp;&nbsp;
-  <img src="assets/screenshots/kilikili-video.png" width="300" alt="Video page with danmaku, subtitles and details">
-</p>
+| | Home (glass capsule navigation) | Video page |
+| :---: | :---: | :---: |
+| **iOS** | <img src="assets/screenshots/kilikili-ios-home.png" height="460" alt="iOS home feed with the glass capsule navigation bar"> | <img src="assets/screenshots/kilikili-ios-video.png" height="460" alt="iOS video page with danmaku and details"> |
+| **Android** | <img src="assets/screenshots/kilikili-android-home.png" height="460" alt="Android home feed with the glass capsule navigation bar"> | <img src="assets/screenshots/kilikili-android-video.png" height="460" alt="Android video page with danmaku, subtitles and details"> |
 
-<p align="center"><sub>Current Android development build (Nov 2026): home feed with the glass capsule navigation · video page</sub></p>
+<sub>Real-device screenshots of the current development build (Nov 2026): iPhone 16 Pro Max · Android test device.</sub>
 
 ## Coming next
 

@@ -18,13 +18,12 @@ KiliKili fork 自 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus)，继承
 
 ## 运行截图
 
-<p align="center">
-  <img src="assets/screenshots/kilikili-home.png" width="300" alt="首页推荐流与玻璃胶囊底部导航">
-  &nbsp;&nbsp;
-  <img src="assets/screenshots/kilikili-video.png" width="300" alt="视频播放页：弹幕、字幕与简介">
-</p>
+| | 首页（玻璃胶囊导航） | 视频播放页 |
+| :---: | :---: | :---: |
+| **iOS** | <img src="assets/screenshots/kilikili-ios-home.png" height="460" alt="iOS 首页推荐流与玻璃胶囊底部导航"> | <img src="assets/screenshots/kilikili-ios-video.png" height="460" alt="iOS 视频播放页：弹幕与简介"> |
+| **Android** | <img src="assets/screenshots/kilikili-android-home.png" height="460" alt="Android 首页推荐流与玻璃胶囊底部导航"> | <img src="assets/screenshots/kilikili-android-video.png" height="460" alt="Android 视频播放页：弹幕、字幕与简介"> |
 
-<p align="center"><sub>Android 当前开发版（2026-11）：首页推荐流与玻璃胶囊导航 · 视频播放页</sub></p>
+<sub>当前开发版（2026-11）真机截图：iPhone 16 Pro Max · Android 测试机。</sub>
 
 ## 即将到来
 

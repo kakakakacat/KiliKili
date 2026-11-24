@@ -44,4 +44,5 @@ Phase 2 Slint migration is **NO-GO** if video compositing/overlay, mobile lifecy
 - [~] M0-SPIKE-05: collect real baseline CPU/RSS/video frame-time samples
       （采集手段就绪：帧耗时分位数 / 掉帧 / CPU / RSS 随每次实验自动入记录；
       目前只有 Windows 一组样本）
-- [ ] M0-SPIKE-06: author ADR-004 with measurements, not assumptions
+- [~] M0-SPIKE-06: author ADR-004 with measurements, not assumptions
+      （提案已写：[ADR-004](../architecture/adr/ADR-004-player-backend.md)；批准前缺的测量见其 §6）

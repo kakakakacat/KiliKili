@@ -241,15 +241,24 @@ windows, linux]`，再逐个核对 `needs.*.result`。真正的回归在被聚�
   windows / linux 带 `if: github.event_name == 'schedule' ||
   inputs.full_platforms`，平时是 skipped；门只在 `full_platforms` 为真时才
   核对这四项。
-- **平台打包那四项只把 `failure` 判红，`cancelled` 不判红**（2026-11-24，
-  issue #181）。托管 macOS runner 容量紧张时，job 会在 **15 分钟整**处被取消：
-  `steps` 为空、`gh run view --log-failed` 拉不到日志、运行注解写着
-  `The job was not acquired by Runner of type hosted even after multiple
-  attempts`——这不是构建失败，是这个 job 根本没开始跑。原先一律要求 `success`，
-  结果最近 8 次定时跑里有 4 次不是 success，其中两次就是这个（
+- **平台打包那四项只把 `failure` 判红，`abandoned` / `cancelled` 不判红**
+  （2026-11-24，issue #181）。托管 macOS runner 容量紧张时，job 会在
+  **15 分钟整**处结束：`steps` 为空、`gh run view --log-failed` 拉不到日志、
+  运行注解写着 `The job was not acquired by Runner of type hosted even after
+  multiple attempts`——这不是构建失败，是这个 job 根本没开始跑。原先一律要求
+  `success`，结果最近 8 次定时跑里有 4 次不是 success，其中两次就是这个（
   [44715385523](https://github.com/kakakakacat/KiliKili/actions/runs/44715385523) 的
   `ios`、[44282401120](https://github.com/kakakakacat/KiliKili/actions/runs/44282401120)
-  的 `macos`）。现在 `cancelled` 只打一条 `::warning::` 注解并写进 step summary。
+  的 `macos`）。现在这两种值各打一条 `::warning::` 注解并写进 step summary。
+
+  **这里有个坑，第一版就栽在上面**：运行页与 Jobs API 把这种 job 显示成
+  `conclusion: cancelled`，而 `gate` 读的 `needs.<job>.result` 给的是
+  **`abandoned`**。照着页面上看到的写 `cancelled)` 不管用——#223 合进来的第一版
+  就是这么写的，当天分支上那次完整回归
+  （[45401214363](https://github.com/kakakakacat/KiliKili/actions/runs/45401214363)）
+  照旧红，拉 gate 日志才看见 `IOS_RESULT: abandoned`。回查 11-18、11-20、11-24
+  三次定时失败，值全是 `abandoned`。**判断要照着 gate 日志里那几个
+  `*_RESULT:` 写，不是照着运行页。**
 
   **这是一处真实的验证能力下降，别当成没有**：有人手动取消那一次、以及
   `concurrency` 的 `cancel-in-progress` 掐掉的那一次，平台打包都会被放过而

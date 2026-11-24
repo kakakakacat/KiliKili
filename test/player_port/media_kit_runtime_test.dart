@@ -142,8 +142,9 @@ void main() {
             'bytes $start-$end/${bytes.length}',
           );
         }
-        response.contentLength = end - start + 1;
-        response.add(bytes.sublist(start, end + 1));
+        response
+          ..contentLength = end - start + 1
+          ..add(bytes.sublist(start, end + 1));
         await response.close();
       });
       final baseline = playerPortSessionCount();

@@ -1,0 +1,109 @@
+# xcodegen 的工程描述：`xcodegen generate` 生成 SlintIosSpike.xcodeproj
+# （生成物不进仓库）。构建与安装见 ../run-device.sh。
+#
+# 签名团队**不写在这里**：Personal Team 的 ID 属于跑实验的人，不属于仓库。
+# 由 run-device.sh 以 DEVELOPMENT_TEAM=… 传给 xcodebuild。
+name: SlintIosSpike
+options:
+  bundleIdPrefix: dev.kilikili.spike
+  deploymentTarget:
+    iOS: "16.0"
+settings:
+  base:
+    CODE_SIGN_STYLE: Automatic
+    # Rust 那边的 staticlib 没有 bitcode，也没有 Swift。
+    ENABLE_BITCODE: NO
+    # 嵌入 framework 时别跑 bitcode_strip：media_kit 这批二进制它处理不了
+    # （"link edit information does not fill the __LINKEDIT segment"）。
+    STRIP_BITCODE_FROM_COPIED_FILES: NO
+targets:
+  SlintIosSpike:
+    type: application
+    platform: iOS
+    sources:
+      - path: main.c
+    preBuildScripts:
+      - name: cargo build
+        basedOnDependencyAnalysis: false
+        script: |
+          set -e
+          export PATH="$HOME/.cargo/bin:$PATH"
+          cd "$PROJECT_DIR/.."
+          cargo build --release --target aarch64-apple-ios
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.kilikili.spike.slintios
+        LIBRARY_SEARCH_PATHS: $(PROJECT_DIR)/../target/aarch64-apple-ios/release
+        # Slint 1.19 在 iOS 上强制带 Skia（C++），要 libc++。
+        OTHER_LDFLAGS: -lslint_ios_spike -lc++
+        TARGETED_DEVICE_FAMILY: "1"
+    info:
+      path: Info.plist
+      properties:
+        CFBundleDisplayName: Slint Spike
+        UILaunchScreen: {}
+        # 后台音频：没有这一项，App 一退到后台进程就被挂起，mpv 跟着停。
+        UIBackgroundModes:
+          - audio
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        # iOS 27 SDK 构建的 App 必须采用 UIScene 生命周期，否则一连上 scene
+        # 就被 UIKit 断言掉（EXC_BREAKPOINT，栈顶
+        # _UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption）。
+        # UIKit **只看清单**判断是否采用，运行时再装 delegate 来不及。
+        # SlintWindowSceneDelegate 是 Slint 1.19 的 winit 后端自带的类。
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+          UISceneConfigurations:
+            UIWindowSceneSessionRoleApplication:
+              - UISceneConfigurationName: Default
+                UISceneDelegateClassName: SlintWindowSceneDelegate
+    dependencies:
+      # media_kit 的 iOS libmpv，由 link-frameworks.sh 软链进来。全部是动态
+      # framework，要嵌进 App（embed），否则启动时 dyld 找不到 @rpath/…
+      - framework: Frameworks/Ass.xcframework
+        embed: true
+      - framework: Frameworks/Avcodec.xcframework
+        embed: true
+      - framework: Frameworks/Avfilter.xcframework
+        embed: true
+      - framework: Frameworks/Avformat.xcframework
+        embed: true
+      - framework: Frameworks/Avutil.xcframework
+        embed: true
+      - framework: Frameworks/Dav1d.xcframework
+        embed: true
+      - framework: Frameworks/Freetype.xcframework
+        embed: true
+      - framework: Frameworks/Fribidi.xcframework
+        embed: true
+      - framework: Frameworks/Harfbuzz.xcframework
+        embed: true
+      - framework: Frameworks/Mbedcrypto.xcframework
+        embed: true
+      - framework: Frameworks/Mbedtls.xcframework
+        embed: true
+      - framework: Frameworks/Mbedx509.xcframework
+        embed: true
+      - framework: Frameworks/Mpv.xcframework
+        embed: true
+      - framework: Frameworks/Placebo.xcframework
+        embed: true
+      - framework: Frameworks/Png16.xcframework
+        embed: true
+      - framework: Frameworks/Swresample.xcframework
+        embed: true
+      - framework: Frameworks/Swscale.xcframework
+        embed: true
+      - framework: Frameworks/Uchardet.xcframework
+        embed: true
+      - framework: Frameworks/Xml2.xcframework
+        embed: true
+      - sdk: UIKit.framework
+      - sdk: Metal.framework
+      - sdk: QuartzCore.framework
+      - sdk: CoreGraphics.framework
+      - sdk: CoreText.framework
+      - sdk: Foundation.framework

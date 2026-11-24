@@ -1,0 +1,6 @@
+# 与 rust/rust-toolchain.toml 同版本：两台开发机跑出来的数字要可比。
+# 本 spike 只交叉编译到 iPhone 真机，所以列上 iOS 的 target。
+[toolchain]
+channel = "1.100.0"
+components = ["rustfmt", "clippy"]
+targets = ["aarch64-apple-ios"]

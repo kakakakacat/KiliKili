@@ -1,0 +1,86 @@
+// SPIKE-004：Slint on iOS。
+// 第 1 步：窗口能起来、能持续重绘（没有视频时那个会动的方块）。
+// 第 2 步：mpv 软件渲染的画面作为 Image 垫在底下，上面叠一层滚动文字
+//          （合成弹幕，只为看层级与帧率，不是真实弹幕引擎），HUD 在最上。
+
+export struct Bullet {
+    text: string,
+    x: length,
+    y: length,
+}
+
+export component AppWindow inherits Window {
+    in property <string> hud: "启动中…";
+    in property <float> phase: 0;
+    in property <image> video;
+    in property <bool> has-video: false;
+    in property <[Bullet]> bullets;
+    in property <string> mode: "";
+    callback toggle-pip();
+    background: #000000;
+    // iOS 上 Slint（fontique）给汉字的回退列表是空的、也看不到苹方，不指定就全是方块；
+    // Hiragino 是唯一可见的 CJK 字体，但缺简体专用字（「弹」）。只是权宜，见 README。
+    default-font-family: "Hiragino Sans";
+
+    if root.has-video: Image {
+        source: root.video;
+        width: parent.width;
+        height: parent.height;
+        image-fit: contain;
+    }
+
+    for b in root.bullets: Text {
+        x: b.x;
+        y: b.y;
+        text: b.text;
+        color: #ffffff;
+        font-size: 22px;
+        stroke: #000000;
+        stroke-width: 1.5px;
+    }
+
+    if !root.has-video: Rectangle {
+        x: (parent.width - self.width) / 2 + sin(root.phase * 360deg) * (parent.width / 3);
+        y: parent.height / 2;
+        width: 64px;
+        height: 64px;
+        border-radius: 12px;
+        background: #4aa3ff;
+    }
+
+    // PiP 按钮：手动进/出画中画（上滑回桌面会自动进，不靠它）。
+    if root.mode != "Sw" && root.mode != "": Rectangle {
+        x: 16px;
+        y: parent.height - 120px;
+        width: 96px;
+        height: 44px;
+        border-radius: 22px;
+        background: pip-touch.pressed ? #4aa3ffcc : #4aa3ff88;
+        Text {
+            text: "PiP";
+            color: #ffffff;
+            font-size: 18px;
+        }
+        pip-touch := TouchArea {
+            clicked => { root.toggle-pip(); }
+        }
+    }
+
+    Rectangle {
+        x: 0;
+        y: 0;
+        width: parent.width;
+        height: hud-text.preferred-height + 72px;
+        background: #000000a0;
+
+        hud-text := Text {
+            x: 16px;
+            y: 56px;
+            width: parent.width - 32px;
+            text: root.hud;
+            color: #74d99f;
+            font-size: 13px;
+            wrap: word-wrap;
+        }
+    }
+}

@@ -1,0 +1,54 @@
+# SPIKE-004（issue #11）的 iOS 实验台。见 README.md。
+#
+# 自成一个 workspace，理由同 ../slint-mpv：spike 是证据产出工具，要链
+# iOS 的 GPU 栈与 libmpv，不该进 `rust/` 给 CI 加依赖。
+#
+# 编成 staticlib，由 ios/ 下的 Xcode 工程（xcodegen 生成）链进一个 App：
+# iOS 的可执行文件要签名、要 Info.plist、要 provisioning profile，这些
+# 交给 Xcode 做比手搓 .app 可靠。入口是 C 的 main() 调 `slint_ios_main`。
+[workspace]
+
+[package]
+name = "slint-ios-spike"
+version = "0.0.0"
+edition = "2024"
+publish = false
+license = "GPL-3.0-or-later"
+
+[lib]
+name = "slint_ios_spike"
+crate-type = ["staticlib"]
+path = "src/lib.rs"
+
+[dependencies]
+# iOS 上 Slint **没有 OpenGL 渲染器**：winit 后端的 glutin 依赖对
+# `target_vendor = "apple", not(macos)` 是排除的。可选的只有 Skia（Metal）、
+# femtovg-wgpu（Metal）与软件渲染。选 femtovg-wgpu，是因为它配上
+# `unstable-wgpu-*` 可以把一张外部 wgpu 纹理直接当 Image 画——mpv 画面
+# 零拷贝进 Slint 的那条路要靠它（见 README「路线」）。
+slint = { version = "1.19", default-features = false, features = [
+    "std",
+    "compat-1-2",
+    "backend-winit",
+    "renderer-femtovg-wgpu",
+    # 拿 Slint 的 wgpu 设备（RenderingSetup 里的 GraphicsAPI::WGPU30）、
+    # 把外部纹理包成 Image。版本号就是 wgpu 的大版本，必须与 Slint 内部用的一致。
+    "unstable-wgpu-30",
+] }
+# 只用它的 Metal hal：`texture_from_raw` + `create_texture_from_hal`。
+# 不单独声明 wgpu 依赖，直接用 `slint::wgpu_30::wgpu`，免得版本漂移。
+objc2-metal = { version = "0.3.2", default-features = false, features = ["std", "MTLDevice", "MTLResource", "MTLTexture", "MTLTypes"] }
+
+# 只用来诊断字体：直接问 Slint 底下那份 fontique 看到了哪些系统字体。
+# 版本要与 i-slint-common 1.19 用的一致（0.12）。
+fontique = "0.12"
+# 只用来诊断音频：读 AVAudioSession 的类别、输出路由与系统音量。
+objc2 = "0.6"
+
+[build-dependencies]
+slint-build = "1.19"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1

@@ -329,6 +329,8 @@ Secrets：
 variable，构建后用 `apksigner verify --print-certs` 核对每个 APK，并用 `aapt`
 确认应用 ID。任一 secret、
 variable 缺失或不匹配时构建失败；发布步骤因此不会上传错误身份的 APK。
+本地未配置正式密钥时，普通 debug 开发仍可使用 debug 签名；缺正式签名的
+release 构建在 `preReleaseBuild` 阶段失败，不在 Gradle 配置阶段阻断 debug。
 仓库不保存私钥、口令或 JKS。仓库所有者须在自己的机器上分别生成两把密钥，
 离线加密备份，再设置下表；**正式密钥绝不能复用验证密钥**。
 

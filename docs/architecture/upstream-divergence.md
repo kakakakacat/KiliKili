@@ -578,7 +578,7 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | `.github/workflows/mac.yml` | `6d35ee6e9` 及本次 | 产物体积闸门、Developer ID 签名与公证（#121） |
 | `.github/workflows/win_x64.yml` | `6d35ee6e9` 及本次 | 产物体积闸门、signtool 代码签名（#121） |
 | `.github/workflows/build.yml` | #121、#146 | 四个可复用工作流补 `secrets: inherit`；Android 验证包与正式包使用独立证书，缺密钥或指纹不符即失败，防止产出临时 debug 签名的 Release |
-| `android/app/build.gradle.kts` | #184、#146 | NDK 版本固定；无签名配置的正式 Android release 构建直接失败，只有 `.dev` 验证包允许本地 debug 回退 |
+| `android/app/build.gradle.kts` | #184、#146 | NDK 版本固定；无签名配置的正式 Android release 在 `preReleaseBuild` 失败，普通 debug 开发不受影响；`.dev` 验证包允许本地 debug 回退 |
 | `.github/workflows/ios.yml` | 本次（#121） | 注释写明侧载没有仓库侧发布身份；构建行为未变 |
 
 `lib/plugin/pl_player/controller.dart` 不在这张表里，它已经由 §4.1 的 S3 一行

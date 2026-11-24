@@ -8,7 +8,8 @@
 //! media_kit 带的这份 iOS 构建是 mpv 0.39，编进了 `gl` / `ios-gl`
 //! （OpenGL ES + VideoToolbox→GLES 零拷贝）与 `audiounit`，**没有** Vulkan、
 //! 没有 avfoundation 输出。所以渲染只有两条路：OpenGL ES，或软件渲染。
-//! 本文件先做软件渲染（第 2 步的基线）。
+//! 两条都在这里：`new(.., RenderApi::Sw)` 是第 2 步的基线，
+//! `RenderApi::OpenGl` 是零拷贝路线（画进 IOSurface 支撑的 FBO）。
 
 use std::ffi::{CStr, CString, c_char, c_int, c_void};
 use std::ptr;
@@ -38,6 +39,10 @@ pub struct MpvEvent {
 
 const RENDER_PARAM_INVALID: c_int = 0;
 const RENDER_PARAM_API_TYPE: c_int = 1;
+const RENDER_PARAM_OPENGL_INIT_PARAMS: c_int = 2;
+const RENDER_PARAM_OPENGL_FBO: c_int = 3;
+const RENDER_PARAM_FLIP_Y: c_int = 4;
+const RENDER_PARAM_BLOCK_FOR_TARGET_TIME: c_int = 12;
 const RENDER_PARAM_SW_SIZE: c_int = 17;
 const RENDER_PARAM_SW_FORMAT: c_int = 18;
 const RENDER_PARAM_SW_STRIDE: c_int = 19;
@@ -52,9 +57,17 @@ unsafe extern "C" {
     fn mpv_create() -> *mut MpvHandle;
     fn mpv_initialize(ctx: *mut MpvHandle) -> c_int;
     fn mpv_terminate_destroy(ctx: *mut MpvHandle);
-    fn mpv_set_option_string(ctx: *mut MpvHandle, name: *const c_char, data: *const c_char)
-    -> c_int;
+    fn mpv_set_option_string(
+        ctx: *mut MpvHandle,
+        name: *const c_char,
+        data: *const c_char,
+    ) -> c_int;
     fn mpv_command(ctx: *mut MpvHandle, args: *mut *const c_char) -> c_int;
+    fn mpv_set_property_string(
+        ctx: *mut MpvHandle,
+        name: *const c_char,
+        data: *const c_char,
+    ) -> c_int;
     fn mpv_get_property_string(ctx: *mut MpvHandle, name: *const c_char) -> *mut c_char;
     fn mpv_free(data: *mut c_void);
     fn mpv_wait_event(ctx: *mut MpvHandle, timeout: f64) -> *mut MpvEvent;
@@ -83,6 +96,26 @@ fn cstr(s: &str) -> CString {
     CString::new(s).expect("参数里不该有 NUL")
 }
 
+#[repr(C)]
+struct OpenGlInitParams {
+    get_proc_address: unsafe extern "C" fn(*mut c_void, *const c_char) -> *mut c_void,
+    get_proc_address_ctx: *mut c_void,
+}
+
+#[repr(C)]
+struct OpenGlFbo {
+    fbo: c_int,
+    w: c_int,
+    h: c_int,
+    internal_format: c_int,
+}
+
+pub enum RenderApi {
+    Sw,
+    /// 调用方保证此刻 EAGLContext 已是当前（ios-gl hwdec 互操作在创建时绑定它）。
+    OpenGl(unsafe extern "C" fn(*mut c_void, *const c_char) -> *mut c_void),
+}
+
 pub struct Mpv {
     handle: *mut MpvHandle,
     render: *mut MpvRenderContext,
@@ -90,7 +123,7 @@ pub struct Mpv {
 
 impl Mpv {
     /// `options` 在 `mpv_initialize` 之前设，例如 `("hwdec", "videotoolbox")`。
-    pub fn new_sw(options: &[(&str, &str)]) -> Result<Self, String> {
+    pub fn new(options: &[(&str, &str)], api: RenderApi) -> Result<Self, String> {
         // SAFETY: 以下都是 libmpv 的公开 C API，按文档的调用顺序使用。
         unsafe {
             let handle = mpv_create();
@@ -106,21 +139,34 @@ impl Mpv {
             }
             check(mpv_initialize(handle), "mpv_initialize")?;
 
-            let api = cstr("sw");
-            let mut params = [
-                RenderParam {
-                    kind: RENDER_PARAM_API_TYPE,
-                    data: api.as_ptr() as *mut c_void,
-                },
-                RenderParam {
-                    kind: RENDER_PARAM_INVALID,
-                    data: ptr::null_mut(),
-                },
-            ];
+            let (name, mut gl) = match api {
+                RenderApi::Sw => (cstr("sw"), None),
+                RenderApi::OpenGl(get_proc_address) => (
+                    cstr("opengl"),
+                    Some(OpenGlInitParams {
+                        get_proc_address,
+                        get_proc_address_ctx: ptr::null_mut(),
+                    }),
+                ),
+            };
+            let mut params = vec![RenderParam {
+                kind: RENDER_PARAM_API_TYPE,
+                data: name.as_ptr() as *mut c_void,
+            }];
+            if let Some(gl) = gl.as_mut() {
+                params.push(RenderParam {
+                    kind: RENDER_PARAM_OPENGL_INIT_PARAMS,
+                    data: (gl as *mut OpenGlInitParams).cast(),
+                });
+            }
+            params.push(RenderParam {
+                kind: RENDER_PARAM_INVALID,
+                data: ptr::null_mut(),
+            });
             let mut render = ptr::null_mut();
             check(
                 mpv_render_context_create(&mut render, handle, params.as_mut_ptr()),
-                "mpv_render_context_create(sw)",
+                &format!("mpv_render_context_create({})", name.to_string_lossy()),
             )?;
             Ok(Self { handle, render })
         }
@@ -202,6 +248,55 @@ impl Mpv {
         check(
             unsafe { mpv_render_context_render(self.render, params.as_mut_ptr()) },
             "mpv_render_context_render(sw)",
+        )
+    }
+}
+
+impl Mpv {
+    /// 画一帧到 `fbo`（调用方保证 EAGLContext 是当前）。
+    ///
+    /// `BLOCK_FOR_TARGET_TIME = 0`：默认值 1 会让 render 一直阻塞到这一帧的
+    /// 显示时刻，而我们是在 UI 线程上调它的——那等于把 UI 帧率锁死在视频帧率上。
+    pub fn render_gl(&self, fbo: u32, width: u32, height: u32, flip_y: bool) -> Result<(), String> {
+        let mut target = OpenGlFbo {
+            fbo: fbo as c_int,
+            w: width as c_int,
+            h: height as c_int,
+            internal_format: 0,
+        };
+        let mut flip: c_int = flip_y.into();
+        let mut block: c_int = 0;
+        let mut params = [
+            RenderParam {
+                kind: RENDER_PARAM_OPENGL_FBO,
+                data: (&raw mut target).cast(),
+            },
+            RenderParam {
+                kind: RENDER_PARAM_FLIP_Y,
+                data: (&raw mut flip).cast(),
+            },
+            RenderParam {
+                kind: RENDER_PARAM_BLOCK_FOR_TARGET_TIME,
+                data: (&raw mut block).cast(),
+            },
+            RenderParam {
+                kind: RENDER_PARAM_INVALID,
+                data: ptr::null_mut(),
+            },
+        ];
+        // SAFETY: 参数指向的内存在调用期间有效。
+        check(
+            unsafe { mpv_render_context_render(self.render, params.as_mut_ptr()) },
+            "mpv_render_context_render(gl)",
+        )
+    }
+
+    pub fn set_property(&self, name: &str, value: &str) -> Result<(), String> {
+        let (n, v) = (cstr(name), cstr(value));
+        // SAFETY: 两个 C 字符串在调用期间有效。
+        check(
+            unsafe { mpv_set_property_string(self.handle, n.as_ptr(), v.as_ptr()) },
+            name,
         )
     }
 }

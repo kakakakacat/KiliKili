@@ -15,6 +15,8 @@ export component AppWindow inherits Window {
     in property <image> video;
     in property <bool> has-video: false;
     in property <[Bullet]> bullets;
+    in property <string> mode: "";
+    callback toggle-pip();
     background: #000000;
     // iOS 上 Slint（fontique）给汉字的回退列表是空的、也看不到苹方，不指定就全是方块；
     // Hiragino 是唯一可见的 CJK 字体，但缺简体专用字（「弹」）。只是权宜，见 README。
@@ -44,6 +46,24 @@ export component AppWindow inherits Window {
         height: 64px;
         border-radius: 12px;
         background: #4aa3ff;
+    }
+
+    // PiP 按钮：手动进/出画中画（上滑回桌面会自动进，不靠它）。
+    if root.mode != "Sw" && root.mode != "": Rectangle {
+        x: 16px;
+        y: parent.height - 120px;
+        width: 96px;
+        height: 44px;
+        border-radius: 22px;
+        background: pip-touch.pressed ? #4aa3ffcc : #4aa3ff88;
+        Text {
+            text: "PiP";
+            color: #ffffff;
+            font-size: 18px;
+        }
+        pip-touch := TouchArea {
+            clicked => { root.toggle-pip(); }
+        }
     }
 
     Rectangle {

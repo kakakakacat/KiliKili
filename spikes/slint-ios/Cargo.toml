@@ -31,7 +31,13 @@ slint = { version = "1.19", default-features = false, features = [
     "compat-1-2",
     "backend-winit",
     "renderer-femtovg-wgpu",
+    # 拿 Slint 的 wgpu 设备（RenderingSetup 里的 GraphicsAPI::WGPU30）、
+    # 把外部纹理包成 Image。版本号就是 wgpu 的大版本，必须与 Slint 内部用的一致。
+    "unstable-wgpu-30",
 ] }
+# 只用它的 Metal hal：`texture_from_raw` + `create_texture_from_hal`。
+# 不单独声明 wgpu 依赖，直接用 `slint::wgpu_30::wgpu`，免得版本漂移。
+objc2-metal = { version = "0.3.2", default-features = false, features = ["std", "MTLDevice", "MTLResource", "MTLTexture", "MTLTypes"] }
 
 # 只用来诊断字体：直接问 Slint 底下那份 fontique 看到了哪些系统字体。
 # 版本要与 i-slint-common 1.19 用的一致（0.12）。

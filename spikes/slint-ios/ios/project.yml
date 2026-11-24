@@ -1,8 +1,8 @@
 # xcodegen 的工程描述：`xcodegen generate` 生成 SlintIosSpike.xcodeproj
-# （生成物不进仓库）。构建与安装见 ../run-device.sh。
+# （生成物不进仓库）。构建与安装见 ../build-run.sh。
 #
 # 签名团队**不写在这里**：Personal Team 的 ID 属于跑实验的人，不属于仓库。
-# 由 run-device.sh 以 DEVELOPMENT_TEAM=… 传给 xcodebuild。
+# 由 build-run.sh 以 DEVELOPMENT_TEAM=… 传给 xcodebuild。
 name: SlintIosSpike
 options:
   bundleIdPrefix: dev.kilikili.spike
@@ -22,6 +22,7 @@ targets:
     platform: iOS
     sources:
       - path: main.c
+      - path: bridge.m
     preBuildScripts:
       - name: cargo build
         basedOnDependencyAnalysis: false
@@ -37,6 +38,9 @@ targets:
         # Slint 1.19 在 iOS 上强制带 Skia（C++），要 libc++。
         OTHER_LDFLAGS: -lslint_ios_spike -lc++
         TARGETED_DEVICE_FAMILY: "1"
+        # OpenGL ES 自 iOS 12 起废弃，但 mpv 0.39 在 iOS 上只有 GLES 渲染接口。
+        GCC_PREPROCESSOR_DEFINITIONS: GLES_SILENCE_DEPRECATION=1
+        CLANG_ENABLE_OBJC_ARC: YES
     info:
       path: Info.plist
       properties:
@@ -103,6 +107,11 @@ targets:
         embed: true
       - sdk: UIKit.framework
       - sdk: AVFoundation.framework
+      - sdk: AVKit.framework
+      - sdk: CoreMedia.framework
+      - sdk: CoreVideo.framework
+      - sdk: OpenGLES.framework
+      - sdk: IOSurface.framework
       - sdk: Metal.framework
       - sdk: QuartzCore.framework
       - sdk: CoreGraphics.framework

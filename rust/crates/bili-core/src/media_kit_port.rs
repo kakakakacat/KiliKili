@@ -447,14 +447,10 @@ pub fn classify_error(text: &str) -> Option<PlayerFailureKind> {
         Some(PlayerFailureKind::Network)
     } else if text.starts_with("Could not open codec") {
         Some(PlayerFailureKind::Decode)
-    } else if text.starts_with("error running")
-        || text.starts_with("Failed to open .")
-        || text.starts_with("Cannot open")
-        || text.starts_with("Can not open")
-    {
-        None
     } else {
-        Some(PlayerFailureKind::Backend)
+        // error 级日志也可能是 seek 后可恢复的缺参考帧；不能抢在后端确认前
+        // 判死会话。未知日志仍由宿主记录，真正终止由 END_FILE 错误码判定。
+        None
     }
 }
 

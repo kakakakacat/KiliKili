@@ -42,6 +42,11 @@ ffmpeg -hide_banner -loglevel error -y -f lavfi -i 'testsrc2=size=320x180:rate=2
   -f lavfi -i 'sine=frequency=440' -t 15 -c:v libx264 -pix_fmt yuv420p -c:a aac "$runtime_dir/fixture.mp4"
 ffmpeg -hide_banner -loglevel error -y -i "$runtime_dir/fixture.mp4" -map 0:v -c copy "$runtime_dir/video.mp4"
 ffmpeg -hide_banner -loglevel error -y -i "$runtime_dir/fixture.mp4" -map 0:a -c copy "$runtime_dir/audio.m4a"
+# 大于解复用缓存且 moov 前置，受控 HTTP 断流才能实际耗尽缓存。
+ffmpeg -hide_banner -loglevel error -y -f lavfi -i 'testsrc2=size=640x360:rate=25' \
+  -f lavfi -i 'sine=frequency=880' -t 30 -c:v libx264 -preset ultrafast \
+  -b:v 3M -minrate 3M -maxrate 3M -bufsize 3M -g 25 -pix_fmt yuv420p \
+  -c:a aac -movflags +faststart "$runtime_dir/quality.mp4"
 (cd rust && cargo build -p bridge_flutter)
 target_dir="$( (cd rust && cargo metadata --format-version 1 --no-deps) | python3 -c 'import json,sys; print(json.load(sys.stdin)["target_directory"])')"
 export KILIKILI_RUST_BRIDGE_TESTS=1

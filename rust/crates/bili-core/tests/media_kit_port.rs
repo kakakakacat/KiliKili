@@ -332,3 +332,23 @@ fn failed_open_can_retry_by_rebuilding_backend_but_timeout_cannot() {
     assert!(port.should_retry(ticket.generation));
     assert!(!port.is_current(ticket.generation));
 }
+
+#[test]
+fn recoverable_decoder_log_during_seek_does_not_fail_pending_command() {
+    let mut port = MediaKitPort::new(SessionId(15));
+    open(&mut port);
+    let seek = port.prepare(PlayerCommand::Seek { position_ms: 5000 });
+    assert!(port.begin(seek.generation));
+    let batch = port.observe(vec![
+        obs(K::Seek, 0.0),
+        Observation {
+            text: Some("h264: co located POCs unavailable".into()),
+            ..obs(K::Error, 0.0)
+        },
+        obs(K::PlaybackRestart, 0.0),
+    ]);
+    assert!(batch.failed.is_empty());
+    assert_eq!(batch.confirmed, vec![seek.generation]);
+    // 真正终止仍由 END_FILE 的 mpv 错误码判定，不能吞掉解码失败。
+    assert_eq!(port.observe(vec![obs(K::EndFile, -14.0)]).failed.len(), 1);
+}

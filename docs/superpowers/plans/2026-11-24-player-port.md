@@ -35,3 +35,14 @@
 6 项与真实 media-kit/libmpv 2 项通过；相邻 Dart 会话/弹幕 6 项通过。
 `dart analyze lib` 无 error，既有 warning/info 保留。真机五项验收矩阵缺项
 已写入 ADR-003 与运行记录，因此本 PR 不关闭 #4。
+
+
+继续验收（用户要求当场推进）：
+
+- [x] 真实 HTTP 缓冲与不同分辨率切换；发现并修复可恢复 error 日志误判。
+- [x] 三轮 raw media-kit / Player Port 独立进程基线，保留回调/wall time/RSS。
+- [x] 独立 Flutter 图形宿主：复用生产适配器、纹理、Rust/Canvas 真实弹幕。
+- [x] Android 真机前后台、PiP、缓冲、销毁重建及画面检查。
+- [x] 原生 MpvPlayer 同素材、同 Seek/倍速/分辨率/受控缓冲契约对照。
+- [ ] iOS 剩余前后台/PiP：profile 包已装、播放/弹幕/缓冲通过；等待首次网络提示处理。
+- [x] 增量复核：修复 Android 驱动重复读取旧 PASS 的运行边界问题。

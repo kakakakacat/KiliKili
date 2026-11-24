@@ -10,6 +10,8 @@ import 'package:kilikili/rust/api/player_port.dart';
 import 'package:kilikili/plugin/pl_player/player_port/flutter_media_kit_adapter.dart';
 import 'package:kilikili/plugin/pl_player/player_port/media_kit_backend.dart';
 
+import '../../tool/player_port_probe/probe_server.dart';
+
 final enabled = Platform.environment['KILIKILI_PLAYER_RUNTIME_TESTS'] == '1';
 
 void main() {
@@ -210,5 +212,106 @@ void main() {
     },
     skip: !enabled,
     timeout: const Timeout(Duration(seconds: 40)),
+  );
+  test(
+    'resolution replacement preserves position and controlled starvation recovers',
+    () async {
+      final dir = File(Platform.environment['KILIKILI_PLAYER_MEDIA']!).parent;
+      final server = await ControlledMediaServer.start(
+        File('${dir.path}/quality.mp4'),
+      );
+      final baseline = playerPortSessionCount();
+      final session = RustPlayerPortSession();
+      final player = await NativePlayer.create(
+        configuration: const PlayerConfiguration(
+          options: {
+            'vo': 'null',
+            'ao': 'null',
+            'hwdec': 'no',
+            'demuxer-max-bytes': '1048576',
+            'cache': 'yes',
+            'cache-secs': '1',
+            'cache-pause-wait': '0.2',
+          },
+        ),
+      );
+      final adapter = FlutterMediaKitAdapter(
+        session: session,
+        backend: MediaKitBackend(player),
+      );
+      final batches = <PlayerPortBatch>[];
+      final subscription = adapter.events.listen(batches.add);
+      Future<PlayerPortSnapshot> waitFor(
+        bool Function(PlayerPortSnapshot) accept,
+      ) async {
+        final deadline = DateTime.now().add(const Duration(seconds: 10));
+        while (DateTime.now().isBefore(deadline)) {
+          final snapshot = batches.lastOrNull?.snapshot;
+          if (snapshot != null && accept(snapshot)) return snapshot;
+          await Future<void>.delayed(const Duration(milliseconds: 40));
+        }
+        final s = batches.lastOrNull?.snapshot;
+        throw StateError(
+          '等待失败: state=${s?.state} pos=${s?.positionMs} pause=${player.getProperty("pause")} cache=${player.getProperty("paused-for-cache")} eof=${player.getProperty("eof-reached")}',
+        );
+      }
+
+      try {
+        await adapter.send(
+          PlayerIntent(kind: .open, video: '${dir.path}/fixture.mp4'),
+        );
+        expect(player.getProperty('width'), '320');
+        await adapter.send(
+          PlayerIntent(kind: .seek, positionMs: BigInt.from(5000)),
+        );
+        final replacement = session.prepare(
+          PlayerIntent(
+            kind: .open,
+            video: server.url,
+          ),
+        );
+        expect(
+          await adapter.execute(
+            replacement,
+            start: const Duration(seconds: 5),
+            play: true,
+          ),
+          isTrue,
+        );
+        await waitFor(
+          (s) => s.state == .playing && s.positionMs >= BigInt.from(5500),
+        );
+        expect(player.getProperty('width'), '640');
+        expect(batches.last.generation, replacement.generation);
+        server.blocked = true;
+        final buffering = await waitFor((s) => s.state == .buffering);
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+        expect(
+          (batches.last.snapshot!.positionMs - buffering.positionMs).abs(),
+          lessThan(BigInt.from(100)),
+        );
+        server.blocked = false;
+        await waitFor(
+          (s) =>
+              s.state == .playing &&
+              s.positionMs > buffering.positionMs + BigInt.from(200),
+        );
+        expect(adapter.isUsable, isTrue);
+        expect(server.requests, greaterThan(0));
+        // ignore: avoid_print
+        print(
+          'Player Port runtime: 320→640, position retained, buffering freeze/recovery PASS (${server.requests} HTTP requests)',
+        );
+      } finally {
+        server.blocked = false;
+        await adapter.dispose();
+        await subscription.cancel();
+        await server.close();
+        expect(playerPortSessionCount(), baseline);
+        await Future<void>.delayed(const Duration(seconds: 6));
+      }
+    },
+    skip: !enabled,
+    timeout: const Timeout(Duration(seconds: 50)),
   );
 }

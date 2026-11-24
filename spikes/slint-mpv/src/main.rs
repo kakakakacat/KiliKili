@@ -244,6 +244,7 @@ fn main() -> Result<()> {
                         .map(|p| p.to_string_lossy().into_owned()),
                     volume: 50,
                     loop_file: args.loop_file,
+                    extra: Vec::new(),
                 };
                 let player = mpv::MpvPlayer::new(
                     Arc::clone(&lib),

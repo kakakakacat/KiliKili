@@ -101,7 +101,26 @@ pub mod render_param {
     pub const OPENGL_INIT_PARAMS: c_int = 2;
     pub const OPENGL_FBO: c_int = 3;
     pub const FLIP_Y: c_int = 4;
+    pub const NEXT_FRAME_INFO: c_int = 11;
     pub const BLOCK_FOR_TARGET_TIME: c_int = 12;
+}
+
+/// `mpv_render_frame_info`（render.h）。`NEXT_FRAME_INFO` 经
+/// `mpv_render_context_get_info` 取回，说的是**下一张**要画的帧。
+#[repr(C)]
+#[derive(Debug, Clone, Copy, Default)]
+pub struct MpvRenderFrameInfo {
+    pub flags: u64,
+    /// 与 `mpv_get_time_us` 同一时基；redraw 或 display-sync 模式下可能是 0。
+    pub target_time: i64,
+}
+
+/// `mpv_render_frame_info_flag`。
+pub mod frame_info {
+    pub const PRESENT: u64 = 1 << 0;
+    pub const REDRAW: u64 = 1 << 1;
+    pub const REPEAT: u64 = 1 << 2;
+    pub const BLOCK_VSYNC: u64 = 1 << 3;
 }
 
 /// `mpv_render_context_update` 的返回位：有新帧要画。
@@ -133,6 +152,8 @@ type FnRenderContextRender =
     unsafe extern "C" fn(*mut MpvRenderContext, *mut MpvRenderParam) -> c_int;
 type FnRenderContextUpdate = unsafe extern "C" fn(*mut MpvRenderContext) -> u64;
 type FnRenderContextFree = unsafe extern "C" fn(*mut MpvRenderContext);
+type FnRenderContextGetInfo = unsafe extern "C" fn(*mut MpvRenderContext, MpvRenderParam) -> c_int;
+type FnGetTimeUs = unsafe extern "C" fn(*mut MpvHandle) -> i64;
 
 pub struct MpvLib {
     pub create: FnCreate,
@@ -154,6 +175,8 @@ pub struct MpvLib {
     pub render_context_render: FnRenderContextRender,
     pub render_context_update: FnRenderContextUpdate,
     pub render_context_free: FnRenderContextFree,
+    pub render_context_get_info: FnRenderContextGetInfo,
+    pub get_time_us: FnGetTimeUs,
     /// 必须活到最后一个函数指针不再被调用为止。
     _lib: libloading::Library,
     pub path: String,
@@ -234,6 +257,8 @@ impl MpvLib {
             render_context_render: sym!("mpv_render_context_render"),
             render_context_update: sym!("mpv_render_context_update"),
             render_context_free: sym!("mpv_render_context_free"),
+            render_context_get_info: sym!("mpv_render_context_get_info"),
+            get_time_us: sym!("mpv_get_time_us"),
             _lib: lib,
             path,
         })

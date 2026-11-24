@@ -212,6 +212,23 @@ adb logcat -s kk-spike
 同样的内容也会显示在屏幕 HUD 上——前者能脚本化取，后者能截图留证，
 实验记录里两样都要。
 
+## 插帧 spike（#218）
+
+同一个 package 里的第二个实验：mpv 的每张新源帧先画进我们自己的纹理环，按
+`target_time` 排程，做块匹配 + 运动补偿后再画进 Slint 的 FBO。结论与数字见
+[`docs/m0/spikes/2026-11-24-interp-218.md`](../../docs/m0/spikes/2026-11-24-interp-218.md)。
+
+- 代码在 `src/interp/`：`gpu.rs`（纹理、着色器调度、计时、回读）、`sched.rs`（源帧环与
+  选帧，有单测）、`shaders.rs`（全部 GLSL，只用 fragment shader）、`app.rs`（参数、播放
+  循环、实验室模式、记录）。`gpu.rs` / `sched.rs` / `shaders.rs` 不依赖 clap、Slint 或 mpv，
+  `spikes/slint-ios` 用 `#[path]` 原样引用。
+- 桌面：`cargo run --release --bin interp -- --help`。`--mode direct|hold|blend|mc`；
+  `--lab <PNG 目录>` 是实验室模式（用 60 fps 真值的第 k−1、k+1 帧插出第 k 帧）。
+- Android：`cargo apk build --release --lib --features interp`（换掉探针的 `android_main`），
+  再用 `./interp-android.sh [--push <文件>]... -- <同桌面的参数>` 驱动。参数写进应用外部数据
+  目录的 `args.txt`，记录逐行进 logcat（tag `kk-interp`），`--record` 的文件拉回
+  `android-out/`。
+
 ## 已知偏差（看数字之前先读这个）
 
 - **文本宽度是估算的**（CJK 按一个字宽、其余 0.55），没问字体引擎。只影响

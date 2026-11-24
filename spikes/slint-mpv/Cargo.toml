@@ -37,7 +37,17 @@ clap = { version = "4", features = ["derive", "env"] }
 # 见 src/mpv/sys.rs 的说明。
 libloading = "0.9"
 slint = "1.19"
+# #218 插帧 spike（src/bin/interp.rs）：着色器、纹理、计时查询都走 glow，
+# 版本与 Slint 的 femtovg 用的同一份，不多编一份。
+glow = "0.18"
+# #218 实验室模式读 PNG 序列。
+png = "0.18"
 sysinfo = "0.40"
+
+[features]
+# Android 上换成 #218 插帧 spike 的入口（src/interp_android.rs）。桌面不需要
+# 这个 feature：桌面入口是 src/bin/interp.rs。
+interp = []
 
 [build-dependencies]
 slint-build = "1.19"

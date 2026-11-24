@@ -34,6 +34,16 @@ DEVELOPMENT_TEAM=<你的团队 ID> SPIKE_DEVICE=<iPhone UDID> \
 团队 ID 不写进仓库。免费 Personal Team 可以用，但**一台设备最多装 3 个**用它签的 App，
 装满了会报「maximum number of installed apps using a free developer profile」。
 
+## 插帧（#218）
+
+gl 模式下设 `SPIKE_INTERP=mc|blend|hold` 就走插帧路径：mpv 的新帧先画进纹理环，每个 tick
+插一张画进零拷贝目标，后面的 Slint / PiP 路径不变。GPU 侧原样复用
+`spikes/slint-mpv/src/interp/` 的 `gpu.rs` / `sched.rs` / `shaders.rs`（见 `src/interp.rs`）。
+其余开关见 `src/lib.rs` 开头。视频可以用 `devicectl device copy to --domain-type
+appDataContainer` 推进 `Documents/`，再用 `SPIKE_VIDEO=~/Documents/<文件>` 指过去。
+真机结果见
+[`docs/m0/spikes/2026-11-24-interp-218.md`](../../docs/m0/spikes/2026-11-24-interp-218.md) §6。
+
 ## 代码地图
 
 | 文件 | 内容 |

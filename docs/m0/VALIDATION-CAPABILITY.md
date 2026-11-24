@@ -697,6 +697,16 @@ AppleScript 读回旁白**刚念的那句话**（`last phrase`），所以记下
 - Windows：`signtool verify /pa`，配了 `WINDOWS_CERT_SHA1` 时比对证书指纹。
 - macOS：`codesign --verify --strict`、`notarytool` 的 `Accepted` 状态、
   `stapler validate`、`spctl -a -t open`。
+- Android（#146）：配置密钥后，构建前校验证书 SHA-256，构建后对每个 APK
+  执行 `apksigner verify --print-certs` 并比对指纹；密钥缺失、指纹不符或
+  APK 签名无效都会让构建失败。验证包使用固定身份与 `.dev` 应用 ID，
+  正式包使用另一把身份与正式应用 ID。指纹解析兼容旧版与 SDK 37 的
+  `apksigner` 输出；`python3 -m unittest discover -s tool -p test_android_signing.py`
+  覆盖两种格式及错误证书、多签名者、错误应用 ID 的拒绝路径。
+  验证包已在 [run 45318556187](https://github.com/kakakakacat/KiliKili/actions/runs/45318556187)
+  与 [run 45318560355](https://github.com/kakakakacat/KiliKili/actions/runs/45318560355)
+  实跑通过，并在 DN_ENG41 上验证覆盖安装和主题设置保留。该新装验证应用
+  没有登录账号或离线视频，登录态和真实离线缓存保留尚未实测。
 
 **CI 验不了、必须人工的**（对应 [QA-001](../qa/RELEASE-VALIDATION.md) 的 S01–S04）：
 
@@ -711,7 +721,7 @@ AppleScript 读回旁白**刚念的那句话**（`last phrase`），所以记下
    需要对应发行版环境，受 §3 的 Linux best-effort 约束，当前只能记
    `NOT TESTED`。
 
-**未配 secret 时的状态**：各平台照常产出未签名的包，日志里显式写明。
-CI 不会因为「没签名」而变红——否则在密钥到位之前所有构建都红，没人能用。
-这一条是有意的取舍：把「没签名」做成**日志里必然看得见的一行**，而不是
-一个会被长期按掉的红叉。
+**未配 secret 时的状态**：Android 的验证包与正式包直接构建失败，防止再产出
+一次性 debug 签名或把它挂到 Release。其余平台仍产出未签名的包，并在日志中
+显式提示。Android 密钥到位前，`regression gate` 的 Android job 会失败；
+这一步必须由仓库所有者先配置，不能把失败当作可忽略的红叉。

@@ -67,10 +67,14 @@ android {
     }
 
     buildTypes {
-        all {
-            signingConfig = config ?: signingConfigs["debug"]
-        }
         release {
+            // 本地验证包保留 debug 回退；正式包由 preReleaseBuild 检查，
+            // 不能在配置阶段抛错，否则没有正式密钥的 debug 开发也会被挡住。
+            signingConfig = config ?: if (project.hasProperty("dev")) {
+                signingConfigs["debug"]
+            } else {
+                null
+            }
             if (project.hasProperty("dev")) {
                 applicationIdSuffix = ".dev"
                 resValue(
@@ -85,6 +89,7 @@ android {
             )
         }
         debug {
+            signingConfig = signingConfigs["debug"]
             applicationIdSuffix = ".debug"
         }
     }
@@ -93,6 +98,16 @@ android {
         val variant = this
         variant.outputs.forEach { output ->
             (output as ApkVariantOutputImpl).versionCodeOverride = flutter.versionCode
+        }
+    }
+}
+
+val hasReleaseSigning = android.signingConfigs.findByName("release") != null
+val isDevBuild = project.hasProperty("dev")
+tasks.matching { it.name == "preReleaseBuild" }.configureEach {
+    doFirst {
+        check(hasReleaseSigning || isDevBuild) {
+            "正式 Android 构建缺少 android/key.properties 签名配置"
         }
     }
 }

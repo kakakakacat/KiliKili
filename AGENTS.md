@@ -264,21 +264,14 @@ PR**，不要只留在代码和 Issues 里：
   只用在下载 SDK 上。
 - 本机没有 fvm 时，issue 模板里写的 `.fvm/flutter_sdk/bin/dart` 按全局
   Flutter SDK 的 `dart` 来用。
-- Android 签名：本地构建读 `android/key.properties`（指向
-  `android/app/kilikili-release.jks`）。两个文件已被 Git 忽略、只在当事人本机，
-  **不是每台开发机都有**（例：2026-11-13 用的这台就没有）。迁移机器时
-  须通过安全渠道同时备份密钥、别名和密码。同一包名的后续 Android 版本必须
-  沿用原签名，否则不能原地升级。
-
-- **CI 构出来的 APK 是一次性 debug 签名，包与包之间不能覆盖安装。**
-  仓库目前**一个 Actions secret 都没有**（`gh api
-  repos/<owner>/<repo>/actions/secrets` 返回 `total_count: 0`），所以
-  `build.yml` 那步 `if [ ! -z "${{ secrets.SIGN_KEYSTORE_BASE64 }}" ]` 永远不执行，
-  `key.properties` 不会生成，`build.gradle.kts` 回落到
-  `signingConfigs["debug"]`——而 CI runner 的 debug keystore 是每台现生成的。
-  因此换一个 CI 包就要先 `adb uninstall`，会清掉登录态、设置与离线缓存；
-  这些包也**不能对外分发**。带 `tag` 发一次版同样是 debug 签名，以后补上
-  正式签名时老用户无法原地升级。修法见 issue #146。
+- Android 本地签名读 Git 忽略的 `android/key.properties` 与其中指定的 JKS。
+  CI 的验证包使用固定的验证密钥，应用 ID 带 `.dev`；带 `tag` 的发布包使用
+  **另一把**发布密钥，应用 ID 不带后缀。两种密钥各自的后续版本都须沿用
+  原证书，否则不能原地升级。材料与配置见
+  [`docs/release/SIGNING.md`](docs/release/SIGNING.md) §6。
+- #146 的签名工作流在密钥或公开指纹缺失时直接失败，不再回落到 runner
+  临时生成的 debug 签名。**配置好 Actions secrets 与 vars 之前不要触发
+  Android 构建或带 `tag` 发布**；旧 CI APK 的签名身份无法继承。
 - **发布签名的约定在 [`docs/release/SIGNING.md`](docs/release/SIGNING.md)**，
   五端各一套身份，不共用：Android 的 JKS 只用于 Android，Linux 用 GPG，
   Apple 与 Windows 各按自己的证书流程来。跨会话不变的几条：
@@ -292,8 +285,8 @@ PR**，不要只留在代码和 Issues 里：
   - **可复用工作流默认拿不到调用方的 secrets**：`build.yml` 调四个平台
     workflow 时必须带 `secrets: inherit`，少这一行的话 Secrets 配好了签名
     也照样跳过，而且一声不吭（#146 的形状）。
-  - 未配 secret 时各平台照常产出**未签名**的包，日志里会写明；这些包能装，
-    但**不能作为正式发布分发**。
+  - Android 的签名材料缺失时构建失败；其他平台未配 secret 时仍可产出
+    **未签名**的包，日志里会写明，不能作为正式发布分发。
 
 ---
 

@@ -398,6 +398,14 @@ video/reply_search_item,main_reply,my_reply,common/dyn,setting/models}` 下
 修改 800 → **799**，仅重命名波及 383 → **371**，有实质改动 417 → **428**，
 新增 841 → **875**，删除 334 → **344**。本次数字含**尚未提交**的工作树改动。
 
+修订：2026-11-24（Android CI 签名 #146）——`build.yml` 早在 #121 就属于
+「有实质改动」，`android/app/build.gradle.kts` 也早在 #184 属于该类，
+本次继续改它们不会让修改类目增加；`ci.yml` 是本 fork 新增的文件。
+新增 `tool/android-signing.py` 与签名解析回归测试；本轮按工作树重新统计，
+新增文件 **916**，其余数量不变。实测发现 SDK 37 的 `apksigner` 使用按签名
+方案命名的输出，校验脚本兼容新旧格式；两个构建入口均运行回归测试。
+按 §6 的上游 tip 与当前工作树核对。
+
 新增那 34 个里绝大多数不是手写代码：IM 的 proto 生成产物、三份描述符快照
 （`tool/proto-generator/inputs/bilibili/{app/im,im}/**`——Dart 子树删掉之后
 生成器要靠它们才跑得起来），以及 golden 的冻结快照。
@@ -427,7 +435,7 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 修改的上游既有文件 | **787** |
 | &nbsp;&nbsp;其中：仅因包名重命名而改动 | **348** |
 | &nbsp;&nbsp;其中：有实质改动 | **439** |
-| 新增文件 | **915** |
+| 新增文件 | **916** |
 | 删除文件 | **366** |
 
 「修改」总数一路下降（935 → 909 → 897 → 891 → 887），部分文件是因迁移被
@@ -569,7 +577,8 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | `.github/workflows/linux_x64.yml` | `d9b23ba4e` `45cfe832c` `6d35ee6e9` 及本次 | RPM 选包修复、产物体积闸门、依赖自动生成、GPG 签名与校验（#121） |
 | `.github/workflows/mac.yml` | `6d35ee6e9` 及本次 | 产物体积闸门、Developer ID 签名与公证（#121） |
 | `.github/workflows/win_x64.yml` | `6d35ee6e9` 及本次 | 产物体积闸门、signtool 代码签名（#121） |
-| `.github/workflows/build.yml` | 本次（#121） | 四个可复用工作流补 `secrets: inherit`，否则签名 secret 传不进去 |
+| `.github/workflows/build.yml` | #121、#146 | 四个可复用工作流补 `secrets: inherit`；Android 验证包与正式包使用独立证书，缺密钥或指纹不符即失败，防止产出临时 debug 签名的 Release |
+| `android/app/build.gradle.kts` | #184、#146 | NDK 版本固定；无签名配置的正式 Android release 在 `preReleaseBuild` 失败，普通 debug 开发不受影响；`.dev` 验证包允许本地 debug 回退 |
 | `.github/workflows/ios.yml` | 本次（#121） | 注释写明侧载没有仓库侧发布身份；构建行为未变 |
 
 `lib/plugin/pl_player/controller.dart` 不在这张表里，它已经由 §4.1 的 S3 一行

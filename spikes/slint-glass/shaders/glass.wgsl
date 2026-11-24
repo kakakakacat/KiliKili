@@ -1,6 +1,8 @@
 // Flutter 侧 `shaders/liquid_glass.frag` 的逐行移植（issue #130）。
 //
-// **这份没有编译过，naga 的报错一个都还没见过。** 逐项对照账见
+// **2026-11-25 第一次过 naga，零报错**（`cargo run --features wgpu-probe`，
+// 见 src/wgpu_probe.rs）。注意「编得过」不等于「画得对」：观感是否与 Flutter
+// 版一致**至今没有并排对照过**。逐项对照账见
 // docs/m0/spikes/2026-11-24-glass-wgpu-eval.md §5。
 //
 // 算法刻意一行不改：那 28 行 GLSL 是目前玻璃观感的事实规格，重新调参会让

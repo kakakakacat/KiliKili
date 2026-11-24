@@ -1,7 +1,6 @@
 // Liquid Glass 的第一个对照 Demo（issue #130，评估文档 §6 第 1 步）。
 //
-// **这份没有编译过。** Slint 的 .slint 语法错误只有 slint-build 能报，
-// 在 `cargo build` 跑通之前不要照着它写第二个组件。
+// 2026-11-24 起已编过并在 Windows/FemtoVG 与 Android/Skia 两端跑过。
 //
 // 它要回答的只有一个问题：
 //
@@ -57,8 +56,11 @@ component MovingBackdrop inherits Rectangle {
 //   shaders/liquid_glass.frag                        （折射与 glint，这里做不到）
 component GlassCapsule inherits Rectangle {
     in property <length> blur-sigma: 10px;
+    // _kNavigationHeight。做成 in property 而不是写死，是因为「摆 10 条」时
+    // 要靠缩小胶囊把它们真的放进屏幕里——见 GlassSpike 里 slot 的说明。
+    in property <length> capsule-height: 80px;
 
-    height: 80px;                      // _kNavigationHeight
+    height: root.capsule-height;
     border-radius: self.height / 2;    // _kBorderRadius = 高度 / 2，胶囊
 
     // #130 的 P0「实时背景模糊」。Slint 1.19.0 新增，对应 CSS 的
@@ -101,12 +103,45 @@ export component GlassSpike inherits Window {
     // 同时摆几条玻璃。见下面 for 循环处的说明。
     in-out property <int> glass-count: 1;
 
+    // 背景动画 Timer 的周期，毫秒。
+    //
+    // 它曾经写死 16ms，而 16ms = 62.5Hz——**正好压在 60Hz 刷新率旁边**，
+    // 于是「帧率读数 61」有两种解释（撞到 vsync / 撞到这个 Timer），
+    // 两种解释导向完全相反的结论。做成可调就是为了把这两者分开：
+    // 把它调到 4ms（250Hz）之后读数还是 61，才能说是 vsync 的锅。
+    in-out property <int> tick-ms: 16;
+
+    // 自绘纹理的位置。只有 `--features wgpu-probe` 那条路会填它，默认整块
+    // 不显示——探针没跑的时候画面必须和之前完全一样，否则对照组就变了。
+    //
+    // 它存在的理由是 #130 的关口 2：原生 backdrop-blur 给不了边缘折射和
+    // 单点高光，补这两件事就得自己出一张纹理交给 Slint。这块地方就是
+    // 「交得进来吗」的落点。
+    in-out property <image> probe-texture;
+    in-out property <bool> probe-visible: false;
+
+    // 这一组是 2026-11-24 那轮踩坑之后加的，不是布局洁癖。
+    //
+    // 原来的摆法是固定 92px 间距、固定 80px 高，于是 `GLASS_COUNT=10`
+    // 在 915×597 的桌面窗口里**只画得出 6 条**，多出来的 y 为负、裁在窗外，
+    // 而帧率读数照常产出——记录里那一档的标签就是错的（notes §4.1）。
+    // Android 上逻辑高度约 902px，同样装不下 10 条，会原样重演。
+    //
+    // 改成按 count 反推间距：装得下就用 92px 原值，装不下就压缩，
+    // **让「摆 N 条」在任何窗口尺寸下都真的是 N 条**。
+    property <length> stack-bottom: root.height - 28px;
+    property <length> stack-top: 104px;   // 顶部那段说明文字占掉的高度
+    property <length> slot: Math.min(92px,
+        (root.stack-bottom - root.stack-top) / Math.max(root.glass-count, 1));
+    property <length> capsule-height: Math.max(12px, Math.min(80px, root.slot - 12px));
+
     Timer {
-        interval: 16ms;
+        interval: root.tick-ms * 1ms;
         running: true;
         triggered => {
-            // 走满一圈回零，避免 f32 在长时间运行后丢精度。
-            root.phase = Math.mod(root.phase + 0.0025, 1.0);
+            // 步长按周期缩放，这样改 tick-ms 只改采样密度，**不改背景的
+            // 移动速度**——否则对照两档时背景快慢不同，截图没法并排看。
+            root.phase = Math.mod(root.phase + 0.0025 * root.tick-ms / 16, 1.0);
         }
     }
 
@@ -123,8 +158,9 @@ export component GlassSpike inherits Window {
     // 刷新率上，开关 backdrop-blur 两边都是同一个数，测不出代价。
     for k in root.glass-count: GlassCapsule {
         x: (root.width - self.width) / 2;
-        y: root.height - self.height - 28px - k * 92px;
+        y: root.stack-bottom - self.height - k * root.slot;
         width: Math.min(root.width - 48px, 430px);
+        capsule-height: root.capsule-height;
         blur-sigma: root.blur-sigma;
 
         HorizontalLayout {
@@ -138,6 +174,45 @@ export component GlassSpike inherits Window {
                 }
             }
         }
+    }
+
+    // 自绘的 WGSL 玻璃，摆在原生那条的正上方，为的就是并排看。
+    //
+    // 两者的差别正是 #130 要的那笔账：原生这条有模糊没折射没高光，
+    // 上面这条有折射有高光但**背板是合成的**（见 src/wgpu_probe.rs：
+    // 怎么拿到真实背板仍然是没解决的那一关）。
+    Image {
+        visible: root.probe-visible;
+        source: root.probe-texture;
+        width: Math.min(root.width - 48px, 430px);
+        height: 80px;
+        x: (root.width - self.width) / 2;
+        y: root.stack-bottom - root.capsule-height - root.slot - 46px;
+        image-fit: fill;
+    }
+    Text {
+        visible: root.probe-visible;
+        x: 24px;
+        y: root.stack-bottom - root.capsule-height - root.slot - 68px;
+        text: "↓ 自绘 WGSL（有折射/高光，背板是合成的）　／　再下面一条是原生 backdrop-blur";
+        color: #ffffffcc;
+        font-size: 12px;
+    }
+
+    // 把这一帧实际跑的档位写在画面上。
+    //
+    // 这不是调试残留，是 notes §4.1 那条教训的修法：上一轮记录把「10 组件」
+    // 那一档记错了，因为档位只存在于环境变量和脚本参数里，截图上看不出来。
+    // 参数印在画面上，截图就自带档位，核对不再依赖「我记得当时设的是几」。
+    Text {
+        x: 24px;
+        y: 96px;
+        text: "blur-sigma=" + root.blur-sigma / 1px + "px  count=" + root.glass-count
+            + "  tick=" + root.tick-ms + "ms"
+            + "  slot=" + Math.round(root.slot / 1px) + "px  h=" + Math.round(root.capsule-height / 1px) + "px"
+            + "  窗口=" + Math.round(root.width / 1px) + "×" + Math.round(root.height / 1px);
+        color: #ffffffcc;
+        font-size: 13px;
     }
 
     // 把「这一版缺什么」写在画面上。截图会进记录，而记录的读者未必记得

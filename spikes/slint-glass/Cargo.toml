@@ -52,7 +52,8 @@ name = "slint-glass-spike"
 path = "src/main.rs"
 
 # ---------------------------------------------------------------------------
-# Android。**这一段没有构建过，一次都没有**——写它的那一轮机器不能占。
+# Android。2026-11-25 构建并装机跑过（首次 2 min 48 s，增量 4 s），
+# 结论见 docs/m0/spikes/2026-11-25-glass-android-notes.md。
 #
 # 一条必须先说清楚的事：**Android 上没有 FemtoVG。**
 # `slint::platform::femtovg_renderer` 整个模块标着 `non-Android only`，
@@ -72,6 +73,17 @@ slint = { version = "~1.19", features = ["backend-android-activity-06"] }
 # 必须能被 `adb logcat -s kk-glass` 脚本化取走。
 android_logger = "0.15"
 log = "0.4"
+# 只为了 `ANativeWindow_setFrameRate`。
+#
+# 为什么非它不可：这台手机面板支持 120Hz，但 app 一起来系统就把它投到 60，
+# **adb 侧全部压不住**——`settings put system min_refresh_rate 120` 被 MIUI
+# 的刷新率仲裁盖掉，`service call SurfaceFlinger 1035` 要 system 权限，
+# `cmd display set-user-preferred-display-mode` 设进去了也照样掉回 60。
+# Android 的正规口子是**由 app 自己声明想要多少帧**，就是这个函数。
+#
+# 版本必须跟 android-activity 0.6 用的那份一致（都是 0.9.0），否则
+# `app.native_window()` 返回的 NativeWindow 和这里的是两个不同的类型。
+ndk = { version = "0.9", features = ["nativewindow", "api-level-31"] }
 
 # cargo-apk 用这一段生成 AndroidManifest 并打包。
 [package.metadata.android]
@@ -79,7 +91,11 @@ package = "io.github.kakacat.kilikili.spike.glass"
 build_targets = ["aarch64-linux-android"]
 
 [package.metadata.android.sdk]
-min_sdk_version = 24
+# 31 而不是 24：链接期按 min_sdk_version 取 NDK 的平台库，而
+# `ANativeWindow_setFrameRateWithChangeStrategy` 是 API 31 才有的符号，
+# 填 24 的话链接直接失败。这是探针的取值，**不是对 app 最低版本的主张**
+# ——真要把玻璃接进 KiliKili，先确认目标机型分布再谈。
+min_sdk_version = 31
 target_sdk_version = 35
 
 # 转屏不重建 activity：重建会让 `android_main` 重跑一遍，截图流程从头开始。
@@ -115,7 +131,13 @@ skia = ["slint/renderer-skia"]
 #
 # 开它的时机：第一步量完、确认折射/高光必须自己画之后，跑评估文档 §2.1
 # 那个十几行的判据（AfterRendering 里到底拿不拿得到可写的 TextureView）。
-wgpu-probe = ["slint/unstable-wgpu-30"]
+#
+# 必须连 `renderer-femtovg-wgpu` 一起开：只开 unstable-wgpu-30 的话启动直接
+# 失败——"unstable-wgpu-30 was enabled but no renderer was selected"。
+# 可选的是 renderer-skia* / renderer-femtovg-wgpu / renderer-vello，这里选
+# femtovg-wgpu 是为了**躲开 Skia 那笔账**（桌面上它一次都没真正构建过），
+# 同时和默认那条路同属 femtovg，画面差异不会混进渲染器差异。
+wgpu-probe = ["slint/unstable-wgpu-30", "slint/renderer-femtovg-wgpu"]
 
 # 依赖按 opt-level=2 编，自己的代码不优化。
 #

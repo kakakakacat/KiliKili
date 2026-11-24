@@ -1,23 +1,31 @@
 # slint-glass — Liquid Glass 的实验台骨架（issue #130）
 
-> **状态：Windows / FemtoVG 跑通了一轮，其余都没碰。**
+> **状态：Windows/FemtoVG 与 Android/Skia 各跑通一轮，wgpu 判据也跑了。**
 >
-> 2026-11-24 首次构建 6 min 01 s、零 error 零 warning，一次编过；增量
-> 12 秒。实测记录见
-> [2026-11-24-glass-windows-notes.md](../../docs/m0/spikes/2026-11-24-glass-windows-notes.md)。
+> 实测记录两份：
+> [Windows / FemtoVG](../../docs/m0/spikes/2026-11-24-glass-windows-notes.md)、
+> [Android / Skia](../../docs/m0/spikes/2026-11-25-glass-android-notes.md)。
 >
-> 这**不等于它是交付**。跑到的只有一件事：**`backdrop-blur` 在 FemtoVG 上
-> 确实生效**（官方 Rectangle 参考页那句「only supported by the Skia
-> renderer」是过时的）。没跑的有：和 Flutter 版并排对照、Skia、wgpu、
-> Android——也就是说它证明了「糊得出来」，**没有证明「糊得像」**。
+> 跑到的：
 >
-> **Android 那一套（`src/lib.rs` 的 `android_main`、Cargo.toml 的
-> `[package.metadata.android]`、`android-drive.sh`）已经写好，但一次都没有
-> 构建、没有装过机。** 同一条规矩：跑通之前别拿它的结构当结论。
+> - **`backdrop-blur` 在 FemtoVG 与 Skia 上都生效**（官方 Rectangle 参考页
+>   那句「only supported by the Skia renderer」是过时的）；Android 侧判据是
+>   量化的，边缘能量掉 42.8%。
+> - **帧代价量出来了**：一条导航栏 ≈0.64 ms/帧、十条 ≈1.66 ms/帧（骁龙
+>   8 Gen 2）。**靠的是换方法不是换设备**——帧率两端都被 vsync 钉死，
+>   改读 Adreno 的 `gpubusy` 才绕开。
+> - **wgpu 关口 2**：`GraphicsAPI::WGPU30` 没有渲染目标，候选 A 出局；
+>   自绘纹理导入 Slint 这条通，`glass.wgsl` 第一次过 naga 零报错。
 >
-> 另外第一轮就撞出两个把实验弄脏的毛病（`GLASS_COUNT=10` 实际只渲染 6 条、
-> 截图脚本的 DPI 偏移），都记在 notes §4。**拿这里的数字下结论之前先读
-> 那一节。**
+> **没跑的，而且其中一条足够挡住后续**：
+>
+> - **和 Flutter 版并排对照还是空的。** 两轮都只证明了「糊得出来」，
+>   **至今没有证明「糊得像」**。
+> - 低端机、iOS / macOS、功耗与温度、滚动残影，全都没碰。
+>   已测的 Android 是 2023 年的旗舰，**不代表低端机**，而低端机才是风险所在。
+>
+> 第一轮撞出的两个毛病（`GLASS_COUNT=10` 实际只渲染 6 条、截图脚本的 DPI
+> 偏移）记在第一轮 notes §4；前者 2026-11-25 已修，修法见第二轮 notes §4。
 
 ## 它要回答什么
 
@@ -43,16 +51,24 @@ cargo build                    # 首次约 6 min，之后增量约 12 s
 ./target/debug/slint-glass-spike
 ```
 
-两个环境变量用来做对照，都在 `src/main.rs` 里读：
+几个环境变量用来做对照，都在 `src/lib.rs` 的 `apply_env_overrides()` 里读：
 
 ```sh
-GLASS_BLUR=0  ./target/debug/slint-glass-spike   # 关掉 backdrop-blur
-GLASS_COUNT=5 ./target/debug/slint-glass-spike   # 同时摆几条玻璃
+GLASS_BLUR=0   ./target/debug/slint-glass-spike   # backdrop-blur 的 sigma，0 等于关掉
+GLASS_COUNT=5  ./target/debug/slint-glass-spike   # 同时摆几条玻璃
+GLASS_TICK=4   ./target/debug/slint-glass-spike   # 背景 Timer 周期（ms），见下
 ```
 
-**`GLASS_COUNT` 有个坑**：窗口高度只装得下 6 条（间距 92px），填 10 的话
-多出来的 4 条 `y` 为负、被裁在窗口外，而帧率读数照样产出——第一轮就是这么
-把「10 组件」那一档记错的。**跑之前先截图数一遍实际可见条数。**
+**`GLASS_COUNT` 曾经有个坑，已修**：原来固定 92px 间距、80px 高，窗口只
+装得下 6 条，填 10 的话多出来的 4 条被裁在窗口外，而帧率读数照样产出——
+第一轮就是这么把「10 组件」那一档记错的。现在按 count 反推间距与胶囊高度，
+N 条就真的是 N 条，**而且画面左上角印出了实际的 `blur-sigma / count /
+tick / slot / h / 窗口尺寸`，截图自带档位**。那条教训的正解是后者：
+档位只活在环境变量里、画面上看不出来，才是记录和实际对不上的根因。
+
+**`GLASS_TICK` 是为了拆一个撞车**：默认 16ms = 62.5Hz，和 60Hz 刷新率只差
+2.5，于是「帧率 61」分不清是撞到 vsync 还是撞到这个 Timer——两种解释导向
+相反的结论。调到 4ms 再读一次才分得开。
 
 量帧率用 Slint 自带的：
 
@@ -61,7 +77,10 @@ SLINT_DEBUG_PERFORMANCE=refresh_full_speed,console ./target/debug/slint-glass-sp
 ```
 
 输出走 **stderr** 不是 stdout。注意它**绕不过 vsync**：这台机器上六组
-对照全是 144 fps（= 刷新率），量不出 `backdrop-blur` 的代价，见 notes §3。
+对照全是 144 fps（= 刷新率），量不出 `backdrop-blur` 的代价，见第一轮
+notes §3。真正量到代价用的是另一条路（Adreno 的 GPU 占用计数），只在
+Android 上可行，见第二轮 notes §3.3——**那一节同时记了这个方法在 vsync
+锁死时会被 DVFS 骗，用它之前先读**。
 
 **FemtoVG 这轮已经糊了，所以 Skia 不用开。** 官方的 Rectangle 参考页说
 `backdrop-blur`「Currently only supported by the Skia renderer」，CHANGELOG
@@ -99,21 +118,45 @@ SLINT_BACKEND=winit-skia ./target/debug/slint-glass-spike
 ## 结构
 
 ```
-ui/glass_spike.slint   会动的背景 + 一条 backdrop-blur 胶囊，参数对着 Flutter 抄
-src/main.rs            开窗。第二步（wgpu 判据）的路标写在文件末尾的注释里
-src/material.rs        GlassMaterial 参数与五个预设，第三步才接进来
-shaders/glass.wgsl     liquid_glass.frag 的逐行 WGSL 移植，第三步才接进来
+ui/glass_spike.slint   会动的背景 + backdrop-blur 胶囊，参数对着 Flutter 抄
+src/lib.rs             桌面与 Android 共用的 run()；android_main 也在这里
+src/main.rs            桌面入口，按 feature 分派到普通跑法或 wgpu 探针
+src/material.rs        GlassMaterial 参数与五个预设
+src/wgpu_probe.rs      wgpu 关口 2 的判据（--features wgpu-probe 才编）
+shaders/glass.wgsl     liquid_glass.frag 的逐行 WGSL 移植
+android-drive.sh       真机的装/配/起/截图/收证据
 ```
 
-后两个**这一轮不参与运行**，`material.rs` 只是被编进去做语法与类型检查。
-它们俩是第三步的料，提前写出来是因为移植账（评估文档 §5）本来就是纸面
-工作，不占机器。
+`material.rs` 与 `glass.wgsl` 原本只是被编进去做检查，**2026-11-25 之后
+它们真的跑起来了**：`wgpu_probe.rs` 用 `GlassUniforms` 把
+`GlassMaterial::FLUTTER_BASELINE` 打成 uniform，跑 `glass.wgsl` 画进一张
+自己的纹理，再交给 Slint 显示。那也是这份 WGSL 第一次被 naga 看过。
 
-## 为什么默认不开 wgpu
+## wgpu 探针（关口 2 的判据）
 
-`wgpu-probe` feature 默认关着，Cargo.toml 里写了理由，这里只重复最要紧的
-一条：**评估文档 §6 的顺序是先量差距、再决定 wgpu 要不要上**，默认开着会
-诱导人跳过第一步，顺带先付一次几百个 crate 的全量编译。
+```sh
+cargo run --features wgpu-probe
+```
+
+默认**不开**，Cargo.toml 里写了理由，最要紧的一条是：评估文档 §6 的顺序
+是先量差距、再决定 wgpu 要不要上，默认开着会诱导人跳过第一步，顺带先付
+一次几百个 crate 的全量编译。
+
+2026-11-25 跑过一次，结论写在 `src/wgpu_probe.rs` 的文件头与第一轮
+notes §6。两句话版本：
+
+1. **在 Slint 这一帧上直接加画 —— 不行。** 三个渲染状态拿到的都只有
+   `WGPU30{instance,device,queue}`，没有渲染目标，wgpu 又没有 GL 那种隐式
+   当前 FBO，发不出 render pass。
+2. **自己出一张纹理交给 Slint —— 行。** 一次过。
+
+**但探针里的背板是合成的，不是 Slint 这一帧的真实背景。**「怎么拿到真实
+背板」才是关口 2 的本体，这一轮没动它。
+
+一个会卡住人的点：只开 `unstable-wgpu-30` 启动直接失败
+（`no renderer was selected`），必须同时带一个 wgpu 能力的渲染器。这里选
+`renderer-femtovg-wgpu` 而不是 Skia——躲开那笔账，而且和默认那条路同属
+femtovg，画面差异不会混进渲染器差异。
 
 ## 为什么又是一个独立 workspace、为什么不进 CI
 
@@ -137,30 +180,59 @@ shaders/glass.wgsl     liquid_glass.frag 的逐行 WGSL 移植，第三步才接
 
 前置：`aarch64-linux-android` target（1.100.0 下已装）、`cargo-apk`、
 `JAVA_HOME`（本机在 `D:/as/jbr`，slint 的 android 后端 build.rs 要 javac，
-少了它直接 panic）。
+少了它直接 panic）、`ANDROID_NDK_ROOT`。
 
 ```sh
 export JAVA_HOME="D:/as/jbr"
-cargo apk build --lib        # 别在别人用着机器的时候跑：要下 skia 再交叉编译几百个 crate
-./android-drive.sh           # 默认档：blur 开、一条玻璃
-./android-drive.sh --blur 0  # 对照档
+export ANDROID_HOME="$LOCALAPPDATA/Android/Sdk"
+export ANDROID_NDK_ROOT="$ANDROID_HOME/ndk/30.0.16248370"
+cargo apk build --release --lib   # 实测首次 2 min 48 s，增量 4 s
+
+./android-drive.sh                                      # 默认档：blur 开、一条玻璃
+./android-drive.sh --blur 0                             # 对照档
+./android-drive.sh --count 10 --perf --fps 120 --tick 4 # 顶到 120Hz 量帧率
 ```
+
+**首次构建比担心的便宜得多**：skia 在 android target 上是**下载的预编译
+包**（`libskia.a` 22.5 MiB），不是源码构建。
+
+`--release` 不是洁癖：Cargo.toml 只给 release 配了 keystore，而且帧率与
+GPU 占用的数字要代表 Phase 2 的真实形态。
+
+**`--fps 120` 和 `--tick 4` 要一起用。** 单给 `--fps` 没用：app 自己只出
+~60 帧的话，SurfaceFlinger 按内容帧率把面板投回 60——**面板是跟着 app 走
+的**。adb 侧三条路（`settings`、`service call SurfaceFlinger 1035`、
+`cmd display set-user-preferred-display-mode`）全部压不住，详见第二轮
+notes §3.2。
 
 `android-drive.sh` 管安装、配置、启动、截图、收 logcat，证据落在
 `target/android-evidence/`（不进仓库）。它靠 logcat 的 `GLASS STEP` 行对
 时间轴，不按固定秒数 sleep——真机冷启动能差好几秒，对不上的后果不是报错，
 是「截到一张黑图而记录照样产出」。
 
-**`adb shell am start` 传不了环境变量**，所以桌面那两个开关在真机上改从
-`$FILES/glass.conf` 读（`BLUR=` / `COUNT=` 两行），由 `android_main` 翻译成
-同样的环境变量——`run()` 那边一个字都不用改，两边跑的是同一组参数。
+**`adb shell am start` 传不了环境变量**，所以桌面那几个开关在真机上改从
+`$FILES/glass.conf` 读（`BLUR= / COUNT= / TICK= / PERF= / FPS=`），由
+`android_main` 翻译成同样的环境变量——`run()` 那边一个字都不用改，两边跑的
+是同一组参数。
+
+还有两条只在真机上成立的：
+
+- **`dumpsys gfxinfo` 对 NativeActivity 无效**（`Total frames rendered: 0`），
+  它只统计 HWUI 管线。要帧时间用 `dumpsys SurfaceFlinger --latency`，
+  要 GPU 成本用 `/sys/class/kgsl/kgsl-3d0/gpubusy`（免 root、读一次清零）。
+- **面板刷新率必须和截图同时取**，脚本每轮落在 `active-mode.txt`。
+  61 fps 在 60Hz 面板上是「满了」，在 120Hz 面板上是「只跑到一半」。
 
 ## 这一轮刻意没做的
 
 - **没接 `spike-harness`。** 第一步要的是「人看两张图」，不是帧耗时分位数。
   等第三步真要量 wgpu 管线开销时再接，那时候记录格式必须和另外两个 spike
   一致，否则跨实验没法逐行对照。
-- **Android 没有构建过、没有装过机。** 入口和驱动脚本都写好了（见上一节），
-  但 `cargo apk build` 一次都没跑——那一步要占机器十几二十分钟。
+- **没有和 Flutter 版并排对照。** 这是最要紧的那个空缺：两轮都只证明了
+  「糊得出来」，**没有证明「糊得像」**。它要跑起 Flutter app，而且首页
+  导航栏要登录态。
+- **没碰真实背板的捕获。** wgpu 探针里那张是合成的，而「怎么拿到当前帧的
+  干净背景」才是关口 2 的本体。
 - **没有多尺度模糊 / Fresnel / 动态光照。** P0 表里这些 Flutter 版也没有，
   先量差距再谈。
+- **没测低端机、iOS、macOS，没测功耗与温度，没测滚动残影。**

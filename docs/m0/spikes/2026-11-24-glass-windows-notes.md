@@ -81,6 +81,14 @@
 真要量它，#226 的基准得另想办法：绕过 vsync、把负载放到 4K 全屏大面积，
 或者直接上压得动的设备（低端 Android 才是那个设备）。
 
+**2026-11-25 补：量到了，但用的不是帧率，也不是在这台机器上。**
+Android 那一轮读 Adreno 的 GPU 占用计数（`gpubusy`，免 root 可读、读一次
+清零），绕开了 vsync 这道墙——**一条导航栏的 backdrop-blur 约 0.64 ms/帧**。
+见 [第二轮记录 §3.3](2026-11-25-glass-android-notes.md)。
+那边还记了一条反例：在 vsync 锁死的设备上，**用占用率算成本会被 DVFS
+骗**，60Hz 下量出来的那组数字外推到 120Hz 当场被实测证伪（§3.4）。
+#226 的基准要用这个方法的话，先读那一段。
+
 ## 4. 两个把实验本身弄脏的毛病，都要写下来
 
 ### 4.1 `GLASS_COUNT=10` 实际只渲染了 6 条
@@ -91,8 +99,13 @@
 
 这正是 #10 那条教训的形状——**自动产出的数字自洽，不等于实验是对的**。
 那一轮「虚拟化极好 + 滚动极卡」出自同一个 bug（列表根本没滚动），只有截图
-戳破了它；这一轮同样是截图戳破的。修法：下一轮要么把胶囊缩小、要么开大
-窗口，并在记录里核对实际可见条数，别只信环境变量。
+戳破了它；这一轮同样是截图戳破的。
+
+**2026-11-25 已修。** 修法不是「把胶囊缩小或开大窗口」那种一次性调参，
+而是按 count 反推间距与胶囊高度，并**把实际参数印在画面上**——根因是档位
+只活在环境变量里、截图上看不出来，所以「记录写的」和「画面跑的」没有任何
+地方对得上。详见
+[第二轮记录 §4](2026-11-25-glass-android-notes.md)。
 
 ### 4.2 截图脚本的 DPI 坑
 
@@ -115,21 +128,66 @@
   像」**。
 - **没开 Skia**（`--features skia` 没跑）。§2 的结论让它从「必须跑」降级为
   「想交叉验证时再跑」。
-- **没开 wgpu**（`--features wgpu-probe` 没跑）。评估文档 §2.1 那个判据
-  （`AfterRendering` 里拿不拿得到可写 `TextureView`）还没验。
-- **没测 Android。** 那是待跑清单里优先级最高的一项，决定五端能不能齐。
-  入口（`src/lib.rs` 的 `android_main`）与驱动脚本（`android-drive.sh`）
-  当天稍后写好了，但**一次都没构建、没装过机**。
-
-  摸前置条件时确认了两件会影响那一轮开销的事：
-
-  1. **Android 上没有 FemtoVG**，`backend-android-activity-06` 自带的是
-     Skia。所以**桌面这一轮的结论代替不了 Android**——两边是两个实现。
-  2. **Skia 在 android target 上是下载的预编译二进制**，不是源码构建：
-     slint-ui 的 `target/aarch64-linux-android/release/build/skia-bindings/`
-     下有 `skia-binaries-…-aarch64-linux-android-ganesh-gl-jpegd-jpege-pdf-vulkan.tar.gz`
-     与 `libskia.a`。桌面上躲掉的那笔账在 Android 躲不掉，但它可控。
-
-  真机（`fa392823`）、`cargo-apk`、`aarch64-linux-android` target 都就位。
+- ~~**没开 wgpu**（`--features wgpu-probe` 没跑）。~~
+  **2026-11-25 跑了，见下面 §6。**
+- ~~**没测 Android。**~~ **2026-11-25 跑了**，另成一份：
+  [第二轮实测：Android / Skia](2026-11-25-glass-android-notes.md)。
+  那一轮把帧代价真的量出来了（本轮量不出来的那一项）。
 - 截图不进仓库（见 [README](README.md)「截图去哪了」），用 §1 的命令随时
   重跑得出来。
+
+## 6. wgpu 关口 2 的判据：候选 A 出局，自绘纹理这条通（2026-11-25）
+
+`cargo run --features wgpu-probe`，代码在 `spikes/slint-glass/src/wgpu_probe.rs`。
+两个问题分开答：
+
+### 6.1 能不能在 Slint 这一帧上直接加画？——**不能**
+
+探针把每个渲染状态实际拿到的东西原样打出来：
+
+```
+PROBE state=RenderingSetup   api=WGPU30{instance,device,queue}（没有渲染目标）
+PROBE state=BeforeRendering  api=WGPU30{instance,device,queue}（没有渲染目标）
+PROBE state=AfterRendering   api=WGPU30{instance,device,queue}（没有渲染目标）
+```
+
+和源码一致（i-slint-core 1.19.1 `api.rs:306`：`GraphicsAPI::WGPU30` 只有
+`instance / device / queue` 三个字段）。wgpu 不像 GL 有隐式的当前 FBO，
+**拿不到 `TextureView` 就发不出 render pass**。
+
+**评估文档 §2 判候选 A「largely out」的那个推断，现在有运行时证据了。**
+
+### 6.2 自己出一张纹理交给 Slint 显示？——**通**
+
+```
+PROBE 结论2 自绘纹理导入 Slint：成功
+```
+
+`Rgba8Unorm` + `TEXTURE_BINDING | RENDER_ATTACHMENT`，走
+`slint::Image::try_from(wgpu::Texture)`，一次过，没碰到
+`TextureImportError` 的任何一种。
+
+顺带：**`shaders/glass.wgsl` 第一次过 naga，零报错**。那份 28 行 GLSL 的
+逐行移植在此之前一个编译器都没看过。
+
+### 6.3 这里有个坑：feature 得带上渲染器
+
+只开 `unstable-wgpu-30` 启动直接失败：
+
+```
+Winit backend failed to find a suitable renderer: unstable-wgpu-30 was
+enabled but no renderer was selected.
+```
+
+要配 `renderer-skia*` / `renderer-femtovg-wgpu` / `renderer-vello` 之一。
+这里选了 `renderer-femtovg-wgpu`：**躲开 Skia 那笔账**，而且和默认那条路
+同属 femtovg，画面差异不会混进渲染器差异。
+
+### 6.4 **没有**解决的那一关
+
+探针里的背板纹理是**合成的**（自己画的条带），不是 Slint 这一帧的真实背景。
+**「怎么拿到真实背板」仍然是关口 2 的本体，这一轮没动它。** 探针证明的是
+管线通、WGSL 跑得起来、纹理导得进去——三件必要条件，不是充分条件。
+
+截图没取到：跑到这一步时机器已经锁屏，`GetForegroundWindow()` 返回 0，
+GDI 与 PIL 的 ImageGrab 都抓不到活动桌面。

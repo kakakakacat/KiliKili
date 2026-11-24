@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Liquid Glass（issue #130）在 Android 真机上的跑法。
 #
-# **这个脚本一次都没有跑过**，和它驱动的那个 APK 一样——写的时候机器不能占。
-# 第一次跑之前先读 README 顶部的状态那段。
+# 2026-11-25 跑通，证据与结论见
+# docs/m0/spikes/2026-11-25-glass-android-notes.md。
 #
 # 分工照 slint-ui（#10）：
 #
@@ -22,6 +22,7 @@
 #   ./android-drive.sh                 # 默认档：blur 开、一条玻璃
 #   ./android-drive.sh --blur 0        # 关掉 backdrop-blur，做对照
 #   ./android-drive.sh --count 5       # 摆 5 条玻璃
+#   ./android-drive.sh --perf          # 叠帧率 overlay（数字会出现在截图里）
 #   ./android-drive.sh --out some/dir  # 证据落到别处
 set -u
 
@@ -31,6 +32,9 @@ FILES="/sdcard/Android/data/$PKG/files"
 OUT="target/android-evidence"
 BLUR=""
 COUNT=""
+PERF=""
+FPS=""
+TICK=""
 
 ADB="${ADB:-adb}"
 export MSYS_NO_PATHCONV=1   # 否则 Git Bash 会把 /sdcard/... 当成 Windows 路径
@@ -39,6 +43,15 @@ while [ $# -gt 0 ]; do
     case "$1" in
         --blur)  BLUR="$2"; shift 2 ;;
         --count) COUNT="$2"; shift 2 ;;
+        # overlay 而不是 console：Android 上 Slint 的帧率日志走 eprintln，
+        # 进不了 logcat；overlay 画在窗口里，截图就是读数。
+        --perf)  PERF="refresh_full_speed,overlay"; shift ;;
+        # 要求系统把面板切到这个帧率。adb 侧压不住 MIUI 的刷新率仲裁，
+        # 只能由 app 自己用 ANativeWindow_setFrameRate 报，见 src/lib.rs。
+        --fps)   FPS="$2"; shift 2 ;;
+        # 背景 Timer 周期（ms）。16ms=62.5Hz 会和 60Hz vsync 撞在一起，
+        # 要分清谁在限速就把它调小，见 ui/glass_spike.slint 的 tick-ms。
+        --tick)  TICK="$2"; shift 2 ;;
         --out)   OUT="$2"; shift 2 ;;
         *) echo "不认识的参数: $1" >&2; exit 2 ;;
     esac
@@ -87,11 +100,14 @@ say "安装 $APK"
 say "配置"
 "$ADB" shell mkdir -p "$FILES"
 "$ADB" shell rm -f "$FILES/glass.conf"
-if [ -n "$BLUR" ] || [ -n "$COUNT" ]; then
+if [ -n "$BLUR" ] || [ -n "$COUNT" ] || [ -n "$PERF" ] || [ -n "$FPS" ] || [ -n "$TICK" ]; then
     CONF="$OUT/glass.conf"
     : > "$CONF"
     [ -n "$BLUR" ]  && echo "BLUR=$BLUR"   >> "$CONF"
     [ -n "$COUNT" ] && echo "COUNT=$COUNT" >> "$CONF"
+    [ -n "$PERF" ]  && echo "PERF=$PERF"   >> "$CONF"
+    [ -n "$FPS" ]   && echo "FPS=$FPS"     >> "$CONF"
+    [ -n "$TICK" ]  && echo "TICK=$TICK"   >> "$CONF"
     "$ADB" push "$CONF" "$FILES/glass.conf"
     echo "档位: $(tr '\n' ' ' < "$CONF")"
 else
@@ -114,6 +130,21 @@ mkdir -p "$OUT/shots"
 if [ ! -s "$OUT/shots/01-glass.png" ]; then
     echo "!! 截图是空的" >&2
 fi
+
+# 帧率档多截一张：overlay 的读数是滑动平均，刚起来那几秒还混着冷启动
+# （着色器编译、首次纹理上传）。只取第一张的话量到的是启动开销不是稳态。
+if [ -n "$PERF" ]; then
+    sleep 12
+    "$ADB" exec-out screencap -p > "$OUT/shots/02-glass-settled.png"
+    [ -s "$OUT/shots/02-glass-settled.png" ] || echo "!! 稳态截图是空的" >&2
+fi
+
+# 面板这一刻到底跑在多少赫兹——必须和截图同时取。
+# 帧率读数的分母就是它：61fps 在 60Hz 面板上是「满了」，在 120Hz 面板上是
+# 「只跑到一半」，两种解释差着一个结论。系统会在 app 起来几秒后重新仲裁，
+# 所以**不能**拿启动时那次读数当准。
+"$ADB" shell dumpsys SurfaceFlinger 2>/dev/null | grep -m1 activeMode > "$OUT/active-mode.txt"
+echo "面板: $(cat "$OUT/active-mode.txt")"
 
 say "logcat"
 "$ADB" logcat -d -s kk-glass > "$OUT/logcat-kk-glass.txt"

@@ -1,6 +1,7 @@
 //! `GlassMaterial`：玻璃材质的全部可调参数，以及五个预设。
 //!
-//! **这份没有编译过。** 但它是这个 spike 里唯一可以在编译之前当参考的
+//! 2026-11-25 起这份真的跑起来了：`wgpu_probe` 用 `GlassUniforms` 打 uniform、
+//! 跑 `shaders/glass.wgsl`。它也是这个 spike 里唯一可以当参考的
 //! 东西：纯数据，值逐个对着 `shaders/liquid_glass.frag` 与
 //! `lib/common/widgets/floating_navigation_bar.dart` 抄的，抄错了能一眼
 //! 看出来。
@@ -197,5 +198,28 @@ impl GlassUniforms {
             specular_strength: material.specular_strength,
             specular_width: material.specular_width,
         }
+    }
+
+    /// 按 WGSL 里 `GlassUniforms` 的字段顺序摊成 8 个 f32。
+    ///
+    /// 为什么不直接把结构体转成字节：`vec2<f32>` 后面跟一串 `f32`，
+    /// std140/std430 的对齐规则和 Rust 的 `#[repr(C)]` 这次恰好一致
+    /// （全是 4 字节标量，vec2 对齐 8，总长 32 刚好对齐），**但这是巧合，
+    /// 不是保证**。摊成数组之后顺序就在眼前，改字段时一眼能对上 WGSL。
+    ///
+    /// 这 8 个值对应 shaders/glass.wgsl 的：
+    /// size.x, size.y, scale, corner_radius, rim_width,
+    /// refraction_strength, specular_strength, specular_width
+    pub fn as_f32_array(&self) -> [f32; 8] {
+        [
+            self.size[0],
+            self.size[1],
+            self.scale,
+            self.corner_radius,
+            self.rim_width,
+            self.refraction_strength,
+            self.specular_strength,
+            self.specular_width,
+        ]
     }
 }

@@ -9,6 +9,12 @@
 GPU 才能答的部分收敛成一张待跑清单。**本文不下 Go/No-Go 结论**——按 #130
 自己的要求，未验证的集成不能当成架构决策。
 
+> **2026-11-24 当天补记**：待跑清单的第 1 项已经跑掉了，结论写在
+> [2026-11-24-glass-windows-notes.md](2026-11-24-glass-windows-notes.md)。
+> 下文 §0 里记的那处「文档与 CHANGELOG 打架」**已判定：CHANGELOG 是对的，
+> FemtoVG 也支持 `backdrop-blur`**。原文保留，只在该处加了判定结果——
+> 推断错在哪里，比推断本身更该留着。
+
 ## 证据等级
 
 | 标记 | 含义 |
@@ -59,6 +65,12 @@ the Skia renderer; other renderers draw the rectangle without the blur」。
 （**源码**，`internal/renderers/femtovg/wgpu.rs`：`BackdropBlur` 需要 view
 所在纹理带 `COPY_SRC`，否则背板不糊）。三处证据指向「FemtoVG 也有，参考页
 滞后」，但这是**推断**，别当定论。
+
+> **已跑，已定（2026-11-24）**：`SLINT_BACKEND=winit-femtovg` 下胶囊后面
+> 的背景确实糊开，胶囊外是硬边。**CHANGELOG 对，参考页滞后。**
+> 直接后果：**Skia 那笔未知的大账不用付**（`skia-bindings` 在这台机器上
+> 从来没真正构建过，见 #229）。记录见
+> [2026-11-24-glass-windows-notes.md](2026-11-24-glass-windows-notes.md) §2。
 
 ### 0.1 这对 #130 意味着什么
 
@@ -310,25 +322,54 @@ GPU 路径是 GL。**
 
 按上面的顺序，优先级从高到低：
 
-1. `backdrop-blur` 在 Skia 与 FemtoVG 上到底谁支持（§0 的文档打架）。
+1. ~~`backdrop-blur` 在 Skia 与 FemtoVG 上到底谁支持（§0 的文档打架）。~~
+   **已答：FemtoVG 也支持**，见 notes §2。
 2. 原生 `backdrop-blur` 导航栏 vs Flutter 版的并排观感差距（§6 第 1 步）。
-3. Android 上 `backdrop-blur` 的效果与帧预算（§6 第 2 步）。
-4. `AfterRendering` 里能否拿到可写的 `TextureView`（§2.1 的判据）。
-5. Android 上 Slint 能不能以 wgpu 渲染（§3）。
+   **第一轮只证明了「糊得出来」，没证明「糊得像」**——并排对照要跑起
+   Flutter app，还没做。
+3. ~~Android 上 `backdrop-blur` 的效果与帧预算（§6 第 2 步）。~~
+   **已答（2026-11-25）**：Skia 上同样生效（边缘能量掉 42.8%），
+   **一条导航栏约 0.64 ms/帧、十条约 1.66 ms/帧**，1/5/10 三档都有富余，
+   拐点在 40 条。见
+   [第二轮记录](2026-11-25-glass-android-notes.md)。
+   **但这是骁龙 8 Gen 2 的旗舰机，不代表低端机。**
+4. ~~`AfterRendering` 里能否拿到可写的 `TextureView`（§2.1 的判据）。~~
+   **已答：拿不到**，候选 A 出局，运行时证据见
+   [第一轮记录 §6.1](2026-11-24-glass-windows-notes.md)。
+   同一个探针证明了**自绘纹理导入 Slint 这条通**（§6.2），`glass.wgsl`
+   也第一次过了 naga。
+5. Android 上 Slint 能不能以 wgpu 渲染（§3）。**仍未验**——第二轮走的是
+   `backend-android-activity-06` 自带的 Skia，wgpu 探针只在桌面跑过
+   （而且用的是 `renderer-femtovg-wgpu`）。
 6. 逻辑像素 / 物理像素换算后，15 / 7 / 4 在 2x 屏上的观感是否与 Flutter 版
    一致（§5）。
 7. `Rgba8Unorm` 与 `Rgba8UnormSrgb` 下 glint 的观感差异，定一个（§5）。
 8. 滚动时的背景更新延迟与残影，以及 `backdrop-blur` 那条「每次重绘都要
    重读并过滤底下每个像素」的实际代价（对照 #126）。
 
+   **第一轮试过，量不出来**：1/5/10 组件 × 开关 blur 六组全是 144 fps，
+   那是显示器刷新率，`refresh_full_speed` 没绕过 vsync，桌面 GPU 压不动。
+   **这不是「不贵」，是「这个方法测不出」**，官方那条警告一个字都没被
+   证伪。
+
+   **第二轮量到了（2026-11-25），换的是方法不是设备**：读 Adreno 的
+   `gpubusy` 计数绕开 vsync。代价见第 3 项。
+   **残影与滚动延迟仍未验**——这一轮背景是匀速横移的条带，没有滚动列表，
+   #126 那条对照还没做。
+
 **前三项不出结论之前，不要开始写 wgpu 管线，也不要开始写组件库。**
+
+> 2026-11-25 状态：第 1、3、4 项已答，**第 2 项（与 Flutter 并排）仍是空的**。
+> 也就是说「糊得像不像」至今没有证据，这一条单独就够挡住组件库。
 
 ## 8. 本轮刻意没做的
 
 - **没有写 ADR。** 关口 2 没有实测答案之前，写出来的只能是候选清单，而
   #130 要的是取舍结论。本文就是那份候选清单。
-- **没有编译过 `spikes/slint-glass`**，一行都没有。它是骨架，不是交付，
-  见它自己的 README。
+- ~~**没有编译过 `spikes/slint-glass`**，一行都没有。~~ **已编过并跑起来
+  了**（2026-11-24 当天，首次构建 6 min 01 s，零 error 零 warning），见
+  notes。但它仍然**不是交付**：只跑了 Windows / FemtoVG 一轮，Skia、wgpu、
+  Android 都没碰。
 - **没有碰 Flutter 侧的 `shaders/liquid_glass.frag`。** 在 Slint 路线确定
   之前，两套实现的「单一来源」问题（#130 评论 §4）还不到收口的时候。
 - **没有去查 Slint 有没有计划把 backdrop 滤镜做成可扩展的。** 如果有，那

@@ -18,19 +18,109 @@ publish = false
 license = "GPL-3.0-or-later"
 
 [dependencies]
-# 两个 renderer feature 同时开着是**故意的**：这个 spike 的第一个待答问题
-# 就是「`backdrop-blur` 到底是 Skia 独有，还是 FemtoVG 也有」——官方的
-# Rectangle 参考页说只有 Skia，CHANGELOG 说两个都有，FemtoVG 的 wgpu 源码里
-# 又确实有 BackdropBlur 的约束说明。三处对不上，只能同一个二进制换着
-# SLINT_BACKEND 各跑一次。
+# **默认只开 FemtoVG，Skia 要显式开 `--features skia`。**
 #
-# 少开一个的话，选不到的那个会**静默退回默认渲染器**，看起来像是「支持」。
-slint = { version = "~1.19", features = ["renderer-skia", "renderer-femtovg"] }
+# 本来想两个一起开，好一次性回答「`backdrop-blur` 到底是 Skia 独有还是
+# FemtoVG 也有」（官方 Rectangle 参考页说只有 Skia，CHANGELOG 说两个都有，
+# FemtoVG 的 wgpu 源码里又确实有 BackdropBlur 的约束说明，三处对不上）。
+#
+# 改掉了，因为查了一下这台机器的实际状态：`slint-ui` / `slint-mpv` /
+# `slint-ios` 三个 spike 的 lockfile 里都有 `skia-bindings`，但
+# `target/release/build/skia-bindings/*/` 下**只有 build script 自己，没有
+# out 产物、没有下载下来的 skia-binaries、没有静态库**——也就是说
+# **Skia 在这台机器上从来没有真正构建过**，它一直只是依赖图里的一个名字。
+#
+# 那笔账的两种走向差一个数量级：下到预编译二进制是几分钟，下不到就要在
+# windows-gnu 上从源码构建 Skia（要 python3 + ninja + clang，几十分钟起步，
+# 失败也不稀奇）。**不该在第一步就付这笔账**——先用 FemtoVG 跑，如果
+# CHANGELOG 是对的、FemtoVG 也支持 backdrop-blur，那这笔账根本不用付。
+slint = { version = "~1.19", features = ["renderer-femtovg"] }
 
 [build-dependencies]
 slint-build = "~1.19"
 
+# Android 入口是 cdylib 里导出的 `android_main`，桌面照旧是 src/main.rs。
+# 多留一个 rlib 是为了让 bin 直接链这个 lib——不留的话 main.rs 只能用
+# `#[path]` 把模块再编一遍。照 slint-ui 的做法。
+[lib]
+name = "slint_glass_spike"
+crate-type = ["cdylib", "rlib"]
+path = "src/lib.rs"
+
+[[bin]]
+name = "slint-glass-spike"
+path = "src/main.rs"
+
+# ---------------------------------------------------------------------------
+# Android。2026-11-25 构建并装机跑过（首次 2 min 48 s，增量 4 s），
+# 结论见 docs/m0/spikes/2026-11-25-glass-android-notes.md。
+#
+# 一条必须先说清楚的事：**Android 上没有 FemtoVG。**
+# `slint::platform::femtovg_renderer` 整个模块标着 `non-Android only`，
+# `backend-android-activity-06` 自带的是 **Skia**。所以：
+#
+# - 桌面那轮验的是「FemtoVG 的 backdrop-blur」，Android 这轮验的是
+#   「Skia 的 backdrop-blur」，**两边的结论不能互相代替**；
+# - 桌面上躲掉的那笔 Skia 账，在 Android 上躲不掉。好消息是它可控：
+#   slint-ui 的 `target/aarch64-linux-android/release/build/skia-bindings/`
+#   下有 `skia-binaries-…-aarch64-linux-android-ganesh-gl-jpegd-jpege-pdf-vulkan.tar.gz`
+#   和 libskia.a——**是下载的预编译二进制，不是源码构建**。
+#   （本 crate 的 target 不共享那份缓存，会重新下一次。）
+[target.'cfg(target_os = "android")'.dependencies]
+# 与上面的 slint 同一个依赖，这里只追加 feature（cargo 对 feature 取并集）。
+slint = { version = "~1.19", features = ["backend-android-activity-06"] }
+# Android 上没有终端：println 进不了 logcat，而「跑到哪了」「为什么失败」
+# 必须能被 `adb logcat -s kk-glass` 脚本化取走。
+android_logger = "0.15"
+log = "0.4"
+# 只为了 `ANativeWindow_setFrameRate`。
+#
+# 为什么非它不可：这台手机面板支持 120Hz，但 app 一起来系统就把它投到 60，
+# **adb 侧全部压不住**——`settings put system min_refresh_rate 120` 被 MIUI
+# 的刷新率仲裁盖掉，`service call SurfaceFlinger 1035` 要 system 权限，
+# `cmd display set-user-preferred-display-mode` 设进去了也照样掉回 60。
+# Android 的正规口子是**由 app 自己声明想要多少帧**，就是这个函数。
+#
+# 版本必须跟 android-activity 0.6 用的那份一致（都是 0.9.0），否则
+# `app.native_window()` 返回的 NativeWindow 和这里的是两个不同的类型。
+ndk = { version = "0.9", features = ["nativewindow", "api-level-31"] }
+
+# cargo-apk 用这一段生成 AndroidManifest 并打包。
+[package.metadata.android]
+package = "io.github.kakacat.kilikili.spike.glass"
+build_targets = ["aarch64-linux-android"]
+
+[package.metadata.android.sdk]
+# 31 而不是 24：链接期按 min_sdk_version 取 NDK 的平台库，而
+# `ANativeWindow_setFrameRateWithChangeStrategy` 是 API 31 才有的符号，
+# 填 24 的话链接直接失败。这是探针的取值，**不是对 app 最低版本的主张**
+# ——真要把玻璃接进 KiliKili，先确认目标机型分布再谈。
+min_sdk_version = 31
+target_sdk_version = 35
+
+# 转屏不重建 activity：重建会让 `android_main` 重跑一遍，截图流程从头开始。
+[package.metadata.android.application.activity]
+config_changes = "orientation|keyboardHidden|screenSize|smallestScreenSize|screenLayout|uiMode|density"
+
+[package.metadata.android.application]
+label = "KiliKili Glass #130"
+# 截图写到外部数据目录，`adb pull` 不需要 run-as。
+debuggable = true
+
+# cargo-apk 的 release 包必须有 keystore，否则打到一半就停。指向 Android 的
+# 标准调试 keystore（口令固定 android）：探针不对外分发，它要的是 release 的
+# 优化等级，不是一个可发布的签名身份。正式签名的约定见 docs/release/SIGNING.md。
+[package.metadata.android.signing.release]
+path = "debug.keystore"
+keystore_password = "android"
+
 [features]
+# Skia 渲染器。只在 FemtoVG 那轮证明了它**不支持** `backdrop-blur` 之后才开
+# ——代价见上面 [dependencies] 里那段。开了之后用
+# `SLINT_BACKEND=winit-skia` 选它；**没开就换后端的话，选不到的那个会静默
+# 退回默认渲染器，看起来像是「支持」**，这是会把结论弄反的那种坑。
+skia = ["slint/renderer-skia"]
+
 # wgpu 这一步**默认不开**，理由有两条，都不是省事：
 #
 # 1. 评估文档 §6 的顺序是先量「原生 backdrop-blur 差多少」，再决定 wgpu 要
@@ -41,7 +131,24 @@ slint-build = "~1.19"
 #
 # 开它的时机：第一步量完、确认折射/高光必须自己画之后，跑评估文档 §2.1
 # 那个十几行的判据（AfterRendering 里到底拿不拿得到可写的 TextureView）。
-wgpu-probe = ["slint/unstable-wgpu-30"]
+#
+# 必须连 `renderer-femtovg-wgpu` 一起开：只开 unstable-wgpu-30 的话启动直接
+# 失败——"unstable-wgpu-30 was enabled but no renderer was selected"。
+# 可选的是 renderer-skia* / renderer-femtovg-wgpu / renderer-vello，这里选
+# femtovg-wgpu 是为了**躲开 Skia 那笔账**（桌面上它一次都没真正构建过），
+# 同时和默认那条路同属 femtovg，画面差异不会混进渲染器差异。
+wgpu-probe = ["slint/unstable-wgpu-30", "slint/renderer-femtovg-wgpu"]
+
+# 依赖按 opt-level=2 编，自己的代码不优化。
+#
+# 这不是微调：Slint 的渲染、布局与 femtovg 的光栅化全在依赖里，不优化的话
+# 连滚动都卡，而「卡」正是这个 spike 要量的东西之一，分不清是 backdrop-blur
+# 贵还是 debug 构建慢。反过来自己的代码保持 debug，改一行重编是秒级的。
+#
+# 代价是首次 `cargo build`（不带 --release）也要花接近 release 的时间，之后
+# 的增量才便宜。
+[profile.dev.package."*"]
+opt-level = 2
 
 [profile.release]
 # 与 `rust/Cargo.toml` 的 release profile 对齐：报告里的数字要代表 Phase 2

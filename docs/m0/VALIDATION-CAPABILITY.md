@@ -26,9 +26,11 @@ Apple 与 Android 改为手动 dispatch（理由见 §2.1）；「成本约束�
 也不改动上表任何一格的结论
 修订：2026-11-22 — 界面侧的实验台（`spikes/slint-ui`，#10）落地并在 Windows
 上实跑，本文末尾新增一节。同样**不进 CI**，同样不改动上表任何一格
-修订：2026-11-24 — Liquid Glass 的实验台骨架（`spikes/slint-glass`，#130）落地，
-**但一行都没有编译过**，本文末尾新增一节记它将来能验到什么、以及为什么它
-和前两个 spike 一样**连进 CI 都不该考虑**。上表任何一格不变
+修订：2026-11-24 — Liquid Glass 的实验台（`spikes/slint-glass`，#130）落地并在
+Windows 上实跑一轮：**`backdrop-blur` 在 FemtoVG 上生效**（官方文档滞后），
+但**帧代价被 vsync 掩盖、量不出来**。本文末尾新增一节分「已验 / 试过没测出来 /
+还没跑」三栏，并记下为什么它和前两个 spike 一样**连进 CI 都不该考虑**。
+上表任何一格不变
 关联：RFC-0001 §9.3 / §16.7，ADR-004
 
 本文回答一个 RFC 里此前含糊带过的问题：五个目标平台，**哪些能做真机验收、哪些只能做编译验证、哪些根本没覆盖**。结论直接影响 M4/M5 的准入范围，以及 ADR-004 能拿到多少实测数据。
@@ -788,38 +790,79 @@ MpvPlayer，含暂停、前后 Seek、倍速、分辨率和受控缓冲恢复。
 视频纹理与真实弹幕 fixture。macOS 可见画面/弹幕，Android 14 与 iOS 27.3
 真机缓冲、前后台、PiP 和销毁重建已执行；两端小窗视频画面已复核。
 它们是手动能力，没有新增 CI job/触发条件。
-### Liquid Glass 的实测能力（#130，2026-11-24）
+### Liquid Glass 的实测能力（#130，2026-11-24 起，2026-11-25 更新）
 
-**这一节记的是「将来能验到什么」，不是「已经验到了什么」**：
-`spikes/slint-glass` 这一轮只落地了骨架，**一行都没有编译过**，所以下面
-每一条都还没有产出过任何证据。评估见
-[2026-11-24-glass-wgpu-eval.md](spikes/2026-11-24-glass-wgpu-eval.md)。
+纸面评估见 [2026-11-24-glass-wgpu-eval.md](spikes/2026-11-24-glass-wgpu-eval.md)，
+实测两轮：
+[Windows / FemtoVG](spikes/2026-11-24-glass-windows-notes.md)、
+[Android / Skia](spikes/2026-11-25-glass-android-notes.md)。
 
-**本机能验的**（桌面，Windows / macOS）：
+**已经验到的**：
 
-- Slint 1.19 原生 `Rectangle::backdrop-blur` 的观感，与 Flutter 版
-  `GlassNavigationSurface` 并排对照。**这一项的结论必须由人看截图判**，
-  不是程序判的——要比的就是观感。
-- 同一个二进制换 `SLINT_BACKEND=winit-skia` / `winit-femtovg` 各跑一次，
-  回答「`backdrop-blur` 到底是 Skia 独有还是 FemtoVG 也有」。官方参考页、
-  CHANGELOG 与 FemtoVG 源码三处说法对不上，只能跑一次定。
-- 动态背景（持续横移的条带）下的帧耗时，判 `backdrop-blur` 那条官方警告
-  （每次重绘都要重读并过滤矩形底下每个像素）的实际代价。与 #126 的首页
-  feed 滚动卡顿是同一类开销，可以互相参照。
-- 开 `wgpu-probe` feature 之后，`AfterRendering` 回调里到底拿不拿得到可写
-  的 `TextureView`（评估文档 §2.1 的判据）。
+- **`backdrop-blur` 在 FemtoVG 与 Skia 上都生效**，官方 Rectangle 参考页
+  那句「only supported by the Skia renderer」是过时的。多条玻璃各自独立
+  模糊。Android 侧有量化判据：边缘能量掉 **42.8%**。
+- **帧代价量到了**（Android，骁龙 8 Gen 2 / Adreno 740）：
+  **一条导航栏约 0.64 ms/帧，十条约 1.66 ms/帧**；1/5/10 三档都有富余，
+  拐点在 40 条 ×sigma 240。方法是读 Adreno 的 `gpubusy`（免 root、读一次
+  清零）**绕开 vsync**，不是看帧率。
+- **wgpu 关口 2 的判据有了运行时证据**：`GraphicsAPI::WGPU30` 只给
+  `instance/device/queue`，**没有渲染目标**，所以「在 Slint 这一帧上直接
+  加画」这条路（候选 A）出局；而**自绘纹理导入 Slint 这条通**
+  （`Image::try_from(wgpu::Texture)` 一次过）。`shaders/glass.wgsl` 也
+  第一次过了 naga，零报错。
+- 构建开销：桌面首次 6 min 01 s / 增量 12 s；Android 首次 2 min 48 s /
+  增量 4 s（Skia 是**下载的预编译包**，不是源码构建）。
+
+**试过但没测出来的**（这一条要写清楚，否则会被当成已验）：
+
+- **靠帧率量 `backdrop-blur` 的代价，两端都失败。** 桌面六组全是 144，
+  Android 六组全是 61——都是刷新率，`refresh_full_speed` 绕不过 vsync。
+  **这不是「不贵」，是「这个方法测不出」。** 真正量到它靠的是换方法
+  （GPU 占用计数），不是换设备。
+- **用 GPU 占用率算成本，在 vsync 锁死的设备上会被 DVFS 骗。** Android
+  60Hz 下量出的那组是非单调的（sigma=60 比 sigma=10 便宜），按它外推到
+  120Hz 应当掉帧，**实测 121 fps 当场证伪**。把面板顶到 120Hz 之后读数
+  才单调。#226 的基准要用这个方法，先读
+  [第二轮记录 §3.4](spikes/2026-11-25-glass-android-notes.md)。
+- **低端机的情况完全未知。** 已测的是 2023 年的旗舰，而低端机才是 #130
+  的风险所在。
+
+**本机还能验、但还没跑的**：
+
+- 与 Flutter 版 `GlassNavigationSurface` **并排对照**。两轮都只证明了
+  「糊得出来」，**至今没有证明「糊得像」**——并排要跑起 Flutter app
+  （首页导航栏还要登录态），开销和这个 spike 不是一个量级。
+  **这一项的结论必须由人看截图判**，不是程序判的。**它单独就够挡住组件库。**
+- 滚动时的背景更新延迟与残影（对照 #126）。两轮的背景都是匀速横移的条带，
+  没有滚动列表。
+- 功耗与温度。采样窗口 12 秒，热降频根本来不及发生。
 
 **必须真机才能验的**：
 
-- Android 上 `backdrop-blur` 出不出效果、帧预算多少。Android 用 Skia，
-  按文档应当支持，但没实测过。**这一项决定 #130 的五端能不能齐**，优先级
-  高于任何桌面上的 wgpu 实验。
-- Android / iOS 上 Slint 能不能以 wgpu 渲染。`femtovg_renderer` 整个模块
-  标着 `non-Android only`，而仓库里已验证过的移动端 GPU 路径（#218 / #219
+- Android / iOS 上 Slint 能不能以 **wgpu** 渲染。第二轮走的是
+  `backend-android-activity-06` 自带的 Skia，wgpu 探针只在桌面跑过
+  （而且用的是 `renderer-femtovg-wgpu`）。`femtovg_renderer` 整个模块标着
+  `non-Android only`，而仓库里已验证过的移动端 GPU 路径（#218 / #219
   的插帧）走的是 GL，不是 wgpu。
+- iOS / macOS 两端一次都没跑过。
 
 **它判不了、必须人看的**：玻璃观感本身——折射带宽、高光强度、模糊程度在
 不同背景下「像不像玻璃」。这些只出截图，结论栏写「人工确认」。
+
+**一条跨 spike 的教训，第一轮就撞上了**：`GLASS_COUNT=10` 的那组读数照常
+产出，而窗口高度只装得下 6 条，多出的 4 条被裁在窗口外——**场景根本不是
+记录上写的那个**。和 #10 那次「虚拟化极好 + 滚动极卡」同一个形状，同样是
+**只有截图戳破了它**。在这台机器上截 GUI 还有个 DPI 坑：缩放 1.5 时必须
+先调 `SetProcessDPIAware()`，否则 `GetWindowRect` 与 `CopyFromScreen` 差
+1.5 倍，截到的是旁边的桌面。两条都记在 notes §4。
+
+**第二轮给出的修法值得推广到别的 spike**：根因不是布局没算对，而是
+**档位只活在环境变量和脚本参数里，画面上看不出来**，于是「记录写的」和
+「实际跑的」没有任何地方能对上。修法是**把实际参数印进画面**，让截图自带
+档位。另外三条 Android 侧的工具教训（`gfxinfo` 对 NativeActivity 无效、
+`am start` 传不了环境变量、面板刷新率必须和截图同时取）记在
+[第二轮记录 §6](spikes/2026-11-25-glass-android-notes.md)。
 
 **它同样不进 CI，而且比前两个 spike 更没得商量**：前两个是「runner 没有
 GPU 合成与显示输出」，这个还要再加一条——#130 要的交付物就是帧时间、掉帧、

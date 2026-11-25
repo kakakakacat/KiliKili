@@ -245,6 +245,16 @@ pub fn install(app: &crate::GlassSpike) {
         return;
     }
 
+    // 质量档与摆法必须配套：Balanced 把模糊交给原生，底下就得真有一条
+    // 只开模糊的原生矩形（`over-blur` 摆法），否则自绘层采到的是**清晰**
+    // 背板——画面上看起来就是「这一档没有模糊」，而参数表、日志、档位行
+    // 全都正常。这正是最容易把记录写错的那种组合，所以吵一行。
+    if quality.needs_native_blur() && mode != 2 {
+        plog!(
+            "PROBE GL 注意：质量档 {quality_name} 要求原生负责模糊，但摆法是 {layout}——自绘层底下没有原生模糊矩形，这一档画出来会是「没有模糊」。要跑这一档请加 GLASS_GL_LAYOUT=over-blur"
+        );
+    }
+
     // ---- 摆法对材质的影响 ----
     match mode {
         1 => {

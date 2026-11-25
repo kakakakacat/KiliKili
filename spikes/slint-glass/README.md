@@ -1,14 +1,16 @@
 # slint-glass — Liquid Glass 的实验台骨架（issue #130）
 
-> **状态：#130 关口 2 的本体已经过了**——GL 覆盖拿到了 Slint 本帧的真实
-> 帧缓冲，P0 五项全部跑在它上面，Windows/FemtoVG 与 Android/Skia 两个后端
-> 各验一次。取舍结论写进了
+> **状态：#130 的 Phase 1 与 Phase 2 都做完了**——GL 覆盖拿到 Slint 本帧的
+> 真实帧缓冲，P0 五项加上 Phase 2 的四项（SDF/法线、多尺度模糊、动态高光、
+> 融合）全部跑在它上面，Windows/FemtoVG 与 Android/Skia 两个后端各验一次。
+> 取舍结论写进了
 > [ADR-016](../../docs/architecture/adr/ADR-016-liquid-glass-rendering.md)。
 >
-> 实测记录三份：
+> 实测记录四份：
 > [Windows / FemtoVG](../../docs/m0/spikes/2026-11-24-glass-windows-notes.md)、
 > [Android / Skia](../../docs/m0/spikes/2026-11-25-glass-android-notes.md)、
-> [GL 覆盖](../../docs/m0/spikes/2026-11-25-glass-gl-overlay-notes.md)。
+> [GL 覆盖](../../docs/m0/spikes/2026-11-25-glass-gl-overlay-notes.md)、
+> [Phase 2](../../docs/m0/spikes/2026-11-25-glass-phase2-notes.md)。
 >
 > 跑到的：
 >
@@ -31,11 +33,24 @@
 >   尺寸算的 1.91 MB 对得上。
 > - **不再截屏**：程序自己用 `take_snapshot` 出图，窗口也不抢焦点了。
 >
+> 第四轮（Phase 2）加的：
+>
+> - **四项能力**：圆角矩形/圆/胶囊共用一个 SDF 与解析法线、三级多尺度模糊、
+>   方向性 + 顶边动态高光、SDF smooth union 融合。两个后端各验一次。
+> - **ADR-016 决策四有了答案**：原生模糊 + 自绘折射**可用**，但原生那条必须
+>   只开 `backdrop-blur`——带着渐变与描边的话，折射会把那道 1px 白描边拖出
+>   第二道（判据见第四轮记录 §1）。**代价是这个组合拿不到多尺度模糊。**
+> - **七档代价**：多尺度再加两级 +0.19 ms、融合 ≈0、决策四那个组合合计
+>   +0.83 ms（全自绘三级是 +2.88 ms）。自绘单级模糊第三次量到 1.70 ms。
+> - **静态证据可复跑**：`GLASS_GL_LIGHT` 钉死光源角、`GLASS_MERGE_GAP` 钉死
+>   融合间距、`GLASS_TICK=10000` 冻住背景——在此之前这三样都由动画相位决定，
+>   同一条命令跑两次得到的不是同一张图。
+>
 > **没跑的**：
 >
 > - **Apple 两端大概率不通**：Slint 1.19 的 Skia 走 Metal-via-wgpu，
 >   notifier 拿不到渲染目标。推断，未验，排在 #225 最前面。
-> - 「原生模糊 + 自绘折射」这个组合（ADR-016 决策四）没试过。
+> - 环境色自适应（P2）、按压/拖动形变（P1，要手势，实验台连输入都没接）。
 > - 低端机、功耗与温度、滚动残影，全都没碰。
 >   已测的 Android 是 2023 年的旗舰，**不代表低端机**，而低端机才是风险所在。
 > - 与 Flutter 版并排对照**已移出范围**（2026-11-25，仓库所有者定：
@@ -138,11 +153,12 @@ SLINT_BACKEND=winit-skia ./target/debug/slint-glass-spike
 ui/glass_spike.slint      会动的背景 + backdrop-blur 胶囊，参数对着 Flutter 抄
 src/lib.rs                桌面与 Android 共用的 run()；android_main、自出图、窗口定位
 src/main.rs               桌面入口，按 feature 分派到普通跑法或 wgpu 探针
-src/material.rs           GlassMaterial 参数、FLUTTER_BASELINE 与 P0_TARGET
+src/material.rs           GlassMaterial 参数与三档预设（baseline / P0 / Phase 2）
 src/gl_probe.rs           **关口 2 本体**：GL 覆盖（--features gl-probe）
 src/wgpu_probe.rs         wgpu 关口 2 的判据（--features wgpu-probe 才编）
-shaders/glass_overlay.frag  GL 版玻璃：折射 + glint + Fresnel + 材质层
-shaders/glass_blur.frag     可分离高斯的一趟
+shaders/glass_sdf.glsl      形状、法线、融合（纯几何，不含材质与采样）
+shaders/glass_overlay.frag  GL 版玻璃：折射 + 高光 + Fresnel + 材质层
+shaders/glass_blur.frag     可分离高斯的一趟，金字塔每级都用它
 shaders/glass.wgsl        liquid_glass.frag 的逐行 WGSL 移植
 shot.ps1                  桌面：挑空闲屏、不抢焦点、让程序自己出图
 android-drive.sh          真机的装/配/起/截图/收证据
@@ -165,11 +181,31 @@ pwsh -NoProfile -Command "& .\shot.ps1 -Out shots/snap-p0.png -EnvVars @{GLASS_G
 
 ```sh
 GLASS_GL=0                  # 关掉 GL 覆盖做对照
-GLASS_GL_MATERIAL=baseline  # 切到「与 Flutter 同式」那一档（无模糊）
+GLASS_GL_MATERIAL=baseline  # 材质档：phase2（默认）/ p0 / baseline
+GLASS_GL_QUALITY=balanced   # 质量档：high（默认）/ balanced / low
+GLASS_GL_LAYOUT=over-blur   # 摆法：slot（默认）/ over-full / over-blur / merge
 GLASS_GL_BLUR=0             # 只关自绘模糊，留折射与高光
+GLASS_GL_LIGHT=180          # 光源角（度），同时停掉自转
+GLASS_MERGE_GAP=12          # 融合间距（逻辑 px），不设则按动画来回走
+GLASS_TICK=10000            # 背景 Timer 周期；填大等于冻住背景
 GLASS_SNAPSHOT=shots/x.png  # 程序自己出图然后退出
 GLASS_WINDOW_POS=5800,588   # 窗口开在这里，且**不激活**（物理像素）
 ```
+
+**四种摆法在回答不同的问题**：
+
+| 摆法 | 自绘玻璃摆在哪 | 用来看什么 |
+|---|---|---|
+| `slot` | 独占最底下一格，背板里没有原生玻璃 | 自绘全套 vs 原生，两条并排 |
+| `over-full` | 盖在**完整**原生胶囊上 | ADR-016 决策四读法甲——**实测描边会被抹成两道** |
+| `over-blur` | 盖在**只开模糊**的原生胶囊上 | 决策四读法乙，可用的那一种 |
+| `merge` | slot 摆法 + 第二个形状 | SDF smooth union 的融合 |
+
+**后三个开关（`GLASS_GL_LIGHT` / `GLASS_MERGE_GAP` / `GLASS_TICK`）是出证据
+用的，不是调试用的。** 光源角和融合间距原本都由动画相位决定，而相位取决于
+「窗口起来之后 Timer 跑了多久」——那段启动耗时每次不一样，于是**同一条命令
+跑两次得到的不是同一张图**。实测三张本该不同间距的截图量出来是 125 / 75 /
+150px，和预期全对不上。要并排比或者要把数字写进记录，先把它们钉死。
 
 后两个解决的是这台机器上的真问题：截屏在主屏跑全屏程序或锁屏时会**静默
 产出黑图**，而新窗口默认会把正在用机器的人踢出全屏程序。`shot.ps1` 自动
@@ -281,6 +317,6 @@ notes §3.2。
   导航栏要登录态。
 - **没碰真实背板的捕获。** wgpu 探针里那张是合成的，而「怎么拿到当前帧的
   干净背景」才是关口 2 的本体。
-- **没有多尺度模糊 / Fresnel / 动态光照。** P0 表里这些 Flutter 版也没有，
-  先量差距再谈。
+- ~~**没有多尺度模糊 / Fresnel / 动态光照。**~~ 第三轮补了 Fresnel，
+  第四轮补了多尺度模糊与动态高光（见文件头「第四轮」那段）。
 - **没测低端机、iOS、macOS，没测功耗与温度，没测滚动残影。**

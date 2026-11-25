@@ -233,12 +233,21 @@ impl GlassMaterial {
         match quality {
             GlassQuality::High => self,
             GlassQuality::Balanced => Self {
-                // 单级模糊：省掉粗级那两趟，也省掉按深度插值。
+                // **模糊整个交给原生 `backdrop-blur`**，自绘这层只管折射与
+                // 高光——也就是 ADR-016 决策四那个组合。宿主要负责在它底下
+                // 摆一条只开模糊的原生矩形，见 [`GlassQuality::needs_native_blur`]。
+                //
+                // 这一档原本写的是「自绘单级模糊 + 折射减半」，实测之后改掉了：
+                // 自绘单级 +2.69 ms，而 High（三级）才 +2.88 ms——中间档和
+                // 顶档一样贵，等于没有中间档；换成这个组合是 **+0.83 ms**。
+                //
+                // 相应地**折射不减半**。#130 的质量表把 Balanced 写成「简化
+                // 折射」，但折射正是自绘这层唯一不可替代的东西（原生给不了），
+                // 砍它等于砍掉这一档存在的理由；真正贵的是模糊，而模糊已经
+                // 交出去了。减的是高光：退回静态 glint。
+                blur_radius: 0.0,
                 blur_levels: 1,
                 thickness: 0.0,
-                // 简化折射：带宽与强度各减一半，边缘那圈仍在，只是浅。
-                refraction_strength: self.refraction_strength * 0.5,
-                edge_highlight: self.edge_highlight * 0.5,
                 // 简化高光：退回静态 glint，不再按光源方向算。
                 specular_sharpness: 0.0,
                 top_highlight: 0.0,
@@ -359,6 +368,22 @@ impl GlassQuality {
         !matches!(self, Self::Low)
     }
 
+    /// 这一档要不要宿主在玻璃底下摆一条**只开模糊**的原生矩形。
+    ///
+    /// High 自己画模糊（而且是多尺度的，原生给不了），底下再来一层就是双份；
+    /// Balanced 把模糊整个交给原生；Low 只剩原生那一层。
+    ///
+    /// 为什么这件事在这里而不在宿主：它是**质量档的一部分**，不是布局偏好。
+    /// 宿主自己决定的话，换个宿主就要重新推一遍「这一档到底谁画模糊」，
+    /// 而那正是 AGENTS.md §2 要避免的。
+    ///
+    /// 注意原生那条必须是 `blur-only`（透明、无描边、无阴影）：带着渐变与
+    /// 描边的话，自绘的折射会把那道 1px 白描边拖出第二道——实测如此，判据
+    /// 见 `docs/m0/spikes/2026-11-25-glass-phase2-notes.md` §1。
+    pub fn needs_native_blur(self) -> bool {
+        matches!(self, Self::Balanced | Self::Low)
+    }
+
     /// 从 `GLASS_GL_QUALITY` 之类的字符串解析。认不出来时返回 `None`，
     /// 由调用方决定是报错还是用默认——**不要在这里静默回落到 High**，
     /// 那样拼错一个字母就会得到一份标签与实际不符的记录（第一轮
@@ -474,6 +499,11 @@ mod tests {
         let low = high.at_quality(GlassQuality::Low);
 
         assert!(balanced.blur_levels <= high.blur_levels);
+        // Balanced 把模糊交给原生，所以自绘这边的 σ 必须是 0——否则会和
+        // 底下那条原生矩形叠成双份模糊。
+        assert_eq!(balanced.blur_radius, 0.0);
+        assert!(GlassQuality::Balanced.needs_native_blur());
+        assert!(!GlassQuality::High.needs_native_blur());
         assert!(balanced.refraction_strength <= high.refraction_strength);
         assert!(balanced.specular_sharpness <= high.specular_sharpness);
         assert!(balanced.merge_k <= high.merge_k);

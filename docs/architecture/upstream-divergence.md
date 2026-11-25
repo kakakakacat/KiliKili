@@ -449,6 +449,13 @@ media-kit 适配器，时序、错误与资源决策修改 Rust，不恢复旧�
 转入「有实质改动」——这是**第一个因渲染后端而进入分叉面的 Android 构建
 配置文件**，此前这个文件与上游只差包名。同步注意点见 §4.3 对应行。
 
+修订：2026-11-25（登录页整页胶囊化 #236 为本次）——按 §6 重算：
+**851 / 341 / 510，新增 1009、删除 369，一个数都没变**。记一笔是为了留下
+「查过了」这个事实：`lib/common/widgets/capsule_tab.dart` 删除、
+`lib/common/widgets/capsule_segmented_tab_bar.dart` 新增，一进一出抵消；
+`lib/pages/login/view.dart` 与 `lib/pages/login/sms_code_field.dart` 分别早在
+#140 和 #162 就已在「有实质改动」与「新增」桶里，再改不改变归类。
+
 ## 1. 基准
 
 ```
@@ -616,6 +623,7 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | `.github/workflows/build.yml` | #121、#146 | 四个可复用工作流补 `secrets: inherit`；Android 验证包与正式包使用独立证书，缺密钥或指纹不符即失败，防止产出临时 debug 签名的 Release |
 | `android/app/build.gradle.kts` | #184、#146 | NDK 版本固定；无签名配置的正式 Android release 在 `preReleaseBuild` 失败，普通 debug 开发不受影响；`.dev` 验证包允许本地 debug 回退 |
 | `.github/workflows/ios.yml` | 本次（#121） | 注释写明侧载没有仓库侧发布身份；构建行为未变 |
+| `lib/pages/login/view.dart` | #140、#162、#236 | 短信登录交互修复（#140）之后，界面整页改胶囊：顶部登录方式是一条**分段胶囊**（`CapsuleSegmentedTabBar`，四格等分、选中块滑动，窄屏丢图标保文字），五个输入栏是填充 + 全圆角（多行的 Cookie 用 24 圆角），主操作是整行 56 高胶囊。**上游若改这个文件，照常同步里面的逻辑与字段，但不要把布局与装饰同步回来**——那一层这边已经整个换掉，判据同 §4.4 |
 | `android/app/src/main/AndroidManifest.xml` | 本次（#230） | `io.flutter.embedding.android.EnableImpeller` 由 `false` 改为 `true`。该 opt-out 是 2024 年底随上游带进来的，Flutter 3.47 已把它标为 deprecated；关着它时 `ImageFilter.isShaderFilterSupported` 为 false，玻璃导航栏的折射 shader 根本不会运行，Android 只能退到 `ImageFilter.blur`——这就是 iOS 透明、Android 像高斯模糊的全部原因。**上游若再改这一段，不要跟着关回去**；上游自己迟早会删掉这个 meta-data，届时整行一并删除即可，默认就是开 |
 
 `lib/plugin/pl_player/controller.dart` 不在这张表里，它已经由 §4.1 的 S3 一行

@@ -1,6 +1,6 @@
 import 'package:kilikili/common/constants.dart';
 import 'package:kilikili/common/dial_prefix.dart';
-import 'package:kilikili/common/widgets/capsule_tab.dart';
+import 'package:kilikili/common/widgets/capsule_segmented_tab_bar.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
@@ -9,7 +9,6 @@ import 'package:kilikili/common/widgets/view_insets_safe_area.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/pages/login/controller.dart';
 import 'package:kilikili/pages/login/sms_code_field.dart';
-import 'package:kilikili/utils/extension/size_ext.dart';
 import 'package:kilikili/utils/extension/widget_ext.dart';
 import 'package:kilikili/utils/image_utils.dart';
 import 'package:kilikili/utils/page_utils.dart';
@@ -43,7 +42,11 @@ class _LoginPageState extends State<LoginPage> {
     _loginPageCtr.didChangeDependencies(context);
   }
 
-  /// 主操作：提交登录。填充胶囊，一屏只会有一个（#162）。
+  /// 主操作：提交登录。**整行填充胶囊**，一屏只会有一个（#162、#236）。
+  ///
+  /// 整行而不是按内容宽度：这是这一屏唯一的落点，宽度本身就是层级。
+  /// 宽屏不会拉成长条——外层 [tabViewOuter] 已经把内容列限在 625（见
+  /// `widget_ext.dart` 的 `constraintWidth`）。
   ///
   /// 这里不设 `shape`：M3 的 FilledButton 默认就是 [StadiumBorder]，再写一遍
   /// 只会在以后换主题时多一处要同步的地方。
@@ -51,14 +54,19 @@ class _LoginPageState extends State<LoginPage> {
     required VoidCallback? onPressed,
     required IconData icon,
     required String label,
-  }) => FilledButton.icon(
-    onPressed: onPressed,
-    icon: Icon(icon, size: 20),
-    label: Text(label),
-    style: FilledButton.styleFrom(
-      minimumSize: const Size(160, 48),
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      textStyle: const TextStyle(fontWeight: FontWeight.w600),
+  }) => Padding(
+    // 左右 20 与表单一致；上间距收进这里，免得每个 tab 各写一个 SizedBox，
+    // 写漏一个就是按钮贴着输入框（Cookie 页原来就是这样）。
+    padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+    child: FilledButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 20),
+      label: Text(label),
+      style: FilledButton.styleFrom(
+        minimumSize: const Size.fromHeight(56),
+        padding: const EdgeInsets.symmetric(horizontal: 28),
+        textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+      ),
     ),
   );
 
@@ -79,6 +87,61 @@ class _LoginPageState extends State<LoginPage> {
       padding: const EdgeInsets.symmetric(horizontal: 18),
       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
     ),
+  );
+
+  /// 胶囊输入栏：填充 + 全圆角，和分段胶囊、整行按钮同一套形状语言（#236）。
+  ///
+  /// 标签不上浮（[FloatingLabelBehavior.never]）：胶囊里没有放上浮标签的位置，
+  /// 硬塞会把文字挤到描边上。登录这几个字段（账号 / 密码 / 手机号 / 验证码 /
+  /// Cookie）内容本身足够自明，标签当占位符用就够。
+  ///
+  /// 多行（Cookie）用大圆角而不是胶囊：几行高的 stadium 会变成一个椭圆。
+  InputDecoration _pillInput(
+    ThemeData theme, {
+    required String label,
+    String? hint,
+    Widget? prefixIcon,
+    Widget? suffixIcon,
+    bool multiline = false,
+  }) {
+    final radius = BorderRadius.circular(multiline ? 24 : 28);
+    OutlineInputBorder border([Color? color, double width = 1]) =>
+        OutlineInputBorder(
+          borderRadius: radius,
+          borderSide: color == null
+              ? BorderSide.none
+              : BorderSide(color: color, width: width),
+        );
+    return InputDecoration(
+      filled: true,
+      fillColor: theme.colorScheme.surfaceContainerHighest,
+      labelText: label,
+      hintText: hint,
+      floatingLabelBehavior: FloatingLabelBehavior.never,
+      prefixIcon: prefixIcon,
+      suffixIcon: suffixIcon,
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: prefixIcon == null ? 20 : 8,
+        vertical: multiline ? 18 : 16,
+      ),
+      // 平时不描边，靠填充色表达形状；聚焦和报错才上描边，否则一排胶囊
+      // 全是轮廓线会很吵。
+      border: border(),
+      enabledBorder: border(),
+      focusedBorder: border(theme.colorScheme.primary, 2),
+      errorBorder: border(theme.colorScheme.error),
+      focusedErrorBorder: border(theme.colorScheme.error, 2),
+    );
+  }
+
+  /// 手机号、验证码这两行是「前缀 + 输入框 + 动作」的组合，塞不进
+  /// [_pillInput]，所以单独给一个同样外观的壳，保证五个输入栏长得一致。
+  Widget _pillShell(ThemeData theme, {required Widget child}) => DecoratedBox(
+    decoration: ShapeDecoration(
+      color: theme.colorScheme.surfaceContainerHighest,
+      shape: const StadiumBorder(),
+    ),
+    child: child,
   );
 
   Widget loginByQRCode(ThemeData theme) {
@@ -236,10 +299,11 @@ class _LoginPageState extends State<LoginPage> {
             maxLines: 10,
             controller: _loginPageCtr.cookieTextController,
             inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r"\s"))],
-            decoration: InputDecoration(
+            decoration: _pillInput(
+              theme,
+              label: 'Cookie',
+              multiline: true,
               prefixIcon: const Icon(Icons.cookie_outlined),
-              border: const UnderlineInputBorder(),
-              labelText: 'Cookie',
               suffixIcon: IconButton(
                 onPressed: _loginPageCtr.cookieTextController.clear,
                 icon: const Icon(Icons.clear),
@@ -277,11 +341,11 @@ class _LoginPageState extends State<LoginPage> {
                   inputFormatters: [
                     FilteringTextInputFormatter.deny(RegExp(r"\s")),
                   ],
-                  decoration: InputDecoration(
+                  decoration: _pillInput(
+                    theme,
+                    label: '账号',
+                    hint: '邮箱/手机号',
                     prefixIcon: const Icon(Icons.account_box),
-                    border: const UnderlineInputBorder(),
-                    labelText: '账号',
-                    hintText: '邮箱/手机号',
                     suffixIcon: IconButton(
                       onPressed: _loginPageCtr.usernameTextController.clear,
                       icon: const Icon(Icons.clear),
@@ -296,10 +360,10 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                   controller: _loginPageCtr.passwordTextController,
                   autofillHints: const [AutofillHints.password],
-                  decoration: InputDecoration(
+                  decoration: _pillInput(
+                    theme,
+                    label: '密码',
                     prefixIcon: const Icon(Icons.password),
-                    border: const UnderlineInputBorder(),
-                    labelText: '密码',
                     suffixIcon: IconButton(
                       onPressed: _loginPageCtr.passwordTextController.clear,
                       icon: const Icon(Icons.clear),
@@ -416,12 +480,8 @@ class _LoginPageState extends State<LoginPage> {
         const SizedBox(height: 10),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: DecoratedBox(
-            decoration: UnderlineTabIndicator(
-              borderSide: BorderSide(
-                color: theme.colorScheme.outline.withValues(alpha: 0.4),
-              ),
-            ),
+          child: _pillShell(
+            theme,
             child: Row(
               children: [
                 const SizedBox(width: 12),
@@ -482,6 +542,7 @@ class _LoginPageState extends State<LoginPage> {
                     ],
                     decoration: InputDecoration(
                       border: InputBorder.none,
+                      floatingLabelBehavior: FloatingLabelBehavior.never,
                       labelText: '手机号',
                       suffixIcon: IconButton(
                         onPressed: _loginPageCtr.telTextController.clear,
@@ -496,12 +557,8 @@ class _LoginPageState extends State<LoginPage> {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: DecoratedBox(
-            decoration: UnderlineTabIndicator(
-              borderSide: BorderSide(
-                color: theme.colorScheme.outline.withValues(alpha: 0.4),
-              ),
-            ),
+          child: _pillShell(
+            theme,
             child: Row(
               children: [
                 Expanded(
@@ -515,8 +572,8 @@ class _LoginPageState extends State<LoginPage> {
                   () {
                     final cooling = _loginPageCtr.smsSendCooldown > 0;
                     return Padding(
-                      // 胶囊有背景色，贴着输入框下划线会糊成一块。
-                      padding: const EdgeInsets.only(left: 8, bottom: 4),
+                      // 壳本身已经是胶囊，这里只留与输入区的间隔。
+                      padding: const EdgeInsets.only(left: 8, right: 4),
                       child: _secondaryAction(
                         onPressed: cooling
                             ? null
@@ -540,7 +597,6 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ),
-        const SizedBox(height: 20),
         _primaryAction(
           onPressed: _loginPageCtr.loginBySmsCode,
           icon: Icons.login,
@@ -565,31 +621,15 @@ class _LoginPageState extends State<LoginPage> {
 
   late EdgeInsets padding;
 
-  /// 四个登录方式入口。竖屏在标题下占一行，横屏收进 AppBar 右侧，样式同一份。
+  /// 四个登录方式入口：一条分段胶囊，选中项在轨道里滑动。
   ///
-  /// 选中态由胶囊本身表达，所以把 TabBar 自己的下划线指示器与分隔线去掉；
-  /// `isScrollable` 是为了窄屏——四个胶囊排不下时横向滚动，而不是压扁文字。
-  Widget _methodTabBar() => TabBar(
+  /// 改成分段控件而不是沿用首页那种分开的胶囊（#138），理由写在
+  /// [CapsuleSegmentedTabBar] 的类注释里：固定几选一和数量不定的分类是
+  /// 两种场景。位置也从「竖屏占一行 / 横屏塞进 AppBar」统一成了内容列顶部，
+  /// 两种朝向一份布局，并且和下面的输入框、整行按钮左右对齐。
+  Widget _methodTabBar() => CapsuleSegmentedTabBar(
     controller: _loginPageCtr.tabController,
-    isScrollable: true,
-    tabAlignment: TabAlignment.center,
-    indicator: const BoxDecoration(),
-    indicatorSize: TabBarIndicatorSize.tab,
-    dividerHeight: 0,
-    dividerColor: Colors.transparent,
-    labelPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-    splashBorderRadius: const BorderRadius.all(Radius.circular(24)),
-    tabs: [
-      for (final (index, (icon, label)) in _loginMethods.indexed)
-        Tab(
-          child: CapsuleTab(
-            controller: _loginPageCtr.tabController,
-            index: index,
-            icon: icon,
-            label: label,
-          ),
-        ),
-    ],
+    items: _loginMethods,
   );
 
   static const List<(IconData, String)> _loginMethods = [
@@ -605,7 +645,6 @@ class _LoginPageState extends State<LoginPage> {
     padding =
         MediaQuery.viewPaddingOf(context).copyWith(top: 0) +
         const EdgeInsets.only(bottom: 25);
-    final isLandscape = !MediaQuery.sizeOf(context).isPortrait;
     return SimpleScaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -613,22 +652,17 @@ class _LoginPageState extends State<LoginPage> {
           icon: const Icon(Icons.close_outlined),
           onPressed: Get.back,
         ),
-        title: Row(
-          children: [
-            const Text('登录'),
-            if (isLandscape)
-              Expanded(
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: _methodTabBar(),
-                ),
-              ),
-          ],
-        ),
+        title: const Text('登录'),
       ),
       body: Column(
         children: [
-          if (!isLandscape) _methodTabBar(),
+          // 和下面的表单同宽同边距，三者（分段胶囊 / 输入框 / 整行按钮）左右
+          // 对齐成一列。横屏不再把它塞进 AppBar——那里宽度不可控，分段控件
+          // 会被挤扁；body 本身可滚动，少掉的那点竖向空间不是问题。
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+            child: _methodTabBar().constraintWidth(),
+          ),
           Expanded(
             child: NotificationListener<ScrollStartNotification>(
               onNotification: (notification) {

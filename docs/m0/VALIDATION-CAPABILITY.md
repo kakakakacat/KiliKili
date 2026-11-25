@@ -893,10 +893,16 @@ ADR 比没有更坏**，因为它看起来像证据。
 
 **本机验不了的**（这几条决定了 #230 不能只凭一台设备收口）：
 
-- **GLES 回退**。手上只有 Vulkan 设备，Impeller 的 GLES 路径**一次都没跑过**。
-  `shaders/liquid_glass.frag` 里有 `#ifdef IMPELLER_TARGET_OPENGLES` 的
-  uv.y 翻转分支，**翻转错了画面上下颠倒而不报错**——这类失败不会出现在日志里，
-  只能靠人看截图。
+- ~~**GLES 回退**~~ ✅ **能验，而且必须验**。手上虽然只有 Vulkan 设备，但
+  manifest 里临时加一条
+  `io.flutter.embedding.android.ImpellerBackend = opengles` 打包，就能把任意
+  Vulkan 机器逼到 GLES 后端（logcat：`Using the Impeller rendering backend
+  (OpenGLES)`）。**第一次真跑就抓到了那个早就被担心的失败**：
+  `shaders/liquid_glass.frag` 里 `#ifdef IMPELLER_TARGET_OPENGLES` 的 uv.y
+  翻转补偿是盲写的（写它的时候 iOS 走 Metal、Android 走 Skia，这个分支从未
+  执行过），Flutter 3.47 根本不需要它，于是导航栏映出屏幕对称位置的内容，
+  看起来既倒置又不透明。删掉那三行后两条后端一致。
+  **这类失败不进日志，只能靠人看截图**——这正是它能躺一年没被发现的原因。
 - **低端 / 老设备**。已测的是 2023 年旗舰，而 GPU 开销涨了近一倍
   （37.6% → 65.5%）、PSS 涨 11%。**低端机与 GLES 是同一件事的两面**：
   退到 GLES 的设备通常也正是吃不下这份开销的设备。

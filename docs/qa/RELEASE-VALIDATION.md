@@ -274,9 +274,14 @@ Android 侧 `EnableImpeller` 由关改开（`android/app/src/main/AndroidManifes
   首页滚动是掉帧率 14.4% → 3.1%（GPU 37.6% → 65.5%），高密度弹幕是
   120.7 → 82.6 fps（GPU 40% → 61%）。两处 GPU 都涨到约 1.6 倍，PSS +11%。
   **这个代价在低端机上是否吃得下，没有数据。**
-- **GLES 回退**：Vulkan 不可用时 Impeller 走 GLES。这条路径与低端/老设备
-  是同一件事的两面，当前**完全没有覆盖**，发布候选若包含这项改动必须记
-  `NOT TESTED` 并在发布说明里披露。
+- **GLES 回退**：Vulkan 不可用时 Impeller 走 GLES。**不需要低端设备也能验**：
+  临时在 manifest 里加
+  `<meta-data android:name="io.flutter.embedding.android.ImpellerBackend"
+  android:value="opengles" />` 打一个包，任何 Vulkan 机器都会被逼到 GLES 后端，
+  logcat 会打 `Using the Impeller rendering backend (OpenGLES)`。
+  **这条路第一次跑就抓到一个 bug**（玻璃导航栏上下倒置，见 #230），所以它
+  必须每次都验，不能靠「Vulkan 没问题所以 GLES 也没问题」推断。
+  仍未覆盖的是**真实低端/老设备的性能**，那是硬件问题，不是这条代码路径。
 
 验证记录见 issue #230。另有一个与本改动无关、但在这类真机验证里会咬人的坑：
 `flutter build apk --profile` 产出的 applicationId 与正式包同名

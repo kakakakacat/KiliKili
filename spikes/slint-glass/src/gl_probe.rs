@@ -37,15 +37,23 @@
 //!
 //! # 自采（self-sampling）
 //!
-//! 背板是整帧拷下来的，**玻璃自己也在那一帧里**——如果矩形压在原生胶囊上，
-//! 采到的就是「玻璃 + 玻璃」，一帧比一帧白。所以这里的矩形由 `.slint` 让出
-//! 最底下那个 slot（`gl-overlay-visible` 为真时原生胶囊整体上移一格），
-//! 矩形里只有背景。这条约束换成真实应用同样成立，是 Phase 2 的输入之一。
+//! 背板是整帧拷下来的，**玻璃自己也在那一帧里**。默认的 `slot` 摆法让出最
+//! 底下一格（原生胶囊整体上移一格），矩形里只有背景，采到的就是干净背板。
+//!
+//! 不会「一帧比一帧白」——Slint 每帧从场景图重画，自绘这层画在它之后，
+//! 下一帧的 Slint 内容里并不含上一帧的自绘结果。所以压在原生胶囊上是
+//! **可以**的，采到的是「本帧的原生玻璃」，不是累积。Phase 2 的 `over-full`
+//! / `over-blur` 两档正是故意这么摆的（ADR-016 决策四）。
+//!
+//! 真正要防的是另一件事：原生那层画了什么，自绘这层就会把什么一起折射。
+//! 实测 `over-full`（原生画渐变 + 1px 白描边）会被折射拖出**第二道描边**，
+//! 而 `over-blur`（原生只画模糊、材质层归自绘）没有这个问题。判据与剖面
+//! 见 `docs/m0/spikes/2026-11-25-glass-phase2-notes.md` §2。
 
 use glow::HasContext;
 use slint::ComponentHandle;
 
-use crate::material::GlassMaterial;
+use crate::material::{GlassMaterial, GlassQuality};
 
 /// Android 上没有 stdout，`println!` 进不了 logcat。
 macro_rules! plog {
@@ -67,21 +75,32 @@ struct Overlay {
     backdrop: glow::Texture,
     /// 背板纹理当前的尺寸，物理像素（**含边距**）。尺寸变了要重新分配。
     tex_size: (i32, i32),
-    /// 玻璃矩形左下角在背板纹理里的位置，以及这张纹理的整体尺寸，物理像素。
+    /// 覆盖矩形左下角在背板纹理里的位置，以及这张纹理的整体尺寸，物理像素。
     /// shader 要用它们把折射后的采样点换算成 uv，见 glass_overlay.frag。
     backdrop_origin: (f32, f32),
     backdrop_size: (f32, f32),
-    /// 模糊的两张 ping-pong 纹理与它们的 FBO。尺寸是背板的 1/DOWNSCALE。
+    /// 模糊金字塔与它们共用的 FBO。每级两张纹理：`[0]` 是横向那趟的中间
+    /// 结果，`[1]` 是该级的输出。**不能只留两张 ping-pong**：shader 要同时
+    /// 采第 0 级和最后一级（边缘细、体部粗），两张轮换的话第 0 级在算后面
+    /// 几级时就被覆盖了。
     blur_fbo: glow::Framebuffer,
-    blur_tex: [glow::Texture; 2],
+    blur_tex: [[glow::Texture; 2]; MAX_BLUR_LEVELS],
+    /// 每级当前的尺寸，物理像素。
+    ///
     /// Cell 而不是裸字段：`draw()` 里已经借着 `&self.gl`，再要个 `&mut self`
-    /// 去改尺寸就借用冲突了。模糊这一步除了这个尺寸没有别的可变状态，
+    /// 去改尺寸就借用冲突了。模糊这一步除了这组尺寸没有别的可变状态，
     /// 用 Cell 把它单独包起来，比把整条 draw 拆开更不容易写错。
-    blur_size: std::cell::Cell<(i32, i32)>,
+    blur_sizes: std::cell::Cell<[(i32, i32); MAX_BLUR_LEVELS]>,
     /// 这一轮用哪组材质参数。**不在这里写常数**：那张表在 material.rs，
     /// 它是宿主与 shader 共同的单一来源（AGENTS.md §2）。
     material: GlassMaterial,
-    material_name: &'static str,
+    material_name: String,
+    /// 光源动画的起点。
+    ///
+    /// 动画状态由 Rust 推，不由宿主推（AGENTS.md §2：换掉 Slint 时这段
+    /// 不该重写）。用 `Instant` 而不是帧计数，是因为帧率在 60 和 120 之间
+    /// 变时转速不该跟着变。
+    start: std::time::Instant,
     /// 判据只打印一次，否则 120fps 下 logcat 直接被刷爆。
     reported: bool,
 }
@@ -90,12 +109,52 @@ struct Overlay {
 /// 而模糊本来就在丢高频，看不出来。见 shaders/glass_blur.frag。
 const DOWNSCALE: i32 = 4;
 
-/// 逻辑像素的矩形，左上原点（Slint 的坐标系）。
-struct LogicalRect {
+/// 多尺度模糊最多几级。4 级在 σ=10 下等效 σ 已经 73.7 逻辑像素，比胶囊
+/// 本身还高，再多没有意义。
+const MAX_BLUR_LEVELS: usize = 4;
+
+/// 第 1 级往后每级在**本级分辨率**下的 σ。
+///
+/// 2.0 配合「每级边长减半」给出等效 σ 逐级翻倍：第 i 级（i≥1）在全分辨率
+/// 下的等效 σ 是 `2.0 × 4 × 2^i`。方差相加之后，σ=10 的四级依次是
+/// 10 / 18.9 / 37.0 / 73.7。**改这个值就要改 material.rs 里那串数字**。
+const SUB_SIGMA: f32 = 2.0;
+
+/// 一个形状，逻辑像素、左上原点（Slint 的坐标系）。
+///
+/// `radius` 决定它是圆角矩形、圆还是胶囊——三者在 glass_sdf.glsl 里是同一个
+/// SDF，见那边的文件头。
+#[derive(Clone, Copy, Default)]
+struct Shape {
     x: f32,
     y: f32,
     w: f32,
     h: f32,
+    radius: f32,
+}
+
+/// 一帧里要打进 shader 的几何与光照。
+///
+/// 捆成一个结构体而不是十个参数：`set_uniforms` 的签名会直接撞上 clippy 的
+/// `too_many_arguments`，而且这些值本来就是**一起**算出来的（都来自同一次
+/// 「逻辑像素 → 物理像素 → 覆盖矩形局部坐标」的换算），分开传很容易出现
+/// 一半用新值一半用旧值。
+struct FrameUniforms {
+    /// 覆盖矩形（多形状时是并集外接框）的逻辑尺寸。
+    size: [f32; 2],
+    /// 覆盖矩形左下角在窗口帧缓冲里的位置，物理像素。
+    origin_px: [f32; 2],
+    scale: f32,
+    count: i32,
+    /// 各形状中心，相对覆盖矩形左下角的逻辑像素，**y 向上**。
+    center: [[f32; 2]; 2],
+    half: [[f32; 2]; 2],
+    radius: [f32; 2],
+    /// 已归一化的光源方向。
+    light_dir: [f32; 2],
+    /// 0 = 不模糊 / 1 = 单级 / ≥2 = 多尺度。和 material 的 blur_levels 不是
+    /// 一回事：blur_radius 为 0 时这里是 0。
+    blur_levels: i32,
 }
 
 /// 把探针挂到窗口上。桌面与 Android 走同一条路径。
@@ -106,29 +165,117 @@ struct LogicalRect {
 pub fn install(app: &crate::GlassSpike) {
     let weak = app.as_weak();
 
-    // 跑哪一档材质。默认 P0 全套（模糊 + 折射 + Fresnel + 高光 + 材质层），
-    // 这是本单 Phase 1 要验收的东西；`GLASS_GL_MATERIAL=baseline` 切到
-    // 「和 Flutter 完全同式」那一档，用来判「像不像」。
+    // ---- 摆法：自绘玻璃盖在哪儿（见 .slint 的 gl-overlay-mode）----
     //
-    // 两档都留着是必须的：只有 P0 那档的话，看到的差别里分不清哪些是
-    // 「自绘补的新能力」、哪些是「移植没对上」。
-    let baseline = std::env::var("GLASS_GL_MATERIAL")
-        .map(|v| v == "baseline")
-        .unwrap_or(false);
-    let (mut material, material_name) = if baseline {
-        let mut m = GlassMaterial::FLUTTER_BASELINE;
-        // **这一行很要紧**：Flutter 的 shader 路径不叠加模糊。那边
-        // `ImageFilter.shader` 与 `ImageFilter.blur(10)` 是二选一
-        // （floating_navigation_bar.dart 的 supportsShader 分支），
-        // `blur_radius: 10.0` 记的是**回退档**的值，不是 shader 档的值。
-        //
-        // 不清零的话这个「对照档」会比 Flutter 多一层模糊，拿它判「像不像」
-        // 等于拿一个并不存在的参照物去比。
-        m.blur_radius = 0.0;
-        (m, "FLUTTER_BASELINE(无模糊，与 shader 路径同式)")
-    } else {
-        (GlassMaterial::P0_TARGET, "P0_TARGET")
+    // over-full / over-blur 是 ADR-016 决策四那条「决策已定、实现待验」的
+    // 两种读法：同样是「原生负责模糊、自绘负责折射与高光」，差别在**谁画
+    // 渐变与描边**。两种都要能一键切，否则判不出哪一种可用。
+    let layout = std::env::var("GLASS_GL_LAYOUT").unwrap_or_else(|_| "slot".into());
+    let mode = match layout.as_str() {
+        "slot" => 0,
+        "over-full" => 1,
+        "over-blur" => 2,
+        "merge" => 3,
+        other => {
+            plog!(
+                "PROBE GL GLASS_GL_LAYOUT={other} 不认识（认 slot/over-full/over-blur/merge），按 slot 跑"
+            );
+            0
+        }
     };
+    app.set_gl_overlay_mode(mode);
+
+    // ---- 质量档（ADR-016 决策五：整条表面一起降，不逐效果开关）----
+    let quality_name = std::env::var("GLASS_GL_QUALITY").unwrap_or_else(|_| "high".into());
+    let quality = GlassQuality::parse(&quality_name).unwrap_or_else(|| {
+        // 认不出来时**要吵**。静默回落到 High 的话，拼错一个字母就会得到
+        // 一份「标签写着 balanced、实际跑的是 high」的记录——第一轮
+        // GLASS_COUNT=10 只画 6 条就是这个形状。
+        plog!(
+            "PROBE GL GLASS_GL_QUALITY={quality_name} 不认识（认 high/balanced/low），按 high 跑"
+        );
+        GlassQuality::High
+    });
+
+    // ---- 材质档 ----
+    //
+    //   phase2（默认） Phase 2 全套：多尺度模糊 + 动态高光 + 融合
+    //   p0             Phase 1 验收的那一档：单级模糊 + 折射 + Fresnel
+    //   baseline       与 Flutter 的 shader 路径同式，用来判「像不像」
+    //
+    // 三档都留着是必须的：只有最新那档的话，画面上的差别分不清哪些是
+    // 「自绘补的新能力」、哪些是「移植没对上」。
+    let material_env = std::env::var("GLASS_GL_MATERIAL").unwrap_or_else(|_| "phase2".into());
+    let (mut material, mut material_name) = match material_env.as_str() {
+        "baseline" => {
+            let mut m = GlassMaterial::FLUTTER_BASELINE;
+            // **这一行很要紧**：Flutter 的 shader 路径不叠加模糊。那边
+            // `ImageFilter.shader` 与 `ImageFilter.blur(10)` 是二选一
+            // （floating_navigation_bar.dart 的 supportsShader 分支），
+            // `blur_radius: 10.0` 记的是**回退档**的值，不是 shader 档的值。
+            //
+            // 不清零的话这个「对照档」会比 Flutter 多一层模糊，拿它判「像不像」
+            // 等于拿一个并不存在的参照物去比。
+            m.blur_radius = 0.0;
+            (
+                m,
+                String::from("FLUTTER_BASELINE(无模糊，与 shader 路径同式)"),
+            )
+        }
+        "p0" => (GlassMaterial::P0_TARGET, String::from("P0_TARGET")),
+        "phase2" => (GlassMaterial::PHASE2_TARGET, String::from("PHASE2_TARGET")),
+        other => {
+            plog!(
+                "PROBE GL GLASS_GL_MATERIAL={other} 不认识（认 phase2/p0/baseline），按 phase2 跑"
+            );
+            (GlassMaterial::PHASE2_TARGET, String::from("PHASE2_TARGET"))
+        }
+    };
+
+    // 质量档整体降级。放在材质档之后、摆法之前：降级改的是「怎么画」，
+    // 而摆法改的是「哪一层归谁画」，后者必须有最终话语权。
+    material = material.at_quality(quality);
+    if !quality.draws_overlay() {
+        // Low 档要省的就是 shader 那一趟，所以是整个不挂，不是挂上去画个空。
+        plog!("PROBE GL 质量档 low：自绘层整个不画，只留原生 backdrop-blur");
+        app.set_gl_overlay_visible(false);
+        app.set_gl_status(slint::format!(
+            "GL: 质量=low，自绘层不画（只有原生 backdrop-blur）"
+        ));
+        return;
+    }
+
+    // ---- 摆法对材质的影响 ----
+    match mode {
+        1 => {
+            // 读法甲：原生画全套（模糊 + 渐变 + 描边），自绘只加折射与高光。
+            // 自绘这层再画一遍渐变与描边就是双份，所以清零。
+            material.blur_radius = 0.0;
+            material.surface_alpha = [0.0; 3];
+            material.border_alpha = 0.0;
+            material_name.push_str("+over-full(材质层归原生)");
+        }
+        2 => {
+            // 读法乙：原生只画模糊（透明、无描边，见 .slint 的 blur-only），
+            // 渐变与描边仍由自绘画——于是自绘采到的背板里没有描边可抹。
+            material.blur_radius = 0.0;
+            material_name.push_str("+over-blur(材质层归自绘)");
+        }
+        _ => {}
+    }
+
+    // 光源方向钉死在某个角度（度），同时停掉自转。
+    //
+    // 和融合那个间距同一个理由：动态高光**动起来**才看得出是动态的，但
+    // 「某一帧的光斑在哪」取决于截图时刻减去启动耗时，而启动耗时每次不同。
+    // 要拿静态图当证据就得能钉住角度；不设这个变量时照常自转。
+    if let Ok(v) = std::env::var("GLASS_GL_LIGHT")
+        && let Ok(deg) = v.parse::<f32>()
+    {
+        material.light_angle = deg.to_radians();
+        material.light_speed = 0.0;
+    }
+
     // 模糊单独可关：和原生 backdrop-blur 并排时，关掉它才看得出
     // 「折射 + 高光」这两件原生做不到的事各自贡献了多少。
     if std::env::var("GLASS_GL_BLUR")
@@ -137,6 +284,25 @@ pub fn install(app: &crate::GlassSpike) {
     {
         material.blur_radius = 0.0;
     }
+
+    // 档位印到画面上。截图自带档位，核对不再依赖「我记得当时设的是几」
+    // ——这是第一轮记错档位之后立的规矩，Phase 2 的开关更多，更需要它。
+    app.set_gl_status(slint::format!(
+        "GL: 材质={} 质量={} 摆法={} σ={} 级={} 厚={} 光={:.0}°{} 融合k={}",
+        material_name,
+        quality_name,
+        layout,
+        material.blur_radius,
+        material.blur_levels,
+        material.thickness,
+        material.light_angle.to_degrees(),
+        if material.light_speed > 0.0 {
+            slint::format!("+{:.2}rad/s", material.light_speed)
+        } else {
+            slint::SharedString::from("(钉死)")
+        },
+        material.merge_k
+    ));
 
     let mut overlay: Option<Overlay> = None;
     // 初始化失败只报一次：失败通常是 shader 编译错，每帧打一遍没有新信息。
@@ -170,7 +336,7 @@ pub fn install(app: &crate::GlassSpike) {
                     version.minor,
                     version.is_embedded
                 );
-                match Overlay::new(gl, material, material_name) {
+                match Overlay::new(gl, material, material_name.clone()) {
                     Ok(o) => overlay = Some(o),
                     Err(err) => {
                         init_failed = true;
@@ -189,15 +355,32 @@ pub fn install(app: &crate::GlassSpike) {
                     return;
                 }
                 let scale = app.window().scale_factor();
-                // 矩形由 .slint 算，Rust 不重算一遍布局——重算就会和原生胶囊
+                // 形状由 .slint 算，Rust 不重算一遍布局——重算就会和原生胶囊
                 // 的摆法漂移，而这两者摆得一不一样正是要看的东西。
-                let rect = LogicalRect {
+                //
+                // 定长数组而不是 Vec：这段每帧都跑，120fps 下一帧一次堆分配
+                // 没有必要。
+                let mut shapes = [Shape::default(); 2];
+                shapes[0] = Shape {
                     x: app.get_overlay_x(),
                     y: app.get_overlay_y(),
                     w: app.get_overlay_w(),
                     h: app.get_overlay_h(),
+                    radius: app.get_overlay_radius(),
                 };
-                overlay.draw(rect, scale);
+                let count = if app.get_overlay2_visible() {
+                    shapes[1] = Shape {
+                        x: app.get_overlay2_x(),
+                        y: app.get_overlay2_y(),
+                        w: app.get_overlay2_w(),
+                        h: app.get_overlay2_h(),
+                        radius: app.get_overlay2_radius(),
+                    };
+                    2
+                } else {
+                    1
+                };
+                overlay.draw(&shapes[..count], scale);
             }
             slint::RenderingState::RenderingTeardown => {
                 if let Some(o) = overlay.take() {
@@ -218,7 +401,7 @@ impl Overlay {
     fn new(
         gl: glow::Context,
         material: GlassMaterial,
-        material_name: &'static str,
+        material_name: String,
     ) -> Result<Self, String> {
         // GLES 与桌面 GL 的版本声明不同，正文是同一份。
         let embedded = gl.version().is_embedded;
@@ -238,7 +421,13 @@ void main() {{
     gl_Position = vec4(p, 0.0, 1.0);
 }}"
         );
-        let fs_src = format!("{header}{}", include_str!("../shaders/glass_overlay.frag"));
+        // 形状与法线单独一个文件，拼在玻璃 shader 前面。模糊那趟不需要它
+        // （它模糊的是整块矩形，形状由玻璃那趟的 coverage 裁），所以只拼这一个。
+        let fs_src = format!(
+            "{header}{}{}",
+            include_str!("../shaders/glass_sdf.glsl"),
+            include_str!("../shaders/glass_overlay.frag")
+        );
 
         let blur_src = format!("{header}{}", include_str!("../shaders/glass_blur.frag"));
 
@@ -270,8 +459,14 @@ void main() {{
             }
             gl.bind_texture(glow::TEXTURE_2D, None);
 
-            // 模糊的两张 ping-pong 纹理。尺寸在第一帧按实际矩形分配。
-            let blur_tex = [new_blur_texture(&gl)?, new_blur_texture(&gl)?];
+            // 模糊金字塔的纹理，每级两张。尺寸在第一帧按实际矩形分配，
+            // 这里只是把名字要出来——没 tex_image_2d 之前它们不占显存。
+            let mut names = Vec::with_capacity(MAX_BLUR_LEVELS * 2);
+            for _ in 0..MAX_BLUR_LEVELS * 2 {
+                names.push(new_blur_texture(&gl)?);
+            }
+            let blur_tex: [[glow::Texture; 2]; MAX_BLUR_LEVELS] =
+                std::array::from_fn(|i| [names[i * 2], names[i * 2 + 1]]);
             let blur_fbo = gl
                 .create_framebuffer()
                 .map_err(|e| format!("create_framebuffer: {e}"))?;
@@ -287,91 +482,135 @@ void main() {{
                 backdrop_size: (1.0, 1.0),
                 blur_fbo,
                 blur_tex,
-                blur_size: std::cell::Cell::new((0, 0)),
+                blur_sizes: std::cell::Cell::new([(0, 0); MAX_BLUR_LEVELS]),
                 material,
                 material_name,
+                start: std::time::Instant::now(),
                 reported: false,
             })
         }
     }
 
-    /// 把背板模糊一遍，返回该拿去采样的那张纹理。
+    /// 把背板糊成一座金字塔，返回 (细级, 粗级) 两张纹理。
     ///
-    /// σ 为 0（`GLASS_GL_BLUR=0` 或材质的 blur_radius 是 0）时**原样返回清晰
-    /// 背板**，不走任何 pass——这就是和 Flutter 版对齐的那一档，两条路要能
-    /// 一键切换，否则「像不像」没有参照物。
+    /// σ 为 0 时（`GLASS_GL_BLUR=0`、材质 `blur_radius` 为 0，或模糊整个交给
+    /// 了原生 `backdrop-blur`）**原样返回清晰背板**，不走任何 pass——这就是
+    /// 和 Flutter 版对齐的那一档，两条路要能一键切换，否则「像不像」没有
+    /// 参照物。
+    ///
+    /// # 金字塔怎么搭（#130 Phase 2「多尺度模糊」）
+    ///
+    /// - 第 0 级：全分辨率背板 → 边长 1/`DOWNSCALE`，σ 用 `sigma_px / 4`。
+    ///   σ 必须跟着降采样一起除，模糊的**视觉半径**才不变；漏掉这一除等于
+    ///   把模糊悄悄调弱四倍，看起来像「blur 没生效」。
+    /// - 第 i 级（i≥1）：上一级的输出 → 边长再减半，σ 固定 [`SUB_SIGMA`]。
+    ///
+    /// 于是第 i 级在全分辨率下的等效 σ 是
+    /// `sqrt(σ² + Σ_{j=1..i} (SUB_SIGMA × DOWNSCALE × 2^j)²)`（高斯卷积的
+    /// 方差相加）。σ=10 时四级依次是 **10 / 18.9 / 37.0 / 73.7** 逻辑像素。
+    ///
+    /// **每多一级只要约 1/5 的代价**：像素数是上一级的 1/4，而每像素的采样
+    /// 数也更少（σ 在本级分辨率下固定 2.0，半径 6；第 0 级 σ=2.5，半径 8）。
+    /// 这正是多尺度比「把单级 σ 调大」划算的地方——后者的采样数随 σ 线性涨，
+    /// 前者按 1/4 几何衰减。
     ///
     /// # Safety
     /// 调用方保证 GL 上下文 current，且已经把深度/裁剪/混合关掉。
-    unsafe fn blur(&self, w: i32, h: i32, sigma_px: f32) -> glow::Texture {
+    unsafe fn blur(
+        &self,
+        w: i32,
+        h: i32,
+        sigma_px: f32,
+        levels: u32,
+    ) -> (glow::Texture, glow::Texture) {
         if sigma_px <= 0.0 {
-            return self.backdrop;
+            return (self.backdrop, self.backdrop);
         }
+        let levels = (levels.max(1) as usize).min(MAX_BLUR_LEVELS);
         let gl = &self.gl;
-        let bw = (w / DOWNSCALE).max(1);
-        let bh = (h / DOWNSCALE).max(1);
-        // σ 跟着降采样一起除，模糊的**视觉半径**才不变。漏掉这一除的话
-        // 降采样等于顺带把模糊调弱四倍，看起来像「blur 没生效」。
-        let sigma = (sigma_px / DOWNSCALE as f32).max(0.5);
+        let mut sizes = self.blur_sizes.get();
 
         unsafe {
-            if self.blur_size.get() != (bw, bh) {
-                for tex in self.blur_tex {
-                    gl.bind_texture(glow::TEXTURE_2D, Some(tex));
-                    gl.tex_image_2d(
-                        glow::TEXTURE_2D,
-                        0,
-                        glow::RGBA8 as i32,
-                        bw,
-                        bh,
-                        0,
-                        glow::RGBA,
-                        glow::UNSIGNED_BYTE,
-                        glow::PixelUnpackData::Slice(None),
-                    );
-                }
-                self.blur_size.set((bw, bh));
-            }
-
             gl.use_program(Some(self.blur_program));
             gl.bind_framebuffer(glow::FRAMEBUFFER, Some(self.blur_fbo));
-            gl.viewport(0, 0, bw, bh);
             gl.active_texture(glow::TEXTURE0);
-
             let loc = |n: &str| gl.get_uniform_location(self.blur_program, n);
-            gl.uniform_1_f32(loc("u_sigma").as_ref(), sigma);
-            gl.uniform_2_f32(loc("u_target_size").as_ref(), bw as f32, bh as f32);
             gl.uniform_1_i32(loc("u_src").as_ref(), 0);
 
-            // 第一趟：全分辨率背板 → 1/4 的 tex[0]，横向。
-            gl.framebuffer_texture_2d(
-                glow::FRAMEBUFFER,
-                glow::COLOR_ATTACHMENT0,
-                glow::TEXTURE_2D,
-                Some(self.blur_tex[0]),
-                0,
-            );
-            gl.bind_texture(glow::TEXTURE_2D, Some(self.backdrop));
-            gl.uniform_2_f32(loc("u_direction").as_ref(), 1.0 / bw as f32, 0.0);
-            gl.draw_arrays(glow::TRIANGLES, 0, 3);
+            let mut src = self.backdrop;
+            for level in 0..levels {
+                let (bw, bh) = if level == 0 {
+                    ((w / DOWNSCALE).max(1), (h / DOWNSCALE).max(1))
+                } else {
+                    let prev = sizes[level - 1];
+                    ((prev.0 / 2).max(1), (prev.1 / 2).max(1))
+                };
+                let sigma = if level == 0 {
+                    (sigma_px / DOWNSCALE as f32).max(0.5)
+                } else {
+                    SUB_SIGMA
+                };
 
-            // 第二趟：tex[0] → tex[1]，竖向。
-            gl.framebuffer_texture_2d(
-                glow::FRAMEBUFFER,
-                glow::COLOR_ATTACHMENT0,
-                glow::TEXTURE_2D,
-                Some(self.blur_tex[1]),
-                0,
-            );
-            gl.bind_texture(glow::TEXTURE_2D, Some(self.blur_tex[0]));
-            gl.uniform_2_f32(loc("u_direction").as_ref(), 0.0, 1.0 / bh as f32);
-            gl.draw_arrays(glow::TRIANGLES, 0, 3);
+                if sizes[level] != (bw, bh) {
+                    for tex in self.blur_tex[level] {
+                        gl.bind_texture(glow::TEXTURE_2D, Some(tex));
+                        gl.tex_image_2d(
+                            glow::TEXTURE_2D,
+                            0,
+                            glow::RGBA8 as i32,
+                            bw,
+                            bh,
+                            0,
+                            glow::RGBA,
+                            glow::UNSIGNED_BYTE,
+                            glow::PixelUnpackData::Slice(None),
+                        );
+                    }
+                    sizes[level] = (bw, bh);
+                }
 
-            self.blur_tex[1]
+                gl.viewport(0, 0, bw, bh);
+                gl.uniform_1_f32(loc("u_sigma").as_ref(), sigma);
+                gl.uniform_2_f32(loc("u_target_size").as_ref(), bw as f32, bh as f32);
+
+                // 横向：上一级（或原始背板）→ 本级的中间纹理。
+                gl.framebuffer_texture_2d(
+                    glow::FRAMEBUFFER,
+                    glow::COLOR_ATTACHMENT0,
+                    glow::TEXTURE_2D,
+                    Some(self.blur_tex[level][0]),
+                    0,
+                );
+                gl.bind_texture(glow::TEXTURE_2D, Some(src));
+                gl.uniform_2_f32(loc("u_direction").as_ref(), 1.0 / bw as f32, 0.0);
+                gl.draw_arrays(glow::TRIANGLES, 0, 3);
+
+                // 竖向：中间纹理 → 本级输出。
+                gl.framebuffer_texture_2d(
+                    glow::FRAMEBUFFER,
+                    glow::COLOR_ATTACHMENT0,
+                    glow::TEXTURE_2D,
+                    Some(self.blur_tex[level][1]),
+                    0,
+                );
+                gl.bind_texture(glow::TEXTURE_2D, Some(self.blur_tex[level][0]));
+                gl.uniform_2_f32(loc("u_direction").as_ref(), 0.0, 1.0 / bh as f32);
+                gl.draw_arrays(glow::TRIANGLES, 0, 3);
+
+                src = self.blur_tex[level][1];
+            }
+
+            self.blur_sizes.set(sizes);
+            (self.blur_tex[0][1], self.blur_tex[levels - 1][1])
         }
     }
 
-    fn draw(&mut self, rect: LogicalRect, scale: f32) {
+    /// 把这一帧的玻璃画上去。
+    ///
+    /// `shapes` 由 `.slint` 算好传进来（1 个或 2 个），Rust 只把它们换算成
+    /// 物理像素并求并集外接框——**不重算布局**，重算就会和原生胶囊的摆法
+    /// 漂移，而两者摆得一不一样正是要看的东西。
+    fn draw(&mut self, shapes: &[Shape], scale: f32) {
         let gl = &self.gl;
         // SAFETY: 在渲染回调里，上下文 current；下面每一处改动的状态都在
         // 末尾按查到的原值恢复，理由见复原那一段的注释。
@@ -382,21 +621,69 @@ void main() {{
             gl.get_parameter_i32_slice(glow::VIEWPORT, &mut vp);
             let fb_h = vp[3];
 
-            let x = (rect.x * scale).round() as i32;
-            let w = (rect.w * scale).round() as i32;
-            let h = (rect.h * scale).round() as i32;
-            // Slint 的 y 从上往下，GL 的帧缓冲原点在左下。
-            let y = fb_h - ((rect.y * scale).round() as i32) - h;
+            // ---- 覆盖矩形 = 所有形状的并集外接框，物理像素 ----
+            //
+            // 多形状时必须按并集来：viewport 收在哪儿 shader 就只能画到哪儿，
+            // 按第一个形状收的话，融合出来的颈部会被裁掉半截。
+            let mut x0 = i32::MAX;
+            let mut y0 = i32::MAX;
+            let mut x1 = i32::MIN;
+            let mut y1 = i32::MIN;
+            // 每个形状在窗口帧缓冲里的位置（左下原点），物理像素。
+            let mut boxes = [[0i32; 4]; 2];
+            for (i, shape) in shapes.iter().enumerate() {
+                let sx = (shape.x * scale).round() as i32;
+                let sw = (shape.w * scale).round() as i32;
+                let sh = (shape.h * scale).round() as i32;
+                // Slint 的 y 从上往下，GL 的帧缓冲原点在左下。
+                let sy = fb_h - ((shape.y * scale).round() as i32) - sh;
+                boxes[i] = [sx, sy, sw, sh];
+                x0 = x0.min(sx);
+                y0 = y0.min(sy);
+                x1 = x1.max(sx + sw);
+                y1 = y1.max(sy + sh);
+            }
+            let (x, y, w, h) = (x0, y0, x1 - x0, y1 - y0);
             if w <= 0 || h <= 0 {
                 return;
             }
 
+            // ---- 先把渲染器的 GL 状态存下来，再动任何东西 ----
+            //
+            // 必须复原。Skia 的 GrDirectContext 自己缓存了一份 GL 状态的影子，
+            // 而我们拿不到它的 reset_context()；femtovg 同理。不复原的话下一帧
+            // 的渲染会以「状态还是我离开时那样」为前提发命令，症状是画面错乱
+            // 而不是报错，很难往这边想。
+            //
+            // **存档这一段 Phase 1 放在背板拷贝之后，那是错的**：拷贝本身就
+            // 会 bind_texture，于是存下来的「原纹理」其实是我们自己那张背板，
+            // 复原等于把渲染器的绑定换成了我们的。症状同样是静默的，这一轮
+            // 一并挪到最前面。
+            let prev_fbo = gl.get_parameter_i32(glow::DRAW_FRAMEBUFFER_BINDING);
+            let prev_program = gl.get_parameter_i32(glow::CURRENT_PROGRAM);
+            let prev_vao = gl.get_parameter_i32(glow::VERTEX_ARRAY_BINDING);
+            let prev_active = gl.get_parameter_i32(glow::ACTIVE_TEXTURE);
+            // 三个纹理单元都要存：清晰背板、细级、粗级各占一个。
+            let mut prev_tex = [0i32; 3];
+            for (unit, slot) in prev_tex.iter_mut().enumerate() {
+                gl.active_texture(glow::TEXTURE0 + unit as u32);
+                *slot = gl.get_parameter_i32(glow::TEXTURE_BINDING_2D);
+            }
+            let prev_blend = gl.is_enabled(glow::BLEND);
+            let prev_depth = gl.is_enabled(glow::DEPTH_TEST);
+            let prev_scissor = gl.is_enabled(glow::SCISSOR_TEST);
+            let prev_cull = gl.is_enabled(glow::CULL_FACE);
+            let prev_blend_src_rgb = gl.get_parameter_i32(glow::BLEND_SRC_RGB);
+            let prev_blend_dst_rgb = gl.get_parameter_i32(glow::BLEND_DST_RGB);
+            let prev_blend_src_alpha = gl.get_parameter_i32(glow::BLEND_SRC_ALPHA);
+            let prev_blend_dst_alpha = gl.get_parameter_i32(glow::BLEND_DST_ALPHA);
+
             if !self.reported {
                 // 判据 1：这个回调里到底绑着什么帧缓冲。
-                let draw_fbo = gl.get_parameter_i32(glow::DRAW_FRAMEBUFFER_BINDING);
-                let read_fbo = gl.get_parameter_i32(glow::READ_FRAMEBUFFER_BINDING);
                 plog!(
-                    "PROBE GL AfterRendering draw_fbo={draw_fbo} read_fbo={read_fbo} viewport={vp:?} scale={scale} rect_px=({x},{y},{w},{h})"
+                    "PROBE GL AfterRendering draw_fbo={prev_fbo} read_fbo={} viewport={vp:?} scale={scale} rect_px=({x},{y},{w},{h}) 形状数={}",
+                    gl.get_parameter_i32(glow::READ_FRAMEBUFFER_BINDING),
+                    shapes.len()
                 );
             }
 
@@ -404,21 +691,32 @@ void main() {{
             //
             // 这是整个关口 2 的那一下。copy_tex_sub_image_2d 读的是当前
             // READ_FRAMEBUFFER，也就是 Slint 刚画完、还没 present 的那一帧。
-            // 拷贝区域要**比玻璃矩形大一圈**：模糊会采到矩形外面，只拷自己
-            // 那一块的话边缘只能 clamp 自己那一行像素，糊出来是一道假硬边。
-            // 边距取 3σ，和 Slint 原生 backdrop-blur 的口径一致（它的文档说
-            // 最远采到该值的三倍）——#130 关口 2 问的「捕获范围」就是这件事。
+            //
+            // 拷贝区域要**比覆盖矩形大一圈**，边距取 max(3σ, 折射强度)：
+            //
+            // - 3σ 那一半给模糊。只拷自己那一块的话，边缘只能 clamp 自己那
+            //   一行像素，糊出来是一道假硬边；3σ 和 Slint 原生 backdrop-blur
+            //   同口径（它的文档说最远采到该值的三倍）——#130 关口 2 问的
+            //   「捕获范围」就是这件事。
+            // - 折射强度那一半是 Phase 2 补的。折射把采样点沿法线推出矩形最多
+            //   refraction_strength 个逻辑像素，而 Phase 1 这里只算了 3σ：
+            //   σ=0 的 baseline 档边距于是是 0，外缘那 7px 一直在采 clamp 值。
+            //   症状轻到三轮都没看出来（边上一圈颜色发直），但它是错的；
+            //   决策四那两档（模糊归原生、自绘 σ=0）会把它放大成一圈硬边。
             //
             // 窗口边上截断是正常的：那里本来就没有更多内容，clamp 是对的。
-            let pad = (self.material.blur_radius * scale * 3.0).ceil() as i32;
+            let pad_logical =
+                (self.material.blur_radius * 3.0).max(self.material.refraction_strength);
+            let pad = (pad_logical * scale).ceil() as i32;
             let px = (x - pad).max(0);
             let py = (y - pad).max(0);
             let pw = (x + w + pad).min(vp[2]) - px;
             let ph = (y + h + pad).min(vp[3]) - py;
-            // 玻璃矩形左下角落在这张带边距纹理里的位置。
+            // 覆盖矩形左下角落在这张带边距纹理里的位置。
             self.backdrop_origin = ((x - px) as f32, (y - py) as f32);
             self.backdrop_size = (pw as f32, ph as f32);
 
+            gl.active_texture(glow::TEXTURE0);
             gl.bind_texture(glow::TEXTURE_2D, Some(self.backdrop));
             if self.tex_size != (pw, ph) {
                 gl.tex_image_2d(
@@ -448,30 +746,11 @@ void main() {{
             }
 
             // ---- 画玻璃 ----
-            //
-            // 这里改的 GL 状态必须复原。Skia 的 GrDirectContext 自己缓存了一份
-            // GL 状态的影子，而我们拿不到它的 reset_context()；femtovg 同理。
-            // 不复原的话下一帧的渲染会以「状态还是我离开时那样」为前提发命令，
-            // 症状是画面错乱而不是报错，很难往这边想。
-            let prev_fbo = gl.get_parameter_i32(glow::DRAW_FRAMEBUFFER_BINDING);
-            let prev_program = gl.get_parameter_i32(glow::CURRENT_PROGRAM);
-            let prev_vao = gl.get_parameter_i32(glow::VERTEX_ARRAY_BINDING);
-            let prev_active = gl.get_parameter_i32(glow::ACTIVE_TEXTURE);
-            let prev_tex = gl.get_parameter_i32(glow::TEXTURE_BINDING_2D);
-            let prev_blend = gl.is_enabled(glow::BLEND);
-            let prev_depth = gl.is_enabled(glow::DEPTH_TEST);
-            let prev_scissor = gl.is_enabled(glow::SCISSOR_TEST);
-            let prev_cull = gl.is_enabled(glow::CULL_FACE);
-            let prev_blend_src_rgb = gl.get_parameter_i32(glow::BLEND_SRC_RGB);
-            let prev_blend_dst_rgb = gl.get_parameter_i32(glow::BLEND_DST_RGB);
-            let prev_blend_src_alpha = gl.get_parameter_i32(glow::BLEND_SRC_ALPHA);
-            let prev_blend_dst_alpha = gl.get_parameter_i32(glow::BLEND_DST_ALPHA);
-
             gl.bind_vertex_array(Some(self.vao));
             gl.disable(glow::DEPTH_TEST);
             gl.disable(glow::SCISSOR_TEST);
             gl.disable(glow::CULL_FACE);
-            // 模糊那两趟是覆盖写，不能开混合；下面画玻璃之前再开。
+            // 模糊那几趟是覆盖写，不能开混合；下面画玻璃之前再开。
             gl.disable(glow::BLEND);
 
             // ---- P0 的「实时背景模糊」：在真实背板上做，不是在合成背板上 ----
@@ -479,23 +758,69 @@ void main() {{
             // 这一步让自绘这条**同时**有模糊和折射。Flutter 版做不到：那边
             // ImageFilter.shader 与 ImageFilter.blur 是二选一（见
             // floating_navigation_bar.dart 的 supportsShader 分支）。
+            //
+            // Phase 2 起它返回两张（细级 + 粗级）：边缘要清楚、体部要糊这件事
+            // 单级做不到，见 glass_overlay.frag 的 backdrop()。
             let sigma_px = self.material.blur_radius * scale;
-            let body = self.blur(pw, ph, sigma_px);
+            let (fine, coarse) = self.blur(pw, ph, sigma_px, self.material.blur_levels);
 
             gl.bind_framebuffer(glow::FRAMEBUFFER, framebuffer_of(prev_fbo));
             gl.use_program(Some(self.program));
             gl.enable(glow::BLEND);
             // 形状由 shader 的 coverage 给，所以是标准的 src-alpha 混合。
             gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
-            // viewport 收到玻璃矩形上，全屏三角形就只覆盖这一块；shader 里
+            // viewport 收到覆盖矩形上，全屏三角形就只覆盖这一块；shader 里
             // 仍然用 gl_FragCoord（窗口坐标）减去 origin。
             gl.viewport(x, y, w, h);
 
-            gl.active_texture(glow::TEXTURE0);
-            gl.bind_texture(glow::TEXTURE_2D, Some(body));
+            // 三张背板一起绑。σ 为 0 时 fine / coarse 就是清晰背板本身
+            // （blur() 原样返回），绑的是同一个纹理名，不浪费。
+            //
+            // 为什么不按 blur_levels 少绑几张：GLES 下采样一张**没分配过**的
+            // 纹理是未定义行为，而 shader 里那几个分支是运行时的，编译器不会
+            // 帮忙剪掉采样指令。三张都绑是最省心的写法，代价只有两次 bind。
+            for (unit, tex) in [self.backdrop, fine, coarse].into_iter().enumerate() {
+                gl.active_texture(glow::TEXTURE0 + unit as u32);
+                gl.bind_texture(glow::TEXTURE_2D, Some(tex));
+            }
 
             let m = self.material;
-            self.set_uniforms(&rect, scale, x, y, &m);
+            // 光源方向由 Rust 推（AGENTS.md §2：换宿主时这段不该重写）。
+            // 用 Instant 而不是帧计数——帧率在 60 和 120 之间变时转速不该跟着变。
+            let angle = m.light_angle + m.light_speed * self.start.elapsed().as_secs_f32();
+            let mut frame = FrameUniforms {
+                size: [w as f32 / scale, h as f32 / scale],
+                origin_px: [x as f32, y as f32],
+                scale,
+                count: shapes.len() as i32,
+                center: [[0.0; 2]; 2],
+                half: [[0.0; 2]; 2],
+                radius: [0.0; 2],
+                light_dir: [angle.cos(), angle.sin()],
+                // blur_levels 和材质里那个不是一回事：σ 为 0（模糊交给原生、
+                // 或 baseline 档）时这里是 0，shader 直接采清晰背板。
+                blur_levels: if sigma_px > 0.0 {
+                    m.blur_levels as i32
+                } else {
+                    0
+                },
+            };
+            // 形状的中心与半宽半高，相对覆盖矩形左下角的逻辑像素。
+            //
+            // 按**取整之后**的物理像素反算，而不是直接用 .slint 给的逻辑值：
+            // shader 里的 p 是 gl_FragCoord 减 origin 得来的，整数基准；
+            // 两边用同一套取整，形状才不会在 HiDPI 下偏半个像素。
+            for (i, shape) in shapes.iter().enumerate() {
+                let [bx, by, bw, bh] = boxes[i];
+                frame.center[i] = [
+                    (bx - x) as f32 / scale + bw as f32 / scale * 0.5,
+                    (by - y) as f32 / scale + bh as f32 / scale * 0.5,
+                ];
+                frame.half[i] = [bw as f32 / scale * 0.5, bh as f32 / scale * 0.5];
+                frame.radius[i] = shape.radius;
+            }
+
+            self.set_uniforms(&frame, &m);
             gl.draw_arrays(glow::TRIANGLES, 0, 3);
 
             if !self.reported {
@@ -509,22 +834,30 @@ void main() {{
                     }
                 );
                 plog!(
-                    "PROBE GL 材质 {} 模糊σ={}（物理 {sigma_px}px，降采样 1/{DOWNSCALE}）折射={} 带宽={} glint={} 带宽={} Fresnel={}^{} 圆角={}",
+                    "PROBE GL 材质 {} 模糊σ={}×{}级（物理 {sigma_px}px，首级降采样 1/{DOWNSCALE}）过渡深度={} 折射={} 带宽={} glint={} 带宽={} 集中度={} 顶边={} Fresnel={}^{} 融合k={} 圆角={:?}",
                     self.material_name,
                     m.blur_radius,
+                    frame.blur_levels,
+                    m.thickness,
                     m.refraction_strength,
                     m.edge_highlight,
                     m.specular_strength,
                     m.specular_width,
+                    m.specular_sharpness,
+                    m.top_highlight,
                     m.fresnel_strength,
                     m.fresnel_power,
-                    rect.h / 2.0
+                    m.merge_k,
+                    &frame.radius[..shapes.len()]
                 );
                 self.reported = true;
             }
 
             // ---- 复原 ----
-            gl.bind_texture(glow::TEXTURE_2D, texture_of(prev_tex));
+            for (unit, name) in prev_tex.iter().enumerate() {
+                gl.active_texture(glow::TEXTURE0 + unit as u32);
+                gl.bind_texture(glow::TEXTURE_2D, texture_of(*name));
+            }
             gl.active_texture(prev_active as u32);
             gl.viewport(vp[0], vp[1], vp[2], vp[3]);
             gl.blend_func_separate(
@@ -543,32 +876,57 @@ void main() {{
         }
     }
 
-    /// 材质参数进 uniform。值全部来自 `GlassMaterial`，不在这里另写一套常数
-    /// ——那张表是单一来源，shader 和宿主都只是它的消费者（AGENTS.md §2）。
+    /// 几何、光照与材质参数进 uniform。
+    ///
+    /// 材质那部分的值全部来自 `GlassMaterial`，不在这里另写一套常数——那张表
+    /// 是单一来源，shader 和宿主都只是它的消费者（AGENTS.md §2）。
     ///
     /// # Safety
     /// 调用方保证 GL 上下文 current 且 `self.program` 已 use。
-    unsafe fn set_uniforms(
-        &self,
-        rect: &LogicalRect,
-        scale: f32,
-        x: i32,
-        y: i32,
-        m: &GlassMaterial,
-    ) {
+    unsafe fn set_uniforms(&self, f: &FrameUniforms, m: &GlassMaterial) {
         let gl = &self.gl;
         unsafe {
             let loc = |n: &str| gl.get_uniform_location(self.program, n);
-            gl.uniform_2_f32(loc("u_size").as_ref(), rect.w, rect.h);
-            gl.uniform_2_f32(loc("u_origin").as_ref(), x as f32, y as f32);
-            gl.uniform_1_f32(loc("u_scale").as_ref(), scale);
-            // 胶囊：圆角等于高度的一半。
-            gl.uniform_1_f32(loc("u_corner_radius").as_ref(), rect.h / 2.0);
+
+            // ---- 覆盖矩形 ----
+            gl.uniform_2_f32(loc("u_size").as_ref(), f.size[0], f.size[1]);
+            gl.uniform_2_f32(loc("u_origin").as_ref(), f.origin_px[0], f.origin_px[1]);
+            gl.uniform_1_f32(loc("u_scale").as_ref(), f.scale);
+
+            // ---- 形状。数组一次传满两个，shader 按 u_shape_count 决定读几个 ----
+            //
+            // 只传 count 个也行，但数组 uniform 的部分更新很容易写成
+            // 「第二个形状还留着上一帧的值」，而那种错只有在 count 从 2 变回 1
+            // 再变回 2 的那一帧才看得见。传满省掉这种时序问题。
+            gl.uniform_1_i32(loc("u_shape_count").as_ref(), f.count);
+            gl.uniform_2_f32_slice(
+                loc("u_shape_center").as_ref(),
+                &[
+                    f.center[0][0],
+                    f.center[0][1],
+                    f.center[1][0],
+                    f.center[1][1],
+                ],
+            );
+            gl.uniform_2_f32_slice(
+                loc("u_shape_half").as_ref(),
+                &[f.half[0][0], f.half[0][1], f.half[1][0], f.half[1][1]],
+            );
+            gl.uniform_1_f32_slice(loc("u_shape_radius").as_ref(), &f.radius);
+            gl.uniform_1_f32(loc("u_merge_k").as_ref(), m.merge_k);
+
+            // ---- 折射与高光 ----
             gl.uniform_1_f32(loc("u_rim_width").as_ref(), m.edge_highlight);
             gl.uniform_1_f32(loc("u_refraction").as_ref(), m.refraction_strength);
             gl.uniform_1_f32(loc("u_specular_strength").as_ref(), m.specular_strength);
             gl.uniform_1_f32(loc("u_specular_width").as_ref(), m.specular_width);
-            // 半透明材质层（Flutter 的 DecoratedBox 那一半）。
+            gl.uniform_1_f32(loc("u_specular_sharpness").as_ref(), m.specular_sharpness);
+            gl.uniform_1_f32(loc("u_top_highlight").as_ref(), m.top_highlight);
+            gl.uniform_2_f32(loc("u_light_dir").as_ref(), f.light_dir[0], f.light_dir[1]);
+            gl.uniform_1_f32(loc("u_fresnel_power").as_ref(), m.fresnel_power);
+            gl.uniform_1_f32(loc("u_fresnel_strength").as_ref(), m.fresnel_strength);
+
+            // ---- 半透明材质层（Flutter 的 DecoratedBox 那一半）----
             gl.uniform_3_f32(
                 loc("u_surface_alpha").as_ref(),
                 m.surface_alpha[0],
@@ -577,8 +935,9 @@ void main() {{
             );
             gl.uniform_1_f32(loc("u_border_alpha").as_ref(), m.border_alpha);
             gl.uniform_1_f32(loc("u_border_width").as_ref(), m.border_width);
-            gl.uniform_1_f32(loc("u_fresnel_power").as_ref(), m.fresnel_power);
-            gl.uniform_1_f32(loc("u_fresnel_strength").as_ref(), m.fresnel_strength);
+            gl.uniform_1_f32(loc("u_opacity").as_ref(), m.opacity);
+
+            // ---- 背板。三个纹理单元与那一圈边距 ----
             gl.uniform_2_f32(
                 loc("u_backdrop_origin").as_ref(),
                 self.backdrop_origin.0,
@@ -590,6 +949,11 @@ void main() {{
                 self.backdrop_size.1,
             );
             gl.uniform_1_i32(loc("u_backdrop").as_ref(), 0);
+            gl.uniform_1_i32(loc("u_blur_fine").as_ref(), 1);
+            gl.uniform_1_i32(loc("u_blur_coarse").as_ref(), 2);
+            gl.uniform_1_i32(loc("u_blur_levels").as_ref(), f.blur_levels);
+            // thickness 在 Phase 2 的含义就是这个过渡深度，见 material.rs。
+            gl.uniform_1_f32(loc("u_blur_depth").as_ref(), m.thickness);
         }
     }
 
@@ -601,8 +965,10 @@ void main() {{
             self.gl.delete_vertex_array(self.vao);
             self.gl.delete_texture(self.backdrop);
             self.gl.delete_framebuffer(self.blur_fbo);
-            for tex in self.blur_tex {
-                self.gl.delete_texture(tex);
+            for level in self.blur_tex {
+                for tex in level {
+                    self.gl.delete_texture(tex);
+                }
             }
         }
     }

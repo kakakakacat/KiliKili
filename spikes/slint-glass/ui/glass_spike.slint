@@ -56,6 +56,13 @@ component MovingBackdrop inherits Rectangle {
 //   shaders/liquid_glass.frag                        （折射与 glint，这里做不到）
 component GlassCapsule inherits Rectangle {
     in property <length> blur-sigma: 10px;
+    // 只开模糊：背景、描边、阴影全部让出去，矩形里只剩「被原生糊过的背景」。
+    //
+    // 这是 ADR-016 决策四那个组合的另一半。决策四说「原生负责模糊、自绘负责
+    // 折射与高光」，但没说原生那层的渐变与描边归谁画——两层都画就是双份，
+    // 而让原生画、自绘再折射的话，折射会把那道 1px 白描边一起抹开。
+    // 让出去之后自绘那层采到的是干净的模糊背景，描边由它自己最后画。
+    in property <bool> blur-only: false;
     // _kNavigationHeight。做成 in property 而不是写死，是因为「摆 10 条」时
     // 要靠缩小胶囊把它们真的放进屏幕里——见 GlassSpike 里 slot 的说明。
     in property <length> capsule-height: 80px;
@@ -73,18 +80,18 @@ component GlassCapsule inherits Rectangle {
     // 表面渐变 topLeft → bottomRight，alpha 0.24 / 0.10 / 0.18。
     // 这里用白色近似 Flutter 的 ColorScheme.surface——真正接进应用时换成
     // 主题色，Demo 阶段固定值更好比对。
-    background: @linear-gradient(135deg,
+    background: root.blur-only ? transparent : @linear-gradient(135deg,
         #ffffff3d 0%,    // 0.24
         #ffffff1a 50%,   // 0.10
         #ffffff2e 100%); // 0.18
 
     // 白色描边 alpha 0.36。
-    border-width: 1px;
+    border-width: root.blur-only ? 0px : 1px;
     border-color: #ffffff5c;
 
     // 外层阴影：黑 alpha 0.22，blur 22，offset (0, 7)。
     drop-shadow-color: #00000038;
-    drop-shadow-blur: 22px;
+    drop-shadow-blur: root.blur-only ? 0px : 22px;
     drop-shadow-offset-x: 0;
     drop-shadow-offset-y: 7px;
 }
@@ -120,12 +127,66 @@ export component GlassSpike inherits Window {
     // 移动的背景上下相邻——「原生只有模糊」和「自绘有折射有高光」的差别
     // 一眼就能看出来，这正是 Phase 1 要的那笔账。
     in-out property <bool> gl-overlay-visible: false;
+    // GL 覆盖怎么摆。由 `GLASS_GL_LAYOUT` 决定，见 gl_probe::install。
+    //
+    //   0 slot       自绘玻璃单占最底下一格，背板里**没有**原生玻璃（Phase 1 的摆法）
+    //   1 over-full  自绘盖在**完整**原生胶囊上（模糊 + 渐变 + 描边都归原生）
+    //   2 over-blur  自绘盖在**只开模糊**的原生胶囊上（渐变与描边归自绘）
+    //   3 merge      slot 摆法 + 第二个形状，演示 SDF 融合
+    //
+    // 1 和 2 是 ADR-016 决策四那条「决策已定、实现待验」要验的两种读法：
+    // 同样是「原生模糊 + 自绘折射」，谁画材质层决定了描边会不会被折射抹开。
+    in-out property <int> gl-overlay-mode: 0;
+    // Rust 侧填的档位串（材质档 / 质量档 / 摆法）。印在画面上，截图自带档位
+    // ——档位只活在环境变量里、画面上看不出来，是第一轮记错档位的根因。
+    in-out property <string> gl-status: "";
+
+    // 自绘玻璃占不占自己那一格。over-* 两档是**盖在原生上**，不占格。
+    property <bool> gl-own-slot: root.gl-overlay-visible
+        && (root.gl-overlay-mode == 0 || root.gl-overlay-mode == 3);
+    // 原生那条只开模糊（over-blur 档）。
+    property <bool> native-blur-only: root.gl-overlay-visible && root.gl-overlay-mode == 2;
+
     // 让 Rust 侧读的矩形，逻辑像素。**布局只在这里算一次**：Rust 重算一遍
     // 就会和原生胶囊的摆法漂移，而两者摆得一不一样正是要看的东西。
-    out property <length> overlay-x: (root.width - root.capsule-width) / 2;
+    //
+    // 这一式在两种摆法下都对：gl-own-slot 时自绘占最底下那格、原生整体上移
+    // 一格；over-* 时 gl-gap 为 0、原生不上移，于是它正好压在第一条原生
+    // 胶囊上——那正是 over-* 要的「同一个矩形」。
+    // 融合那一档整体右移半个预留宽度，好让「圆 + 胶囊」这个并集居中。
+    out property <length> overlay-x: (root.width - root.capsule-width) / 2
+        + root.merge-reserve / 2;
     out property <length> overlay-y: root.stack-bottom - root.capsule-height;
     out property <length> overlay-w: root.capsule-width;
     out property <length> overlay-h: root.capsule-height;
+    // 圆角。胶囊 = 半高；换成圆角矩形或圆只要改这一项，形状在
+    // glass_sdf.glsl 里是同一个 SDF。
+    out property <length> overlay-radius: root.capsule-height / 2;
+
+    // ---- 融合演示（gl-overlay-mode == 3）的第二个形状 ----
+    //
+    // 一个直径 = 胶囊高度的圆，沿水平方向靠过来又离开。为什么是圆而不是
+    // 第二条胶囊：圆和胶囊共用同一个 SDF（只有圆角不同），一张图里同时
+    // 出现两种形状，正好把「三种形状是同一个 SDF」这件事也验了。
+    out property <bool> overlay2-visible: root.gl-overlay-visible && root.gl-overlay-mode == 3;
+    out property <length> overlay2-w: root.capsule-height;
+    out property <length> overlay2-h: root.capsule-height;
+    out property <length> overlay2-radius: root.capsule-height / 2;
+    // 间距在 -6px（略微重叠）与 150px 之间来回。颈部在间距小于融合半径
+    // （material.rs 的 merge_k = 24px）的那一段才长得出来，所以这个行程
+    // **必须跨过 24px**，否则截图上永远只有「两个分开的形状」或「一坨」。
+    // 间距默认跟着 phase 来回走；`GLASS_MERGE_GAP` 填了就钉死在那个值上。
+    //
+    // 钉得住很要紧：动画相位取决于「窗口起来之后 Timer 跑了多久」，而那段
+    // 启动耗时每次都不一样（实测三张本该不同间距的截图，量出来是 125 / 75 /
+    // 150px，和预期对不上）。拿动画中的某一帧当证据，记录里那个数字是碰
+    // 运气来的。
+    in-out property <float> merge-gap-override: -1;
+    out property <length> merge-gap: root.merge-gap-override >= 0
+        ? root.merge-gap-override * 1px
+        : -6px + 156px * (0.5 + 0.5 * Math.cos(root.phase * 720deg));
+    out property <length> overlay2-x: root.overlay-x - root.overlay2-w - root.merge-gap;
+    out property <length> overlay2-y: root.overlay-y;
 
     // 自绘纹理的位置。只有 `--features wgpu-probe` 那条路会填它，默认整块
     // 不显示——探针没跑的时候画面必须和之前完全一样，否则对照组就变了。
@@ -149,7 +210,7 @@ export component GlassSpike inherits Window {
     property <length> stack-top: 104px;   // 顶部那段说明文字占掉的高度
     // GL 覆盖开着时多占一格（最底下那格给它），这样「摆 N 条原生」在两种
     // 模式下都还是真的 N 条——上一轮记错档位就是栽在这种地方。
-    property <int> total-slots: root.glass-count + (root.gl-overlay-visible ? 1 : 0);
+    property <int> total-slots: root.glass-count + (root.gl-own-slot ? 1 : 0);
     // GL 玻璃和上面那条原生胶囊之间额外留的空当。
     //
     // 不是排版偏好：GL 这条的背板要多拷 3σ 的边距（否则模糊到边缘没内容可
@@ -159,13 +220,20 @@ export component GlassSpike inherits Window {
     // 这条约束换成真实应用同样成立——两块玻璃离得近到 3σ 以内就会互相
     // 采到。#130 正文把「靠近时的玻璃融合」排在 P1，这里先把它记成一个
     // 已知的物理约束，而不是等到组件库那一轮再撞。
-    property <length> gl-gap: root.gl-overlay-visible ? 40px : 0;
+    property <length> gl-gap: root.gl-own-slot ? 40px : 0;
     property <length> slot: Math.min(92px,
         (root.stack-bottom - root.stack-top - root.gl-gap) / Math.max(root.total-slots, 1));
     property <length> capsule-height: Math.max(12px, Math.min(80px, root.slot - 12px));
+    // 融合那一档要在胶囊左边空出一个圆的位置。**不空的话在手机上会直接
+    // 出界**：机器宽 406 逻辑px，胶囊自己就占 358，圆被推到 x = -68，画面上
+    // 看起来像「第二个形状没画出来」，而 logcat 里形状数照样是 2。
+    // 实测撞到过（2026-11-25 Android 第一轮 merge）。
+    property <length> merge-reserve: root.gl-overlay-mode == 3
+        ? root.capsule-height + 24px
+        : 0px;
     // 抽成属性是因为 overlay-w 要用同一个值：GL 玻璃和原生胶囊必须一样宽，
     // 否则并排看到的差别里混进了尺寸差。
-    property <length> capsule-width: Math.min(root.width - 48px, 430px);
+    property <length> capsule-width: Math.min(root.width - 48px - root.merge-reserve, 430px);
 
     Timer {
         interval: root.tick-ms * 1ms;
@@ -189,13 +257,17 @@ export component GlassSpike inherits Window {
     // 10 组件」。而且单个胶囊在这台机器上根本压不动——帧率被 vsync 钉在
     // 刷新率上，开关 backdrop-blur 两边都是同一个数，测不出代价。
     for k in root.glass-count: GlassCapsule {
-        x: (root.width - self.width) / 2;
+        // 和 overlay-x 同一式：两者必须严格对齐，over-* 两档靠的就是
+        // 「自绘矩形和第一条原生胶囊是同一个矩形」。
+        x: (root.width - self.width) / 2 + root.merge-reserve / 2;
         // +1 格：GL 覆盖开着时最底下那格留给它，见 gl-overlay-visible。
         y: root.stack-bottom - self.height - root.gl-gap
-            - (k + (root.gl-overlay-visible ? 1 : 0)) * root.slot;
+            - (k + (root.gl-own-slot ? 1 : 0)) * root.slot;
         width: root.capsule-width;
         capsule-height: root.capsule-height;
         blur-sigma: root.blur-sigma;
+        // over-blur 档下第一条（被自绘盖住的那条）只开模糊，其余照常。
+        blur-only: root.native-blur-only && k == 0;
 
         HorizontalLayout {
             padding: 4px;   // _kIndicatorPaddingInt
@@ -239,7 +311,13 @@ export component GlassSpike inherits Window {
         visible: root.gl-overlay-visible;
         x: 24px;
         y: root.stack-bottom - root.capsule-height - 20px;
-        text: "↓ GL 覆盖：背板是本帧真实帧缓冲，有边缘折射 + 单点高光（无模糊，与 Flutter 版同式）　／　↑ 上面是原生 backdrop-blur（有模糊，无折射无高光）";
+        text: root.gl-overlay-mode == 0
+            ? "↓ 自绘 GL 覆盖：背板是本帧真实帧缓冲（多尺度模糊 + 折射 + Fresnel + 动态高光）　／　↑ 上面是原生 backdrop-blur（只有模糊）"
+            : (root.gl-overlay-mode == 1
+                ? "↓ 这一条是「原生画全套（模糊+渐变+描边）、自绘只加折射与高光」——要看的是折射有没有把那道 1px 白描边抹开（ADR-016 决策四读法甲）"
+                : (root.gl-overlay-mode == 2
+                    ? "↓ 这一条是「原生只画模糊，渐变与描边归自绘」——同样是决策四，但自绘采到的背板里没有描边可抹（读法乙）"
+                    : "↓ SDF 融合：圆靠近胶囊时长出颈部（smooth union，k=24px）。圆和胶囊是同一个 SDF，只有圆角不同"));
         wrap: word-wrap;
         width: root.width - 48px;
         color: #ffffffcc;
@@ -257,7 +335,12 @@ export component GlassSpike inherits Window {
         text: "blur-sigma=" + root.blur-sigma / 1px + "px  count=" + root.glass-count
             + "  tick=" + root.tick-ms + "ms"
             + "  slot=" + Math.round(root.slot / 1px) + "px  h=" + Math.round(root.capsule-height / 1px) + "px"
-            + "  窗口=" + Math.round(root.width / 1px) + "×" + Math.round(root.height / 1px);
+            + "  窗口=" + Math.round(root.width / 1px) + "×" + Math.round(root.height / 1px)
+            + (root.gl-status == "" ? "" : "\n" + root.gl-status)
+            // 融合那一档把实际间距也印出来：它是这一档唯一要读的数。
+            + (root.overlay2-visible
+                ? "  间距=" + Math.round(root.merge-gap / 1px) + "px"
+                : "");
         color: #ffffffcc;
         font-size: 13px;
     }

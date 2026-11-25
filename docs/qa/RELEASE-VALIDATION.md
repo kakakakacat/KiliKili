@@ -144,7 +144,7 @@ SC 列表和全屏 SC、标题/看过人数/在线数更新；修改屏蔽词与
 
 | 平台 | 发布候选需执行 | 当前能力边界 |
 |---|---|---|
-| Android | F01–F13；重点记录旋转、硬解、后台和断网 | 有 Android 实机；产物构建需手动触发 |
+| Android | F01–F13；重点记录旋转、硬解、后台和断网；**每次执行都要从 logcat 记下渲染后端**（见下文 #230 一节） | 有 Android 实机；产物构建需手动触发；手上只有 Vulkan 旗舰机，Impeller 的 GLES 回退与低端设备**没有覆盖** |
 | iOS | F01–F13；重点记录全屏、后台、PiP（若本版本承诺） | 有 iOS 实机，但当前签名配置仍阻碍真机安装；未解除前记 `BLOCKED` |
 | macOS | F01–F13 中适用项；重点记录窗口生命周期与全屏 | 有本机 GUI 与硬解验证环境 |
 | Windows | F01–F13 中适用项；重点记录安装、窗口与硬解 | 有独立设备；不能以 Actions 构建替代 GUI 操作 |
@@ -163,7 +163,7 @@ SC 列表和全屏 SC、标题/看过人数/在线数更新；修改屏蔽词与
 | P01 | 冷启动 | 杀进程后点击图标至首页可交互；记录每次毫秒数、p50/p95 | 与同设备旧版相比；退化需定位原因，不用 CI runner 数据 |
 | P02 | 内存 | 空闲首页、长列表滚动 5 分钟、1080p 播放 10 分钟；记录 RSS/PSS、GPU 内存、峰值及结束值 | 不持续增长；峰值差异有解释 |
 | P03 | CPU | 固定 1080p 视频与弹幕密度，稳态播放 10 分钟；记录平均/峰值和硬解状态 | 与同设备基线比较，记录软/硬解变化 |
-| P04 | 帧耗时 | 首页快速滚动及视频弹幕各 2 分钟；记录 p95/p99、丢帧数、设备刷新率 | 依据实际刷新率解释预算与退化，不混合不同刷新率设备 |
+| P04 | 帧耗时 | 首页快速滚动及视频弹幕各 2 分钟；记录 p95/p99、丢帧数、设备刷新率。**刷新率必须在滚动当中取**——多数 Android 面板触摸时才升到高刷，滑动前后读到的都是休息档；`dumpsys SurfaceFlinger --latency` 的环形缓冲只存 128 帧（120 Hz 下约 1 秒），要分段取样再按时间戳去重合并 | 依据实际刷新率解释预算与退化，不混合不同刷新率设备。**debug（JIT）包的帧数据一律作废**，只认 profile/release 的 AOT 包 |
 | P05 | Seek 延迟 | 同一视频固定目标位置，前跳/后跳各 5 次；从操作到有效新画面计时 | 记录每次值与失败次数；与基线比较 |
 | P06 | 网络恢复 | 固定弱网、断线 30 秒、恢复；记录超时、重试次数、首帧恢复时间和请求数 | 无无限重试或请求风暴；功能行为同时满足 F10 |
 | P07 | 电量/能耗 | 同亮度音量和网络播放同一 1080p 视频 30 分钟；记录电量变化及系统能耗工具数据 | 同设备 A/B 比较；温度或后台负载异常时重测 |
@@ -247,3 +247,44 @@ Android/iOS 分别验证前后台、PiP 与纹理销毁恢复，普通暂停不�
 #4 的本轮独立探针已覆盖 macOS 真实弹幕和 Android/iOS 前后台/PiP、受控缓冲、
 分辨率切换与销毁重建；无窗口三轮基线及原生同素材契约对照也已补齐。
 这些可复跑证据见 [运行记录](player-port-2026-11-24.md)，不替代上述完整产品路径。
+
+## Android 打开 Impeller 后的必验路径（#230）
+
+Android 侧 `EnableImpeller` 由关改开（`android/app/src/main/AndroidManifest.xml`）。
+渲染后端换了，**所有经过 GPU 的路径都要重验一遍**，而且不能只看包名或分支名：
+
+- **先确认后端**。`adb logcat` 里 `Using the Impeller rendering backend (Vulkan)`
+  才算开，`[Action Required]: Impeller opt-out deprecated` 是仍然关着。
+  装包、切分支、合并都可能让实际跑的东西和预期不一致，每轮都读一次。
+- **玻璃导航栏**：三种首页底栏的胶囊背景应与 iOS 观感一致（折射而非模糊）。
+  `ImageFilter.isShaderFilterSupported` 只在 Impeller 下为 true，这是
+  `lib/common/widgets/floating_navigation_bar.dart` 走 shader 还是回退
+  `ImageFilter.blur` 的分水岭。
+- **播放器 Texture 通道**：播放、全屏切换、后台切回；确认仍是硬解
+  （`dumpsys media.player` 或 logcat 的解码器名）。
+- **弹幕**：彩色、描边、密集并发下的叠加与清屏。**这是目前唯一量到 Impeller
+  更差的场景**：在 120 Hz 面板上播放高密度弹幕视频（约 5.6 万条 / 4 分 18 秒），
+  Skia 每一帧都踩在 8.33 ms 上（有效 120.7 fps，GPU 40%），Impeller 有 46% 的
+  帧要两个 vsync（有效 82.6 fps，GPU 61%），重复一轮复现。没有出现超过
+  2.5 个周期的重掉帧。**换到 60 Hz 面板上两者都够**，这个差距只在高刷设备上看得见。
+- **PiP 与纹理销毁重建**：与 [Player Port 一节](#player-port-接入后的必验路径4) 同一组操作。
+  （#230 本轮已验：开「后台画中画」后按 HOME 进小窗，画面与弹幕都在，不黑屏、
+  不倒置；`am start` 回前台后纹理正常恢复。）
+- **帧耗时与 GPU 开销**：按 §4 P04 采样。两个场景的结论**方向相反**，必须分开记：
+  首页滚动是掉帧率 14.4% → 3.1%（GPU 37.6% → 65.5%），高密度弹幕是
+  120.7 → 82.6 fps（GPU 40% → 61%）。两处 GPU 都涨到约 1.6 倍，PSS +11%。
+  **这个代价在低端机上是否吃得下，没有数据。**
+- **GLES 回退**：Vulkan 不可用时 Impeller 走 GLES。**不需要低端设备也能验**：
+  临时在 manifest 里加
+  `<meta-data android:name="io.flutter.embedding.android.ImpellerBackend"
+  android:value="opengles" />` 打一个包，任何 Vulkan 机器都会被逼到 GLES 后端，
+  logcat 会打 `Using the Impeller rendering backend (OpenGLES)`。
+  **这条路第一次跑就抓到一个 bug**（玻璃导航栏上下倒置，见 #230），所以它
+  必须每次都验，不能靠「Vulkan 没问题所以 GLES 也没问题」推断。
+  仍未覆盖的是**真实低端/老设备的性能**，那是硬件问题，不是这条代码路径。
+
+验证记录见 issue #230。另有一个与本改动无关、但在这类真机验证里会咬人的坑：
+`flutter build apk --profile` 产出的 applicationId 与正式包同名
+（`android/app/build.gradle.kts` 只给 `debug` 和 `.dev` 加了后缀），
+装到带正式版的设备上会覆盖用户数据；装之前先 `aapt2 dump packagename` 核一遍。
+

@@ -18,10 +18,13 @@ void main() {
     p.y - center.y
   ) + vec2(0.0001));
   float rim = 1.0 - smoothstep(0.0, 15.0, -distance);
+  // 不要在 GLES 上翻 uv.y。这里原本有一个 `#ifdef IMPELLER_TARGET_OPENGLES`
+  // 的补偿，照搬「GLES 纹理原点在左下」的老经验盲写，而它在 #230 打开
+  // Impeller 之前从未被执行过（iOS 走 Metal，Android 走 Skia）。真跑起来
+  // 才发现 Flutter 3.47 的 Impeller 给到 ImageFilter.shader 的背板两条
+  // 后端朝向一致，补偿反而把画面翻了过来：导航栏里映出屏幕对称位置的内容，
+  // 看上去既倒置又不透明。见 #230。
   vec2 uv = (p + normal * rim * 7.0) / u_size;
-#ifdef IMPELLER_TARGET_OPENGLES
-  uv.y = 1.0 - uv.y;
-#endif
   vec4 backdrop = texture(u_backdrop, clamp(uv, vec2(0.0), vec2(1.0)));
   float glint = (1.0 - smoothstep(0.0, 4.0, -distance)) * 0.18;
   fragColor = vec4(mix(backdrop.rgb, vec3(1.0), glint), backdrop.a);

@@ -869,3 +869,78 @@ GPU 合成与显示输出」，这个还要再加一条——#130 要的交付�
 显存、功耗，而托管 runner 上只有软件光栅器（Linux 的 lavapipe、Windows 没
 GPU、macOS 的 Metal 设备历史上反复拿不到）。**软件光栅器上的性能数字写进
 ADR 比没有更坏**，因为它看起来像证据。
+
+### Flutter 侧 Android 渲染后端的实测能力（#230，2026-11-25）
+
+#230 把 Android 的 `EnableImpeller` 由关改开。这是**整个 app 的渲染后端**，
+不是一块导航栏，所以验证能力边界要单独记一笔。
+
+**能验、已经验到的**（骁龙 8 Gen 2 / Adreno 740 / Android 15 真机）：
+
+- **后端本身可判定**：`adb logcat` 的
+  `Using the Impeller rendering backend (Vulkan)` 对
+  `[Action Required]: Impeller opt-out deprecated`，两句互斥。
+  **必须每轮都读**——分支名、包名、甚至同一个工作树里的并发会话切分支，
+  都让「以为装的那个」和「实际跑的那个」对不上，本单实际踩过一次。
+- **`ImageFilter.isShaderFilterSupported` 可用 `debugPrint` 当场取**，
+  它是 shader 路径与 `blur` 回退的分水岭。
+- 功能面：播放（硬解解码器名可从 logcat 取）、全屏、后台恢复、弹幕、
+  离线缓存封面。
+- 性能面：feed 滚动帧间隔（`dumpsys SurfaceFlinger --latency`）、
+  GPU 占用（Adreno `gpubusy`）、冷启动（`am start -W`）、
+  内存（`dumpsys meminfo`）。本轮数值与结论见 issue #230 与
+  [RELEASE-VALIDATION](../qa/RELEASE-VALIDATION.md) 的 #230 一节。
+
+**本机验不了的**（这几条决定了 #230 不能只凭一台设备收口）：
+
+- ~~**GLES 回退**~~ ✅ **能验，而且必须验**。手上虽然只有 Vulkan 设备，但
+  manifest 里临时加一条
+  `io.flutter.embedding.android.ImpellerBackend = opengles` 打包，就能把任意
+  Vulkan 机器逼到 GLES 后端（logcat：`Using the Impeller rendering backend
+  (OpenGLES)`）。**第一次真跑就抓到了那个早就被担心的失败**：
+  `shaders/liquid_glass.frag` 里 `#ifdef IMPELLER_TARGET_OPENGLES` 的 uv.y
+  翻转补偿是盲写的（写它的时候 iOS 走 Metal、Android 走 Skia，这个分支从未
+  执行过），Flutter 3.47 根本不需要它，于是导航栏映出屏幕对称位置的内容，
+  看起来既倒置又不透明。删掉那三行后两条后端一致。
+  **这类失败不进日志，只能靠人看截图**——这正是它能躺一年没被发现的原因。
+- **低端 / 老设备**。已测的是 2023 年旗舰，而 GPU 开销涨了近一倍
+  （37.6% → 65.5%）、PSS 涨 11%。**低端机与 GLES 是同一件事的两面**：
+  退到 GLES 的设备通常也正是吃不下这份开销的设备。
+- **实际功耗与温度**。只有 GPU 占用这一个间接指标；采样窗口是秒级，
+  热降频来不及发生。与 #130 第二轮同一条限制。
+
+**本轮补验的两项**：
+
+- **PiP**：开「播放器设置 → 后台画中画」后按 HOME 进小窗，Impeller 下画面与
+  弹幕都正常绘制、不黑屏不倒置，回前台后纹理正常恢复。注意这条默认是关的，
+  `autoPiP` 在 `PlPlayerController` 里是 `late final`，**改完设置必须重启 app
+  才生效**，否则会误判成「PiP 坏了」。
+- **高密度弹幕的帧时间**：这是目前唯一量到 **Impeller 更差**的场景。同一支
+  视频（约 5.6 万条弹幕 / 4 分 18 秒）在 120 Hz 面板上，Skia 每帧 8.33 ms
+  （有效 120.7 fps，GPU 40%），Impeller 有 46% 的帧要两个 vsync（有效
+  82.6 fps，GPU 61%），复现一轮一致，且无超过 2.5 周期的重掉帧。
+  **和首页滚动的结论方向相反**，所以「Impeller 更顺」这句话不能笼统地说。
+  关掉弹幕后两边都只按视频帧率出帧（约 30 fps，GPU 24%），说明差距出在
+  弹幕这层的持续重绘上，不在视频纹理通道。
+
+**三条方法上的硬约束**，踩过才知道，已同步进
+[RELEASE-VALIDATION §4 P04](../qa/RELEASE-VALIDATION.md)：
+
+- **debug（JIT）包的帧数据一律作废**，性能结论只认 profile/release 的 AOT 包。
+- **面板刷新率必须在滚动当中取**。多数 Android 面板触摸时才升到高刷，
+  滑动前后读到的都是休息档，按它判掉帧会整个错掉。这与 #130 第二轮
+  notes §6 是同一条教训，本单又撞了一次——说明它值得写进流程而不是记在人脑里。
+- **`dumpsys SurfaceFlinger --latency` 的环形缓冲只有 128 帧**（120 Hz 下
+  约 1 秒），一次只拿得到滚动的尾巴；要分段取样再按时间戳去重合并。
+
+**一个会覆盖用户数据的坑**：`flutter build apk --profile` 的 applicationId
+与正式包同名（`android/app/build.gradle.kts` 只给 `debug` 和 `-Pdev` 的
+release 加了后缀，`profile` 没有）。装之前先 `aapt2 dump packagename` 核一遍。
+
+**对 #130 / #225 的影响**：`GlassMaterial::FLUTTER_BASELINE`（折射 7 /
+glint 0.18 / 不模糊）此前只代表 iOS，Android 线上跑的是 sigma=10 的纯高斯
+模糊——也就是 Slint `backdrop-blur` 给出的那个东西。**#230 合入后两端统一到
+折射这一侧**，于是 Slint 侧「糊得像不像」的对照目标也跟着变了：不再是
+「像 Android 现状」（那是白捡的），而是「像 iOS 的清透折射」，正是
+[wgpu 评估](spikes/2026-11-24-glass-wgpu-eval.md) §2 卡在关口 2 的那一项。
+

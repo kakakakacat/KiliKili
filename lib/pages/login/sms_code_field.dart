@@ -38,6 +38,8 @@ class _SmsCodeFieldState extends State<SmsCodeField> {
     decoration: const InputDecoration(
       prefixIcon: Icon(Icons.sms_outlined),
       border: InputBorder.none,
+      // 外面是胶囊壳（登录页 `_pillShell`），标签上浮会顶到壳的上边缘。
+      floatingLabelBehavior: FloatingLabelBehavior.never,
       labelText: '验证码',
     ),
     keyboardType: TextInputType.number,

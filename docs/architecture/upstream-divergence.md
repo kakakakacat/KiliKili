@@ -442,6 +442,13 @@ media-kit 适配器，时序、错误与资源决策修改 Rust，不恢复旧�
 另有 3 个新增（`assets/app_icon/`）。清单见 §4.5。这类文件的同步策略和代码
 不同：上游再改图标时不要手工合并，重跑生成器即可。
 
+修订：2026-11-25（Android 打开 Impeller #230 为本次）——按 §6 的方法对
+分支重算：修改 **851** 不变（实质 **509 → 510**、仅重命名 **342 → 341**），
+新增 **1009**、删除 **369** 均不变。只动了一个文件
+`android/app/src/main/AndroidManifest.xml`，它从「仅因包名重命名而改动」
+转入「有实质改动」——这是**第一个因渲染后端而进入分叉面的 Android 构建
+配置文件**，此前这个文件与上游只差包名。同步注意点见 §4.3 对应行。
+
 ## 1. 基准
 
 ```
@@ -460,12 +467,12 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 类别 | 数量 |
 | --- | ---: |
 | 修改的上游既有文件 | **851** |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | **342** |
-| &nbsp;&nbsp;其中：有实质改动 | **509** |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | **341** |
+| &nbsp;&nbsp;其中：有实质改动 | **510** |
 | 新增文件 | **1009** |
 | 删除文件 | **369** |
 
-数字为 2026-11-25 对 main 的重算值（含 #208 与 #14 的打包资源，见 §4.5）。
+数字为 2026-11-25 的重算值（含 #208 与 #14 的打包资源见 §4.5，以及 #230 把 `AndroidManifest.xml` 从「仅重命名」转入「实质改动」）。
 
 「修改」总数一路下降（935 → 909 → 897 → 891 → 887），部分文件是因迁移被
 删除，从 M 转到了 D。#108 的界面改动一度把它顶回 892；合入 #111 的关注/
@@ -510,7 +517,7 @@ D），删除多一个（`models_new/upload_bfs/`），新增七个是 Rust 侧�
 
 ## 4. 有实质改动的上游文件
 
-509 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
+510 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
 见 §4.4，应用图标与启动图见 §4.5，其余改动逐个列在 §4.3。
 
 ### 4.1 typed 直连迁移触及的上游文件
@@ -609,6 +616,7 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | `.github/workflows/build.yml` | #121、#146 | 四个可复用工作流补 `secrets: inherit`；Android 验证包与正式包使用独立证书，缺密钥或指纹不符即失败，防止产出临时 debug 签名的 Release |
 | `android/app/build.gradle.kts` | #184、#146 | NDK 版本固定；无签名配置的正式 Android release 在 `preReleaseBuild` 失败，普通 debug 开发不受影响；`.dev` 验证包允许本地 debug 回退 |
 | `.github/workflows/ios.yml` | 本次（#121） | 注释写明侧载没有仓库侧发布身份；构建行为未变 |
+| `android/app/src/main/AndroidManifest.xml` | 本次（#230） | `io.flutter.embedding.android.EnableImpeller` 由 `false` 改为 `true`。该 opt-out 是 2024 年底随上游带进来的，Flutter 3.47 已把它标为 deprecated；关着它时 `ImageFilter.isShaderFilterSupported` 为 false，玻璃导航栏的折射 shader 根本不会运行，Android 只能退到 `ImageFilter.blur`——这就是 iOS 透明、Android 像高斯模糊的全部原因。**上游若再改这一段，不要跟着关回去**；上游自己迟早会删掉这个 meta-data，届时整行一并删除即可，默认就是开 |
 
 `lib/plugin/pl_player/controller.dart` 不在这张表里，它已经由 §4.1 的 S3 一行
 覆盖；issue #89 又给它加了 seek 代际 `_seekEpoch`，这里不重复计数。那条代际

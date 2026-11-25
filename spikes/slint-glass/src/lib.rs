@@ -15,6 +15,8 @@
 // 里最该被语法与类型检查看着的东西，所以无论开不开 feature 都编进去。
 #![allow(dead_code)]
 
+#[cfg(feature = "gl-probe")]
+pub mod gl_probe;
 mod material;
 #[cfg(feature = "wgpu-probe")]
 pub mod wgpu_probe;
@@ -23,9 +25,118 @@ slint::include_modules!();
 
 /// 桌面与 Android 共用的那一段。
 pub fn run() -> Result<(), slint::PlatformError> {
+    place_window_without_stealing_focus()?;
+
     let app = GlassSpike::new()?;
     apply_env_overrides(&app);
+
+    // GL 覆盖探针。桌面和 Android 同一条路径——这正是它比 wgpu 那条强的
+    // 地方：两端给 notifier 的都是 `NativeOpenGL`，代码一份。
+    //
+    // 默认开（编进来了就说明是专门为它跑的这一轮），`GLASS_GL=0` 关掉当
+    // 对照组。对照组必须存在：没有它就分不清画面上那条玻璃是 GL 画的还是
+    // 原生 backdrop-blur 画的。
+    #[cfg(feature = "gl-probe")]
+    {
+        let on = std::env::var("GLASS_GL").map(|v| v != "0").unwrap_or(true);
+        app.set_gl_overlay_visible(on);
+        if on {
+            gl_probe::install(&app);
+        }
+    }
+
+    // 到点自己出一张图，然后退出。见 Cargo.toml 里 image 依赖处的理由。
+    //
+    //   GLASS_SNAPSHOT=shots/x.png   出图路径；不设就正常跑，一切照旧
+    //   GLASS_SNAPSHOT_MS=3000       等多久再截（默认 3s，让背景动画跑起来）
+    //
+    // 必须留足等待时间：Slint 要先把窗口建起来、渲染notifier 要先收到
+    // RenderingSetup 建好 GL 资源，第一帧之前截等于截了个空窗口。
+    let _snapshot_timer = std::env::var("GLASS_SNAPSHOT").ok().map(|path| {
+        let delay = std::env::var("GLASS_SNAPSHOT_MS")
+            .ok()
+            .and_then(|v| v.parse::<u64>().ok())
+            .unwrap_or(3000);
+        let weak = app.as_weak();
+        let timer = slint::Timer::default();
+        timer.start(
+            slint::TimerMode::SingleShot,
+            std::time::Duration::from_millis(delay),
+            move || {
+                if let Some(app) = weak.upgrade() {
+                    save_snapshot(&app, &path);
+                }
+                let _ = slint::quit_event_loop();
+            },
+        );
+        timer
+    });
+
     app.run()
+}
+
+/// 按 `GLASS_WINDOW_POS=x,y`（物理像素）把窗口开在指定位置，并且**不激活**。
+///
+/// 这不是便利功能，是这台开发机的硬约束：主屏上有人在打游戏，而 Slint 的
+/// 窗口默认开在主屏、默认抢焦点——全屏游戏会被踢出来。事后用 SetWindowPos
+/// 挪是没用的，焦点那一下已经发生了，所以必须在**窗口创建之前**就定下来。
+///
+/// `with_active(false)` 同时解决了另一件事：不激活的窗口不会把前台程序打断，
+/// 于是人和实验台可以同时用这台机器——这正是 #130 这种要反复起 GUI 的
+/// spike 最缺的。
+///
+/// 不设这个环境变量时整段跳过，行为和以前完全一样。
+#[cfg(not(target_os = "android"))]
+fn place_window_without_stealing_focus() -> Result<(), slint::PlatformError> {
+    let Ok(spec) = std::env::var("GLASS_WINDOW_POS") else {
+        return Ok(());
+    };
+    let Some((x, y)) = spec
+        .split_once(',')
+        .and_then(|(a, b)| Some((a.trim().parse::<i32>().ok()?, b.trim().parse::<i32>().ok()?)))
+    else {
+        println!("GLASS_WINDOW_POS 格式应为 `x,y`（物理像素），收到的是 {spec:?}，忽略");
+        return Ok(());
+    };
+
+    slint::BackendSelector::new()
+        .with_winit_window_attributes_hook(move |attrs| {
+            attrs
+                .with_position(slint::winit_030::winit::dpi::PhysicalPosition::new(x, y))
+                // 这一行是关键。
+                .with_active(false)
+        })
+        .select()
+}
+
+/// Android 上没有多屏也没有窗口位置，整段不编译。
+#[cfg(target_os = "android")]
+fn place_window_without_stealing_focus() -> Result<(), slint::PlatformError> {
+    Ok(())
+}
+
+/// 把当前窗口存成 PNG。
+///
+/// 一个**必须验的点**：`take_snapshot` 走的是「渲染到离屏纹理」那条路，
+/// 和上屏那条不是同一个渲染目标。GL 覆盖探针是在 `AfterRendering` 里往
+/// 当前帧缓冲上画的，所以「截出来的图里有没有 GL 玻璃」不是想当然——
+/// 上游 femtovg 的 `render_snapshot` 里专门有段注释说 notifier 可能重新
+/// 绑定帧缓冲，说明两者确实会互相影响。截完看一眼图再下结论。
+fn save_snapshot(app: &GlassSpike, path: &str) {
+    use slint::ComponentHandle;
+    match app.window().take_snapshot() {
+        Ok(buf) => {
+            let (w, h) = (buf.width(), buf.height());
+            match image::RgbaImage::from_raw(w, h, buf.as_bytes().to_vec()) {
+                Some(img) => match img.save(path) {
+                    Ok(()) => println!("SNAPSHOT 已写 {path} ({w}x{h})"),
+                    Err(err) => println!("SNAPSHOT 写文件失败：{err}"),
+                },
+                None => println!("SNAPSHOT 像素缓冲尺寸对不上：{w}x{h}"),
+            }
+        }
+        Err(err) => println!("SNAPSHOT take_snapshot 失败：{err}"),
+    }
 }
 
 /// 把环境变量里的档位套到窗口上。
@@ -140,6 +251,12 @@ fn android_main(app: slint::android::AndroidApp) {
                         // 想要的帧率，见下面 set_frame_rate 那段。
                         "FPS" => "GLASS_FPS",
                         "TICK" => "GLASS_TICK",
+                        // GL 覆盖探针的开关，见 run() 里那段。Android 上
+                        // 这是唯一的传参通道（am start 传不了环境变量）。
+                        "GL" => "GLASS_GL",
+                        // 哪一档材质：p0（默认，全套）/ baseline（与 Flutter
+                        // 同式，用来判「像不像」）。见 gl_probe::install。
+                        "MATERIAL" => "GLASS_GL_MATERIAL",
                         other => {
                             log::warn!("GLASS conf 里不认识的键: {other}");
                             continue;

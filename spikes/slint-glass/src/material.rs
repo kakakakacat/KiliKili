@@ -66,6 +66,32 @@ pub struct GlassMaterial {
     pub thickness: f32,
     /// 圆角半径，逻辑像素。胶囊形状时等于高度的一半。
     pub corner_radius: f32,
+
+    // ---- 以下四项是 2026-11-25 跟着 GL 覆盖探针一起补的 ----
+    //
+    // #130 正文的参数表里没有它们，但 Flutter 版的玻璃**不只是那 28 行
+    // shader**：外面还套着一层 DecoratedBox（渐变 + 白描边），两层合起来
+    // 才是首页那条导航栏的观感。只移植 shader 那一半的话，画出来是一片
+    // 几乎看不见的折射边——对照时会误判成「自绘这条不行」。
+    //
+    // 既然 AGENTS.md §2 要求材质参数是单一来源，这两层的参数就都得在这
+    // 张表里，而不是一半在表里、一半散在宿主的控件代码里。
+    /// 表面渐变的三个停靠点 alpha（topLeft → 中点 → bottomRight）。
+    ///
+    /// 来源：`floating_navigation_bar.dart` 的 `scheme.surface` 0.24 / 0.10 /
+    /// 0.18。Demo 里用白色近似 `surface`，接进应用时换主题色。
+    pub surface_alpha: [f32; 3],
+    /// 白色描边的 alpha。来源：同上，0.36。
+    pub border_alpha: f32,
+    /// 描边宽度，逻辑像素。Flutter 的 `Border.all` 默认 1。
+    pub border_width: f32,
+    /// Fresnel 边缘反射的强度，`0.0..=1.0`。
+    ///
+    /// 和 `fresnel_power` 配对：`fresnel_power` 是指数（边缘集中度），
+    /// 这个是叠加上去的白色强度。**Flutter 版没有这个效果**，所以
+    /// `FLUTTER_BASELINE` 里它是 0；它属于 #130 P0 表里 Flutter 没做、
+    /// 要在 Slint 这边新做的那部分，见 `P0_TARGET`。
+    pub fresnel_strength: f32,
 }
 
 impl GlassMaterial {
@@ -88,6 +114,33 @@ impl GlassMaterial {
         specular_width: 4.0,
         thickness: 0.0,
         corner_radius: 40.0,
+        surface_alpha: [0.24, 0.10, 0.18],
+        border_alpha: 0.36,
+        border_width: 1.0,
+        // Flutter 版没有 Fresnel。这里是 0 不是「还没调」，是**那边确实
+        // 没有这个效果**——对照时它必须是 0，否则比的就不是同一个东西。
+        fresnel_strength: 0.0,
+    };
+
+    /// #130 P0 表要的全套：在 `FLUTTER_BASELINE` 上补**模糊**与 **Fresnel**。
+    ///
+    /// 为什么要单独立一个常量，而不是直接把 baseline 调了：这两个是
+    /// **Flutter 侧没有**的能力（P0 表里那五项，Flutter 只做到了「局部折射 +
+    /// Specular 高光」两项）。混进 baseline 的话，「和 Flutter 像不像」就
+    /// 再也没有参照物了。GL 探针默认跑这一档，`GLASS_GL_MATERIAL=baseline`
+    /// 切回对照档。
+    ///
+    /// 注意 `blur_radius` 在这里**第一次真的生效**：Flutter 那边它只是
+    /// 不支持 shader 时的回退值，两条路二选一（`supportsShader` 分支）；
+    /// 自绘这条是「先模糊、再在模糊结果上折射」，两件事同时在。
+    pub const P0_TARGET: Self = Self {
+        // 和原生 backdrop-blur 的 sigma 取同一个值，三条玻璃才可比。
+        blur_radius: 10.0,
+        // 2.0 是 Fresnel 的常见起点（越大越集中在边缘）。**这个值是看着
+        // 调的，不是算出来的**，#130 的 ADR 要是定了别的口径就以那边为准。
+        fresnel_power: 2.0,
+        fresnel_strength: 0.35,
+        ..Self::FLUTTER_BASELINE
     };
 }
 

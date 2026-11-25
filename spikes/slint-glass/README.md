@@ -1,10 +1,14 @@
 # slint-glass — Liquid Glass 的实验台骨架（issue #130）
 
-> **状态：Windows/FemtoVG 与 Android/Skia 各跑通一轮，wgpu 判据也跑了。**
+> **状态：#130 关口 2 的本体已经过了**——GL 覆盖拿到了 Slint 本帧的真实
+> 帧缓冲，P0 五项全部跑在它上面，Windows/FemtoVG 与 Android/Skia 两个后端
+> 各验一次。取舍结论写进了
+> [ADR-016](../../docs/architecture/adr/ADR-016-liquid-glass-rendering.md)。
 >
-> 实测记录两份：
+> 实测记录三份：
 > [Windows / FemtoVG](../../docs/m0/spikes/2026-11-24-glass-windows-notes.md)、
-> [Android / Skia](../../docs/m0/spikes/2026-11-25-glass-android-notes.md)。
+> [Android / Skia](../../docs/m0/spikes/2026-11-25-glass-android-notes.md)、
+> [GL 覆盖](../../docs/m0/spikes/2026-11-25-glass-gl-overlay-notes.md)。
 >
 > 跑到的：
 >
@@ -17,12 +21,25 @@
 > - **wgpu 关口 2**：`GraphicsAPI::WGPU30` 没有渲染目标，候选 A 出局；
 >   自绘纹理导入 Slint 这条通，`glass.wgsl` 第一次过 naga 零报错。
 >
-> **没跑的，而且其中一条足够挡住后续**：
+> 第三轮加的：
 >
-> - **和 Flutter 版并排对照还是空的。** 两轮都只证明了「糊得出来」，
->   **至今没有证明「糊得像」**。
-> - 低端机、iOS / macOS、功耗与温度、滚动残影，全都没碰。
+> - **GL 覆盖探针**（`--features gl-probe`）：`AfterRendering` 里
+>   `glCopyTexSubImage2D` 拷本帧帧缓冲，再用自己的 GLSL 画玻璃。
+>   两个后端 `draw_fbo=0 read_fbo=0`、零 GL 错误。
+> - **代价拆开了**：原生模糊 +0.65 ms、自绘折射/Fresnel/高光 +0.27 ms、
+>   自绘模糊 +1.71 ms（Adreno 740 / 120Hz）。显存 +1.87 MB，和按纹理
+>   尺寸算的 1.91 MB 对得上。
+> - **不再截屏**：程序自己用 `take_snapshot` 出图，窗口也不抢焦点了。
+>
+> **没跑的**：
+>
+> - **Apple 两端大概率不通**：Slint 1.19 的 Skia 走 Metal-via-wgpu，
+>   notifier 拿不到渲染目标。推断，未验，排在 #225 最前面。
+> - 「原生模糊 + 自绘折射」这个组合（ADR-016 决策四）没试过。
+> - 低端机、功耗与温度、滚动残影，全都没碰。
 >   已测的 Android 是 2023 年的旗舰，**不代表低端机**，而低端机才是风险所在。
+> - 与 Flutter 版并排对照**已移出范围**（2026-11-25，仓库所有者定：
+>   观感由人用眼睛判，不作为产出项）。
 >
 > 第一轮撞出的两个毛病（`GLASS_COUNT=10` 实际只渲染 6 条、截图脚本的 DPI
 > 偏移）记在第一轮 notes §4；前者 2026-11-25 已修，修法见第二轮 notes §4。
@@ -118,14 +135,45 @@ SLINT_BACKEND=winit-skia ./target/debug/slint-glass-spike
 ## 结构
 
 ```
-ui/glass_spike.slint   会动的背景 + backdrop-blur 胶囊，参数对着 Flutter 抄
-src/lib.rs             桌面与 Android 共用的 run()；android_main 也在这里
-src/main.rs            桌面入口，按 feature 分派到普通跑法或 wgpu 探针
-src/material.rs        GlassMaterial 参数与五个预设
-src/wgpu_probe.rs      wgpu 关口 2 的判据（--features wgpu-probe 才编）
-shaders/glass.wgsl     liquid_glass.frag 的逐行 WGSL 移植
-android-drive.sh       真机的装/配/起/截图/收证据
+ui/glass_spike.slint      会动的背景 + backdrop-blur 胶囊，参数对着 Flutter 抄
+src/lib.rs                桌面与 Android 共用的 run()；android_main、自出图、窗口定位
+src/main.rs               桌面入口，按 feature 分派到普通跑法或 wgpu 探针
+src/material.rs           GlassMaterial 参数、FLUTTER_BASELINE 与 P0_TARGET
+src/gl_probe.rs           **关口 2 本体**：GL 覆盖（--features gl-probe）
+src/wgpu_probe.rs         wgpu 关口 2 的判据（--features wgpu-probe 才编）
+shaders/glass_overlay.frag  GL 版玻璃：折射 + glint + Fresnel + 材质层
+shaders/glass_blur.frag     可分离高斯的一趟
+shaders/glass.wgsl        liquid_glass.frag 的逐行 WGSL 移植
+shot.ps1                  桌面：挑空闲屏、不抢焦点、让程序自己出图
+android-drive.sh          真机的装/配/起/截图/收证据
+android-measure.sh        真机：四档 GPU 占用与显存对照
 ```
+
+## GL 覆盖探针（关口 2 本体）
+
+```sh
+cargo build --features gl-probe
+pwsh -NoProfile -Command "& .\shot.ps1 -Out shots/snap-p0.png -EnvVars @{GLASS_GL='1'}"
+```
+
+它和 wgpu 探针的分工：wgpu 那个证明了「自绘纹理导得进 Slint」，但**背板是
+合成的**；这个的背板是**本帧真实帧缓冲**，那才是关口 2 的本体。
+**两个探针不要同时开**——会抢同一块屏幕位置，而且 wgpu 那条路下 notifier
+拿到的根本不是 `NativeOpenGL`。
+
+额外的开关：
+
+```sh
+GLASS_GL=0                  # 关掉 GL 覆盖做对照
+GLASS_GL_MATERIAL=baseline  # 切到「与 Flutter 同式」那一档（无模糊）
+GLASS_GL_BLUR=0             # 只关自绘模糊，留折射与高光
+GLASS_SNAPSHOT=shots/x.png  # 程序自己出图然后退出
+GLASS_WINDOW_POS=5800,588   # 窗口开在这里，且**不激活**（物理像素）
+```
+
+后两个解决的是这台机器上的真问题：截屏在主屏跑全屏程序或锁屏时会**静默
+产出黑图**，而新窗口默认会把正在用机器的人踢出全屏程序。`shot.ps1` 自动
+挑一块不含前台窗口的屏幕，把这两件事一起办了。
 
 `material.rs` 与 `glass.wgsl` 原本只是被编进去做检查，**2026-11-25 之后
 它们真的跑起来了**：`wgpu_probe.rs` 用 `GlassUniforms` 把

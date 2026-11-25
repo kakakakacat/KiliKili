@@ -36,6 +36,34 @@ license = "GPL-3.0-or-later"
 # CHANGELOG 是对的、FemtoVG 也支持 backdrop-blur，那这笔账根本不用付。
 slint = { version = "~1.19", features = ["renderer-femtovg"] }
 
+# 自己出图用（GLASS_SNAPSHOT，见 src/lib.rs）。只开 png，不要默认那堆解码器
+# ——jpeg/gif/webp 全都用不上，开着白编几十个 crate。
+#
+# 为什么要自己出图而不是截屏：这台机器上**截屏不可靠**。主屏跑着全屏程序
+# 时，GDI 对另一块屏返回全黑；锁屏时窗口根本不渲染（第二轮桌面那张 wgpu
+# 截图就是这么丢的）；缩放 1.5 还有 GetWindowRect 与 CopyFromScreen 差
+# 1.5 倍那个坑。Slint 自己的 take_snapshot 把这三条一次性绕开，而且**人在
+# 用这台机器的时候也能跑**——不抢焦点、不动窗口。
+image = { version = "0.25", default-features = false, features = ["png"] }
+
+# GL 覆盖探针（feature `gl-probe`）用。只是函数指针加载器 + 常量表，
+# 不带窗口系统，也不和 femtovg 自己那份 glow 共享类型——我们从 Slint 给的
+# `get_proc_address` 自己建一个 Context，版本对不对得上无所谓。
+# 0.18 是 lockfile 里已经有的版本，不额外拉新包。
+glow = { version = "0.18", optional = true }
+
+# 桌面独有：窗口属性钩子（`GLASS_WINDOW_POS`，见 src/lib.rs）。
+#
+# 只给非 Android 开，是因为这条路走的是 winit 后端，Android 用的是
+# `backend-android-activity-06`，那边既没有多屏也没有「抢焦点」这回事。
+#
+# 为什么非要它不可：这台机器的主屏上有人在用（全屏游戏），而 Slint 的窗口
+# 默认开在主屏并**抢走焦点**。事后用 SetWindowPos 挪走已经晚了——焦点那一
+# 下已经发生。这个钩子能在窗口创建之前就把位置和 `with_active(false)` 定下
+# 来，窗口从一开始就不激活。
+[target.'cfg(not(target_os = "android"))'.dependencies]
+slint = { version = "~1.19", features = ["unstable-winit-030"] }
+
 [build-dependencies]
 slint-build = "~1.19"
 
@@ -138,6 +166,22 @@ skia = ["slint/renderer-skia"]
 # femtovg-wgpu 是为了**躲开 Skia 那笔账**（桌面上它一次都没真正构建过），
 # 同时和默认那条路同属 femtovg，画面差异不会混进渲染器差异。
 wgpu-probe = ["slint/unstable-wgpu-30", "slint/renderer-femtovg-wgpu"]
+
+# 关口 2 **本体**：在 `AfterRendering` 里把本帧真实帧缓冲拷进纹理，再用自己的
+# GLSL 画玻璃。代码与完整理由在 src/gl_probe.rs。
+#
+# 为什么它和 wgpu-probe 是两条路而不是一条的两步：`GraphicsAPI` 的 GL 变体
+# （`NativeOpenGL`）带 get_proc_address，GL 有隐式的当前帧缓冲，**不需要谁把
+# 渲染目标递过来**；WGPU30 变体没有渲染目标，所以同样的做法在 wgpu 上做不到。
+# 评估文档 §3 把「AfterRendering 覆盖」整条判为出局，是只看了 wgpu 那一侧。
+#
+# 它**不需要**任何额外的渲染器 feature：桌面默认就是 femtovg 的 GL 后端，
+# Android 的 `backend-android-activity-06` 是 Skia ganesh-gl，两边给 notifier
+# 的都是 NativeOpenGL。也就是说这条路**没有新增编译代价**——加的只有 glow。
+#
+# 跑法：`cargo run --features gl-probe`（Android 看 README）。
+# 两个探针不要同时开，会抢同一块屏幕位置。
+gl-probe = ["dep:glow"]
 
 # 依赖按 opt-level=2 编，自己的代码不优化。
 #

@@ -869,3 +869,60 @@ GPU 合成与显示输出」，这个还要再加一条——#130 要的交付�
 显存、功耗，而托管 runner 上只有软件光栅器（Linux 的 lavapipe、Windows 没
 GPU、macOS 的 Metal 设备历史上反复拿不到）。**软件光栅器上的性能数字写进
 ADR 比没有更坏**，因为它看起来像证据。
+
+### Flutter 侧 Android 渲染后端的实测能力（#230，2026-11-25）
+
+#230 把 Android 的 `EnableImpeller` 由关改开。这是**整个 app 的渲染后端**，
+不是一块导航栏，所以验证能力边界要单独记一笔。
+
+**能验、已经验到的**（骁龙 8 Gen 2 / Adreno 740 / Android 15 真机）：
+
+- **后端本身可判定**：`adb logcat` 的
+  `Using the Impeller rendering backend (Vulkan)` 对
+  `[Action Required]: Impeller opt-out deprecated`，两句互斥。
+  **必须每轮都读**——分支名、包名、甚至同一个工作树里的并发会话切分支，
+  都让「以为装的那个」和「实际跑的那个」对不上，本单实际踩过一次。
+- **`ImageFilter.isShaderFilterSupported` 可用 `debugPrint` 当场取**，
+  它是 shader 路径与 `blur` 回退的分水岭。
+- 功能面：播放（硬解解码器名可从 logcat 取）、全屏、后台恢复、弹幕、
+  离线缓存封面。
+- 性能面：feed 滚动帧间隔（`dumpsys SurfaceFlinger --latency`）、
+  GPU 占用（Adreno `gpubusy`）、冷启动（`am start -W`）、
+  内存（`dumpsys meminfo`）。本轮数值与结论见 issue #230 与
+  [RELEASE-VALIDATION](../qa/RELEASE-VALIDATION.md) 的 #230 一节。
+
+**本机验不了的**（这几条决定了 #230 不能只凭一台设备收口）：
+
+- **GLES 回退**。手上只有 Vulkan 设备，Impeller 的 GLES 路径**一次都没跑过**。
+  `shaders/liquid_glass.frag` 里有 `#ifdef IMPELLER_TARGET_OPENGLES` 的
+  uv.y 翻转分支，**翻转错了画面上下颠倒而不报错**——这类失败不会出现在日志里，
+  只能靠人看截图。
+- **低端 / 老设备**。已测的是 2023 年旗舰，而 GPU 开销涨了近一倍
+  （37.6% → 65.5%）、PSS 涨 11%。**低端机与 GLES 是同一件事的两面**：
+  退到 GLES 的设备通常也正是吃不下这份开销的设备。
+- **实际功耗与温度**。只有 GPU 占用这一个间接指标；采样窗口是秒级，
+  热降频来不及发生。与 #130 第二轮同一条限制。
+
+**能验但本轮没跑的**（是欠账，不是能力边界）：PiP。
+
+**三条方法上的硬约束**，踩过才知道，已同步进
+[RELEASE-VALIDATION §4 P04](../qa/RELEASE-VALIDATION.md)：
+
+- **debug（JIT）包的帧数据一律作废**，性能结论只认 profile/release 的 AOT 包。
+- **面板刷新率必须在滚动当中取**。多数 Android 面板触摸时才升到高刷，
+  滑动前后读到的都是休息档，按它判掉帧会整个错掉。这与 #130 第二轮
+  notes §6 是同一条教训，本单又撞了一次——说明它值得写进流程而不是记在人脑里。
+- **`dumpsys SurfaceFlinger --latency` 的环形缓冲只有 128 帧**（120 Hz 下
+  约 1 秒），一次只拿得到滚动的尾巴；要分段取样再按时间戳去重合并。
+
+**一个会覆盖用户数据的坑**：`flutter build apk --profile` 的 applicationId
+与正式包同名（`android/app/build.gradle.kts` 只给 `debug` 和 `-Pdev` 的
+release 加了后缀，`profile` 没有）。装之前先 `aapt2 dump packagename` 核一遍。
+
+**对 #130 / #225 的影响**：`GlassMaterial::FLUTTER_BASELINE`（折射 7 /
+glint 0.18 / 不模糊）此前只代表 iOS，Android 线上跑的是 sigma=10 的纯高斯
+模糊——也就是 Slint `backdrop-blur` 给出的那个东西。**#230 合入后两端统一到
+折射这一侧**，于是 Slint 侧「糊得像不像」的对照目标也跟着变了：不再是
+「像 Android 现状」（那是白捡的），而是「像 iOS 的清透折射」，正是
+[wgpu 评估](spikes/2026-11-24-glass-wgpu-eval.md) §2 卡在关口 2 的那一项。
+

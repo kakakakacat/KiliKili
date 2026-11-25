@@ -251,11 +251,14 @@ flutter_launcher_icons:
     image_path: assets/app_icon/macos.png
 
 flutter_native_splash:
+  # 深色底取应用图标的背景色 #101628（见上面的 adaptive_icon_background），
+  # 浅色仍是白底——浅色模式下用深色启动图，进应用时会闪一下（issue #14）。
+  # image 指向 logo_2.png，那是与应用图标同源的标记，透明底、单色，缩放后仍清晰。
   android_12:
     color: "#ffffff"
-    color_dark: "#212121"
+    color_dark: "#101628"
   color: "#ffffff"
-  color_dark: "#212121"
+  color_dark: "#101628"
   image: assets/images/logo/logo_2.png
   image_dark: assets/images/logo/logo_2.png
 

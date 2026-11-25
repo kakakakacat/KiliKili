@@ -13,8 +13,10 @@ SPIKE-001/002）与 `spikes/slint-ui`（界面，SPIKE-003），记录格式同�
 **手写的有几份例外**，它们不是 `--record` 产出的，可以也必须手工编辑：
 `2026-11-22-flutter-patches-slint-eval.md` 与
 `2026-11-24-glass-wgpu-eval.md`（读 diff / 读 Slint 文档与源码写出来的
-评估，根本没有程序可跑）、`2026-11-24-glass-windows-notes.md` 与
-`2026-11-25-glass-android-notes.md`（#130 的
+评估，根本没有程序可跑）、`2026-11-24-glass-windows-notes.md`、
+`2026-11-25-glass-android-notes.md`、
+`2026-11-25-glass-gl-overlay-notes.md` 与
+`2026-11-25-glass-phase2-notes.md`（#130 的
 实验台还没接 `spike-harness`，结论要人看截图判）、下面这份 Android 的、iOS 的 `SPIKE-004-ios.md`、#210 的补测记录
 （理由同 Android：入口是 App，证据来自 `devicectl --console` 与真机截图），以及 #218 的
 插帧记录（汇总实验室模式、macOS、Android 与 iOS 真机几类运行）。
@@ -39,6 +41,8 @@ SPIKE-001/002）与 `spikes/slint-ui`（界面，SPIKE-003），记录格式同�
 | [2026-11-24-glass-wgpu-eval.md](2026-11-24-glass-wgpu-eval.md) | 不涉及（读 Slint 1.19.1 的文档与源码） | **#130 的 Liquid Glass 预研，纸面部分**。最硬的一条：**立单前提已变**——Slint 1.19.0（立单后三天）给 `Rectangle` 加了 `backdrop-blur`，官方描述就是「for translucent glass effects」，#130 「必须自建 wgpu 管线才能拿到背板」的隐含假设不再成立。关口 1（wgpu 接口）已答，首轮不必 fork；关口 2 的三条候选里 **A 基本可判掉**（`AfterRendering` 拿不到渲染目标），**C 在 Android 上不存在**。没有任何一条同时满足「当前帧干净背景 + 自定义 shader + Android 可用」 |
 | [2026-11-24-glass-windows-notes.md](2026-11-24-glass-windows-notes.md) | Windows 11 / RX 7900 GRE | **#130 第一轮实测（Slint 1.19.1 / FemtoVG）**：骨架一次编过（首次 6 min 01 s、零 warning，增量 12 s）。**`backdrop-blur` 在 FemtoVG 上生效**——官方 Rectangle 参考页那句「only supported by the Skia renderer」是过时的，CHANGELOG 对，于是 Skia 那笔没人付过的账不用付。**帧率这项是「测不出」不是「不贵」**：1/5/10 组件 × 开关 blur 六组全 144 fps（= 刷新率），`refresh_full_speed` 绕不过 vsync。两个弄脏实验的毛病：`GLASS_COUNT=10` 实际只渲染 6 条（已修）、截图脚本的 DPI 偏移。**2026-11-25 加写 §6：wgpu 关口 2 的判据跑了**——`GraphicsAPI::WGPU30` 只给 `instance/device/queue`、**没有渲染目标**，候选 A 出局有了运行时证据；而**自绘纹理导入 Slint 这条通**，`glass.wgsl` 第一次过 naga 零报错。仍未解决的是「怎么拿到真实背板」——探针里那张是合成的 |
 | [2026-11-25-glass-android-notes.md](2026-11-25-glass-android-notes.md) | Redmi K70（SM8550 / Adreno 740）/ Android 14 | **#130 第二轮实测（Slint 1.19.1 / Skia）**：`backdrop-blur` 在 Skia 上同样生效，判据是量化的（边缘能量掉 42.8%，且度量与背景相位无关）。**帧代价第一次量出来了，靠的是换方法不是换设备**——帧率两端都被 vsync 钉死（桌面 144、手机 61），改读 Adreno 的 `gpubusy`（免 root、读一次清零）才绕开：**一条导航栏 ≈0.64 ms/帧，十条 ≈1.66 ms/帧**，拐点在 40 条。一条反例值得记住：**在 vsync 锁死的设备上用占用率算成本会被 DVFS 骗**，60Hz 下量的那组非单调、外推到 120Hz 被实测证伪。另有三条工具教训：`gfxinfo` 对 NativeActivity 无效、`am start` 传不了环境变量、面板刷新率必须和截图同时取。**已测的是 2023 旗舰，不代表低端机** |
+| [2026-11-25-glass-gl-overlay-notes.md](2026-11-25-glass-gl-overlay-notes.md) | Windows 11 / RX 7900 GRE ＋ Android 14 / Adreno 740 真机 | **#130 第三轮：关口 2 的本体过了**。上一轮把「`AfterRendering` 覆盖」整条判为出局，**那一步推广错了**——出局的只是 wgpu 变体（`WGPU30` 没有渲染目标），而 `NativeOpenGL` 带 `get_proc_address`、GL 有隐式当前帧缓冲，**桌面 femtovg 与 Android 的 Skia 给 notifier 的都是它**。于是 `glCopyTexSubImage2D` 拷本帧帧缓冲、再用自己的 GLSL 画玻璃这条路跑通了，两个后端各验一次，`draw_fbo=0 read_fbo=0`、零 GL 错误。**P0 五项全部跑在真实背板上**。代价拆开了：原生 `backdrop-blur` +0.65ms、自绘折射/Fresnel/高光 +0.27ms、自绘模糊 +1.71ms，显存 +1.87MB 与理论的 1.91MB 对得上。顺带查出**Apple 两端大概率不通**（Skia 走 Metal-via-wgpu，推断未验，排 #225）。取舍写进 ADR-016 |
+| [2026-11-25-glass-phase2-notes.md](2026-11-25-glass-phase2-notes.md) | Windows 11 / RX 7900 GRE ＋ Android 14 / Adreno 740 真机 | **#130 第四轮：Phase 2 的四项能力做完，ADR-016 决策四有了答案**。决策四（原生模糊 + 自绘折射）**可用，但只有一种摆法可用**：原生那条必须只开 `backdrop-blur`，渐变与描边整个归自绘，否则折射会把那道 1px 白描边拖出第二道（判据是过圆头的一行亮度剖面，双峰相距 7 物理px）。附带一条会影响组件库的：**这个组合与多尺度模糊互斥**——原生只有一档 σ，从边到心是常数（残余对比度 18.0/18.6/18.6），而自绘三级是 15.1/9.1/4.9。七档代价：多尺度再加两级只要 +0.19ms、融合 ≈0，**自绘单级模糊第三次量到 1.70ms**。另修掉两个 Phase 1 的静默错误（背板边距漏算折射、GL 状态存档放在了拷贝之后）|
 
 ## 为什么先有一份 Windows 的
 

@@ -48,6 +48,11 @@ public class Win32Place {
 # GLASS_WINDOW_POS 要的是物理像素。
 [void][Win32Place]::SetProcessDPIAware()
 
+# .NET 的「当前目录」和 PowerShell 的 Set-Location **不是一回事**：
+# GetFullPath 用的是前者，而 Set-Location 只动后者。宿主进程的起始目录和
+# 脚本里 cd 到的目录不一致时，相对路径会静默落到起始目录下（实测这样写出过
+# shots/shots/*.png，而脚本照常打印「已写」）。手动同步一下。
+[Environment]::CurrentDirectory = (Get-Location).Path
 $outPath = [System.IO.Path]::GetFullPath($Out)
 $outDir = [System.IO.Path]::GetDirectoryName($outPath)
 if (-not (Test-Path $outDir)) { New-Item -ItemType Directory -Path $outDir | Out-Null }

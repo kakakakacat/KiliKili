@@ -45,11 +45,17 @@ if ! "$ADB" shell true >/dev/null 2>&1; then
     exit 1
 fi
 
-# 一档 = 一组 glass.conf。四档的设计：
-#   native    只有原生 backdrop-blur（GL 探针关掉）——基准
-#   gl-p0     原生 + GL 覆盖（模糊+折射+Fresnel+高光）——本单 P0 的代价
-#   gl-base   原生 + GL 覆盖但不模糊（与 Flutter 同式）——拆出「模糊」那一笔
-#   noblur    连原生 backdrop-blur 都关掉——地板，判上面三个的分母
+# 一档 = 一组 glass.conf。七档的设计（前四档是 Phase 1 的，后三档 Phase 2 加）：
+#   native      只有原生 backdrop-blur（GL 探针关掉）——基准
+#   gl-p0       原生 + GL 覆盖（单级模糊+折射+Fresnel+高光）——P0 的代价
+#   gl-base     原生 + GL 覆盖但不模糊（与 Flutter 同式）——拆出「模糊」那一笔
+#   noblur      连原生 backdrop-blur 都关掉——地板，判上面几个的分母
+#   gl-phase2   在 gl-p0 上换成三级多尺度模糊 + 动态高光——多尺度那一笔
+#   gl-overblur 原生负责模糊、自绘只负责折射与高光——ADR-016 决策四那个组合
+#   gl-merge    两个形状 + 融合——并集外接框变大那一笔
+#
+# **档与档之间只差一件事**，否则减出来的差值说明不了任何东西。gl-phase2 与
+# gl-p0 只差级数与高光，gl-overblur 与 gl-base 只差「原生那条开不开模糊」。
 run_case() {
     local name="$1" conf="$2"
     say "$name"
@@ -94,11 +100,17 @@ run_case() {
     "$ADB" shell am force-stop "$PKG"
 }
 
-# 四档都把面板顶到 120Hz（FPS=120 + TICK=4），理由见文件头。
-run_case "native（只有原生 backdrop-blur）" "COUNT=1 GL=0 FPS=120 TICK=4"
-run_case "gl-p0（原生 + GL 全套 P0）"       "COUNT=1 GL=1 MATERIAL=p0 FPS=120 TICK=4"
-run_case "gl-base（原生 + GL 无模糊）"      "COUNT=1 GL=1 MATERIAL=baseline FPS=120 TICK=4"
-run_case "noblur（连原生模糊都关）"          "COUNT=1 GL=0 BLUR=0 FPS=120 TICK=4"
+# 七档都把面板顶到 120Hz（FPS=120 + TICK=4），理由见文件头。
+#
+# 光源角一律钉死（LIGHT=180）：自转本身不要钱（一次 cos/sin 在 CPU 侧），
+# 但钉住之后每一档画的是同一帧，省掉「这档碰巧光斑在别处」这种解释空间。
+run_case "native（只有原生 backdrop-blur）"   "COUNT=1 GL=0 FPS=120 TICK=4"
+run_case "gl-p0（原生 + GL 单级 P0）"         "COUNT=1 GL=1 MATERIAL=p0 LIGHT=180 FPS=120 TICK=4"
+run_case "gl-phase2（原生 + GL 三级多尺度）"  "COUNT=1 GL=1 MATERIAL=phase2 LIGHT=180 FPS=120 TICK=4"
+run_case "gl-overblur（原生模糊 + 自绘折射）" "COUNT=1 GL=1 LAYOUT=over-blur LIGHT=180 FPS=120 TICK=4"
+run_case "gl-merge（两个形状 + 融合）"        "COUNT=1 GL=1 LAYOUT=merge MERGEGAP=12 LIGHT=180 FPS=120 TICK=4"
+run_case "gl-base（原生 + GL 无模糊）"        "COUNT=1 GL=1 MATERIAL=baseline LIGHT=180 FPS=120 TICK=4"
+run_case "noblur（连原生模糊都关）"            "COUNT=1 GL=0 BLUR=0 FPS=120 TICK=4"
 
 say "完"
 note "报告: $REPORT"

@@ -24,6 +24,12 @@
 #   ./android-drive.sh --count 5       # 摆 5 条玻璃
 #   ./android-drive.sh --perf          # 叠帧率 overlay（数字会出现在截图里）
 #   ./android-drive.sh --out some/dir  # 证据落到别处
+#
+# Phase 2 加的四个（见 src/gl_probe.rs 的 install）：
+#   ./android-drive.sh --layout over-blur             # ADR-016 决策四那个组合
+#   ./android-drive.sh --layout merge --mergegap 12   # SDF 融合，间距钉死
+#   ./android-drive.sh --quality balanced             # 质量档
+#   ./android-drive.sh --light 180                    # 光源角钉死，截图才可复跑
 set -u
 
 PKG=io.github.kakacat.kilikili.spike.glass
@@ -37,6 +43,10 @@ FPS=""
 TICK=""
 GL=""
 MATERIAL=""
+LAYOUT=""
+QUALITY=""
+MERGEGAP=""
+LIGHT=""
 
 ADB="${ADB:-adb}"
 export MSYS_NO_PATHCONV=1   # 否则 Git Bash 会把 /sdcard/... 当成 Windows 路径
@@ -57,8 +67,17 @@ while [ $# -gt 0 ]; do
         # GL 覆盖探针（关口 2 本体：本帧真实背板 + 自定义 shader）。
         # APK 要用 `cargo apk build --lib --features gl-probe` 打才有它。
         --gl)    GL="$2"; shift 2 ;;
-        # p0（默认，模糊+折射+Fresnel+高光）或 baseline（与 Flutter 同式）。
+        # phase2（默认，全套）/ p0（Phase 1 那档）/ baseline（与 Flutter 同式）。
         --material) MATERIAL="$2"; shift 2 ;;
+        # 自绘玻璃怎么摆：slot / over-full / over-blur / merge。
+        --layout) LAYOUT="$2"; shift 2 ;;
+        # 质量档：high / balanced / low（ADR-016 决策五）。
+        --quality) QUALITY="$2"; shift 2 ;;
+        # 融合演示的间距（逻辑 px）。不填就按动画来回走——**要出证据就填**，
+        # 动画相位取决于启动耗时，每次不一样。
+        --mergegap) MERGEGAP="$2"; shift 2 ;;
+        # 光源角（度），同时停掉自转。同上，静态证据必须钉住。
+        --light) LIGHT="$2"; shift 2 ;;
         --out)   OUT="$2"; shift 2 ;;
         *) echo "不认识的参数: $1" >&2; exit 2 ;;
     esac
@@ -107,21 +126,23 @@ say "安装 $APK"
 say "配置"
 "$ADB" shell mkdir -p "$FILES"
 "$ADB" shell rm -f "$FILES/glass.conf"
-if [ -n "$BLUR" ] || [ -n "$COUNT" ] || [ -n "$PERF" ] || [ -n "$FPS" ] || [ -n "$TICK" ] \
-    || [ -n "$GL" ] || [ -n "$MATERIAL" ]; then
-    CONF="$OUT/glass.conf"
-    : > "$CONF"
-    [ -n "$BLUR" ]  && echo "BLUR=$BLUR"   >> "$CONF"
-    [ -n "$COUNT" ] && echo "COUNT=$COUNT" >> "$CONF"
-    [ -n "$PERF" ]  && echo "PERF=$PERF"   >> "$CONF"
-    [ -n "$FPS" ]   && echo "FPS=$FPS"     >> "$CONF"
-    [ -n "$TICK" ]  && echo "TICK=$TICK"   >> "$CONF"
-    [ -n "$GL" ]    && echo "GL=$GL"       >> "$CONF"
-    [ -n "$MATERIAL" ] && echo "MATERIAL=$MATERIAL" >> "$CONF"
+CONF="$OUT/glass.conf"
+: > "$CONF"
+# 键名要和 src/lib.rs 的 android_main 里那张表对上。拼错的键 app 只 warn 一行
+# 然后**按默认跑**——不看 logcat 的话，表现是「这个开关没用」。
+for kv in "BLUR=$BLUR" "COUNT=$COUNT" "PERF=$PERF" "FPS=$FPS" "TICK=$TICK" \
+    "GL=$GL" "MATERIAL=$MATERIAL" "LAYOUT=$LAYOUT" "QUALITY=$QUALITY" \
+    "MERGEGAP=$MERGEGAP" "LIGHT=$LIGHT"; do
+    case "$kv" in
+        *=) ;;                      # 没填的跳过，让 app 用自己的默认
+        *) echo "$kv" >> "$CONF" ;;
+    esac
+done
+if [ -s "$CONF" ]; then
     "$ADB" push "$CONF" "$FILES/glass.conf"
     echo "档位: $(tr '\n' ' ' < "$CONF")"
 else
-    echo "档位: 默认（blur 开、一条玻璃）"
+    echo "档位: 默认（blur 开、一条玻璃、GL 覆盖开、phase2 材质）"
 fi
 
 say "启动"

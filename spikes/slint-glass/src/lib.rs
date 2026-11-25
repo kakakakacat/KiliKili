@@ -169,6 +169,15 @@ pub fn apply_env_overrides(app: &GlassSpike) {
         // 画面左上角也印出了实际的 slot / h / 窗口尺寸，截图自带档位。
         app.set_glass_count(n);
     }
+    // 融合演示里两个形状的间距，逻辑像素。不设就按动画来回走。
+    //
+    // 它存在的理由是**可复跑**：动画相位取决于窗口起来之后 Timer 跑了多久，
+    // 而启动耗时每次不同，拿动画中的某一帧当证据，那个数字是碰运气来的。
+    if let Ok(v) = std::env::var("GLASS_MERGE_GAP")
+        && let Ok(gap) = v.parse::<f32>()
+    {
+        app.set_merge_gap_override(gap);
+    }
     // 背景 Timer 的周期。默认 16ms 等于 62.5Hz，和 60Hz 刷新率只差 2.5——
     // 帧率读数 61 时分不清是谁在限速。要判它就把这个调小（如 4ms）再读一次。
     if let Ok(n) = std::env::var("GLASS_TICK")
@@ -254,9 +263,21 @@ fn android_main(app: slint::android::AndroidApp) {
                         // GL 覆盖探针的开关，见 run() 里那段。Android 上
                         // 这是唯一的传参通道（am start 传不了环境变量）。
                         "GL" => "GLASS_GL",
-                        // 哪一档材质：p0（默认，全套）/ baseline（与 Flutter
-                        // 同式，用来判「像不像」）。见 gl_probe::install。
+                        // 哪一档材质：phase2（默认，全套）/ p0 / baseline
+                        // （与 Flutter 同式，用来判「像不像」）。
+                        // 见 gl_probe::install。
                         "MATERIAL" => "GLASS_GL_MATERIAL",
+                        // 自绘玻璃怎么摆：slot / over-full / over-blur / merge。
+                        // over-* 两档是 ADR-016 决策四要验的那个组合。
+                        "LAYOUT" => "GLASS_GL_LAYOUT",
+                        // 质量档：high / balanced / low（ADR-016 决策五）。
+                        "QUALITY" => "GLASS_GL_QUALITY",
+                        // 只关自绘模糊，留折射与高光。
+                        "GLBLUR" => "GLASS_GL_BLUR",
+                        // 融合演示的间距，逻辑像素。见 apply_env_overrides。
+                        "MERGEGAP" => "GLASS_MERGE_GAP",
+                        // 光源方向钉死在这个角度（度），同时停掉自转。
+                        "LIGHT" => "GLASS_GL_LIGHT",
                         other => {
                             log::warn!("GLASS conf 里不认识的键: {other}");
                             continue;

@@ -111,6 +111,22 @@ export component GlassSpike inherits Window {
     // 把它调到 4ms（250Hz）之后读数还是 61，才能说是 vsync 的锅。
     in-out property <int> tick-ms: 16;
 
+    // GL 覆盖探针（`--features gl-probe`）。关口 2 本体：背板是本帧真实
+    // 帧缓冲，不是合成的。见 src/gl_probe.rs。
+    //
+    // 开着的时候**原生胶囊整体上移一格**，最底下那格让给 GL 玻璃。这不是
+    // 排版偏好，是自采：GL 玻璃的背板是整帧拷下来的，矩形压在原生胶囊上
+    // 就会采到玻璃自己，画面一帧比一帧白。让出一格之后，两条玻璃在同一片
+    // 移动的背景上下相邻——「原生只有模糊」和「自绘有折射有高光」的差别
+    // 一眼就能看出来，这正是 Phase 1 要的那笔账。
+    in-out property <bool> gl-overlay-visible: false;
+    // 让 Rust 侧读的矩形，逻辑像素。**布局只在这里算一次**：Rust 重算一遍
+    // 就会和原生胶囊的摆法漂移，而两者摆得一不一样正是要看的东西。
+    out property <length> overlay-x: (root.width - root.capsule-width) / 2;
+    out property <length> overlay-y: root.stack-bottom - root.capsule-height;
+    out property <length> overlay-w: root.capsule-width;
+    out property <length> overlay-h: root.capsule-height;
+
     // 自绘纹理的位置。只有 `--features wgpu-probe` 那条路会填它，默认整块
     // 不显示——探针没跑的时候画面必须和之前完全一样，否则对照组就变了。
     //
@@ -131,9 +147,25 @@ export component GlassSpike inherits Window {
     // **让「摆 N 条」在任何窗口尺寸下都真的是 N 条**。
     property <length> stack-bottom: root.height - 28px;
     property <length> stack-top: 104px;   // 顶部那段说明文字占掉的高度
+    // GL 覆盖开着时多占一格（最底下那格给它），这样「摆 N 条原生」在两种
+    // 模式下都还是真的 N 条——上一轮记错档位就是栽在这种地方。
+    property <int> total-slots: root.glass-count + (root.gl-overlay-visible ? 1 : 0);
+    // GL 玻璃和上面那条原生胶囊之间额外留的空当。
+    //
+    // 不是排版偏好：GL 这条的背板要多拷 3σ 的边距（否则模糊到边缘没内容可
+    // 采），σ=10 时边距是 30 逻辑像素。两条玻璃靠得比这还近的话，GL 的
+    // 背板里就会**采到上面那条原生玻璃**，它的亮边会被糊进 GL 这条的顶边。
+    //
+    // 这条约束换成真实应用同样成立——两块玻璃离得近到 3σ 以内就会互相
+    // 采到。#130 正文把「靠近时的玻璃融合」排在 P1，这里先把它记成一个
+    // 已知的物理约束，而不是等到组件库那一轮再撞。
+    property <length> gl-gap: root.gl-overlay-visible ? 40px : 0;
     property <length> slot: Math.min(92px,
-        (root.stack-bottom - root.stack-top) / Math.max(root.glass-count, 1));
+        (root.stack-bottom - root.stack-top - root.gl-gap) / Math.max(root.total-slots, 1));
     property <length> capsule-height: Math.max(12px, Math.min(80px, root.slot - 12px));
+    // 抽成属性是因为 overlay-w 要用同一个值：GL 玻璃和原生胶囊必须一样宽，
+    // 否则并排看到的差别里混进了尺寸差。
+    property <length> capsule-width: Math.min(root.width - 48px, 430px);
 
     Timer {
         interval: root.tick-ms * 1ms;
@@ -158,8 +190,10 @@ export component GlassSpike inherits Window {
     // 刷新率上，开关 backdrop-blur 两边都是同一个数，测不出代价。
     for k in root.glass-count: GlassCapsule {
         x: (root.width - self.width) / 2;
-        y: root.stack-bottom - self.height - k * root.slot;
-        width: Math.min(root.width - 48px, 430px);
+        // +1 格：GL 覆盖开着时最底下那格留给它，见 gl-overlay-visible。
+        y: root.stack-bottom - self.height - root.gl-gap
+            - (k + (root.gl-overlay-visible ? 1 : 0)) * root.slot;
+        width: root.capsule-width;
         capsule-height: root.capsule-height;
         blur-sigma: root.blur-sigma;
 
@@ -195,6 +229,19 @@ export component GlassSpike inherits Window {
         x: 24px;
         y: root.stack-bottom - root.capsule-height - root.slot - 68px;
         text: "↓ 自绘 WGSL（有折射/高光，背板是合成的）　／　再下面一条是原生 backdrop-blur";
+        color: #ffffffcc;
+        font-size: 12px;
+    }
+
+    // GL 覆盖的标注。**必须画在矩形外面**：GL 那一层是在 Slint 画完之后
+    // 直接覆盖上去的，落在矩形里的 Slint 内容会被盖掉。
+    Text {
+        visible: root.gl-overlay-visible;
+        x: 24px;
+        y: root.stack-bottom - root.capsule-height - 20px;
+        text: "↓ GL 覆盖：背板是本帧真实帧缓冲，有边缘折射 + 单点高光（无模糊，与 Flutter 版同式）　／　↑ 上面是原生 backdrop-blur（有模糊，无折射无高光）";
+        wrap: word-wrap;
+        width: root.width - 48px;
         color: #ffffffcc;
         font-size: 12px;
     }

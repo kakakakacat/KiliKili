@@ -35,6 +35,8 @@ COUNT=""
 PERF=""
 FPS=""
 TICK=""
+GL=""
+MATERIAL=""
 
 ADB="${ADB:-adb}"
 export MSYS_NO_PATHCONV=1   # 否则 Git Bash 会把 /sdcard/... 当成 Windows 路径
@@ -52,6 +54,11 @@ while [ $# -gt 0 ]; do
         # 背景 Timer 周期（ms）。16ms=62.5Hz 会和 60Hz vsync 撞在一起，
         # 要分清谁在限速就把它调小，见 ui/glass_spike.slint 的 tick-ms。
         --tick)  TICK="$2"; shift 2 ;;
+        # GL 覆盖探针（关口 2 本体：本帧真实背板 + 自定义 shader）。
+        # APK 要用 `cargo apk build --lib --features gl-probe` 打才有它。
+        --gl)    GL="$2"; shift 2 ;;
+        # p0（默认，模糊+折射+Fresnel+高光）或 baseline（与 Flutter 同式）。
+        --material) MATERIAL="$2"; shift 2 ;;
         --out)   OUT="$2"; shift 2 ;;
         *) echo "不认识的参数: $1" >&2; exit 2 ;;
     esac
@@ -100,7 +107,8 @@ say "安装 $APK"
 say "配置"
 "$ADB" shell mkdir -p "$FILES"
 "$ADB" shell rm -f "$FILES/glass.conf"
-if [ -n "$BLUR" ] || [ -n "$COUNT" ] || [ -n "$PERF" ] || [ -n "$FPS" ] || [ -n "$TICK" ]; then
+if [ -n "$BLUR" ] || [ -n "$COUNT" ] || [ -n "$PERF" ] || [ -n "$FPS" ] || [ -n "$TICK" ] \
+    || [ -n "$GL" ] || [ -n "$MATERIAL" ]; then
     CONF="$OUT/glass.conf"
     : > "$CONF"
     [ -n "$BLUR" ]  && echo "BLUR=$BLUR"   >> "$CONF"
@@ -108,6 +116,8 @@ if [ -n "$BLUR" ] || [ -n "$COUNT" ] || [ -n "$PERF" ] || [ -n "$FPS" ] || [ -n 
     [ -n "$PERF" ]  && echo "PERF=$PERF"   >> "$CONF"
     [ -n "$FPS" ]   && echo "FPS=$FPS"     >> "$CONF"
     [ -n "$TICK" ]  && echo "TICK=$TICK"   >> "$CONF"
+    [ -n "$GL" ]    && echo "GL=$GL"       >> "$CONF"
+    [ -n "$MATERIAL" ] && echo "MATERIAL=$MATERIAL" >> "$CONF"
     "$ADB" push "$CONF" "$FILES/glass.conf"
     echo "档位: $(tr '\n' ' ' < "$CONF")"
 else
@@ -145,6 +155,14 @@ fi
 # 所以**不能**拿启动时那次读数当准。
 "$ADB" shell dumpsys SurfaceFlinger 2>/dev/null | grep -m1 activeMode > "$OUT/active-mode.txt"
 echo "面板: $(cat "$OUT/active-mode.txt")"
+
+# GL 探针的判据行单独落一份：它们是关口 2 的证据，混在整份 logcat 里
+# 下次要找得翻半天。
+"$ADB" logcat -d -s kk-glass | grep -F "PROBE GL" > "$OUT/probe-gl.txt" 2>/dev/null
+if [ -s "$OUT/probe-gl.txt" ]; then
+    echo "GL 探针判据:"
+    cat "$OUT/probe-gl.txt"
+fi
 
 say "logcat"
 "$ADB" logcat -d -s kk-glass > "$OUT/logcat-kk-glass.txt"

@@ -4111,6 +4111,7 @@ dependencies = [
  "i-slint-backend-android-activity",
  "i-slint-backend-linuxkms",
  "i-slint-backend-selector",
+ "i-slint-backend-winit",
  "i-slint-common",
  "i-slint-core",
  "i-slint-core-macros",
@@ -4142,6 +4143,8 @@ name = "slint-glass-spike"
 version = "0.0.0"
 dependencies = [
  "android_logger",
+ "glow 0.18.0",
+ "image",
  "log",
  "ndk 0.9.0",
  "slint",

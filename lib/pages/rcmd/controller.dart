@@ -19,6 +19,63 @@ class RcmdController extends CommonListController with RefreshImplMixin {
   @override
   bool get isEnd => false;
 
+  // ---- 首屏铺满（#263）----
+  //
+  // 默认的 app 推荐接口没有 `ps` 参数，每次约 10 条，大屏一屏放不下就会
+  // 留空位。这里在刷新后按「一屏容量」自动续拉，直到铺满或达到上限。
+  //
+  // 为什么留在宿主：推荐流还没迁到 Rust（`lib/http/video.dart`）。「不够
+  // 就续拉、最多几次」是阈值与重试策略，按 AGENTS.md §2 应该在 Rust；
+  // 推荐切片迁移时把它做成 Rust 接口的参数（如 `min_count`），并删掉这一段。
+  // 「一屏容量」依赖布局，那部分留在宿主（见 view 的 `_reportCapacity`）。
+
+  /// 一屏可容纳的卡片数，由页面按网格布局算出；视口尺寸、dpi、列宽设置
+  /// 变化时页面会重新上报，值不变则沿用。
+  int? screenCapacity;
+
+  /// 每次刷新最多续拉的次数，防止服务端持续返回很少或大半被过滤时刷请求。
+  static const int _maxTopUps = 3;
+  int _topUps = 0;
+  bool _filling = false;
+
+  int get _loadedCount => switch (loadingState.value) {
+    Success(:final List? response) => response?.length ?? 0,
+    _ => 0,
+  };
+
+  /// 页面上报新的一屏容量。变大时（如折叠屏展开、转屏）立即补齐。
+  void updateScreenCapacity(int capacity) {
+    if (capacity == screenCapacity) return;
+    screenCapacity = capacity;
+    _fillFirstScreen();
+  }
+
+  Future<void> _fillFirstScreen() async {
+    final capacity = screenCapacity;
+    if (capacity == null || _filling || !_hasData) return;
+    _filling = true;
+    try {
+      while (!isClosed && _topUps < _maxTopUps && _loadedCount < capacity) {
+        // 刷新还在进行时等它结束，不与之并发（基类见 isLoading 直接返回）。
+        if (isLoading) break;
+        _topUps++;
+        final before = _loadedCount;
+        await queryData(false);
+        // 续拉失败或一条没多（基类对加载更多的失败不报错）就停，不重试。
+        if (_loadedCount <= before) break;
+      }
+    } finally {
+      _filling = false;
+    }
+  }
+
+  @override
+  Future<void> queryData([bool isRefresh = true]) async {
+    if (isRefresh) _topUps = 0;
+    await super.queryData(isRefresh);
+    if (isRefresh) await _fillFirstScreen();
+  }
+
   @override
   void onInit() {
     super.onInit();

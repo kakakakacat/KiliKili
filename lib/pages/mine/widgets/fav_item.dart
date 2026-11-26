@@ -1,4 +1,5 @@
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
+import 'package:kilikili/pages/mine/widgets/mine_surfaces.dart';
 import 'package:kilikili/services/rust/rust_fav.dart';
 import 'package:kilikili/utils/bili_utils.dart';
 import 'package:kilikili/utils/utils.dart';
@@ -17,59 +18,20 @@ class FavFolderItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final heroTag = Utils.makeHeroTag(item.id);
-    return GestureDetector(
+    return MineCollectionTile(
       onTap: () => Get.toNamed(
         '/favDetail',
         arguments: item,
-        parameters: {
-          'mediaId': item.id.toString(),
-          'heroTag': heroTag,
-        },
+        parameters: {'mediaId': item.id.toString(), 'heroTag': heroTag},
       )?.whenComplete(onPop),
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(12)),
-              boxShadow: [
-                BoxShadow(
-                  color: theme.colorScheme.onInverseSurface.withValues(
-                    alpha: 0.4,
-                  ),
-                  offset: const Offset(6, -8),
-                  blurRadius: 0.0,
-                  spreadRadius: 0.0,
-                ),
-              ],
-            ),
-            child: Hero(
-              tag: heroTag,
-              child: NetworkImgLayer(
-                src: item.cover,
-                width: 180,
-                height: 110,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            ' ${item.title}',
-            maxLines: 1,
-            overflow: .ellipsis,
-            style: const TextStyle(height: 1.42, letterSpacing: 0.3),
-          ),
-          Text(
-            ' 共${item.mediaCount}条视频 · ${BiliUtils.isPublicFavText(item.attr)}',
-            style: theme.textTheme.labelSmall!.copyWith(
-              color: theme.colorScheme.outline,
-            ),
-          ),
-        ],
+      cover: Hero(
+        tag: heroTag,
+        child: NetworkImgLayer(src: item.cover, width: 112, height: 90),
       ),
+      title: item.title,
+      subtitle:
+          '${item.mediaCount} 条视频 · ${BiliUtils.isPublicFavText(item.attr)}',
     );
   }
 }

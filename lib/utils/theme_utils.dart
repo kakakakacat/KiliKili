@@ -165,10 +165,53 @@ abstract final class ThemeUtils {
         },
       ),
     );
-    if (isDark && Pref.isPureBlackTheme) {
-      return darkenTheme(theme);
-    }
-    return theme;
+    // 导航配色放在 darkenTheme 之后：纯黑主题会把 primary 调暗，选中色要跟着它。
+    return _navigationColors(
+      isDark && Pref.isPureBlackTheme ? darkenTheme(theme) : theme,
+    );
+  }
+
+  /// 导航的选中项用主题色，未选中保持灰色（#252，所有者决定）。
+  ///
+  /// 覆盖底栏的三种形态（玻璃悬浮栏与 M3 `NavigationBar` 都读
+  /// `navigationBarTheme`，经典 `BottomNavigationBar` 读自己的主题）以及横屏 /
+  /// 平板的 `NavigationRail`。主题里的样式会**整个替换**组件默认值，所以文字
+  /// 必须基于最终的 `labelMedium` 给出完整样式，否则会丢掉字号与用户设置的
+  /// 字重；图标尺寸同理显式写 24。
+  static ThemeData _navigationColors(ThemeData theme) {
+    final scheme = theme.colorScheme;
+    final label = theme.textTheme.labelMedium!;
+    Color colorOf(Set<WidgetState> states) =>
+        states.contains(WidgetState.disabled)
+        ? scheme.onSurfaceVariant.withValues(alpha: 0.38)
+        : states.contains(WidgetState.selected)
+        ? scheme.primary
+        : scheme.onSurfaceVariant;
+    return theme.copyWith(
+      navigationBarTheme: theme.navigationBarTheme.copyWith(
+        iconTheme: WidgetStateProperty.resolveWith(
+          (states) => IconThemeData(size: 24, color: colorOf(states)),
+        ),
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (states) => label.copyWith(color: colorOf(states)),
+        ),
+      ),
+      bottomNavigationBarTheme: theme.bottomNavigationBarTheme.copyWith(
+        selectedItemColor: scheme.primary,
+        unselectedItemColor: scheme.onSurfaceVariant,
+      ),
+      navigationRailTheme: theme.navigationRailTheme.copyWith(
+        selectedIconTheme: IconThemeData(size: 24, color: scheme.primary),
+        unselectedIconTheme: IconThemeData(
+          size: 24,
+          color: scheme.onSurfaceVariant,
+        ),
+        selectedLabelTextStyle: label.copyWith(color: scheme.primary),
+        unselectedLabelTextStyle: label.copyWith(
+          color: scheme.onSurfaceVariant,
+        ),
+      ),
+    );
   }
 
   static ThemeData darkenTheme(ThemeData theme) {

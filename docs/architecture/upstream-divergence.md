@@ -456,6 +456,12 @@ media-kit 适配器，时序、错误与资源决策修改 Rust，不恢复旧�
 `lib/pages/login/view.dart` 与 `lib/pages/login/sms_code_field.dart` 分别早在
 #140 和 #162 就已在「有实质改动」与「新增」桶里，再改不改变归类。
 
+修订：2026-11-26（#242 预回归的三个 P1：#255、#256、#257 为本次）——
+`lib/pages/search_panel/view.dart` 此前只被重命名提交 `ba430476b` 触及，本次转为
+实质改动：仅重命名 **340 → 339**、实质改动 **513 → 514**；修改总数、新增与删除不变。
+同时改到的 `http_error.dart`（#106）、`search_panel/controller.dart`（S9）、
+`reply_reply/{controller,view}.dart`（#176）早已在实质改动桶里，不改变归类。
+
 ## 1. 基准
 
 ```
@@ -474,10 +480,13 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 类别 | 数量 |
 | --- | ---: |
 | 修改的上游既有文件 | **853** |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | **340** |
-| &nbsp;&nbsp;其中：有实质改动 | **513** |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | **339** |
+| &nbsp;&nbsp;其中：有实质改动 | **514** |
 | 新增文件 | **1042** |
 | 删除文件 | **369** |
+
+其后 #255–#257 让 `lib/pages/search_panel/view.dart` 转入实质改动（339 / 514），见文首
+2026-11-26 那条修订。
 
 数字为 2026-11-26 的重算值（#250 应用图标分支的工作树，按 §6 整表重算）。比 #242 那次的
 852 / 340 / 512 / 1019 / 369：`android/app/src/main/res/values-v31/styles.xml` 因 Android 12+
@@ -636,6 +645,9 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | `.github/workflows/ios.yml` | 本次（#121） | 注释写明侧载没有仓库侧发布身份；构建行为未变 |
 | `lib/pages/login/view.dart` | #140、#162、#236 | 短信登录交互修复（#140）之后，界面整页改胶囊：顶部登录方式是一条**分段胶囊**（`CapsuleSegmentedTabBar`，四格等分、选中块滑动，窄屏丢图标保文字），五个输入栏是填充 + 全圆角（多行的 Cookie 用 24 圆角），主操作是整行 56 高胶囊。**上游若改这个文件，照常同步里面的逻辑与字段，但不要把布局与装饰同步回来**——那一层这边已经整个换掉，判据同 §4.4 |
 | `android/app/src/main/AndroidManifest.xml` | 本次（#230） | `io.flutter.embedding.android.EnableImpeller` 由 `false` 改为 `true`。该 opt-out 是 2024 年底随上游带进来的，Flutter 3.47 已把它标为 deprecated；关着它时 `ImageFilter.isShaderFilterSupported` 为 false，玻璃导航栏的折射 shader 根本不会运行，Android 只能退到 `ImageFilter.blur`——这就是 iOS 透明、Android 像高斯模糊的全部原因。**上游若再改这一段，不要跟着关回去**；上游自己迟早会删掉这个 meta-data，届时整行一并删除即可，默认就是开 |
+| `lib/common/widgets/loading_widget/http_error.dart` | #106、#255 | 错误态胶囊（#106）；屏高 < 580 时缩小插图与上下边距，避免文案与重试按钮落到首页悬浮底栏下面，常规手机保持上游尺寸 |
+| `lib/pages/video/reply_reply/{controller,view}.dart` | #176、#256 | 线程化进度条只在拉取期间显示（新增 `fetchingTree`），上游让它常驻，未拉取时是一根来历不明的主题色条。**同步上游时保留这个开关** |
+| `lib/pages/search_panel/{controller,view}.dart` | S9、#257 | 搜索面板加页脚：加载更多失败时显示原因并可点重试，到底时显示「没有更多了」。刻意没改 `CommonListController`——几十个列表共用，改它的上游冲突面太大 |
 
 `lib/plugin/pl_player/controller.dart` 不在这张表里，它已经由 §4.1 的 S3 一行
 覆盖；issue #89 又给它加了 seek 代际 `_seekEpoch`，这里不重复计数。那条代际

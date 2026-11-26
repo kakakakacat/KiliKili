@@ -237,12 +237,16 @@ dev_dependencies:
   flutter_native_splash: ^2.4.6
   jnigen: ^1.0.0
 
+# 图标源是 assets/app_icon/source_transparent.png（透明底）。icon.png / macos.png
+# 以及插件不管的 Windows ico、托盘图、Linux 图标由 tool/app-icon-generate.py
+# 生成，统一白底（#250：深色底在白色启动图上很突兀）。iOS 不接受带 alpha 的
+# 图标，所以 icon.png 必须不透明。
 flutter_launcher_icons:
   android: true
   ios: true
   remove_alpha_ios: true
   image_path: assets/app_icon/icon.png
-  adaptive_icon_background: "#101628"
+  adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: assets/app_icon/android_foreground.png
   adaptive_icon_foreground_inset: 19
   adaptive_icon_monochrome: assets/app_icon/android_foreground.png
@@ -251,10 +255,15 @@ flutter_launcher_icons:
     image_path: assets/app_icon/macos.png
 
 flutter_native_splash:
-  # 深色底取应用图标的背景色 #101628（见上面的 adaptive_icon_background），
-  # 浅色仍是白底——浅色模式下用深色启动图，进应用时会闪一下（issue #14）。
+  # 深色底沿用品牌深蓝 #101628，浅色白底——浅色模式下用深色启动图，进应用时
+  # 会闪一下（issue #14）。
   # image 指向 logo_2.png，那是与应用图标同源的标记，透明底、单色，缩放后仍清晰。
+  # android_12 必须单独给 image：不给的话 Android 12+ 直接拿启动器图标（连同
+  # 背景层）画在启动画面上——#250 里白底上的那块深色方块。这里给透明底标记、
+  # 不配 icon_background_color，浅色/深色底上都只显示粉色标记。
   android_12:
+    image: assets/app_icon/splash_android12.png
+    image_dark: assets/app_icon/splash_android12.png
     color: "#ffffff"
     color_dark: "#101628"
   color: "#ffffff"

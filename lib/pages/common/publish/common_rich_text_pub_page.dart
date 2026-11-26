@@ -74,8 +74,27 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
     imageList = RxList<PicModel>(widget.pics ?? <PicModel>[]);
   }
 
+  /// 正在传的那一批配图的 id，与 [imageList] 一一对应（网络图那几位是 null）。
+  ///
+  /// 存在 state 上而不是 [_uploadPictures] 的局部变量里，是因为取消来自
+  /// 两个它管不到的地方：用返回键关掉加载框、页面被销毁（#273）。
+  List<int?> _uploadIds = const [];
+
+  /// 这一批是不是已经被用户放弃了。放弃后不再弹 toast、不再关加载框
+  /// （它已经关了，再调 `SmartDialog.dismiss` 会关掉别的东西），也不再发布。
+  bool _uploadAborted = false;
+
+  void _abortUploads() {
+    _uploadAborted = true;
+    for (final id in _uploadIds) {
+      RustUpload.cancel(id);
+    }
+  }
+
   @override
   void dispose() {
+    // 先停上传再删文件：后台上传可能还在读下面要删的那几个文件。
+    _abortUploads();
     if (PlatformUtils.isMobile) {
       for (final img in imageList) {
         if (img is FilePicModel) {
@@ -508,6 +527,9 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
       pictures = await _uploadPictures();
       // null 表示失败或被取消，toast 已经发过（或刻意不发）。
       if (pictures == null) return;
+      // 图刚好全传完、页面却已经退出：用户的意思是「不发了」，这里不能
+      // 替用户发出去（#273）。
+      if (!mounted) return;
     }
     return onCustomPublish(pictures: pictures);
   }
@@ -518,21 +540,28 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
   /// `Future.wait(eagerError: true)` 并发传，同时拿一个 `CancelToken` 在出错
   /// 时把其余几张一起停掉。Rust 侧的取消是显式 id（ADR-015 决策三），所以
   /// 这里自己收着那串 id——并发度不变，出错时的行为也不变。
+  ///
+  /// 用返回键关掉加载框、或者退出页面，都会取消整批（#273）。基线两样都
+  /// 不取消：图在后台传完，动态照样发出去，回到首页才弹「发布成功」。
   Future<List<Map<String, dynamic>>?> _uploadPictures() async {
-    SmartDialog.showLoading(msg: '正在上传图片...');
-    // 与 imageList 一一对应：网络图那几位是 null。
-    final ids = <int?>[];
+    _uploadAborted = false;
+    final ids = _uploadIds = <int?>[];
+    // onDismiss 在代码自己关加载框时也会触发；那时这一批要么已全部结束
+    // （取消是空操作），要么已经在失败分支里取消过，所以这里不必区分。
+    SmartDialog.showLoading(msg: '正在上传图片...', onDismiss: _abortUploads);
     for (final img in imageList) {
-      ids.add(
-        switch (img) {
-          FilePicModel e => await RustUpload.beginBfs(
-            path: e.path,
-            category: 'daily',
-            biz: 'new_dyn',
-          ),
-          OpusPicModel _ => null,
-        },
-      );
+      final id = switch (img) {
+        FilePicModel e => await RustUpload.beginBfs(
+          path: e.path,
+          category: 'daily',
+          biz: 'new_dyn',
+        ),
+        OpusPicModel _ => null,
+      };
+      ids.add(id);
+      // 启动是逐张 await 的，放弃可能发生在中途：已经启动的那几张由
+      // _abortUploads 取消了，刚启动的这一张它还没见过，这里补上。
+      if (_uploadAborted) RustUpload.cancel(id);
     }
 
     final pictures = <Map<String, dynamic>>[];
@@ -560,10 +589,13 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
       for (final id in ids.skip(i + 1)) {
         RustUpload.cancel(id);
       }
+      if (_uploadAborted) return null;
       SmartDialog.dismiss();
       if (!RustUpload.isCancelled(state)) state.toast();
       return null;
     }
+    // 放弃发生在最后一张刚传完之后：图都在，但用户已经不要发了。
+    if (_uploadAborted) return null;
     SmartDialog.dismiss();
     return pictures;
   }

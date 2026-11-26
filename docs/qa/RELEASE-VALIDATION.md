@@ -170,7 +170,7 @@ SC 列表和全屏 SC、标题/看过人数/在线数更新；修改屏蔽词与
 | P08 | 安装体积 | 对同架构 Release 产物记录字节数、内含原生库及相对上版增量 | 每次增量有原因；构建/产物检查通过 |
 | P09 | 首页底栏响应（#127） | 三种底栏分别在动画开/关下，测相邻及跨两项切换，区分首次进入与再次切换；固定页面数据和网络，记录点击到选中态、目标页构建、首帧及转场完成的原始耗时。用 profile/release 帧时间线分开 UI、Raster 与玻璃背板开销，并检查初始化、请求和图片解码 | 关闭动画时不应有固定转场等待或途经页初始化；开启时不把有意的转场时长算作首帧阻塞。与同设备旧版重复比较；Widget 测试只证明切换行为，不能充当真机耗时基线 |
 
-P09 可用 `tool/navigation_profile/README.md` 的独立 profile 包记录回调与帧时间；边界和原始记录示例见 [#127 未登录采样](measurements/nav-127-anonymous-2026-11-26/README.md)，不要把匿名结果替代登录态验收。
+P09 可用 `tool/navigation_profile/README.md` 的独立 profile 包记录回调与帧时间；边界和原始记录示例见 [#127 未登录采样](measurements/nav-127-anonymous-2026-11-26/README.md)及 [登录态采样](measurements/nav-127-authenticated-2026-11-26/README.md)。两种状态各保留 30 条有效样本，覆盖悬浮底栏、动画关闭；其他样式和旧版对照仍待测。
 
 性能门槛采用 [RFC-0001 §8.1](../architecture/RFC-0001-rust-slint-migration.md) 的原则：冷启动、CPU、Seek 不劣于同设备基线；内存无持续增长；包体增量可解释。尚无数值基线时先记录 `NO BASELINE`，不得填写 `PASS` 或声称性能改善。硬解、PiP、后台行为与渲染性能不能由虚拟化 CI runner 验收。
 

@@ -990,3 +990,15 @@ glint 0.18 / 不模糊）此前只代表 iOS，Android 线上跑的是 sigma=10 
 「像 Android 现状」（那是白捡的），而是「像 iOS 的清透折射」，正是
 [wgpu 评估](spikes/2026-11-24-glass-wgpu-eval.md) §2 卡在关口 2 的那一项。
 
+
+
+## 首页导航切换回归（#127）
+
+`test/pages/main/navigation_switch_test.dart` 通过真实 `MainController.setIndex`
+核查三种底栏的点击：关闭「首页切换页面动画」时，选中态同步更新，下一帧
+直接显示目标，不构建途经的中间页；侧栏同样直接切换。另核查开启动画时
+保留转场，以及连续切换后最终页面与选中态一致。
+
+测试使用临时 Hive 设置与无网络的页面占位，需使用已打补丁的 Flutter SDK。
+它覆盖开关与首帧行为，不测真实页面初始化、网络、图片解码或 GPU 开销；
+真机采样方法见 `docs/qa/RELEASE-VALIDATION.md` 的 P09。CI 触发方式未变。

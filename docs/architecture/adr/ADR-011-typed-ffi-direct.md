@@ -725,3 +725,44 @@ shadow 是 RFC §5.3 为 Stage 1 早期设计的，那时 Rust 还不是任何�
 
 判据：**一个设施如果只服务于某个已经改掉的形态，那么改形态的那次就该把它
 一起删**。留着不删的代价不是那几行代码，是后来的人会继续往上投入。
+
+---
+
+## #271（番剧片头片尾从不跳过）落地后的补充
+
+### 补充二十八：构造 fixture 冻住的不只是字段类型，还有字段的**位置**
+
+补充二十三说手工 fixture 会把作者的类型假设一起冻进测试。#271 把这条推进
+了一步：被冻住的还有「这个字段在响应里的哪一层」。
+
+`ogv_watch_progress.pgc.raw.json` 是按「片头片尾当然和降级接口放在同一个
+地方」构造的，于是片段写进了 `video_info.clip_info_list`。真实的
+`/ogv/player/playview` 把它放在**外层** `data.video_extra.clip_info`，而且
+类型是整数 `clip_type`（1 = 片头、2 = 片尾）；`video_info.clip_info_list`
+在这条接口上实测恒为 null。
+
+后果是一个必现的线上故障被一份自洽的样本挡在了测试之外：登录态下番剧走
+主接口，片段恒为空，既不自动跳也不出按钮；而 CI 全绿，Rust 单测、golden、
+一次性 parity 三样都过——因为它们比的都是同一份错误的输入。
+
+这个 bug **不是迁移引入的**，基线 `PlayUrlModel.fromJson` 连同上游
+PiliPlus 都只看 `video_info.clip_info_list`。迁移忠实地搬走了它，
+parity 测试忠实地证明了「搬得一模一样」。**parity 保证的是「没改坏」，
+不是「本来是对的」**——这两件事在验收时容易混为一谈。
+
+判据：构造 fixture 时，**位置和类型一样都是假设**。能匿名抓到的接口（这次
+两条都能，只差一个 `buvid3` cookie）就别构造；抓不到的，至少把「这一层是
+猜的」写进 fixture README。
+
+### 补充二十九：导出面不该带某一条接口的字面量
+
+同一件事，两条接口给的是两套写法：主接口发整数 `clip_type`，降级接口发
+`clipType: "CLIP_TYPE_OP"`。原先领域实体 `ClipInfo.clip_type` 是
+`Option<String>`，装的就是后一种的字面量——于是「认哪一套」这个决定被推到
+了下游（`bili-core::pgc_clip_segments` 里那个 `match` 字符串），而上游少喂
+一套时下游静默地什么都不做。
+
+现在归一在解析层：`bili_domain::playurl::ClipKind { Opening, Ending, Other }`，
+两条接口各自映射过去，`bili-core` 与 FRB 导出面都只认这三个值。这正是
+「FRB 的导出面保持语言中立」那条的同构情形——**也不该带协议中立之外的
+接口方言**。认不出来的取值归 `Other`，不猜。

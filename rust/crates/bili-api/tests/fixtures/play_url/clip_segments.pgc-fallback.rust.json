@@ -1,0 +1,80 @@
+{
+  "accept_description": [
+    "高清 1080P+",
+    "高清 1080P",
+    "高清 720P",
+    "清晰 480P",
+    "流畅 360P"
+  ],
+  "accept_format": "mp4,mp4,mp4,mp4,mp4",
+  "accept_quality": [
+    112,
+    80,
+    64,
+    32,
+    16
+  ],
+  "clip_info_list": [
+    {
+      "end": 129.0,
+      "kind": "Opening",
+      "start": 41.0
+    },
+    {
+      "end": 1384.0,
+      "kind": "Ending",
+      "start": 1297.0
+    }
+  ],
+  "cur_language": null,
+  "dash": null,
+  "durl": [
+    {
+      "ahead": null,
+      "backup_url": [
+        "https://cdn-backup.example/preview-1.mp4?token=REDACTED"
+      ],
+      "length": 360193,
+      "order": 1,
+      "size": 25636340,
+      "url": "https://cdn.example/preview-1.mp4?token=REDACTED",
+      "vhead": null
+    }
+  ],
+  "format": "mp4",
+  "from": "local",
+  "language": null,
+  "last_play_cid": null,
+  "last_play_time": 312000,
+  "message": null,
+  "quality": 32,
+  "result": "suee",
+  "seek_param": "start",
+  "seek_type": "second",
+  "support_formats": [
+    {
+      "codecs": [],
+      "display_desc": "1080P",
+      "format": "mp4",
+      "new_desc": "1080P 高码率",
+      "quality": 112
+    },
+    {
+      "codecs": [],
+      "display_desc": "1080P",
+      "format": "mp4",
+      "new_desc": "1080P 高清",
+      "quality": 80
+    },
+    {
+      "codecs": [],
+      "display_desc": "720P",
+      "format": "mp4",
+      "new_desc": "720P 准高清",
+      "quality": 64
+    }
+  ],
+  "time_length": 1425406,
+  "video_codecid": 7,
+  "volume": null
+}

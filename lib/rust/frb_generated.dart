@@ -16222,8 +16222,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     return ClipInfo(
       start: dco_decode_opt_box_autoadd_f_64(arr[0]),
       end: dco_decode_opt_box_autoadd_f_64(arr[1]),
-      clipType: dco_decode_opt_String(arr[2]),
+      kind: dco_decode_clip_kind(arr[2]),
     );
+  }
+
+  @protected
+  ClipKind dco_decode_clip_kind(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return ClipKind.values[raw as int];
   }
 
   @protected
@@ -29409,8 +29415,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_start = sse_decode_opt_box_autoadd_f_64(deserializer);
     var var_end = sse_decode_opt_box_autoadd_f_64(deserializer);
-    var var_clipType = sse_decode_opt_String(deserializer);
-    return ClipInfo(start: var_start, end: var_end, clipType: var_clipType);
+    var var_kind = sse_decode_clip_kind(deserializer);
+    return ClipInfo(start: var_start, end: var_end, kind: var_kind);
+  }
+
+  @protected
+  ClipKind sse_decode_clip_kind(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return ClipKind.values[inner];
   }
 
   @protected
@@ -46631,7 +46644,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_opt_box_autoadd_f_64(self.start, serializer);
     sse_encode_opt_box_autoadd_f_64(self.end, serializer);
-    sse_encode_opt_String(self.clipType, serializer);
+    sse_encode_clip_kind(self.kind, serializer);
+  }
+
+  @protected
+  void sse_encode_clip_kind(ClipKind self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
   }
 
   @protected

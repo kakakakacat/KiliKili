@@ -930,6 +930,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ClipInfo dco_decode_clip_info(dynamic raw);
 
   @protected
+  ClipKind dco_decode_clip_kind(dynamic raw);
+
+  @protected
   CoinLikeArcItem dco_decode_coin_like_arc_item(dynamic raw);
 
   @protected
@@ -5158,6 +5161,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ClipInfo sse_decode_clip_info(SseDeserializer deserializer);
+
+  @protected
+  ClipKind sse_decode_clip_kind(SseDeserializer deserializer);
 
   @protected
   CoinLikeArcItem sse_decode_coin_like_arc_item(SseDeserializer deserializer);
@@ -10662,6 +10668,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_clip_info(ClipInfo self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_clip_kind(ClipKind self, SseSerializer serializer);
 
   @protected
   void sse_encode_coin_like_arc_item(

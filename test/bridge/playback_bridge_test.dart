@@ -169,13 +169,15 @@ void main() {
 
   test('PGC 片头片尾跨 FFI 转成毫秒的片段', () {
     final segments = pgcClipSegments(const [
-      ClipInfo(start: 0, end: 88.5, clipType: 'CLIP_TYPE_OP'),
-      ClipInfo(start: 1350, end: 1434, clipType: 'CLIP_TYPE_ED'),
+      ClipInfo(start: 0, end: 88.5, kind: ClipKind.opening),
+      ClipInfo(start: 1350, end: 1434, kind: ClipKind.ending),
+      ClipInfo(start: 10, end: 20, kind: ClipKind.other),
     ], 1440000);
-    expect(segments.length, 2);
+    expect(segments.length, 3);
     expect(segments[0].category, 'intro');
     expect(segments[0].endMs, 88500);
     expect(segments[1].category, 'outro');
+    expect(segments[2].category, 'sponsor');
     expect(segments[0].videoDurationMs, 1440000);
   }, skip: bridgeSkip);
 }

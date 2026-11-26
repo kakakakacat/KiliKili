@@ -171,6 +171,25 @@ pub struct ClipInfo {
     /// 起止（秒）。基线转成毫秒是在模型里做的，此处保持接口单位。
     pub start: Option<f64>,
     pub end: Option<f64>,
-    /// `CLIP_TYPE_OP` / `CLIP_TYPE_ED` / 其他。
-    pub clip_type: Option<String>,
+    pub kind: ClipKind,
+}
+
+/// 片段是片头还是片尾。
+///
+/// **刻意不是 `Option<String>`。** 两条 PGC 接口对同一件事给的是两套
+/// 表示：主接口（playview）在 `video_extra.clip_info` 里发整数
+/// `clip_type`（1 = 片头、2 = 片尾），降级接口在 `video_info.clip_info_list`
+/// 里发字符串 `clipType`（`CLIP_TYPE_OP` / `CLIP_TYPE_ED`）。把其中一套
+/// 的字面量原样带进领域，等于让下游去认某一条接口的词汇——#271 就是这么
+/// 漏的：只认字符串那一套，主接口的片头片尾被整条丢掉，番剧从来不跳。
+/// 归一在解析层做完，领域里只剩「是哪一种」。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub enum ClipKind {
+    /// 片头。
+    Opening,
+    /// 片尾。
+    Ending,
+    /// 认不出来的类型。基线把它归到「赞助」那一类，此处只表示「不是
+    /// 片头也不是片尾」，归类由 `bili-core` 决定。
+    Other,
 }

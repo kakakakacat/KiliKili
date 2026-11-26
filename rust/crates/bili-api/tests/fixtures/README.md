@@ -21,11 +21,19 @@
 DTO——否则下一个人照着同一份 fixture 又会猜回去。宽松解析的判据见
 `crates/bili-api/src/lenient.rs` 的模块文档。
 
+#271 是这条的第二个例子，而且比 #161 更难发现：`ogv_watch_progress.pgc`
+里的片头片尾按「它当然和降级接口放在同一个地方」构造，放进了
+`video_info.clip_info_list`。真实的 playview 把它放在外层
+`video_extra.clip_info` 且类型是整数，`video_info.clip_info_list` 恒为
+null——于是「番剧从来不跳片头」这个必现的线上故障，被一份自洽的构造样本
+挡在了测试之外，CI 全绿。**构造样本连字段的「位置」都是假设**，不只是
+类型。
+
 ## 有真实来源的那几份
 
 | 位置 | 哪些是真的 | 其余 |
 |---|---|---|
-| `play_url/` | UGC 样本取自真机真实响应并脱敏 | PGC / PUGV 为构造样本 |
+| `play_url/` | UGC 样本取自真机真实响应并脱敏；`clip_segments.pgc-fallback` 取自 2026-11-26 匿名抓的 `/pgc/player/web/v2/playurl` 并脱敏（地址、时长外的业务 id 已替换，`durl` 只留一条、`support_formats` 只留三档）；`ogv_watch_progress.pgc` 的 `video_extra.clip_info` **形状**（整数 `clip_type`、位置在外层）取自同日的真实 playview 响应 | PGC / PUGV 的其余部分为构造样本；`clip_segments.pgc-fallback` 里的 `current_watch_progress` 是构造值（匿名抓到的是 0，那样覆盖不到降级接口的进度路径） |
 | `reply/` | `reply_list_paged`、`reply_reply` 取自**匿名**抓的真实响应并脱敏（rpid/oid/mid 等已替换） | 其余构造 |
 | `video_page/` | `play_info`、`note_list` 取自真实响应并脱敏 | `ai_conclusion`、`play_info_rich` 手工构造——那两段要登录态才拿得到，匿名是 `code -101` |
 | `space/` | 合集与列表取自真实响应再脱敏 | 投稿搜索那条手工构造 |

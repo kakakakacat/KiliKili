@@ -201,17 +201,21 @@
             "production_type": 2
           }
         ]
-      },
-      "clip_info_list": [
+      }
+    },
+    "video_extra": {
+      "clip_info": [
         {
+          "clip_type": 1,
           "start": 0,
           "end": 88.5,
-          "clipType": "CLIP_TYPE_OP"
+          "toast_text": ""
         },
         {
+          "clip_type": 2,
           "start": 1350,
           "end": 1434,
-          "clipType": "CLIP_TYPE_ED"
+          "toast_text": ""
         }
       ]
     },

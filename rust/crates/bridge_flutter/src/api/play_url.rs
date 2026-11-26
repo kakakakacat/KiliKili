@@ -158,8 +158,19 @@ pub struct ClipInfo {
     /// 起止（秒）。转成毫秒是展示侧的事，此处保持接口单位。
     pub start: Option<f64>,
     pub end: Option<f64>,
-    /// `CLIP_TYPE_OP` / `CLIP_TYPE_ED` / 其他。
-    pub clip_type: Option<String>,
+    pub kind: ClipKind,
+}
+
+/// 片段是片头还是片尾。
+///
+/// 接口那两套写法（主接口的整数、降级接口的 `CLIP_TYPE_*` 字符串）在
+/// `bili-api` 解析时就归一掉了，导出面只有这三个取值——宿主不该认任何
+/// 一条接口的词汇（issue #271）。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ClipKind {
+    Opening,
+    Ending,
+    Other,
 }
 
 // ------------------------------------------------------------------ 转换
@@ -289,7 +300,15 @@ fn clip_info(value: domain::ClipInfo) -> ClipInfo {
     ClipInfo {
         start: value.start,
         end: value.end,
-        clip_type: value.clip_type,
+        kind: clip_kind(value.kind),
+    }
+}
+
+const fn clip_kind(value: domain::ClipKind) -> ClipKind {
+    match value {
+        domain::ClipKind::Opening => ClipKind::Opening,
+        domain::ClipKind::Ending => ClipKind::Ending,
+        domain::ClipKind::Other => ClipKind::Other,
     }
 }
 
@@ -324,6 +343,10 @@ pub(crate) fn to_domain_clip(value: ClipInfo) -> domain::ClipInfo {
     domain::ClipInfo {
         start: value.start,
         end: value.end,
-        clip_type: value.clip_type,
+        kind: match value.kind {
+            ClipKind::Opening => domain::ClipKind::Opening,
+            ClipKind::Ending => domain::ClipKind::Ending,
+            ClipKind::Other => domain::ClipKind::Other,
+        },
     }
 }

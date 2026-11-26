@@ -13,6 +13,7 @@ import 'package:flutter/foundation.dart';
 export 'package:kilikili/rust/api/play_url.dart'
     show
         ClipInfo,
+        ClipKind,
         Dash,
         Durl,
         LanguageItem,

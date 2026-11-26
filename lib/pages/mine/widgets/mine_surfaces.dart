@@ -1,5 +1,30 @@
 import 'package:material_ui/material_ui.dart';
 
+/// 背景先覆盖完整视口，只有交互内容避让系统状态栏。
+class MinePageBackground extends StatelessWidget {
+  const MinePageBackground({super.key, required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+          colors: [
+            colors.primary.withValues(alpha: 0.055),
+            colors.surface,
+            colors.surface,
+          ],
+        ),
+      ),
+      child: SafeArea(left: false, right: false, bottom: false, child: child),
+    );
+  }
+}
+
 /// 只承载视觉和交互；账号、等级和接口规则仍由调用方提供。
 class MineSurface extends StatelessWidget {
   const MineSurface({

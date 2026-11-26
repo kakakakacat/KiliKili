@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kilikili/pages/mine/widgets/mine_surfaces.dart';
+import 'package:kilikili/common/widgets/main_layout.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
@@ -190,5 +191,46 @@ void main() {
     }
     await tester.tap(find.text('很长很长的默认收藏夹名称'));
     expect(taps, ['头像', '长按', '动态', '关注', '粉丝', '收藏']);
+  });
+  testWidgets('背景延伸到状态栏，内容只避让一次顶部安全区', (tester) async {
+    const contentKey = Key('mine-content');
+    const backgroundKey = Key('mine-background');
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MediaQuery(
+          data: const MediaQueryData(
+            padding: EdgeInsets.only(top: 24),
+            viewPadding: EdgeInsets.only(top: 24),
+          ),
+          child: MainPageInset(
+            extendBehindStatusBar: true,
+            child: MinePageBackground(
+              key: backgroundKey,
+              child: const SizedBox.expand(key: contentKey),
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(tester.getTopLeft(find.byKey(backgroundKey)).dy, 0);
+    expect(tester.getTopLeft(find.byKey(contentKey)).dy, 24);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('其他主页面保留原来的状态栏留白', (tester) async {
+    const key = Key('other-page');
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: MediaQuery(
+          data: MediaQueryData(
+            padding: EdgeInsets.only(top: 24),
+            viewPadding: EdgeInsets.only(top: 24),
+          ),
+          child: MainPageInset(child: SizedBox.expand(key: key)),
+        ),
+      ),
+    );
+    expect(tester.getTopLeft(find.byKey(key)).dy, 24);
+    expect(tester.takeException(), isNull);
   });
 }

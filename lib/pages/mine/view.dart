@@ -75,18 +75,7 @@ class _MediaPageState extends CommonPageState<MinePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-          colors: [
-            theme.colorScheme.primary.withValues(alpha: 0.055),
-            theme.colorScheme.surface,
-            theme.colorScheme.surface,
-          ],
-        ),
-      ),
+    return MinePageBackground(
       child: Column(
         children: [
           Center(

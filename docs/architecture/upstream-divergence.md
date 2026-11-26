@@ -473,13 +473,20 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 | 类别 | 数量 |
 | --- | ---: |
-| 修改的上游既有文件 | **852** |
+| 修改的上游既有文件 | **853** |
 | &nbsp;&nbsp;其中：仅因包名重命名而改动 | **340** |
-| &nbsp;&nbsp;其中：有实质改动 | **512** |
-| 新增文件 | **1019** |
+| &nbsp;&nbsp;其中：有实质改动 | **513** |
+| 新增文件 | **1042** |
 | 删除文件 | **369** |
 
-数字为 2026-11-26 的重算值（#242 发布准备分支上，按 §6 整表重算）。比 11-25 的 851 / 341 / 510 / 1009 / 369：
+数字为 2026-11-26 的重算值（#250 应用图标分支的工作树，按 §6 整表重算）。比 #242 那次的
+852 / 340 / 512 / 1019 / 369：`android/app/src/main/res/values-v31/styles.xml` 因 Android 12+
+启动画面单独配图第一次与上游不同（修改 +1、实质 +1）；新增 +23，其中 22 个来自 #250（各密度
+`android12splash.png` 10 个、插件补齐的各密度前景/单色图 9 个、`assets/app_icon/` 的透明源与
+启动图源、`tool/app-icon-generate.py`），另 1 个是 #242 那次少算的——按同一方法在 `213084d8c`
+上实测已是 1020。
+
+#242 那次的说明（852 / 340 / 512 / 1019 / 369）：比 11-25 的 851 / 341 / 510 / 1009 / 369：
 #15 的经典粉色让 `theme_color_type.dart` 第一次与上游不同（修改 +1、实质 +1）；#242 让
 `lib/pages/about/view.dart` 从「仅重命名」转入「实质改动」；新增多出的 10 个来自 #239–#241
 的 spike 与工具（含 `spikes/slint-mpv/avsync.py`）。
@@ -527,7 +534,7 @@ D），删除多一个（`models_new/upload_bfs/`），新增七个是 Rust 侧�
 
 ## 4. 有实质改动的上游文件
 
-510 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
+513 个。业务层 typed 直连迁移集中列在 §4.1，竖版与横版封面卡片改版
 见 §4.4，应用图标与启动图见 §4.5，其余改动逐个列在 §4.3。
 
 ### 4.1 typed 直连迁移触及的上游文件
@@ -689,25 +696,35 @@ ARGB 值继续生效；没有保存过相关选项的用户使用新的默认值
 按 §6 检查这两个文件：`storage_pref.dart` 已有 fork 实质改动，色板文件此前
 与上游一致，本次新增一个实质改动文件，不增加文件总数。
 
-### 4.5 应用图标与启动图（#208、#14）
+### 4.5 应用图标与启动图（#208、#14、#250）
 
-62 个上游资源文件，全部由两个生成器产出，**没有一处是手改的**：
+#250（2026-11-26）把各端图标从深蓝底改成白底，并给 Android 12+ 启动画面单独
+配了透明底标记——此前那一段没配 `image`，系统拿带深蓝背景层的启动器图标画在
+白底启动画面上。上游文件里因此多了 `values-v31/styles.xml` 一个（修改 +1）。
+
+上游资源文件全部由生成器产出，**没有一处是手改的**：
 
 | 位置 | 个数 | 产出方式 |
 |---|---:|---|
 | `android/app/src/main/res/`（mipmap、drawable、`values*/colors.xml`、`values*/styles.xml`） | 22 | `flutter_launcher_icons` + `flutter_native_splash` |
 | `ios/Runner/Assets.xcassets/`（AppIcon 20 张、LaunchImage/LaunchBackground 8 张） | 28 | 同上 |
 | `macos/Runner/Assets.xcassets/AppIcon.appiconset/` | 7 | `flutter_launcher_icons` |
-| `windows/runner/resources/app_icon.ico` | 1 | 手工多尺寸 ICO |
-| `assets/images/logo/`（`logo.png`、`logo_2.png`、`desktop/logo_large.png`、`ico/app_icon.ico`） | 4 | 源图 |
+| `windows/runner/resources/app_icon.ico` | 1 | `tool/app-icon-generate.py` |
+| `assets/images/logo/`（`logo.png`、`desktop/logo_large.png`、`ico/app_icon.ico`） | 3 | `tool/app-icon-generate.py` |
+| `assets/images/logo/logo_2.png` | 1 | 源图（单色遮罩，见下） |
 
-新增 3 个：`assets/app_icon/{icon,android_foreground,macos}.png`，是生成器的
-输入源图，`pubspec.yaml` 的 `flutter_launcher_icons` 段指向它们。
+**唯一的源是 `assets/app_icon/source_transparent.png`**（1024²，透明底粉色标记，
+#250 从旧深色图标按「粉 × α + 深蓝 × (1-α)」反解出来，抗锯齿边缘保留）。
+`assets/app_icon/{icon,macos,splash_android12}.png` 与上表里插件不管的 Windows
+ico、托盘图、Linux 图标都由 `tool/app-icon-generate.py generate` 从它生成；
+`android_foreground.png` 本来就是透明底，直接作为自适应图标前景。iOS 不接受带
+alpha 的图标，所以 `icon.png` 必须是不透明白底。
 
 **同步策略与代码相反：上游再动图标或启动图时不要合并它们的改动，直接取我们
-这边的版本，或者改完源图重跑两个生成器**：
+这边的版本，或者改完源图依次重跑**：
 
 ```sh
+python3 tool/app-icon-generate.py generate   # 需要 Pillow + numpy
 dart run flutter_launcher_icons
 dart run flutter_native_splash:create
 ```

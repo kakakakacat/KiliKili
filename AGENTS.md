@@ -225,11 +225,21 @@ PR**，不要只留在代码和 Issues 里：
   2026-11-26 遇到过一次：`gh workflow run` 返回
   `HTTP 422: Actions has been disabled for this repository.`，而仓库设置页与
   `repos/.../actions/permissions` 都显示 `enabled: true`、十个工作流全
-  `active`。**「API 说开着、派发说关着」时，仓库里改什么都没用**，原因只在
-  网页端可见（仓库的 Actions 标签页、Settings → Actions 页面顶部、GitHub
-  发的邮件）。GitHub 不在仓库里提示这件事，表现就是 workflow 安静地不跑：
-  那次连着三次合并进 main 都没触发回归也没人发现，是合完去看那次运行才
-  暴露的。
+  `active`，逐个调 `PUT .../actions/workflows/<id>/enable` 也全部返回 OK。
+
+  **成因是「本仓库的 workflow 总开关」没开，而这个开关 API 看不见也按不到。**
+  本仓库是 PiliPlus 的 fork，fork 的工作流有一道独立的闸门，开关在**仓库的
+  Actions 标签页**上（页面顶部的横幅与按钮），它与 Settings → Actions 里那组
+  `Allow all actions / Disable actions` 单选**不是同一个东西**：后者是
+  `actions/permissions` 反映的那个，前者不是。所以会出现「API 说开着、派发说
+  关着」。
+
+  **判据：`actions/permissions` 说 `enabled: true` 但派发 422 时，不要再在
+  API 和仓库设置页里找了，直接去 Actions 标签页点那个开关。** 2026-11-26 那次
+  在 API 这边白试了一轮才问出来。
+
+  GitHub 不在别处提示这件事，表现就是 workflow 安静地不跑：那次连着三次合并
+  进 main 都没触发回归也没人发现，是合完去看那次运行才暴露的。
 
 - **先分清是账号级还是仓库级，再去猜成因。** 一条命令就够——看同账号别的
   仓库最近有没有运行：

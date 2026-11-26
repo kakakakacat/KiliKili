@@ -468,9 +468,6 @@ abstract final class Pref {
   static bool get openInBrowser =>
       _setting.get(SettingBoxKey.openInBrowser, defaultValue: false);
 
-  static bool get savedRcmdTip =>
-      _setting.get(SettingBoxKey.savedRcmdTip, defaultValue: true);
-
   static bool get showVipDanmaku =>
       _setting.get(SettingBoxKey.showVipDanmaku, defaultValue: true);
 

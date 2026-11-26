@@ -185,6 +185,45 @@ pub fn snap_refresh_rate(hz: f32) -> f32 {
         .unwrap_or(hz)
 }
 
+/// 常见片源帧率（媒体时间）。NTSC 的 23.976 / 29.97 / 59.94 并进整数档：
+/// 与整数只差 0.1%，十几个带抖动的间隔分辨不出来，硬分的话会在两者之间
+/// 跳。并进去也没有代价——这个值只用来定档位与 `audio-delay`，每张输出帧
+/// 插在哪里按源帧自己的 `target_time` 算。
+const COMMON_SOURCE_FPS: [f32; 8] = [12.0, 15.0, 24.0, 25.0, 30.0, 48.0, 50.0, 60.0];
+
+/// 片源帧率测量值离常见值不超过这个比例就取常见值（取最近的那个；
+/// 常见值之间最近的 24 / 25、48 / 50 也差 4%）。1.5% 不够：开播头一秒的
+/// 窗口里混着起播时的间隔，实测 24 fps 报 23.5、30 fps 报 29.85。
+const SOURCE_SNAP_TOLERANCE: f32 = 0.03;
+
+/// 把测得的源帧率（**墙钟**，即 `target_time` 间隔换算的，已含倍速）吸附到
+/// 「常见片源帧率 × 倍速」。
+///
+/// 为什么要吸附：中位数在 16 个间隔上仍会在 29.4–30.3 之间抖（mpv 的
+/// `target_time` 带着 vsync 对齐与音频时钟校正），抖到档位判断的边界上时
+/// 档位与 `audio-delay` 都会跟着变，每变一次声音跳一下。吸附不上（VFR、
+/// 怪帧率）就原样返回。
+#[must_use]
+pub fn snap_source_fps(wall_fps: f32, speed: f64) -> f32 {
+    let speed = if speed > 0.0 { speed as f32 } else { 1.0 };
+    let media = wall_fps / speed;
+    COMMON_SOURCE_FPS
+        .iter()
+        .copied()
+        .min_by(|a, b| (media / a - 1.0).abs().total_cmp(&(media / b - 1.0).abs()))
+        .filter(|r| (media / r - 1.0).abs() < SOURCE_SNAP_TOLERANCE)
+        .map_or(wall_fps, |r| r * speed)
+}
+
+/// [`snap_source_fps`] 的结果是不是吸附上了常见帧率。
+#[must_use]
+pub fn is_common_source_fps(wall_fps: f32, speed: f64) -> bool {
+    let speed = if speed > 0.0 { speed as f32 } else { 1.0 };
+    COMMON_SOURCE_FPS
+        .iter()
+        .any(|r| (wall_fps / speed / r - 1.0).abs() < 1e-4)
+}
+
 /// 是不是常见刷新率之一（[`snap_refresh_rate`] 吸附上了）。
 #[must_use]
 pub fn is_common_refresh_rate(hz: f32) -> bool {
@@ -325,6 +364,18 @@ mod tests {
             decide(Setting::Fps60, Some(30.0), None, 60.0, 0),
             Decision::Direct(DirectReason::Measuring)
         );
+    }
+
+    #[test]
+    fn source_rates_snap_to_common_values_times_speed() {
+        assert_eq!(snap_source_fps(29.6, 1.0), 30.0);
+        assert_eq!(snap_source_fps(23.98, 1.0), 24.0);
+        assert_eq!(snap_source_fps(24.1, 1.0), 24.0);
+        assert_eq!(snap_source_fps(36.1, 1.5), 36.0);
+        // 吸附不上的原样返回（VFR、怪帧率）。
+        assert_eq!(snap_source_fps(27.0, 1.0), 27.0);
+        assert!(is_common_source_fps(snap_source_fps(36.1, 1.5), 1.5));
+        assert!(!is_common_source_fps(27.0, 1.0));
     }
 
     #[test]

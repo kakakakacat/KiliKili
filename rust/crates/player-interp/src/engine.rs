@@ -43,6 +43,43 @@ use crate::sched::Pick;
 /// 再留一张余量（#218 实验台 Android / iOS 都用 8）。
 pub const RING_CAPACITY: usize = 8;
 
+/// 源帧槽的尺寸。
+///
+/// 默认是视频的显示尺寸：mpv 只做解码与色彩转换，缩放交给我们的输出 pass，
+/// 运动估计也在源分辨率上做（最便宜）。
+///
+/// 用户开了**放大类** mpv 着色器（Anime4K 之类，`glsl-shaders` 里带
+/// `WHEN OUTPUT.w > HOOKED.w` 条件的）时这样做等于把它们关掉了——mpv 往源尺寸
+/// 的槽里画，输出不比输入大，放大着色器的条件不成立。这时槽改成视频按比例
+/// 放进窗口后的尺寸：mpv 在槽里做完放大，我们在放大后的画面上插帧，输出
+/// pass 再 1:1 贴上去。
+///
+/// 代价：运动估计在 1/4 亮度上做，槽变大多少成本就跟着平方地涨；搜索半径
+/// 按槽像素算，放大 2 倍时能跟上的源像素位移减半。所以只放大、不缩小，
+/// 也不超过 `max_pixels`（宿主按机型给，例如低端机 1280×720）。
+#[must_use]
+pub fn slot_size(
+    video: (i32, i32),
+    window: (i32, i32),
+    upscale_shaders: bool,
+    max_pixels: i64,
+) -> (i32, i32) {
+    let (vw, vh) = video;
+    let (ww, wh) = window;
+    if !upscale_shaders || vw <= 0 || vh <= 0 || ww <= 0 || wh <= 0 {
+        return video;
+    }
+    let fit = (f64::from(ww) / f64::from(vw)).min(f64::from(wh) / f64::from(vh));
+    let cap = (max_pixels as f64 / (f64::from(vw) * f64::from(vh))).sqrt();
+    let scale = fit.min(cap);
+    if scale <= 1.0 {
+        return video;
+    }
+    // 偶数尺寸：1/4 亮度那一级按 2×2 取。
+    let even = |x: f64| ((x.round() as i32) / 2 * 2).max(2);
+    (even(f64::from(vw) * scale), even(f64::from(vh) * scale))
+}
+
 /// mpv 下一张源帧该画进哪里。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SourceTarget {
@@ -129,6 +166,16 @@ impl Interpolator {
         self.ctl.set_display_refresh(hz);
     }
 
+    /// 见 [`Controller::set_source_fps_hint`]。
+    pub fn set_source_fps_hint(&mut self, media_fps: Option<f32>) {
+        self.ctl.set_source_fps_hint(media_fps);
+    }
+
+    /// 见 [`Controller::set_speed`]。
+    pub fn set_speed(&mut self, speed: f64) {
+        self.ctl.set_speed(speed);
+    }
+
     pub fn on_event(&mut self, event: Event) {
         self.ctl.on_event(event);
     }
@@ -175,8 +222,9 @@ impl Interpolator {
         self.ctl.observe_direct(raw_target_time, now_us);
     }
 
-    /// 准备接收一张源帧。`video` 是视频的显示尺寸（宿主在后台线程取 mpv 的
-    /// `dwidth` / `dheight`，渲染线程上不要同步取属性，#218 §5 坑 1）。
+    /// 准备接收一张源帧。`video` 是槽的尺寸：一般是视频的显示尺寸（宿主在
+    /// 后台线程取 mpv 的 `dwidth` / `dheight`，渲染线程上不要同步取属性，
+    /// #218 §5 坑 1）；开了放大着色器时见 [`slot_size`]。
     pub fn source_target(
         &mut self,
         video: (i32, i32),
@@ -244,5 +292,43 @@ impl Interpolator {
 impl Default for Interpolator {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::slot_size;
+
+    const BIG: i64 = i64::MAX;
+
+    #[test]
+    fn without_upscale_shaders_the_slot_is_the_video() {
+        assert_eq!(
+            slot_size((1280, 720), (2796, 1290), false, BIG),
+            (1280, 720)
+        );
+    }
+
+    #[test]
+    fn upscale_shaders_get_the_fitted_window_size() {
+        // iPhone 16 Pro Max 横屏，720p 片源：按高度放大 1.79 倍。
+        assert_eq!(
+            slot_size((1280, 720), (2796, 1290), true, BIG),
+            (2292, 1290)
+        );
+    }
+
+    #[test]
+    fn never_smaller_than_the_video() {
+        assert_eq!(
+            slot_size((1920, 1080), (1280, 720), true, BIG),
+            (1920, 1080)
+        );
+    }
+
+    #[test]
+    fn capped_by_pixels() {
+        let (w, h) = slot_size((640, 360), (2400, 1080), true, 1280 * 720);
+        assert_eq!((w, h), (1280, 720));
     }
 }

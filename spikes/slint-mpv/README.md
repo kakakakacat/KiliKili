@@ -228,6 +228,11 @@ adb logcat -s kk-spike
   （`src/interp_android.rs`）：`ANativeWindow_setFrameRate`、Choreographer 刷新率回调、
   `AThermal` 温控，都是 API 30 才有，运行期 dlsym。
   接入结论见 [`docs/m0/spikes/2026-11-24-interp-219.md`](../../docs/m0/spikes/2026-11-24-interp-219.md)。
+  第二轮加了：`--event-at 秒:speed=倍速`；`--glsl-shaders <列表>` 与 `--upscale-shaders`（Anime4K
+  这类放大着色器在插帧路径下生效，`--slot-max-pixels` 限槽的像素）；`avsync.py`（闪光 + 哔声素材
+  与拍屏量法）。
+- 桌面多显示器：`--window-pos x,y`（或环境变量 `SPIKE_WINDOW_POS`）把窗口放在全局坐标
+  `x,y`（主屏左上为原点、逻辑像素），并且**不激活、不抢焦点**。
 - 桌面：`cargo run --release --bin interp -- --help`。`--mode direct|hold|blend|mc`；
   `--lab <PNG 目录>` 是实验室模式（用 60 fps 真值的第 k−1、k+1 帧插出第 k 帧）。
 - Android：`cargo apk build --release --lib --features interp`（换掉探针的 `android_main`），

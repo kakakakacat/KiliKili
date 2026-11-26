@@ -80,6 +80,10 @@ const DELAY_MARGIN_US: i64 = 15_000;
 /// 想要的延迟与当前值相差不到这个比例，就不改 `audio-delay`（每改一次声音
 /// 都会跳一下）。只有片源帧率真的变了（倍速、换片源）才值得改。
 const DELAY_HYSTERESIS: f64 = 0.10;
+/// 源帧率的新估计要连续这么多张源帧不变才采纳。
+const SRC_FPS_STABLE: u32 = 6;
+/// 非零延迟改成另一个非零值之前，新值要稳定这么多个 vsync。
+const DELAY_STABLE_VSYNCS: u32 = 30;
 
 #[derive(Debug)]
 pub struct Controller {
@@ -103,6 +107,20 @@ pub struct Controller {
 
     av_delay_us: i64,
     av_delay_taken: Option<i64>,
+    /// 测量得到、已采纳的源帧率（墙钟，已吸附），见 [`Controller::source_fps`]。
+    src_fps: Option<f32>,
+    /// 宿主从 mpv 读到的片源帧率（**媒体时间**，`container-fps`）。
+    fps_hint: Option<f32>,
+    /// 与 `src_fps` 不同的新估计，及它已连续出现的源帧数。
+    src_fps_candidate: Option<(f32, u32)>,
+    /// 延迟从一个非零值改到另一个非零值之前，新值已经连续出现了几个 vsync。
+    av_delay_candidate: Option<(i64, u32)>,
+    /// 下一次重算延迟时直接采纳（倍速、片源这种宿主明确告知的变化，不是
+    /// 估计抖动，不用去抖）。
+    av_delay_force: bool,
+    /// mpv 的 `speed`。`target_time` 是墙钟，所以源帧间隔已经含倍速；
+    /// 只有换算 `audio-delay`（媒体时间）时要用它。
+    speed: f64,
 
     out_window_start: Option<i64>,
     out_distinct: u32,
@@ -136,6 +154,12 @@ impl Controller {
             pending_cost_us: 0,
             av_delay_us: 0,
             av_delay_taken: None,
+            av_delay_candidate: None,
+            av_delay_force: false,
+            src_fps: None,
+            src_fps_candidate: None,
+            fps_hint: None,
+            speed: 1.0,
             out_window_start: None,
             out_distinct: 0,
             out_last: None,
@@ -189,6 +213,36 @@ impl Controller {
         self.governor.set_thermal(thermal);
     }
 
+    /// 播放倍速变了（宿主观察 mpv 的 `speed` 属性）。
+    ///
+    /// 倍速改变源帧在墙钟上的间隔：旧的间隔样本作废，环里的帧与新帧之间
+    /// 也不能插值（`target_time` 的步长突变）。与拖动一样等下一张源帧到达
+    /// 再清，期间显示最新一张；重新攒够样本前走直通。
+    pub fn set_speed(&mut self, speed: f64) {
+        let speed = if speed.is_finite() && speed > 0.0 {
+            speed
+        } else {
+            1.0
+        };
+        if (speed - self.speed).abs() < 1e-6 {
+            return;
+        }
+        self.speed = speed;
+        self.av_delay_force = true;
+        self.governor.reset_load();
+        self.ring.reset_rate();
+        self.src_fps = None;
+        self.src_fps_candidate = None;
+        self.ring.request_flush();
+        self.last_t_out = None;
+        self.last_direct_t = None;
+    }
+
+    #[must_use]
+    pub fn speed(&self) -> f64 {
+        self.speed
+    }
+
     pub fn set_gpu_available(&mut self, available: bool) {
         self.gpu_available = available;
     }
@@ -197,7 +251,13 @@ impl Controller {
         match event {
             Event::Seek => self.ring.request_flush(),
             Event::SourceChanged => {
+                // 新片源的 container-fps 由宿主重新给。
+                self.fps_hint = None;
+                self.av_delay_force = true;
+                self.governor.reset_load();
                 self.ring.reset_stream();
+                self.src_fps = None;
+                self.src_fps_candidate = None;
                 self.last_direct_t = None;
             }
             Event::Background => {
@@ -237,11 +297,65 @@ impl Controller {
         self.reported_hz.value().or_else(|| self.meter.hz())
     }
 
+    /// 片源帧率（墙钟上的，含倍速；已吸附到「常见帧率 × 倍速」）。
+    ///
+    /// 宿主给了 mpv 的 `container-fps`（[`Controller::set_source_fps_hint`]）
+    /// 且它是常见帧率时以它为准：媒体时间上的帧率不受起播追帧、vsync 对齐、
+    /// 改倍速后的过渡期影响，开播与改倍速后立刻可用。只有测量已经稳定、又与
+    /// 它差出 15% 以上（VFR、容器标错）时才信测量。
     #[must_use]
     pub fn source_fps(&self) -> Option<f32> {
-        self.ring
-            .source_interval_us()
-            .map(|us| (1e6 / us as f64) as f32)
+        let hinted = self
+            .fps_hint
+            .map(|media| policy::snap_source_fps(media * self.speed as f32, self.speed))
+            .filter(|fps| policy::is_common_source_fps(*fps, self.speed));
+        match (hinted, self.src_fps) {
+            (Some(h), Some(m)) if (m / h - 1.0).abs() > 0.15 => Some(m),
+            (Some(h), _) => Some(h),
+            (None, m) => m,
+        }
+    }
+
+    /// mpv 的 `container-fps`（媒体时间，与倍速无关）。宿主在**渲染线程以外**
+    /// 读（读法同视频尺寸），换片源后重新给；读不到给 `None`。
+    pub fn set_source_fps_hint(&mut self, media_fps: Option<f32>) {
+        self.fps_hint = media_fps.filter(|f| f.is_finite() && *f > 1.0);
+    }
+
+    /// 每收到一张源帧重估一次源帧率；新估计要连续 [`SRC_FPS_STABLE`] 张源帧
+    /// 都是它才采纳（第一次也一样）。
+    ///
+    /// 只看一次估计不够：起播头一秒 mpv 的 `target_time` 很不规整（iPhone 上
+    /// 头一秒只出 13 帧），估计依次报 26.7、25、24，档位与 `audio-delay`
+    /// 跟着改三次，每改一次声音跳一下。
+    fn update_source_fps(&mut self) {
+        let Some(us) = self.ring.source_interval_us() else {
+            self.src_fps = None;
+            self.src_fps_candidate = None;
+            return;
+        };
+        let fps = policy::snap_source_fps((1e6 / us as f64) as f32, self.speed);
+        // 吸附不上的（VFR、怪帧率）要攒满一整窗。
+        if !policy::is_common_source_fps(fps, self.speed)
+            && self.ring.interval_samples() < sched::INTERVAL_SAMPLES
+        {
+            return;
+        }
+        let same = |a: f32| (fps / a - 1.0).abs() < 0.01;
+        if self.src_fps.is_some_and(same) {
+            self.src_fps_candidate = None;
+            return;
+        }
+        let streak = match self.src_fps_candidate {
+            Some((c, n)) if same(c) => n + 1,
+            _ => 1,
+        };
+        if streak >= SRC_FPS_STABLE {
+            self.src_fps = Some(fps);
+            self.src_fps_candidate = None;
+        } else {
+            self.src_fps_candidate = Some((fps, streak));
+        }
     }
 
     pub fn begin_vsync(&mut self, wall_us: i64) -> Plan {
@@ -313,36 +427,72 @@ impl Controller {
     }
 
     fn update_av_delay(&mut self) {
+        let mut snapped = false;
         let wanted = match self.decision {
             Decision::Interp(_) => {
-                let interval = self.ring.source_interval_us().unwrap_or(41_708);
+                let fps = self.source_fps();
+                snapped = fps.is_some_and(|f| policy::is_common_source_fps(f, self.speed));
+                let interval = fps.map_or(41_708, |fps| (1e6 / f64::from(fps)).round() as i64);
                 let spans = if self.skip_dups { 2 } else { 1 };
                 interval * spans + DELAY_MARGIN_US
             }
             Decision::Direct(_) => 0,
         };
         let switching = (wanted == 0) != (self.av_delay_us == 0);
-        let drift = (wanted - self.av_delay_us).abs() as f64 / self.av_delay_us.max(1) as f64;
-        if switching || drift > DELAY_HYSTERESIS {
+        // 吸附上了常见帧率的估计是稳定的，变了就是片源真变了（或倍速刚改、
+        // 第一次估计混进了旧倍速的帧），照改；吸附不上的（VFR）才需要滞回。
+        let changed = if snapped {
+            (wanted - self.av_delay_us).abs() > 1_000
+        } else {
+            (wanted - self.av_delay_us).abs() as f64 / self.av_delay_us.max(1) as f64
+                > DELAY_HYSTERESIS
+        };
+        // 只管紧接着的这一次重算：之后的变化照常去抖。
+        let force = std::mem::take(&mut self.av_delay_force);
+        if switching || (force && changed) {
             self.av_delay_us = wanted;
+            self.av_delay_candidate = None;
+            return;
+        }
+        if !changed {
+            self.av_delay_candidate = None;
+            return;
+        }
+        // 非零改非零：新值要连续 DELAY_STABLE_VSYNCS 个 vsync 都是它才改。
+        // 倍速刚改回来时头几次估计混着过渡期的间隔，会在两个常见帧率之间
+        // 来回（实测一拍二的 24 fps 在 0.4 秒里 95 / 98 ms 改了四次）。
+        let streak = match self.av_delay_candidate {
+            Some((v, n)) if (v - wanted).abs() <= 1_000 => n + 1,
+            _ => 1,
+        };
+        if streak >= DELAY_STABLE_VSYNCS {
+            self.av_delay_us = wanted;
+            self.av_delay_candidate = None;
+        } else {
+            self.av_delay_candidate = Some((wanted, streak));
         }
     }
 
-    /// 给音频加的延迟（微秒）有变化时返回新值，宿主把它设成 mpv 的
-    /// `audio-delay`（秒）。**异步设**：不能从渲染线程发同步的 mpv 命令
-    /// （ADR-004 决策三）。
+    /// 给音频加的延迟有变化时返回新值（微秒，**媒体时间**），宿主把它设成
+    /// mpv 的 `audio-delay`（秒）。**异步设**：不能从渲染线程发同步的 mpv
+    /// 命令（ADR-004 决策三）。
+    ///
+    /// 插帧推迟的是墙钟时间；mpv 的 `audio-delay` 加在 pts 上，是媒体时间，
+    /// 2 倍速下 0.1 s 的 `audio-delay` 在墙钟上只有 50 ms。所以这里乘倍速。
     pub fn take_av_delay_change(&mut self) -> Option<i64> {
-        if self.av_delay_taken == Some(self.av_delay_us) {
+        let media = (self.av_delay_us as f64 * self.speed).round() as i64;
+        if self.av_delay_taken == Some(media) {
             return None;
         }
-        self.av_delay_taken = Some(self.av_delay_us);
-        Some(self.av_delay_us)
+        self.av_delay_taken = Some(media);
+        Some(media)
     }
 
     /// 直通模式下 mpv 交出了一张新帧（不含重画）：只记时间戳，用来估源帧率。
     pub fn observe_direct(&mut self, raw_target_time: i64, now_us: i64) {
         let t = sched::normalize_target_time(raw_target_time, now_us).unwrap_or(now_us);
         self.ring.observe(t, self.last_direct_t);
+        self.update_source_fps();
         self.last_direct_t = Some(t);
     }
 
@@ -368,7 +518,9 @@ impl Controller {
             return None;
         }
         let t = sched::normalize_target_time(raw_target_time, now_us).unwrap_or(now_us);
-        Some(self.ring.push(t, slot).1)
+        let pushed = self.ring.push(t, slot).1;
+        self.update_source_fps();
+        Some(pushed)
     }
 
     /// GPU 重新分配了环（源帧尺寸变了）。
@@ -480,6 +632,11 @@ mod tests {
         wall: i64,
         now: i64,
         next_src: i64,
+        /// 源帧在墙钟上的间隔（倍速时 = 媒体间隔 / 倍速）。
+        src_dt: i64,
+        /// 每张源帧时间戳上叠加的抖动：第 i 张加 `jitter[i % len]`。
+        jitter: Vec<i64>,
+        src_count: usize,
     }
 
     impl Sim {
@@ -492,6 +649,9 @@ mod tests {
                 wall: 0,
                 now: 1_000_000,
                 next_src: 1_000_000,
+                src_dt: SRC30,
+                jitter: vec![0],
+                src_count: 0,
             }
         }
 
@@ -501,15 +661,17 @@ mod tests {
             let plan = self.c.begin_vsync(self.wall);
             let mut pick = None;
             // mpv 最多提前交一张。
-            while self.next_src <= self.now + SRC30 {
+            while self.next_src <= self.now + self.src_dt {
+                let t = self.next_src + self.jitter[self.src_count % self.jitter.len()];
+                self.src_count += 1;
                 match plan {
-                    Plan::Direct => self.c.observe_direct(self.next_src, self.now),
+                    Plan::Direct => self.c.observe_direct(t, self.now),
                     Plan::Interp => {
                         let slot = self.c.slot_for(false);
-                        self.c.push_source(self.next_src, self.now, slot, false);
+                        self.c.push_source(t, self.now, slot, false);
                     }
                 }
-                self.next_src += SRC30;
+                self.next_src += self.src_dt;
             }
             if plan == Plan::Interp {
                 pick = Some(self.c.pick(self.now));
@@ -564,16 +726,124 @@ mod tests {
     }
 
     #[test]
+    fn a_jittery_source_rate_snaps_and_keeps_the_delay_still() {
+        let mut sim = Sim::new(Setting::Fps60);
+        // target_time 带着 vsync 对齐，间隔在 30.6–36.1 ms 之间抖。
+        sim.jitter = vec![0, 2_000, -700, 1_500, -1_200, 300];
+        sim.run(60);
+        assert_eq!(sim.c.source_fps(), Some(30.0));
+        let first = sim.c.take_av_delay_change();
+        assert_eq!(first, Some(33_333 + DELAY_MARGIN_US));
+        sim.run(1_000);
+        assert_eq!(
+            sim.c.take_av_delay_change(),
+            None,
+            "播放中途不再改 audio-delay"
+        );
+    }
+
+    #[test]
+    fn audio_delay_is_media_time_under_speed() {
+        // 24 fps 片源 1.25 倍速：墙钟上 30 fps。
+        let mut sim = Sim::new(Setting::Fps60);
+        sim.c.set_speed(1.25);
+        sim.run(60);
+        assert!(matches!(sim.c.decision(), Decision::Interp(_)));
+        assert_eq!(sim.c.source_fps(), Some(30.0));
+        // 墙钟上推迟 33.3 + 15 ms；mpv 的 audio-delay 是媒体时间，乘倍速。
+        assert_eq!(
+            sim.c.take_av_delay_change(),
+            Some(((33_333 + DELAY_MARGIN_US) as f64 * 1.25).round() as i64)
+        );
+    }
+
+    #[test]
+    fn changing_speed_remeasures_the_source() {
+        let mut sim = Sim::new(Setting::Fps60);
+        sim.run(60);
+        assert!(matches!(sim.c.decision(), Decision::Interp(_)));
+        let _ = sim.c.take_av_delay_change();
+        // 30 fps 片源调到 2 倍速：墙钟上 60 fps，60 Hz 屏幕上没得插。
+        sim.c.set_speed(2.0);
+        sim.src_dt = P60;
+        sim.run(1);
+        assert_eq!(sim.c.decision(), Decision::Direct(DirectReason::Measuring));
+        sim.run(60);
+        assert_eq!(
+            sim.c.decision(),
+            Decision::Direct(DirectReason::SourceFastEnough)
+        );
+        assert_eq!(sim.c.take_av_delay_change(), Some(0));
+        // 调回 1 倍速，重新插帧。
+        sim.c.set_speed(1.0);
+        sim.src_dt = SRC30;
+        sim.run(60);
+        assert!(matches!(sim.c.decision(), Decision::Interp(_)));
+        assert_eq!(sim.c.take_av_delay_change(), Some(SRC30 + DELAY_MARGIN_US));
+    }
+
+    #[test]
+    fn a_speed_change_forgets_earlier_step_downs() {
+        let mut sim = Sim::new(Setting::Fps60);
+        sim.run(60);
+        // 每帧都超时，两秒后降档。
+        for _ in 0..200 {
+            sim.step();
+            sim.c.end_vsync(40_000);
+        }
+        assert_eq!(sim.c.decision(), Decision::Direct(DirectReason::Fallback));
+        sim.c.set_speed(1.5);
+        sim.c.set_speed(1.0);
+        sim.run(60);
+        assert!(
+            matches!(sim.c.decision(), Decision::Interp(Cadence { fps, .. }) if fps == 60.0),
+            "{:?}",
+            sim.c.decision()
+        );
+    }
+
+    #[test]
+    fn the_container_fps_hint_wins_over_a_noisy_start() {
+        // 起播头一秒 mpv 在追帧：墙钟上稳定地 33 fps，实际是 30 fps 片源。
+        let mut sim = Sim::new(Setting::Fps60);
+        sim.c.set_source_fps_hint(Some(29.97));
+        sim.src_dt = 30_000;
+        sim.run(30);
+        assert_eq!(sim.c.source_fps(), Some(30.0));
+        assert_eq!(sim.c.take_av_delay_change(), Some(SRC30 + DELAY_MARGIN_US));
+        sim.src_dt = SRC30;
+        sim.run(200);
+        assert_eq!(sim.c.take_av_delay_change(), None);
+        // 倍速：立刻按 container-fps × 倍速，audio-delay 只改一次。
+        sim.c.set_speed(1.25);
+        assert!((sim.c.source_fps().unwrap_or(0.0) - 37.5).abs() < 1e-3);
+        sim.src_dt = 26_667;
+        sim.run(1);
+        let wall = 26_667 + DELAY_MARGIN_US;
+        assert_eq!(
+            sim.c.take_av_delay_change(),
+            Some((wall as f64 * 1.25).round() as i64)
+        );
+        sim.run(200);
+        assert_eq!(sim.c.take_av_delay_change(), None);
+    }
+
+    #[test]
+    fn a_wrong_hint_loses_to_a_stable_measurement() {
+        // 容器标 60，实际 30（VFR 片源常见）。
+        let mut sim = Sim::new(Setting::Fps60);
+        sim.c.set_source_fps_hint(Some(60.0));
+        sim.run(60);
+        assert_eq!(sim.c.source_fps(), Some(30.0));
+    }
+
+    #[test]
     fn skipping_dups_doubles_the_lookahead() {
         let mut c = Controller::new(8, true, 0.0015);
         c.set_setting(Setting::Fps60);
         c.set_gpu_available(true);
-        let mut sim = Sim {
-            c,
-            wall: 0,
-            now: 1_000_000,
-            next_src: 1_000_000,
-        };
+        let mut sim = Sim::new(Setting::Fps60);
+        sim.c = c;
         sim.run(60);
         assert_eq!(
             sim.c.take_av_delay_change(),

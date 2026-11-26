@@ -88,15 +88,27 @@ abstract class CommonSearchPanelState<
     final style = TextStyle(fontSize: 13, color: colorScheme.outline);
     final Widget child;
     if (error != null) {
-      child = InkWell(
-        onTap: controller.retryLoadMore,
-        child: Padding(
-          padding: const .symmetric(horizontal: 16, vertical: 16),
-          child: Text(
-            '加载失败：$error\n点击重试',
-            textAlign: .center,
-            style: style,
-          ),
+      // 重试做成按钮而不是可点的文字：一行灰字看不出能点。样式与整页
+      // 错误态 `HttpError` 的「点击重试」一致。
+      child = Padding(
+        padding: const .symmetric(horizontal: 16, vertical: 16),
+        child: Column(
+          mainAxisSize: .min,
+          spacing: 10,
+          children: [
+            Text('加载失败：$error', textAlign: .center, style: style),
+            FilledButton.tonal(
+              onPressed: controller.retryLoadMore,
+              style: FilledButton.styleFrom(
+                tapTargetSize: .padded,
+                backgroundColor: colorScheme.primary.withAlpha(20),
+              ),
+              child: Text(
+                '点击重试',
+                style: TextStyle(color: colorScheme.primary),
+              ),
+            ),
+          ],
         ),
       );
     } else if (reachedEnd) {

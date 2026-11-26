@@ -659,6 +659,12 @@ class _NavigationDestinationLayoutDelegate extends MultiChildLayoutDelegate {
 
   static const int labelId = 2;
 
+  /// 图标与文字之间收掉的距离（逻辑像素，#259）。实测 320dpi 平板上两者
+  /// 可见间距约 10.5：`labelPadding` 只占 2，其余是图标字形下方留白与中文
+  /// 字体行高的上沿，只改 `labelPadding` 减不到一半。所以在布局里让文字
+  /// 上移，并按一半修正图标位置，使组合仍垂直居中。
+  static const double gapReduction = 5;
+
   @override
   void performLayout(Size size) {
     double halfWidth(Size size) => size.width / 2;
@@ -670,7 +676,7 @@ class _NavigationDestinationLayoutDelegate extends MultiChildLayoutDelegate {
     final double yPositionOffset = Tween<double>(
       begin: halfHeight(iconSize),
 
-      end: halfHeight(iconSize) + halfHeight(labelSize),
+      end: halfHeight(iconSize) + halfHeight(labelSize) - gapReduction / 2,
     ).transform(animation.value);
     final double iconYPosition = halfHeight(size) - yPositionOffset;
 
@@ -687,7 +693,7 @@ class _NavigationDestinationLayoutDelegate extends MultiChildLayoutDelegate {
       Offset(
         halfWidth(size) - halfWidth(labelSize),
 
-        iconYPosition + iconSize.height,
+        iconYPosition + iconSize.height - gapReduction * animation.value,
       ),
     );
   }

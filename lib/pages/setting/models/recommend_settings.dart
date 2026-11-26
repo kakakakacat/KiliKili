@@ -26,25 +26,7 @@ List<SettingsModel> get recommendSettings => [
     defaultVal: true,
     onChanged: (value) {
       try {
-        Get.find<RcmdController>()
-          ..enableSaveLastData = value
-          ..lastRefreshAt = null;
-      } catch (e) {
-        if (kDebugMode) debugPrint('$e');
-      }
-    },
-  ),
-  SwitchModel(
-    title: '显示上次看到位置提示',
-    subtitle: '保留上次推荐时，在上次刷新位置显示提示',
-    leading: const Icon(Icons.tips_and_updates_outlined),
-    setKey: SettingBoxKey.savedRcmdTip,
-    defaultVal: true,
-    onChanged: (value) {
-      try {
-        Get.find<RcmdController>()
-          ..savedRcmdTip = value
-          ..lastRefreshAt = null;
+        Get.find<RcmdController>().enableSaveLastData = value;
       } catch (e) {
         if (kDebugMode) debugPrint('$e');
       }
@@ -144,7 +126,6 @@ void _switchRcmdSource(RcmdSource value, VoidCallback setState) {
   try {
     Get.find<RcmdController>()
       ..rcmdSource = value
-      ..lastRefreshAt = null
       // 用 onReload 而不是 onRefresh：切换来源后不应把旧来源的列表
       // 拼到新来源的数据前面（"保留上次内容"只在同一来源内生效）
       ..onReload();

@@ -156,55 +156,17 @@ class _RcmdPageState extends State<RcmdPage>
                   if (index == response.length - 1) {
                     controller.onLoadMore();
                   }
-                  if (controller.lastRefreshAt != null) {
-                    if (controller.lastRefreshAt == index) {
-                      return GestureDetector(
-                        onTap: () => controller
-                          ..animateToTop()
-                          ..onRefresh(),
-                        child: Card(
-                          child: Container(
-                            alignment: Alignment.center,
-                            padding: const .symmetric(horizontal: 10),
-                            child: Text(
-                              '上次看到这里\n点击刷新',
-                              textAlign: .center,
-                              style: TextStyle(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-                    final actualIndex = index > controller.lastRefreshAt!
-                        ? index - 1
-                        : index;
-                    return VideoCardV(
-                      videoItem: response[actualIndex],
-                      onRemove: () {
-                        if (controller.lastRefreshAt != null &&
-                            actualIndex < controller.lastRefreshAt!) {
-                          controller.lastRefreshAt =
-                              controller.lastRefreshAt! - 1;
-                        }
-                        controller.loadingState
-                          ..value.data!.removeAt(actualIndex)
-                          ..refresh();
-                      },
-                    );
-                  } else {
-                    return VideoCardV(
-                      videoItem: response[index],
-                      onRemove: () => controller.loadingState
-                        ..value.data!.removeAt(index)
-                        ..refresh(),
-                    );
-                  }
+                  // 「保留上次内容」时新旧内容直接相接，不再插「上次看到
+                  // 这里，点击刷新」提示卡（#268，所有者决定，连同设置开关
+                  // 一起删除；与上游 PiliPlus 分叉）。
+                  return VideoCardV(
+                    videoItem: response[index],
+                    onRemove: () => controller.loadingState
+                      ..value.data!.removeAt(index)
+                      ..refresh(),
+                  );
                 },
-                itemCount: controller.lastRefreshAt != null
-                    ? response.length + 1
-                    : response.length,
+                itemCount: response.length,
               )
             : HttpError(onReload: controller.onReload),
       Error(:final errMsg) => HttpError(

@@ -13,9 +13,6 @@ class RcmdController extends CommonListController with RefreshImplMixin {
   /// 可在设置页切换后立即生效，无需重启
   RcmdSource rcmdSource = Pref.rcmdSource;
 
-  int? lastRefreshAt;
-  late bool savedRcmdTip = Pref.savedRcmdTip;
-
   @override
   bool get isEnd => false;
 
@@ -114,9 +111,6 @@ class RcmdController extends CommonListController with RefreshImplMixin {
     if (enableSaveLastData && page == 0) {
       if (loadingState.value case Success(:final response)) {
         if (response != null && response.isNotEmpty) {
-          if (savedRcmdTip) {
-            lastRefreshAt = dataList.length;
-          }
           if (response.length > 200) {
             dataList.addAll(response.take(50));
           } else {

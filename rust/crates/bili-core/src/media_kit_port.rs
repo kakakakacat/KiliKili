@@ -47,6 +47,12 @@ pub struct Batch {
     pub confirmed: Vec<Generation>,
     pub failed: Vec<(Generation, PlayerFailureKind)>,
     pub seek_completed: bool,
+    /// Open/Seek/切轨已交给后端、还没等到确认。
+    ///
+    /// 这段时间旧代际的快照会被闸门丢弃、新代际还没有快照，宿主只能看到
+    /// 最后一张「播放中」——断网 Seek 时画面冻住却显示在播（#244）。宿主
+    /// 据此显示加载态；它是事实而不是计时，超时仍由宿主的确认超时判定。
+    pub awaiting: bool,
 }
 
 #[derive(Debug)]
@@ -251,7 +257,13 @@ impl MediaKitPort {
 
     pub fn observe(&mut self, observations: Vec<Observation>) -> Batch {
         let mut batch = Batch::default();
-        if self.poisoned || observations.is_empty() {
+        if self.poisoned {
+            return batch;
+        }
+        // 空批次也要如实报告在途命令：宿主每 40ms 轮询一次，空批次很常见，
+        // 报成 false 会让加载态闪烁。
+        batch.awaiting = self.pending.is_some();
+        if observations.is_empty() {
             return batch;
         }
         for observation in observations {
@@ -357,6 +369,7 @@ impl MediaKitPort {
                 batch.confirmed.push(pending.generation);
             }
         }
+        batch.awaiting = self.pending.is_some() && !self.poisoned;
         if self.loaded && self.position_ready && !self.poisoned {
             let observed = &self.observed;
             let snapshot = PlayerSnapshot {

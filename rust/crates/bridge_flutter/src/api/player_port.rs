@@ -142,6 +142,8 @@ pub struct PlayerPortBatch {
     pub confirmed: Vec<u64>,
     pub failures: Vec<PlayerPortFailureEvent>,
     pub seek_completed: bool,
+    /// 有 Open/Seek/切轨在等后端确认（见 `bili_core::media_kit_port::Batch`）。
+    pub awaiting: bool,
 }
 #[derive(Debug, Clone)]
 pub struct PlayerCommandResult {
@@ -335,6 +337,7 @@ pub fn player_port_observe(
                 })
                 .collect(),
             seek_completed: batch.seek_completed,
+            awaiting: batch.awaiting,
         }),
         error_kind: None,
         error_detail: None,

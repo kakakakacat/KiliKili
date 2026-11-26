@@ -322,6 +322,9 @@ class PlayerPortBatch {
   final List<PlayerPortFailureEvent> failures;
   final bool seekCompleted;
 
+  /// 有 Open/Seek/切轨在等后端确认（见 `bili_core::media_kit_port::Batch`）。
+  final bool awaiting;
+
   const PlayerPortBatch({
     required this.sessionId,
     required this.generation,
@@ -331,6 +334,7 @@ class PlayerPortBatch {
     required this.confirmed,
     required this.failures,
     required this.seekCompleted,
+    required this.awaiting,
   });
 
   @override
@@ -342,7 +346,8 @@ class PlayerPortBatch {
       bufferedMs.hashCode ^
       confirmed.hashCode ^
       failures.hashCode ^
-      seekCompleted.hashCode;
+      seekCompleted.hashCode ^
+      awaiting.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -356,7 +361,8 @@ class PlayerPortBatch {
           bufferedMs == other.bufferedMs &&
           confirmed == other.confirmed &&
           failures == other.failures &&
-          seekCompleted == other.seekCompleted;
+          seekCompleted == other.seekCompleted &&
+          awaiting == other.awaiting;
 }
 
 enum PlayerPortFailure {

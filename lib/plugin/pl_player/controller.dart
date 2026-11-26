@@ -211,6 +211,17 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   final RxBool isBuffering = true.obs;
 
+  /// Open/Seek/切轨已发给后端、还没等到确认（Rust `awaiting`）。这段时间没有
+  /// 新快照，不单独显示加载态的话画面冻住却还显示在播（#244）。
+  final RxBool isAwaiting = false.obs;
+
+  /// 重试/重建时要回到的位置：最近一次 Seek 的目标，或重建前最后的播放位置。
+  ///
+  /// 只在**新后端报上第一张快照**（真的在那里播起来了）时清除。网络失败后
+  /// Rust 允许的那次自动重建在离线时同样会失败，还会清掉 `_latestSnapshot`；
+  /// 若重建一发起就清除，下一次手动重试只能从 0 开始（#244 复测时踩到）。
+  Duration? _resumeAt;
+
   /// 全屏方向
   // ignore: unnecessary_getters_setters
   bool get isVertical => _isVertical;
@@ -802,6 +813,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       if (!session.isCurrent(ticket)) return;
       _processing = true;
       _latestSnapshot = null;
+      isAwaiting.value = false;
       _sourceRotation = rotate;
       _sourceVolume = volume;
       this.isLive = isLive;
@@ -1042,10 +1054,13 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   Future<void>? refreshPlayer() {
     if (dataSource is FileSource) return null;
     final source = dataSource;
+    final resumeAt = _resumeAt ??= Duration(
+      milliseconds: positionInMilliseconds,
+    );
     return setDataSource(
       source,
       isLive: isLive,
-      seekTo: isLive ? null : Duration(milliseconds: positionInMilliseconds),
+      seekTo: isLive ? null : resumeAt,
       aid: _aid,
       bvid: _bvid,
       cid: cid,
@@ -1140,9 +1155,14 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     final facts = _snapshots;
     _subscriptions = [
       adapter.events.listen((batch) {
-        if (batch.snapshot != null) _latestSnapshot = batch.snapshot;
+        isAwaiting.value = batch.awaiting;
+        if (batch.snapshot != null) {
+          _latestSnapshot = batch.snapshot;
+          _resumeAt = null;
+        }
         _playerFacts.add(batch);
       }),
+      adapter.faults.listen((_) => _onBackendFault(adapter)),
       facts.listen((batch) {
         _latestSnapshot = batch.snapshot;
         final speed = batch.snapshot!.speed;
@@ -1294,6 +1314,24 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     ];
   }
 
+  /// 后端被永久停用（#244）。按 ADR-003 只能新建后端恢复，且超时不授予自动
+  /// 重试，所以这里只退出「播放中」并亮出重试入口（播放器中央的错误态，
+  /// 点击走 [refreshPlayer] 新建后端）。
+  void _onBackendFault(FlutterMediaKitAdapter adapter) {
+    if (_playerAdapter != adapter) return;
+    isAwaiting.value = false;
+    isBuffering.value = false;
+    dataStatus.value = DataStatus.error;
+    if (playerStatus.isPlaying) {
+      playerStatus = .paused;
+      _startWakeLockTimer();
+      for (final element in _statusListeners) {
+        element(.paused);
+      }
+    }
+    _updatePlaybackState();
+  }
+
   /// 移除事件监听
   void _removeListeners() {
     _subscriptions?.forEach((e) => e.cancel());
@@ -1308,6 +1346,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     _heartDuration = position.inSeconds;
 
     danmakuController?.clear();
+    _resumeAt = position;
     try {
       final accepted = await _playerAdapter?.send(
         PlayerIntent(

@@ -24951,6 +24951,7 @@ impl SseDecode for crate::api::player_port::PlayerPortBatch {
         let mut var_failures =
             <Vec<crate::api::player_port::PlayerPortFailureEvent>>::sse_decode(deserializer);
         let mut var_seekCompleted = <bool>::sse_decode(deserializer);
+        let mut var_awaiting = <bool>::sse_decode(deserializer);
         return crate::api::player_port::PlayerPortBatch {
             session_id: var_sessionId,
             generation: var_generation,
@@ -24960,6 +24961,7 @@ impl SseDecode for crate::api::player_port::PlayerPortBatch {
             confirmed: var_confirmed,
             failures: var_failures,
             seek_completed: var_seekCompleted,
+            awaiting: var_awaiting,
         };
     }
 }
@@ -38027,6 +38029,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::player_port::PlayerPortBatch 
             self.confirmed.into_into_dart().into_dart(),
             self.failures.into_into_dart().into_dart(),
             self.seek_completed.into_into_dart().into_dart(),
+            self.awaiting.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -51906,6 +51909,7 @@ impl SseEncode for crate::api::player_port::PlayerPortBatch {
             serializer,
         );
         <bool>::sse_encode(self.seek_completed, serializer);
+        <bool>::sse_encode(self.awaiting, serializer);
     }
 }
 

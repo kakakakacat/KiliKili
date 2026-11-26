@@ -349,6 +349,8 @@ Docker 27.3.1，已承载 6 个生产容器
 - **iOS 签名**：`ios/Runner.xcodeproj` 中 `DEVELOPMENT_TEAM = ""`，bundle id 仍为占位 `com.example.piliplus`。CI 与本机均只能 `--no-codesign` 构建；真机安装需配置 Apple Developer Team。（spike 不受此限：`spikes/slint-ios` 用免费 Personal Team 签名装上了真机，团队 ID 由构建命令传入、不进仓库；代价是**一台设备最多 3 个**这样签名的 App、7 天过期。见下面「iOS 真机的 Slint/libmpv 实测能力」。）（macOS 为 `CODE_SIGN_IDENTITY = "-"` ad-hoc 签名，不受影响。）这说的是**开发期真机安装**；对外分发的发布签名是另一件事，结论见[发布签名](../release/SIGNING.md) §5：iOS 侧载的签名身份属于使用者，仓库侧没有、也不该有可复用的发布身份。
 - **iOS 模拟器 runtime**：本机 `simctl list runtimes` 为空，模拟器冒烟测试需额外下载 runtime。
 - **Linux GPU/合成**：如后续确有必要，比 Docker 可靠得多的路径是在 Windows 设备上安装双系统，或使用支持 GPU 分区直通的 VM。当前判断为投入产出比不足，暂不投入。
+- **CI 本身可能整个停掉，而仓库里没有任何提示**（#279，2026-11-26）。那次 `gh workflow run` 返回 `HTTP 422: Actions has been disabled for this repository.`，而仓库设置页与 `actions/permissions` 都显示 `enabled: true`、十个工作流全 `active`；成因只在网页端可见，**至今未查明**（已排除存储额度与账单：同账号其余仓库当天均正常运行，private 仓库的产物合计只有 4.5 MB）。表现就是回归安静地不再运行——连着三次合并进 main 都没触发，是合完去看那次运行才发现的。
+  这件事叠在 #114 上尤其糟：#114 关掉 PR 回归时的说法是「发现点从合并前后移到合并后」，合并后那张网也没了就等于**完全没有自动检查**，本机跑的那几条（AGENTS.md §5）是唯一保障。判别账号级还是仓库级、以及怎么量产物用量，见 AGENTS.md §7。
 
 ## 5. 跨机协作约定（macOS ↔ Windows）
 

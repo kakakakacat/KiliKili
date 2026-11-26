@@ -169,16 +169,25 @@ jobs:
             KiliKili_windows_*.zip
             KiliKili-Win-Setup/KiliKili_windows_*.exe
 
+      # 带 tag 的发布包已经进了上面的 Release。public 仓库的 Release 附件不计入
+      # Actions 存储，产物那份却是计费的——同一个包存两遍，#279 的 4.87 GB 就是
+      # 这么堆起来的，堆满之后 GitHub 会账号级停掉整个仓库的 Actions。
+      # retention-days 比仓库默认的 7 天更短：验证包看完即弃。
       - name: Upload windows file release
+        if: ${{ inputs.tag == '' }}
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: Windows-file-x64-release
           path: KiliKili_windows_*.zip
+          retention-days: 2
 
+      # 同上，只在非发布构建里留一份短期产物（#279）。
       - name: Upload windows setup release
+        if: ${{ inputs.tag == '' }}
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: Windows-setup-x64-release
           path: KiliKili-Win-Setup/KiliKili_windows_*.exe
+          retention-days: 2

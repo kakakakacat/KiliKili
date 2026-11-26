@@ -537,7 +537,12 @@ jobs:
 
       # 未签名时 .asc 与公钥不存在，这里只会少传几个文件：
       # softprops/action-gh-release 的 fail_on_unmatched_files 默认为 false。
+      # 带 tag 的发布包已经进了上面的 Release。public 仓库的 Release 附件不计入
+      # Actions 存储，产物那份却是计费的——同一个包存两遍，#279 的 4.87 GB 就是
+      # 这么堆起来的，堆满之后 GitHub 会账号级停掉整个仓库的 Actions。
+      # retention-days 比仓库默认的 7 天更短：验证包看完即弃。
       - name: Upload linux checksums and signatures
+        if: ${{ inputs.tag == '' }}
         uses: actions/upload-artifact@v7
         with:
           name: Linux_checksums
@@ -546,31 +551,44 @@ jobs:
             KiliKili-linux-signing-key.asc
             SHA256SUMS
             SHA256SUMS.asc
+          retention-days: 2
 
+      # 同上，只在非发布构建里留一份短期产物（#279）。
       - name: Upload linux targz package
+        if: ${{ inputs.tag == '' }}
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: Linux_targz_amd64_packege
           path: KiliKili_linux_*.tar.gz
+          retention-days: 2
 
+      # 同上，只在非发布构建里留一份短期产物（#279）。
       - name: Upload linux deb package
+        if: ${{ inputs.tag == '' }}
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: Linux_deb_amd64_package
           path: KiliKili_linux_*.deb
+          retention-days: 2
 
+      # 同上，只在非发布构建里留一份短期产物（#279）。
       - name: Upload linux rpm package
+        if: ${{ inputs.tag == '' }}
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: Linux_rpm_amd64_package
           path: KiliKili_linux_*.rpm
+          retention-days: 2
 
+      # 同上，只在非发布构建里留一份短期产物（#279）。
       - name: Upload linux AppImage package
+        if: ${{ inputs.tag == '' }}
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: Linux_AppImage_amd64_package
           path: KiliKili_linux_*.AppImage
+          retention-days: 2

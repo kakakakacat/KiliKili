@@ -473,13 +473,16 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 | 类别 | 数量 |
 | --- | ---: |
-| 修改的上游既有文件 | **851** |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | **341** |
-| &nbsp;&nbsp;其中：有实质改动 | **510** |
-| 新增文件 | **1009** |
+| 修改的上游既有文件 | **852** |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | **340** |
+| &nbsp;&nbsp;其中：有实质改动 | **512** |
+| 新增文件 | **1019** |
 | 删除文件 | **369** |
 
-数字为 2026-11-25 的重算值（含 #208 与 #14 的打包资源见 §4.5，以及 #230 把 `AndroidManifest.xml` 从「仅重命名」转入「实质改动」）。
+数字为 2026-11-26 的重算值（#242 发布准备分支上，按 §6 整表重算）。比 11-25 的 851 / 341 / 510 / 1009 / 369：
+#15 的经典粉色让 `theme_color_type.dart` 第一次与上游不同（修改 +1、实质 +1）；#242 让
+`lib/pages/about/view.dart` 从「仅重命名」转入「实质改动」；新增多出的 10 个来自 #239–#241
+的 spike 与工具（含 `spikes/slint-mpv/avsync.py`）。
 
 「修改」总数一路下降（935 → 909 → 897 → 891 → 887），部分文件是因迁移被
 删除，从 M 转到了 D。#108 的界面改动一度把它顶回 892；合入 #111 的关注/
@@ -593,7 +596,8 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | `.gitignore` | `6b54c9b01` `dd23f968c` | 忽略 Rust `target/` 等产物 |
 | `analysis_options.yaml` | `ee41df52c` | 排除 FRB 生成的 Dart 代码 |
 | `README.md` / `README.en.md` | `e0b32bfda` `c7dc17c1a` `f92a9890c` | 改写为 KiliKili 的说明与路线图 |
-| `pubspec.yaml` / `pubspec.lock` | `ee41df52c` `57485ede8` | 引入 `flutter_rust_bridge` 与 `rust_builder` |
+| `pubspec.yaml` / `pubspec.lock` | `ee41df52c` `57485ede8` #242 | 引入 `flutter_rust_bridge` 与 `rust_builder`；版本名改为 KiliKili 自己的 `0.1.0`（同步上游时**不要**带回上游的 `version:`；`+N` 由 CI 按提交数改写） |
+| `lib/pages/about/view.dart`、`lib/common/constants.dart` | #242 | 「关于」页加「基于 PiliPlus」与「开源许可证」两项（只增不改，GPL-3.0 要求注明来源） |
 | `lib/main.dart` | `ee41df52c` | 启动时初始化 Rust Core |
 | `lib/common/widgets/image/network_img_layer.dart` | #109 | 头像图片与占位图统一绘制主题色圆边框 |
 | `lib/pages/mine/view.dart` | #109 | 未登录头像改走共用头像组件，保持边框一致 |

@@ -175,6 +175,23 @@ Commit Hash: ${BuildConfig.commitHash}''',
             title: const Text('Source Code'),
             subtitle: Text(Constants.sourceCodeUrl, style: subTitleStyle),
           ),
+          ListTile(
+            onTap: () => PageUtils.launchURL(Constants.upstreamUrl),
+            leading: const Icon(Icons.call_split),
+            title: const Text('基于 PiliPlus'),
+            subtitle: Text(Constants.upstreamUrl, style: subTitleStyle),
+          ),
+          ListTile(
+            onTap: () => PageUtils.launchURL(
+              '${Constants.sourceCodeUrl}/blob/main/LICENSE',
+            ),
+            leading: const Icon(Icons.gavel_outlined),
+            title: const Text('开源许可证'),
+            subtitle: Text(
+              'GNU GPL v3.0 · 非官方客户端，与哔哩哔哩无关',
+              style: subTitleStyle,
+            ),
+          ),
           if (Platform.isAndroid)
             ListTile(
               onTap: AndroidHelper.openLinkVerifySettings,

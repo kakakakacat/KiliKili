@@ -356,37 +356,42 @@ class _ScrimLayerState extends State<_ScrimLayer> {
             ColoredBox(
               color: colors.scrim,
               child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                  9,
-                  0,
-                  widget.reserveTrailing ? CoverScrimCard._trailingWidth : 9,
-                  7,
-                ),
+                padding: const EdgeInsets.fromLTRB(9, 0, 9, 7),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (_meta(context, colors) case final meta
-                        when meta.isNotEmpty)
+                    if (_metaRow(context, colors) case final row?)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 2),
-                        child: Row(spacing: 4, children: meta),
+                        child: row,
                       ),
-                    if (widget.titleBuilder case final build?)
-                      Semantics(
-                        label: widget.semanticsLabel ?? widget.title,
-                        child: build(context, colors),
-                      )
-                    else
-                      Text(
-                        widget.title,
-                        maxLines: widget.titleMaxLines,
-                        overflow: TextOverflow.ellipsis,
-                        semanticsLabel: widget.semanticsLabel,
-                        style:
-                            (widget.titleStyle ?? const TextStyle(height: 1.32))
-                                .copyWith(color: colors.title),
+                    // 「⋮」贴在卡片右下角，只和标题最后一行重叠，所以右侧
+                    // 预留只给标题。此前整列都让出 32px，信息行右端的日期
+                    // 因此比顶行的时长缩进一大截，看着没贴边。
+                    Padding(
+                      padding: EdgeInsets.only(
+                        right: widget.reserveTrailing
+                            ? CoverScrimCard._trailingWidth - 9
+                            : 0,
                       ),
+                      child: switch (widget.titleBuilder) {
+                        final build? => Semantics(
+                          label: widget.semanticsLabel ?? widget.title,
+                          child: build(context, colors),
+                        ),
+                        null => Text(
+                          widget.title,
+                          maxLines: widget.titleMaxLines,
+                          overflow: TextOverflow.ellipsis,
+                          semanticsLabel: widget.semanticsLabel,
+                          style:
+                              (widget.titleStyle ??
+                                      const TextStyle(height: 1.32))
+                                  .copyWith(color: colors.title),
+                        ),
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -397,7 +402,31 @@ class _ScrimLayerState extends State<_ScrimLayer> {
     );
   }
 
-  /// 信息行：UP 名（+ 已关注的对勾）在前，调用方给的那几项在后。
+  /// 信息行。调用方用 `Spacer()` 把后面几项推到右边（见
+  /// [CoverScrimMetaBuilder]）。
+  ///
+  /// 不能把 UP 名的 `Flexible` 和调用方的 `Spacer` 直接放进同一个 Row：两者
+  /// 都是 flex 1，剩余宽度会**对半分**——UP 名最多拿一半，稍长就被截成
+  /// 「N…」甚至只剩一块空底色（#245）；名字短时，`Flexible` 用不完的那一半
+  /// 又落在日期右边，日期因此不贴边。所以按第一个 `Spacer` 拆开：它之前的项
+  /// 放进 `Expanded` 吃掉全部剩余宽度，之后的项按自身宽度贴右。
+  Widget? _metaRow(BuildContext context, CoverScrimColors colors) {
+    final items = _meta(context, colors);
+    if (items.isEmpty) return null;
+    final split = items.indexWhere((w) => w is Spacer);
+    if (split < 0) return Row(spacing: 4, children: items);
+    return Row(
+      spacing: 4,
+      children: [
+        Expanded(
+          child: Row(spacing: 4, children: items.sublist(0, split)),
+        ),
+        ...items.sublist(split + 1),
+      ],
+    );
+  }
+
+  /// UP 名（+ 已关注的对勾）在前，调用方给的那几项在后。
   List<Widget> _meta(BuildContext context, CoverScrimColors colors) => [
     if (widget.upName case final name? when name.isNotEmpty) ...[
       // Flexible 只给 UP 名：这一行里只有它可以被截断还看得懂。

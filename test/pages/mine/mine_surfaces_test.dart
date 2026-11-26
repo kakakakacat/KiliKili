@@ -207,9 +207,9 @@ void main() {
     const contentKey = Key('mine-content');
     const backgroundKey = Key('mine-background');
     await tester.pumpWidget(
-      MaterialApp(
+      const MaterialApp(
         home: MediaQuery(
-          data: const MediaQueryData(
+          data: MediaQueryData(
             padding: EdgeInsets.only(top: 24),
             viewPadding: EdgeInsets.only(top: 24),
           ),
@@ -217,7 +217,7 @@ void main() {
             extendBehindStatusBar: true,
             child: MinePageBackground(
               key: backgroundKey,
-              child: const SizedBox.expand(key: contentKey),
+              child: SizedBox.expand(key: contentKey),
             ),
           ),
         ),

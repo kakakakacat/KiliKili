@@ -456,6 +456,12 @@ media-kit 适配器，时序、错误与资源决策修改 Rust，不恢复旧�
 `lib/pages/login/view.dart` 与 `lib/pages/login/sms_code_field.dart` 分别早在
 #140 和 #162 就已在「有实质改动」与「新增」桶里，再改不改变归类。
 
+修订：2026-11-26（#242 预回归的三个 P1：#255、#256、#257 为本次）——
+`lib/pages/search_panel/view.dart` 此前只被重命名提交 `ba430476b` 触及，本次转为
+实质改动：仅重命名 **340 → 339**、实质改动 **513 → 514**；修改总数、新增与删除不变。
+同时改到的 `http_error.dart`（#106）、`search_panel/controller.dart`（S9）、
+`reply_reply/{controller,view}.dart`（#176）早已在实质改动桶里，不改变归类。
+
 ## 1. 基准
 
 ```
@@ -474,15 +480,17 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 类别 | 数量 |
 | --- | ---: |
 | 修改的上游既有文件 | **853** |
-| &nbsp;&nbsp;其中：仅因包名重命名而改动 | **340** |
-| &nbsp;&nbsp;其中：有实质改动 | **513** |
+| &nbsp;&nbsp;其中：仅因包名重命名而改动 | **339** |
+| &nbsp;&nbsp;其中：有实质改动 | **514** |
 | 新增文件 | **1074** |
 | 删除文件 | **369** |
 
-数字为 2026-11-26 在 main `3c3c3f0d8`（#251、#253、#249 合并后）上按 §6 的重算值。比 #250
-分支那次的 853 / 340 / 513 / 1042 / 369 只多了新增 32 个，全部来自 #249 的真机导航采样
-（`docs/qa/measurements/nav-127-{anonymous,authenticated}-2026-11-26/`）；#252 与 #249 改的
-都是已在实质改动名单里的文件，修改数不变。
+数字为 2026-11-26 在 main `fc92bca4b`（#258、#261 合并后）上按 §6 的重算值：修改 / 新增 / 删除
+853 / 1074 / 369 实测。比 #250 分支那次的 853 / 340 / 513 / 1042 / 369：新增多 32 个，全部来自
+#249 的真机导航采样（`docs/qa/measurements/nav-127-{anonymous,authenticated}-2026-11-26/`）；
+#255–#257 让 `lib/pages/search_panel/view.dart` 从「仅重命名」转入实质改动（340 / 513 →
+339 / 514，见文首 2026-11-26 那条修订）；#252、#249、#259 改的都是已在实质改动名单里的文件，
+修改数不变。
 
 #250 分支那次的说明：比 #242 那次的
 852 / 340 / 512 / 1019 / 369：`android/app/src/main/res/values-v31/styles.xml` 因 Android 12+
@@ -613,7 +621,7 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | `lib/main.dart` | `ee41df52c` | 启动时初始化 Rust Core |
 | `lib/common/widgets/image/network_img_layer.dart` | #109 | 头像图片与占位图统一绘制主题色圆边框 |
 | `lib/pages/mine/view.dart` | #109 | 未登录头像改走共用头像组件，保持边框一致 |
-| `lib/common/widgets/floating_navigation_bar.dart`、`lib/pages/main/view.dart` | #122 | 三种首页底栏共用 64px 高度（#248）、玻璃背景、胶囊裁切、4px 内容内边距与边缘留白；安全区仅在胶囊外处理，分栏中心对齐选中背景，图标与文字组合居中；保留导航与隐藏行为。玻璃底色的不透明度先在 #122 降到 0.10–0.24，#252 因「太透、文字看不清」提回 0.68–0.78（液态玻璃着色器只折射不模糊，中间区域要靠底色压暗背板）；选中项图标与文字改用主题色（#252，配色在 `lib/utils/theme_utils.dart`） |
+| `lib/common/widgets/floating_navigation_bar.dart`、`lib/pages/main/view.dart` | #122 | 三种首页底栏共用 64px 高度（#248）、图标与文字的可见间距各减半（#259：悬浮底栏在布局代理里让文字上移 5；MD3 底栏 `labelPadding` 改为仅底部 8 并把图标下移 4；经典底栏图标下移 3、整条上移 1.5，组合仍垂直居中）、玻璃背景、胶囊裁切、4px 内容内边距与边缘留白；安全区仅在胶囊外处理，分栏中心对齐选中背景，图标与文字组合居中；保留导航与隐藏行为。玻璃底色的不透明度先在 #122 降到 0.10–0.24，#252 因「太透、文字看不清」提回 0.68–0.78（液态玻璃着色器只折射不模糊，中间区域要靠底色压暗背板）；选中项图标与文字改用主题色（#252，配色在 `lib/utils/theme_utils.dart`） |
 | `lib/pages/main/controller.dart` | #128、#127 | 遵循「首页切换页面动画」设置：关闭时底栏与侧栏均直接切换，避免固定 240ms 转场及途经页初始化；开启时仍由 TabBarView 按方向滑动 240ms。同步上游时保留开关语义，不对 PageView 强制加动画 |
 | `lib/scripts/double_tap_gesture.patch` | #143 | 给 Flutter SDK 的 `DoubleTapGestureRecognizer` 加一个 `doubleTapTimeout` 参数（默认仍为 `kDoubleTapTimeout`，只有播放器选择性调短）；**改了它就多一个只在打过补丁的 SDK 上才存在的符号**，见 AGENTS §5 |
 | `lib/scripts/material/*.patch`（8 个）、`lib/common/widgets/flutter/dyn_tab_bar.dart` | #168 | cherry-pick 上游 `915276c87`，把补丁对齐到 `material_ui` 1.11.x；`tabs.patch` 新引入 `minimumIndicatorWidth`，**又一个只在打过补丁的包里存在的符号**。补丁与 `material_ui` 版本强绑定：1.10.0 上 `scaffold.patch` 打不上，必须连同 `pubspec.lock` 的版本一起动 |
@@ -641,6 +649,9 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | `.github/workflows/ios.yml` | 本次（#121） | 注释写明侧载没有仓库侧发布身份；构建行为未变 |
 | `lib/pages/login/view.dart` | #140、#162、#236 | 短信登录交互修复（#140）之后，界面整页改胶囊：顶部登录方式是一条**分段胶囊**（`CapsuleSegmentedTabBar`，四格等分、选中块滑动，窄屏丢图标保文字），五个输入栏是填充 + 全圆角（多行的 Cookie 用 24 圆角），主操作是整行 56 高胶囊。**上游若改这个文件，照常同步里面的逻辑与字段，但不要把布局与装饰同步回来**——那一层这边已经整个换掉，判据同 §4.4 |
 | `android/app/src/main/AndroidManifest.xml` | 本次（#230） | `io.flutter.embedding.android.EnableImpeller` 由 `false` 改为 `true`。该 opt-out 是 2024 年底随上游带进来的，Flutter 3.47 已把它标为 deprecated；关着它时 `ImageFilter.isShaderFilterSupported` 为 false，玻璃导航栏的折射 shader 根本不会运行，Android 只能退到 `ImageFilter.blur`——这就是 iOS 透明、Android 像高斯模糊的全部原因。**上游若再改这一段，不要跟着关回去**；上游自己迟早会删掉这个 meta-data，届时整行一并删除即可，默认就是开 |
+| `lib/common/widgets/loading_widget/http_error.dart` | #106、#255 | 错误态胶囊（#106）；屏高 < 580 时缩小插图与上下边距，避免文案与重试按钮落到首页悬浮底栏下面，常规手机保持上游尺寸 |
+| `lib/pages/video/reply_reply/{controller,view}.dart` | #176、#256 | 线程化进度条只在拉取期间显示（新增 `fetchingTree`），上游让它常驻，未拉取时是一根来历不明的主题色条。**同步上游时保留这个开关** |
+| `lib/pages/search_panel/{controller,view}.dart` | S9、#257 | 搜索面板加页脚：加载更多失败时显示原因并可点重试，到底时显示「没有更多了」。刻意没改 `CommonListController`——几十个列表共用，改它的上游冲突面太大 |
 
 `lib/plugin/pl_player/controller.dart` 不在这张表里，它已经由 §4.1 的 S3 一行
 覆盖；issue #89 又给它加了 seek 代际 `_seekEpoch`，这里不重复计数。那条代际

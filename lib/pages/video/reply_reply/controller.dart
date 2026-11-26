@@ -233,14 +233,20 @@ class VideoReplyReplyController extends ReplyController
   Future<void>? _inflightReply;
   final progress = RxDouble(0);
 
+  /// 线程化拉取是否在进行。进度条只在这期间显示（#256）：`progress` 在普通
+  /// 翻页时也会更新，进度条若常驻，没点线程化时就是一根来历不明的主题色条。
+  final fetchingTree = false.obs;
+
   bool get inFetchReply => _replyTimer != null || _inflightReply != null;
 
   void _cancelReplyTimer() {
     _replyTimer?.cancel();
     _replyTimer = null;
+    fetchingTree.value = false;
   }
 
   void nextReplyRound() {
+    fetchingTree.value = true;
     _replyTimer = null;
     _inflightReply = _fetchNextReply();
   }
@@ -284,6 +290,7 @@ class VideoReplyReplyController extends ReplyController
     if (_replyTimer != null) {
       assert(_inflightReply == null);
       _cancelReplyTimer();
+      fetchingTree.value = true;
       return _inflightReply = _fetchNextReply();
     } else if (_inflightReply case final future?) {
       return future;
@@ -315,6 +322,7 @@ class VideoReplyReplyController extends ReplyController
   final replyTree = Rxn<ReplyTree>();
 
   void buildTree() {
+    fetchingTree.value = false;
     final data = loadingState.rawValue.data!;
     if (data.isEmpty) return;
     final seen = HashSet<int>();

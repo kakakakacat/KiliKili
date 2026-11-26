@@ -24,14 +24,23 @@ class HttpError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    // 矮屏（如 320×480 的平板、横屏手机）上，固定 40 + 200 的上边距与插图
+    // 会把文案和重试按钮推到首页悬浮底栏下面（#255）。高度 ≥ 580 时保持
+    // 上游原样，只在更矮时按比例收缩插图——刻意不去量底栏高度：本组件
+    // 到处复用，不该知道外层有没有悬浮底栏。
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final isShort = screenHeight < 580;
     final child = Column(
       mainAxisSize: .min,
       mainAxisAlignment: .center,
       crossAxisAlignment: .center,
       children: [
-        const SizedBox(height: 40),
-        SvgPicture.asset(Assets.error, height: 200),
-        const SizedBox(height: 30),
+        SizedBox(height: isShort ? 16 : 40),
+        SvgPicture.asset(
+          Assets.error,
+          height: isShort ? (screenHeight - 380).clamp(80.0, 200.0) : 200,
+        ),
+        SizedBox(height: isShort ? 16 : 30),
         Padding(
           padding: const .symmetric(horizontal: 16, vertical: 5),
           child: SelectionText(

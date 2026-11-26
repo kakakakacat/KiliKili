@@ -67,6 +67,10 @@ name = "slint_mpv_spike"
 crate-type = ["cdylib"]
 path = "src/lib.rs"
 
+# 桌面：测试窗口放到指定位置、不抢焦点（`--window-pos`）。
+[target.'cfg(not(target_os = "android"))'.dependencies]
+slint = { version = "1.19", features = ["unstable-winit-030"] }
+
 [target.'cfg(target_os = "android")'.dependencies]
 # 与上面的 slint 同一个依赖，这里只是**追加 feature**（cargo 对 feature 取并集）。
 slint = { version = "1.19", features = ["backend-android-activity-06"] }

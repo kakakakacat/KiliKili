@@ -248,11 +248,12 @@ impl MpvPlayer {
     /// #218 在 Adreno 610 上实测：渲染线程每张新帧同步 `mpv_get_property`
     /// 两次，`hold` 模式就从 59 fps 掉到 51 fps——同步取属性要排队等 mpv 的
     /// core 线程，core 忙着解封装 / 解码时渲染线程跟着干等。
+    ///
+    /// 后台线程每 200 ms 读一次：`dwidth`、`dheight`、`container-fps` × 1000。
     #[allow(dead_code)] // 只有 #218 的 interp 用
-    pub fn spawn_size_watcher(
-        &self,
-    ) -> Arc<(std::sync::atomic::AtomicI64, std::sync::atomic::AtomicI64)> {
+    pub fn spawn_size_watcher(&self) -> Arc<SizeWatch> {
         let size = Arc::new((
+            std::sync::atomic::AtomicI64::new(0),
             std::sync::atomic::AtomicI64::new(0),
             std::sync::atomic::AtomicI64::new(0),
         ));
@@ -277,11 +278,26 @@ impl MpvPlayer {
                     };
                     (code >= 0).then_some(v)
                 };
+                let read_f64 = |name: &std::ffi::CStr| {
+                    let mut v: f64 = 0.0;
+                    let code = unsafe {
+                        (lib.get_property)(
+                            handle.0,
+                            name.as_ptr(),
+                            format::DOUBLE,
+                            (&raw mut v).cast::<c_void>(),
+                        )
+                    };
+                    (code >= 0).then_some(v)
+                };
                 while !stop.load(Ordering::Acquire) {
                     if let (Some(w), Some(h)) = (read(c"dwidth"), read(c"dheight")) {
                         out.0.store(w, Ordering::Release);
                         out.1.store(h, Ordering::Release);
                     }
+                    // #219：片源帧率（媒体时间），千分之一 fps；读不到记 0。
+                    let fps = read_f64(c"container-fps").unwrap_or(0.0);
+                    out.2.store((fps * 1000.0) as i64, Ordering::Release);
                     std::thread::sleep(Duration::from_millis(200));
                 }
             });
@@ -962,3 +978,10 @@ mod tests {
         assert_eq!(failure_kind(-20), PlayerFailureKind::Backend);
     }
 }
+
+/// [`MpvPlayer::spawn_size_watcher`] 的输出：显示宽、高、`container-fps` × 1000。
+pub type SizeWatch = (
+    std::sync::atomic::AtomicI64,
+    std::sync::atomic::AtomicI64,
+    std::sync::atomic::AtomicI64,
+);

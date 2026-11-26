@@ -43,7 +43,9 @@ gl 模式下设 `SPIKE_INTERP=mc|blend|hold` 就走插帧路径：mpv 的新帧�
 **#219**：设 `SPIKE_INTERP_SETTING=off|45|60|follow` 改走 `player_interp::Interpolator`，
 出帧由 CADisplayLink 驱动、按档位请求帧率（`ios/bridge.m` 第 4 节），Info.plist 开了
 ProMotion（`CADisableMinimumFrameDurationOnPhone`）。`SPIKE_INTERP_FOLLOW_CAP=120` 放开
-「跟随」的上限，`SPIKE_INTERP_THERMAL` 盖掉系统温控读数。结论见
+「跟随」的上限，`SPIKE_INTERP_THERMAL` 盖掉系统温控读数。`SPIKE_INTERP_UPSCALE=1` 配合
+`SPIKE_MPV_OPTS=glsl-shaders=~/Documents/…`：零拷贝目标与源帧槽按窗口放大，Anime4K 这类放大
+着色器才生效。`SPIKE_SCRIPT` 里的 `set speed X` 同时告诉 Interpolator。结论见
 [`docs/m0/spikes/2026-11-24-interp-219.md`](../../docs/m0/spikes/2026-11-24-interp-219.md)。
 其余开关见 `src/lib.rs` 开头。视频可以用 `devicectl device copy to --domain-type
 appDataContainer` 推进 `Documents/`，再用 `SPIKE_VIDEO=~/Documents/<文件>` 指过去。

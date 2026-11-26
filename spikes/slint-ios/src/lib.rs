@@ -23,6 +23,8 @@
 //!   CADisplayLink 驱动并按档位请求帧率。给了它，`SPIKE_INTERP` 不生效。配套
 //!   `SPIKE_INTERP_FOLLOW_CAP`（默认 60）、`SPIKE_INTERP_THERMAL`（`nominal` 等，
 //!   盖掉系统读数）。
+//!   `SPIKE_INTERP_UPSCALE=1`：`SPIKE_MPV_OPTS` 里给了放大类 `glsl-shaders`（Anime4K），
+//!   零拷贝目标与源帧槽按窗口放大（`player_interp::engine::slot_size`）。
 //! - `SPIKE_MPV_OPTS`：`k=v,k=v`，追加 mpv 选项（调色彩/格式问题时做对照）。
 //! - `SPIKE_SCRIPT`：定时动作，`秒=动作;秒=动作…`（秒从启动算）。动作是一条 mpv 命令
 //!   （空格分词，如 `seek 30 absolute`、`set speed 2`），或 `quality`：换到
@@ -209,6 +211,11 @@ struct Engine {
     /// 上一次的 (后台, PiP) 状态，变化时转成生命周期事件。
     phase: (bool, bool),
     produced: u64,
+    /// Slint 窗口的物理像素尺寸（display link 回调里每帧更新）。
+    view_px: (u32, u32),
+    /// `SPIKE_INTERP_UPSCALE=1`：`SPIKE_MPV_OPTS` 里给了放大类 `glsl-shaders`
+    /// （Anime4K），零拷贝目标与源帧槽改成视频放进窗口后的尺寸。
+    upscale: bool,
 }
 
 impl Engine {
@@ -243,6 +250,8 @@ impl Engine {
             thermal_override,
             phase: (false, false),
             produced: 0,
+            view_px: (0, 0),
+            upscale: env("SPIKE_INTERP_UPSCALE").is_some_and(|v| v == "1"),
         })
     }
 
@@ -809,12 +818,29 @@ impl Video {
             ) {
                 eng.video_size = (w, h);
             }
+            // 片源帧率（媒体时间）。起播头一秒 target_time 不规整，按它测会让
+            // audio-delay 连改三次（#219 记录）。
+            eng.it
+                .set_source_fps_hint(mpv.property("container-fps").and_then(|v| v.parse().ok()));
         }
         eng.since_size += 1;
         let (w, h) = eng.video_size;
         if w == 0 {
             return None;
         }
+        // 零拷贝目标原本是视频原始尺寸、由 Slint 缩放：这样 mpv 的输出永远
+        // 不比输入大，放大类着色器（Anime4K）的条件不成立，直通时也不生效。
+        // 开了 SPIKE_INTERP_UPSCALE 就让目标（也就是源帧槽）按窗口放大。
+        let (w, h) = {
+            let (vw, vh) = eng.view_px;
+            let (sw, sh) = player_interp::engine::slot_size(
+                (w as i32, h as i32),
+                (vw as i32, vh as i32),
+                eng.upscale,
+                2560 * 1440,
+            );
+            (sw as u32, sh as u32)
+        };
         if let Err(err) = self.ensure_targets(w, h, importer) {
             log(&err);
             return None;
@@ -1006,6 +1032,11 @@ impl Video {
         };
         if action.starts_with("seek") {
             eng.it.on_event(Event::Seek);
+        } else if let Some(speed) = action
+            .strip_prefix("set speed ")
+            .and_then(|v| v.trim().parse::<f64>().ok())
+        {
+            eng.it.set_speed(speed);
         } else if action == "quality" {
             eng.it.on_event(Event::SourceChanged);
         }
@@ -1066,11 +1097,14 @@ impl Video {
     }
 }
 
+/// CADisplayLink 每次回调要做的事：`(timestamp, targetTimestamp)`。
+type TickFn = Box<dyn FnMut(f64, f64)>;
+
 thread_local! {
     /// PiP 窗口上的播放/暂停按钮：回调在主线程，交给定时器去执行。
     static PENDING_PLAY: Cell<Option<bool>> = const { Cell::new(None) };
     /// #219：CADisplayLink 回调要做的事（主线程）。
-    static ON_TICK: RefCell<Option<Box<dyn FnMut(f64, f64)>>> = const { RefCell::new(None) };
+    static ON_TICK: RefCell<Option<TickFn>> = const { RefCell::new(None) };
     /// 定时器算好的「此刻能不能提交 GLES」，display link 回调直接用。
     static MAY_RENDER: Cell<bool> = const { Cell::new(true) };
 }
@@ -1197,6 +1231,10 @@ fn run() -> Result<(), slint::PlatformError> {
                     return;
                 };
                 let may_render = MAY_RENDER.with(Cell::get);
+                if let Some(eng) = v.engine.as_mut() {
+                    let size = ui.window().size();
+                    eng.view_px = (size.width, size.height);
+                }
                 if let Some((image, pixbuf)) = v.frame_engine(importer, may_render, ts, target) {
                     ui.set_video(image);
                     ui.set_has_video(true);

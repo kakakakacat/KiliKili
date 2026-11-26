@@ -203,9 +203,30 @@ pub struct Args {
 
     /// 定时注入生命周期 / 温控事件，`秒:事件`，可给多次。事件：seek（同时真的
     /// seek 到 `--seek-to`）、bg、fg、pip、pipexit、source、thermal-nominal、
-    /// thermal-moderate、thermal-severe。用来在真机上走一遍状态机。
+    /// thermal-moderate、thermal-severe、speed=倍速（同时真的改 mpv 的
+    /// `speed`）。用来在真机上走一遍状态机。
     #[arg(long)]
     event_at: Vec<String>,
+
+    /// mpv 的 `glsl-shaders`（例如 Anime4K 的一串，`:` 分隔，Android 上给设备
+    /// 上的路径）。
+    #[arg(long)]
+    glsl_shaders: Option<String>,
+
+    /// `--glsl-shaders` 里是放大类着色器：源帧槽改成视频放进窗口后的尺寸，
+    /// 让它们在插帧路径下照样生效（`player_interp::engine::slot_size`）。
+    #[arg(long)]
+    upscale_shaders: bool,
+
+    /// 放大时槽的像素上限（默认 1920×1080）。
+    #[arg(long, default_value_t = 1920 * 1080)]
+    slot_max_pixels: i64,
+
+    /// 桌面：窗口左上角放在这个全局坐标（逻辑像素，主屏左上角为原点，
+    /// `x,y`），并且**不激活、不抢焦点**。没给时读环境变量
+    /// `SPIKE_WINDOW_POS`。多显示器时用来把测试窗口固定到某一块屏上。
+    #[arg(long)]
+    window_pos: Option<String>,
 
     /// 原始参数串，写进记录。由入口填。
     #[arg(skip)]
@@ -405,7 +426,7 @@ struct Live {
     renderer: String,
     pending_shot: Option<PathBuf>,
     video_size: (i32, i32),
-    size_watch: Arc<(std::sync::atomic::AtomicI64, std::sync::atomic::AtomicI64)>,
+    size_watch: Arc<mpv::SizeWatch>,
     harness_gl: Option<spike_harness::gl::Gl>,
     frame_started: Option<Instant>,
     /// `--setting` 给了才有。
@@ -438,6 +459,9 @@ pub fn run_with(args: Args, platform: Box<dyn Platform>) -> Result<String> {
         ),
         ("speed".to_owned(), format!("{}", args.speed)),
     ];
+    if let Some(shaders) = &args.glsl_shaders {
+        extra.push(("glsl-shaders".to_owned(), shaders.clone()));
+    }
     if args.mpv_interp {
         extra.push(("interpolation".to_owned(), "yes".to_owned()));
         extra.push(("tscale".to_owned(), "oversample".to_owned()));
@@ -466,6 +490,7 @@ pub fn run_with(args: Args, platform: Box<dyn Platform>) -> Result<String> {
         Box::new(NullSink),
     )?));
 
+    place_desktop_window(args.window_pos.as_deref())?;
     let ui = SpikeWindow::new().context("建不了 Slint 窗口")?;
     ui.window().set_size(slint::LogicalSize::new(
         args.width as f32,
@@ -505,6 +530,7 @@ pub fn run_with(args: Args, platform: Box<dyn Platform>) -> Result<String> {
             let mut engine = Interpolator::new();
             engine.set_setting(setting.into());
             engine.controller_mut().set_follow_cap(args.follow_cap);
+            engine.set_speed(args.speed);
             engine
         }),
         platform,
@@ -969,6 +995,8 @@ impl Live {
             if w > 0 && h > 0 {
                 self.video_size = (w, h);
             }
+            let fps = self.size_watch.2.load(std::sync::atomic::Ordering::Acquire);
+            engine.set_source_fps_hint((fps > 0).then_some(fps as f32 / 1000.0));
         }
         let kind = match plan {
             Plan::Direct => {
@@ -994,7 +1022,13 @@ impl Live {
                         break;
                     }
                     let redraw = info.flags & mpv::sys::frame_info::REDRAW != 0;
-                    let slot = engine.source_target((w, h), redraw)?;
+                    let size = player_interp::engine::slot_size(
+                        (w, h),
+                        target,
+                        self.args.upscale_shaders,
+                        self.args.slot_max_pixels,
+                    );
+                    let slot = engine.source_target(size, redraw)?;
                     unsafe { render.render(slot.fbo, slot.width, slot.height, flip, loader)? };
                     engine.commit_source(slot, info.target_time, now);
                     if !redraw {
@@ -1079,6 +1113,23 @@ impl Live {
         let Some(engine) = self.engine.as_mut() else {
             return;
         };
+        if let Some(speed) = name.strip_prefix("speed=") {
+            match speed.parse::<f64>() {
+                Ok(speed) => {
+                    if let Err(err) = self
+                        .player
+                        .borrow()
+                        .debug_set_property("speed", &format!("{speed}"))
+                    {
+                        self.stats.errors.push(format!("改倍速失败：{err:#}"));
+                    }
+                    engine.set_speed(speed);
+                }
+                Err(_) => self.stats.errors.push(format!("倍速写错了：{name}")),
+            }
+            self.stats.engine_log.push(format!("{t:6.2}s 注入 {name}"));
+            return;
+        }
         let event = match name {
             "seek" => {
                 let to = format!("{}", self.args.seek_to);
@@ -1349,6 +1400,7 @@ fn run_lab(args: &Args) -> Result<String> {
         bail!("{} 里至少要 3 张 f%04d.png", dir.display());
     }
 
+    place_desktop_window(args.window_pos.as_deref())?;
     let ui = SpikeWindow::new()?;
     ui.window().set_size(slint::PhysicalSize::new(64, 64));
     let result: Rc<RefCell<Option<Result<String>>>> = Rc::new(RefCell::new(None));
@@ -1479,4 +1531,43 @@ fn flip_rows(rgba: &[u8], w: u32, h: u32) -> Vec<u8> {
         .flatten()
         .copied()
         .collect()
+}
+
+/// 见 `--window-pos`。必须在建第一个 Slint 窗口之前调用。
+#[cfg(not(target_os = "android"))]
+fn place_desktop_window(arg: Option<&str>) -> Result<()> {
+    use slint::winit_030::winit;
+    let spec = arg
+        .map(str::to_owned)
+        .or_else(|| std::env::var("SPIKE_WINDOW_POS").ok());
+    let Some(spec) = spec else {
+        return Ok(());
+    };
+    let (x, y) = spec
+        .split_once(',')
+        .and_then(|(x, y)| Some((x.trim().parse::<f64>().ok()?, y.trim().parse::<f64>().ok()?)))
+        .with_context(|| format!("--window-pos 要写成 x,y：{spec}"))?;
+    #[allow(unused_mut)]
+    let mut builder =
+        winit::event_loop::EventLoop::<slint::winit_030::SlintEvent>::with_user_event();
+    #[cfg(target_os = "macos")]
+    {
+        use winit::platform::macos::EventLoopBuilderExtMacOS;
+        builder.with_activate_ignoring_other_apps(false);
+    }
+    slint::BackendSelector::new()
+        .with_winit_event_loop_builder(builder)
+        .with_winit_window_attributes_hook(move |attrs| {
+            attrs
+                .with_position(winit::dpi::LogicalPosition::new(x, y))
+                .with_active(false)
+        })
+        .select()
+        .context("选不了 winit 后端")?;
+    Ok(())
+}
+
+#[cfg(target_os = "android")]
+fn place_desktop_window(_arg: Option<&str>) -> Result<()> {
+    Ok(())
 }

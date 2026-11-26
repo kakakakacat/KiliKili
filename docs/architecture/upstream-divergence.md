@@ -476,10 +476,15 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 修改的上游既有文件 | **853** |
 | &nbsp;&nbsp;其中：仅因包名重命名而改动 | **340** |
 | &nbsp;&nbsp;其中：有实质改动 | **513** |
-| 新增文件 | **1042** |
+| 新增文件 | **1074** |
 | 删除文件 | **369** |
 
-数字为 2026-11-26 的重算值（#250 应用图标分支的工作树，按 §6 整表重算）。比 #242 那次的
+数字为 2026-11-26 在 main `3c3c3f0d8`（#251、#253、#249 合并后）上按 §6 的重算值。比 #250
+分支那次的 853 / 340 / 513 / 1042 / 369 只多了新增 32 个，全部来自 #249 的真机导航采样
+（`docs/qa/measurements/nav-127-{anonymous,authenticated}-2026-11-26/`）；#252 与 #249 改的
+都是已在实质改动名单里的文件，修改数不变。
+
+#250 分支那次的说明：比 #242 那次的
 852 / 340 / 512 / 1019 / 369：`android/app/src/main/res/values-v31/styles.xml` 因 Android 12+
 启动画面单独配图第一次与上游不同（修改 +1、实质 +1）；新增 +23，其中 22 个来自 #250（各密度
 `android12splash.png` 10 个、插件补齐的各密度前景/单色图 9 个、`assets/app_icon/` 的透明源与
@@ -608,7 +613,7 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | `lib/main.dart` | `ee41df52c` | 启动时初始化 Rust Core |
 | `lib/common/widgets/image/network_img_layer.dart` | #109 | 头像图片与占位图统一绘制主题色圆边框 |
 | `lib/pages/mine/view.dart` | #109 | 未登录头像改走共用头像组件，保持边框一致 |
-| `lib/common/widgets/floating_navigation_bar.dart`、`lib/pages/main/view.dart` | #122 | 三种首页底栏共用 64px 高度（#248）、玻璃背景、胶囊裁切、4px 内容内边距与边缘留白；安全区仅在胶囊外处理，分栏中心对齐选中背景，图标与文字组合居中，降低底色与高光的不透明度；保留导航与隐藏行为 |
+| `lib/common/widgets/floating_navigation_bar.dart`、`lib/pages/main/view.dart` | #122 | 三种首页底栏共用 64px 高度（#248）、玻璃背景、胶囊裁切、4px 内容内边距与边缘留白；安全区仅在胶囊外处理，分栏中心对齐选中背景，图标与文字组合居中；保留导航与隐藏行为。玻璃底色的不透明度先在 #122 降到 0.10–0.24，#252 因「太透、文字看不清」提回 0.68–0.78（液态玻璃着色器只折射不模糊，中间区域要靠底色压暗背板）；选中项图标与文字改用主题色（#252，配色在 `lib/utils/theme_utils.dart`） |
 | `lib/pages/main/controller.dart` | #128、#127 | 遵循「首页切换页面动画」设置：关闭时底栏与侧栏均直接切换，避免固定 240ms 转场及途经页初始化；开启时仍由 TabBarView 按方向滑动 240ms。同步上游时保留开关语义，不对 PageView 强制加动画 |
 | `lib/scripts/double_tap_gesture.patch` | #143 | 给 Flutter SDK 的 `DoubleTapGestureRecognizer` 加一个 `doubleTapTimeout` 参数（默认仍为 `kDoubleTapTimeout`，只有播放器选择性调短）；**改了它就多一个只在打过补丁的 SDK 上才存在的符号**，见 AGENTS §5 |
 | `lib/scripts/material/*.patch`（8 个）、`lib/common/widgets/flutter/dyn_tab_bar.dart` | #168 | cherry-pick 上游 `915276c87`，把补丁对齐到 `material_ui` 1.11.x；`tabs.patch` 新引入 `minimumIndicatorWidth`，**又一个只在打过补丁的包里存在的符号**。补丁与 `material_ui` 版本强绑定：1.10.0 上 `scaffold.patch` 打不上，必须连同 `pubspec.lock` 的版本一起动 |

@@ -42,6 +42,19 @@ null——于是「番剧从来不跳片头」这个必现的线上故障，被�
 明确记录为**全部手工构造**的：`fav/`、`history/`、`msg/`、`pgc/`、`user/`、
 `login/`、`grpc_im/`。其余目录没有留下来源说明，按默认假设处理。
 
+## 怎么抓一份真实样本
+
+匿名也能抓到的接口比想象中多，构造之前先试一次。两个容易卡住的地方：
+
+- **先取 `buvid3`。** `https://api.bilibili.com/x/frontend/finger/spi` 返回
+  `b_3`/`b_4`，当 cookie 发出去。少了它 `/ogv/player/playview` 一律
+  `code -400`——#271 第一次探查就卡在这里，误以为这条接口非登录不可。
+- **WBI 签名按 `crates/bili-protocol/src/wbi.rs` 那套来**，`img_key`/`sub_key`
+  取自 `/x/web-interface/nav`（匿名可取）。请求头带上 `User-Agent` 与对应
+  页面的 `Referer`。
+
+拿到之后按下面脱敏，再按本文件的表登记它「哪些是真的」。
+
 ## 脱敏
 
 取自真实响应的样本一律脱敏后入库：CDN 地址、稿件 id、昵称、mid、评论 id

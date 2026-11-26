@@ -224,8 +224,9 @@ PR**，不要只留在代码和 Issues 里：
   gh api -X PUT repos/<owner>/<repo>/rulesets/27013798 -f enforcement=active
   ```
 
-  眼下还没能确认这一步：这个仓库的 Actions 处在停用状态（见下一条），
-  PR 上一次检查都跑不起来。
+  2026-11-26 那次卡住的原因是整个仓库的 Actions 被停了（见下一条），当天
+  晚些时候由仓库所有者在网页端恢复；第 4 步要等 `pull_request:` 合进 main
+  之后、在真实 PR 上确认一次。
 - 因此 **合并前仍然请自己在本机验**（至少 `cargo fmt --check` /
   `cargo clippy` / `cargo test`，动了 Dart 再跑 `flutter test`），别因为
   `pull_request:` 回来了就假定 PR 上有过绿检查。要在合并前跑一次完整回归：

@@ -43,6 +43,8 @@ Widget _navigation(String style, MainController main) => Obx(() {
     destinationCount: destinations.length,
     child: style == 'MD3 底栏'
         ? NavigationBar(
+            height: mainNavigationBarHeight,
+            labelPadding: const EdgeInsets.symmetric(vertical: 4),
             selectedIndex: index,
             onDestinationSelected: main.setIndex,
             destinations: destinations
@@ -55,6 +57,9 @@ Widget _navigation(String style, MainController main) => Obx(() {
                 .toList(),
           )
         : BottomNavigationBar(
+            iconSize: 16,
+            selectedFontSize: 12,
+            unselectedFontSize: 12,
             currentIndex: index,
             onTap: main.setIndex,
             items: destinations
@@ -111,7 +116,10 @@ void main() {
         MaterialApp(
           home: Scaffold(
             bottomNavigationBar: bottomNav
-                ? SizedBox(height: 80, child: _navigation(style, main))
+                ? SizedBox(
+                    height: mainNavigationBarHeight + (style == '悬浮底栏' ? 8 : 0),
+                    child: _navigation(style, main),
+                  )
                 : null,
             body: PageView(
               controller: pages,

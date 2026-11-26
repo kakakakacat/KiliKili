@@ -9,12 +9,13 @@ import 'package:material_ui/material_ui.dart';
 
 const double _kMaxLabelTextScaleFactor = 1.3;
 
-const _kNavigationHeight = 80.0;
-const _kIndicatorHeight = _kNavigationHeight - 2 * _kIndicatorPaddingInt;
+// 三种首页底栏共用高度，避免切换样式后胶囊尺寸跳变。
+const mainNavigationBarHeight = 64.0;
+const _kIndicatorHeight = mainNavigationBarHeight - 2 * _kIndicatorPaddingInt;
 const _kIndicatorWidth = 86.0;
 const _kIndicatorPaddingInt = 4.0;
 const _kIndicatorPadding = EdgeInsets.all(_kIndicatorPaddingInt);
-const _kBorderRadius = BorderRadius.all(.circular(_kNavigationHeight / 2));
+const _kBorderRadius = BorderRadius.all(.circular(mainNavigationBarHeight / 2));
 const _kNavigationShape = RoundedSuperellipseBorder(
   borderRadius: _kBorderRadius,
 );
@@ -236,7 +237,7 @@ class FloatingNavigationBar extends StatelessWidget {
         bottomPadding + padding.bottom,
       ),
       child: SizedBox(
-        height: _kNavigationHeight,
+        height: mainNavigationBarHeight,
         width: destinations.length * _kIndicatorWidth,
         child: GlassNavigationSurface(
           selectedIndex: selectedIndex,
@@ -842,7 +843,7 @@ const _indicatorLight = Color(0x10000000);
 class _NavigationBarDefaultsM3 extends NavigationBarThemeData {
   _NavigationBarDefaultsM3(this.context)
     : super(
-        height: _kNavigationHeight,
+        height: mainNavigationBarHeight,
         elevation: 3.0,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       );

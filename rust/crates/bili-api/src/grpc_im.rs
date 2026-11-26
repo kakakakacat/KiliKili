@@ -988,11 +988,13 @@ pub fn project_settings(bytes: &[u8]) -> Result<ImSettingsPage, DomainError> {
     })
 }
 
-/// 改一项设置并写回整张表。
+/// 改一项设置并写回。
 ///
-/// `raw` 是 [`get_settings`] 带回来的那段字节。这里重新解码它、只改
-/// `key` 那一项、再把**整张表**发回去——与基线一字不差，而我们没投影的
-/// 那些字段原样留在里面。
+/// `raw` 是 [`get_settings`] 带回来的那段字节。这里重新解码它、取出
+/// `key` 那一项改掉，**只把这一项**发回去（#276）。基线就是这样：
+/// `SetImSettingsReq(settings: {key: item})`。整张表发回去服务端回 -400，
+/// 所以「带着原始字节走一圈」只用在这一项内部——它里面我们没投影的
+/// 字段原样留着，不按投影重建。
 ///
 /// `switch_on` 与 `selected_value` 二选一：前者改开关，后者把选择项里
 /// `item_type == selected_value` 的那条设成选中、其余取消。
@@ -1008,8 +1010,31 @@ pub async fn set_settings<T: HttpTransport>(
     switch_on: Option<bool>,
     selected_value: Option<i32>,
 ) -> Result<(), DomainError> {
+    let req = set_settings_request(raw, key, switch_on, selected_value)?;
+    unary(
+        transport,
+        ctx,
+        protocol::IM_SET_SETTINGS,
+        &req,
+        Idempotency::Idempotent.retry_policy(),
+    )
+    .await?;
+    Ok(())
+}
+
+/// [`set_settings`] 发出去的那个请求。单独拆出来，是为了让单测能断言
+/// 「请求里只有被改的那一项」——#276 正是错在这里。
+///
+/// # Errors
+/// 同 [`set_settings`] 的协议错误。
+pub fn set_settings_request(
+    raw: &[u8],
+    key: i32,
+    switch_on: Option<bool>,
+    selected_value: Option<i32>,
+) -> Result<pb::SetImSettingsReq, DomainError> {
     let mut reply: pb::GetImSettingsReply = decode(raw, "私信设置快照")?;
-    let setting = reply.settings.get_mut(&key).ok_or_else(|| {
+    let mut setting = reply.settings.remove(&key).ok_or_else(|| {
         DomainError::new(
             ErrorKind::Protocol,
             format!("设置快照里没有 key {key}，界面拿的可能是另一次读取的结果"),
@@ -1053,18 +1078,9 @@ pub async fn set_settings<T: HttpTransport>(
         }
     }
 
-    let req = pb::SetImSettingsReq {
-        settings: reply.settings,
-    };
-    unary(
-        transport,
-        ctx,
-        protocol::IM_SET_SETTINGS,
-        &req,
-        Idempotency::Idempotent.retry_policy(),
-    )
-    .await?;
-    Ok(())
+    Ok(pb::SetImSettingsReq {
+        settings: [(key, setting)].into_iter().collect(),
+    })
 }
 
 /// 取关键词屏蔽列表。
@@ -1439,9 +1455,10 @@ mod tests {
         );
     }
 
-    /// 写回整张设置表，而不是按投影重建一个缺字段的赝品。
+    /// 只发被改的那一项（#276：整张表发回去服务端回 -400），而这一项
+    /// 本身仍是从原始字节解出来的，不是按投影重建的赝品。
     #[test]
-    fn set_settings_mutates_one_entry_and_keeps_the_rest() {
+    fn set_settings_sends_only_the_changed_entry() {
         let reply = pb::GetImSettingsReply {
             page_title: Some("私信设置".to_owned()),
             settings: [
@@ -1451,7 +1468,7 @@ mod tests {
                         content: Some(pb::setting::Content::Switch(pb::SettingSwitch {
                             switch_on: Some(false),
                             title: Some("接收陌生人私信".to_owned()),
-                            subtitle: None,
+                            subtitle: Some("这段说明我们没有投影".to_owned()),
                         })),
                     },
                 ),
@@ -1469,26 +1486,26 @@ mod tests {
         };
         let raw = reply.encode_to_vec();
 
-        // 复现 set_settings 里的改法（网络那一步在桥接测试里验）。
-        let mut decoded: pb::GetImSettingsReply = decode(&raw, "快照").expect("可解码");
-        let Some(pb::setting::Content::Switch(s)) = decoded
-            .settings
-            .get_mut(&1)
-            .expect("有这一项")
-            .content
-            .as_mut()
+        let req = set_settings_request(&raw, 1, Some(true), None).expect("能构造");
+
+        // 第二项不在请求里：基线只发 {key: item}。
+        assert_eq!(req.settings.keys().copied().collect::<Vec<_>>(), [1]);
+        let Some(pb::setting::Content::Switch(s)) =
+            req.settings.get(&1).and_then(|s| s.content.as_ref())
         else {
             panic!("第一项应是开关");
         };
-        s.switch_on = Some(true);
+        assert_eq!(s.switch_on, Some(true));
+        // 这一项里没投影的字段原样带回。
+        assert_eq!(s.subtitle.as_deref(), Some("这段说明我们没有投影"));
+        assert_eq!(s.title.as_deref(), Some("接收陌生人私信"));
+    }
 
-        // 没投影的第二项原样还在——这正是带着字节走一圈的理由。
-        let kept = decoded.settings.get(&2).expect("第二项还在");
-        assert!(matches!(
-            kept.content.as_ref(),
-            Some(pb::setting::Content::Text(_))
-        ));
-        assert_eq!(decoded.settings.len(), 2);
+    #[test]
+    fn set_settings_request_rejects_a_key_not_in_the_snapshot() {
+        let raw = pb::GetImSettingsReply::default().encode_to_vec();
+        let err = set_settings_request(&raw, 9, Some(true), None).expect_err("应报错");
+        assert_eq!(err.kind(), ErrorKind::Protocol);
     }
 
     #[test]

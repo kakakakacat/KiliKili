@@ -1002,3 +1002,11 @@ glint 0.18 / 不模糊）此前只代表 iOS，Android 线上跑的是 sigma=10 
 测试使用临时 Hive 设置与无网络的页面占位，需使用已打补丁的 Flutter SDK。
 它覆盖开关与首帧行为，不测真实页面初始化、网络、图片解码或 GPU 开销；
 真机采样方法见 `docs/qa/RELEASE-VALIDATION.md` 的 P09。CI 触发方式未变。
+
+
+`tool/navigation_profile/` 可在独立包名的完整产品 profile 包上，自动采集真实
+导航回调、选中态、目标页进入可见合成帧、对应 `FrameTiming` 及请求结果时刻。
+它保留原应用数据，不伪造登录；每个进程首访一次、回访两次，支持新进程重复。
+当前示例记录见 [#127 未登录采样](../qa/measurements/nav-127-anonymous-2026-11-26/README.md)。
+光栅完成不等于面板显示，轮询终态不等于精确请求完成；该工具不能替代完整的
+CPU/GPU 调用栈分析。CI 触发方式未变，真实登录由用户在独立测试包完成。

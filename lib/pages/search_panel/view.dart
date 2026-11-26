@@ -60,10 +60,67 @@ abstract class CommonSearchPanelState<
             padding: EdgeInsets.only(
               bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
             ),
-            sliver: Obx(() => _buildBody(controller.loadingState.value)),
+            sliver: SliverMainAxisGroup(
+              slivers: [
+                Obx(() => _buildBody(controller.loadingState.value)),
+                Obx(_buildFooter),
+              ],
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  /// 加载更多的结局要说出来（#257）：失败时给原因与重试，到底时说没有了。
+  /// 两者都不是时什么也不画——刻意不显示「加载中...」，加载更多是在最后一条
+  /// 出现时悄悄触发的，常驻一行「加载中」反而像卡住。
+  Widget _buildFooter() {
+    final error = controller.loadMoreError.value;
+    final reachedEnd = controller.reachedEnd.value;
+    if (controller.loadingState.value case Success(:final response)) {
+      if (response == null || response.isEmpty) {
+        return const SliverToBoxAdapter();
+      }
+    } else {
+      return const SliverToBoxAdapter();
+    }
+    final style = TextStyle(fontSize: 13, color: colorScheme.outline);
+    final Widget child;
+    if (error != null) {
+      // 重试做成按钮而不是可点的文字：一行灰字看不出能点。样式与整页
+      // 错误态 `HttpError` 的「点击重试」一致。
+      child = Padding(
+        padding: const .symmetric(horizontal: 16, vertical: 16),
+        child: Column(
+          mainAxisSize: .min,
+          spacing: 10,
+          children: [
+            Text('加载失败：$error', textAlign: .center, style: style),
+            FilledButton.tonal(
+              onPressed: controller.retryLoadMore,
+              style: FilledButton.styleFrom(
+                tapTargetSize: .padded,
+                backgroundColor: colorScheme.primary.withAlpha(20),
+              ),
+              child: Text(
+                '点击重试',
+                style: TextStyle(color: colorScheme.primary),
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if (reachedEnd) {
+      child = Padding(
+        padding: const .symmetric(vertical: 16),
+        child: Text('没有更多了', textAlign: .center, style: style),
+      );
+    } else {
+      return const SliverToBoxAdapter();
+    }
+    return SliverToBoxAdapter(
+      child: SizedBox(width: double.infinity, child: child),
     );
   }
 

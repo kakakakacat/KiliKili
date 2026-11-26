@@ -101,8 +101,38 @@ class SearchPanelController<R extends SearchNumData<T>, T>
     }
   }
 
+  /// 加载更多失败的原因；首屏之外的失败 `CommonListController` 会直接丢弃，
+  /// 搜索面板靠它在页脚说明原因并给出重试（#257）。
+  final loadMoreError = RxnString();
+
+  /// 与 `isEnd` 同步的可观察副本，供页脚显示「没有更多了」。
+  final reachedEnd = false.obs;
+
   @override
-  Future<LoadingState<R>> customGetData() => RustSearch.searchByType<R>(
+  Future<void> queryData([bool isRefresh = true]) async {
+    await super.queryData(isRefresh);
+    reachedEnd.value = isEnd;
+  }
+
+  /// 页脚的「点击重试」。
+  void retryLoadMore() {
+    loadMoreError.value = null;
+    onLoadMore();
+  }
+
+  @override
+  Future<LoadingState<R>> customGetData() async {
+    final res = await _search();
+    if (page > 1) {
+      loadMoreError.value = switch (res) {
+        Error(:final errMsg) => errMsg ?? '加载失败',
+        _ => null,
+      };
+    }
+    return res;
+  }
+
+  Future<LoadingState<R>> _search() => RustSearch.searchByType<R>(
     searchType: searchType_,
     keyword: keyword,
     page: page,
@@ -133,6 +163,13 @@ class SearchPanelController<R extends SearchNumData<T>, T>
     _stopTimer();
     SmartDialog.dismiss(status: .loading);
     if (!isClosed) queryData(page == 1);
+  }
+
+  @override
+  Future<void> onRefresh() {
+    loadMoreError.value = null;
+    reachedEnd.value = false;
+    return super.onRefresh();
   }
 
   @override

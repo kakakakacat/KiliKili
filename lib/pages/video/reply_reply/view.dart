@@ -302,15 +302,19 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
               color: colorScheme.outline,
               tooltip: '线程化展示',
             ),
+            // 进度条只在线程化拉取期间出现（#256）；Expanded 保留，让排序
+            // 按钮始终靠右。
             Expanded(
               child: Obx(
-                () => LinearProgressIndicator(
-                  // ignore: deprecated_member_use
-                  year2023: true,
-                  borderRadius: const .all(.circular(4)),
-                  value: controller.progress.value,
-                  stopIndicatorColor: Colors.transparent,
-                ),
+                () => controller.fetchingTree.value
+                    ? LinearProgressIndicator(
+                        // ignore: deprecated_member_use
+                        year2023: true,
+                        borderRadius: const .all(.circular(4)),
+                        value: controller.progress.value,
+                        stopIndicatorColor: Colors.transparent,
+                      )
+                    : const SizedBox.shrink(),
               ),
             ),
             TextButton.icon(

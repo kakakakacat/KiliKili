@@ -176,8 +176,11 @@ class _MainAppState extends PopScopeState<MainApp>
             height: mainNavigationBarHeight,
             backgroundColor: Colors.transparent,
             indicatorColor: Colors.transparent,
-            // 图标槽上下各有 4px 留白，文字底部也保留 4px，组合才能居中。
-            labelPadding: const EdgeInsets.symmetric(vertical: 4),
+            // 图标与文字的可见间距原为约 16（图标槽下方 4、字形留白 4、
+            // labelPadding 4、中文行高上沿约 4），#259 要求减半：文字的上
+            // 内边距挪到下方（文字上移 4、标签总高不变），图标再下移 4，
+            // 组合仍垂直居中。
+            labelPadding: const EdgeInsets.only(bottom: 8),
             surfaceTintColor: Colors.transparent,
             elevation: 0,
             onDestinationSelected: _mainController.setIndex,
@@ -186,8 +189,12 @@ class _MainAppState extends PopScopeState<MainApp>
                 .map(
                   (e) => NavigationDestination(
                     label: e.label,
-                    icon: _buildIcon(type: e),
-                    selectedIcon: _buildIcon(type: e, selected: true),
+                    icon: _buildIcon(type: e, offsetY: _md3IconShift),
+                    selectedIcon: _buildIcon(
+                      type: e,
+                      selected: true,
+                      offsetY: _md3IconShift,
+                    ),
                   ),
                 )
                 .toList(),
@@ -195,24 +202,32 @@ class _MainAppState extends PopScopeState<MainApp>
         );
       } else {
         bottomNav = Obx(
-          () => BottomNavigationBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            currentIndex: _mainController.selectedIndex.value,
-            onTap: _mainController.setIndex,
-            iconSize: 16,
-            selectedFontSize: 12,
-            unselectedFontSize: 12,
-            type: .fixed,
-            items: _mainController.navigationBars
-                .map(
-                  (e) => BottomNavigationBarItem(
-                    label: e.label,
-                    icon: _buildIcon(type: e),
-                    activeIcon: _buildIcon(type: e, selected: true),
-                  ),
-                )
-                .toList(),
+          () => Transform.translate(
+            // 图标下移后整条上移一半，组合仍垂直居中（#259）。
+            offset: const Offset(0, -_classicIconShift / 2),
+            child: BottomNavigationBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              currentIndex: _mainController.selectedIndex.value,
+              onTap: _mainController.setIndex,
+              iconSize: 16,
+              selectedFontSize: 12,
+              unselectedFontSize: 12,
+              type: .fixed,
+              items: _mainController.navigationBars
+                  .map(
+                    (e) => BottomNavigationBarItem(
+                      label: e.label,
+                      icon: _buildIcon(type: e, offsetY: _classicIconShift),
+                      activeIcon: _buildIcon(
+                        type: e,
+                        selected: true,
+                        offsetY: _classicIconShift,
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
           ),
         );
       }
@@ -419,7 +434,31 @@ class _MainAppState extends PopScopeState<MainApp>
     return child;
   }
 
-  Widget _buildIcon({required NavigationBarType type, bool selected = false}) {
+  /// MD3 底栏图标下移量，与上面 `labelPadding` 的调整配对（#259）。
+  static const double _md3IconShift = 4;
+
+  /// 经典底栏图标下移量（#259）：原可见间距约 6.5，`BottomNavigationBar`
+  /// 的图标与文字之间没有可调的内边距，只能移图标；整条底栏再上移一半，
+  /// 让组合仍垂直居中。
+  static const double _classicIconShift = 3;
+
+  Widget _buildIcon({
+    required NavigationBarType type,
+    bool selected = false,
+    double offsetY = 0,
+  }) {
+    final icon = _buildRawIcon(type: type, selected: selected);
+    // 只平移绘制，不改布局尺寸：Flutter 自带的两种底栏不暴露图标与文字的
+    // 间距，这样不必复制它们的布局代码。
+    return offsetY == 0
+        ? icon
+        : Transform.translate(offset: Offset(0, offsetY), child: icon);
+  }
+
+  Widget _buildRawIcon({
+    required NavigationBarType type,
+    bool selected = false,
+  }) {
     final icon = selected ? type.selectIcon : type.icon;
     return type == .dynamics
         ? Obx(

@@ -749,12 +749,14 @@ abstract final class Pref {
   static bool get p1080 =>
       _setting.get(SettingBoxKey.p1080, defaultValue: true);
 
+  // 保留色板索引，避免升级时把已保存的绿色选择映射成粉色。
   static int get customColor =>
-      _setting.get(SettingBoxKey.customColor, defaultValue: 0);
+      _setting.get(SettingBoxKey.customColor, defaultValue: 1);
 
+  // 首次启动使用经典粉；用户主动开启动态取色后仍尊重已保存的设置。
   static bool get dynamicColor =>
       !Platform.isIOS &&
-      _setting.get(SettingBoxKey.dynamicColor, defaultValue: true);
+      _setting.get(SettingBoxKey.dynamicColor, defaultValue: false);
 
   static bool get enableSystemProxy =>
       _setting.get(SettingBoxKey.enableSystemProxy, defaultValue: false);

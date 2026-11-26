@@ -23258,8 +23258,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PlayerPortBatch dco_decode_player_port_batch(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 8)
-      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
+    if (arr.length != 9)
+      throw Exception('unexpected arr length: expect 9 but see ${arr.length}');
     return PlayerPortBatch(
       sessionId: dco_decode_u_64(arr[0]),
       generation: dco_decode_u_64(arr[1]),
@@ -23269,6 +23269,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       confirmed: dco_decode_list_prim_u_64_strict(arr[5]),
       failures: dco_decode_list_player_port_failure_event(arr[6]),
       seekCompleted: dco_decode_bool(arr[7]),
+      awaiting: dco_decode_bool(arr[8]),
     );
   }
 
@@ -39701,6 +39702,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_confirmed = sse_decode_list_prim_u_64_strict(deserializer);
     var var_failures = sse_decode_list_player_port_failure_event(deserializer);
     var var_seekCompleted = sse_decode_bool(deserializer);
+    var var_awaiting = sse_decode_bool(deserializer);
     return PlayerPortBatch(
       sessionId: var_sessionId,
       generation: var_generation,
@@ -39710,6 +39712,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       confirmed: var_confirmed,
       failures: var_failures,
       seekCompleted: var_seekCompleted,
+      awaiting: var_awaiting,
     );
   }
 
@@ -55329,6 +55332,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_list_prim_u_64_strict(self.confirmed, serializer);
     sse_encode_list_player_port_failure_event(self.failures, serializer);
     sse_encode_bool(self.seekCompleted, serializer);
+    sse_encode_bool(self.awaiting, serializer);
   }
 
   @protected

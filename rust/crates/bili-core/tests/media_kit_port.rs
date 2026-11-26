@@ -352,3 +352,35 @@ fn recoverable_decoder_log_during_seek_does_not_fail_pending_command() {
     // 真正终止仍由 END_FILE 的 mpv 错误码判定，不能吞掉解码失败。
     assert_eq!(port.observe(vec![obs(K::EndFile, -14.0)]).failed.len(), 1);
 }
+
+/// #244：断网 Seek 时后端迟迟不确认，这段时间既没有旧快照也没有新快照，
+/// 宿主必须能从批次里知道「命令还在路上」，否则只会停在最后一张「播放中」。
+#[test]
+fn awaiting_reports_unconfirmed_seek_even_on_empty_batches() {
+    let mut port = MediaKitPort::new(SessionId(16));
+    open(&mut port);
+    assert!(!port.observe(vec![obs(K::Position, 1.5)]).awaiting);
+    let seek = port.prepare(PlayerCommand::Seek { position_ms: 9000 });
+    assert!(port.begin(seek.generation));
+    // 宿主每 40ms 轮询，空批次也要如实报告，否则加载态会闪烁。
+    let batch = port.observe(vec![]);
+    assert!(batch.awaiting);
+    assert!(batch.snapshot.is_none());
+    assert!(port.observe(vec![obs(K::Seek, 0.0)]).awaiting);
+    let batch = port.observe(vec![obs(K::PlaybackRestart, 0.0), obs(K::Position, 9.0)]);
+    assert_eq!(batch.confirmed, vec![seek.generation]);
+    assert!(!batch.awaiting);
+}
+
+/// 超时封住后端后不再报告在途：宿主应转入「失败、点击重试」，而不是一直转圈。
+#[test]
+fn timed_out_backend_is_no_longer_awaiting() {
+    let mut port = MediaKitPort::new(SessionId(17));
+    open(&mut port);
+    let seek = port.prepare(PlayerCommand::Seek { position_ms: 9000 });
+    assert!(port.begin(seek.generation));
+    assert!(port.observe(vec![]).awaiting);
+    port.abort(seek.generation);
+    assert!(!port.observe(vec![]).awaiting);
+    assert!(!port.should_retry(seek.generation));
+}

@@ -190,6 +190,58 @@ void main() {
     skip: !enabled,
   );
 
+  test(
+    'unconfirmed seek is reported as awaiting, timeout faults once (#244)',
+    () async {
+      final backend = Backend();
+      final session = RustPlayerPortSession();
+      final adapter = FlutterMediaKitAdapter(
+        session: session,
+        backend: backend,
+        automaticPolling: false,
+        confirmationTimeout: const Duration(milliseconds: 50),
+      );
+      final batches = <PlayerPortBatch>[];
+      var faults = 0;
+      adapter.events.listen(batches.add);
+      adapter.faults.listen((_) => faults++);
+      final open = session.prepare(openIntent('A.mp4'));
+      final opened = adapter.execute(open);
+      await Future<void>.delayed(Duration.zero);
+      backend.pending.addAll([
+        observation(PlayerObservationKind.startFile),
+        observation(PlayerObservationKind.fileLoaded),
+        observation(PlayerObservationKind.position, 1, open.generation),
+      ]);
+      adapter.poll();
+      expect(await opened, isTrue);
+      batches.clear();
+
+      final seek = adapter.send(
+        PlayerIntent(
+          kind: PlayerIntentKind.seek,
+          positionMs: BigInt.from(9000),
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+      // 断网时后端什么都不报：空批次也必须让宿主知道命令还在路上。
+      adapter.poll();
+      expect(batches.last.awaiting, isTrue);
+      expect(batches.last.snapshot, isNull);
+      await expectLater(seek, throwsA(isA<TimeoutException>()));
+      expect(adapter.isUsable, isFalse);
+      expect(faults, 1);
+      // 停用后的命令静默拒绝，不再重复通知。
+      expect(
+        await adapter.send(const PlayerIntent(kind: PlayerIntentKind.play)),
+        isFalse,
+      );
+      expect(faults, 1);
+      await adapter.dispose();
+    },
+    skip: !enabled,
+  );
+
   test('queued stale commands never enter backend', () async {
     final backend = Backend();
     final session = RustPlayerPortSession();

@@ -70,6 +70,16 @@ class FlutterMediaKitAdapter {
   final Duration confirmationTimeout;
   final _events = StreamController<PlayerPortBatch>.broadcast(sync: true);
   Stream<PlayerPortBatch> get events => _events.stream;
+
+  /// 后端被永久停用（确认超时、执行出错、事件溢出）时触发一次。
+  ///
+  /// 按 ADR-003，停用后只能新建后端恢复，而且超时不授予自动重试（Rust
+  /// `should_retry` 对超时恒为 false）。所以这里只**通知**，不重试：宿主据此
+  /// 退出「播放中」，给出明确的重试入口（#244）。之前停用是静默的——轮询一停，
+  /// UI 就永远停在最后一张快照上。
+  final _faults = StreamController<void>.broadcast(sync: true);
+  Stream<void> get faults => _faults.stream;
+  bool _awaiting = false;
   Timer? _timer;
   Future<void> _tail = Future.value();
   Future<void>? _disposing;
@@ -93,13 +103,20 @@ class FlutterMediaKitAdapter {
       _confirmation?.complete();
       _confirmation = null;
     }
-    if (batch.snapshot != null || batch.failures.isNotEmpty) _events.add(batch);
+    // 待确认期间没有快照也没有失败，只有 awaiting 在变；不推送的话宿主
+    // 看不到「命令还在路上」。
+    final awaitingChanged = batch.awaiting != _awaiting;
+    _awaiting = batch.awaiting;
+    if (batch.snapshot != null ||
+        batch.failures.isNotEmpty ||
+        awaitingChanged) {
+      _events.add(batch);
+    }
     if (!playerPortIsCurrent(
       sessionId: session.id,
       generation: session.generation,
     )) {
-      _faulted = true;
-      _timer?.cancel();
+      _fault();
     }
     if (isUsable) backend.sample(batch.emittingGeneration);
   }
@@ -152,9 +169,8 @@ class FlutterMediaKitAdapter {
         return isUsable && session.isCurrent(ticket);
       } catch (_) {
         if (isUsable) {
-          _faulted = true;
           session.abort(ticket.generation);
-          _timer?.cancel();
+          _fault();
         }
         rethrow;
       } finally {
@@ -166,6 +182,14 @@ class FlutterMediaKitAdapter {
     });
     _tail = result.then<void>((_) {}, onError: (Object _, StackTrace _) {});
     return result;
+  }
+
+  void _fault() {
+    if (!isUsable) return;
+    _faulted = true;
+    _timer?.cancel();
+    _awaiting = false;
+    _faults.add(null);
   }
 
   Future<void> dispose() => _disposing ??= _dispose();
@@ -181,5 +205,6 @@ class FlutterMediaKitAdapter {
     await _tail;
     await backend.dispose();
     await _events.close();
+    await _faults.close();
   }
 }

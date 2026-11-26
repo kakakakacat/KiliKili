@@ -1846,7 +1846,38 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         ],
 
         Obx(() {
+          // 后端停用后的重试入口（#244）。之前 error 态没有任何界面，断网 Seek
+          // 超时后画面冻住、控制层还显示在播，只能去菜单里找「重载视频」。
+          if (plPlayerController.dataStatus.error) {
+            return Center(
+              child: GestureDetector(
+                onTap: plPlayerController.refreshPlayer,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: 6,
+                    children: [
+                      Icon(Icons.refresh, color: Colors.white, size: 18),
+                      Text(
+                        '播放失败，点击重试',
+                        style: TextStyle(color: Colors.white, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
           if (plPlayerController.dataStatus.loading ||
+              plPlayerController.isAwaiting.value ||
               (plPlayerController.isBuffering.value &&
                   plPlayerController.playerStatus.isPlaying)) {
             return Center(

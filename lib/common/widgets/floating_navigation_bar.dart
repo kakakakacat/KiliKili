@@ -77,10 +77,16 @@ class GlassNavigationSurface extends StatelessWidget {
                             gradient: LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
+                              // 液态玻璃着色器只折射、不模糊，底下卡片的
+                              // 标题会原样透上来，和导航文字叠在一起（#252
+                              // 所有者反馈「太透、看不清」）。所以中间区域靠
+                              // 这层着色压暗背板；边缘高光与折射仍由着色器
+                              // 负责，玻璃感保留。此前为 0.24 / 0.10 / 0.18
+                              // （#122 调高透明度时的取值）。
                               colors: [
-                                scheme.surface.withValues(alpha: 0.24),
-                                scheme.surface.withValues(alpha: 0.10),
-                                scheme.surface.withValues(alpha: 0.18),
+                                scheme.surface.withValues(alpha: 0.78),
+                                scheme.surface.withValues(alpha: 0.68),
+                                scheme.surface.withValues(alpha: 0.74),
                               ],
                             ),
                             borderRadius: _kBorderRadius,

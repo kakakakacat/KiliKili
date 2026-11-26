@@ -156,7 +156,18 @@ void main() {
                 ),
                 name: '这是很长很长的用户昵称用于验证截断',
                 level: const Text('6', textScaler: TextScaler.noScaling),
-                details: const [Text('硬币 2114.7'), Text('经验 49367/49367')],
+                details: const [
+                  MineInfoPill(
+                    icon: Icons.toll_outlined,
+                    label: '硬币',
+                    value: '2114.7',
+                  ),
+                  MineInfoPill(
+                    icon: Icons.stars_outlined,
+                    label: '经验',
+                    value: '49367/49367',
+                  ),
+                ],
                 statistics: [
                   for (final label in ['动态', '关注', '粉丝'])
                     MineStatButton(
@@ -233,4 +244,83 @@ void main() {
     expect(tester.getTopLeft(find.byKey(key)).dy, 24);
     expect(tester.takeException(), isNull);
   });
+  for (final scenario in [
+    (width: 600.0, scale: 1.0, count: 5, inline: true),
+    (width: 320.0, scale: 1.0, count: 5, inline: false),
+    (width: 600.0, scale: 2.0, count: 5, inline: false),
+    (width: 600.0, scale: 1.0, count: 7, inline: false),
+  ]) {
+    testWidgets('账户工具自适应：$scenario', (tester) async {
+      tester.view.physicalSize = Size(scenario.width, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      var profileTaps = 0;
+      var toolTaps = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(scenario.scale)),
+            child: child!,
+          ),
+          home: Scaffold(
+            body: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: MineAccountCard(
+                avatar: const SizedBox.square(
+                  dimension: 64,
+                  child: Icon(Icons.person),
+                ),
+                name: '卡卡卡卡喵',
+                level: const SizedBox(width: 26, height: 12),
+                details: const [
+                  MineInfoPill(
+                    icon: Icons.toll_outlined,
+                    label: '硬币',
+                    value: '2114.7',
+                  ),
+                  MineInfoPill(
+                    icon: Icons.stars_outlined,
+                    label: '经验',
+                    value: '49367/49367',
+                  ),
+                ],
+                statistics: [
+                  for (final label in ['动态', '关注', '粉丝'])
+                    MineStatButton(count: '21', label: label, onTap: () {}),
+                ],
+                tools: List.generate(
+                  scenario.count,
+                  (i) => MineToolButton(
+                    tooltip: '账户工具 $i',
+                    icon: Icons.settings_outlined,
+                    onPressed: () => toolTaps++,
+                  ),
+                ),
+                onTap: () => profileTaps++,
+              ),
+            ),
+          ),
+        ),
+      );
+      expect(tester.takeException(), isNull);
+      final capsule = tester.getRect(find.byType(MineToolCapsule));
+      final name = tester.getRect(find.text('卡卡卡卡喵'));
+      final card = tester.getRect(find.byType(MineAccountCard));
+      expect(capsule.right, closeTo(card.right - 16, 0.1));
+      if (scenario.inline) {
+        expect(capsule.center.dy, closeTo(name.center.dy, 0.1));
+      } else {
+        expect(name.top, greaterThan(capsule.bottom));
+      }
+      for (var i = 0; i < scenario.count; i++) {
+        final finder = find.byTooltip('账户工具 $i');
+        expect(tester.getSize(finder).width, greaterThanOrEqualTo(44));
+        await tester.tap(finder);
+      }
+      expect(toolTaps, scenario.count);
+      expect(profileTaps, 0);
+    });
+  }
 }

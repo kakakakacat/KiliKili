@@ -78,15 +78,14 @@ class _MediaPageState extends CommonPageState<MinePage>
     return MinePageBackground(
       child: Column(
         children: [
-          Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 960),
+          if (widget.showBackBtn)
+            const Align(
+              alignment: Alignment.centerLeft,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
-                child: _buildHeaderActions,
+                padding: EdgeInsets.fromLTRB(12, 8, 12, 0),
+                child: BackButton(),
               ),
             ),
-          ),
           Expanded(
             child: Center(
               child: ConstrainedBox(
@@ -97,7 +96,7 @@ class _MediaPageState extends CommonPageState<MinePage>
                     onRefresh: controller.onRefresh,
                     child: onBuild(
                       ListView(
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 150),
+                        padding: const EdgeInsets.fromLTRB(20, 14, 20, 150),
                         physics: const AlwaysScrollableScrollPhysics(),
                         children: [
                           _buildUserInfo(),
@@ -124,98 +123,77 @@ class _MediaPageState extends CommonPageState<MinePage>
     );
   }
 
-  Widget get _buildHeaderActions => Wrap(
-    alignment: WrapAlignment.spaceBetween,
-    crossAxisAlignment: WrapCrossAlignment.center,
-    spacing: 12,
-    runSpacing: 12,
-    children: [
-      Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (widget.showBackBtn) const BackButton(),
-          Text(
-            '我的',
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
+  List<Widget> get _accountTools => [
+    if (!_mainController.hasHome) ...[
+      MineToolButton(
+        tooltip: '搜索',
+        onPressed: () => Get.toNamed('/search'),
+        icon: Icons.search,
       ),
-      MineToolCapsule(
-        children: [
-          if (!_mainController.hasHome) ...[
-            MineToolButton(
-              tooltip: '搜索',
-              onPressed: () => Get.toNamed('/search'),
-              icon: Icons.search,
-            ),
-            msgBadge(_mainController),
-          ],
-          if (GStorage.reply != null)
-            MineToolButton(
-              tooltip: '评论记录',
-              onPressed: () => Get.toNamed('/myReply'),
-              icon: Icons.comment_outlined,
-            ),
-          Obx(() {
-            final anonymity = MineController.anonymity.value;
-            return MineToolButton(
-              tooltip: '无痕模式：${anonymity ? '已开启，点击关闭' : '已关闭，点击开启'}',
-              selected: anonymity,
-              onPressed: MineController.onChangeAnonymity,
-              // 固定图形、用底色区分状态，避免斜杠把眼镜和帽子的轮廓盖住。
-              icon: MdiIcons.incognito,
-            );
-          }),
-          MineToolButton(
-            tooltip: '切换账号',
-            onPressed: () => LoginPageController.switchAccountDialog(context),
-            icon: MdiIcons.accountSwitchOutline,
-          ),
-          Obx(
-            () => PopupMenuButton<ThemeType>(
-              tooltip: '主题：${controller.themeType.value.label}',
-              initialValue: controller.themeType.value,
-              onSelected: controller.onChangeTheme,
-              itemBuilder: (context) => [
-                for (final type in ThemeType.values)
-                  CheckedPopupMenuItem(
-                    value: type,
-                    checked: type == controller.themeType.value,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        type.icon,
-                        const SizedBox(width: 12),
-                        Text(type.label),
-                      ],
-                    ),
-                  ),
-              ],
-              child: SizedBox.square(
-                dimension: 44,
-                child: Center(
-                  child: IconTheme(
-                    data: IconThemeData(
-                      size: 21,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                    child: controller.themeType.value.icon,
-                  ),
-                ),
+      if (controller.isLogin)
+        SizedBox.square(dimension: 44, child: msgBadge(_mainController)),
+    ],
+    if (GStorage.reply != null)
+      MineToolButton(
+        tooltip: '评论记录',
+        onPressed: () => Get.toNamed('/myReply'),
+        icon: Icons.comment_outlined,
+      ),
+    Obx(() {
+      final anonymity = MineController.anonymity.value;
+      return MineToolButton(
+        tooltip: '无痕模式：${anonymity ? '已开启，点击关闭' : '已关闭，点击开启'}',
+        selected: anonymity,
+        onPressed: MineController.onChangeAnonymity,
+        // 固定图形、用底色区分状态，避免斜杠把眼镜和帽子的轮廓盖住。
+        icon: MdiIcons.incognito,
+      );
+    }),
+    MineToolButton(
+      tooltip: '切换账号',
+      onPressed: () => LoginPageController.switchAccountDialog(context),
+      icon: MdiIcons.accountSwitchOutline,
+    ),
+    Obx(
+      () => PopupMenuButton<ThemeType>(
+        tooltip: '主题：${controller.themeType.value.label}',
+        initialValue: controller.themeType.value,
+        onSelected: controller.onChangeTheme,
+        itemBuilder: (context) => [
+          for (final type in ThemeType.values)
+            CheckedPopupMenuItem(
+              value: type,
+              checked: type == controller.themeType.value,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  type.icon,
+                  const SizedBox(width: 12),
+                  Text(type.label),
+                ],
               ),
             ),
-          ),
-          MineToolButton(
-            tooltip: '设置',
-            onPressed: () => Get.toNamed('/setting', preventDuplicates: false),
-            icon: Icons.settings_outlined,
-          ),
         ],
+        child: SizedBox.square(
+          dimension: 44,
+          child: Center(
+            child: IconTheme(
+              data: IconThemeData(
+                size: 21,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              child: controller.themeType.value.icon,
+            ),
+          ),
+        ),
       ),
-    ],
-  );
+    ),
+    MineToolButton(
+      tooltip: '设置',
+      onPressed: () => Get.toNamed('/setting', preventDuplicates: false),
+      icon: Icons.settings_outlined,
+    ),
+  ];
 
   Widget _buildUserInfo() => Obx(() {
     final userInfo = controller.userInfo.value;
@@ -255,29 +233,17 @@ class _MediaPageState extends CommonPageState<MinePage>
         isSeniorMember: userInfo.isSeniorMember == 1,
         height: 12,
       ),
+      tools: _accountTools,
       details: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: colors.primaryContainer.withValues(alpha: 0.45),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            '硬币 ${userInfo.money?.toString() ?? '-'}',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: colors.onPrimaryContainer,
-            ),
-          ),
+        MineInfoPill(
+          icon: Icons.toll_outlined,
+          label: '硬币',
+          value: userInfo.money?.toString() ?? '-',
         ),
-        Text(
-          '经验 ${levelInfo?.currentExp ?? '-'}/${levelInfo?.nextExp ?? '-'}',
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: colors.onSurfaceVariant,
-          ),
+        MineInfoPill(
+          icon: Icons.stars_outlined,
+          label: '经验',
+          value: '${levelInfo?.currentExp ?? '-'}/${levelInfo?.nextExp ?? '-'}',
         ),
       ],
       statistics: [

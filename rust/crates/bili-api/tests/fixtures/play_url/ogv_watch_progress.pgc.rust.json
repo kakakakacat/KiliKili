@@ -12,13 +12,13 @@
   ],
   "clip_info_list": [
     {
-      "clip_type": "CLIP_TYPE_OP",
       "end": 88.5,
+      "kind": "Opening",
       "start": 0.0
     },
     {
-      "clip_type": "CLIP_TYPE_ED",
       "end": 1434.0,
+      "kind": "Ending",
       "start": 1350.0
     }
   ],

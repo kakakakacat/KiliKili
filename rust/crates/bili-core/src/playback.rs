@@ -6,7 +6,7 @@
 //! 「补哪一档清晰度」「两次取流怎么并」「loudnorm 怎么填」一个字都不会变。
 //! 所以放在应用层，宿主只负责调用。
 
-use bili_domain::playurl::{ClipInfo, MediaStream, Volume};
+use bili_domain::playurl::{ClipInfo, ClipKind, MediaStream, Volume};
 use bili_domain::sponsor_block::SkipSegment;
 
 /// 低于最高档、但 DASH 里没给出的最高一档清晰度；没有可补的则返回 `None`。
@@ -131,9 +131,10 @@ pub fn has_volume_measurement(volume: &Volume) -> bool {
 
 /// PGC 的片头片尾 → 可跳过片段。
 ///
-/// 番剧的 `clip_info_list` 与 SponsorBlock 的片段在播放器里走同一条跳过
-/// 逻辑，基线也是转成同一个模型消费的。分类映射（`CLIP_TYPE_OP` → 片头、
-/// `CLIP_TYPE_ED` → 片尾、其余归赞助）是业务规则，放在这一层。
+/// 番剧的片头片尾与 SponsorBlock 的片段在播放器里走同一条跳过逻辑，
+/// 基线也是转成同一个模型消费的。分类映射（片头 → `intro`、片尾 →
+/// `outro`、其余归 `sponsor`）是业务规则，放在这一层；接口那两套写法
+/// 之间的差异在 `bili-api` 就归一成了 [`ClipKind`]。
 ///
 /// 缺 `start`/`end` 的条目**整条丢弃**而不是让整次转换失败：基线用一个
 /// 吞异常的 try/catch 表达「片段没拿到不该打断起播」，但它是整体放弃，
@@ -146,10 +147,10 @@ pub fn pgc_clip_segments(clips: &[ClipInfo], time_length_ms: Option<i64>) -> Vec
             let (start, end) = (clip.start?, clip.end?);
             Some(SkipSegment {
                 uuid: String::new(),
-                category: match clip.clip_type.as_deref() {
-                    Some("CLIP_TYPE_OP") => "intro".to_owned(),
-                    Some("CLIP_TYPE_ED") => "outro".to_owned(),
-                    _ => "sponsor".to_owned(),
+                category: match clip.kind {
+                    ClipKind::Opening => "intro".to_owned(),
+                    ClipKind::Ending => "outro".to_owned(),
+                    ClipKind::Other => "sponsor".to_owned(),
                 },
                 action_type: None,
                 // 接口给的是秒，与 SponsorBlock 那条路径归一到同一个单位。
@@ -275,23 +276,23 @@ mod tests {
             ClipInfo {
                 start: Some(0.0),
                 end: Some(90.5),
-                clip_type: Some("CLIP_TYPE_OP".to_owned()),
+                kind: ClipKind::Opening,
             },
             ClipInfo {
                 start: Some(1300.0),
                 end: Some(1400.0),
-                clip_type: Some("CLIP_TYPE_ED".to_owned()),
+                kind: ClipKind::Ending,
             },
             ClipInfo {
                 start: Some(10.0),
                 end: Some(20.0),
-                clip_type: None,
+                kind: ClipKind::Other,
             },
             // 缺 end：整条丢弃，不影响其余三条
             ClipInfo {
                 start: Some(5.0),
                 end: None,
-                clip_type: None,
+                kind: ClipKind::Other,
             },
         ];
         let segments = pgc_clip_segments(&clips, Some(1_440_000));

@@ -25,7 +25,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// 行为都会在这里变红。**通过之后本文件连同快照里的 Dart 痕迹一并退场**
 /// ——它证明的是「迁移这一刻没有改行为」，不是长期回归。
 ///
-/// ## 四处**有意**与基线不同，这里断言的是差异本身
+/// ## 五处**有意**与基线不同，这里断言的是差异本身
 ///
 /// 1. **音轨排序下沉。** 基线在 `Language.fromJson` 里排（中文在前、AI
 ///    在后），现在 Rust 解析时就排好。下面对基线那一侧照样排一遍，比的
@@ -40,6 +40,13 @@ import 'package:flutter_test/flutter_test.dart';
 ///    `VideoQuality.fromFormat(id, formats)` 的结果，与流的 `id` 恒等
 ///    （名字可能来自响应，码永远是 id）。下面对每条流算一遍基线的名字，
 ///    确认它能从快照里的 `support_formats` 原样重建。
+/// 5. **主接口的片头片尾来自 `video_extra.clip_info`（issue #271）。**
+///    基线只看 `video_info.clip_info_list`，而 playview 从来不往那里放
+///    东西——于是登录态走主接口时番剧的片头片尾永远是空的，既不自动跳
+///    也不出按钮。这是基线的 bug，不是迁移引入的，修在 Rust 的解析层。
+///    下面对 OGV 那份样本断言的正是这个差异：**基线拿不到，Rust 拿得到**。
+///    片段类型也不再是接口字面量（`CLIP_TYPE_*`），两套写法归一成
+///    `ClipKind`，比的仍是最终分类。
 void main() {
   const dir = 'rust/crates/bili-api/tests/fixtures/play_url';
 
@@ -70,6 +77,13 @@ void main() {
               progress['current_progress'];
         }
         return model;
+      case 'pgc-fallback':
+        // 降级接口的信封是 `result`，进度在业务信息里。
+        final result = body['result'] as Map<String, dynamic>;
+        final videoInfo = result['video_info'] as Map<String, dynamic>;
+        return _Baseline.fromJson(videoInfo)
+          ..lastPlayTime =
+              result['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
       case 'pugv-fallback':
         final result = body['data'] as Map<String, dynamic>;
         return _Baseline.fromJson(result)
@@ -385,38 +399,57 @@ void main() {
       }
     }
 
-    // --- clip_info_list（差异 3）
+    // --- clip_info_list（差异 3、差异 5）
     final rustClips = (rust['clip_info_list'] as List?)
         ?.cast<Map<String, dynamic>>();
-    expect(
-      rustClips?.length,
-      baseline.clipInfoList?.length,
-      reason: '$name: clip_info_list 条数',
-    );
-    if (rustClips != null) {
-      for (var i = 0; i < rustClips.length; i++) {
-        final r = rustClips[i];
-        final b = baseline.clipInfoList![i];
-        expect(
-          _segmentCategory(r['clip_type'] as String?),
-          b.category,
-          reason: '$name: clip[$i].category',
-        );
-        expect(
-          ((r['start'] as num) * 1000).round(),
-          b.segment[0],
-          reason: '$name: clip[$i].start',
-        );
-        expect(
-          ((r['end'] as num) * 1000).round(),
-          b.segment[1],
-          reason: '$name: clip[$i].end',
-        );
-        expect(
-          baseline.timeLength,
-          b.videoDuration,
-          reason: '$name: clip[$i].videoDuration',
-        );
+    if (shape == 'pgc') {
+      // 差异 5：基线按 `video_info.clip_info_list` 取，主接口不往那里
+      // 放东西，所以它这一侧必然是空的。断言空本身——它是 #271 的病根，
+      // 写死在这里，免得哪天有人「修好」基线拷贝把证据抹掉。
+      expect(
+        baseline.clipInfoList,
+        isNull,
+        reason: '$name: 基线看不见 video_extra 里的片段，这正是 #271',
+      );
+      expect(
+        rustClips?.map((e) => _kindCategory(e['kind'] as String?)).toList(),
+        ['intro', 'outro'],
+        reason: '$name: Rust 从 video_extra.clip_info 取到了片头片尾',
+      );
+      // 单位仍是秒，转换规则与基线那一侧一致（差异 3）。
+      expect(((rustClips!.first['start'] as num) * 1000).round(), 0);
+      expect(((rustClips.first['end'] as num) * 1000).round(), 88500);
+    } else {
+      expect(
+        rustClips?.length,
+        baseline.clipInfoList?.length,
+        reason: '$name: clip_info_list 条数',
+      );
+      if (rustClips != null) {
+        for (var i = 0; i < rustClips.length; i++) {
+          final r = rustClips[i];
+          final b = baseline.clipInfoList![i];
+          expect(
+            _kindCategory(r['kind'] as String?),
+            b.category,
+            reason: '$name: clip[$i].category',
+          );
+          expect(
+            ((r['start'] as num) * 1000).round(),
+            b.segment[0],
+            reason: '$name: clip[$i].start',
+          );
+          expect(
+            ((r['end'] as num) * 1000).round(),
+            b.segment[1],
+            reason: '$name: clip[$i].end',
+          );
+          expect(
+            baseline.timeLength,
+            b.videoDuration,
+            reason: '$name: clip[$i].videoDuration',
+          );
+        }
       }
     }
   }
@@ -432,7 +465,23 @@ void main() {
   test('PUGV 降级的整段流与基线逐字段一致', () {
     checkCase('durl_progress.pugv-fallback', 'pugv-fallback');
   });
+
+  // 降级接口那一侧的片段与基线一致——#271 只出在主接口上，这条用来
+  // 划清边界：不是 Rust 解析把片段弄丢了，是基线从没看过主接口那个位置。
+  test('PGC 降级的片头片尾与基线逐字段一致', () {
+    checkCase('clip_segments.pgc-fallback', 'pgc-fallback');
+  });
 }
+
+/// Rust 快照里的 `kind` → 基线的 category。
+///
+/// 两边的词汇不同（快照是 `ClipKind` 的 serde 名，基线是接口字面量），
+/// 比的是最终分类。这不是基线拷贝的一部分，所以放在分界线之前。
+String _kindCategory(String? kind) => switch (kind) {
+  'Opening' => 'intro',
+  'Ending' => 'outro',
+  _ => 'sponsor',
+};
 
 // ===================================================================
 // 以下全部是迁移前 `lib/` 里那一版的逐字拷贝。不要「顺手改好」：

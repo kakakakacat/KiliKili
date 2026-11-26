@@ -13,13 +13,24 @@
 //! 注意 PGC 降级接口的信封用的是 `result` 而非 `data`——不是笔误，是
 //! 这条接口本来就与其他三条不同。
 //!
+//! **片头片尾（番剧跳过）两条接口放的位置和写法都不一样**（issue #271）：
+//!
+//! | 接口 | 位置 | 类型字段 |
+//! |---|---|---|
+//! | PGC/PUGV 主（playview） | `data.video_extra.clip_info` | `clip_type`，整数 1/2 |
+//! | PGC 降级 | `result.video_info.clip_info_list` | `clipType`，`CLIP_TYPE_OP`/`CLIP_TYPE_ED` |
+//!
+//! 基线（连同上游 PiliPlus）只认后一种，于是登录态走主接口时片段永远是
+//! 空的——番剧从来不跳片头，也不显示跳过按钮。两种写法在这里归一成
+//! [`ClipKind`]。
+//!
 //! DTO 一律 `Option` + `#[serde(default)]`，理由同 [`crate::video_detail`]：
 //! 少一个字段不该让整次取流失败。
 
 use bili_domain::error::{DomainError, ErrorKind};
 use bili_domain::playurl::{
-    ClipInfo, Dash, Durl, LanguageItem, LanguageOptions, MediaStream, PlayFormat, PlayUrl,
-    SegmentBase, Volume,
+    ClipInfo, ClipKind, Dash, Durl, LanguageItem, LanguageOptions, MediaStream, PlayFormat,
+    PlayUrl, SegmentBase, Volume,
 };
 use bili_domain::video::VideoType;
 use serde::Deserialize;
@@ -102,6 +113,8 @@ fn unwrap_result<T: serde::de::DeserializeOwned>(body: &str) -> Result<T, Domain
 struct PlayViewDto {
     video_info: Option<PlayUrlDto>,
     watch_progress: Option<WatchProgressDto>,
+    /// 片头片尾在这里，不在 `video_info` 里（见模块文档的表）。
+    video_extra: Option<VideoExtraDto>,
     arc: Option<ArcDto>,
     not_playable_reason: Option<ReasonDto>,
 }
@@ -137,6 +150,17 @@ impl PlayViewDto {
                 // 归一（null / 非正数 → 0）。
                 play.last_play_time =
                     normalize_progress(p.current_watch_progress.or(p.current_progress));
+            }
+            // 主接口的片段在外层 `video_extra` 里。只在它真给了东西时
+            // 才覆盖——`video_info.clip_info_list` 在这条接口上实测恒为
+            // null，但留着那条路，哪天它回来也不用再改一次。
+            if let Some(clips) = self
+                .video_extra
+                .and_then(|e| e.clip_info)
+                .filter(|v| !v.is_empty())
+            {
+                play.clip_info_list =
+                    Some(clips.into_iter().map(ExtraClipDto::into_domain).collect());
             }
             return Ok(Outcome::Ready(Box::new(play)));
         }
@@ -578,7 +602,45 @@ impl ClipDto {
         ClipInfo {
             start: self.start,
             end: self.end,
-            clip_type: self.clip_type,
+            kind: match self.clip_type.as_deref() {
+                Some("CLIP_TYPE_OP") => ClipKind::Opening,
+                Some("CLIP_TYPE_ED") => ClipKind::Ending,
+                _ => ClipKind::Other,
+            },
+        }
+    }
+}
+
+/// 主接口的片段：在 `data.video_extra` 下，且类型是整数。
+///
+/// `toast_text`（「即将跳过片头」）没取：宿主有自己的跳过提示文案，
+/// 两套文案混用只会让同一个动作在不同接口下说不同的话。
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct VideoExtraDto {
+    clip_info: Option<Vec<ExtraClipDto>>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+struct ExtraClipDto {
+    start: Option<f64>,
+    end: Option<f64>,
+    /// 1 = 片头、2 = 片尾。实测 2026-11-26，两部番剧的取值一致；
+    /// 认不出来的值归 [`ClipKind::Other`]，不猜。
+    clip_type: Option<i64>,
+}
+
+impl ExtraClipDto {
+    fn into_domain(self) -> ClipInfo {
+        ClipInfo {
+            start: self.start,
+            end: self.end,
+            kind: match self.clip_type {
+                Some(1) => ClipKind::Opening,
+                Some(2) => ClipKind::Ending,
+                _ => ClipKind::Other,
+            },
         }
     }
 }
@@ -673,6 +735,54 @@ mod tests {
             "watch_progress":{"current_progress":77}}}"#;
         let play = ready(parse(body, VideoType::Pgc, false).expect("应当解析成功"));
         assert_eq!(play.last_play_time, 77);
+    }
+
+    #[test]
+    fn playview_clips_come_from_video_extra() {
+        // #271：主接口把片头片尾放在外层 `video_extra.clip_info` 里，
+        // 类型是整数；`video_info.clip_info_list` 实测恒为 null。
+        let body = r#"{"code":0,"data":{
+            "video_info":{"quality":80},
+            "video_extra":{"clip_info":[
+                {"clip_type":1,"start":41,"end":129,"toast_text":""},
+                {"clip_type":2,"start":1297,"end":1384,"toast_text":""},
+                {"clip_type":9,"start":5,"end":6,"toast_text":""}]}}}"#;
+        let play = ready(parse(body, VideoType::Pgc, false).expect("应当解析成功"));
+        let clips = play.clip_info_list.expect("片段应当解析出来");
+        assert_eq!(
+            clips.iter().map(|c| c.kind).collect::<Vec<_>>(),
+            [ClipKind::Opening, ClipKind::Ending, ClipKind::Other],
+            "认不出来的整数归 Other，不猜"
+        );
+        assert_eq!(clips[0].start, Some(41.0));
+        assert_eq!(clips[0].end, Some(129.0));
+    }
+
+    #[test]
+    fn playview_without_video_extra_keeps_the_stream_clips() {
+        // 两条路都留着：`video_extra` 没给东西时不该把流里那份清掉。
+        let body = r#"{"code":0,"data":{
+            "video_info":{"quality":80,"clip_info_list":[
+                {"start":0,"end":88.5,"clipType":"CLIP_TYPE_OP"}]},
+            "video_extra":{"clip_info":[]}}}"#;
+        let play = ready(parse(body, VideoType::Pgc, false).expect("应当解析成功"));
+        let clips = play.clip_info_list.expect("片段应当解析出来");
+        assert_eq!(clips.len(), 1);
+        assert_eq!(clips[0].kind, ClipKind::Opening);
+    }
+
+    #[test]
+    fn pgc_fallback_clips_use_the_string_vocabulary() {
+        // 降级接口是另一套写法，归一到同一个 ClipKind。
+        let body = r#"{"code":0,"result":{"video_info":{"clip_info_list":[
+            {"materialNo":0,"start":41,"end":129,"toastText":"即将跳过片头","clipType":"CLIP_TYPE_OP"},
+            {"materialNo":0,"start":1297,"end":1384,"toastText":"即将跳过片尾","clipType":"CLIP_TYPE_ED"}]}}}"#;
+        let play = ready(parse(body, VideoType::Pgc, true).expect("应当解析成功"));
+        let clips = play.clip_info_list.expect("片段应当解析出来");
+        assert_eq!(
+            clips.iter().map(|c| c.kind).collect::<Vec<_>>(),
+            [ClipKind::Opening, ClipKind::Ending]
+        );
     }
 
     #[test]

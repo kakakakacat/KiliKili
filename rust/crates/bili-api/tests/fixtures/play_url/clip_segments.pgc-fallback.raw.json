@@ -1,0 +1,92 @@
+{
+  "code": 0,
+  "message": "success",
+  "result": {
+    "video_info": {
+      "from": "local",
+      "result": "suee",
+      "quality": 32,
+      "format": "mp4",
+      "timelength": 1425406,
+      "accept_format": "mp4,mp4,mp4,mp4,mp4",
+      "accept_description": [
+        "高清 1080P+",
+        "高清 1080P",
+        "高清 720P",
+        "清晰 480P",
+        "流畅 360P"
+      ],
+      "accept_quality": [
+        112,
+        80,
+        64,
+        32,
+        16
+      ],
+      "video_codecid": 7,
+      "seek_param": "start",
+      "seek_type": "second",
+      "support_formats": [
+        {
+          "quality": 112,
+          "format": "mp4",
+          "description": "高清 1080P+",
+          "new_description": "1080P 高码率",
+          "display_desc": "1080P",
+          "codecs": []
+        },
+        {
+          "quality": 80,
+          "format": "mp4",
+          "description": "高清 1080P",
+          "new_description": "1080P 高清",
+          "display_desc": "1080P",
+          "codecs": []
+        },
+        {
+          "quality": 64,
+          "format": "mp4",
+          "description": "高清 720P",
+          "new_description": "720P 准高清",
+          "display_desc": "720P",
+          "codecs": []
+        }
+      ],
+      "durl": [
+        {
+          "order": 1,
+          "length": 360193,
+          "size": 25636340,
+          "url": "https://cdn.example/preview-1.mp4?token=REDACTED",
+          "backup_url": [
+            "https://cdn-backup.example/preview-1.mp4?token=REDACTED"
+          ]
+        }
+      ],
+      "clip_info_list": [
+        {
+          "materialNo": 0,
+          "start": 41,
+          "end": 129,
+          "toastText": "即将跳过片头",
+          "clipType": "CLIP_TYPE_OP"
+        },
+        {
+          "materialNo": 0,
+          "start": 1297,
+          "end": 1384,
+          "toastText": "即将跳过片尾",
+          "clipType": "CLIP_TYPE_ED"
+        }
+      ]
+    },
+    "play_view_business_info": {
+      "user_status": {
+        "watch_progress": {
+          "current_watch_progress": 312000,
+          "last_ep_id": 100003
+        }
+      }
+    }
+  }
+}

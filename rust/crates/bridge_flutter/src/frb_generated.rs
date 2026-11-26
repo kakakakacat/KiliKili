@@ -14451,11 +14451,24 @@ impl SseDecode for crate::api::play_url::ClipInfo {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_start = <Option<f64>>::sse_decode(deserializer);
         let mut var_end = <Option<f64>>::sse_decode(deserializer);
-        let mut var_clipType = <Option<String>>::sse_decode(deserializer);
+        let mut var_kind = <crate::api::play_url::ClipKind>::sse_decode(deserializer);
         return crate::api::play_url::ClipInfo {
             start: var_start,
             end: var_end,
-            clip_type: var_clipType,
+            kind: var_kind,
+        };
+    }
+}
+
+impl SseDecode for crate::api::play_url::ClipKind {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::play_url::ClipKind::Opening,
+            1 => crate::api::play_url::ClipKind::Ending,
+            2 => crate::api::play_url::ClipKind::Other,
+            _ => unreachable!("Invalid variant for ClipKind: {}", inner),
         };
     }
 }
@@ -31181,7 +31194,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::play_url::ClipInfo {
         [
             self.start.into_into_dart().into_dart(),
             self.end.into_into_dart().into_dart(),
-            self.clip_type.into_into_dart().into_dart(),
+            self.kind.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -31194,6 +31207,28 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::play_url::ClipInfo>
     for crate::api::play_url::ClipInfo
 {
     fn into_into_dart(self) -> crate::api::play_url::ClipInfo {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::play_url::ClipKind {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::Opening => 0.into_dart(),
+            Self::Ending => 1.into_dart(),
+            Self::Other => 2.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::play_url::ClipKind
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::play_url::ClipKind>
+    for crate::api::play_url::ClipKind
+{
+    fn into_into_dart(self) -> crate::api::play_url::ClipKind {
         self
     }
 }
@@ -44353,7 +44388,24 @@ impl SseEncode for crate::api::play_url::ClipInfo {
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <Option<f64>>::sse_encode(self.start, serializer);
         <Option<f64>>::sse_encode(self.end, serializer);
-        <Option<String>>::sse_encode(self.clip_type, serializer);
+        <crate::api::play_url::ClipKind>::sse_encode(self.kind, serializer);
+    }
+}
+
+impl SseEncode for crate::api::play_url::ClipKind {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::play_url::ClipKind::Opening => 0,
+                crate::api::play_url::ClipKind::Ending => 1,
+                crate::api::play_url::ClipKind::Other => 2,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
     }
 }
 

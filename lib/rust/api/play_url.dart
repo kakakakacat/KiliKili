@@ -6,26 +6,24 @@
 import 'package:kilikili/rust/frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `clip_info`, `dash`, `durl`, `language_item`, `language_options`, `media_stream`, `play_format`, `play_url`, `segment_base`, `to_domain_clip`, `to_domain_stream`, `volume`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These functions are ignored because they are not marked as `pub`: `clip_info`, `clip_kind`, `dash`, `durl`, `language_item`, `language_options`, `media_stream`, `play_format`, `play_url`, `segment_base`, `to_domain_clip`, `to_domain_stream`, `volume`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// 可跳过片段。
 class ClipInfo {
   /// 起止（秒）。转成毫秒是展示侧的事，此处保持接口单位。
   final double? start;
   final double? end;
-
-  /// `CLIP_TYPE_OP` / `CLIP_TYPE_ED` / 其他。
-  final String? clipType;
+  final ClipKind kind;
 
   const ClipInfo({
     this.start,
     this.end,
-    this.clipType,
+    required this.kind,
   });
 
   @override
-  int get hashCode => start.hashCode ^ end.hashCode ^ clipType.hashCode;
+  int get hashCode => start.hashCode ^ end.hashCode ^ kind.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -34,7 +32,18 @@ class ClipInfo {
           runtimeType == other.runtimeType &&
           start == other.start &&
           end == other.end &&
-          clipType == other.clipType;
+          kind == other.kind;
+}
+
+/// 片段是片头还是片尾。
+///
+/// 接口那两套写法（主接口的整数、降级接口的 `CLIP_TYPE_*` 字符串）在
+/// `bili-api` 解析时就归一掉了，导出面只有这三个取值——宿主不该认任何
+/// 一条接口的词汇（issue #271）。
+enum ClipKind {
+  opening,
+  ending,
+  other,
 }
 
 /// DASH 流。

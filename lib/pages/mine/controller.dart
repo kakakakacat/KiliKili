@@ -281,8 +281,8 @@ class MineController extends GetxController with AccountMixin {
     }
   }
 
-  void onChangeTheme() {
-    final newVal = nextThemeType;
+  void onChangeTheme([ThemeType? selected]) {
+    final newVal = selected ?? nextThemeType;
     themeType.value = newVal;
     GStorage.setting.put(SettingBoxKey.themeMode, newVal.index);
     Get.changeThemeMode(ThemeUtils.themeMode = newVal.toThemeMode);

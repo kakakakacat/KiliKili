@@ -1,14 +1,13 @@
 import 'dart:async';
 
 import 'package:kilikili/common/assets.dart';
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/flutter/list_tile.dart';
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/common/widgets/player_bar.dart';
 import 'package:kilikili/http/loading_state.dart';
 import 'package:kilikili/models/common/mine_tab_type.dart';
 import 'package:kilikili/models/common/nav_bar_config.dart';
+import 'package:kilikili/models/common/theme/theme_type.dart';
 import 'package:kilikili/pages/common/common_page.dart';
 import 'package:kilikili/pages/home/view.dart';
 import 'package:kilikili/pages/login/controller.dart';
@@ -17,6 +16,7 @@ import 'package:kilikili/pages/mine/controller.dart';
 import 'package:kilikili/pages/mine/widgets/fav_item.dart';
 import 'package:kilikili/pages/mine/widgets/history_item.dart';
 import 'package:kilikili/pages/mine/widgets/later_item.dart';
+import 'package:kilikili/pages/mine/widgets/mine_surfaces.dart';
 import 'package:kilikili/pages/mine/widgets/sub_item.dart';
 import 'package:kilikili/utils/bili_utils.dart';
 import 'package:kilikili/utils/extension/get_ext.dart';
@@ -75,375 +75,204 @@ class _MediaPageState extends CommonPageState<MinePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final secondary = theme.colorScheme.secondary;
-    return Column(
-      children: [
-        Padding(
-          padding: const .symmetric(vertical: 10),
-          child: _buildHeaderActions,
-        ),
-        Expanded(
-          child: Material(
-            type: .transparency,
-            child: refreshIndicator(
-              onRefresh: controller.onRefresh,
-              child: onBuild(
-                ListView(
-                  padding: const .only(bottom: 150),
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  children: [
-                    _buildUserInfo(theme, secondary),
-                    _buildActions(secondary),
-                    for (final tab in controller.mineTabs)
-                      switch (tab) {
-                        .favorite => Obx(_buildFav),
-                        .history => Obx(_buildHistory),
-                        .later => Obx(_buildLater),
-                        .sub => Obx(_buildSub),
-                      },
-                  ],
-                ),
+    return MinePageBackground(
+      child: Column(
+        children: [
+          if (widget.showBackBtn)
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(12, 8, 12, 0),
+                child: BackButton(),
               ),
             ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActions(Color primary) {
-    return Row(
-      mainAxisAlignment: .spaceEvenly,
-      children: controller.list
-          .map(
-            (e) => Flexible(
-              child: InkWell(
-                onTap: e.onTap,
-                borderRadius: Style.mdRadius,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 80),
-                  child: AspectRatio(
-                    aspectRatio: 1,
-                    child: Column(
-                      spacing: 6,
-                      mainAxisSize: .min,
-                      mainAxisAlignment: .center,
-                      children: [
-                        Icon(e.icon, color: primary),
-                        Text(
-                          e.title,
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                      ],
+          Expanded(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 960),
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: refreshIndicator(
+                    onRefresh: controller.onRefresh,
+                    child: onBuild(
+                      ListView(
+                        padding: const EdgeInsets.fromLTRB(20, 14, 20, 150),
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: [
+                          _buildUserInfo(),
+                          const SizedBox(height: 18),
+                          MineActionDock(actions: controller.list),
+                          const SizedBox(height: 24),
+                          for (final tab in controller.mineTabs)
+                            switch (tab) {
+                              .favorite => Obx(_buildFav),
+                              .history => Obx(_buildHistory),
+                              .later => Obx(_buildLater),
+                              .sub => Obx(_buildSub),
+                            },
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          )
-          .toList(),
-    );
-  }
-
-  Widget get _buildHeaderActions {
-    const iconSize = 22.0;
-    const padding = EdgeInsets.all(8);
-    const style = ButtonStyle(tapTargetSize: .shrinkWrap);
-    return PlayerBar(
-      left: widget.showBackBtn
-          ? const Padding(
-              padding: EdgeInsets.only(left: 8),
-              child: BackButton(),
-            )
-          : const SizedBox.shrink(),
-      right: Row(
-        spacing: 5,
-        mainAxisSize: .min,
-        children: [
-          if (!_mainController.hasHome) ...[
-            IconButton(
-              iconSize: iconSize,
-              padding: padding,
-              style: style,
-              tooltip: '搜索',
-              onPressed: () => Get.toNamed('/search'),
-              icon: const Icon(Icons.search),
-            ),
-            msgBadge(_mainController),
-          ],
-          if (GStorage.reply != null)
-            IconButton(
-              iconSize: iconSize,
-              padding: padding,
-              style: style,
-              tooltip: '评论记录',
-              onPressed: () => Get.toNamed('/myReply'),
-              icon: const Icon(Icons.message_outlined),
-            ),
-          Obx(
-            () {
-              final anonymity = MineController.anonymity.value;
-              return IconButton(
-                iconSize: iconSize,
-                padding: padding,
-                style: style,
-                tooltip: "${anonymity ? '退出' : '进入'}无痕模式",
-                onPressed: MineController.onChangeAnonymity,
-                icon: anonymity
-                    ? const Icon(MdiIcons.incognito)
-                    : const Icon(MdiIcons.incognitoOff),
-              );
-            },
           ),
-          IconButton(
-            iconSize: iconSize,
-            padding: padding,
-            style: style,
-            tooltip: '切换账号',
-            onPressed: () => LoginPageController.switchAccountDialog(context),
-            icon: const Icon(Icons.switch_account_outlined),
-          ),
-          Obx(
-            () => IconButton(
-              iconSize: iconSize,
-              padding: padding,
-              style: style,
-              tooltip: '切换至${controller.nextThemeType.label}主题',
-              onPressed: controller.onChangeTheme,
-              icon: controller.themeType.value.icon,
-            ),
-          ),
-          IconButton(
-            iconSize: iconSize,
-            padding: padding,
-            style: style,
-            tooltip: '设置',
-            onPressed: () => Get.toNamed('/setting', preventDuplicates: false),
-            icon: const Icon(Icons.settings_outlined),
-          ),
-          const SizedBox(width: 16),
         ],
       ),
     );
   }
 
-  Widget _buildUserInfo(ThemeData theme, Color secondary) {
-    final style = TextStyle(
-      fontSize: theme.textTheme.titleMedium!.fontSize,
-      fontWeight: FontWeight.bold,
-    );
-    final labelStyle = theme.textTheme.labelMedium!.copyWith(
-      color: theme.colorScheme.outline,
-    );
-    final coinLabelStyle = TextStyle(
-      fontSize: theme.textTheme.labelMedium!.fontSize,
-      color: theme.colorScheme.outline,
-    );
-    final coinValStyle = TextStyle(
-      fontSize: theme.textTheme.labelMedium!.fontSize,
-      fontWeight: FontWeight.bold,
-      color: secondary,
-    );
-    return Obx(() {
-      final userInfo = controller.userInfo.value;
-      final levelInfo = userInfo.levelInfo;
-      final hasLevel = levelInfo != null;
-      final isVip = userInfo.vipStatus != null && userInfo.vipStatus! > 0;
-      final userStat = controller.userStat.value;
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          GestureDetector(
-            behavior: .opaque,
-            onTap: controller.onLogin,
-            onLongPress: () {
-              Feedback.forLongPress(context);
-              controller.onLogin(true);
-            },
-            onSecondaryTap: PlatformUtils.isMobile
-                ? null
-                : () => controller.onLogin(true),
-            child: Row(
-              mainAxisSize: .min,
-              children: [
-                const SizedBox(width: 20),
-                userInfo.face != null
-                    ? Stack(
-                        clipBehavior: .none,
-                        children: [
-                          NetworkImgLayer(
-                            src: userInfo.face,
-                            type: .avatar,
-                            width: 55,
-                            height: 55,
-                          ),
-                          if (isVip)
-                            Positioned(
-                              right: -1,
-                              bottom: -2,
-                              child: SvgPicture.asset(
-                                Assets.vipIcon,
-                                height: 19,
-                                semanticsLabel: "大会员",
-                              ),
-                            ),
-                        ],
-                      )
-                    : Semantics(
-                        label: '默认头像',
-                        child: const NetworkImgLayer(
-                          src: null,
-                          type: .avatar,
-                          width: 55,
-                          height: 55,
-                        ),
-                      ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: .min,
-                    mainAxisAlignment: .center,
-                    crossAxisAlignment: .start,
-                    children: [
-                      Row(
-                        spacing: 6,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              userInfo.uname ?? '点击登录',
-                              style: theme.textTheme.titleMedium!.copyWith(
-                                height: 1,
-                                color: isVip && userInfo.vipType == 2
-                                    ? theme.colorScheme.vipColor
-                                    : null,
-                              ),
-                              maxLines: 1,
-                              overflow: .ellipsis,
-                            ),
-                          ),
-                          BiliUtils.levelPicture(
-                            levelInfo?.currentLevel ?? 0,
-                            isSeniorMember: userInfo.isSeniorMember == 1,
-                            height: 10,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text.rich(
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text: '硬币 ',
-                              style: coinLabelStyle,
-                            ),
-                            TextSpan(
-                              text: userInfo.money?.toString() ?? '-',
-                              style: coinValStyle,
-                            ),
-                            TextSpan(
-                              text: "      经验 ",
-                              style: coinLabelStyle,
-                            ),
-                            TextSpan(
-                              text: levelInfo?.currentExp?.toString() ?? '-',
-                              style: coinValStyle,
-                            ),
-                            TextSpan(
-                              text: "/${levelInfo?.nextExp ?? '-'}",
-                              style: coinLabelStyle,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 225),
-                        child: LinearProgressIndicator(
-                          minHeight: 2.25,
-                          value: hasLevel
-                              ? levelInfo.currentExp! / levelInfo.nextExp!
-                              : 0,
-                          backgroundColor: theme.colorScheme.outline.withValues(
-                            alpha: 0.4,
-                          ),
-                          valueColor: AlwaysStoppedAnimation<Color>(secondary),
-                          stopIndicatorColor: Colors.transparent,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 20),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: .spaceEvenly,
-            children: [
-              _btn(
-                count: userStat.dynamicCount,
-                countStyle: style,
-                name: '动态',
-                labelStyle: labelStyle,
-                onTap: () => controller.push('memberDynamics'),
-              ),
-              _btn(
-                count: userStat.following,
-                countStyle: style,
-                name: '关注',
-                labelStyle: labelStyle,
-                onTap: () => controller.push('follow'),
-              ),
-              _btn(
-                count: userStat.follower,
-                countStyle: style,
-                name: '粉丝',
-                labelStyle: labelStyle,
-                onTap: () => controller.push('fan'),
-              ),
-            ],
-          ),
-        ],
+  List<Widget> get _accountTools => [
+    if (!_mainController.hasHome) ...[
+      MineToolButton(
+        tooltip: '搜索',
+        onPressed: () => Get.toNamed('/search'),
+        icon: Icons.search,
+      ),
+      if (controller.isLogin)
+        SizedBox.square(dimension: 44, child: msgBadge(_mainController)),
+    ],
+    if (GStorage.reply != null)
+      MineToolButton(
+        tooltip: '评论记录',
+        onPressed: () => Get.toNamed('/myReply'),
+        icon: Icons.comment_outlined,
+      ),
+    Obx(() {
+      final anonymity = MineController.anonymity.value;
+      return MineToolButton(
+        tooltip: '无痕模式：${anonymity ? '已开启，点击关闭' : '已关闭，点击开启'}',
+        selected: anonymity,
+        onPressed: MineController.onChangeAnonymity,
+        // 固定图形、用底色区分状态，避免斜杠把眼镜和帽子的轮廓盖住。
+        icon: MdiIcons.incognito,
       );
-    });
-  }
-
-  Widget _btn({
-    required int? count,
-    required TextStyle countStyle,
-    required String name,
-    required TextStyle? labelStyle,
-    required VoidCallback onTap,
-  }) {
-    return Flexible(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: Style.mdRadius,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 80),
-          child: AspectRatio(
-            aspectRatio: 1,
-            child: Column(
-              spacing: 4,
-              mainAxisSize: .min,
-              mainAxisAlignment: .center,
-              children: [
-                Text(
-                  count?.toString() ?? '-',
-                  style: countStyle,
-                ),
-                Text(
-                  name,
-                  style: labelStyle,
-                ),
-              ],
+    }),
+    MineToolButton(
+      tooltip: '切换账号',
+      onPressed: () => LoginPageController.switchAccountDialog(context),
+      icon: MdiIcons.accountSwitchOutline,
+    ),
+    Obx(
+      () => PopupMenuButton<ThemeType>(
+        tooltip: '主题：${controller.themeType.value.label}',
+        initialValue: controller.themeType.value,
+        onSelected: controller.onChangeTheme,
+        itemBuilder: (context) => [
+          for (final type in ThemeType.values)
+            CheckedPopupMenuItem(
+              value: type,
+              checked: type == controller.themeType.value,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  type.icon,
+                  const SizedBox(width: 12),
+                  Text(type.label),
+                ],
+              ),
+            ),
+        ],
+        child: SizedBox.square(
+          dimension: 44,
+          child: Center(
+            child: IconTheme(
+              data: IconThemeData(
+                size: 21,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              child: controller.themeType.value.icon,
             ),
           ),
         ),
       ),
+    ),
+    MineToolButton(
+      tooltip: '设置',
+      onPressed: () => Get.toNamed('/setting', preventDuplicates: false),
+      icon: Icons.settings_outlined,
+    ),
+  ];
+
+  Widget _buildUserInfo() => Obx(() {
+    final userInfo = controller.userInfo.value;
+    final levelInfo = userInfo.levelInfo;
+    final isVip = userInfo.vipStatus != null && userInfo.vipStatus! > 0;
+    final userStat = controller.userStat.value;
+    final colors = theme.colorScheme;
+    return MineAccountCard(
+      avatar: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Semantics(
+            label: userInfo.face == null ? '默认头像' : '用户头像',
+            child: NetworkImgLayer(
+              src: userInfo.face,
+              type: .avatar,
+              width: 64,
+              height: 64,
+            ),
+          ),
+          if (isVip)
+            Positioned(
+              right: -1,
+              bottom: -2,
+              child: SvgPicture.asset(
+                Assets.vipIcon,
+                height: 20,
+                semanticsLabel: '大会员',
+              ),
+            ),
+        ],
+      ),
+      name: userInfo.uname ?? '点击登录',
+      nameColor: isVip && userInfo.vipType == 2 ? colors.vipColor : null,
+      level: BiliUtils.levelPicture(
+        levelInfo?.currentLevel ?? 0,
+        isSeniorMember: userInfo.isSeniorMember == 1,
+        height: 12,
+      ),
+      tools: _accountTools,
+      details: [
+        MineInfoPill(
+          icon: Icons.toll_outlined,
+          label: '硬币',
+          value: userInfo.money?.toString() ?? '-',
+        ),
+        MineInfoPill(
+          icon: Icons.stars_outlined,
+          label: '经验',
+          value: '${levelInfo?.currentExp ?? '-'}/${levelInfo?.nextExp ?? '-'}',
+        ),
+      ],
+      statistics: [
+        MineStatButton(
+          count: userStat.dynamicCount?.toString() ?? '-',
+          label: '动态',
+          onTap: () => controller.push('memberDynamics'),
+        ),
+        MineStatButton(
+          count: userStat.following?.toString() ?? '-',
+          label: '关注',
+          onTap: () => controller.push('follow'),
+        ),
+        MineStatButton(
+          count: userStat.follower?.toString() ?? '-',
+          label: '粉丝',
+          onTap: () => controller.push('fan'),
+        ),
+      ],
+      onTap: controller.onLogin,
+      onLongPress: () {
+        Feedback.forLongPress(context);
+        controller.onLogin(true);
+      },
+      onSecondaryTap: PlatformUtils.isMobile
+          ? null
+          : () => controller.onLogin(true),
     );
-  }
+  });
 
   void _autoRefresh(MineRefreshMixin tabCtr) => Timer(
     const Duration(milliseconds: 150),
@@ -521,17 +350,31 @@ class _MediaPageState extends CommonPageState<MinePage>
           return const SizedBox.shrink();
         }
         child = SizedBox(
-          height: 180,
+          height: tab == MineTabType.favorite
+              ? 132 +
+                    (MediaQuery.textScalerOf(context).scale(14) - 14).clamp(
+                          0,
+                          double.infinity,
+                        ) *
+                        8
+              : 180,
           child: ListView.separated(
             itemCount: response.length,
             controller: tabCtr.scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const .only(left: 20, top: 10, right: 20),
+            padding: const EdgeInsets.only(top: 10),
             itemBuilder: (context, index) {
               if (index == response.length - 1) {
                 tabCtr.onLoadMore();
               }
-              return SizedBox(width: 180, child: itemBuilder(response[index]));
+              return SizedBox(
+                width: tab == MineTabType.favorite
+                    ? (MediaQuery.sizeOf(context).width - 40)
+                          .clamp(0, 360)
+                          .toDouble()
+                    : 180,
+                child: itemBuilder(response[index]),
+              );
             },
             scrollDirection: .horizontal,
             separatorBuilder: (_, _) => const SizedBox(width: 14),
@@ -547,15 +390,13 @@ class _MediaPageState extends CommonPageState<MinePage>
     final secondary = theme.colorScheme.secondary;
     return Column(
       children: [
-        Divider(
-          height: 20,
-          color: theme.colorScheme.outline.withValues(alpha: 0.1),
-        ),
+        const SizedBox(height: 8),
         ListTile(
+          contentPadding: EdgeInsets.zero,
           dense: true,
           onTap: onPushDetail,
           title: Padding(
-            padding: const EdgeInsets.only(left: 10),
+            padding: EdgeInsets.zero,
             child: Text.rich(
               TextSpan(
                 children: [
@@ -570,8 +411,8 @@ class _MediaPageState extends CommonPageState<MinePage>
                     ),
                   WidgetSpan(
                     child: Icon(
-                      Icons.arrow_forward_ios,
-                      size: 18,
+                      Icons.chevron_right,
+                      size: 20,
                       color: secondary,
                     ),
                   ),
@@ -586,6 +427,7 @@ class _MediaPageState extends CommonPageState<MinePage>
           ),
         ),
         child,
+        const SizedBox(height: 16),
       ],
     );
   }

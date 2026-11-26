@@ -276,7 +276,6 @@ class MainController extends GetxController
       Get.to(
         const Material(
           child: ViewSafeArea(
-            top: true,
             child: MinePage(showBackBtn: true),
           ),
         ),

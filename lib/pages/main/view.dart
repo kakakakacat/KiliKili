@@ -372,13 +372,27 @@ class _MainAppState extends PopScopeState<MainApp>
         controller: _mainController.controller,
         physics: const NeverScrollableScrollPhysics(),
         scrollDirection: _mainController.useBottomNav ? .horizontal : .vertical,
-        children: _mainController.navigationBars.map((i) => i.page).toList(),
+        children: _mainController.navigationBars
+            .map(
+              (i) => MainPageInset(
+                extendBehindStatusBar: i == NavigationBarType.mine,
+                child: i.page,
+              ),
+            )
+            .toList(),
       );
     } else {
       child = PageView(
         controller: _mainController.controller,
         physics: const NeverScrollableScrollPhysics(),
-        children: _mainController.navigationBars.map((i) => i.page).toList(),
+        children: _mainController.navigationBars
+            .map(
+              (i) => MainPageInset(
+                extendBehindStatusBar: i == NavigationBarType.mine,
+                child: i.page,
+              ),
+            )
+            .toList(),
       );
     }
 
@@ -394,7 +408,7 @@ class _MainAppState extends PopScopeState<MainApp>
           child: bottomNav,
         );
       }
-      padding = _padding.copyWith(bottom: 0);
+      padding = _padding.copyWith(top: 0, bottom: 0);
     } else {
       sideBar = DecoratedBox(
         decoration: BoxDecoration(
@@ -406,7 +420,7 @@ class _MainAppState extends PopScopeState<MainApp>
         ),
         child: _sideBar(),
       );
-      padding = .only(top: _padding.top, right: _padding.right);
+      padding = .only(right: _padding.right);
     }
 
     child = Material(

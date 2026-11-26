@@ -2,6 +2,26 @@ import 'package:kilikili/common/widgets/slotted_layout_helper.dart';
 import 'package:flutter/rendering.dart' show ChildLayoutHelper;
 import 'package:material_ui/material_ui.dart';
 
+/// 由页面决定是否把背景画到状态栏后面，其他页面保持原有内容起点。
+class MainPageInset extends StatelessWidget {
+  const MainPageInset({
+    super.key,
+    required this.child,
+    this.extendBehindStatusBar = false,
+  });
+
+  final Widget child;
+  final bool extendBehindStatusBar;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: EdgeInsets.only(
+      top: extendBehindStatusBar ? 0 : MediaQuery.viewPaddingOf(context).top,
+    ),
+    child: child,
+  );
+}
+
 enum MainType { sideBar, bottomNav, body }
 
 class MainLayout

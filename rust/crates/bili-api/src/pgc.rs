@@ -1269,7 +1269,11 @@ struct EpisodeDto {
     #[serde(default)]
     pub_time: Option<i64>,
     /// 基线取的是 `pub_time ?? release_date`：两个键表示同一件事。
-    #[serde(default)]
+    ///
+    /// 放宽：线上这个键是空字符串 `""`，严格解析会让整条详情作废（#270）。
+    /// 它只作 `pub_time` 缺失时的显示回退，不参与排序与游标，属于
+    /// `lenient.rs` 里允许放宽的那类时间戳。`pub_time` 没有实测依据，不动。
+    #[serde(default, deserialize_with = "crate::lenient::opt_i64")]
     release_date: Option<i64>,
     #[serde(default)]
     share_copy: Option<String>,
@@ -1585,6 +1589,23 @@ mod season_detail_tests {
         assert_eq!(eps[1].pub_time, Some(200));
         assert_eq!(eps[2].pub_time, Some(300), "两个都有时以 pub_time 为准");
         assert_eq!(eps[3].pub_time, None);
+    }
+
+    /// 线上 `/pgc/view/web/season` 每一集的 `release_date` 是空字符串
+    /// （2026-11-26 抓 7 部番剧，7/7 如此）。按 `Option<i64>` 严格解析时
+    /// 整条详情作废、所有番剧都打不开（#270）。当初的手工 fixture 填的是
+    /// 数字，正好把这个形状挡在了测试外。
+    #[test]
+    fn empty_string_release_date_does_not_fail_the_season() {
+        let body = r#"{"code":0,"message":"0","result":{"episodes":[
+            {"ep_id":1,"pub_time":100,"release_date":""},
+            {"ep_id":2,"release_date":""},
+            {"ep_id":3,"release_date":"200"}
+        ]}}"#;
+        let eps = pgc(body).episodes;
+        assert_eq!(eps[0].pub_time, Some(100));
+        assert_eq!(eps[1].pub_time, None, "空串当作没有这个值");
+        assert_eq!(eps[2].pub_time, Some(200));
     }
 
     /// 基线 `PgcStat.fromJson` 对七个字段的处理不对称，而且键名有单复数

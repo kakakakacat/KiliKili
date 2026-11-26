@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kilikili/common/widgets/floating_navigation_bar.dart';
 import 'package:material_ui/material_ui.dart';
@@ -13,7 +11,7 @@ void main() {
             children: [
               SizedBox(
                 width: 300,
-                height: 80,
+                height: mainNavigationBarHeight,
                 child: GlassNavigationSurface(
                   child: NavigationBar(
                     backgroundColor: Colors.transparent,
@@ -32,9 +30,12 @@ void main() {
               ),
               SizedBox(
                 width: 300,
-                height: 80,
+                height: mainNavigationBarHeight,
                 child: GlassNavigationSurface(
                   child: BottomNavigationBar(
+                    iconSize: 16,
+                    selectedFontSize: 12,
+                    unselectedFontSize: 12,
                     type: BottomNavigationBarType.fixed,
                     backgroundColor: Colors.transparent,
                     items: const [
@@ -142,12 +143,12 @@ void main() {
         body: Center(
           child: SizedBox(
             width: 300,
-            height: 80,
+            height: mainNavigationBarHeight,
             child: GlassNavigationSurface(
               selectedIndex: selected,
               destinationCount: 3,
               child: NavigationBar(
-                height: 80,
+                height: mainNavigationBarHeight,
                 backgroundColor: Colors.transparent,
                 indicatorColor: Colors.transparent,
                 labelPadding: const EdgeInsets.symmetric(vertical: 4),
@@ -197,7 +198,7 @@ void main() {
           body: Center(
             child: SizedBox(
               width: 300,
-              height: 80,
+              height: mainNavigationBarHeight,
               child: GlassNavigationSurface(
                 selectedIndex: 0,
                 destinationCount: 3,

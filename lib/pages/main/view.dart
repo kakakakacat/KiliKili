@@ -173,7 +173,7 @@ class _MainAppState extends PopScopeState<MainApp>
         bottomNav = Obx(
           () => NavigationBar(
             maintainBottomViewPadding: false,
-            height: 80,
+            height: mainNavigationBarHeight,
             backgroundColor: Colors.transparent,
             indicatorColor: Colors.transparent,
             // 图标槽上下各有 4px 留白，文字底部也保留 4px，组合才能居中。
@@ -229,7 +229,7 @@ class _MainAppState extends PopScopeState<MainApp>
           ),
           child: SizedBox(
             width: _mainController.navigationBars.length * 86.0,
-            height: 80,
+            height: mainNavigationBarHeight,
             child: Obx(
               () => GlassNavigationSurface(
                 selectedIndex: _mainController.selectedIndex.value,

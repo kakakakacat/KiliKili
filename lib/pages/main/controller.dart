@@ -296,13 +296,9 @@ class MainController extends GetxController
           duration: const Duration(milliseconds: 240),
           curve: Curves.easeOutCubic,
         );
-      } else if (useBottomNav) {
-        controller.animateToPage(
-          value,
-          duration: const Duration(milliseconds: 240),
-          curve: Curves.easeOutCubic,
-        );
       } else {
+        // 「首页切换页面动画」关闭时直接呈现目标，底栏也不能强制滑动；
+        // 否则会引入 240ms 转场，跨页还会初始化途经的页面（#127）。
         controller.jumpToPage(value);
       }
       if (currentNav == NavigationBarType.home) {

@@ -1,0 +1,113 @@
+{"event": "page_mount", "us": 691559025317, "sample": 0, "target": -1, "page": 0}
+{"event": "request_result", "us": 691559873791, "sample": 0, "target": -1, "controller": "RcmdController", "state": "Success<List<RcmdVideoItemAppModel>>"}
+{"event": "request_result", "us": 691560677462, "sample": 0, "target": -1, "controller": "RcmdController", "state": "Success<List<RcmdVideoItemAppModel>>"}
+{"event": "ready", "us": 691565001347, "sample": 0, "target": -1, "login": false}
+{"event": "sample", "us": 691565014313, "sample": 0, "target": 1, "login": false, "first": true, "name": "dynamics"}
+{"event": "callback", "us": 691565015218, "sample": 0, "target": 1}
+{"event": "selected", "us": 691565015917, "sample": 0, "target": 1}
+{"event": "page_mount", "us": 691565035782, "sample": 0, "target": 1, "page": 1}
+{"event": "first_paint", "us": 691565080118, "sample": 0, "target": 1, "frame": 116}
+{"event": "full_paint", "us": 691565080349, "sample": 0, "target": 1, "frame": 116}
+{"event": "request_result", "us": 691565174937, "sample": 0, "target": 1, "controller": "DynamicsController", "state": "Error"}
+{"event": "frame", "us": 691565212346, "sample": 0, "target": 1, "frame": 116, "build_us": 53716, "raster_us": 18745, "vsync_us": 691565023340, "raster_finish_us": 691565099073}
+{"event": "frame", "us": 691565212629, "sample": 0, "target": 1, "frame": 117, "build_us": 1482, "raster_us": 16086, "vsync_us": 691565090172, "raster_finish_us": 691565115381}
+{"event": "frame", "us": 691565212757, "sample": 0, "target": 1, "frame": 118, "build_us": 1179, "raster_us": 8925, "vsync_us": 691565106880, "raster_finish_us": 691565124489}
+{"event": "frame", "us": 691565212879, "sample": 0, "target": 1, "frame": 119, "build_us": 1205, "raster_us": 4052, "vsync_us": 691565123622, "raster_finish_us": 691565131690}
+{"event": "frame", "us": 691565212998, "sample": 0, "target": 1, "frame": 120, "build_us": 1376, "raster_us": 4278, "vsync_us": 691565139908, "raster_finish_us": 691565146904}
+{"event": "frame", "us": 691565213116, "sample": 0, "target": 1, "frame": 121, "build_us": 2086, "raster_us": 7628, "vsync_us": 691565156720, "raster_finish_us": 691565167625}
+{"event": "frame", "us": 691565213238, "sample": 0, "target": 1, "frame": 122, "build_us": 2586, "raster_us": 25895, "vsync_us": 691565173387, "raster_finish_us": 691565204333}
+{"event": "frame", "us": 691565213362, "sample": 0, "target": 1, "frame": 123, "build_us": 2243, "raster_us": 7317, "vsync_us": 691565190053, "raster_finish_us": 691565211919}
+{"event": "request_result", "us": 691565235387, "sample": 0, "target": 1, "controller": "DynamicsTabController", "state": "Error"}
+{"event": "data_terminal", "us": 691565240894, "sample": 0, "target": 1, "state": "Error"}
+{"event": "frame", "us": 691565324302, "sample": 0, "target": 1, "frame": 124, "build_us": 2363, "raster_us": 7603, "vsync_us": 691565206720, "raster_finish_us": 691565220102}
+{"event": "frame", "us": 691565324658, "sample": 0, "target": 1, "frame": 125, "build_us": 1742, "raster_us": 11234, "vsync_us": 691565223387, "raster_finish_us": 691565237827}
+{"event": "frame", "us": 691565324840, "sample": 0, "target": 1, "frame": 126, "build_us": 9531, "raster_us": 8625, "vsync_us": 691565240523, "raster_finish_us": 691565261229}
+{"event": "frame", "us": 691565324995, "sample": 0, "target": 1, "frame": 127, "build_us": 1825, "raster_us": 12016, "vsync_us": 691565273825, "raster_finish_us": 691565290772}
+{"event": "frame", "us": 691565325174, "sample": 0, "target": 1, "frame": 128, "build_us": 1088, "raster_us": 5100, "vsync_us": 691565290414, "raster_finish_us": 691565297877}
+{"event": "frame", "us": 691565325346, "sample": 0, "target": 1, "frame": 129, "build_us": 890, "raster_us": 14146, "vsync_us": 691565307074, "raster_finish_us": 691565323399}
+{"event": "frame", "us": 691565439924, "sample": 0, "target": 1, "frame": 130, "build_us": 1546, "raster_us": 10507, "vsync_us": 691565323765, "raster_finish_us": 691565339313}
+{"event": "frame", "us": 691565440525, "sample": 0, "target": 1, "frame": 131, "build_us": 493, "raster_us": 16455, "vsync_us": 691565340438, "raster_finish_us": 691565358641}
+{"event": "frame", "us": 691565440713, "sample": 0, "target": 1, "frame": 132, "build_us": 621, "raster_us": 7097, "vsync_us": 691565357173, "raster_finish_us": 691565366398}
+{"event": "frame", "us": 691565440888, "sample": 0, "target": 1, "frame": 133, "build_us": 774, "raster_us": 7489, "vsync_us": 691565373865, "raster_finish_us": 691565384127}
+{"event": "frame", "us": 691565441061, "sample": 0, "target": 1, "frame": 134, "build_us": 508, "raster_us": 8574, "vsync_us": 691565390575, "raster_finish_us": 691565401414}
+{"event": "frame", "us": 691565441234, "sample": 0, "target": 1, "frame": 135, "build_us": 505, "raster_us": 9520, "vsync_us": 691565407282, "raster_finish_us": 691565419264}
+{"event": "frame", "us": 691565441406, "sample": 0, "target": 1, "frame": 136, "build_us": 707, "raster_us": 11820, "vsync_us": 691565423979, "raster_finish_us": 691565438437}
+{"event": "frame", "us": 691565554652, "sample": 0, "target": 1, "frame": 137, "build_us": 546, "raster_us": 10023, "vsync_us": 691565440685, "raster_finish_us": 691565453688}
+{"event": "frame", "us": 691565554969, "sample": 0, "target": 1, "frame": 138, "build_us": 481, "raster_us": 6791, "vsync_us": 691565457408, "raster_finish_us": 691565465891}
+{"event": "frame", "us": 691565555155, "sample": 0, "target": 1, "frame": 139, "build_us": 507, "raster_us": 7570, "vsync_us": 691565474122, "raster_finish_us": 691565483656}
+{"event": "frame", "us": 691565555333, "sample": 0, "target": 1, "frame": 140, "build_us": 1021, "raster_us": 13186, "vsync_us": 691565490831, "raster_finish_us": 691565507387}
+{"event": "frame", "us": 691565555505, "sample": 0, "target": 1, "frame": 141, "build_us": 966, "raster_us": 14547, "vsync_us": 691565507523, "raster_finish_us": 691565526911}
+{"event": "frame", "us": 691565555685, "sample": 0, "target": 1, "frame": 142, "build_us": 1031, "raster_us": 8248, "vsync_us": 691565524221, "raster_finish_us": 691565535695}
+{"event": "selected", "us": 691566244477, "sample": 0, "target": 1}
+{"event": "sample", "us": 691567248561, "sample": 1, "target": 1, "login": false, "first": false, "name": "dynamics"}
+{"event": "callback", "us": 691567249273, "sample": 1, "target": 1}
+{"event": "selected", "us": 691567249906, "sample": 1, "target": 1}
+{"event": "first_paint", "us": 691567289306, "sample": 1, "target": 1, "frame": 173}
+{"event": "full_paint", "us": 691567290148, "sample": 1, "target": 1, "frame": 173}
+{"event": "data_terminal", "us": 691567291276, "sample": 1, "target": 1, "state": "Error"}
+{"event": "frame", "us": 691567399851, "sample": 1, "target": 1, "frame": 173, "build_us": 23920, "raster_us": 7129, "vsync_us": 691567261778, "raster_finish_us": 691567297343}
+{"event": "frame", "us": 691567400714, "sample": 1, "target": 1, "frame": 174, "build_us": 1193, "raster_us": 32764, "vsync_us": 691567295190, "raster_finish_us": 691567330469}
+{"event": "frame", "us": 691567401303, "sample": 1, "target": 1, "frame": 175, "build_us": 2482, "raster_us": 8335, "vsync_us": 691567311897, "raster_finish_us": 691567339055}
+{"event": "frame", "us": 691567401929, "sample": 1, "target": 1, "frame": 177, "build_us": 1515, "raster_us": 6812, "vsync_us": 691567345355, "raster_finish_us": 691567355273}
+{"event": "frame", "us": 691567402376, "sample": 1, "target": 1, "frame": 178, "build_us": 2327, "raster_us": 7436, "vsync_us": 691567362029, "raster_finish_us": 691567374521}
+{"event": "frame", "us": 691567402702, "sample": 1, "target": 1, "frame": 179, "build_us": 1706, "raster_us": 6713, "vsync_us": 691567378734, "raster_finish_us": 691567389020}
+{"event": "frame", "us": 691567507813, "sample": 1, "target": 1, "frame": 180, "build_us": 1680, "raster_us": 6859, "vsync_us": 691567395440, "raster_finish_us": 691567405742}
+{"event": "frame", "us": 691567508663, "sample": 1, "target": 1, "frame": 181, "build_us": 1561, "raster_us": 7333, "vsync_us": 691567412141, "raster_finish_us": 691567423246}
+{"event": "frame", "us": 691567509045, "sample": 1, "target": 1, "frame": 182, "build_us": 2459, "raster_us": 6715, "vsync_us": 691567428845, "raster_finish_us": 691567439946}
+{"event": "frame", "us": 691567509313, "sample": 1, "target": 1, "frame": 183, "build_us": 5430, "raster_us": 8058, "vsync_us": 691567445551, "raster_finish_us": 691567462580}
+{"event": "frame", "us": 691567509558, "sample": 1, "target": 1, "frame": 184, "build_us": 2748, "raster_us": 7141, "vsync_us": 691567462259, "raster_finish_us": 691567474219}
+{"event": "frame", "us": 691567510018, "sample": 1, "target": 1, "frame": 185, "build_us": 2958, "raster_us": 7580, "vsync_us": 691567478967, "raster_finish_us": 691567492541}
+{"event": "frame", "us": 691567510450, "sample": 1, "target": 1, "frame": 186, "build_us": 1954, "raster_us": 6869, "vsync_us": 691567495679, "raster_finish_us": 691567507158}
+{"event": "frame", "us": 691567636203, "sample": 1, "target": 1, "frame": 187, "build_us": 2805, "raster_us": 7389, "vsync_us": 691567512385, "raster_finish_us": 691567525143}
+{"event": "frame", "us": 691567637821, "sample": 1, "target": 1, "frame": 188, "build_us": 3169, "raster_us": 7198, "vsync_us": 691567529090, "raster_finish_us": 691567542509}
+{"event": "frame", "us": 691567638192, "sample": 1, "target": 1, "frame": 189, "build_us": 2478, "raster_us": 6941, "vsync_us": 691567545796, "raster_finish_us": 691567557877}
+{"event": "frame", "us": 691567638495, "sample": 1, "target": 1, "frame": 190, "build_us": 3211, "raster_us": 13053, "vsync_us": 691567562504, "raster_finish_us": 691567581320}
+{"event": "frame", "us": 691567638704, "sample": 1, "target": 1, "frame": 191, "build_us": 2228, "raster_us": 7948, "vsync_us": 691567579212, "raster_finish_us": 691567593687}
+{"event": "frame", "us": 691567638897, "sample": 1, "target": 1, "frame": 192, "build_us": 850, "raster_us": 7531, "vsync_us": 691567595915, "raster_finish_us": 691567606191}
+{"event": "frame", "us": 691567639168, "sample": 1, "target": 1, "frame": 193, "build_us": 1964, "raster_us": 13518, "vsync_us": 691567612622, "raster_finish_us": 691567634758}
+{"event": "frame", "us": 691567746208, "sample": 1, "target": 1, "frame": 194, "build_us": 1314, "raster_us": 10248, "vsync_us": 691567629326, "raster_finish_us": 691567645394}
+{"event": "frame", "us": 691567747514, "sample": 1, "target": 1, "frame": 195, "build_us": 1121, "raster_us": 7329, "vsync_us": 691567646060, "raster_finish_us": 691567656690}
+{"event": "frame", "us": 691567748145, "sample": 1, "target": 1, "frame": 196, "build_us": 915, "raster_us": 6594, "vsync_us": 691567662767, "raster_finish_us": 691567671634}
+{"event": "frame", "us": 691567748941, "sample": 1, "target": 1, "frame": 197, "build_us": 929, "raster_us": 7725, "vsync_us": 691567679475, "raster_finish_us": 691567691930}
+{"event": "frame", "us": 691567750162, "sample": 1, "target": 1, "frame": 198, "build_us": 1053, "raster_us": 13305, "vsync_us": 691567696213, "raster_finish_us": 691567712784}
+{"event": "frame", "us": 691567750441, "sample": 1, "target": 1, "frame": 199, "build_us": 1008, "raster_us": 6627, "vsync_us": 691567712910, "raster_finish_us": 691567723103}
+{"event": "frame", "us": 691567750669, "sample": 1, "target": 1, "frame": 200, "build_us": 1470, "raster_us": 7608, "vsync_us": 691567729614, "raster_finish_us": 691567742155}
+{"event": "frame", "us": 691567860993, "sample": 1, "target": 1, "frame": 201, "build_us": 881, "raster_us": 6560, "vsync_us": 691567746322, "raster_finish_us": 691567759277}
+{"event": "frame", "us": 691567861973, "sample": 1, "target": 1, "frame": 202, "build_us": 794, "raster_us": 6555, "vsync_us": 691567763016, "raster_finish_us": 691567771920}
+{"event": "selected", "us": 691568293976, "sample": 1, "target": 1}
+{"event": "sample", "us": 691569297738, "sample": 2, "target": 1, "login": false, "first": false, "name": "dynamics"}
+{"event": "callback", "us": 691569298967, "sample": 2, "target": 1}
+{"event": "selected", "us": 691569299651, "sample": 2, "target": 1}
+{"event": "first_paint", "us": 691569353206, "sample": 2, "target": 1, "frame": 232}
+{"event": "full_paint", "us": 691569354104, "sample": 2, "target": 1, "frame": 232}
+{"event": "data_terminal", "us": 691569356369, "sample": 2, "target": 1, "state": "Error"}
+{"event": "frame", "us": 691569465220, "sample": 2, "target": 1, "frame": 232, "build_us": 33589, "raster_us": 7941, "vsync_us": 691569316788, "raster_finish_us": 691569362119}
+{"event": "frame", "us": 691569466534, "sample": 2, "target": 1, "frame": 233, "build_us": 1755, "raster_us": 7509, "vsync_us": 691569366911, "raster_finish_us": 691569377688}
+{"event": "frame", "us": 691569467717, "sample": 2, "target": 1, "frame": 234, "build_us": 1374, "raster_us": 6866, "vsync_us": 691569383588, "raster_finish_us": 691569393318}
+{"event": "frame", "us": 691569469774, "sample": 2, "target": 1, "frame": 235, "build_us": 2107, "raster_us": 7514, "vsync_us": 691569400233, "raster_finish_us": 691569412285}
+{"event": "frame", "us": 691569470340, "sample": 2, "target": 1, "frame": 236, "build_us": 2137, "raster_us": 7045, "vsync_us": 691569416930, "raster_finish_us": 691569427642}
+{"event": "frame", "us": 691569471467, "sample": 2, "target": 1, "frame": 237, "build_us": 4051, "raster_us": 8424, "vsync_us": 691569433635, "raster_finish_us": 691569449401}
+{"event": "frame", "us": 691569473129, "sample": 2, "target": 1, "frame": 238, "build_us": 2954, "raster_us": 7609, "vsync_us": 691569450345, "raster_finish_us": 691569464281}
+{"event": "frame", "us": 691569599355, "sample": 2, "target": 1, "frame": 239, "build_us": 5375, "raster_us": 7618, "vsync_us": 691569467068, "raster_finish_us": 691569495162}
+{"event": "frame", "us": 691569600278, "sample": 2, "target": 1, "frame": 240, "build_us": 1589, "raster_us": 7759, "vsync_us": 691569500493, "raster_finish_us": 691569511378}
+{"event": "frame", "us": 691569601046, "sample": 2, "target": 1, "frame": 241, "build_us": 3380, "raster_us": 7530, "vsync_us": 691569517207, "raster_finish_us": 691569531973}
+{"event": "frame", "us": 691569602054, "sample": 2, "target": 1, "frame": 242, "build_us": 3426, "raster_us": 7231, "vsync_us": 691569533914, "raster_finish_us": 691569546076}
+{"event": "frame", "us": 691569602811, "sample": 2, "target": 1, "frame": 243, "build_us": 2872, "raster_us": 7881, "vsync_us": 691569550641, "raster_finish_us": 691569564700}
+{"event": "frame", "us": 691569603558, "sample": 2, "target": 1, "frame": 244, "build_us": 2181, "raster_us": 6982, "vsync_us": 691569567342, "raster_finish_us": 691569578863}
+{"event": "frame", "us": 691569604455, "sample": 2, "target": 1, "frame": 245, "build_us": 3211, "raster_us": 7458, "vsync_us": 691569584044, "raster_finish_us": 691569598566}
+{"event": "frame", "us": 691569719907, "sample": 2, "target": 1, "frame": 246, "build_us": 3989, "raster_us": 7643, "vsync_us": 691569600749, "raster_finish_us": 691569618576}
+{"event": "frame", "us": 691569720126, "sample": 2, "target": 1, "frame": 247, "build_us": 1665, "raster_us": 7234, "vsync_us": 691569617453, "raster_finish_us": 691569628805}
+{"event": "frame", "us": 691569720203, "sample": 2, "target": 1, "frame": 248, "build_us": 331, "raster_us": 8622, "vsync_us": 691569634160, "raster_finish_us": 691569645107}
+{"event": "frame", "us": 691569720278, "sample": 2, "target": 1, "frame": 249, "build_us": 350, "raster_us": 9286, "vsync_us": 691569650866, "raster_finish_us": 691569663084}
+{"event": "frame", "us": 691569720347, "sample": 2, "target": 1, "frame": 250, "build_us": 311, "raster_us": 9247, "vsync_us": 691569667569, "raster_finish_us": 691569679163}
+{"event": "frame", "us": 691569720415, "sample": 2, "target": 1, "frame": 251, "build_us": 326, "raster_us": 8053, "vsync_us": 691569684273, "raster_finish_us": 691569694840}
+{"event": "frame", "us": 691569720485, "sample": 2, "target": 1, "frame": 252, "build_us": 330, "raster_us": 7915, "vsync_us": 691569700976, "raster_finish_us": 691569710814}
+{"event": "frame", "us": 691569828399, "sample": 2, "target": 1, "frame": 253, "build_us": 367, "raster_us": 7150, "vsync_us": 691569717681, "raster_finish_us": 691569727847}
+{"event": "frame", "us": 691569828709, "sample": 2, "target": 1, "frame": 254, "build_us": 423, "raster_us": 9246, "vsync_us": 691569734393, "raster_finish_us": 691569746498}
+{"event": "frame", "us": 691569828868, "sample": 2, "target": 1, "frame": 255, "build_us": 314, "raster_us": 8189, "vsync_us": 691569751101, "raster_finish_us": 691569760989}
+{"event": "frame", "us": 691569829055, "sample": 2, "target": 1, "frame": 256, "build_us": 287, "raster_us": 7584, "vsync_us": 691569767812, "raster_finish_us": 691569777216}
+{"event": "frame", "us": 691569829303, "sample": 2, "target": 1, "frame": 257, "build_us": 570, "raster_us": 7815, "vsync_us": 691569784509, "raster_finish_us": 691569794428}
+{"event": "frame", "us": 691569829512, "sample": 2, "target": 1, "frame": 258, "build_us": 441, "raster_us": 7646, "vsync_us": 691569801205, "raster_finish_us": 691569810684}
+{"event": "frame", "us": 691569829668, "sample": 2, "target": 1, "frame": 259, "build_us": 493, "raster_us": 7517, "vsync_us": 691569817900, "raster_finish_us": 691569827380}
+{"event": "selected", "us": 691570358897, "sample": 2, "target": 1}
+{"event": "done", "us": 691571362447, "sample": 2, "target": 1}

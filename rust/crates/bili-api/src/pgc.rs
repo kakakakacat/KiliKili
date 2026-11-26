@@ -1270,9 +1270,13 @@ struct EpisodeDto {
     pub_time: Option<i64>,
     /// 基线取的是 `pub_time ?? release_date`：两个键表示同一件事。
     ///
-    /// 放宽：线上这个键是空字符串 `""`，严格解析会让整条详情作废（#270）。
-    /// 它只作 `pub_time` 缺失时的显示回退，不参与排序与游标，属于
-    /// `lenient.rs` 里允许放宽的那类时间戳。`pub_time` 没有实测依据，不动。
+    /// 放宽：番剧线上这个键是空字符串 `""`，严格解析会让整条详情作废
+    /// （#270）。它只作 `pub_time` 缺失时的显示回退，不参与排序与游标，
+    /// 属于 `lenient.rs` 里允许放宽的那类时间戳。`pub_time` 没有实测依据，
+    /// 不动。
+    ///
+    /// 课堂（PUGV）走同一个 DTO，但线上形状相反：这个键是数字、`pub_time`
+    /// 整个不出现，于是回退在那边是承重的（2026-11-26 实测，见下方测试）。
     #[serde(default, deserialize_with = "crate::lenient::opt_i64")]
     release_date: Option<i64>,
     #[serde(default)]
@@ -1606,6 +1610,23 @@ mod season_detail_tests {
         assert_eq!(eps[0].pub_time, Some(100));
         assert_eq!(eps[1].pub_time, None, "空串当作没有这个值");
         assert_eq!(eps[2].pub_time, Some(200));
+    }
+
+    /// 课堂（PUGV）与番剧共用 `EpisodeDto`，线上形状却是反过来的：
+    /// `release_date` 是数字、`pub_time` 根本不出现（2026-11-26 匿名抓
+    /// `/pugv/view/web/season` 的 season_id=1 / 100 / 1000，三季 225 集
+    /// 皆如此）。所以放宽之后数字必须仍按数字走，否则课堂的时间全空。
+    #[test]
+    fn pugv_release_date_is_a_number_and_carries_the_time() {
+        let body = r#"{"code":0,"data":{"episodes":[
+            {"id":9,"release_date":1567851011},
+            {"id":2,"release_date":0}
+        ]}}"#;
+        let eps = parse_season_detail(body, SeasonKind::Pugv)
+            .expect("课堂详情在 data 里")
+            .episodes;
+        assert_eq!(eps[0].pub_time, Some(1567851011));
+        assert_eq!(eps[1].pub_time, Some(0), "0 是有效取值，不是缺失");
     }
 
     /// 基线 `PgcStat.fromJson` 对七个字段的处理不对称，而且键名有单复数

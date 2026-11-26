@@ -49,8 +49,16 @@ const BACKOFF_BASE_US: i64 = 30_000_000;
 const BACKOFF_MAX_US: i64 = 300_000_000;
 /// 升档之后这么短时间内又被降，算「升失败」。
 const FAILED_STEP_UP_US: i64 = 10_000_000;
-/// 一个窗口里至少要有这么多帧才下结论（窗口刚开、或宿主暂停重绘时）。
+/// 一个窗口里至少要有这么多帧才按掉帧比例下结论（窗口刚开、或宿主暂停
+/// 重绘时间隔本来就长）。
+///
+/// 帧数不够、但大多数帧都**补帧超时**（我们自己的耗时超过显示周期）的窗口
+/// 照样算坏窗口：Adreno 610 上 Anime4K + 放大后的槽每帧 300 ms，一秒只有
+/// 三帧，只看帧数的话一个窗口都凑不够，回退永远不触发，卡在 3 FPS。暂停
+/// 重绘不会让耗时变长，所以这个判据不会误伤暂停。
 const MIN_FRAMES_PER_WINDOW: u32 = 10;
+/// 稀疏窗口里至少要有这么多帧，才按超时比例下结论。
+const MIN_FRAMES_SPARSE: u32 = 2;
 
 #[derive(Debug, Clone)]
 pub struct Governor {
@@ -59,6 +67,7 @@ pub struct Governor {
     window_start: Option<i64>,
     frames: u32,
     misses: u32,
+    overruns: u32,
     bad_streak: u32,
     /// 最近一次换档（升或降）的时刻。
     last_change: Option<i64>,
@@ -76,6 +85,7 @@ impl Default for Governor {
             window_start: None,
             frames: 0,
             misses: 0,
+            overruns: 0,
             bad_streak: 0,
             last_change: None,
             last_step_up: None,
@@ -86,6 +96,17 @@ impl Default for Governor {
 }
 
 impl Governor {
+    /// 负载整个变了（换片源、改倍速）：之前降过的档、退避都作废，温控保留。
+    ///
+    /// 不清的话 24 fps 在 2 倍速下（墙钟 48 → 60）把 Adreno 610 压到降档，
+    /// 回到 1 倍速后仍停在下一档（24 → 30），要等 30 秒升档才回到 60。
+    pub fn reset_load(&mut self) {
+        *self = Self {
+            thermal: self.thermal,
+            ..Self::default()
+        };
+    }
+
     /// 要在档位表里往下挪几格。
     #[must_use]
     pub fn steps_down(&self) -> u32 {
@@ -132,6 +153,9 @@ impl Governor {
         if missed || overran {
             self.misses += 1;
         }
+        if overran {
+            self.overruns += 1;
+        }
         if now_us - start < WINDOW_US {
             return;
         }
@@ -143,12 +167,15 @@ impl Governor {
         self.window_start = None;
         self.frames = 0;
         self.misses = 0;
+        self.overruns = 0;
         self.bad_streak = 0;
         self.maybe_step_up(now_us);
     }
 
     fn close_window(&mut self, now_us: i64) {
         let enough = self.frames >= MIN_FRAMES_PER_WINDOW;
+        let starved =
+            !enough && self.frames >= MIN_FRAMES_SPARSE && self.overruns * 2 >= self.frames;
         let ratio = if enough {
             self.misses as f32 / self.frames as f32
         } else {
@@ -157,10 +184,11 @@ impl Governor {
         self.window_start = Some(now_us);
         self.frames = 0;
         self.misses = 0;
-        if !enough {
+        self.overruns = 0;
+        if !enough && !starved {
             return;
         }
-        if ratio > BAD_RATIO {
+        if starved || ratio > BAD_RATIO {
             self.bad_streak += 1;
             if self.bad_streak >= BAD_WINDOWS_TO_STEP {
                 self.step_down(now_us);
@@ -252,6 +280,30 @@ mod tests {
         let mut t = 0;
         run(&mut g, &mut t, 3, true);
         assert_eq!(g.steps_down(), 1);
+    }
+
+    #[test]
+    fn a_few_very_slow_frames_per_second_still_step_down() {
+        // 每帧 300 ms：一秒三帧，凑不够 MIN_FRAMES_PER_WINDOW。
+        let mut g = Governor::default();
+        let mut t = 0;
+        for _ in 0..10 {
+            t += 300_000;
+            g.on_frame(t, 300_000, P, 300_000);
+        }
+        assert_eq!(g.steps_down(), 1);
+    }
+
+    #[test]
+    fn a_paused_host_with_cheap_frames_is_not_a_failure() {
+        // 暂停时宿主隔很久才重画一次，但每帧都便宜。
+        let mut g = Governor::default();
+        let mut t = 0;
+        for _ in 0..20 {
+            t += 400_000;
+            g.on_frame(t, 400_000, P, 1_000);
+        }
+        assert_eq!(g.steps_down(), 0);
     }
 
     #[test]

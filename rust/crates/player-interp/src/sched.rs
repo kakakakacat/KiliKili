@@ -79,16 +79,23 @@ pub struct Ring {
     /// 不改变片源帧率，清掉的话每次拖动之后都要重新攒样本，这期间档位判断
     /// 只能退回直通。换片源（切集、切清晰度）时由 [`Ring::reset_stream`] 清。
     intervals: VecDeque<i64>,
+    /// 接下来还要丢掉几个间隔不记（见 [`Ring::reset_rate`]）。
+    skip_intervals: u8,
+    /// 给出源帧率估计至少要几个样本（[`Ring::reset_rate`] 之后是满窗）。
+    min_samples: usize,
 }
 
 /// 估源帧率用的间隔样本数。
-const INTERVAL_SAMPLES: usize = 16;
+pub const INTERVAL_SAMPLES: usize = 16;
 /// 至少攒到这么多个间隔才给出源帧率。
 ///
 /// 第一版是 4：macOS 实测开播头 0.5 秒里源帧率估计在 29.4 → 30.0 之间抖，
 /// 档位与 `audio-delay` 跟着改了五次（每改一次声音跳一下）。8 个间隔在
 /// 24 fps 片源上也只要三分之一秒。
 const MIN_INTERVAL_SAMPLES: usize = 8;
+/// 开播（换片源）后头几个间隔不记：mpv 起播时音频时钟还在对齐，
+/// `target_time` 的步长偏 3% 左右（实测 30 fps 片源头一秒报 29.0）。
+const STARTUP_SKIP: u8 = 4;
 
 impl Ring {
     #[must_use]
@@ -101,6 +108,8 @@ impl Ring {
             gap_limit_us: 250_000,
             flush_pending: false,
             intervals: VecDeque::with_capacity(INTERVAL_SAMPLES),
+            skip_intervals: STARTUP_SKIP,
+            min_samples: MIN_INTERVAL_SAMPLES,
         }
     }
 
@@ -144,20 +153,47 @@ impl Ring {
     pub fn reset_stream(&mut self) {
         self.clear();
         self.intervals.clear();
+        self.skip_intervals = STARTUP_SKIP;
+        self.min_samples = MIN_INTERVAL_SAMPLES;
     }
 
-    /// 最近相邻源帧间隔的中位数（微秒）。样本不够时 `None`。
+    /// 只清源帧率样本（倍速变了，墙钟上的间隔跟着变），环里的帧留着。
     ///
-    /// 用中位数不用均值：重复帧判定、seek 前后、mpv 偶尔丢的一帧都会留下
-    /// 个别离群的间隔。
+    /// 之后的头三个间隔也不记，并且要攒满一整窗才给估计：mpv 改倍速时
+    /// 已经排好的几张还是按旧倍速定的 `target_time`，过渡期的间隔混进来的话
+    /// 第一次估计偏到别的常见帧率上（实测 24 fps 从 2 倍速回 1 倍速时先报成
+    /// 25），`audio-delay` 要多改一次。代价是改倍速后多直通约 0.7 秒。
+    pub fn reset_rate(&mut self) {
+        self.intervals.clear();
+        self.skip_intervals = 3;
+        self.min_samples = INTERVAL_SAMPLES;
+    }
+
+    /// 已攒的源帧间隔样本数。
+    #[must_use]
+    pub fn interval_samples(&self) -> usize {
+        self.intervals.len()
+    }
+
+    /// 最近相邻源帧间隔的估计（微秒）。样本不够时 `None`。
+    ///
+    /// 先取中位数，丢掉离它超过 25% 的间隔（mpv 丢的一帧、seek 前后留下的
+    /// 整倍数间隔），剩下的取均值。只用中位数不够：`target_time` 每张都带着
+    /// 一两毫秒的抖动，中位数落在哪一个样本上就是哪个，30 fps 片源会报成
+    /// 28.7；均值里相邻间隔的抖动互相抵消。
     #[must_use]
     pub fn source_interval_us(&self) -> Option<i64> {
-        if self.intervals.len() < MIN_INTERVAL_SAMPLES {
+        if self.intervals.len() < self.min_samples {
             return None;
         }
         let mut sorted: Vec<i64> = self.intervals.iter().copied().collect();
         sorted.sort_unstable();
-        Some(sorted[sorted.len() / 2])
+        let median = sorted[sorted.len() / 2];
+        let kept: Vec<i64> = sorted
+            .into_iter()
+            .filter(|dt| (dt - median).abs() * 4 <= median)
+            .collect();
+        Some(kept.iter().sum::<i64>() / kept.len() as i64)
     }
 
     /// 只记时间戳、不进环：直通模式下 mpv 直接画进宿主的 FBO，没有槽可写，
@@ -170,6 +206,10 @@ impl Ring {
 
     fn note_interval(&mut self, dt: i64) {
         if dt <= 0 || dt > self.gap_limit_us {
+            return;
+        }
+        if self.skip_intervals > 0 {
+            self.skip_intervals -= 1;
             return;
         }
         if self.intervals.len() == INTERVAL_SAMPLES {
@@ -386,7 +426,7 @@ mod tests {
 
     #[test]
     fn source_interval_survives_a_flush_but_not_a_stream_reset() {
-        let times: Vec<i64> = (0..10).map(|i| i * 33_333).collect();
+        let times: Vec<i64> = (0..14).map(|i| i * 33_333).collect();
         let mut ring = Ring::new(16);
         for t in &times {
             let slot = ring.slot_for_next();
@@ -402,12 +442,25 @@ mod tests {
     }
 
     #[test]
+    fn startup_intervals_are_skipped() {
+        // 起播头四个间隔偏快（音频时钟还在对齐），不进估计。
+        let mut ring = Ring::new(16);
+        let mut t = 0;
+        for i in 0..14 {
+            t += if i < 5 { 30_000 } else { 33_333 };
+            let slot = ring.slot_for_next();
+            ring.push(t, slot);
+        }
+        assert_eq!(ring.source_interval_us(), Some(33_333));
+    }
+
+    #[test]
     fn source_interval_ignores_outliers() {
         // 24fps，其中一个间隔因为丢帧变成两倍。
         let mut ring = Ring::new(16);
         let mut t = 0;
-        for i in 0..10 {
-            t += if i == 3 { 83_333 } else { 41_667 };
+        for i in 0..14 {
+            t += if i == 7 { 83_333 } else { 41_667 };
             let slot = ring.slot_for_next();
             ring.push(t, slot);
         }
@@ -418,7 +471,7 @@ mod tests {
     fn observing_feeds_the_interval_without_slots() {
         let mut ring = Ring::new(4);
         let mut last = None;
-        for i in 0..10 {
+        for i in 0..14 {
             let t = i * 41_667;
             ring.observe(t, last);
             last = Some(t);

@@ -649,6 +649,7 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | `.github/workflows/ios.yml` | 本次（#121） | 注释写明侧载没有仓库侧发布身份；构建行为未变 |
 | `lib/pages/login/view.dart` | #140、#162、#236 | 短信登录交互修复（#140）之后，界面整页改胶囊：顶部登录方式是一条**分段胶囊**（`CapsuleSegmentedTabBar`，四格等分、选中块滑动，窄屏丢图标保文字），五个输入栏是填充 + 全圆角（多行的 Cookie 用 24 圆角），主操作是整行 56 高胶囊。**上游若改这个文件，照常同步里面的逻辑与字段，但不要把布局与装饰同步回来**——那一层这边已经整个换掉，判据同 §4.4 |
 | `android/app/src/main/AndroidManifest.xml` | 本次（#230） | `io.flutter.embedding.android.EnableImpeller` 由 `false` 改为 `true`。该 opt-out 是 2024 年底随上游带进来的，Flutter 3.47 已把它标为 deprecated；关着它时 `ImageFilter.isShaderFilterSupported` 为 false，玻璃导航栏的折射 shader 根本不会运行，Android 只能退到 `ImageFilter.blur`——这就是 iOS 透明、Android 像高斯模糊的全部原因。**上游若再改这一段，不要跟着关回去**；上游自己迟早会删掉这个 meta-data，届时整行一并删除即可，默认就是开 |
+| `lib/pages/rcmd/{controller,view}.dart` | #108、#263 | 首屏铺满：页面用网格自身的 `getLayout` 按视口尺寸算一屏容量（外层 `LayoutBuilder`，只在尺寸、dpi、列宽变化时重算），控制器在刷新后不足容量就续拉，最多 3 次；骨架数同容量。**「续拉阈值与次数」按 AGENTS §2 属于应在 Rust 的策略，留在宿主是因为推荐流未迁，随推荐切片迁移时改为 Rust 接口参数并删掉这段** |
 | `lib/common/widgets/loading_widget/http_error.dart` | #106、#255 | 错误态胶囊（#106）；屏高 < 580 时缩小插图与上下边距，避免文案与重试按钮落到首页悬浮底栏下面，常规手机保持上游尺寸 |
 | `lib/pages/video/reply_reply/{controller,view}.dart` | #176、#256 | 线程化进度条只在拉取期间显示（新增 `fetchingTree`），上游让它常驻，未拉取时是一根来历不明的主题色条。**同步上游时保留这个开关** |
 | `lib/pages/search_panel/{controller,view}.dart` | S9、#257 | 搜索面板加页脚：加载更多失败时显示原因并可点重试，到底时显示「没有更多了」。刻意没改 `CommonListController`——几十个列表共用，改它的上游冲突面太大 |

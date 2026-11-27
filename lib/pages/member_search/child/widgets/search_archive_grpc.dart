@@ -73,7 +73,7 @@ class SearchArchiveGrpc extends StatelessWidget {
             ? DurationUtils.formatDuration(item.duration!.toInt())
             : null,
         coverOverlays: [
-          if (item.isPugv) const PBadge(text: '课堂', top: 54, right: 6),
+          if (item.isPugv) const PBadge(text: '课堂', bottom: 6, right: 6),
         ],
         date: date,
         trailing: SizedBox.square(

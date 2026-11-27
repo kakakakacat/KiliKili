@@ -96,6 +96,10 @@ void main() {
   float ink = u_light > 0.5
     ? 1.0 - smoothstep(0.35, 0.80, lum)
     : smoothstep(0.30, 0.70, lum);
+  // 只染透镜内部：边缘带采的是透镜外侧被压进来的内容（底栏外的封面），
+  // 那里的深色染上去就是一圈品红色的环——第二次上机在彩色封面上看到的
+  // 正是这个（#266）。iOS 的边缘是白亮的，不带选中色。
+  ink *= 1.0 - edge;
   vec3 accent = vec3(u_accent_r, u_accent_g, u_accent_b);
   lensed = mix(lensed, accent, ink * 0.9);
 

@@ -38,6 +38,8 @@ import 'package:kilikili/services/rust/rust_pgc.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:kilikili/common/widgets/video_card/cover_zoom.dart';
+import 'package:kilikili/pages/video/view.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -569,6 +571,21 @@ abstract final class PageUtils {
       secondRpIdKey: ?secondRpId,
       ...?extraArguments,
     };
+    // 封面放大（#265）：从封面卡片点进来、且封面对得上时才放大；关掉
+    // 「页面过渡动画」时照常直接切页。
+    final coverZoom = CoverZoomSource.take(cover);
+    if (coverZoom != null &&
+        !off &&
+        Get.defaultTransition != Transition.noTransition) {
+      arguments['coverZoom'] = coverZoom;
+      return Get.key.currentState?.push(
+        CoverZoomPageRoute(
+          page: () => const VideoDetailPageV(),
+          routeName: '/videoV',
+          settings: RouteSettings(name: '/videoV', arguments: arguments),
+        ),
+      );
+    }
     return PageUtils.toDupNamed('/videoV', arguments: arguments, off: off);
   }
 

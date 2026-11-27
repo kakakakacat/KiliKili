@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
+import 'package:kilikili/common/widgets/video_card/cover_zoom.dart';
 import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/services/rust/rust_cover_scrim.dart';
 import 'package:kilikili/utils/extension/num_ext.dart';
@@ -177,8 +178,14 @@ class CoverScrimCard extends StatelessWidget {
     final colorScheme = ColorScheme.of(context);
     final lineHeight =
         MediaQuery.textScalerOf(context).scale(_titleFontSize) * _titleHeight;
-    final coverStack = _CoverStack(
+    // 封面放大进播放页（#265）：每张网络封面都是一个可放大的源。点下去时
+    // 记成「刚点的那张」，播放页入口按封面地址认领，见 [CoverZoomSource]。
+    final coverZoom = localCover == null && cover?.isNotEmpty == true
+        ? CoverZoomSource(cover: cover)
+        : null;
+    final Widget coverStack = _CoverStack(
       cover: cover,
+      coverZoom: coverZoom,
       localCover: localCover,
       topStats: topStats,
       topDuration: topDuration,
@@ -187,7 +194,11 @@ class CoverScrimCard extends StatelessWidget {
       foregroundOverlays: foregroundOverlays,
       metaBuilder: metaBuilder,
     );
-    return Card(
+    final coverArea = switch (coverZoom) {
+      final zoom? => zoom.sourceHero(coverStack),
+      null => coverStack,
+    };
+    final card = Card(
       // hardEdge 足够：圆角由 Card 的 shape 裁，封面自己不再裁一次，省一层
       // saveLayer。
       clipBehavior: Clip.hardEdge,
@@ -204,9 +215,9 @@ class CoverScrimCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (coverAspectRatio case final ratio?)
-                AspectRatio(aspectRatio: ratio, child: coverStack)
+                AspectRatio(aspectRatio: ratio, child: coverArea)
               else
-                Expanded(child: coverStack),
+                Expanded(child: coverArea),
               _TextStrip(
                 span: TextSpan(children: titleSpans ?? [TextSpan(text: title)]),
                 upLabel: _upLabel(colorScheme),
@@ -263,6 +274,13 @@ class CoverScrimCard extends StatelessWidget {
         ],
       ),
     );
+    if (coverZoom == null) return card;
+    // 用 Listener 而不是包一层 onTap：有的卡片（如动态）不走自己的 onTap，
+    // 点击由外层处理，指针抬起时记一下就能覆盖所有入口。
+    return Listener(
+      onPointerUp: (_) => coverZoom.markTapped(),
+      child: card,
+    );
   }
 
   /// 胶囊里的字：`UP 主名 [已关注]`，白字（主题色底上的 onPrimary）。
@@ -296,6 +314,7 @@ class CoverScrimCard extends StatelessWidget {
 class _CoverStack extends StatelessWidget {
   const _CoverStack({
     required this.cover,
+    required this.coverZoom,
     required this.localCover,
     required this.topStats,
     required this.topDuration,
@@ -306,6 +325,7 @@ class _CoverStack extends StatelessWidget {
   });
 
   final String? cover;
+  final CoverZoomSource? coverZoom;
   final String? localCover;
   final List<(StatType, dynamic)> topStats;
   final String? topDuration;
@@ -324,26 +344,30 @@ class _CoverStack extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         LayoutBuilder(
-          builder: (context, constraints) => localCover != null
-              ? Image.file(
-                  File(localCover!),
-                  width: constraints.maxWidth,
-                  height: constraints.maxHeight,
-                  fit: BoxFit.cover,
-                  cacheWidth: constraints.maxWidth.cacheSize(context),
-                  colorBlendMode: NetworkImgLayer.reduce
-                      ? BlendMode.modulate
-                      : null,
-                  color: NetworkImgLayer.reduce
-                      ? NetworkImgLayer.reduceLuxColor
-                      : null,
-                )
-              : NetworkImgLayer(
-                  src: cover,
-                  width: constraints.maxWidth,
-                  height: constraints.maxHeight,
-                  borderRadius: BorderRadius.zero,
-                ),
+          builder: (context, constraints) {
+            // 记下封面尺寸：放大转场要按同一尺寸取图才能命中这张图的缓存。
+            coverZoom?.size = constraints.biggest;
+            return localCover != null
+                ? Image.file(
+                    File(localCover!),
+                    width: constraints.maxWidth,
+                    height: constraints.maxHeight,
+                    fit: BoxFit.cover,
+                    cacheWidth: constraints.maxWidth.cacheSize(context),
+                    colorBlendMode: NetworkImgLayer.reduce
+                        ? BlendMode.modulate
+                        : null,
+                    color: NetworkImgLayer.reduce
+                        ? NetworkImgLayer.reduceLuxColor
+                        : null,
+                  )
+                : NetworkImgLayer(
+                    src: cover,
+                    width: constraints.maxWidth,
+                    height: constraints.maxHeight,
+                    borderRadius: BorderRadius.zero,
+                  );
+          },
         ),
         ...coverOverlays,
         CoverTopInfoBar(stats: topStats, duration: topDuration),

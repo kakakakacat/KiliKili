@@ -501,12 +501,13 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 | 修改的上游既有文件 | **854** |
 | &nbsp;&nbsp;其中：仅因包名重命名而改动 | **338** |
 | &nbsp;&nbsp;其中：有实质改动 | **516** |
-| 新增文件 | **1077** |
+| 新增文件 | **1078** |
 | 删除文件 | **369** |
 
 其后 #268 删除「显示上次看到位置提示」开关，第一次改动 `lib/utils/storage_key.dart`（此前与上游
 完全一致）：修改 853 → 854、实质改动 514 → 515。
 本轮 #262 新增三个文件后为 1077；最新 main 合入后的分类为 854 / 339 / 515；状态栏验收修复后为 854 / 338 / 516。
+#265 新增 `lib/common/widgets/video_card/cover_zoom.dart`，新增 1077 → 1078，其余不变（见 §4.6）。
 下述 1074 是本轮之前的基线。
 
 基线数字为 2026-11-26 在 main `fc92bca4b`（#258、#261 合并后）上按 §6 的重算值：修改 / 新增 / 删除
@@ -793,6 +794,31 @@ dart run flutter_native_splash:create
   挪位置并删掉一个空行。那是生成器的固定行为，**不要还原**——还原了下次再生成
   又会变回去，白白制造一轮 diff。
 
+### 4.6 封面放大转场（#265）
+
+从任意封面卡片（`CoverScrimCard`：首页推荐、热门、搜索、动态、UP 空间、
+历史、稍后再看、收藏、相关推荐等）点进播放页时，封面从卡片位置放大到播放器
+位置，播放页其余内容在转场后段淡入并微微上移；返回时内容先淡出、播放器缩回
+卡片。卡片上的封面和进播放页传的封面地址对不上时（例如番剧卡片是季度封面、
+进的是单集）不放大，照常切页。「页面过渡动画」设为 `noTransition` 时也直接切页。
+
+实现全在新增的 `lib/common/widgets/video_card/cover_zoom.dart`：卡片封面外包
+`Hero`，点下去（指针抬起）时记成「刚点的那张」，`toVideoPage` 按封面地址
+认领（4 秒内有效），所以各入口不用单独传参；播放页播放器区域放同 tag 的 `CoverZoomHold`，
+视频首帧画出之前一直盖着封面；路由换成 `CoverZoomPageRoute`（`GetPageRoute`
+的子类，只换 `buildTransitions`，外层仍套全局转场以保留 secondary 动画与
+iOS 边缘返回）。飞行和落地用的都是卡片上那张已解码的图，不重新加载。
+
+| 文件 | 改动 |
+| --- | --- |
+| `lib/utils/page_utils.dart` | `toVideoPage` 认领刚点的封面，认领到时改推 `CoverZoomPageRoute`，路由名仍是 `/videoV` |
+| `lib/pages/video/view.dart` | `videoPlayer` 的 Stack 里加 `CoverZoomHold`（只在认领到封面进来时） |
+
+**同步时**：上游改 `toVideoPage` 的参数或 `videoPlayer` 的层次，照常同步，
+保留认领封面的那一段和那一层 `CoverZoomHold`；上游若给播放页换了路由或
+转场写法，要确认 `/videoV` 仍能被 `CoverZoomPageRoute` 推起来
+（`Get.arguments` 依赖 `RouteSettings.arguments`）。
+
 ### 同步时的注意点
 
 - `lib/http/video.dart` 与 `lib/http/search.dart` 是**上游高频改动区**，
@@ -808,7 +834,7 @@ dart run flutter_native_splash:create
 
 ## 5. 新增文件
 
-1077 个，不与上游冲突，按区域分布：
+1078 个，不与上游冲突，按区域分布：
 
 | 区域 | 文件数 | 内容 |
 | --- | ---: | --- |
@@ -821,7 +847,7 @@ dart run flutter_native_splash:create
 | `docs/` | 90 | RFC、ADR、M0 记录、QA 与实施计划 |
 | `spikes/` | 105 | 原生播放器与平台集成实验台 |
 | `shaders/` | 1 | Liquid Glass 背板折射着色器 |
-| `lib/common/` | 5 | 共用视图与交互组件 |
+| `lib/common/` | 6 | 共用视图与交互组件（含 #265 的封面放大转场） |
 | `lib/pages/` | 8 | 弹幕引擎、验证码、SC 展示和页面辅助 |
 | `lib/plugin/` | 4 | 音量指示组件、Player Port 平台适配与观察端 |
 | `lib/utils/` | 2 | 字幕格式转换 |

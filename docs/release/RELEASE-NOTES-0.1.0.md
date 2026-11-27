@@ -1,8 +1,12 @@
-# KiliKili 0.1.0 发布说明（草稿）
+# KiliKili 0.1.0 发布说明
 
-> 状态：**草稿**，跟踪 issue #242。「已知问题」与「验收」两节要在按
-> [`docs/qa/RELEASE-VALIDATION.md`](../qa/RELEASE-VALIDATION.md) 跑完候选版本之后再填；
+> 状态：**待发布**，跟踪 issue #242，「已知问题」一节由 #311 收口。
 > 发版时把本文「给用户看的部分」原样贴进 GitHub Release 正文。
+>
+> 验收情况见 #242：Android 与 Windows 已按 [`docs/qa/RELEASE-VALIDATION.md`](../qa/RELEASE-VALIDATION.md)
+> 跑过主链路，其余未跑完的用例由所有者决定按通过处置（处置记录在 #242）。
+> #311 第三节里还有三项待定内容（三个 UX 小瑕疵、是否写明验收覆盖面、
+> 关注列表 M16），所有者决定**本版先不写进来**。
 
 ---
 
@@ -28,8 +32,8 @@ KiliKili 的第一个公开版本。它基于 [PiliPlus](https://github.com/bggR
 
 **Linux 是实验性的。** 安装包能构建出来，依赖也按程序实际链接的库自动生成，但我们没有
 Linux 桌面环境，**没有在任何一台真实的 Linux 机器上启动过它**。能用、不能用都欢迎反馈。
-安装包在 Ubuntu 24.04 上构建，推测需要同代或更新的发行版（glibc 2.39 及以上，例如
-Ubuntu 24.04、Debian 13、Fedora 40）。
+安装包在 Ubuntu 24.04 上构建，需要同代或更新的发行版（glibc 2.38 及以上，例如
+Ubuntu 24.04、Debian 13、Fedora 39）。
 
 ### 安装，以及怎么绕过系统拦截
 
@@ -88,10 +92,16 @@ chmod +x KiliKili_linux_*_amd64.AppImage && ./KiliKili_linux_*_amd64.AppImage
 
 ### 已知问题
 
-<!-- TODO(#242)：跑完 RELEASE-VALIDATION 后，把 FAIL / NOT TESTED / 处置为「带着发」的 P1 列在这里 -->
-
-- Linux 未经真机测试（见上）。
-- 部分 Android 平板上首页滑动可能卡顿（#126）。
+- **Linux 版没有在真机上测试过**（见上）。安装包能构建、依赖也按程序实际链接的库生成，
+  但我们没有 Linux 桌面环境，能用、不能用都欢迎反馈。
+- **Linux 的 deb 包少一条依赖声明**：程序里的 `libdartjni.so` 需要 `libjvm.so`，deb 的
+  `Depends` 里没有它。只要用不到这部分功能就没有影响。
+- **默认主题色从蓝色改成了经典粉**。从旧版本升级上来、而且从没自己选过主题色的用户，
+  打开后会发现界面变粉了，在设置里可以改回去。
+- **番剧的片头片尾跳过会被 SponsorBlock 的分类开关连带关掉**：在设置里关掉 SponsorBlock
+  的某些分类后，番剧的自动跳过也会一起失效（[#278](https://github.com/kakakakacat/KiliKili/issues/278)）。
+- **自己发的短评在应用内删不掉**：发出去的短评不会出现在「我的评论」里，要删只能去
+  官方客户端。上游版本也是这样。
 
 问题反馈：<https://github.com/kakakakacat/KiliKili/issues>
 
@@ -124,7 +134,7 @@ KiliKili 是非官方客户端，与哔哩哔哩（上海宽娱数码科技有�
 | iOS | `IPHONEOS_DEPLOYMENT_TARGET = 14.0`、Podfile `14.0` | **15.0** | Flutter 3.47.9 的 `Flutter.framework` 是 `minos 15.0`（`vtool -show-build`），14.x 上装不上 |
 | macOS | `MACOSX_DEPLOYMENT_TARGET = 10.14`、Podfile `10.14` | **12.0** | `FlutterMacOS.framework` 是 `minos 12.0`（arm64 与 x86_64 相同） |
 | Windows | — | **Windows 10 x64** | Flutter 桌面的支持范围；只构建 x64 |
-| Linux | — | glibc ≥ 2.39（推测） | `linux_x64.yml` 跑在 `ubuntu-latest`（24.04）；未实测 |
+| Linux | — | glibc ≥ 2.38 | `linux_x64.yml` 跑在 `ubuntu-latest`（24.04）；候选 deb 实测 `Depends: libc6 >= 2.38` |
 
 iOS / macOS 工程文件里的 14.0 / 10.14 是上游留下的旧值，与上游一致所以没改；它们不影响
 产物能装的最低系统（引擎二进制本身就要求更高）。以后升 Flutter 时按同样的方法重查一遍。

@@ -1,37 +1,6 @@
-import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/stat/stat.dart';
 import 'package:kilikili/models/common/stat_type.dart';
 import 'package:material_ui/material_ui.dart';
-
-/// 直播围观数等仍压在封面上的半透明深色小药丸。
-///
-/// 它落在封面上而不是底部遮罩里，**不在 `cover_scrim` 的对比度保证范围
-/// 内**——那套保证只对遮罩合成出来的那块背景成立。所以这里固定用
-/// `black45` + 白字。视频统计和时长已改用顶部共用渐变行（#124）。
-class CoverPill extends StatelessWidget {
-  const CoverPill({super.key, required this.children});
-
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    if (children.isEmpty) return const SizedBox.shrink();
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: Colors.black45,
-        borderRadius: Style.coverCardRadius,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 6,
-          children: children,
-        ),
-      ),
-    );
-  }
-}
 
 /// 视频封面的整行顶部信息，渐变从封面边缘开始，由卡片圆角统一裁切。
 class CoverTopInfoBar extends StatelessWidget {
@@ -109,7 +78,14 @@ class CoverTopInfoBar extends StatelessWidget {
   }
 }
 
-/// 直播的围观数药丸。
+/// 直播的围观数角标。
+///
+/// 贴着封面左上角摆（`CoverScrimCard.topStart` 的位置是 `(0, 0)`），左上角由
+/// 卡片圆角裁出，只留右下角圆角，看上去是封面角上「露出」的一块，而不是
+/// 浮在封面上的药丸。
+///
+/// 它落在封面上而不是底部遮罩里，**不在 `cover_scrim` 的对比度保证范围
+/// 内**，所以固定用 `black45` + 白字。
 ///
 /// 不走 [CoverTopInfoBar]：接口给的已经是「1.2万看过」这种**成品字符串**，
 /// 再经 `StatWidget` 的 `numFormat` 会被当成数字二次格式化。
@@ -122,9 +98,14 @@ class CoverWatchedPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final watched = this.watched;
     if (watched == null || watched.isEmpty) return const SizedBox.shrink();
-    return CoverPill(
-      children: [
-        Row(
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: Colors.black45,
+        borderRadius: BorderRadius.only(bottomRight: Radius.circular(8)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 3, 7, 3),
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           spacing: 2,
           children: [
@@ -140,7 +121,7 @@ class CoverWatchedPill extends StatelessWidget {
             ),
           ],
         ),
-      ],
+      ),
     );
   }
 }

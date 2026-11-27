@@ -109,7 +109,7 @@ class CoverScrimCard extends StatelessWidget {
   /// 封面底部遮罩里的辅助信息。
   final CoverScrimMetaBuilder? metaBuilder;
 
-  /// 直播围观数等仍需单独摆放的左上角浮层。
+  /// 直播围观数等仍需单独摆放的左上角浮层，紧贴封面左上角、无间距。
   final Widget? topStart;
 
   /// 视频顶部共用渐变行；没有对应数据的卡片只展示可用项。
@@ -354,7 +354,7 @@ class _CoverStack extends StatelessWidget {
         ...coverOverlays,
         CoverTopInfoBar(stats: topStats, duration: topDuration),
         if (topStart case final topStart?)
-          Positioned(top: 6, left: 6, child: topStart),
+          Positioned(top: 0, left: 0, child: topStart),
         if (hasMeta)
           Positioned(
             left: 0,

@@ -1,6 +1,7 @@
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
+import 'package:kilikili/common/widgets/video_card/cover_zoom.dart';
 import 'package:kilikili/common/widgets/video_popup_menu.dart';
 import 'package:kilikili/http/search.dart';
 import 'package:kilikili/models/common/stat_type.dart';
@@ -24,13 +25,17 @@ class VideoCardV extends StatelessWidget {
   final BaseRcmdVideoItemModel videoItem;
   final VoidCallback? onRemove;
 
+  /// 点开时封面放大进播放页（#265），目前只有首页推荐开。
+  final bool coverZoom;
+
   const VideoCardV({
     super.key,
     required this.videoItem,
     this.onRemove,
+    this.coverZoom = false,
   });
 
-  Future<void> onPushDetail() async {
+  Future<void> onPushDetail([CoverZoomSource? zoom]) async {
     switch (videoItem.goto) {
       case 'bangumi':
         PageUtils.viewPgc(epId: videoItem.param!);
@@ -61,6 +66,7 @@ class VideoCardV extends StatelessWidget {
             title: videoItem.title,
             isVertical: isVertical,
             dimension: dimension,
+            coverZoom: zoom,
           );
         }
         break;
@@ -86,13 +92,17 @@ class VideoCardV extends StatelessWidget {
       cover: videoItem.cover,
       bvid: videoItem.bvid,
     );
+    final zoom = coverZoom && videoItem.goto == 'av'
+        ? CoverZoomSource(key: videoItem, cover: videoItem.cover)
+        : null;
     return CoverScrimCard(
       cover: videoItem.cover,
+      coverZoom: zoom,
       title: videoItem.title,
       upName: videoItem.owner.name?.toString(),
       // 匿名态下服务端照样会给 is_followed，不验登录会在未登录时也打上勾。
       upFollowed: videoItem.isFollowed && Accounts.main.isLogin,
-      onTap: onPushDetail,
+      onTap: () => onPushDetail(zoom),
       onLongPress: onLongPress,
       onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
       topStats: [

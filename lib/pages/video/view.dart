@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 import 'dart:math';
 
+import 'package:kilikili/common/widgets/video_card/cover_zoom.dart';
 import 'package:kilikili/common/assets.dart';
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/custom_icon.dart';
@@ -88,6 +89,9 @@ class VideoDetailPageV extends StatefulWidget {
 class _VideoDetailPageVState extends State<VideoDetailPageV>
     with RouteAware, RouteAwareMixin, WidgetsBindingObserver {
   final heroTag = Get.arguments['heroTag'];
+
+  /// 从首页推荐 / 热门点封面进来时才有，见 [CoverZoomSource]（#265）。
+  final CoverZoomSource? coverZoom = Get.arguments['coverZoom'];
 
   late final VideoDetailController videoDetailController;
   late final VideoReplyController _videoReplyController;
@@ -1488,6 +1492,15 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           }
           return const SizedBox.shrink();
         }),
+        // 放大落地的位置；首帧出来之前一直盖着封面，免得先黑一下。
+        if (coverZoom case final zoom?)
+          Positioned.fill(
+            child: CoverZoomHold(
+              source: zoom,
+              autoPlay: videoDetailController.autoPlay,
+              videoController: () => plPlayerController?.videoController,
+            ),
+          ),
         manualPlayerWidget(height),
 
         if (videoDetailController.plPlayerController.enableBlock ||

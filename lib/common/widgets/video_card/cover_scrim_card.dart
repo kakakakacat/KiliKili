@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/video_card/cover_pill.dart';
+import 'package:kilikili/common/widgets/video_card/cover_zoom.dart';
 import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/services/rust/rust_cover_scrim.dart';
 import 'package:kilikili/utils/extension/num_ext.dart';
@@ -76,6 +77,7 @@ class CoverScrimCard extends StatelessWidget {
     this.elevation = 4,
     this.semanticsLabel,
     this.coverAspectRatio,
+    this.coverZoom,
   });
 
   final String? cover;
@@ -146,6 +148,10 @@ class CoverScrimCard extends StatelessWidget {
   /// 高度。
   final double? coverAspectRatio;
 
+  /// 点开时让封面放大进播放页（#265）。只有首页推荐和热门传，见
+  /// [CoverZoomSource]。
+  final CoverZoomSource? coverZoom;
+
   static const _titleFontSize = 14.0;
   static const _titleHeight = 1.32;
   static const _dateFontSize = 11.0;
@@ -177,8 +183,9 @@ class CoverScrimCard extends StatelessWidget {
     final colorScheme = ColorScheme.of(context);
     final lineHeight =
         MediaQuery.textScalerOf(context).scale(_titleFontSize) * _titleHeight;
-    final coverStack = _CoverStack(
+    final Widget coverStack = _CoverStack(
       cover: cover,
+      coverZoom: coverZoom,
       localCover: localCover,
       topStats: topStats,
       topDuration: topDuration,
@@ -187,6 +194,10 @@ class CoverScrimCard extends StatelessWidget {
       foregroundOverlays: foregroundOverlays,
       metaBuilder: metaBuilder,
     );
+    final coverArea = switch (coverZoom) {
+      final zoom? => zoom.sourceHero(coverStack),
+      null => coverStack,
+    };
     return Card(
       // hardEdge 足够：圆角由 Card 的 shape 裁，封面自己不再裁一次，省一层
       // saveLayer。
@@ -204,9 +215,9 @@ class CoverScrimCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (coverAspectRatio case final ratio?)
-                AspectRatio(aspectRatio: ratio, child: coverStack)
+                AspectRatio(aspectRatio: ratio, child: coverArea)
               else
-                Expanded(child: coverStack),
+                Expanded(child: coverArea),
               _TextStrip(
                 span: _titleSpan(colorScheme),
                 semanticsLabel: [
@@ -302,6 +313,7 @@ class CoverScrimCard extends StatelessWidget {
 class _CoverStack extends StatelessWidget {
   const _CoverStack({
     required this.cover,
+    required this.coverZoom,
     required this.localCover,
     required this.topStats,
     required this.topDuration,
@@ -312,6 +324,7 @@ class _CoverStack extends StatelessWidget {
   });
 
   final String? cover;
+  final CoverZoomSource? coverZoom;
   final String? localCover;
   final List<(StatType, dynamic)> topStats;
   final String? topDuration;
@@ -330,26 +343,30 @@ class _CoverStack extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         LayoutBuilder(
-          builder: (context, constraints) => localCover != null
-              ? Image.file(
-                  File(localCover!),
-                  width: constraints.maxWidth,
-                  height: constraints.maxHeight,
-                  fit: BoxFit.cover,
-                  cacheWidth: constraints.maxWidth.cacheSize(context),
-                  colorBlendMode: NetworkImgLayer.reduce
-                      ? BlendMode.modulate
-                      : null,
-                  color: NetworkImgLayer.reduce
-                      ? NetworkImgLayer.reduceLuxColor
-                      : null,
-                )
-              : NetworkImgLayer(
-                  src: cover,
-                  width: constraints.maxWidth,
-                  height: constraints.maxHeight,
-                  borderRadius: BorderRadius.zero,
-                ),
+          builder: (context, constraints) {
+            // 记下封面尺寸：放大转场要按同一尺寸取图才能命中这张图的缓存。
+            coverZoom?.size = constraints.biggest;
+            return localCover != null
+                ? Image.file(
+                    File(localCover!),
+                    width: constraints.maxWidth,
+                    height: constraints.maxHeight,
+                    fit: BoxFit.cover,
+                    cacheWidth: constraints.maxWidth.cacheSize(context),
+                    colorBlendMode: NetworkImgLayer.reduce
+                        ? BlendMode.modulate
+                        : null,
+                    color: NetworkImgLayer.reduce
+                        ? NetworkImgLayer.reduceLuxColor
+                        : null,
+                  )
+                : NetworkImgLayer(
+                    src: cover,
+                    width: constraints.maxWidth,
+                    height: constraints.maxHeight,
+                    borderRadius: BorderRadius.zero,
+                  );
+          },
         ),
         ...coverOverlays,
         CoverTopInfoBar(stats: topStats, duration: topDuration),

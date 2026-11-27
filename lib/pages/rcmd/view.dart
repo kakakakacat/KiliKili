@@ -236,6 +236,7 @@ class _RcmdPageState extends State<RcmdPage>
                   // 一起删除；与上游 PiliPlus 分叉）。
                   return VideoCardV(
                     videoItem: response[index],
+                    coverZoom: true,
                     onRemove: () => controller.loadingState
                       ..value.data!.removeAt(index)
                       ..refresh(),

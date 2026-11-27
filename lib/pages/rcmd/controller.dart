@@ -35,6 +35,11 @@ class RcmdController extends CommonListController with RefreshImplMixin {
   int _topUps = 0;
   bool _filling = false;
 
+  /// 本次刷新拿到的新卡数（含续拉）。开着「保留上次数据」时，刷新把新卡
+  /// 放在最前、旧卡接在后面，列表总数早就超过一屏；铺满与否必须只看
+  /// 新卡，否则刷新后只有顶上约 10 张是新的，其余全是旧卡（#282）。
+  int _freshCount = 0;
+
   int get _loadedCount => switch (loadingState.value) {
     Success(:final List? response) => response?.length ?? 0,
     _ => 0,
@@ -52,7 +57,7 @@ class RcmdController extends CommonListController with RefreshImplMixin {
     if (capacity == null || _filling || !_hasData) return;
     _filling = true;
     try {
-      while (!isClosed && _topUps < _maxTopUps && _loadedCount < capacity) {
+      while (!isClosed && _topUps < _maxTopUps && _freshCount < capacity) {
         // 刷新还在进行时等它结束，不与之并发（基类见 isLoading 直接返回）。
         if (isLoading) break;
         _topUps++;
@@ -108,6 +113,18 @@ class RcmdController extends CommonListController with RefreshImplMixin {
 
   @override
   void handleListResponse(List dataList) {
+    if (page == 0) {
+      _freshCount = dataList.length;
+    } else if (_filling) {
+      // 续拉的新卡插在本次新卡之后、旧卡之前；基类随后追加的是已清空的
+      // dataList，等于只做一次刷新通知。
+      if (loadingState.value case Success(:final response?)) {
+        response.insertAll(_freshCount, dataList);
+        _freshCount += dataList.length;
+        dataList.clear();
+      }
+      return;
+    }
     if (enableSaveLastData && page == 0) {
       if (loadingState.value case Success(:final response)) {
         if (response != null && response.isNotEmpty) {

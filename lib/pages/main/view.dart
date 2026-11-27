@@ -189,6 +189,9 @@ class _MainAppState extends PopScopeState<MainApp>
                 .map(
                   (e) => NavigationDestination(
                     label: e.label,
+                    // 长按是玻璃透镜的放大（#266），不要再在上方弹标签提示；
+                    // 空串表示不建 Tooltip。标签本来就一直显示，读屏走语义。
+                    tooltip: '',
                     icon: _buildIcon(type: e, offsetY: _md3IconShift),
                     selectedIcon: _buildIcon(
                       type: e,

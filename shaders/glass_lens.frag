@@ -96,11 +96,12 @@ void main() {
   float edge = 1.0 - smoothstep(0.0, r * 0.45, -d);
   vec2 base = c + (p - c) / zoom;
   vec2 bend = n * edge * edge * r * 0.35 * lift;
-  // 色散：三个通道沿法线错开一点，只在边缘带里出现。
+  // 色散：三个通道沿法线错开一点，只在边缘带里出现。第一版是 0.92 / 1.10，轮廓
+  // 上彩色噪点太重，收到 0.96 / 1.05。
   vec3 lensed = vec3(
-    sampleAt(base + bend * 0.92).r,
+    sampleAt(base + bend * 0.96).r,
     sampleAt(base + bend).g,
-    sampleAt(base + bend * 1.10).b
+    sampleAt(base + bend * 1.05).b
   );
 
   // 染色：透镜里的「墨」（浅色主题下比底色深的像素，深色主题反过来）换
@@ -126,5 +127,10 @@ void main() {
   // 「原样」上，文字出现双重影（#266 第三次上机看到）。只在最开始一小段
   // 淡入，避免高光边「啪」一下出现。
   vec4 original = sampleAt(p);
-  fragColor = vec4(mix(original.rgb, lensed, smoothstep(0.0, 0.2, lift)), original.a);
+  // 轮廓内侧 1.5 像素渐变回原画面：外面那道裁剪是硬边，轮廓处折射又最
+  // 强、采到的全是高频内容，不过渡的话长按时边上一圈是参差的彩色像素
+  // （#266 第四次上机）。
+  float rimFade = 1.0 - smoothstep(-1.5, 0.0, d);
+  float amount = smoothstep(0.0, 0.2, lift) * rimFade;
+  fragColor = vec4(mix(original.rgb, lensed, amount), original.a);
 }

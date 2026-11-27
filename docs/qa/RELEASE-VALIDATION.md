@@ -135,9 +135,10 @@ ADR-011 决策五把对照机制定为「Rust 冻结快照 + Dart parity 测试�
 
 分别通过底部导航和独立入口打开「我的」：背景延伸到状态栏，没有横向色带，
 顶部不显示「我的」标题，工具胶囊位于账户卡片内且保持在系统图标下方；
-宽度足够时与昵称同行靠右，窄屏、大字号或额外搜索/消息入口出现时独立一行靠右，
-按钮不缩小。硬币和经验分别有图标胶囊；动态/关注/粉丝各有淡底色胶囊、右箭头和
-按压反馈，点击仍跳转对应列表。点击工具不能触发头像跳转，头像长按仍可打开登录。
+宽度足够时与昵称同行靠右，窄屏、大字号或额外搜索/消息入口出现时位于头像右侧、
+顶部与头像对齐；空间不足时按钮在胶囊内换行，不缩小。硬币和经验分别有图标胶囊；
+动态/关注/粉丝各有淡底色胶囊、右箭头和按压反馈，点击仍跳转对应列表。
+点击工具不能触发头像跳转，头像长按仍可打开登录。
 独立入口的返回按钮仍在卡片外左侧。切回首页/动态及侧栏布局时，顶部避让仍与改动前一致。
 
 手机窄屏与平板、系统大字号、浅色/深色分别确认：账户卡片和统计不溢出，四个
@@ -172,7 +173,7 @@ SC 列表和全屏 SC、标题/看过人数/在线数更新；修改屏蔽词与
 | Windows | F01–F13 中适用项；重点记录安装、窗口与硬解 | 有独立设备；不能以 Actions 构建替代 GUI 操作 |
 | Linux | 构建、解包、原生库与依赖检查；功能项记 `NOT TESTED` | 目前无可用 Linux GUI/硬解验收环境，按 best-effort 发布范围单独披露 |
 
-自动检查由 `ci.yml` 触发。**2026-11-12 起 PR 上不触发**（重构期暂停，issue #114：`pull_request:` 已注释，ruleset「main regression gate」改为 `disabled`），当前只在 main 的 push、每日定时和手动运行时跑；发布候选因此必须显式以 `workflow_dispatch` 跑一次 CI，不能假设候选 commit 的 PR 上有过绿检查。恢复 PR 触发后，下文「每个 PR」重新成立。每次运行都会跑 `rust.yml`（Rust 检查与冻结快照）、`flutter-test.yml`（Dart 基线对照与真实 FFI）、Android Release 开发包构建及 `libbridge_flutter.so` 产物检查；`regression gate` 要求这些 job 全部成功。每日定时运行还会调用 iOS、macOS、Windows、Linux 的既有打包 workflow；手动运行 CI 时可用 `full_platforms` 请求相同的全平台构建。分支保护（ruleset「main regression gate」）已存在但当前停用，恢复 PR 检查时把它的 `enforcement` 改回 `active`。CI 的固定 fixture 对照不访问上游实时接口，基线版本见 [M0 基线](../m0/BASELINE.md)；更新快照须在 PR 中审查差异并重跑 Dart parity，不得在 CI 中设置 `UPDATE_GOLDEN`。
+自动检查由 `ci.yml` 触发：PR、main 的 push、每日定时和手动运行都会跑。**2026-11-12 到 2026-11-27 之间 PR 上曾暂停**（重构期，issue #114），2026-11-28 起 ruleset「main regression gate」重新把 `regression gate` 设成必需检查，下文「每个 PR」重新成立；发布候选仍须确认记录的那次 run 对应的正是候选 commit，必要时以 `workflow_dispatch` 重跑。每次运行都会跑 `rust.yml`（Rust 检查与冻结快照）、`flutter-test.yml`（Dart 基线对照与真实 FFI）、Android Release 开发包构建及 `libbridge_flutter.so` 产物检查；`regression gate` 要求这些 job 全部成功。每日定时运行还会调用 iOS、macOS、Windows、Linux 的既有打包 workflow；手动运行 CI 时可用 `full_platforms` 请求相同的全平台构建。分支保护（ruleset「main regression gate」）的 `enforcement` 为 `active`，`bypass_actors` 为空：gate 报不上来时谁都没有豁免，唯一的出路是把它改回 `disabled`。CI 的固定 fixture 对照不访问上游实时接口，基线版本见 [M0 基线](../m0/BASELINE.md)；更新快照须在 PR 中审查差异并重跑 Dart parity，不得在 CI 中设置 `UPDATE_GOLDEN`。
 
 自动构建仍只证明产物可打包；它不能验收视频首帧、硬解、PiP、后台音频或升级后的真实用户数据。每个发布候选仍须填入 workflow run 链接、真机执行记录，并对目标平台的最终产物运行 `python3 tool/inspect-artifact.py <artifact> --require <原生库文件名>`。实际库名按平台产物确定，不能只看构建日志或包体积。产物检查方法见[发布产物复盘](../m0/2026-11-10-RELEASE-REVIEW.md)。
 
@@ -201,7 +202,7 @@ P09 可用 `tool/navigation_profile/README.md` 的独立 profile 包记录回调
 逐项勾选并附证据；未满足项写缺陷、影响平台和处置决定。清单是发布门槛的记录，不表示当前版本已具备发布条件。
 
 - [ ] 候选 commit、版本号、Release 产物哈希固定；后续任何代码或打包改动重新生成候选记录。
-- [ ] `regression gate` 通过；记录本次 CI 的 run 链接。PR 检查暂停期间（issue #114）须对候选 commit 手动 `gh workflow run "Regression CI" --ref <候选 ref>`，并确认该 run 对应的正是候选 commit。若候选 commit 未经历全平台定时构建，手动以 `full_platforms` 运行 CI；记录构建结果、安装包签名/版本信息，并用 `inspect-artifact.py` 核对最终产物的原生库与依赖。
+- [ ] `regression gate` 通过；记录本次 CI 的 run 链接，并确认该 run 对应的正是候选 commit（PR 上的检查已于 2026-11-28 恢复为必需项，issue #114；候选 commit 若不来自某个 PR，手动 `gh workflow run "Regression CI" --ref <候选 ref>`）。若候选 commit 未经历全平台定时构建，手动以 `full_platforms` 运行 CI；记录构建结果、安装包签名/版本信息，并用 `inspect-artifact.py` 核对最终产物的原生库与依赖。
 - [ ] `flutter-test.yml`、`rust.yml` 的全部检查通过；确认 bridge job 实际加载原生库，未将跳过的测试写作通过。
 - [ ] 每个目标平台完成 F01–F11；适用的 F12–F13 已执行。登录态、断网恢复和旧版原地升级都有实际设备证据。
 - [ ] Android、iOS、macOS、Windows 的播放、Seek、全屏、弹幕、前后台或窗口生命周期经过实际设备验收；iOS 真机签名问题已解决或该平台不纳入本次发布。

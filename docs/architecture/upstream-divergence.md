@@ -476,10 +476,10 @@ media-kit 适配器，时序、错误与资源决策修改 Rust，不恢复旧�
 仅重命名 **339 → 338**、实质改动 **515 → 516**，新增 **1077**、删除 **369** 不变。
 
 修订：2026-11-26（#262 验收：工具融入账户卡片）——移除独立顶栏和标题；
-工具胶囊在宽度足够时与昵称同行靠右，窄屏、大字号或工具较多时独立一行靠右，
-独立入口保留卡片外的返回按钮。硬币与经验增加各自的图标胶囊，动态/关注/粉丝
-以胶囊、箭头和按压反馈表达可点击。继续修改已属实质改动的 `mine/view.dart`
-及本 fork 新增的视觉组件/测试，上游分类与文件数量不变。
+工具胶囊在宽度足够时与昵称同行靠右，窄屏、大字号或工具较多时位于头像右侧、
+顶部与头像对齐，独立入口保留卡片外的返回按钮。硬币与经验增加各自的图标胶囊，
+动态/关注/粉丝以胶囊、箭头和按压反馈表达可点击。继续修改已属实质改动的
+`mine/view.dart` 及本 fork 新增的视觉组件/测试，上游分类与文件数量不变。
 
 ## 1. 基准
 
@@ -640,7 +640,7 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | `.gitattributes` | `f113d9136` | 补全跨平台换行符规则 |
 | `.gitignore` | `6b54c9b01` `dd23f968c` | 忽略 Rust `target/` 等产物 |
 | `analysis_options.yaml` | `ee41df52c` | 排除 FRB 生成的 Dart 代码 |
-| `README.md` / `README.en.md` | `e0b32bfda` `c7dc17c1a` `f92a9890c` | 改写为 KiliKili 的说明与路线图 |
+| `README.md` / `README.en.md` | `e0b32bfda` `c7dc17c1a` `f92a9890c` #305 | 改写为面向用户的功能、截图与获取说明；中英文同步维护 |
 | `pubspec.yaml` / `pubspec.lock` | `ee41df52c` `57485ede8` #242 | 引入 `flutter_rust_bridge` 与 `rust_builder`；版本名改为 KiliKili 自己的 `0.1.0`（同步上游时**不要**带回上游的 `version:`；`+N` 由 CI 按提交数改写） |
 | `lib/pages/about/view.dart`、`lib/common/constants.dart` | #242 | 「关于」页加「基于 PiliPlus」与「开源许可证」两项（只增不改，GPL-3.0 要求注明来源） |
 | `lib/main.dart` | `ee41df52c` | 启动时初始化 Rust Core |

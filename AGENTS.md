@@ -211,28 +211,28 @@ PR**，不要只留在代码和 Issues 里：
 
 - **合并前要仓库所有者明确许可。**
 - **合并排队，一次只合一个**——生成产物决定了并行合必冲突。
-- **PR 上的回归检查正在恢复中，目前处在「触发已开、但还不是必需检查」的
-  中间态**（issue #114）：`ci.yml` 的 `pull_request:` 触发已于 2026-11-27
-  恢复，而 ruleset「main regression gate」**仍是 `disabled`**。
+- **PR 上的回归检查已经恢复**（issue #114）：`ci.yml` 的 `pull_request:`
+  触发于 2026-11-27 恢复，ruleset「main regression gate」于 2026-11-28 改回
+  `active`，`regression gate` 重新是合并到 main 的必需检查。
 
-  **顺序是刻意的，不要一次改两处。** 必需检查一旦生效而 `regression gate`
-  报不上来，PR 会全部卡死在 `BLOCKED` 永久合不进去——2026-11-12 当初关的
-  时候必须两处一起关，正是这个原因；恢复时却要**先看到它真的报过一次绿**，
-  再把 ruleset 改回 `active`：
+  **当初是两处一起关的，恢复却必须分两步。** 必需检查一旦生效而
+  `regression gate` 报不上来，PR 会全部卡死在 `BLOCKED` 永久合不进去；所以
+  先恢复触发，在真实 PR 上看到它报过绿（#309 / #310），再开 ruleset。
+
+  **出事时唯一的出路是把 ruleset 关回去**：它的 `bypass_actors` 是空的，
+  仓库所有者也没有豁免。典型触发场景是仓库 Actions 又被停（见下一条）——
+  那时 gate 永远报不上来，所有 PR 都合不进去：
 
   ```sh
-  gh api -X PUT repos/<owner>/<repo>/rulesets/27013798 -f enforcement=active
+  gh api -X PUT repos/<owner>/<repo>/rulesets/27013798 -f enforcement=disabled
   ```
 
-  2026-11-26 那次卡住的原因是整个仓库的 Actions 被停了（见下一条），当天
-  晚些时候由仓库所有者在网页端恢复；第 4 步要等 `pull_request:` 合进 main
-  之后、在真实 PR 上确认一次。
-- 因此 **合并前仍然请自己在本机验**（至少 `cargo fmt --check` /
-  `cargo clippy` / `cargo test`，动了 Dart 再跑 `flutter test`），别因为
-  `pull_request:` 回来了就假定 PR 上有过绿检查。要在合并前跑一次完整回归：
-  `gh workflow run "Regression CI" --ref <分支>`。
-- 回归仍在跑的地方：合并进 main 的 push、每日 02:17 定时、手动 dispatch。
-  坏改动的发现点从「合并前」后移到「合并后」，合完顺手看一眼那次运行。
+- **合并前仍然自己在本机验一遍**（至少 `cargo fmt --check` / `cargo clippy` /
+  `cargo test`，动了 Dart 再跑 `flutter test`）。PR 上有必需检查不等于能省掉
+  这一步：Android 那项 11–15 分钟，低级错误在本机挡住比来回推分支快得多。
+  要在开 PR 前先跑一次完整回归：`gh workflow run "Regression CI" --ref <分支>`。
+- 回归触发的地方：PR、合并进 main 的 push、每日 02:17 定时、手动 dispatch。
+  合完仍然顺手看一眼 main 上那次运行——PR 绿只说明合并前那一版是绿的。
 - **那次运行根本没出现时，先怀疑 Actions 被停了，而不是触发条件。**
   2026-11-26 遇到过一次：`gh workflow run` 返回
   `HTTP 422: Actions has been disabled for this repository.`，而仓库设置页与

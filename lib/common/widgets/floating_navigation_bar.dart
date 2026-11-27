@@ -23,8 +23,31 @@ const _kNavigationShape = RoundedSuperellipseBorder(
   borderRadius: _kBorderRadius,
 );
 
+/// 底栏着色沿左上 → 右下对角线的三档不透明度。
+///
+/// 液态玻璃着色器只折射、不模糊，底下卡片的标题会原样透上来，和导航文字
+/// 叠在一起（#252 所有者反馈「太透、看不清」）。所以中间区域靠这层着色
+/// 压暗背板；边缘高光与折射仍由着色器负责，玻璃感保留。此前为 0.24 /
+/// 0.10 / 0.18（#122 调高透明度时的取值）。
+///
+/// 着色器可用时这层在 shader 里画（#266：盖在 shader 之上的话，水滴里的
+/// 折射会被它压得看不见）；不可用时仍是一层 DecoratedBox。两处同一组值。
+const _kTintAlphas = (0.78, 0.68, 0.74);
+
 /// 统一的胶囊玻璃底层，供三种底部导航样式共用。
-class GlassNavigationSurface extends StatelessWidget {
+///
+/// 选中指示是一滴会拉伸、冲过、回弹的液态玻璃（#266）。形变规则全在 Rust
+/// （`bili_core::glass_droplet`，AGENTS.md 第 2 节），这里只做三件事：用
+/// [Ticker] 按真实流逝时间推它、把「格」换算成像素、交给着色器画出来。
+///
+/// 两种情况退回原来的纯平移（300ms `easeOutCubic`），不弹、不变形：
+///
+/// - 系统打开了「减弱动态效果」（#266 验收第 4 条）；
+/// - Rust Core 不可用（初始化失败，或没有原生库的组件测试进程）。这时没有
+///   形变规则可用，而为它在 Dart 再写一份弹簧正是第 2 节禁止的。
+///
+/// 着色器不可用（非 Impeller）时水滴照样变形，质感退回原来的渐变胶囊。
+class GlassNavigationSurface extends StatefulWidget {
   const GlassNavigationSurface({
     super.key,
     required this.child,
@@ -36,12 +59,186 @@ class GlassNavigationSurface extends StatelessWidget {
   final int? selectedIndex;
   final int? destinationCount;
 
+  @override
+  State<GlassNavigationSurface> createState() => _GlassNavigationSurfaceState();
+}
+
+class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
+    with SingleTickerProviderStateMixin {
   static Future<FragmentProgram>? _glassProgram;
+
+  late final Ticker _ticker = createTicker(_onTick);
+
+  /// 每推一帧通知一次。只有滤镜和选中指示两处监听，导航内容不重建。
+  final _frame = _FrameNotifier();
+
+  GlassDropletState? _state;
+
+  /// 最近一帧的形状；null 表示静止在 [_selected] 上。
+  GlassDropletShape? _shape;
+  Duration _lastElapsed = Duration.zero;
+
+  /// Rust 调用抛过异常就永久退回平移，不在每一帧重试同一个错误。
+  bool _rustFailed = false;
+
+  /// 复用同一个着色器对象，每帧改 uniform 再包一个新的 `ImageFilter`：
+  /// 原生滤镜在包装时按当时的 uniform 建出来，判等也比 uniform，所以
+  /// 改了就会重绘、没改就不会。
+  FragmentShader? _shader;
+
+  int? get _selected {
+    final count = widget.destinationCount;
+    final index = widget.selectedIndex;
+    if (count == null || count <= 0 || index == null) return null;
+    return index.clamp(0, count - 1);
+  }
+
+  bool _useSprings(BuildContext context) =>
+      RustCore.isReady &&
+      !_rustFailed &&
+      !MediaQuery.disableAnimationsOf(context);
+
+  @override
+  void didUpdateWidget(GlassNavigationSurface oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.destinationCount != widget.destinationCount) {
+      // tab 数量变了，「格」的含义跟着变，旧状态没有意义，直接落到新位置。
+      _reset();
+    } else if (oldWidget.selectedIndex != widget.selectedIndex &&
+        _state != null &&
+        !_ticker.isActive) {
+      _lastElapsed = Duration.zero;
+      _ticker.start();
+    }
+  }
+
+  void _reset() {
+    _ticker.stop();
+    _state = null;
+    _shape = null;
+  }
+
+  void _onTick(Duration elapsed) {
+    final state = _state;
+    final selected = _selected;
+    if (state == null || selected == null) {
+      _ticker.stop();
+      return;
+    }
+    final dt = (elapsed - _lastElapsed).inMicroseconds / 1e6;
+    _lastElapsed = elapsed;
+    try {
+      final frame = glassDropletStep(
+        state: state,
+        target: selected.toDouble(),
+        pressed: false,
+        dtSeconds: dt,
+      );
+      _state = frame.state;
+      _shape = frame.settled ? null : frame.shape;
+      if (frame.settled) _ticker.stop();
+    } catch (_) {
+      _reset();
+      _rustFailed = true;
+      setState(() {});
+    }
+    _frame.notify();
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    _frame.dispose();
+    _shader?.dispose();
+    super.dispose();
+  }
+
+  /// 选中水滴当前的外接框，像素，相对底栏左上角。
+  Rect _dropletRect(Size size, int selected, int count) {
+    final slotWidth = (size.width - 2 * _kIndicatorPaddingInt) / count;
+    final shape = _shape;
+    final left = shape?.left ?? selected.toDouble();
+    final right = shape?.right ?? selected + 1.0;
+    final restHeight = size.height - 2 * _kIndicatorPaddingInt;
+    final height = restHeight * (shape?.heightScale ?? 1.0);
+    return Rect.fromLTWH(
+      _kIndicatorPaddingInt + slotWidth * left,
+      _kIndicatorPaddingInt + (restHeight - height) / 2,
+      slotWidth * (right - left),
+      height,
+    );
+  }
+
+  ImageFilter _glassFilter(
+    FragmentProgram program,
+    Size size,
+    Rect? droplet,
+    Color tint,
+  ) {
+    final shader = _shader ??= program.fragmentShader();
+    // 下标从 2 起：0、1 是引擎自动填的 u_size。顺序见 liquid_glass.frag。
+    var i = 2;
+    if (droplet != null) {
+      shader
+        ..setFloat(i++, droplet.left / size.width)
+        ..setFloat(i++, droplet.top / size.height)
+        ..setFloat(i++, droplet.right / size.width)
+        ..setFloat(i++, droplet.bottom / size.height)
+        ..setFloat(i++, _shape?.stretch ?? 0);
+    } else {
+      for (var k = 0; k < 5; k++) {
+        shader.setFloat(i++, 0);
+      }
+    }
+    shader
+      ..setFloat(i++, tint.r)
+      ..setFloat(i++, tint.g)
+      ..setFloat(i++, tint.b)
+      ..setFloat(i++, _kTintAlphas.$1)
+      ..setFloat(i++, _kTintAlphas.$2)
+      ..setFloat(i++, _kTintAlphas.$3);
+    return ImageFilter.shader(shader);
+  }
 
   @override
   Widget build(BuildContext context) {
     final scheme = ColorScheme.of(context);
     final supportsShader = ImageFilter.isShaderFilterSupported;
+    final selected = _selected;
+    final count = widget.destinationCount;
+    final springs = selected != null && _useSprings(context);
+    if (!springs) {
+      _reset();
+    } else if (_state == null) {
+      try {
+        _state = glassDropletRest(index: selected.toDouble());
+      } catch (_) {
+        _rustFailed = true;
+        return build(context);
+      }
+    }
+
+    final dropletDecoration = BoxDecoration(
+      borderRadius: _kBorderRadius,
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Colors.white.withValues(alpha: 0.26),
+          scheme.primary.withValues(alpha: 0.08),
+          Colors.white.withValues(alpha: 0.10),
+        ],
+      ),
+      border: Border.all(color: Colors.white.withValues(alpha: 0.40)),
+      boxShadow: [
+        BoxShadow(
+          color: scheme.onSurface.withValues(alpha: 0.12),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    );
+
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: _kBorderRadius,
@@ -55,112 +252,145 @@ class GlassNavigationSurface extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: _kBorderRadius,
-        child: FutureBuilder<FragmentProgram>(
-          future: supportsShader
-              ? (_glassProgram ??= FragmentProgram.fromAsset(
-                  'shaders/liquid_glass.frag',
-                ))
-              : null,
-          builder: (context, snapshot) {
-            // 非 Impeller 后端无法对背板运行自定义折射，保留可读的透明材质。
-            final filter = supportsShader && snapshot.hasData
-                ? ImageFilter.shader(snapshot.data!.fragmentShader())
-                : ImageFilter.blur(sigmaX: 10, sigmaY: 10);
-            return BackdropFilter(
-              filter: filter,
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final count = destinationCount;
-                  final index = selectedIndex;
-                  return Stack(
-                    fit: StackFit.passthrough,
-                    children: [
-                      Positioned.fill(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              // 液态玻璃着色器只折射、不模糊，底下卡片的
-                              // 标题会原样透上来，和导航文字叠在一起（#252
-                              // 所有者反馈「太透、看不清」）。所以中间区域靠
-                              // 这层着色压暗背板；边缘高光与折射仍由着色器
-                              // 负责，玻璃感保留。此前为 0.24 / 0.10 / 0.18
-                              // （#122 调高透明度时的取值）。
-                              colors: [
-                                scheme.surface.withValues(alpha: 0.78),
-                                scheme.surface.withValues(alpha: 0.68),
-                                scheme.surface.withValues(alpha: 0.74),
-                              ],
-                            ),
-                            borderRadius: _kBorderRadius,
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.36),
-                            ),
-                          ),
-                        ),
-                      ),
-                      if (count != null && count > 0 && index != null)
-                        _SelectionDroplet(
-                          index: index.clamp(0, count - 1),
-                          count: count,
-                          size: constraints.biggest,
-                          decoration: BoxDecoration(
-                            borderRadius: _kBorderRadius,
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Colors.white.withValues(alpha: 0.26),
-                                scheme.primary.withValues(alpha: 0.08),
-                                Colors.white.withValues(alpha: 0.10),
-                              ],
-                            ),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.40),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: scheme.onSurface.withValues(
-                                  alpha: 0.12,
-                                ),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                        ),
-                      // 三种导航与选中背景共用分栏边界，避免首尾项目向外偏移。
-                      Padding(
-                        padding: _kIndicatorPadding,
-                        // 安全区已由胶囊外层负责，内部导航不能再次插入状态栏留白。
-                        child: MediaQuery.removePadding(
-                          context: context,
-                          removeTop: true,
-                          removeBottom: true,
-                          removeLeft: true,
-                          removeRight: true,
-                          child: Theme(
-                            data: Theme.of(context).copyWith(
-                              splashFactory: NoSplash.splashFactory,
-                              splashColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                            ),
-                            child: NavigationBarTheme(
-                              data: NavigationBarTheme.of(context).copyWith(
-                                overlayColor: const WidgetStatePropertyAll(
-                                  Colors.transparent,
-                                ),
-                              ),
-                              child: Center(child: child),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final size = constraints.biggest;
+            final deform = springs && size.isFinite;
+            return FutureBuilder<FragmentProgram>(
+              future: supportsShader
+                  ? (_glassProgram ??= FragmentProgram.fromAsset(
+                      'shaders/liquid_glass.frag',
+                    ))
+                  : null,
+              builder: (context, snapshot) {
+                // 非 Impeller 后端无法对背板运行自定义折射，保留可读的透明材质。
+                final program = supportsShader && snapshot.hasData
+                    ? snapshot.data!
+                    : null;
+                // 水滴由着色器画：只在会变形时这样做。平移退路里水滴的位置
+                // 由 AnimatedPositioned 插值，着色器拿不到，仍画渐变胶囊。
+                final shaderDroplet = program != null && deform;
+
+                Widget? indicator;
+                if (selected != null && count != null) {
+                  final face = IgnorePointer(
+                    child: shaderDroplet
+                        ? const SizedBox.expand()
+                        : DecoratedBox(decoration: dropletDecoration),
                   );
-                },
-              ),
+                  if (deform) {
+                    indicator = ListenableBuilder(
+                      listenable: _frame,
+                      builder: (context, child) {
+                        final rect = _dropletRect(size, selected, count);
+                        return Positioned.fromRect(
+                          key: const Key('glass-selected-indicator'),
+                          rect: rect,
+                          child: child!,
+                        );
+                      },
+                      child: face,
+                    );
+                  } else {
+                    final slotWidth =
+                        (constraints.maxWidth - 2 * _kIndicatorPaddingInt) /
+                        count;
+                    indicator = AnimatedPositioned(
+                      key: const Key('glass-selected-indicator'),
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOutCubic,
+                      left: _kIndicatorPaddingInt + slotWidth * selected,
+                      top: _kIndicatorPaddingInt,
+                      bottom: _kIndicatorPaddingInt,
+                      width: slotWidth,
+                      child: face,
+                    );
+                  }
+                }
+
+                final content = Stack(
+                  fit: StackFit.passthrough,
+                  children: [
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: program != null
+                              ? null
+                              : LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    scheme.surface.withValues(
+                                      alpha: _kTintAlphas.$1,
+                                    ),
+                                    scheme.surface.withValues(
+                                      alpha: _kTintAlphas.$2,
+                                    ),
+                                    scheme.surface.withValues(
+                                      alpha: _kTintAlphas.$3,
+                                    ),
+                                  ],
+                                ),
+                          borderRadius: _kBorderRadius,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.36),
+                          ),
+                        ),
+                      ),
+                    ),
+                    ?indicator,
+                    // 三种导航与选中背景共用分栏边界，避免首尾项目向外偏移。
+                    Padding(
+                      padding: _kIndicatorPadding,
+                      // 安全区已由胶囊外层负责，内部导航不能再次插入状态栏留白。
+                      child: MediaQuery.removePadding(
+                        context: context,
+                        removeTop: true,
+                        removeBottom: true,
+                        removeLeft: true,
+                        removeRight: true,
+                        child: Theme(
+                          data: Theme.of(context).copyWith(
+                            splashFactory: NoSplash.splashFactory,
+                            splashColor: Colors.transparent,
+                            highlightColor: Colors.transparent,
+                          ),
+                          child: NavigationBarTheme(
+                            data: NavigationBarTheme.of(context).copyWith(
+                              overlayColor: const WidgetStatePropertyAll(
+                                Colors.transparent,
+                              ),
+                            ),
+                            child: Center(child: widget.child),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+
+                if (program == null) {
+                  return BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: content,
+                  );
+                }
+                return ListenableBuilder(
+                  listenable: _frame,
+                  builder: (context, child) => BackdropFilter(
+                    filter: _glassFilter(
+                      program,
+                      size,
+                      shaderDroplet && count != null
+                          ? _dropletRect(size, selected, count)
+                          : null,
+                      scheme.surface,
+                    ),
+                    child: child,
+                  ),
+                  child: content,
+                );
+              },
             );
           },
         ),
@@ -169,145 +399,8 @@ class GlassNavigationSurface extends StatelessWidget {
   }
 }
 
-/// 底栏的选中指示：一滴会拉伸、冲过、回弹的液态玻璃（#266）。
-///
-/// 形变规则全在 Rust（`bili_core::glass_droplet`，AGENTS.md 第 2 节），这里
-/// 只做三件事：用 [Ticker] 按真实流逝时间推它、把「格」换算成像素、画出来。
-///
-/// 两种情况退回原来的纯平移（300ms `easeOutCubic`），不弹、不变形：
-///
-/// - 系统打开了「减弱动态效果」（#266 验收第 4 条）；
-/// - Rust Core 不可用（初始化失败，或没有原生库的组件测试进程）。这时没有
-///   形变规则可用，而为它在 Dart 再写一份弹簧正是第 2 节禁止的。
-class _SelectionDroplet extends StatefulWidget {
-  const _SelectionDroplet({
-    required this.index,
-    required this.count,
-    required this.size,
-    required this.decoration,
-  });
-
-  final int index;
-  final int count;
-  final Size size;
-  final Decoration decoration;
-
-  @override
-  State<_SelectionDroplet> createState() => _SelectionDropletState();
-}
-
-class _SelectionDropletState extends State<_SelectionDroplet>
-    with SingleTickerProviderStateMixin {
-  late final Ticker _ticker = createTicker(_onTick);
-  GlassDropletState? _state;
-  GlassDropletShape? _shape;
-  Duration _lastElapsed = Duration.zero;
-
-  /// Rust 调用抛过异常就永久退回平移，不在每一帧重试同一个错误。
-  bool _rustFailed = false;
-
-  bool _useDroplet(BuildContext context) =>
-      RustCore.isReady &&
-      !_rustFailed &&
-      // 高度不受约束时没法按比例压扁，退回上下贴边的平移。
-      widget.size.height.isFinite &&
-      !MediaQuery.disableAnimationsOf(context);
-
-  @override
-  void didUpdateWidget(_SelectionDroplet oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.count != widget.count) {
-      // tab 数量变了，「格」的含义跟着变，旧状态没有意义，直接落到新位置。
-      _ticker.stop();
-      _state = null;
-      _shape = null;
-    } else if (oldWidget.index != widget.index && _state != null) {
-      _start();
-    }
-  }
-
-  void _start() {
-    if (_ticker.isActive) return;
-    _lastElapsed = Duration.zero;
-    _ticker.start();
-  }
-
-  void _onTick(Duration elapsed) {
-    final state = _state;
-    if (state == null) return;
-    final dt = (elapsed - _lastElapsed).inMicroseconds / 1e6;
-    _lastElapsed = elapsed;
-    try {
-      final frame = glassDropletStep(
-        state: state,
-        target: widget.index.toDouble(),
-        pressed: false,
-        dtSeconds: dt,
-      );
-      setState(() {
-        _state = frame.state;
-        _shape = frame.shape;
-      });
-      if (frame.settled) _ticker.stop();
-    } catch (_) {
-      _ticker.stop();
-      setState(() => _rustFailed = true);
-    }
-  }
-
-  @override
-  void dispose() {
-    _ticker.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final slotWidth =
-        (widget.size.width - 2 * _kIndicatorPaddingInt) / widget.count;
-    final child = IgnorePointer(
-      child: DecoratedBox(decoration: widget.decoration),
-    );
-
-    if (!_useDroplet(context)) {
-      _ticker.stop();
-      _state = null;
-      _shape = null;
-      return AnimatedPositioned(
-        key: const Key('glass-selected-indicator'),
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutCubic,
-        left: _kIndicatorPaddingInt + slotWidth * widget.index,
-        top: _kIndicatorPaddingInt,
-        bottom: _kIndicatorPaddingInt,
-        width: slotWidth,
-        child: child,
-      );
-    }
-
-    if (_state == null) {
-      try {
-        _state = glassDropletRest(index: widget.index.toDouble());
-      } catch (_) {
-        _rustFailed = true;
-        return build(context);
-      }
-    }
-    final shape = _shape;
-    final left = shape?.left ?? widget.index.toDouble();
-    final right = shape?.right ?? widget.index + 1.0;
-    final heightScale = shape?.heightScale ?? 1.0;
-    final restHeight = widget.size.height - 2 * _kIndicatorPaddingInt;
-    final height = restHeight * heightScale;
-    return Positioned(
-      key: const Key('glass-selected-indicator'),
-      left: _kIndicatorPaddingInt + slotWidth * left,
-      top: _kIndicatorPaddingInt + (restHeight - height) / 2,
-      width: slotWidth * (right - left),
-      height: height,
-      child: child,
-    );
-  }
+class _FrameNotifier extends ChangeNotifier {
+  void notify() => notifyListeners();
 }
 
 /// ref [NavigationBar]

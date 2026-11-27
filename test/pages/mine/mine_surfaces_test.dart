@@ -269,6 +269,7 @@ void main() {
               padding: const EdgeInsets.all(20),
               child: MineAccountCard(
                 avatar: const SizedBox.square(
+                  key: ValueKey('头像'),
                   dimension: 64,
                   child: Icon(Icons.person),
                 ),
@@ -312,6 +313,10 @@ void main() {
       if (scenario.inline) {
         expect(capsule.center.dy, closeTo(name.center.dy, 0.1));
       } else {
+        // 胶囊独占一行时在头像右侧，顶边与头像齐平，昵称整体落到它下面。
+        final avatar = tester.getRect(find.byKey(const ValueKey('头像')));
+        expect(capsule.top, closeTo(avatar.top, 0.1));
+        expect(capsule.left, greaterThan(avatar.right));
         expect(name.top, greaterThan(capsule.bottom));
       }
       for (var i = 0; i < scenario.count; i++) {

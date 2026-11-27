@@ -1,12 +1,11 @@
 name: Regression CI
 
 on:
-  # 2026-11-12 起曾暂停 PR 上的回归检查（issue #114），2026-11-27 恢复触发。
-  #
-  # 与之配套的 ruleset「main regression gate」**仍是 disabled**，要等
-  # `regression gate` 在 PR 上真的报过一次绿再改回 active（#114 第 4 步）。
-  # 顺序不能反：ruleset 一旦 active 而检查报不上来，所有 PR 会卡在 BLOCKED
-  # 永久合不进去——这也是 2026-11-12 当初必须两处一起关的原因。
+  # 2026-11-12 起曾暂停 PR 上的回归检查（issue #114），分两步恢复：
+  # 2026-11-27 恢复 `pull_request:` 触发，2026-11-28 在 PR #309 / #310 上看到
+  # `regression gate` 真的报过绿之后，才把 ruleset「main regression gate」改回
+  # active。顺序不能反：ruleset 一旦 active 而检查报不上来，所有 PR 会卡在
+  # BLOCKED 永久合不进去——这也是 2026-11-12 当初必须两处一起关的原因。
   pull_request:
   push:
     branches: [main]

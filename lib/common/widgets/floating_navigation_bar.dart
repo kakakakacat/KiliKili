@@ -4,6 +4,9 @@
 
 import 'dart:ui';
 
+import 'package:flutter/scheduler.dart' show Ticker;
+import 'package:kilikili/rust/api/glass_droplet.dart';
+import 'package:kilikili/services/rust_core.dart';
 import 'package:kilikili/utils/extension/theme_ext.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -98,45 +101,33 @@ class GlassNavigationSurface extends StatelessWidget {
                         ),
                       ),
                       if (count != null && count > 0 && index != null)
-                        AnimatedPositioned(
-                          key: const Key('glass-selected-indicator'),
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeOutCubic,
-                          left:
-                              4 +
-                              (constraints.maxWidth - 8) *
-                                  index.clamp(0, count - 1) /
-                                  count,
-                          top: 4,
-                          bottom: 4,
-                          width: (constraints.maxWidth - 8) / count,
-                          child: IgnorePointer(
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                borderRadius: _kBorderRadius,
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    Colors.white.withValues(alpha: 0.26),
-                                    scheme.primary.withValues(alpha: 0.08),
-                                    Colors.white.withValues(alpha: 0.10),
-                                  ],
-                                ),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.40),
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: scheme.onSurface.withValues(
-                                      alpha: 0.12,
-                                    ),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
+                        _SelectionDroplet(
+                          index: index.clamp(0, count - 1),
+                          count: count,
+                          size: constraints.biggest,
+                          decoration: BoxDecoration(
+                            borderRadius: _kBorderRadius,
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.white.withValues(alpha: 0.26),
+                                scheme.primary.withValues(alpha: 0.08),
+                                Colors.white.withValues(alpha: 0.10),
+                              ],
                             ),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.40),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: scheme.onSurface.withValues(
+                                  alpha: 0.12,
+                                ),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                         ),
                       // 三种导航与选中背景共用分栏边界，避免首尾项目向外偏移。
@@ -174,6 +165,147 @@ class GlassNavigationSurface extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+}
+
+/// 底栏的选中指示：一滴会拉伸、冲过、回弹的液态玻璃（#266）。
+///
+/// 形变规则全在 Rust（`bili_core::glass_droplet`，AGENTS.md 第 2 节），这里
+/// 只做三件事：用 [Ticker] 按真实流逝时间推它、把「格」换算成像素、画出来。
+///
+/// 两种情况退回原来的纯平移（300ms `easeOutCubic`），不弹、不变形：
+///
+/// - 系统打开了「减弱动态效果」（#266 验收第 4 条）；
+/// - Rust Core 不可用（初始化失败，或没有原生库的组件测试进程）。这时没有
+///   形变规则可用，而为它在 Dart 再写一份弹簧正是第 2 节禁止的。
+class _SelectionDroplet extends StatefulWidget {
+  const _SelectionDroplet({
+    required this.index,
+    required this.count,
+    required this.size,
+    required this.decoration,
+  });
+
+  final int index;
+  final int count;
+  final Size size;
+  final Decoration decoration;
+
+  @override
+  State<_SelectionDroplet> createState() => _SelectionDropletState();
+}
+
+class _SelectionDropletState extends State<_SelectionDroplet>
+    with SingleTickerProviderStateMixin {
+  late final Ticker _ticker = createTicker(_onTick);
+  GlassDropletState? _state;
+  GlassDropletShape? _shape;
+  Duration _lastElapsed = Duration.zero;
+
+  /// Rust 调用抛过异常就永久退回平移，不在每一帧重试同一个错误。
+  bool _rustFailed = false;
+
+  bool _useDroplet(BuildContext context) =>
+      RustCore.isReady &&
+      !_rustFailed &&
+      // 高度不受约束时没法按比例压扁，退回上下贴边的平移。
+      widget.size.height.isFinite &&
+      !MediaQuery.disableAnimationsOf(context);
+
+  @override
+  void didUpdateWidget(_SelectionDroplet oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.count != widget.count) {
+      // tab 数量变了，「格」的含义跟着变，旧状态没有意义，直接落到新位置。
+      _ticker.stop();
+      _state = null;
+      _shape = null;
+    } else if (oldWidget.index != widget.index && _state != null) {
+      _start();
+    }
+  }
+
+  void _start() {
+    if (_ticker.isActive) return;
+    _lastElapsed = Duration.zero;
+    _ticker.start();
+  }
+
+  void _onTick(Duration elapsed) {
+    final state = _state;
+    if (state == null) return;
+    final dt = (elapsed - _lastElapsed).inMicroseconds / 1e6;
+    _lastElapsed = elapsed;
+    try {
+      final frame = glassDropletStep(
+        state: state,
+        target: widget.index.toDouble(),
+        pressed: false,
+        dtSeconds: dt,
+      );
+      setState(() {
+        _state = frame.state;
+        _shape = frame.shape;
+      });
+      if (frame.settled) _ticker.stop();
+    } catch (_) {
+      _ticker.stop();
+      setState(() => _rustFailed = true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final slotWidth =
+        (widget.size.width - 2 * _kIndicatorPaddingInt) / widget.count;
+    final child = IgnorePointer(
+      child: DecoratedBox(decoration: widget.decoration),
+    );
+
+    if (!_useDroplet(context)) {
+      _ticker.stop();
+      _state = null;
+      _shape = null;
+      return AnimatedPositioned(
+        key: const Key('glass-selected-indicator'),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+        left: _kIndicatorPaddingInt + slotWidth * widget.index,
+        top: _kIndicatorPaddingInt,
+        bottom: _kIndicatorPaddingInt,
+        width: slotWidth,
+        child: child,
+      );
+    }
+
+    if (_state == null) {
+      try {
+        _state = glassDropletRest(index: widget.index.toDouble());
+      } catch (_) {
+        _rustFailed = true;
+        return build(context);
+      }
+    }
+    final shape = _shape;
+    final left = shape?.left ?? widget.index.toDouble();
+    final right = shape?.right ?? widget.index + 1.0;
+    final heightScale = shape?.heightScale ?? 1.0;
+    final restHeight = widget.size.height - 2 * _kIndicatorPaddingInt;
+    final height = restHeight * heightScale;
+    return Positioned(
+      key: const Key('glass-selected-indicator'),
+      left: _kIndicatorPaddingInt + slotWidth * left,
+      top: _kIndicatorPaddingInt + (restHeight - height) / 2,
+      width: slotWidth * (right - left),
+      height: height,
+      child: child,
     );
   }
 }

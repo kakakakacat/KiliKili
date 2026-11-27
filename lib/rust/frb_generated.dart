@@ -221,7 +221,6 @@ abstract class RustLibApi extends BaseApi {
     required List<int> rgba,
     required int width,
     required int height,
-    required int tintRgb,
   });
 
   Future<SubtitleConvert> crateApiSubtitleConvertSubtitle({
@@ -383,7 +382,7 @@ abstract class RustLibApi extends BaseApi {
     required List<Uint8List> items,
   });
 
-  CoverScrimStyle crateApiCoverScrimFallbackCoverScrim({required int tintRgb});
+  CoverScrimStyle crateApiCoverScrimFallbackCoverScrim();
 
   Future<WriteResult> crateApiFavFavArticle({
     required FavContext context,
@@ -2651,7 +2650,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     required List<int> rgba,
     required int width,
     required int height,
-    required int tintRgb,
   }) {
     return handler.executeSync(
       SyncTask(
@@ -2660,7 +2658,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_list_prim_u_8_loose(rgba, serializer);
           sse_encode_u_32(width, serializer);
           sse_encode_u_32(height, serializer);
-          sse_encode_u_32(tintRgb, serializer);
           return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 19)!;
         },
         codec: SseCodec(
@@ -2668,7 +2665,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: null,
         ),
         constMeta: kCrateApiCoverScrimComputeCoverScrimConstMeta,
-        argValues: [rgba, width, height, tintRgb],
+        argValues: [rgba, width, height],
         apiImpl: this,
       ),
     );
@@ -2677,7 +2674,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiCoverScrimComputeCoverScrimConstMeta =>
       const TaskConstMeta(
         debugName: "compute_cover_scrim",
-        argNames: ["rgba", "width", "height", "tintRgb"],
+        argNames: ["rgba", "width", "height"],
       );
 
   @override
@@ -3694,12 +3691,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  CoverScrimStyle crateApiCoverScrimFallbackCoverScrim({required int tintRgb}) {
+  CoverScrimStyle crateApiCoverScrimFallbackCoverScrim() {
     return handler.executeSync(
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_u_32(tintRgb, serializer);
           return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 49)!;
         },
         codec: SseCodec(
@@ -3707,7 +3703,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: null,
         ),
         constMeta: kCrateApiCoverScrimFallbackCoverScrimConstMeta,
-        argValues: [tintRgb],
+        argValues: [],
         apiImpl: this,
       ),
     );
@@ -3716,7 +3712,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiCoverScrimFallbackCoverScrimConstMeta =>
       const TaskConstMeta(
         debugName: "fallback_cover_scrim",
-        argNames: ["tintRgb"],
+        argNames: [],
       );
 
   @override
@@ -16433,14 +16429,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   CoverScrimStyle dco_decode_cover_scrim_style(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 5)
-      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
     return CoverScrimStyle(
       scrimArgb: dco_decode_u_32(arr[0]),
       titleArgb: dco_decode_u_32(arr[1]),
       subtitleArgb: dco_decode_u_32(arr[2]),
-      tintArgb: dco_decode_u_32(arr[3]),
-      tintLabelArgb: dco_decode_u_32(arr[4]),
     );
   }
 
@@ -29634,14 +29628,10 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_scrimArgb = sse_decode_u_32(deserializer);
     var var_titleArgb = sse_decode_u_32(deserializer);
     var var_subtitleArgb = sse_decode_u_32(deserializer);
-    var var_tintArgb = sse_decode_u_32(deserializer);
-    var var_tintLabelArgb = sse_decode_u_32(deserializer);
     return CoverScrimStyle(
       scrimArgb: var_scrimArgb,
       titleArgb: var_titleArgb,
       subtitleArgb: var_subtitleArgb,
-      tintArgb: var_tintArgb,
-      tintLabelArgb: var_tintLabelArgb,
     );
   }
 
@@ -46841,8 +46831,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_u_32(self.scrimArgb, serializer);
     sse_encode_u_32(self.titleArgb, serializer);
     sse_encode_u_32(self.subtitleArgb, serializer);
-    sse_encode_u_32(self.tintArgb, serializer);
-    sse_encode_u_32(self.tintLabelArgb, serializer);
   }
 
   @protected

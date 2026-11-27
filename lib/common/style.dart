@@ -11,13 +11,12 @@ abstract final class Style {
   static const aspectRatio16x9 = 16 / 9;
   static const aspectRatio3x4 = 3 / 4;
 
-  /// 竖版封面大卡片的格子比例（issue #108）。
+  /// 封面卡片里**封面**的宽高比。
   ///
-  /// 比封面源图的 16:9 **高**，有两个原因：文案叠在封面上要占掉底部一条，
-  /// 格子再扁就只剩一道缝；而且整张卡就是封面，扁格子在多列下会挤成一片。
-  /// 代价是 `BoxFit.cover` 把封面上下各裁掉约 12%——封面的主体通常在中间，
-  /// 这个代价比把文案压成一行小。
-  static const coverCardRatio = 4 / 3;
+  /// 标题和 UP 主名已经移到封面下方（#295），封面不再需要为叠加文案加高，
+  /// 回到和其他列表一致的 16:10。格子高度 = 宽 / 本比例 +
+  /// `CoverScrimCard.textExtent`，见 `Grid.coverCardDelegate`。
+  static const coverCardRatio = aspectRatio;
 
   /// 竖版封面大卡片的圆角。比 [mdRadius] 大一圈，配合阴影。
   static const coverCardRadius = BorderRadius.all(.circular(14));

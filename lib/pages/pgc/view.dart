@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/button/more_btn.dart';
 import 'package:kilikili/common/widgets/flutter/refresh_indicator.dart';
@@ -65,10 +66,10 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
           if (controller.showPgcTimeline)
             SliverToBoxAdapter(
               child: SizedBox(
-                // 封面高度 + 上面那条 TabBar。文案已经叠进封面里（issue
-                // #108），不再额外给标题行留高度。
+                // 封面高度 + 封面下方一行标题（#295）+ 上面那条 TabBar。
                 height:
                     Grid.smallCardWidth / 2 / 0.75 +
+                    CoverScrimCard.textExtent(1) +
                     MediaQuery.textScalerOf(context).scale(48),
                 child: Obx(
                   () => _buildTimeline(theme, controller.timelineState.value),
@@ -307,6 +308,7 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
     crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth * 0.6,
     childAspectRatio: 0.75,
+    mainAxisExtent: CoverScrimCard.textExtent(1),
   );
 
   Widget _buildRcmdBody(LoadingState<List<PgcIndexItem>?> loadingState) {
@@ -341,6 +343,7 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
                 SizedBox(
                   height:
                       Grid.smallCardWidth / 2 / 0.75 +
+                      CoverScrimCard.textExtent(1) +
                       MediaQuery.textScalerOf(context).scale(50),
                   child: Obx(
                     () => _buildFollowBody(controller.followState.value),

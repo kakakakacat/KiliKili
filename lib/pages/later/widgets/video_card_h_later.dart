@@ -165,13 +165,11 @@ class VideoCardHLater extends StatelessWidget {
                 ),
               ]
             : null,
-        trailing: SizedBox.square(
-          dimension: 29,
-          child: IconButton(
-            tooltip: '移除',
-            onPressed: () => ctr.toViewDel(context, index, videoItem.aid!),
-            icon: const Icon(Icons.clear, color: Colors.white, size: 18),
-          ),
+        trailing: IconButton(
+          tooltip: '移除',
+          padding: EdgeInsets.zero,
+          onPressed: () => ctr.toViewDel(context, index, videoItem.aid!),
+          icon: const Icon(Icons.clear, size: 18),
         ),
       ),
     );

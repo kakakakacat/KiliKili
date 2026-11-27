@@ -27,30 +27,15 @@ class LiveItem extends StatelessWidget {
       onTap: () => PageUtils.toLiveRoom(liveItem.roomid),
       onLongPress: onLongPress,
       onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-      // 命中词上色。高亮色压在随封面变化的遮罩上，对比度不像 colors.title
-      // 那样由 Rust 保证，所以按遮罩的明暗在主题色的两端里挑一个：浅遮罩
-      // （深文字）配深色调，深遮罩（浅文字）配浅色调。
-      titleBuilder: (context, colors) => Text.rich(
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-        TextSpan(
-          style: TextStyle(height: 1.32, color: colors.title),
-          children: liveItem.titleSpans
-              .map(
-                (e) => TextSpan(
-                  text: e.text,
-                  style: e.isEm
-                      ? TextStyle(
-                          color: colors.title.computeLuminance() > 0.5
-                              ? theme.colorScheme.primaryFixed
-                              : theme.colorScheme.onPrimaryFixedVariant,
-                        )
-                      : null,
-                ),
-              )
-              .toList(),
-        ),
-      ),
+      // 命中词用主题色标出来。标题已经在封面下方的卡片底色上（#295），
+      // 不再随封面遮罩变色，直接用 primary 即可。
+      titleSpans: [
+        for (final e in liveItem.titleSpans)
+          TextSpan(
+            text: e.text,
+            style: e.isEm ? TextStyle(color: theme.colorScheme.primary) : null,
+          ),
+      ],
       topStart: CoverWatchedPill(
         watched: '${NumUtils.numFormat(liveItem.online)}围观',
       ),

@@ -193,29 +193,6 @@ class _MediaListPanelState extends State<MediaListPanel>
             title: item.title ?? '',
             upName: item.upper?.name,
             titleStyle: TextStyle(fontWeight: isCurr ? FontWeight.bold : null),
-            titleBuilder: item.type == 24 && item.intro?.isNotEmpty == true
-                ? (context, colors) => Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.title ?? '',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: colors.title,
-                          fontWeight: isCurr ? FontWeight.bold : null,
-                        ),
-                      ),
-                      Text(
-                        item.intro!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 11, color: colors.subtitle),
-                      ),
-                    ],
-                  )
-                : null,
             coverOverlays: [
               if (item.badge?.isNotEmpty == true)
                 PBadge(
@@ -236,6 +213,15 @@ class _MediaListPanelState extends State<MediaListPanel>
               if (isCurr) const PBadge(text: '正在播放', left: 6, top: 6),
             ],
             metaBuilder: (context, colors) => [
+              if (item.type == 24 && item.intro?.isNotEmpty == true)
+                Flexible(
+                  child: Text(
+                    item.intro!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 11, color: colors.subtitle),
+                  ),
+                ),
               if (item.type == 2 && item.cntInfo != null)
                 Flexible(
                   child: Text(
@@ -253,11 +239,8 @@ class _MediaListPanelState extends State<MediaListPanel>
                       title: const Text('确定移除该视频？'),
                       onConfirm: () => widget.onDelete!(item, index),
                     ),
-                    icon: const Icon(
-                      Icons.clear,
-                      size: 18,
-                      color: Colors.white,
-                    ),
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(Icons.clear, size: 18),
                     tooltip: '移除视频',
                   )
                 : null,

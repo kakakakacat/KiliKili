@@ -37,12 +37,7 @@ class LiveCardVApp extends StatelessWidget {
       topStart: CoverWatchedPill(watched: item.watchedText),
       metaBuilder: (context, colors) =>
           liveMeta(colors: colors, areaName: item.areaName),
-      trailing: item.feedback.isEmpty
-          ? null
-          : SizedBox.square(
-              dimension: 29,
-              child: _feedbackButton(context, theme),
-            ),
+      trailing: item.feedback.isEmpty ? null : _feedbackButton(context, theme),
     );
   }
 
@@ -120,12 +115,7 @@ class LiveCardVApp extends StatelessWidget {
           },
         );
       },
-      icon: const Icon(
-        Icons.more_vert_outlined,
-        size: 17,
-        color: Colors.white,
-        shadows: [Shadow(blurRadius: 3, color: Colors.black54)],
-      ),
+      icon: const Icon(Icons.more_vert_outlined, size: 17),
     );
   }
 }

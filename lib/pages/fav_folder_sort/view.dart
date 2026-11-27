@@ -1,3 +1,4 @@
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/widgets/reorder_mixin.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/http/loading_state.dart';
@@ -80,7 +81,8 @@ class _FavFolderSortPageState extends State<FavFolderSortPage>
         final key = item.id.toString();
         return SizedBox(
           key: Key(key),
-          height: 110,
+          // 封面原来的高度 + 封面下方标题区（#295）。
+          height: 110 + CoverScrimCard.textExtent(),
           child: FavVideoItem(
             heroTag: key,
             item: item,

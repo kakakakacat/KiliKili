@@ -1,3 +1,4 @@
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/skeleton/video_card_v.dart';
 import 'package:kilikili/common/sliver_single_child_delegate.dart';
 import 'package:kilikili/common/style.dart';
@@ -77,6 +78,7 @@ class _LiveAreaChildPageState extends State<LiveAreaChildPage>
     crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth,
     childAspectRatio: Style.coverCardRatio,
+    mainAxisExtent: CoverScrimCard.textExtent(),
   );
 
   Widget _buildBody(LoadingState<List<LiveRoomCard>?> loadingState) {

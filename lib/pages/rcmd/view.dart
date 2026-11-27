@@ -1,5 +1,6 @@
 import 'dart:math' show max;
 
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/skeleton/video_card_v.dart';
 import 'package:kilikili/common/sliver_single_child_delegate.dart';
 import 'package:kilikili/common/style.dart';
@@ -172,6 +173,7 @@ class _RcmdPageState extends State<RcmdPage>
     crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Pref.recommendCardWidth,
     childAspectRatio: Style.coverCardRatio,
+    mainAxisExtent: CoverScrimCard.textExtent(),
   );
 
   /// 一屏可容纳的卡片数（#263），直接用网格自己的布局算：列数与行高和

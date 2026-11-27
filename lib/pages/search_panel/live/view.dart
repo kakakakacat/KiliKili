@@ -1,3 +1,4 @@
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/skeleton/video_card_v.dart';
 import 'package:kilikili/common/sliver_single_child_delegate.dart';
 import 'package:kilikili/common/style.dart';
@@ -50,6 +51,7 @@ class _SearchLivePanelState
     crossAxisSpacing: Style.cardSpace,
     mainAxisSpacing: Style.cardSpace,
     childAspectRatio: Style.coverCardRatio,
+    mainAxisExtent: CoverScrimCard.textExtent(),
   );
 
   @override

@@ -1,3 +1,4 @@
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/animated_height.dart';
 import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
@@ -224,6 +225,7 @@ class _PgcIndexPageState extends State<PgcIndexPage>
     crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth * 0.6,
     childAspectRatio: 0.75,
+    mainAxisExtent: CoverScrimCard.textExtent(1),
   );
 
   Widget _buildList(LoadingState<List<PgcIndexItem>?> loadingState) {

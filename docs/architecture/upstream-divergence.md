@@ -687,6 +687,10 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 `.github/workflows/build.yml` 与 `ios.yml` 在 #121 之前只有包名重命名，
 现已进入上表。
 
+修订：2026-11-27（#295 标题与 UP 名移到封面下方）——本轮触及的上游文件
+在此之前都已属于「实质改动」（逐个对照上游 tip 核过），修改 / 新增 / 删除
+三个数都不变；表格与说明按新布局改写，见 §4.4。
+
 ### 4.4 封面卡片改版触及的上游文件
 
 issue #108 把视频封面从「顶部封面图 + 底部独立文案区」改成
@@ -695,23 +699,30 @@ issue #108 把视频封面从「顶部封面图 + 底部独立文案区」改成
 同一组件；格子改为按封面比例排布。离线缓存优先从本地封面文件取色，
 断网时文案仍与实际显示的封面匹配。
 
+#295 又把「UP 名 + 标题」挪回封面**下方**（叠在封面上会挡住封面底部的
+内容）：两者排成同一段文字，最多两行；发布日期和操作按钮在卡片右下角。
+封面底部只剩一条矮遮罩，放分区、在线人数、简介这类辅助信息，没有就不画。
+格子因此变回「封面 16:10 + 文字区」，与上游的思路相近，但结构仍是
+`CoverScrimCard`，不是上游的那棵树。
+
 | 文件 | 性质 |
 | --- | --- |
 | `lib/common/widgets/video_card/video_card_v.dart` | 首页推荐卡，改用新的 `CoverScrimCard` |
-| `lib/common/style.dart` | 新增 `coverCardRatio`（4:3）与 `coverCardRadius`（14）两个常量 |
-| `lib/common/widgets/video_popup_menu.dart` | 新增 `onCover`：压在遮罩上时图标改白色 + 阴影 |
-| `lib/common/skeleton/video_card_v.dart` | 骨架跟着变成整块封面，否则加载完会重排 |
-| `lib/pages/{rcmd,live,live_follow,live_search,live_area_detail,search_panel/live,pgc,pgc_index,member_pgc,member_coin_arc,member_like_arc,member_home}/**` | 卡片本体改用 `CoverScrimCard`；对应 grid delegate 去掉给文字留的 `mainAxisExtent`（格子现在就是封面本身），视频/直播格子的 `childAspectRatio` 从 16:10 收到 4:3 |
-| `lib/common/widgets/video_card/video_card_h.dart`、`lib/utils/grid.dart` | 横版视频卡改用共用遮罩，并让搜索、热门、相关视频等格子按 4:3 排布 |
+| `lib/common/style.dart` | 新增 `coverCardRatio`（封面比例，#295 起为 16:10）与 `coverCardRadius`（14）两个常量 |
+| `lib/common/widgets/video_popup_menu.dart` | #108 曾加 `onCover`（白色图标 + 阴影），#295 按钮移出封面后删掉，回到上游写法 |
+| `lib/common/skeleton/video_card_v.dart` | 骨架与卡片同构：封面块 + 下方两条文字占位，否则加载完会重排 |
+| `lib/pages/{rcmd,live,live_follow,live_search,live_area_detail,search_panel/live,pgc,pgc_index,member_pgc,member_coin_arc,member_like_arc,member_home}/**` | 卡片本体改用 `CoverScrimCard`；grid delegate 按「封面比例 + `CoverScrimCard.textExtent`」切格子 |
+| `lib/common/widgets/video_card/video_card_h.dart`、`lib/utils/grid.dart` | 横版视频卡改用共用卡片；`Grid.coverCardDelegate` 统一给搜索、热门、相关视频等格子加上文字区高度 |
 | `lib/pages/{search_panel,member_search,video/reply_search_item,history,history_search,later,later_search,fav_detail,fav_search,fav_sort,fav,member_video,member_video_web,member_favorite,member_season_series,member_cheese,music,subscription,subscription_detail,download}/**` | 视频、番剧、课程、收藏夹与离线缓存原有横向图文行改为整张封面卡；保留选择、进度、菜单与跳转入口 |
 | `lib/pages/{dynamics,video/medialist}/**`、`lib/services/rust/rust_cover_scrim.dart` | 动态与播放列表共用遮罩；离线文件经同一 Rust 算法取色 |
 
-卡片上的信息分三层，改哪一层决定了去哪里改：**底部遮罩**里的标题、UP 名
-及辅助信息，颜色由 `cover_scrim` 保证对比度；UP 名的主题色药丸也由 Rust
-根据当前主题色与封面合成结果选出底色、文字色；**封面顶部**的视频播放量、
+卡片上的信息分三层，改哪一层决定了去哪里改：**封面下方**是「UP 名 + 标题」
+与右下角的日期、按钮，用主题色，在卡片底色上（#295）；**底部遮罩**只放
+辅助信息，颜色由 `cover_scrim` 保证对比度（#108 时 UP 名药丸的配色也在
+Rust 里算，#295 随药丸一起删掉）；**封面顶部**的视频播放量、
 弹幕数和时长共用紧贴边缘的单行深色渐变层（#124），与底部遮罩的 Rust
-对比度保证分开。历史与稍后再看的徽标随之下移，避免压住信息行；直播围观数
-仍用独立的 `black45` 药丸。`CoverScrimCard` 自带的阴影与 14px 圆角是**有意偏离
+对比度保证分开。历史与稍后再看的徽标随之下移，避免压住信息行；直播围观数在封面左上角，
+只有图标和白字、不带底色。`CoverScrimCard` 自带的阴影与 14px 圆角是**有意偏离
 全局 `cardTheme`** 的（那边 `shadowColor` 是透明），理由写在该类的
 `elevation` 字段注释上。
 

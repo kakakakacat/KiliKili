@@ -3,21 +3,33 @@
 
 // 尺寸和背板图像由 Flutter 的 ImageFilter 自动绑定。
 uniform vec2 u_size;
-// 以下由 `GlassNavigationSurface` 设置（float 下标从 2 起，见那边的
-// `_GlassUniforms`）。全部留 0 时与 #266 之前逐像素相同：不着色、不画水滴。
+// 以下由 `GlassNavigationSurface` 设置，float 下标从 2 起，顺序即声明顺序。
+// 全部留 0 时与 #266 之前逐像素相同：不着色、不画水滴。
 //
-// 选中水滴的外接框（#266）：左、上、右、下，**占底栏宽高的比例**而不是
-// 像素——ImageFilter 给到的坐标是背板纹理的像素，宿主那边只有逻辑像素，
-// 用比例就不必关心两者之间差了几倍的设备像素比。右 <= 左 表示不画水滴。
-uniform vec4 u_drop;
+// **只用标量 float，不用 vec3/vec4。** `FragmentShader.setFloat` 的下标是
+// 紧密排列的，而 vec2 之后紧跟 vec4 时 std140 会补 8 字节对齐，后面的值
+// 整体错位——第一次上真机就是这样：着色和水滴全读成了错的值，底栏透得
+// 看不清（#266）。标量按 4 字节对齐，不会插填充。
+//
+// 选中水滴的外接框：左、上、右、下，**占底栏宽高的比例**而不是像素——
+// ImageFilter 给到的坐标是背板纹理的像素，宿主那边只有逻辑像素，用比例
+// 就不必关心两者之间差了几倍的设备像素比。右 <= 左 表示不画水滴。
+uniform float u_drop_left;
+uniform float u_drop_top;
+uniform float u_drop_right;
+uniform float u_drop_bottom;
 // 水滴拉伸程度 0..1（`bili_core::glass_droplet` 的 `stretch`），决定中段
 // 收细多少。
 uniform float u_drop_stretch;
 // 底栏着色：颜色，与沿对角线三档的不透明度（左上 / 中 / 右下）。着色
 // 原先是盖在 shader 输出之上的一层 DecoratedBox，水滴里的折射会被那层
 // 0.7 左右的遮罩压得几乎看不见，所以挪进来，水滴内外用不同的浓度。
-uniform vec3 u_tint;
-uniform vec3 u_tint_alpha;
+uniform float u_tint_r;
+uniform float u_tint_g;
+uniform float u_tint_b;
+uniform float u_tint_alpha0;
+uniform float u_tint_alpha1;
+uniform float u_tint_alpha2;
 uniform sampler2D u_backdrop;
 out vec4 fragColor;
 
@@ -73,13 +85,14 @@ void main() {
   // 一条投影，三档在 0 / 0.5 / 1 处线性插值。
   float t = clamp(dot(p, u_size) / dot(u_size, u_size), 0.0, 1.0);
   float tintAlpha = t < 0.5
-    ? mix(u_tint_alpha.x, u_tint_alpha.y, t * 2.0)
-    : mix(u_tint_alpha.y, u_tint_alpha.z, t * 2.0 - 1.0);
-  vec3 color = mix(bar, u_tint, tintAlpha);
+    ? mix(u_tint_alpha0, u_tint_alpha1, t * 2.0)
+    : mix(u_tint_alpha1, u_tint_alpha2, t * 2.0 - 1.0);
+  vec3 tint = vec3(u_tint_r, u_tint_g, u_tint_b);
+  vec3 color = mix(bar, tint, tintAlpha);
 
   // ---- 选中水滴（#266） ----
-  vec2 dropMin = u_drop.xy * u_size;
-  vec2 dropMax = u_drop.zw * u_size;
+  vec2 dropMin = vec2(u_drop_left, u_drop_top) * u_size;
+  vec2 dropMax = vec2(u_drop_right, u_drop_bottom) * u_size;
   if (dropMax.x > dropMin.x && dropMax.y > dropMin.y) {
     vec2 dc = (dropMin + dropMax) * 0.5;
     vec2 db = (dropMax - dropMin) * 0.5;
@@ -108,7 +121,7 @@ void main() {
         + sampleBackdrop(lens + vec2(-r, r))
         + sampleBackdrop(lens + vec2(r, -r))
         + sampleBackdrop(lens + vec2(-r, -r))) * 0.25;
-      inner = mix(inner, u_tint, tintAlpha * 0.72);
+      inner = mix(inner, tint, tintAlpha * 0.72);
       // 高光：贴边一圈细亮线，朝左上方的那段更亮。
       float rimLine = 1.0 - smoothstep(0.0, aa * 2.5, -d);
       float facing = clamp(dot(n, normalize(vec2(-0.6, -0.8))), 0.0, 1.0);

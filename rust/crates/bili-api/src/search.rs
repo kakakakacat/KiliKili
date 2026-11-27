@@ -21,7 +21,13 @@
 //! `data.v_voucher` 存在即表示本次请求被风控拦下，`result` 不可信。基线
 //! 在这里直接判失败（`lib/http/search.dart` 里那句 `return const
 //! Error('触发风控')`，其后的验证流程是注释掉的）。本模块保持同样的判定，
-//! 归为 [`ErrorKind::Auth`]——重试只会继续被拦。
+//! 归为 [`ErrorKind::Auth`]。
+//!
+//! 但**判失败不等于马上把错误交给用户**。真机上（2026-11-27，DN-ENG81
+//! 匿名搜索翻页）这类拦截多是短时限流：页脚报「触发风控」，用户点一下
+//! 重试就好了。所以 [`fetch_search_parsed`] 遇到它先自己等一会儿再试
+//! [`RISK_CONTROL_RETRIES`] 次，都被拦才把错误交出去——那时才需要用户
+//! 介入（或者真要走验证流程）。
 //!
 //! ## 为什么这里不用 `#[derive(Deserialize)]` 的 DTO
 //!
@@ -196,6 +202,61 @@ pub async fn fetch_search<T: HttpTransport>(
     send(transport, ctx, &prepared).await
 }
 
+/// 风控拦截的错误文案。宿主据此显示，[`is_risk_control`] 据此识别。
+pub const RISK_CONTROL_DETAIL: &str = "触发风控，需要完成验证后重试";
+
+/// 被风控拦下后自动重试的次数（不含第一次请求）。
+///
+/// 两次、线性退避：真机上用户手点一次重试就能过，说明拦截窗口在秒级；
+/// 再多就是在限流窗口里继续加压，反而延长被拦的时间。
+pub const RISK_CONTROL_RETRIES: u32 = 2;
+
+/// 第 n 次自动重试前等待 `n × 本值` 毫秒（800 ms、1600 ms）。
+pub const RISK_CONTROL_RETRY_DELAY_MS: u64 = 800;
+
+/// 这个错误是不是搜索接口的风控拦截（`data.v_voucher`）。
+#[must_use]
+pub fn is_risk_control(err: &DomainError) -> bool {
+    err.kind() == ErrorKind::Auth && err.detail() == RISK_CONTROL_DETAIL
+}
+
+/// 发一次搜索并按 `parse` 解析；**被风控拦下时自动退避重试**。
+///
+/// 只对风控重试：网络错误的重试由传输层负责（见 `transport_reqwest`），
+/// 其余业务错误原样返回。每次重试都重新发同一个请求（`wts` 不变——
+/// 退避总共不到 3 秒，签名仍在有效期内）。
+///
+/// # Errors
+/// 最后一次仍被风控拦下时返回该风控错误；其余见 [`fetch_search`] 与 `parse`。
+#[cfg(feature = "reqwest-transport")]
+pub async fn fetch_search_parsed<T: HttpTransport, R>(
+    transport: &T,
+    ctx: &RequestContext,
+    params: &SearchParams,
+    mixin_key: &str,
+    wts: i64,
+    parse: fn(&str) -> Result<R, DomainError>,
+) -> Result<R, DomainError> {
+    let mut attempt = 0u32;
+    loop {
+        let result = match fetch_search(transport, ctx, params, mixin_key, wts).await {
+            Ok(body) => parse(&body),
+            Err(e) => Err(e),
+        };
+        match result {
+            Err(e) if is_risk_control(&e) && attempt < RISK_CONTROL_RETRIES => {
+                attempt += 1;
+                tracing::info!(attempt, "搜索被风控拦下，退避后自动重试");
+                tokio::time::sleep(std::time::Duration::from_millis(
+                    RISK_CONTROL_RETRY_DELAY_MS * u64::from(attempt),
+                ))
+                .await;
+            }
+            other => return other,
+        }
+    }
+}
+
 /// 取热搜榜。`limit` 为条数上限。
 ///
 /// # Errors
@@ -264,10 +325,7 @@ fn unwrap_search_data(body: &str) -> Result<Value, DomainError> {
     // 基线：`if (vVoucher != null) return const Error('触发风控')`。
     // 归 Auth 而不是 Remote：原样重试只会再被拦一次，必须走验证流程。
     if data.get("v_voucher").is_some_and(|v| !v.is_null()) {
-        return Err(DomainError::new(
-            ErrorKind::Auth,
-            "触发风控，需要完成验证后重试",
-        ));
+        return Err(DomainError::new(ErrorKind::Auth, RISK_CONTROL_DETAIL));
     }
     Ok(data)
 }
@@ -663,6 +721,99 @@ fn lenient_i64(value: &Value, key: &str) -> Option<i64> {
 mod tests {
     use super::*;
 
+    /// 按顺序吐出预设响应体的传输，记下被请求了几次。
+    struct Scripted {
+        bodies: std::sync::Mutex<std::collections::VecDeque<String>>,
+        calls: std::sync::atomic::AtomicUsize,
+    }
+    impl Scripted {
+        fn new(bodies: &[String]) -> Self {
+            Self {
+                bodies: std::sync::Mutex::new(bodies.iter().cloned().collect()),
+                calls: std::sync::atomic::AtomicUsize::new(0),
+            }
+        }
+        fn calls(&self) -> usize {
+            self.calls.load(std::sync::atomic::Ordering::SeqCst)
+        }
+    }
+    impl HttpTransport for Scripted {
+        async fn post(
+            &self,
+            _: crate::http::HttpPost,
+        ) -> Result<crate::http::HttpResponse, DomainError> {
+            panic!("搜索只发 GET");
+        }
+        async fn get(
+            &self,
+            _: crate::http::HttpGet,
+        ) -> Result<crate::http::HttpResponse, DomainError> {
+            self.calls.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            let body = self
+                .bodies
+                .lock()
+                .expect("锁不应中毒")
+                .pop_front()
+                .expect("请求次数超出预期");
+            Ok(crate::http::HttpResponse { status: 200, body })
+        }
+    }
+
+    fn web_ctx() -> RequestContext {
+        RequestContext {
+            base_url: "https://api.bilibili.com".to_owned(),
+            cookie: None,
+            csrf: None,
+            headers: vec![],
+            timeout: std::time::Duration::from_secs(10),
+        }
+    }
+
+    fn video_params() -> SearchParams {
+        SearchParams {
+            search_type: "video".to_owned(),
+            keyword: "测试".to_owned(),
+            page: 2,
+            ..SearchParams::default()
+        }
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn risk_control_is_retried_until_it_clears() {
+        // 真机：页脚报「触发风控」，手点重试就好了——这一步改由 Rust 自动做。
+        let blocked = envelope(r#"{"v_voucher":"voucher_xxx","result":[]}"#);
+        let ok = envelope(r#"{"numResults":1,"result":[{"title":"过了","duration":"0:30"}]}"#);
+        let transport = Scripted::new(&[blocked.clone(), blocked, ok]);
+        let page =
+            fetch_search_parsed(&transport, &web_ctx(), &video_params(), "m", 1, parse_video)
+                .await
+                .expect("第三次应当成功");
+        assert_eq!(page.items[0].title, "过了");
+        assert_eq!(transport.calls(), 3);
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn risk_control_gives_up_after_the_retry_budget() {
+        let blocked = envelope(r#"{"v_voucher":"voucher_xxx","result":[]}"#);
+        let transport = Scripted::new(&[blocked.clone(), blocked.clone(), blocked]);
+        let err = fetch_search_parsed(&transport, &web_ctx(), &video_params(), "m", 1, parse_video)
+            .await
+            .expect_err("三次都被拦就该交给用户");
+        assert!(is_risk_control(&err));
+        assert_eq!(transport.calls(), 1 + RISK_CONTROL_RETRIES as usize);
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn other_errors_are_not_retried() {
+        let transport =
+            Scripted::new(&[r#"{"code":-400,"message":"请求错误","ttl":1}"#.to_owned()]);
+        let err = fetch_search_parsed(&transport, &web_ctx(), &video_params(), "m", 1, parse_video)
+            .await
+            .expect_err("业务错误照常返回");
+        assert!(!is_risk_control(&err));
+        assert_eq!(transport.calls(), 1, "只对风控重试");
+    }
+
     #[tokio::test]
     async fn recommend_uses_app_endpoint() {
         struct AppEndpoint {
@@ -766,7 +917,8 @@ mod tests {
         // 基线：`if (vVoucher != null) return const Error('触发风控')`。
         let body = envelope(r#"{"v_voucher":"voucher_xxx","result":[]}"#);
         let err = parse_video(&body).expect_err("必须判为失败");
-        assert_eq!(err.kind(), ErrorKind::Auth, "重试只会继续被拦");
+        assert_eq!(err.kind(), ErrorKind::Auth);
+        assert!(is_risk_control(&err));
         assert!(err.detail().contains("风控"));
     }
 

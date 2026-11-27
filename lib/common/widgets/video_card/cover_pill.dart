@@ -80,12 +80,11 @@ class CoverTopInfoBar extends StatelessWidget {
 
 /// 直播的围观数角标。
 ///
-/// 贴着封面左上角摆（`CoverScrimCard.topStart` 的位置是 `(0, 0)`），左上角由
-/// 卡片圆角裁出，只留右下角圆角，看上去是封面角上「露出」的一块，而不是
-/// 浮在封面上的药丸。
+/// 只有图标和文字，没有底色，直接压在封面左上角（`CoverScrimCard.topStart`
+/// 的位置是 `(0, 0)`，边距由这里的 padding 给）。
 ///
 /// 它落在封面上而不是底部遮罩里，**不在 `cover_scrim` 的对比度保证范围
-/// 内**，所以固定用 `black45` + 白字。
+/// 内**；没有底色之后，浅色封面上白字可能看不清。
 ///
 /// 不走 [CoverTopInfoBar]：接口给的已经是「1.2万看过」这种**成品字符串**，
 /// 再经 `StatWidget` 的 `numFormat` 会被当成数字二次格式化。
@@ -98,29 +97,23 @@ class CoverWatchedPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final watched = this.watched;
     if (watched == null || watched.isEmpty) return const SizedBox.shrink();
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: Colors.black45,
-        borderRadius: BorderRadius.only(bottomRight: Radius.circular(8)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(8, 3, 7, 3),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 2,
-          children: [
-            Icon(
-              StatType.view.iconData,
-              size: 12,
-              color: Colors.white,
-              semanticLabel: StatType.view.label,
-            ),
-            Text(
-              watched,
-              style: const TextStyle(fontSize: 12, color: Colors.white),
-            ),
-          ],
-        ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 5, 8, 5),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 2,
+        children: [
+          Icon(
+            StatType.view.iconData,
+            size: 12,
+            color: Colors.white,
+            semanticLabel: StatType.view.label,
+          ),
+          Text(
+            watched,
+            style: const TextStyle(fontSize: 12, color: Colors.white),
+          ),
+        ],
       ),
     );
   }

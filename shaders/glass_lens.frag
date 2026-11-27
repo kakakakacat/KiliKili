@@ -82,7 +82,7 @@ void main() {
   // 镜中间的内容，图标上下各多出一个倒影、文字下面拖着一截重影（#266）。
   float edge = 1.0 - smoothstep(0.0, r * 0.45, -d);
   vec2 base = c + (p - c) / zoom;
-  vec2 bend = n * edge * edge * r * 0.35;
+  vec2 bend = n * edge * edge * r * 0.35 * lift;
   // 色散：三个通道沿法线错开一点，只在边缘带里出现。
   vec3 lensed = vec3(
     sampleAt(base + bend * 0.92).r,
@@ -99,7 +99,7 @@ void main() {
   // 只染透镜内部：边缘带采的是透镜外侧被压进来的内容（底栏外的封面），
   // 那里的深色染上去就是一圈品红色的环——第二次上机在彩色封面上看到的
   // 正是这个（#266）。iOS 的边缘是白亮的，不带选中色。
-  ink *= 1.0 - edge;
+  ink *= (1.0 - edge) * lift;
   vec3 accent = vec3(u_accent_r, u_accent_g, u_accent_b);
   lensed = mix(lensed, accent, ink * 0.9);
 
@@ -108,7 +108,10 @@ void main() {
   float top = clamp(-n.y, 0.0, 1.0);
   lensed = mix(lensed, vec3(1.0), rimLine * (0.35 + 0.35 * top) + 0.04);
 
-  // 整体按升起程度淡入：刚升起时和原画面几乎一样，不会「啪」一下出现。
+  // 不按升起程度做交叉淡化：放大倍数与边缘折射已经随它回到 1，画面自己
+  // 会连续缩回原样。直接按 lift 混合的话，半升起时是「放大 1.1 倍」叠在
+  // 「原样」上，文字出现双重影（#266 第三次上机看到）。只在最开始一小段
+  // 淡入，避免高光边「啪」一下出现。
   vec4 original = sampleAt(p);
-  fragColor = vec4(mix(original.rgb, lensed, lift), original.a);
+  fragColor = vec4(mix(original.rgb, lensed, smoothstep(0.0, 0.2, lift)), original.a);
 }

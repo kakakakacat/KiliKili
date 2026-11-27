@@ -24,7 +24,11 @@ void main() {
   const barWidth = 3 * 86.0;
   final indicator = find.byKey(const Key('glass-selected-indicator'));
 
-  Widget bar(int selected, {bool disableAnimations = false}) => MaterialApp(
+  Widget bar(
+    int selected, {
+    bool disableAnimations = false,
+    ValueChanged<int>? onSelected,
+  }) => MaterialApp(
     home: MediaQuery(
       data: MediaQueryData(disableAnimations: disableAnimations),
       child: Scaffold(
@@ -35,6 +39,7 @@ void main() {
             child: GlassNavigationSurface(
               selectedIndex: selected,
               destinationCount: 3,
+              onDestinationSelected: onSelected,
               child: const SizedBox.expand(),
             ),
           ),
@@ -98,5 +103,99 @@ void main() {
       tester.getRect(indicator).left,
       closeTo(rest0.left + 2 * rest0.width, 0.01),
     );
+  });
+
+  /// 第 [slot] 格的中心，全局坐标。
+  Offset slotCenter(WidgetTester tester, double slot) {
+    final surface = tester.getRect(find.byType(GlassNavigationSurface));
+    final slotWidth = (surface.width - 8) / 3;
+    return Offset(surface.left + 4 + slotWidth * slot, surface.center.dy);
+  }
+
+  testWidgets('按下即跑到按下那格并鼓起，松手未切换则回到选中项', skip: !bridgeTestsRequested, (
+    tester,
+  ) async {
+    await tester.pumpWidget(bar(0));
+    final rest0 = tester.getRect(indicator);
+    final gesture = await tester.startGesture(slotCenter(tester, 2.5));
+    await tester.pumpAndSettle();
+    final held = tester.getRect(indicator);
+    // 鼓起 12%，中心落在第 2 格中心。
+    expect(held.height, greaterThan(rest0.height * 1.05));
+    expect(
+      held.center.dx,
+      closeTo(rest0.center.dx + 2 * rest0.width, 0.5),
+    );
+    await gesture.up();
+    await tester.pumpAndSettle();
+    // 测试里没有内层导航去改选中，水滴回到第 0 格、恢复原大小。
+    final back = tester.getRect(indicator);
+    expect(back.left, closeTo(rest0.left, 0.01));
+    expect(back.height, closeTo(rest0.height, 0.01));
+  });
+
+  testWidgets('拖动时水滴跟手，松手吸附到最近一格并选中', skip: !bridgeTestsRequested, (
+    tester,
+  ) async {
+    var selected = 0;
+    final picks = <int>[];
+    await tester.pumpWidget(
+      StatefulBuilder(
+        builder: (context, setState) => bar(
+          selected,
+          onSelected: (i) {
+            picks.add(i);
+            setState(() => selected = i);
+          },
+        ),
+      ),
+    );
+    final rest0 = tester.getRect(indicator);
+    final gesture = await tester.startGesture(slotCenter(tester, 0.5));
+    await tester.pump();
+    // 拖到第 2 格靠左的位置：跟手时中心对着手指，松手吸附到手指所在的第 2 格。
+    await gesture.moveTo(slotCenter(tester, 2.2));
+    await tester.pumpAndSettle();
+    final dragging = tester.getRect(indicator);
+    expect(dragging.center.dx, closeTo(slotCenter(tester, 2.2).dx, 1.0));
+    expect(picks, isEmpty, reason: '拖动中不切换');
+
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(picks, [2]);
+    final settled = tester.getRect(indicator);
+    expect(settled.left, closeTo(rest0.left + 2 * rest0.width, 0.01));
+    expect(settled.width, closeTo(rest0.width, 0.01));
+  });
+
+  testWidgets('拖回原来那格松手不触发选中', skip: !bridgeTestsRequested, (tester) async {
+    final picks = <int>[];
+    await tester.pumpWidget(bar(1, onSelected: picks.add));
+    final gesture = await tester.startGesture(slotCenter(tester, 1.5));
+    await gesture.moveTo(slotCenter(tester, 2.5));
+    await tester.pump(const Duration(milliseconds: 100));
+    await gesture.moveTo(slotCenter(tester, 1.4));
+    await tester.pumpAndSettle();
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(picks, isEmpty);
+  });
+
+  testWidgets('减弱动态效果时拖动选择照常可用', skip: !bridgeTestsRequested, (tester) async {
+    final picks = <int>[];
+    await tester.pumpWidget(
+      bar(0, disableAnimations: true, onSelected: picks.add),
+    );
+    final rest0 = tester.getRect(indicator);
+    final gesture = await tester.startGesture(slotCenter(tester, 0.5));
+    await gesture.moveTo(slotCenter(tester, 2.4));
+    await tester.pumpAndSettle();
+    // 按格跳，不变形。
+    final r = tester.getRect(indicator);
+    expect(r.width, closeTo(rest0.width, 0.01));
+    expect(r.left, closeTo(rest0.left + 2 * rest0.width, 0.01));
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(picks, [2]);
   });
 }

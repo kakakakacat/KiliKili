@@ -26,6 +26,27 @@ GlassDropletFrame glassDropletStep({
   dtSeconds: dtSeconds,
 );
 
+/// 手指按下时水滴的目标格。`pointer` 单位是格。
+double glassDropletPressTarget({required double pointer, required int count}) =>
+    RustLib.instance.api.crateApiGlassDropletGlassDropletPressTarget(
+      pointer: pointer,
+      count: count,
+    );
+
+/// 拖动时水滴跟手的目标（中心对准手指，夹在首尾两格之间）。
+double glassDropletDragTarget({required double pointer, required int count}) =>
+    RustLib.instance.api.crateApiGlassDropletGlassDropletDragTarget(
+      pointer: pointer,
+      count: count,
+    );
+
+/// 松手后吸附到的 tab 下标。
+int glassDropletSnapIndex({required double target, required int count}) =>
+    RustLib.instance.api.crateApiGlassDropletGlassDropletSnapIndex(
+      target: target,
+      count: count,
+    );
+
 class GlassDropletFrame {
   final GlassDropletState state;
   final GlassDropletShape shape;
@@ -64,16 +85,29 @@ class GlassDropletShape {
   /// 0 = 静止形状，1 = 拉到上限。供 shader 决定中段收细多少。
   final double stretch;
 
+  /// 按压程度 0..1。
+  final double press;
+
+  /// 水滴下方内容的放大倍数；等于 1 时宿主不叠透镜层。
+  final double lensZoom;
+
   const GlassDropletShape({
     required this.left,
     required this.right,
     required this.heightScale,
     required this.stretch,
+    required this.press,
+    required this.lensZoom,
   });
 
   @override
   int get hashCode =>
-      left.hashCode ^ right.hashCode ^ heightScale.hashCode ^ stretch.hashCode;
+      left.hashCode ^
+      right.hashCode ^
+      heightScale.hashCode ^
+      stretch.hashCode ^
+      press.hashCode ^
+      lensZoom.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -83,7 +117,9 @@ class GlassDropletShape {
           left == other.left &&
           right == other.right &&
           heightScale == other.heightScale &&
-          stretch == other.stretch;
+          stretch == other.stretch &&
+          press == other.press &&
+          lensZoom == other.lensZoom;
 }
 
 /// 水滴的运动状态。宿主原样保存，每帧传回 [`glass_droplet_step`]，不要

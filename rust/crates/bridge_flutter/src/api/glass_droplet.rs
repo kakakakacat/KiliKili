@@ -33,6 +33,10 @@ pub struct GlassDropletShape {
     pub height_scale: f64,
     /// 0 = 静止形状，1 = 拉到上限。供 shader 决定中段收细多少。
     pub stretch: f64,
+    /// 按压程度 0..1。
+    pub press: f64,
+    /// 水滴下方内容的放大倍数；等于 1 时宿主不叠透镜层。
+    pub lens_zoom: f64,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -82,6 +86,8 @@ impl From<core::DropletFrame> for GlassDropletFrame {
                 right: f.shape.right,
                 height_scale: f.shape.height_scale,
                 stretch: f.shape.stretch,
+                press: f.shape.press,
+                lens_zoom: f.shape.lens_zoom,
             },
             settled: f.settled,
         }
@@ -106,4 +112,25 @@ pub fn glass_droplet_step(
     dt_seconds: f64,
 ) -> GlassDropletFrame {
     core::step(state.into(), target, pressed, dt_seconds).into()
+}
+
+/// 手指按下时水滴的目标格。`pointer` 单位是格。
+#[frb(sync)]
+#[must_use]
+pub fn glass_droplet_press_target(pointer: f64, count: u32) -> f64 {
+    core::press_target(pointer, count)
+}
+
+/// 拖动时水滴跟手的目标（中心对准手指，夹在首尾两格之间）。
+#[frb(sync)]
+#[must_use]
+pub fn glass_droplet_drag_target(pointer: f64, count: u32) -> f64 {
+    core::drag_target(pointer, count)
+}
+
+/// 松手后吸附到的 tab 下标。
+#[frb(sync)]
+#[must_use]
+pub fn glass_droplet_snap_index(target: f64, count: u32) -> u32 {
+    core::snap_index(target, count)
 }

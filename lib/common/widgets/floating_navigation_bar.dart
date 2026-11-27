@@ -4,7 +4,8 @@
 
 import 'dart:ui';
 
-import 'package:flutter/scheduler.dart' show Ticker;
+import 'package:flutter/gestures.dart' show kTouchSlop;
+import 'package:flutter/scheduler.dart' show SchedulerBinding, Ticker;
 import 'package:kilikili/rust/api/glass_droplet.dart';
 import 'package:kilikili/services/rust_core.dart';
 import 'package:kilikili/utils/extension/theme_ext.dart';
@@ -47,17 +48,34 @@ const _kTintAlphas = (0.78, 0.68, 0.74);
 ///   形变规则可用，而为它在 Dart 再写一份弹簧正是第 2 节禁止的。
 ///
 /// 着色器不可用（非 Impeller）时水滴照样变形，质感退回原来的渐变胶囊。
+///
+/// ## 按压与拖动（#266 所有者定）
+///
+/// - 按下哪格，水滴**立即**跑过去并鼓起；真正切换仍由内层导航的点击完成，
+///   这里不重复选中（重复点同一个 tab 在首页是「回顶/刷新」，不能多触发）。
+/// - 按下后移动超过 [kTouchSlop]：进入拖动，水滴中心跟手；内层的点击此时
+///   已被手势竞技场取消，松手后由这里吸附到最近一格并调
+///   [onDestinationSelected]。
+/// - 按住期间水滴之上叠一层透镜，放大下方的图标与文字（只在着色器可用时）。
+///
+/// 手势用 [Listener] 读原始触点，不进手势竞技场，所以三种底栏（悬浮 / MD3 /
+/// 经典，后两者是 Flutter 自带控件）都不用改内部就能生效。哪一格、跟手的
+/// 目标、吸附到哪格都由 Rust 决定。
 class GlassNavigationSurface extends StatefulWidget {
   const GlassNavigationSurface({
     super.key,
     required this.child,
     this.selectedIndex,
     this.destinationCount,
+    this.onDestinationSelected,
   });
 
   final Widget child;
   final int? selectedIndex;
   final int? destinationCount;
+
+  /// 拖动选择松手时调用。点按不经过这里，由内层导航自己处理。
+  final ValueChanged<int>? onDestinationSelected;
 
   @override
   State<GlassNavigationSurface> createState() => _GlassNavigationSurfaceState();
@@ -65,7 +83,8 @@ class GlassNavigationSurface extends StatefulWidget {
 
 class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
     with SingleTickerProviderStateMixin {
-  static Future<FragmentProgram>? _glassProgram;
+  /// 底栏着色器与按压透镜着色器，一起加载。
+  static Future<List<FragmentProgram>>? _programs;
 
   late final Ticker _ticker = createTicker(_onTick);
 
@@ -74,7 +93,7 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
 
   GlassDropletState? _state;
 
-  /// 最近一帧的形状；null 表示静止在 [_selected] 上。
+  /// 最近一帧的形状；null 表示还没推过（静止在 [_selected] 上）。
   GlassDropletShape? _shape;
   Duration _lastElapsed = Duration.zero;
 
@@ -85,6 +104,19 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
   /// 原生滤镜在包装时按当时的 uniform 建出来，判等也比 uniform，所以
   /// 改了就会重绘、没改就不会。
   FragmentShader? _shader;
+  FragmentShader? _lensShader;
+
+  /// 手指按下或拖动期间水滴的目标格，优先于 [_selected]。松手后保留到下一
+  /// 帧画完：那时内层导航的点击（或这里的拖动吸附）已经把选中改过来了，
+  /// 再交还给 [_selected] 就不会往旧位置抖一下。
+  double? _touchTarget;
+  bool _pressed = false;
+  bool _dragging = false;
+  int? _pointer;
+  Offset _downPosition = Offset.zero;
+
+  /// 最近一次布局的尺寸，供触点换算成「格」。
+  Size _size = Size.zero;
 
   int? get _selected {
     final count = widget.destinationCount;
@@ -93,10 +125,106 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
     return index.clamp(0, count - 1);
   }
 
+  bool get _rustUsable => RustCore.isReady && !_rustFailed;
+
   bool _useSprings(BuildContext context) =>
-      RustCore.isReady &&
-      !_rustFailed &&
-      !MediaQuery.disableAnimationsOf(context);
+      _rustUsable && !MediaQuery.disableAnimationsOf(context);
+
+  /// 手指此刻的位置，单位是格。
+  double _slotOf(Offset local, int count) {
+    final slotWidth = (_size.width - 2 * _kIndicatorPaddingInt) / count;
+    if (slotWidth <= 0) return 0;
+    return (local.dx - _kIndicatorPaddingInt) / slotWidth;
+  }
+
+  void _kick() {
+    _frame.notify();
+    if (_state != null && !_ticker.isActive) {
+      _lastElapsed = Duration.zero;
+      _ticker.start();
+    }
+  }
+
+  void _onPointerDown(PointerDownEvent e) {
+    final count = widget.destinationCount;
+    if (_pointer != null || count == null || count <= 0 || !_rustUsable) {
+      return;
+    }
+    try {
+      _touchTarget = glassDropletPressTarget(
+        pointer: _slotOf(e.localPosition, count),
+        count: count,
+      );
+    } catch (_) {
+      return;
+    }
+    _pointer = e.pointer;
+    _downPosition = e.localPosition;
+    _pressed = true;
+    _dragging = false;
+    _kick();
+  }
+
+  void _onPointerMove(PointerMoveEvent e) {
+    final count = widget.destinationCount;
+    if (e.pointer != _pointer || count == null || count <= 0) return;
+    if (!_dragging && (e.localPosition - _downPosition).distance > kTouchSlop) {
+      _dragging = true;
+    }
+    if (!_dragging) return;
+    try {
+      _touchTarget = glassDropletDragTarget(
+        pointer: _slotOf(e.localPosition, count),
+        count: count,
+      );
+    } catch (_) {
+      return;
+    }
+    _kick();
+  }
+
+  void _onPointerUp(PointerUpEvent e) {
+    if (e.pointer != _pointer) return;
+    final count = widget.destinationCount;
+    final target = _touchTarget;
+    if (_dragging && count != null && count > 0 && target != null) {
+      try {
+        final index = glassDropletSnapIndex(target: target, count: count);
+        _touchTarget = index.toDouble();
+        // 拖回原来那格不算选择：`MainController.setIndex` 对重复选中的处理
+        // 是 500ms 内第二次就回顶/刷新，拖一下不该触发它。
+        if (index != widget.selectedIndex) {
+          widget.onDestinationSelected?.call(index);
+        }
+      } catch (_) {
+        _touchTarget = null;
+      }
+    }
+    _endTouch(keepTarget: true);
+  }
+
+  void _onPointerCancel(PointerCancelEvent e) {
+    if (e.pointer != _pointer) return;
+    _endTouch(keepTarget: false);
+  }
+
+  void _endTouch({required bool keepTarget}) {
+    _pointer = null;
+    _pressed = false;
+    _dragging = false;
+    if (!keepTarget) {
+      _touchTarget = null;
+    } else {
+      final released = _touchTarget;
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        // 期间又按下了就别清掉新的目标。
+        if (!mounted || _pointer != null || _touchTarget != released) return;
+        _touchTarget = null;
+        _kick();
+      });
+    }
+    _kick();
+  }
 
   @override
   void didUpdateWidget(GlassNavigationSurface oldWidget) {
@@ -120,8 +248,8 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
 
   void _onTick(Duration elapsed) {
     final state = _state;
-    final selected = _selected;
-    if (state == null || selected == null) {
+    final target = _touchTarget ?? _selected?.toDouble();
+    if (state == null || target == null) {
       _ticker.stop();
       return;
     }
@@ -130,12 +258,13 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
     try {
       final frame = glassDropletStep(
         state: state,
-        target: selected.toDouble(),
-        pressed: false,
+        target: target,
+        pressed: _pressed,
         dtSeconds: dt,
       );
       _state = frame.state;
-      _shape = frame.settled ? null : frame.shape;
+      // 静止时也保留形状：按住不动时它是鼓起的那一档，不是原始胶囊。
+      _shape = frame.shape;
       if (frame.settled) _ticker.stop();
     } catch (_) {
       _reset();
@@ -150,6 +279,7 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
     _ticker.dispose();
     _frame.dispose();
     _shader?.dispose();
+    _lensShader?.dispose();
     super.dispose();
   }
 
@@ -197,6 +327,24 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
       ..setFloat(i++, _kTintAlphas.$1)
       ..setFloat(i++, _kTintAlphas.$2)
       ..setFloat(i++, _kTintAlphas.$3);
+    return ImageFilter.shader(shader);
+  }
+
+  /// 平移退路里水滴停在哪格：按住或拖动时跟着触点吸附，否则是选中项。
+  int _fallbackIndex(int selected, int count) {
+    final target = _touchTarget;
+    if (target == null) return selected;
+    try {
+      return glassDropletSnapIndex(target: target, count: count);
+    } catch (_) {
+      return selected;
+    }
+  }
+
+  ImageFilter _lensFilter(FragmentProgram program, double zoom) {
+    // 下标 2：u_zoom。0、1 是引擎填的 u_size。
+    final shader = (_lensShader ??= program.fragmentShader())
+      ..setFloat(2, zoom);
     return ImageFilter.shader(shader);
   }
 
@@ -255,18 +403,22 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
         child: LayoutBuilder(
           builder: (context, constraints) {
             final size = constraints.biggest;
+            _size = size;
             final deform = springs && size.isFinite;
-            return FutureBuilder<FragmentProgram>(
+            return FutureBuilder<List<FragmentProgram>>(
               future: supportsShader
-                  ? (_glassProgram ??= FragmentProgram.fromAsset(
-                      'shaders/liquid_glass.frag',
-                    ))
+                  ? (_programs ??= Future.wait([
+                      FragmentProgram.fromAsset('shaders/liquid_glass.frag'),
+                      FragmentProgram.fromAsset('shaders/glass_lens.frag'),
+                    ]))
                   : null,
               builder: (context, snapshot) {
                 // 非 Impeller 后端无法对背板运行自定义折射，保留可读的透明材质。
-                final program = supportsShader && snapshot.hasData
+                final programs = supportsShader && snapshot.hasData
                     ? snapshot.data!
                     : null;
+                final program = programs?[0];
+                final lensProgram = programs?[1];
                 // 水滴由着色器画：只在会变形时这样做。平移退路里水滴的位置
                 // 由 AnimatedPositioned 插值，着色器拿不到，仍画渐变胶囊。
                 final shaderDroplet = program != null && deform;
@@ -295,14 +447,22 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
                     final slotWidth =
                         (constraints.maxWidth - 2 * _kIndicatorPaddingInt) /
                         count;
-                    indicator = AnimatedPositioned(
-                      key: const Key('glass-selected-indicator'),
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOutCubic,
-                      left: _kIndicatorPaddingInt + slotWidth * selected,
-                      top: _kIndicatorPaddingInt,
-                      bottom: _kIndicatorPaddingInt,
-                      width: slotWidth,
+                    indicator = ListenableBuilder(
+                      listenable: _frame,
+                      builder: (context, child) => AnimatedPositioned(
+                        key: const Key('glass-selected-indicator'),
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOutCubic,
+                        // 「减弱动态效果」下拖动选择仍然可用，只是水滴按格
+                        // 跳、不跟手不弹。
+                        left:
+                            _kIndicatorPaddingInt +
+                            slotWidth * _fallbackIndex(selected, count),
+                        top: _kIndicatorPaddingInt,
+                        bottom: _kIndicatorPaddingInt,
+                        width: slotWidth,
+                        child: child!,
+                      ),
                       child: face,
                     );
                   }
@@ -366,13 +526,45 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
                         ),
                       ),
                     ),
+                    if (deform && lensProgram != null && count != null)
+                      ListenableBuilder(
+                        listenable: _frame,
+                        builder: (context, _) {
+                          final zoom = _shape?.lensZoom ?? 1.0;
+                          // 不按压时不挂这一层，省掉一次背板采样。
+                          if (zoom <= 1.001) return const SizedBox.shrink();
+                          final rect = _dropletRect(size, selected, count);
+                          return Positioned.fromRect(
+                            rect: rect,
+                            child: IgnorePointer(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(
+                                  rect.shortestSide / 2,
+                                ),
+                                child: BackdropFilter(
+                                  filter: _lensFilter(lensProgram, zoom),
+                                  child: const SizedBox.expand(),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                   ],
                 );
 
+                final touchable = Listener(
+                  behavior: HitTestBehavior.translucent,
+                  onPointerDown: _onPointerDown,
+                  onPointerMove: _onPointerMove,
+                  onPointerUp: _onPointerUp,
+                  onPointerCancel: _onPointerCancel,
+                  child: content,
+                );
                 if (program == null) {
                   return BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: content,
+                    child: touchable,
                   );
                 }
                 return ListenableBuilder(
@@ -388,7 +580,7 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
                     ),
                     child: child,
                   ),
-                  child: content,
+                  child: touchable,
                 );
               },
             );
@@ -473,6 +665,7 @@ class FloatingNavigationBar extends StatelessWidget {
         child: GlassNavigationSurface(
           selectedIndex: selectedIndex,
           destinationCount: destinations.length,
+          onDestinationSelected: onDestinationSelected,
           child: Row(
             crossAxisAlignment: .stretch,
             children: <Widget>[

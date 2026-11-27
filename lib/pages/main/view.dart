@@ -249,6 +249,8 @@ class _MainAppState extends PopScopeState<MainApp>
               () => GlassNavigationSurface(
                 selectedIndex: _mainController.selectedIndex.value,
                 destinationCount: _mainController.navigationBars.length,
+                // 拖动选择松手时由玻璃层吸附选中；点按仍走内层导航（#266）。
+                onDestinationSelected: _mainController.setIndex,
                 child: navigationChild,
               ),
             ),

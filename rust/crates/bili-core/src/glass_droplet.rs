@@ -72,6 +72,10 @@ pub const SCALE_SPRING: SpringParams = SpringParams {
 /// 按住时的目标缩放。
 pub const PRESSED_SCALE: f64 = 1.12;
 
+/// 按住时水滴下方内容（图标与文字）的最大放大倍数，即 iOS 按住 tab bar
+/// 时那块透镜。随缩放弹簧一起进出：鼓起一半时放大一半。
+pub const LENS_MAX_ZOOM: f64 = 1.22;
+
 /// 宽度最多比静止时多出几格。
 ///
 /// 两条边各自跟弹簧走的话，跨四格时能拉开两格多，看上去是一条长带子而不
@@ -127,6 +131,12 @@ pub struct DropletShape {
     /// 拉伸程度，0 是静止形状，1 是到了 [`MAX_EXTRA_WIDTH`]。shader 用它
     /// 决定中段收细多少；回退画法可以忽略。
     pub stretch: f64,
+    /// 按压程度，0 是松开静止，1 是鼓到 [`PRESSED_SCALE`]。回弹时可能
+    /// 短暂超出这个区间，已夹到 `[0, 1]`。
+    pub press: f64,
+    /// 水滴下方内容的放大倍数，1 表示不放大。宿主据此决定要不要叠透镜层
+    /// （等于 1 时不叠，省一次背板采样）。
+    pub lens_zoom: f64,
 }
 
 /// 一次 [`step`] 的结果。
@@ -245,13 +255,53 @@ fn shape(s: &DropletState) -> DropletShape {
         .sqrt()
         .clamp(MIN_HEIGHT_SCALE, MAX_HEIGHT_SCALE);
     let stretch = ((width - 1.0) / MAX_EXTRA_WIDTH).clamp(0.0, 1.0);
+    let press = ((s.scale - 1.0) / (PRESSED_SCALE - 1.0)).clamp(0.0, 1.0);
     let half = width * 0.5 * s.scale;
     DropletShape {
         left: center - half,
         right: center + half,
         height_scale: height_scale * s.scale,
         stretch,
+        press,
+        lens_zoom: 1.0 + (LENS_MAX_ZOOM - 1.0) * press,
     }
+}
+
+/// 手指按下时落在哪一格。`pointer` 是手指位置，单位是格（宿主按
+/// `(x - 内边距) / 每格宽度` 换算），`count` 是 tab 数。
+///
+/// 按下就让水滴跑过去（#266 所有者定：不等松手），所以这里的结果直接当
+/// [`step`] 的目标。超出首尾的按压归到首尾那格。
+#[must_use]
+pub fn press_target(pointer: f64, count: u32) -> f64 {
+    if count == 0 || !pointer.is_finite() {
+        return 0.0;
+    }
+    pointer.floor().clamp(0.0, f64::from(count - 1))
+}
+
+/// 拖动时水滴跟手的目标：让水滴的**中心**对准手指，而不是左边缘。
+///
+/// 结果是小数，夹在首尾两格之间——水滴不会被拖出底栏。
+#[must_use]
+pub fn drag_target(pointer: f64, count: u32) -> f64 {
+    if count == 0 || !pointer.is_finite() {
+        return 0.0;
+    }
+    (pointer - 0.5).clamp(0.0, f64::from(count - 1))
+}
+
+/// 松手后吸附到哪一格：离水滴当前目标最近的那格。正好在两格中间时归右边
+/// （`f64::round` 远离零取整，目标都非负）。
+#[must_use]
+pub fn snap_index(target: f64, count: u32) -> u32 {
+    if count == 0 || !target.is_finite() {
+        return 0;
+    }
+    // 夹取之后在 [0, count - 1] 内，转 u32 不会截断。
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    let index = target.round().clamp(0.0, f64::from(count - 1)) as u32;
+    index
 }
 
 /// 阻尼振子推进 `dt` 秒的解析解，返回新的位置与速度。
@@ -488,5 +538,58 @@ mod tests {
         let b = spring(0.0, 0.0, 1.0, almost, 0.1);
         assert!((a.0 - b.0).abs() < 1e-4);
         assert!((a.1 - b.1).abs() < 1e-3);
+    }
+
+    #[test]
+    fn press_target_picks_the_slot_under_the_finger() {
+        assert_eq!(press_target(0.0, 4), 0.0);
+        assert_eq!(press_target(2.99, 4), 2.0);
+        assert_eq!(press_target(-0.3, 4), 0.0);
+        assert_eq!(press_target(4.2, 4), 3.0);
+        assert_eq!(press_target(f64::NAN, 4), 0.0);
+        assert_eq!(press_target(1.0, 0), 0.0);
+    }
+
+    #[test]
+    fn drag_centres_the_droplet_on_the_finger_and_stays_inside() {
+        assert_eq!(drag_target(1.5, 4), 1.0);
+        assert!((drag_target(2.25, 4) - 1.75).abs() < 1e-12);
+        assert_eq!(drag_target(0.1, 4), 0.0);
+        assert_eq!(drag_target(9.0, 4), 3.0);
+    }
+
+    #[test]
+    fn snap_rounds_to_the_nearest_slot() {
+        assert_eq!(snap_index(1.49, 4), 1);
+        assert_eq!(snap_index(1.5, 4), 2);
+        assert_eq!(snap_index(-2.0, 4), 0);
+        assert_eq!(snap_index(7.0, 4), 3);
+        assert_eq!(snap_index(f64::NAN, 4), 0);
+        assert_eq!(snap_index(1.0, 0), 0);
+    }
+
+    #[test]
+    fn lens_follows_the_press() {
+        let rest_shape = step(rest(1.0), 1.0, false, FRAME_60).shape;
+        assert_eq!(rest_shape.press, 0.0);
+        assert_eq!(rest_shape.lens_zoom, 1.0);
+        let mut s = rest(1.0);
+        for _ in 0..60 {
+            s = step(s, 1.0, true, FRAME_60).state;
+        }
+        let pressed = step(s, 1.0, true, FRAME_60).shape;
+        assert!((pressed.press - 1.0).abs() < 1e-9);
+        assert!((pressed.lens_zoom - LENS_MAX_ZOOM).abs() < 1e-9);
+    }
+
+    #[test]
+    fn dragging_follows_a_fractional_target() {
+        let mut s = rest(0.0);
+        for _ in 0..90 {
+            s = step(s, drag_target(2.25, 4), true, FRAME_60).state;
+        }
+        let f = step(s, drag_target(2.25, 4), true, FRAME_60);
+        let centre = (f.shape.left + f.shape.right) * 0.5;
+        assert!((centre - 2.25).abs() < 1e-3, "水滴中心应对准手指：{centre}");
     }
 }

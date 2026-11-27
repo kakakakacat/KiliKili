@@ -275,6 +275,7 @@ flutter:
   uses-material-design: true
 
   shaders:
+    - shaders/glass_lens.frag
     - shaders/liquid_glass.frag
 
   assets:

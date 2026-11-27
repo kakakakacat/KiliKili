@@ -12,8 +12,17 @@
 // 升起程度 > 0 时挂上，平时不付这一次背板采样。
 //
 // 它是叠在导航内容**之上**的 BackdropFilter，裁成透镜的胶囊形，背板里
-// 已经有底栏与图标。坐标约定与 liquid_glass.frag 相同：FlutterFragCoord
-// 与 u_size 都是这块被裁剪区域（透镜外接框）的背板像素。
+// 已经有底栏与图标。
+//
+// ## 坐标：不要假设 FlutterFragCoord 相对透镜
+//
+// 第一版照 liquid_glass.frag 的写法，以为 FlutterFragCoord 与 u_size 都是
+// 「被裁剪的这一小块」。DN-ENG81（Impeller/Vulkan）上录屏证明不是：它们是
+// **整屏背板**的物理像素。结果透镜以屏幕中心为圆心放大、采到屏幕别处的
+// 内容——白底页面上是一团纯白，封面上是一块彩虹色的乱码（#266）。
+//
+// 所以宿主把透镜在屏幕上的物理像素位置传进来。为防另一种后端真按裁剪区
+// 域给坐标，u_size 与透镜尺寸几乎相等时按本地坐标处理。
 
 uniform vec2 u_size;
 // 以下由 `GlassNavigationSurface` 设置，float 下标从 2 起，顺序即声明顺序。
@@ -30,16 +39,30 @@ uniform float u_accent_g;
 uniform float u_accent_b;
 // 1 = 浅色主题（图标比底色深），0 = 深色主题（图标比底色浅）。
 uniform float u_light;
+// 透镜外接框在屏幕上的位置与尺寸，物理像素。
+uniform float u_lens_left;
+uniform float u_lens_top;
+uniform float u_lens_width;
+uniform float u_lens_height;
 uniform sampler2D u_backdrop;
 out vec4 fragColor;
 
+// 背板左上角到透镜左上角的偏移（见文件头「坐标」一节）。
+vec2 lensOrigin() {
+  vec2 lens = vec2(u_lens_width, u_lens_height);
+  bool local = all(lessThan(abs(u_size - lens), vec2(4.0)));
+  return local ? vec2(0.0) : vec2(u_lens_left, u_lens_top);
+}
+
+// 按透镜本地坐标（像素）采背板。
 vec4 sampleAt(vec2 p) {
-  return texture(u_backdrop, clamp(p / u_size, vec2(0.0), vec2(1.0)));
+  vec2 g = p + lensOrigin();
+  return texture(u_backdrop, clamp(g / u_size, vec2(0.0), vec2(1.0)));
 }
 
 void main() {
-  vec2 p = FlutterFragCoord().xy;
-  vec2 c = u_size * 0.5;
+  vec2 p = FlutterFragCoord().xy - lensOrigin();
+  vec2 c = vec2(u_lens_width, u_lens_height) * 0.5;
   float r = c.y;
   // 胶囊 SDF 与指向外侧的法线（与 liquid_glass.frag 同式）。
   vec2 q = abs(p - c) - vec2(max(c.x - r, 0.0), 0.0);

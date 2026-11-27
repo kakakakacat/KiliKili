@@ -303,10 +303,14 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
     }
   }
 
+  /// 透镜着色器的滤镜。[screenRect] 是透镜在屏幕上的位置，**物理像素**：
+  /// 真机上 `FlutterFragCoord` 是整屏背板的坐标，不是裁剪区域的（见
+  /// glass_lens.frag 文件头）。
   ImageFilter _lensFilter(
     FragmentProgram program,
     GlassDropletShape shape,
     ColorScheme scheme,
+    Rect screenRect,
   ) {
     // 下标从 2 起：0、1 是引擎填的 u_size。顺序见 glass_lens.frag。
     final accent = scheme.primary;
@@ -316,8 +320,27 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
       ..setFloat(4, accent.r)
       ..setFloat(5, accent.g)
       ..setFloat(6, accent.b)
-      ..setFloat(7, scheme.brightness == Brightness.light ? 1 : 0);
+      ..setFloat(7, scheme.brightness == Brightness.light ? 1 : 0)
+      ..setFloat(8, screenRect.left)
+      ..setFloat(9, screenRect.top)
+      ..setFloat(10, screenRect.width)
+      ..setFloat(11, screenRect.height);
     return ImageFilter.shader(shader);
+  }
+
+  /// [local]（相对底栏左上角，逻辑像素）在屏幕上的位置，物理像素。用的是
+  /// 上一帧的布局：透镜只在切换的几百毫秒里出现，这期间底栏不会动。还没
+  /// 布局过时返回 null，这一帧不画透镜。
+  Rect? _screenRect(Rect local, double devicePixelRatio) {
+    final box = context.findRenderObject();
+    if (box is! RenderBox || !box.hasSize || !box.attached) return null;
+    final origin = box.localToGlobal(local.topLeft);
+    return Rect.fromLTWH(
+      origin.dx * devicePixelRatio,
+      origin.dy * devicePixelRatio,
+      local.width * devicePixelRatio,
+      local.height * devicePixelRatio,
+    );
   }
 
   @override
@@ -520,6 +543,11 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
                       return const SizedBox.shrink();
                     }
                     final rect = _indicatorRect(size, selected, count);
+                    final screenRect = _screenRect(
+                      rect,
+                      MediaQuery.devicePixelRatioOf(context),
+                    );
+                    if (screenRect == null) return const SizedBox.shrink();
                     return Positioned.fromRect(
                       rect: rect,
                       // 不给透镜加 BoxShadow：阴影先画在底下，会被透镜自己的
@@ -531,7 +559,12 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
                             rect.shortestSide / 2,
                           ),
                           child: BackdropFilter(
-                            filter: _lensFilter(lensProgram, shape, scheme),
+                            filter: _lensFilter(
+                              lensProgram,
+                              shape,
+                              scheme,
+                              screenRect,
+                            ),
                             child: const SizedBox.expand(),
                           ),
                         ),

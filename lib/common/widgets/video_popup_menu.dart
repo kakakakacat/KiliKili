@@ -34,12 +34,7 @@ class VideoPopupMenu extends StatelessWidget {
     required this.videoItem,
     this.onRemove,
     this.menuItemHeight = 45,
-    this.onCover = false,
   });
-
-  /// 按钮是否压在封面遮罩上（issue #108 的竖版大卡）。遮罩颜色随封面变，
-  /// 主题的 `outline` 在浅遮罩上会糊掉，所以换成白色 + 阴影。
-  final bool onCover;
 
   @override
   Widget build(BuildContext context) {
@@ -47,11 +42,8 @@ class VideoPopupMenu extends StatelessWidget {
       padding: EdgeInsets.zero,
       icon: Icon(
         Icons.more_vert_outlined,
-        color: onCover ? Colors.white : Theme.of(context).colorScheme.outline,
+        color: Theme.of(context).colorScheme.outline,
         size: iconSize,
-        shadows: onCover
-            ? const [Shadow(blurRadius: 3, color: Colors.black54)]
-            : null,
       ),
       position: PopupMenuPosition.under,
       itemBuilder: (context) =>
@@ -230,10 +222,11 @@ class VideoPopupMenu extends StatelessWidget {
                                     onPressed: () async {
                                       Get.back();
                                       SmartDialog.showLoading(msg: '正在提交');
-                                      final res = await RustVideoWrite.dislikeVideo(
-                                        bvid: videoItem.bvid!,
-                                        dislike: true,
-                                      );
+                                      final res =
+                                          await RustVideoWrite.dislikeVideo(
+                                            bvid: videoItem.bvid!,
+                                            dislike: true,
+                                          );
                                       SmartDialog.dismiss();
                                       if (res.isSuccess) {
                                         SmartDialog.showToast('点踩成功');
@@ -251,10 +244,11 @@ class VideoPopupMenu extends StatelessWidget {
                                     onPressed: () async {
                                       Get.back();
                                       SmartDialog.showLoading(msg: '正在提交');
-                                      final res = await RustVideoWrite.dislikeVideo(
-                                        bvid: videoItem.bvid!,
-                                        dislike: false,
-                                      );
+                                      final res =
+                                          await RustVideoWrite.dislikeVideo(
+                                            bvid: videoItem.bvid!,
+                                            dislike: false,
+                                          );
                                       SmartDialog.dismiss();
                                       SmartDialog.showToast(
                                         res.isSuccess ? '取消踩' : res.toString(),

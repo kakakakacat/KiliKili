@@ -53,25 +53,18 @@ class SearchArchiveGrpc extends StatelessWidget {
         onTap: open,
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        titleBuilder: (context, colors) => Text.rich(
-          TextSpan(
-            style: TextStyle(color: colors.title, height: 1.32),
-            children: [
-              for (final part in titleSpans)
-                TextSpan(
-                  text: part.text,
-                  style: part.isEm
-                      ? const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          decoration: TextDecoration.underline,
-                        )
-                      : null,
-                ),
-            ],
-          ),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
+        titleSpans: [
+          for (final part in titleSpans)
+            TextSpan(
+              text: part.text,
+              style: part.isEm
+                  ? const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      decoration: TextDecoration.underline,
+                    )
+                  : null,
+            ),
+        ],
         topStats: [
           (StatType.play, item.view?.toInt()),
           (StatType.danmaku, item.danmaku?.toInt()),
@@ -82,25 +75,12 @@ class SearchArchiveGrpc extends StatelessWidget {
         coverOverlays: [
           if (item.isPugv) const PBadge(text: '课堂', top: 54, right: 6),
         ],
-        metaBuilder: date.isEmpty
-            ? null
-            : (context, colors) => [
-                const Spacer(),
-                Text(
-                  date,
-                  maxLines: 1,
-                  style: TextStyle(fontSize: 11, color: colors.subtitle),
-                ),
-              ],
+        date: date,
         trailing: SizedBox.square(
           dimension: 29,
           child: PopupMenuButton(
             padding: EdgeInsets.zero,
-            icon: const Icon(
-              Icons.more_vert_outlined,
-              color: Colors.white,
-              size: 17,
-            ),
+            icon: const Icon(Icons.more_vert_outlined, size: 17),
             position: PopupMenuPosition.under,
             itemBuilder: (context) => [
               PopupMenuItem(

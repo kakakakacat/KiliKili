@@ -52,15 +52,7 @@ class SubVideoCardH extends StatelessWidget {
         topDuration: (videoItem.duration ?? 0) > 0
             ? DurationUtils.formatDuration(videoItem.duration)
             : null,
-        metaBuilder: date.isEmpty
-            ? null
-            : (context, colors) => [
-                Text(
-                  date,
-                  maxLines: 1,
-                  style: TextStyle(fontSize: 11, color: colors.subtitle),
-                ),
-              ],
+        date: date,
       ),
     );
   }

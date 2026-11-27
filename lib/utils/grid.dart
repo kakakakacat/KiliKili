@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/skeleton/video_card_h.dart';
 import 'package:kilikili/common/skeleton/video_card_v.dart';
 import 'package:kilikili/common/style.dart';
@@ -32,15 +33,18 @@ mixin GridMixin {
 abstract final class Grid {
   static final double smallCardWidth = Pref.smallCardWidth;
 
+  /// 封面卡片（`CoverScrimCard`）的格子：封面按 [aspectRatio]，再加上封面
+  /// 下方 [titleLines] 行文字区的高度。
   static SliverGridDelegateWithExtentAndRatio coverCardDelegate({
     double aspectRatio = Style.coverCardRatio,
-  }) =>
-      SliverGridDelegateWithExtentAndRatio(
-        maxCrossAxisExtent: smallCardWidth,
-        mainAxisSpacing: 8,
-        crossAxisSpacing: 2,
-        childAspectRatio: aspectRatio,
-      );
+    int titleLines = 2,
+  }) => SliverGridDelegateWithExtentAndRatio(
+    maxCrossAxisExtent: smallCardWidth,
+    mainAxisSpacing: 8,
+    crossAxisSpacing: 2,
+    childAspectRatio: aspectRatio,
+    mainAxisExtent: CoverScrimCard.textExtent(titleLines),
+  );
 
   static SliverGridDelegateWithMaxCrossAxisExtent videoCardHDelegate({
     double mainAxisExtent = 110,

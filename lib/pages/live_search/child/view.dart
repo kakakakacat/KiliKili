@@ -1,3 +1,4 @@
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/skeleton/msg_feed_top.dart';
 import 'package:kilikili/common/skeleton/video_card_v.dart';
 import 'package:kilikili/common/sliver_single_child_delegate.dart';
@@ -80,6 +81,7 @@ class _LiveSearchChildPageState extends State<LiveSearchChildPage>
     crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth,
     childAspectRatio: Style.coverCardRatio,
+    mainAxisExtent: CoverScrimCard.textExtent(),
   );
 
   late final userDelegate = SliverGridDelegateWithMaxCrossAxisExtent(

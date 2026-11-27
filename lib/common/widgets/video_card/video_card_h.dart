@@ -50,26 +50,19 @@ class VideoCardH extends StatelessWidget {
         onTap: onTap ?? () => pushVideoH(videoItem),
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        titleBuilder: videoItem.titleList?.isNotEmpty == true
-            ? (context, colors) => Text.rich(
-                TextSpan(
-                  style: TextStyle(color: colors.title, height: 1.32),
-                  children: [
-                    for (final span in videoItem.titleList!)
-                      TextSpan(
-                        text: span.text,
-                        style: span.isEm
-                            ? const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                decoration: TextDecoration.underline,
-                              )
-                            : null,
-                      ),
-                  ],
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              )
+        titleSpans: videoItem.titleList?.isNotEmpty == true
+            ? [
+                for (final span in videoItem.titleList!)
+                  TextSpan(
+                    text: span.text,
+                    style: span.isEm
+                        ? const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          )
+                        : null,
+                  ),
+              ]
             : null,
         topStats: videoItem.isLive == true
             ? const []
@@ -104,24 +97,11 @@ class VideoCardH extends StatelessWidget {
               ),
             ),
         ],
-        metaBuilder: date.isEmpty
-            ? null
-            : (context, colors) => [
-                const Spacer(),
-                Text(
-                  date,
-                  maxLines: 1,
-                  style: TextStyle(fontSize: 11, color: colors.subtitle),
-                ),
-              ],
-        trailing: SizedBox.square(
-          dimension: 29,
-          child: VideoPopupMenu(
-            iconSize: 17,
-            onCover: true,
-            videoItem: videoItem,
-            onRemove: onRemove,
-          ),
+        date: date,
+        trailing: VideoPopupMenu(
+          iconSize: 17,
+          videoItem: videoItem,
+          onRemove: onRemove,
         ),
       ),
     );

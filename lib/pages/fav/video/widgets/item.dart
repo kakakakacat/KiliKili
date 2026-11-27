@@ -27,30 +27,14 @@ class FavVideoItem extends StatelessWidget {
         child: CoverScrimCard(
           cover: item.cover,
           title: item.title,
-          titleBuilder: item.intro?.isNotEmpty == true
-              ? (context, colors) => Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: colors.title),
-                    ),
-                    Text(
-                      item.intro!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 11, color: colors.subtitle),
-                    ),
-                  ],
-                )
-              : null,
           metaBuilder: (context, colors) => [
             Flexible(
               child: Text(
-                '${item.mediaCount}个内容 · ${BiliUtils.isPublicFavText(item.attr)}',
+                [
+                  '${item.mediaCount}个内容',
+                  BiliUtils.isPublicFavText(item.attr),
+                  if (item.intro?.isNotEmpty == true) item.intro!,
+                ].join(' · '),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: 11, color: colors.subtitle),

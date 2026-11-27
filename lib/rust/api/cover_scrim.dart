@@ -17,17 +17,15 @@ CoverScrimStyle computeCoverScrim({
   required List<int> rgba,
   required int width,
   required int height,
-  required int tintRgb,
 }) => RustLib.instance.api.crateApiCoverScrimComputeCoverScrim(
   rgba: rgba,
   width: width,
   height: height,
-  tintRgb: tintRgb,
 );
 
 /// 封面缺失 / 加载中 / 解码失败时的固定回退配色。
-CoverScrimStyle fallbackCoverScrim({required int tintRgb}) =>
-    RustLib.instance.api.crateApiCoverScrimFallbackCoverScrim(tintRgb: tintRgb);
+CoverScrimStyle fallbackCoverScrim() =>
+    RustLib.instance.api.crateApiCoverScrimFallbackCoverScrim();
 
 /// 一张封面算出来的底部遮罩配色。颜色是 `0xAARRGGBB`，Dart 侧直接
 /// `Color(value)`。
@@ -40,24 +38,16 @@ class CoverScrimStyle {
   final int scrimArgb;
   final int titleArgb;
   final int subtitleArgb;
-  final int tintArgb;
-  final int tintLabelArgb;
 
   const CoverScrimStyle({
     required this.scrimArgb,
     required this.titleArgb,
     required this.subtitleArgb,
-    required this.tintArgb,
-    required this.tintLabelArgb,
   });
 
   @override
   int get hashCode =>
-      scrimArgb.hashCode ^
-      titleArgb.hashCode ^
-      subtitleArgb.hashCode ^
-      tintArgb.hashCode ^
-      tintLabelArgb.hashCode;
+      scrimArgb.hashCode ^ titleArgb.hashCode ^ subtitleArgb.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -66,7 +56,5 @@ class CoverScrimStyle {
           runtimeType == other.runtimeType &&
           scrimArgb == other.scrimArgb &&
           titleArgb == other.titleArgb &&
-          subtitleArgb == other.subtitleArgb &&
-          tintArgb == other.tintArgb &&
-          tintLabelArgb == other.tintLabelArgb;
+          subtitleArgb == other.subtitleArgb;
 }

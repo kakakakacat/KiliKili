@@ -70,13 +70,11 @@ class FavPgcCard extends StatelessWidget {
                   ),
                 ),
               ],
-        trailing: SizedBox.square(
-          dimension: 29,
-          child: IconButton(
-            tooltip: '修改追番状态',
-            onPressed: onUpdateStatus,
-            icon: const Icon(Icons.more_vert, color: Colors.white, size: 18),
-          ),
+        trailing: IconButton(
+          tooltip: '修改追番状态',
+          padding: EdgeInsets.zero,
+          onPressed: onUpdateStatus,
+          icon: const Icon(Icons.more_vert, size: 18),
         ),
       ),
     );

@@ -115,7 +115,6 @@ class HistoryItemCard extends StatelessWidget {
             ? item.cover
             : item.covers.firstOrNull,
         title: item.title ?? '',
-        titleMaxLines: (item.videos ?? 0) > 1 ? 1 : 2,
         upName: item.authorName,
         onTap: enableMultiSelect
             ? () => ctr.onSelect(item)
@@ -155,24 +154,14 @@ class HistoryItemCard extends StatelessWidget {
                 style: TextStyle(fontSize: 11, color: colors.subtitle),
               ),
             ),
-          const Spacer(),
-          if (date.isNotEmpty)
-            Text(
-              date,
-              maxLines: 1,
-              style: TextStyle(fontSize: 11, color: colors.subtitle),
-            ),
         ],
+        date: date,
         trailing: SizedBox.square(
           dimension: 29,
           child: PopupMenuButton(
             padding: EdgeInsets.zero,
             tooltip: '功能菜单',
-            icon: const Icon(
-              Icons.more_vert_outlined,
-              color: Colors.white,
-              size: 18,
-            ),
+            icon: const Icon(Icons.more_vert_outlined, size: 18),
             position: PopupMenuPosition.under,
             itemBuilder: (_) => [
               if (item.authorMid != null && item.authorName?.isNotEmpty == true)

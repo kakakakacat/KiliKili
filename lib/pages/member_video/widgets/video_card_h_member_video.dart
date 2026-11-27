@@ -75,7 +75,7 @@ class VideoCardHMemberVideo extends StatelessWidget {
         cover: videoItem.cover,
         title: videoItem.title,
         titleStyle: isCurr
-            ? const TextStyle(fontWeight: FontWeight.bold, height: 1.32)
+            ? const TextStyle(fontWeight: FontWeight.bold)
             : null,
         onTap: _open,
         onLongPress: onLongPress,
@@ -117,24 +117,8 @@ class VideoCardHMemberVideo extends StatelessWidget {
               ),
             ),
         ],
-        metaBuilder: date.isEmpty
-            ? null
-            : (context, colors) => [
-                const Spacer(),
-                Text(
-                  date,
-                  maxLines: 1,
-                  style: TextStyle(fontSize: 11, color: colors.subtitle),
-                ),
-              ],
-        trailing: SizedBox.square(
-          dimension: 29,
-          child: VideoPopupMenu(
-            iconSize: 17,
-            onCover: true,
-            videoItem: videoItem,
-          ),
-        ),
+        date: date,
+        trailing: VideoPopupMenu(iconSize: 17, videoItem: videoItem),
       ),
     );
   }

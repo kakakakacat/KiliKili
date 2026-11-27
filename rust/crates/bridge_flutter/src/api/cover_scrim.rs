@@ -22,8 +22,6 @@ pub struct CoverScrimStyle {
     pub scrim_argb: u32,
     pub title_argb: u32,
     pub subtitle_argb: u32,
-    pub tint_argb: u32,
-    pub tint_label_argb: u32,
 }
 
 impl From<cover_scrim::CoverScrim> for CoverScrimStyle {
@@ -32,8 +30,6 @@ impl From<cover_scrim::CoverScrim> for CoverScrimStyle {
             scrim_argb: v.scrim_argb,
             title_argb: v.title_argb,
             subtitle_argb: v.subtitle_argb,
-            tint_argb: v.tint_argb,
-            tint_label_argb: v.tint_label_argb,
         }
     }
 }
@@ -45,18 +41,13 @@ impl From<cover_scrim::CoverScrim> for CoverScrimStyle {
 /// 错误，没有必要让调用方分支。
 #[frb(sync)]
 #[must_use]
-pub fn compute_cover_scrim(
-    rgba: Vec<u8>,
-    width: u32,
-    height: u32,
-    tint_rgb: u32,
-) -> CoverScrimStyle {
-    cover_scrim::cover_scrim(&rgba, width, height, tint_rgb).into()
+pub fn compute_cover_scrim(rgba: Vec<u8>, width: u32, height: u32) -> CoverScrimStyle {
+    cover_scrim::cover_scrim(&rgba, width, height).into()
 }
 
 /// 封面缺失 / 加载中 / 解码失败时的固定回退配色。
 #[frb(sync)]
 #[must_use]
-pub fn fallback_cover_scrim(tint_rgb: u32) -> CoverScrimStyle {
-    cover_scrim::fallback_scrim(tint_rgb).into()
+pub fn fallback_cover_scrim() -> CoverScrimStyle {
+    cover_scrim::fallback_scrim().into()
 }

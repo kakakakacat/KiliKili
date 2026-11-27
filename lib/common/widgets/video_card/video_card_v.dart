@@ -103,25 +103,28 @@ class VideoCardV extends StatelessWidget {
       topDuration: videoItem.duration > 0
           ? DurationUtils.formatDuration(videoItem.duration)
           : null,
+      date: videoItem is RcmdVideoItemModel
+          ? DateFormatUtils.dateFormat(
+              videoItem.pubdate,
+              short: shortFormat,
+              long: longFormat,
+            )
+          : null,
       trailing: videoItem.goto == 'av'
-          ? SizedBox.square(
-              dimension: 29,
-              child: VideoPopupMenu(
-                iconSize: 17,
-                onCover: true,
-                videoItem: videoItem,
-                onRemove: onRemove,
-              ),
+          ? VideoPopupMenu(
+              iconSize: 17,
+              videoItem: videoItem,
+              onRemove: onRemove,
             )
           : null,
       metaBuilder: _meta,
     );
   }
 
-  /// UP 名之后那几项：角标 + 发布时间。
+  /// 封面底部遮罩里的角标。
   ///
-  /// 播放量与弹幕数已放到封面顶部信息行（issue #124），这一行只剩
-  /// 「这条稿件是什么」而不是「它有多热」。
+  /// 播放量与弹幕数在封面顶部信息行（issue #124），发布时间在封面下方右
+  /// 下角（#295），这一行只剩「这条稿件是什么」。
   List<Widget> _meta(BuildContext context, CoverScrimColors colors) => [
     if (videoItem.goto == 'bangumi')
       PBadge(
@@ -146,18 +149,6 @@ class VideoCardV extends StatelessWidget {
         type: .line_primary,
         fontSize: 9,
       ),
-    if (videoItem is RcmdVideoItemModel) ...[
-      const Spacer(),
-      Text(
-        DateFormatUtils.dateFormat(
-          videoItem.pubdate,
-          short: shortFormat,
-          long: longFormat,
-        ),
-        maxLines: 1,
-        style: TextStyle(fontSize: 11, color: colors.subtitle),
-      ),
-    ],
   ];
 
   static final shortFormat = DateFormat('M-d');

@@ -29,35 +29,34 @@ Widget videoSeasonWidget(
     padding: floor == 1
         ? const EdgeInsets.symmetric(horizontal: 12)
         : EdgeInsets.zero,
-    child: AspectRatio(
-      aspectRatio: Style.coverCardRatio,
-      child: CoverScrimCard(
-        cover: video.cover,
-        title: video.title ?? '',
-        titleMaxLines: isDetail ? 3 : 2,
-        coverOverlays: [
-          if (video.badge?.text case final badge?)
-            PBadge(
-              text: badge,
-              top: 8,
-              right: 10,
-              type: badge == '充电专属' ? PBadgeType.error : PBadgeType.primary,
+    child: CoverScrimCard(
+      // 动态流里父级高度无界，卡片按封面比例自己定高。
+      coverAspectRatio: Style.coverCardRatio,
+      cover: video.cover,
+      title: video.title ?? '',
+      titleMaxLines: isDetail ? 3 : 2,
+      coverOverlays: [
+        if (video.badge?.text case final badge?)
+          PBadge(
+            text: badge,
+            top: 8,
+            right: 10,
+            type: badge == '充电专属' ? PBadgeType.error : PBadgeType.primary,
+          ),
+        if (video.durationText case final duration?)
+          PBadge(text: duration, top: 8, left: 10, type: PBadgeType.gray),
+      ],
+      metaBuilder: (context, colors) => [
+        if (video.stat case final stat?)
+          Flexible(
+            child: Text(
+              '${NumUtils.numFormat(stat.play)}播放 · ${NumUtils.numFormat(stat.danmu)}弹幕',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 11, color: colors.subtitle),
             ),
-          if (video.durationText case final duration?)
-            PBadge(text: duration, top: 8, left: 10, type: PBadgeType.gray),
-        ],
-        metaBuilder: (context, colors) => [
-          if (video.stat case final stat?)
-            Flexible(
-              child: Text(
-                '${NumUtils.numFormat(stat.play)}播放 · ${NumUtils.numFormat(stat.danmu)}弹幕',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 11, color: colors.subtitle),
-              ),
-            ),
-        ],
-      ),
+          ),
+      ],
     ),
   );
 }

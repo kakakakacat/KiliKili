@@ -38,39 +38,26 @@ class MemberCheeseItem extends StatelessWidget {
           if (marks?.isNotEmpty == true)
             PBadge(text: marks!.join('|'), top: 6, right: 6),
         ],
-        metaBuilder: status == null && ctime == null
-            ? null
-            : (context, colors) => [
-                if (status?.isNotEmpty == true)
-                  Flexible(
-                    child: Text(
-                      status!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 11, color: colors.subtitle),
-                    ),
+        metaBuilder: status?.isNotEmpty == true
+            ? (context, colors) => [
+                Flexible(
+                  child: Text(
+                    status!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 11, color: colors.subtitle),
                   ),
-                if (ctime != null) ...[
-                  const Spacer(),
-                  Flexible(
-                    child: Text(
-                      '收藏于${DateFormatUtils.dateFormat(ctime)}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 11, color: colors.subtitle),
-                    ),
-                  ),
-                ],
-              ],
+                ),
+              ]
+            : null,
+        date: ctime == null ? null : '收藏于${DateFormatUtils.dateFormat(ctime)}',
         trailing: onRemove == null
             ? null
-            : SizedBox.square(
-                dimension: 29,
-                child: IconButton(
-                  tooltip: '移除',
-                  onPressed: onRemove,
-                  icon: const Icon(Icons.clear, color: Colors.white, size: 18),
-                ),
+            : IconButton(
+                tooltip: '移除',
+                padding: EdgeInsets.zero,
+                onPressed: onRemove,
+                icon: const Icon(Icons.clear, size: 18),
               ),
       ),
     );

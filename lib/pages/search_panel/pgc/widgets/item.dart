@@ -20,6 +20,12 @@ class SearchPgcCard extends StatelessWidget {
     final areas = item.areas?.isNotEmpty == true ? item.areas! : '';
     final styles = item.styles?.isNotEmpty == true ? item.styles! : '';
     final index = item.indexShow?.isNotEmpty == true ? item.indexShow! : '';
+    final meta = [
+      if (item.mediaScore?.score != null) '评分:${item.mediaScore!.score}',
+      if (areas.isNotEmpty) areas,
+      if (styles.isNotEmpty) styles,
+      if (index.isNotEmpty) index,
+    ].join(' · ');
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       child: CoverScrimCard(
@@ -31,55 +37,33 @@ class SearchPgcCard extends StatelessWidget {
         coverOverlays: [
           PBadge(text: item.seasonTypeName, top: 6, right: 6),
         ],
-        titleBuilder: (context, colors) => Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text.rich(
-              TextSpan(
-                style: TextStyle(color: colors.title, height: 1.32),
-                children: [
-                  for (final span in item.titleSpans)
-                    TextSpan(
-                      text: span.text,
-                      style: span.isEm
-                          ? const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              decoration: TextDecoration.underline,
-                            )
-                          : null,
-                    ),
-                ],
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+        titleSpans: [
+          for (final span in item.titleSpans)
+            TextSpan(
+              text: span.text,
+              style: span.isEm
+                  ? const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      decoration: TextDecoration.underline,
+                    )
+                  : null,
             ),
-            if (item.mediaScore?.score != null ||
-                areas.isNotEmpty ||
-                date.isNotEmpty)
-              Text(
-                [
-                  if (item.mediaScore?.score != null)
-                    '评分:${item.mediaScore!.score}',
-                  if (areas.isNotEmpty) areas,
-                  if (date.isNotEmpty) date,
-                ].join(' · '),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 11, color: colors.subtitle),
-              ),
-            if (styles.isNotEmpty || index.isNotEmpty)
-              Text(
-                [
-                  if (styles.isNotEmpty) styles,
-                  if (index.isNotEmpty) index,
-                ].join(' · '),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 11, color: colors.subtitle),
-              ),
-          ],
-        ),
+        ],
+        // 原来跟在标题下面的两行辅助信息（评分 / 地区 / 风格 / 集数）属于
+        // 「其他信息」，按 #295 留在封面底部遮罩里，并成一行。
+        metaBuilder: meta.isEmpty
+            ? null
+            : (context, colors) => [
+                Flexible(
+                  child: Text(
+                    meta,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 11, color: colors.subtitle),
+                  ),
+                ),
+              ],
+        date: date,
       ),
     );
   }

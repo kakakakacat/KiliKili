@@ -68,18 +68,11 @@ class MemberCoinLikeItem extends StatelessWidget {
       topDuration: item.duration != null && item.duration! > 0
           ? DurationUtils.formatDuration(item.duration)
           : null,
-      metaBuilder: (context, colors) => [
-        const Spacer(),
-        Text(
-          DateFormatUtils.dateFormat(
-            item.ctime,
-            short: VideoCardV.shortFormat,
-            long: VideoCardV.longFormat,
-          ),
-          maxLines: 1,
-          style: TextStyle(fontSize: 11, color: colors.subtitle),
-        ),
-      ],
+      date: DateFormatUtils.dateFormat(
+        item.ctime,
+        short: VideoCardV.shortFormat,
+        long: VideoCardV.longFormat,
+      ),
     );
   }
 }

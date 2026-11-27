@@ -230,9 +230,7 @@ class DetailItem extends StatelessWidget {
                     ),
             ),
         ],
-        trailing: entry.isCompleted
-            ? entry.moreBtn(theme.colorScheme.copyWith(outline: Colors.white))
-            : null,
+        trailing: entry.isCompleted ? entry.moreBtn(theme.colorScheme) : null,
         onTap: () async {
           if (!canDel) {
             Get.to(const DownloadingPage());

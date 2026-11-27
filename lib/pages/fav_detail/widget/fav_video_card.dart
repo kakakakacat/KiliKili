@@ -125,19 +125,15 @@ class FavVideoCardH extends StatelessWidget {
                 style: TextStyle(fontSize: 11, color: colors.subtitle),
               ),
             ),
-          const Spacer(),
-          Text(
-            date,
-            maxLines: 1,
-            style: TextStyle(fontSize: 11, color: colors.subtitle),
-          ),
         ],
+        date: date,
         trailing: isOwner
             ? SizedBox.square(
                 dimension: 29,
                 child: IconButton(
                   tooltip: '取消收藏',
-                  icon: const Icon(Icons.clear, color: Colors.white, size: 18),
+                  padding: EdgeInsets.zero,
+                  icon: const Icon(Icons.clear, size: 18),
                   onPressed: () => showDialog(
                     context: context,
                     builder: (context) => AlertDialog(

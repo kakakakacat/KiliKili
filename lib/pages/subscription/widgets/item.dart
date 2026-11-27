@@ -58,11 +58,8 @@ class SubFolderCard extends StatelessWidget {
           ],
           trailing: IconButton(
             onPressed: cancelSub,
-            icon: const Icon(
-              Icons.delete_outline,
-              size: 18,
-              color: Colors.white,
-            ),
+            padding: EdgeInsets.zero,
+            icon: const Icon(Icons.delete_outline, size: 18),
             tooltip: '取消订阅',
           ),
           onTap: () => onPushSub(label, heroTag, item),

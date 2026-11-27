@@ -31,12 +31,7 @@ class SeasonSeriesCard extends StatelessWidget {
             right: 6,
           ),
         ],
-        metaBuilder: (context, colors) => [
-          Text(
-            DateFormatUtils.dateFormat(meta.ptime),
-            style: TextStyle(fontSize: 11, color: colors.subtitle),
-          ),
-        ],
+        date: DateFormatUtils.dateFormat(meta.ptime),
         onTap: onTap,
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,

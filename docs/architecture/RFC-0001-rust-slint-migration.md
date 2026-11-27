@@ -533,7 +533,8 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 - domain：bili-domain 中的实体、规则和 Ports traits。
 - application：bili-core 中 UseCase、播放器意图编排、事件/快照。
 - 补充（2026-11-12，issue #108）：bili-core 还放**与宿主无关的呈现算法**，
-  目前是 `cover_scrim`（按封面缩略图算底部文案遮罩的配色与对比度）。它不是
+  目前是 `cover_scrim`（按封面缩略图算底部辅助信息遮罩的配色与对比度；
+  #295 起标题移到封面下方，遮罩里只剩辅助信息）。它不是
   UseCase，但符合 AGENTS.md 第 2 节的判据——阈值判断与收敛算法，换掉宿主
   框架不该重写。边界是：**算颜色**在 Rust，**画渐变**在宿主；bili-core 不
   碰像素解码，输入是宿主给的一小块 RGBA。

@@ -1,3 +1,4 @@
+import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/button/more_btn.dart';
 import 'package:kilikili/common/widgets/loading_widget/loading_widget.dart';
@@ -71,6 +72,7 @@ class _MemberHomeState extends State<MemberHome>
     crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth,
     childAspectRatio: Style.coverCardRatio,
+    mainAxisExtent: CoverScrimCard.textExtent(),
   );
 
   late final gridDelegateH = OpusGridDelegateFixedMainAxisExtent(
@@ -84,6 +86,7 @@ class _MemberHomeState extends State<MemberHome>
     crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth * 0.6,
     childAspectRatio: 0.75,
+    mainAxisExtent: CoverScrimCard.textExtent(),
   );
 
   Widget _buildBody(LoadingState<rust.SpacePage?> loadingState) {
@@ -108,7 +111,10 @@ class _MemberHomeState extends State<MemberHome>
             if (archives != null && archives.isNotEmpty)
               ..._buildArchive(response.archive!.count!.toInt(), archives),
             if (favourites != null && favourites.isNotEmpty)
-              ..._buildFavourite(response.favourite!.count!.toInt(), favourites),
+              ..._buildFavourite(
+                response.favourite!.count!.toInt(),
+                favourites,
+              ),
             if (coinArchives != null && coinArchives.isNotEmpty)
               ..._buildCoinArchive(
                 response.coinArchive!.count!.toInt(),

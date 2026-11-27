@@ -142,9 +142,7 @@ class PageInfoItem<T extends MultiSelectData> extends StatelessWidget {
             style: TextStyle(fontSize: 11, color: colors.subtitle),
           ),
         ],
-        trailing: pageInfo.entries.first.moreBtn(
-          colorScheme.copyWith(outline: Colors.white),
-        ),
+        trailing: pageInfo.entries.first.moreBtn(colorScheme),
         onTap: () {
           if (controller.enableMultiSelect.value) {
             controller.onSelect(seasonInfo);

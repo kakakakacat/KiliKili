@@ -19,10 +19,24 @@ KiliKili 基于 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus)，保留�
   <img src="assets/screenshots/kilikili-android-video.png" height="400" alt="Android 播放页">
 </p>
 
+## 和原版哔哩哔哩比，哪里不一样
+
+- **底层逻辑用 Rust 重写。** 取数、选流、排序与过滤这些核心逻辑正从 Dart 一条接口一条地搬进 Rust（[#67](https://github.com/kakakakacat/KiliKili/issues/67)），只读接口已基本迁完。原生代码、没有 GC 停顿，五个平台跑的是同一份实现，不会各端各写一套、各错一套。*我们还没有和官方客户端做受控对照测量，所以这里不报百分比；基准方法见 [docs/qa](docs/qa)。*
+
+- **Liquid Glass 玻璃界面，iOS 那种水滴特效。** 底部导航的选中指示是一滴真玻璃：有折射和高光，切换标签时像液体一样先被拉长、冲过目标再回弹，按住会鼓起。走 Impeller 的 shader 折射，设备不支持或系统开了「减弱动态效果」时自动降级，不会卡。
+
+- **「我的」页面重做过。** 账户信息和动态/关注/粉丝统计合成一张卡片，顶部是一体式工具胶囊（无痕模式、主题切换、搜索、消息），下面是统一圆角的快捷入口和收藏卡片，窄屏、平板、深浅主题、大字体都适配（[#262](https://github.com/kakakakacat/KiliKili/issues/262)）。
+
+- **不必要的东西一律砍掉。** 没有广告，没有开屏，没有商城和会员购入口，不集成任何推送 SDK，不做「用完即走」之外的挽留。还内置 SponsorBlock 自动跳过恰饭片段，番剧可以跳过片头片尾。
+
 ## 即将到来
 
-- **Liquid Glass 玻璃界面**：首页导航已经用上了，之后会扩展到更多界面。
-- **视频补帧**：让低帧率视频播放更顺滑，可随时关闭。
+- **GPU 视频插帧**：让低帧率视频播放更顺滑，可随时关闭（[#211](https://github.com/kakakakacat/KiliKili/issues/211)、[#219](https://github.com/kakakakacat/KiliKili/issues/219)、[#220](https://github.com/kakakakacat/KiliKili/issues/220)）。
+- **视频内搜索**：按字幕和弹幕直接定位到要看的那一段（[#213](https://github.com/kakakakacat/KiliKili/issues/213)）。
+- **智能弹幕**：密度调节、自动避开字幕、防剧透预览（[#214](https://github.com/kakakakacat/KiliKili/issues/214)）。
+- **玻璃界面扩展到更多页面**：从导航栏扩到整套控件，并做五平台适配与低端机降级（[#224](https://github.com/kakakakacat/KiliKili/issues/224)–[#226](https://github.com/kakakakacat/KiliKili/issues/226)）。
+- **更灵活的倍速**：细粒度调速、任意输入、记住上次的倍速（[#291](https://github.com/kakakakacat/KiliKili/issues/291)）。
+- **动态头像**：gif / ResAnimation 头像不再被压成静态图（[#292](https://github.com/kakakakacat/KiliKili/issues/292)）。
 
 正式安装包尚未发布，请关注 [Releases](https://github.com/kakakakacat/KiliKili/releases)。
 

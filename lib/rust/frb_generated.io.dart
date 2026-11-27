@@ -7,6 +7,7 @@ import 'package:kilikili/rust/api/cover_scrim.dart';
 import 'package:kilikili/rust/api/danmaku.dart';
 import 'package:kilikili/rust/api/dynamic.dart';
 import 'package:kilikili/rust/api/fav.dart';
+import 'package:kilikili/rust/api/glass_droplet.dart';
 import 'package:kilikili/rust/api/grpc.dart';
 import 'package:kilikili/rust/api/history.dart';
 import 'package:kilikili/rust/api/im.dart';
@@ -279,6 +280,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FollowList dco_decode_box_autoadd_follow_list(dynamic raw);
+
+  @protected
+  GlassDropletState dco_decode_box_autoadd_glass_droplet_state(dynamic raw);
 
   @protected
   GrpcContext dco_decode_box_autoadd_grpc_context(dynamic raw);
@@ -1155,6 +1159,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   FormatCandidateInput dco_decode_format_candidate_input(dynamic raw);
 
   @protected
+  GlassDropletFrame dco_decode_glass_droplet_frame(dynamic raw);
+
+  @protected
+  GlassDropletShape dco_decode_glass_droplet_shape(dynamic raw);
+
+  @protected
+  GlassDropletState dco_decode_glass_droplet_state(dynamic raw);
+
+  @protected
   GrpcBytesResult dco_decode_grpc_bytes_result(dynamic raw);
 
   @protected
@@ -1204,6 +1217,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PlatformInt64 dco_decode_i_64(dynamic raw);
+
+  @protected
+  int dco_decode_i_8(dynamic raw);
 
   @protected
   ImAckSeqnoResult dco_decode_im_ack_seqno_result(dynamic raw);
@@ -4252,6 +4268,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   FollowList sse_decode_box_autoadd_follow_list(SseDeserializer deserializer);
 
   @protected
+  GlassDropletState sse_decode_box_autoadd_glass_droplet_state(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   GrpcContext sse_decode_box_autoadd_grpc_context(SseDeserializer deserializer);
 
   @protected
@@ -5426,6 +5447,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  GlassDropletFrame sse_decode_glass_droplet_frame(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  GlassDropletShape sse_decode_glass_droplet_shape(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  GlassDropletState sse_decode_glass_droplet_state(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   GrpcBytesResult sse_decode_grpc_bytes_result(SseDeserializer deserializer);
 
   @protected
@@ -5481,6 +5517,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
+
+  @protected
+  int sse_decode_i_8(SseDeserializer deserializer);
 
   @protected
   ImAckSeqnoResult sse_decode_im_ack_seqno_result(SseDeserializer deserializer);
@@ -9437,6 +9476,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_glass_droplet_state(
+    GlassDropletState self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_grpc_context(
     GrpcContext self,
     SseSerializer serializer,
@@ -11003,6 +11048,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_glass_droplet_frame(
+    GlassDropletFrame self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_glass_droplet_shape(
+    GlassDropletShape self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_glass_droplet_state(
+    GlassDropletState self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_grpc_bytes_result(
     GrpcBytesResult self,
     SseSerializer serializer,
@@ -11067,6 +11130,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_i_8(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_im_ack_seqno_result(

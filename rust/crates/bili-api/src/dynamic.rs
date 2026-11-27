@@ -315,11 +315,18 @@ pub async fn send_update_reserve<T: HttpTransport>(
         &update_reserve_request(sid, sub_type, title, start),
     )
     .await?;
-    let value: serde_json::Value = unwrap_reserve(&body)?;
-    value
-        .get("sid")
+    parse_update_reserve(&body, sid)
+}
+
+/// 更新预约成功时服务端不一定回 `data.sid`（真机见 #284，`data` 也可能为
+/// null）。基线 Dart 只看 `code == 0`；更新不会换 id，缺省时沿用请求的 `sid`。
+fn parse_update_reserve(body: &str, sid: i64) -> Result<i64, DomainError> {
+    let value: Option<serde_json::Value> = crate::envelope::unwrap_envelope_nullable(body)?;
+    Ok(value
+        .as_ref()
+        .and_then(|v| v.get("sid"))
         .and_then(serde_json::Value::as_i64)
-        .ok_or_else(|| DomainError::new(ErrorKind::Protocol, "更新预约响应缺少 sid"))
+        .unwrap_or(sid))
 }
 
 pub async fn send_dyn_reserve<T: HttpTransport>(
@@ -637,6 +644,17 @@ pub async fn fetch_dyn_red<T: HttpTransport>(
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    #[allow(clippy::expect_used)]
+    fn update_reserve_without_sid_keeps_the_request_sid() {
+        let ok = |body: &str| parse_update_reserve(body, 42).expect("code 0 is success");
+        assert_eq!(ok(r#"{"code":0,"message":"0","data":{}}"#), 42);
+        assert_eq!(ok(r#"{"code":0,"message":"0","data":null}"#), 42);
+        assert_eq!(ok(r#"{"code":0,"message":"0"}"#), 42);
+        assert_eq!(ok(r#"{"code":0,"message":"0","data":{"sid":7}}"#), 7);
+        assert!(parse_update_reserve(r#"{"code":-400,"message":"x"}"#, 42).is_err());
+    }
+
     use super::*;
 
     #[test]

@@ -104,7 +104,7 @@ class FavVideoCardH extends StatelessWidget {
           if (badge != null && badge.isNotEmpty)
             PBadge(
               text: badge,
-              top: item.kind != 24 || (item.duration ?? 0) > 0 ? 54 : 6,
+              bottom: 6,
               right: 6,
               type: PBadgeType.gray,
             ),

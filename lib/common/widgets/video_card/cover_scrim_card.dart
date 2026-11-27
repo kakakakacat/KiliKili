@@ -369,7 +369,6 @@ class _CoverStack extends StatelessWidget {
                   );
           },
         ),
-        ...coverOverlays,
         CoverTopInfoBar(stats: topStats, duration: topDuration),
         if (topStart case final topStart?)
           Positioned(top: 0, left: 0, child: topStart),
@@ -385,6 +384,9 @@ class _CoverStack extends StatelessWidget {
               ),
             ),
           ),
+        // 角标在底部遮罩之上：#295 之后角标贴在封面右下角，正好落在遮罩带里，
+        // 画在遮罩下面会被盖住。
+        ...coverOverlays,
         ...foregroundOverlays,
       ],
     );

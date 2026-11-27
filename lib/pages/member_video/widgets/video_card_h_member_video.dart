@@ -95,7 +95,7 @@ class VideoCardHMemberVideo extends StatelessWidget {
           if (badge != null)
             PBadge(
               text: badge,
-              top: 54,
+              bottom: 6,
               right: 6,
               type: videoItem.badges.first == '充电专属'
                   ? PBadgeType.error

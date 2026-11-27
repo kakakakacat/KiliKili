@@ -81,7 +81,7 @@ class VideoCardH extends StatelessWidget {
           if (videoItem.badge case final badge?)
             PBadge(
               text: badge,
-              top: videoItem.isLive == true && videoItem.duration <= 0 ? 6 : 54,
+              bottom: 6,
               right: 6,
               type: badge == '充电专属' ? PBadgeType.error : PBadgeType.primary,
             ),

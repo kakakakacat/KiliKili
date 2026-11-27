@@ -57,9 +57,9 @@ class MemberCoinLikeItem extends StatelessWidget {
       onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
       coverOverlays: [
         if (item.isCooperation == true)
-          const PBadge(text: '合作', top: 54, left: 6)
+          const PBadge(text: '合作', bottom: 6, right: 6)
         else if (item.isSteins == true)
-          const PBadge(text: '互动', top: 54, left: 6),
+          const PBadge(text: '互动', bottom: 6, right: 6),
       ],
       topStats: [
         (StatType.play, item.play),

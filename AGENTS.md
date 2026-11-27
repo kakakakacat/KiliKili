@@ -211,13 +211,25 @@ PR**，不要只留在代码和 Issues 里：
 
 - **合并前要仓库所有者明确许可。**
 - **合并排队，一次只合一个**——生成产物决定了并行合必冲突。
-- **PR 上的回归检查当前是关的**（2026-11-12 起，issue #114）：`ci.yml` 的
-  `pull_request:` 触发已注释掉，仓库 ruleset「main regression gate」改成
-  `disabled`。两处必须同时生效——只关一边的话，必需检查 `regression gate`
-  永不上报，PR 全部卡死在 `BLOCKED`。恢复时同样两处一起改回来。
-- 因此 **PR 上没有任何自动检查，合并前请自己在本机验**（至少
-  `cargo fmt --check` / `cargo clippy` / `cargo test`，动了 Dart 再跑
-  `flutter test`）。要在合并前跑一次完整回归：
+- **PR 上的回归检查正在恢复中，目前处在「触发已开、但还不是必需检查」的
+  中间态**（issue #114）：`ci.yml` 的 `pull_request:` 触发已于 2026-11-27
+  恢复，而 ruleset「main regression gate」**仍是 `disabled`**。
+
+  **顺序是刻意的，不要一次改两处。** 必需检查一旦生效而 `regression gate`
+  报不上来，PR 会全部卡死在 `BLOCKED` 永久合不进去——2026-11-12 当初关的
+  时候必须两处一起关，正是这个原因；恢复时却要**先看到它真的报过一次绿**，
+  再把 ruleset 改回 `active`：
+
+  ```sh
+  gh api -X PUT repos/<owner>/<repo>/rulesets/27013798 -f enforcement=active
+  ```
+
+  2026-11-26 那次卡住的原因是整个仓库的 Actions 被停了（见下一条），当天
+  晚些时候由仓库所有者在网页端恢复；第 4 步要等 `pull_request:` 合进 main
+  之后、在真实 PR 上确认一次。
+- 因此 **合并前仍然请自己在本机验**（至少 `cargo fmt --check` /
+  `cargo clippy` / `cargo test`，动了 Dart 再跑 `flutter test`），别因为
+  `pull_request:` 回来了就假定 PR 上有过绿检查。要在合并前跑一次完整回归：
   `gh workflow run "Regression CI" --ref <分支>`。
 - 回归仍在跑的地方：合并进 main 的 push、每日 02:17 定时、手动 dispatch。
   坏改动的发现点从「合并前」后移到「合并后」，合完顺手看一眼那次运行。

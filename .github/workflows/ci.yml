@@ -1,15 +1,13 @@
 name: Regression CI
 
 on:
-  # 2026-11-12 起暂停 PR 上的回归检查（issue #114）。重构期一条接口一个 PR，
-  # 每个 PR 都要等一次完整回归（Android 打包 11-15 分钟最慢），等待成本超过
-  # 收益。配套地，仓库 ruleset「main regression gate」已改为 disabled——只注释
-  # 这里而不动 ruleset 的话，必需检查 `regression gate` 永不上报，所有 PR 会
-  # 卡在 BLOCKED 永久合不进去。
+  # 2026-11-12 起曾暂停 PR 上的回归检查（issue #114），2026-11-27 恢复触发。
   #
-  # 恢复时两处一起改回来：取消下面这行注释 + ruleset enforcement 改回 active。
-  # 期间要在合并前验证某个分支：gh workflow run "Regression CI" --ref <分支>
-  # pull_request:
+  # 与之配套的 ruleset「main regression gate」**仍是 disabled**，要等
+  # `regression gate` 在 PR 上真的报过一次绿再改回 active（#114 第 4 步）。
+  # 顺序不能反：ruleset 一旦 active 而检查报不上来，所有 PR 会卡在 BLOCKED
+  # 永久合不进去——这也是 2026-11-12 当初必须两处一起关的原因。
+  pull_request:
   push:
     branches: [main]
   schedule:

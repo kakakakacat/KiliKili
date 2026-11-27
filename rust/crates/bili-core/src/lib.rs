@@ -4,6 +4,7 @@
 
 pub mod cdn;
 pub mod cover_scrim;
+pub mod glass_droplet;
 pub mod media_kit_port;
 pub mod media_select;
 pub mod playback;

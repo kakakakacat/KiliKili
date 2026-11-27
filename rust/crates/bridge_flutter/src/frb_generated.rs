@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -882833588;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 511811393;
 
 // Section: executor
 
@@ -8409,6 +8409,176 @@ fn wire__crate__api__dynamic__followee_votes_impl(
         },
     )
 }
+fn wire__crate__api__glass_droplet__glass_droplet_drag_target_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "glass_droplet_drag_target",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_pointer = <f64>::sse_decode(&mut deserializer);
+            let api_count = <u32>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>(crate::api::glass_droplet::glass_droplet_drag_target(
+                    api_pointer,
+                    api_count,
+                ))?;
+                std::result::Result::Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__glass_droplet__glass_droplet_press_target_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "glass_droplet_press_target",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_pointer = <f64>::sse_decode(&mut deserializer);
+            let api_count = <u32>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>(
+                    crate::api::glass_droplet::glass_droplet_press_target(api_pointer, api_count),
+                )?;
+                std::result::Result::Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__glass_droplet__glass_droplet_rest_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "glass_droplet_rest",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_index = <f64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok =
+                    Ok::<_, ()>(crate::api::glass_droplet::glass_droplet_rest(api_index))?;
+                std::result::Result::Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__glass_droplet__glass_droplet_snap_index_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "glass_droplet_snap_index",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_target = <f64>::sse_decode(&mut deserializer);
+            let api_count = <u32>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>(crate::api::glass_droplet::glass_droplet_snap_index(
+                    api_target, api_count,
+                ))?;
+                std::result::Result::Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__glass_droplet__glass_droplet_step_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "glass_droplet_step",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_state =
+                <crate::api::glass_droplet::GlassDropletState>::sse_decode(&mut deserializer);
+            let api_target = <f64>::sse_decode(&mut deserializer);
+            let api_pressed = <bool>::sse_decode(&mut deserializer);
+            let api_dt_seconds = <f64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>(crate::api::glass_droplet::glass_droplet_step(
+                    api_state,
+                    api_target,
+                    api_pressed,
+                    api_dt_seconds,
+                ))?;
+                std::result::Result::Ok(output_ok)
+            })())
+        },
+    )
+}
 fn wire__crate__api__playback__has_volume_measurement_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -15839,6 +16009,66 @@ impl SseDecode for crate::api::media_select::FormatCandidateInput {
     }
 }
 
+impl SseDecode for crate::api::glass_droplet::GlassDropletFrame {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_state =
+            <crate::api::glass_droplet::GlassDropletState>::sse_decode(deserializer);
+        let mut var_shape =
+            <crate::api::glass_droplet::GlassDropletShape>::sse_decode(deserializer);
+        let mut var_settled = <bool>::sse_decode(deserializer);
+        return crate::api::glass_droplet::GlassDropletFrame {
+            state: var_state,
+            shape: var_shape,
+            settled: var_settled,
+        };
+    }
+}
+
+impl SseDecode for crate::api::glass_droplet::GlassDropletShape {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_left = <f64>::sse_decode(deserializer);
+        let mut var_right = <f64>::sse_decode(deserializer);
+        let mut var_heightScale = <f64>::sse_decode(deserializer);
+        let mut var_stretch = <f64>::sse_decode(deserializer);
+        let mut var_lift = <f64>::sse_decode(deserializer);
+        let mut var_lensZoom = <f64>::sse_decode(deserializer);
+        return crate::api::glass_droplet::GlassDropletShape {
+            left: var_left,
+            right: var_right,
+            height_scale: var_heightScale,
+            stretch: var_stretch,
+            lift: var_lift,
+            lens_zoom: var_lensZoom,
+        };
+    }
+}
+
+impl SseDecode for crate::api::glass_droplet::GlassDropletState {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_left = <f64>::sse_decode(deserializer);
+        let mut var_leftVelocity = <f64>::sse_decode(deserializer);
+        let mut var_right = <f64>::sse_decode(deserializer);
+        let mut var_rightVelocity = <f64>::sse_decode(deserializer);
+        let mut var_lift = <f64>::sse_decode(deserializer);
+        let mut var_liftVelocity = <f64>::sse_decode(deserializer);
+        let mut var_target = <f64>::sse_decode(deserializer);
+        let mut var_direction = <i8>::sse_decode(deserializer);
+        return crate::api::glass_droplet::GlassDropletState {
+            left: var_left,
+            left_velocity: var_leftVelocity,
+            right: var_right,
+            right_velocity: var_rightVelocity,
+            lift: var_lift,
+            lift_velocity: var_liftVelocity,
+            target: var_target,
+            direction: var_direction,
+        };
+    }
+}
+
 impl SseDecode for crate::api::grpc::GrpcBytesResult {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -16118,6 +16348,13 @@ impl SseDecode for i64 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         deserializer.cursor.read_i64::<NativeEndian>().unwrap()
+    }
+}
+
+impl SseDecode for i8 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_i8().unwrap()
     }
 }
 
@@ -30051,243 +30288,243 @@ fn pde_ffi_dispatcher_primary_impl(
         }
         192 => wire__crate__api__user__fetch_video_tags_impl(port, ptr, rust_vec_len, data_len),
         193 => wire__crate__api__dynamic__followee_votes_impl(port, ptr, rust_vec_len, data_len),
-        195 => wire__crate__api__video_write__heart_beat_impl(port, ptr, rust_vec_len, data_len),
-        196 => {
+        200 => wire__crate__api__video_write__heart_beat_impl(port, ptr, rust_vec_len, data_len),
+        201 => {
             wire__crate__api__video_write__history_report_impl(port, ptr, rust_vec_len, data_len)
         }
-        199 => wire__crate__api__msg__im_report_impl(port, ptr, rust_vec_len, data_len),
-        202 => wire__crate__api__init__init_app_impl(port, ptr, rust_vec_len, data_len),
-        203 => wire__crate__api__fav__like_topic_impl(port, ptr, rust_vec_len, data_len),
-        204 => wire__crate__api__video_write__like_video_impl(port, ptr, rust_vec_len, data_len),
-        210 => wire__crate__api__login__login_by_password_impl(port, ptr, rust_vec_len, data_len),
-        211 => wire__crate__api__login__login_by_sms_impl(port, ptr, rust_vec_len, data_len),
-        212 => wire__crate__api__login__login_devices_impl(port, ptr, rust_vec_len, data_len),
-        213 => wire__crate__api__login__login_exchange_oauth_code_impl(
+        204 => wire__crate__api__msg__im_report_impl(port, ptr, rust_vec_len, data_len),
+        207 => wire__crate__api__init__init_app_impl(port, ptr, rust_vec_len, data_len),
+        208 => wire__crate__api__fav__like_topic_impl(port, ptr, rust_vec_len, data_len),
+        209 => wire__crate__api__video_write__like_video_impl(port, ptr, rust_vec_len, data_len),
+        215 => wire__crate__api__login__login_by_password_impl(port, ptr, rust_vec_len, data_len),
+        216 => wire__crate__api__login__login_by_sms_impl(port, ptr, rust_vec_len, data_len),
+        217 => wire__crate__api__login__login_devices_impl(port, ptr, rust_vec_len, data_len),
+        218 => wire__crate__api__login__login_exchange_oauth_code_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        214 => wire__crate__api__login__login_logout_impl(port, ptr, rust_vec_len, data_len),
-        215 => wire__crate__api__login__login_pre_capture_impl(port, ptr, rust_vec_len, data_len),
-        216 => wire__crate__api__login__login_qrcode_impl(port, ptr, rust_vec_len, data_len),
-        217 => wire__crate__api__login__login_qrcode_poll_impl(port, ptr, rust_vec_len, data_len),
-        218 => {
+        219 => wire__crate__api__login__login_logout_impl(port, ptr, rust_vec_len, data_len),
+        220 => wire__crate__api__login__login_pre_capture_impl(port, ptr, rust_vec_len, data_len),
+        221 => wire__crate__api__login__login_qrcode_impl(port, ptr, rust_vec_len, data_len),
+        222 => wire__crate__api__login__login_qrcode_poll_impl(port, ptr, rust_vec_len, data_len),
+        223 => {
             wire__crate__api__login__login_resolve_captcha_impl(port, ptr, rust_vec_len, data_len)
         }
-        219 => {
+        224 => {
             wire__crate__api__login__login_safe_center_info_impl(port, ptr, rust_vec_len, data_len)
         }
-        220 => {
+        225 => {
             wire__crate__api__login__login_safe_center_sms_impl(port, ptr, rust_vec_len, data_len)
         }
-        221 => wire__crate__api__login__login_safe_center_verify_impl(
+        226 => wire__crate__api__login__login_safe_center_verify_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        222 => wire__crate__api__login__login_send_sms_code_impl(port, ptr, rust_vec_len, data_len),
-        224 => wire__crate__api__video_write__media_list_history_impl(
+        227 => wire__crate__api__login__login_send_sms_code_impl(port, ptr, rust_vec_len, data_len),
+        229 => wire__crate__api__video_write__media_list_history_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        227 => wire__crate__api__search_suggest__parse_search_suggest_impl(
+        232 => wire__crate__api__search_suggest__parse_search_suggest_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        229 => wire__crate__api__video_detail__parse_video_detail_impl(
+        234 => wire__crate__api__video_detail__parse_video_detail_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        230 => wire__crate__api__history__pause_history_impl(port, ptr, rust_vec_len, data_len),
-        231 => wire__crate__api__video_write__pgc_add_impl(port, ptr, rust_vec_len, data_len),
-        233 => wire__crate__api__video_write__pgc_del_impl(port, ptr, rust_vec_len, data_len),
-        234 => wire__crate__api__pgc__pgc_review_del_impl(port, ptr, rust_vec_len, data_len),
-        235 => wire__crate__api__pgc__pgc_review_dislike_impl(port, ptr, rust_vec_len, data_len),
-        236 => wire__crate__api__pgc__pgc_review_like_impl(port, ptr, rust_vec_len, data_len),
-        237 => wire__crate__api__pgc__pgc_review_modify_impl(port, ptr, rust_vec_len, data_len),
-        238 => wire__crate__api__pgc__pgc_review_post_impl(port, ptr, rust_vec_len, data_len),
-        239 => wire__crate__api__video_write__pgc_triple_impl(port, ptr, rust_vec_len, data_len),
-        240 => wire__crate__api__video_write__pgc_update_impl(port, ptr, rust_vec_len, data_len),
-        242 => wire__crate__api__im__pin_im_session_impl(port, ptr, rust_vec_len, data_len),
-        253 => {
+        235 => wire__crate__api__history__pause_history_impl(port, ptr, rust_vec_len, data_len),
+        236 => wire__crate__api__video_write__pgc_add_impl(port, ptr, rust_vec_len, data_len),
+        238 => wire__crate__api__video_write__pgc_del_impl(port, ptr, rust_vec_len, data_len),
+        239 => wire__crate__api__pgc__pgc_review_del_impl(port, ptr, rust_vec_len, data_len),
+        240 => wire__crate__api__pgc__pgc_review_dislike_impl(port, ptr, rust_vec_len, data_len),
+        241 => wire__crate__api__pgc__pgc_review_like_impl(port, ptr, rust_vec_len, data_len),
+        242 => wire__crate__api__pgc__pgc_review_modify_impl(port, ptr, rust_vec_len, data_len),
+        243 => wire__crate__api__pgc__pgc_review_post_impl(port, ptr, rust_vec_len, data_len),
+        244 => wire__crate__api__video_write__pgc_triple_impl(port, ptr, rust_vec_len, data_len),
+        245 => wire__crate__api__video_write__pgc_update_impl(port, ptr, rust_vec_len, data_len),
+        247 => wire__crate__api__im__pin_im_session_impl(port, ptr, rust_vec_len, data_len),
+        258 => {
             wire__crate__api__dynamic__private_pub_setting_impl(port, ptr, rust_vec_len, data_len)
         }
-        254 => wire__crate__api__video_write__relation_mod_impl(port, ptr, rust_vec_len, data_len),
-        255 => wire__crate__api__msg__remove_session_impl(port, ptr, rust_vec_len, data_len),
-        256 => {
+        259 => wire__crate__api__video_write__relation_mod_impl(port, ptr, rust_vec_len, data_len),
+        260 => wire__crate__api__msg__remove_session_impl(port, ptr, rust_vec_len, data_len),
+        261 => {
             wire__crate__api__reply_grpc__reply_card_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        257 => wire__crate__api__reply_grpc__reply_content_default_impl(
+        262 => wire__crate__api__reply_grpc__reply_content_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        258 => wire__crate__api__reply_grpc__reply_control_info_default_impl(
+        263 => wire__crate__api__reply_grpc__reply_control_info_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        259 => wire__crate__api__video_write__reply_del_impl(port, ptr, rust_vec_len, data_len),
-        260 => wire__crate__api__reply_grpc__reply_detail_page_default_impl(
+        264 => wire__crate__api__video_write__reply_del_impl(port, ptr, rust_vec_len, data_len),
+        265 => wire__crate__api__reply_grpc__reply_detail_page_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        261 => wire__crate__api__reply_grpc__reply_emote_default_impl(
+        266 => wire__crate__api__reply_grpc__reply_emote_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        262 => wire__crate__api__reply_grpc__reply_entity_default_impl(
+        267 => wire__crate__api__reply_grpc__reply_entity_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        263 => wire__crate__api__reply_grpc__reply_filter_input_default_impl(
+        268 => wire__crate__api__reply_grpc__reply_filter_input_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        264 => wire__crate__api__reply_grpc__reply_flat_page_default_impl(
+        269 => wire__crate__api__reply_grpc__reply_flat_page_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        265 => wire__crate__api__reply_grpc__reply_fold_card_default_impl(
+        270 => wire__crate__api__reply_grpc__reply_fold_card_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        267 => wire__crate__api__reply_grpc__reply_main_page_default_impl(
+        272 => wire__crate__api__reply_grpc__reply_main_page_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        268 => wire__crate__api__reply_grpc__reply_medal_default_impl(
+        273 => wire__crate__api__reply_grpc__reply_medal_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        269 => {
+        274 => {
             wire__crate__api__reply_grpc__reply_note_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        270 => wire__crate__api__reply_grpc__reply_parent_member_default_impl(
+        275 => wire__crate__api__reply_grpc__reply_parent_member_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        271 => wire__crate__api__reply_grpc__reply_picture_default_impl(
+        276 => wire__crate__api__reply_grpc__reply_picture_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        272 => wire__crate__api__reply_grpc__reply_search_item_default_impl(
+        277 => wire__crate__api__reply_grpc__reply_search_item_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        273 => wire__crate__api__reply_grpc__reply_search_list_default_impl(
+        278 => wire__crate__api__reply_grpc__reply_search_list_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        274 => wire__crate__api__reply_grpc__reply_subject_default_impl(
+        279 => wire__crate__api__reply_grpc__reply_subject_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        275 => {
+        280 => {
             wire__crate__api__reply_grpc__reply_url_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        276 => {
+        281 => {
             wire__crate__api__reply_grpc__reply_user_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        277 => wire__crate__api__reply_grpc__reply_vote_card_default_impl(
+        282 => wire__crate__api__reply_grpc__reply_vote_card_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        278 => {
+        283 => {
             wire__crate__api__reply_grpc__reply_vote_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        279 => wire__crate__api__reply_grpc__reply_vote_option_default_impl(
+        284 => wire__crate__api__reply_grpc__reply_vote_option_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        280 => wire__crate__api__space__report_member_impl(port, ptr, rust_vec_len, data_len),
-        281 => wire__crate__api__dynamic__reserve_info_impl(port, ptr, rust_vec_len, data_len),
-        282 => {
+        285 => wire__crate__api__space__report_member_impl(port, ptr, rust_vec_len, data_len),
+        286 => wire__crate__api__dynamic__reserve_info_impl(port, ptr, rust_vec_len, data_len),
+        287 => {
             wire__crate__api__video_write__room_entry_action_impl(port, ptr, rust_vec_len, data_len)
         }
-        283 => wire__crate__api__dynamic__save_vote_impl(port, ptr, rust_vec_len, data_len),
-        284 => wire__crate__api__search__search_all_impl(port, ptr, rust_vec_len, data_len),
-        285 => wire__crate__api__search__search_article_impl(port, ptr, rust_vec_len, data_len),
-        286 => wire__crate__api__search__search_live_impl(port, ptr, rust_vec_len, data_len),
-        287 => wire__crate__api__search__search_pgc_impl(port, ptr, rust_vec_len, data_len),
-        288 => wire__crate__api__search__search_recommend_impl(port, ptr, rust_vec_len, data_len),
-        289 => wire__crate__api__search__search_trending_impl(port, ptr, rust_vec_len, data_len),
-        290 => wire__crate__api__search__search_user_impl(port, ptr, rust_vec_len, data_len),
-        291 => wire__crate__api__search__search_video_impl(port, ptr, rust_vec_len, data_len),
-        294 => wire__crate__api__im__send_im_message_impl(port, ptr, rust_vec_len, data_len),
-        296 => wire__crate__api__im__set_im_setting_impl(port, ptr, rust_vec_len, data_len),
-        297 => wire__crate__api__msg__set_msg_dnd_impl(port, ptr, rust_vec_len, data_len),
-        298 => wire__crate__api__msg__set_notice_impl(port, ptr, rust_vec_len, data_len),
-        299 => wire__crate__api__msg__set_push_ss_impl(port, ptr, rust_vec_len, data_len),
-        300 => wire__crate__api__fav__sort_fav_impl(port, ptr, rust_vec_len, data_len),
-        301 => wire__crate__api__fav__sort_fav_folder_impl(port, ptr, rust_vec_len, data_len),
-        302 => wire__crate__api__misc__sort_follow_tag_impl(port, ptr, rust_vec_len, data_len),
-        305 => wire__crate__api__user__space_reserve_impl(port, ptr, rust_vec_len, data_len),
-        306 => wire__crate__api__user__space_setting_mod_impl(port, ptr, rust_vec_len, data_len),
-        307 => wire__crate__api__relation__special_action_impl(port, ptr, rust_vec_len, data_len),
-        309 => wire__crate__api__dynamic__thumb_dynamic_impl(port, ptr, rust_vec_len, data_len),
-        310 => wire__crate__api__history__to_view_clear_impl(port, ptr, rust_vec_len, data_len),
-        311 => wire__crate__api__history__to_view_del_impl(port, ptr, rust_vec_len, data_len),
-        312 => wire__crate__api__history__to_view_later_impl(port, ptr, rust_vec_len, data_len),
-        313 => wire__crate__api__dynamic__top_dynamic_impl(port, ptr, rust_vec_len, data_len),
-        314 => wire__crate__api__dynamic__topic_pub_search_impl(port, ptr, rust_vec_len, data_len),
-        315 => wire__crate__api__dynamic__topic_rcmd_impl(port, ptr, rust_vec_len, data_len),
-        316 => wire__crate__api__dynamic__topic_top_impl(port, ptr, rust_vec_len, data_len),
-        317 => wire__crate__api__video_write__ugc_triple_impl(port, ptr, rust_vec_len, data_len),
-        318 => wire__crate__api__fav__unfav_all_impl(port, ptr, rust_vec_len, data_len),
-        319 => wire__crate__api__im__unpin_im_session_impl(port, ptr, rust_vec_len, data_len),
-        320 => {
+        288 => wire__crate__api__dynamic__save_vote_impl(port, ptr, rust_vec_len, data_len),
+        289 => wire__crate__api__search__search_all_impl(port, ptr, rust_vec_len, data_len),
+        290 => wire__crate__api__search__search_article_impl(port, ptr, rust_vec_len, data_len),
+        291 => wire__crate__api__search__search_live_impl(port, ptr, rust_vec_len, data_len),
+        292 => wire__crate__api__search__search_pgc_impl(port, ptr, rust_vec_len, data_len),
+        293 => wire__crate__api__search__search_recommend_impl(port, ptr, rust_vec_len, data_len),
+        294 => wire__crate__api__search__search_trending_impl(port, ptr, rust_vec_len, data_len),
+        295 => wire__crate__api__search__search_user_impl(port, ptr, rust_vec_len, data_len),
+        296 => wire__crate__api__search__search_video_impl(port, ptr, rust_vec_len, data_len),
+        299 => wire__crate__api__im__send_im_message_impl(port, ptr, rust_vec_len, data_len),
+        301 => wire__crate__api__im__set_im_setting_impl(port, ptr, rust_vec_len, data_len),
+        302 => wire__crate__api__msg__set_msg_dnd_impl(port, ptr, rust_vec_len, data_len),
+        303 => wire__crate__api__msg__set_notice_impl(port, ptr, rust_vec_len, data_len),
+        304 => wire__crate__api__msg__set_push_ss_impl(port, ptr, rust_vec_len, data_len),
+        305 => wire__crate__api__fav__sort_fav_impl(port, ptr, rust_vec_len, data_len),
+        306 => wire__crate__api__fav__sort_fav_folder_impl(port, ptr, rust_vec_len, data_len),
+        307 => wire__crate__api__misc__sort_follow_tag_impl(port, ptr, rust_vec_len, data_len),
+        310 => wire__crate__api__user__space_reserve_impl(port, ptr, rust_vec_len, data_len),
+        311 => wire__crate__api__user__space_setting_mod_impl(port, ptr, rust_vec_len, data_len),
+        312 => wire__crate__api__relation__special_action_impl(port, ptr, rust_vec_len, data_len),
+        314 => wire__crate__api__dynamic__thumb_dynamic_impl(port, ptr, rust_vec_len, data_len),
+        315 => wire__crate__api__history__to_view_clear_impl(port, ptr, rust_vec_len, data_len),
+        316 => wire__crate__api__history__to_view_del_impl(port, ptr, rust_vec_len, data_len),
+        317 => wire__crate__api__history__to_view_later_impl(port, ptr, rust_vec_len, data_len),
+        318 => wire__crate__api__dynamic__top_dynamic_impl(port, ptr, rust_vec_len, data_len),
+        319 => wire__crate__api__dynamic__topic_pub_search_impl(port, ptr, rust_vec_len, data_len),
+        320 => wire__crate__api__dynamic__topic_rcmd_impl(port, ptr, rust_vec_len, data_len),
+        321 => wire__crate__api__dynamic__topic_top_impl(port, ptr, rust_vec_len, data_len),
+        322 => wire__crate__api__video_write__ugc_triple_impl(port, ptr, rust_vec_len, data_len),
+        323 => wire__crate__api__fav__unfav_all_impl(port, ptr, rust_vec_len, data_len),
+        324 => wire__crate__api__im__unpin_im_session_impl(port, ptr, rust_vec_len, data_len),
+        325 => {
             wire__crate__api__relation__update_follow_tag_impl(port, ptr, rust_vec_len, data_len)
         }
-        321 => wire__crate__api__dynamic__update_reserve_impl(port, ptr, rust_vec_len, data_len),
-        322 => wire__crate__api__msg__update_sys_cursor_impl(port, ptr, rust_vec_len, data_len),
-        323 => wire__crate__api__misc__update_wish_impl(port, ptr, rust_vec_len, data_len),
-        324 => wire__crate__api__upload__upload_bfs_await_impl(port, ptr, rust_vec_len, data_len),
-        327 => wire__crate__api__upload__upload_image_await_impl(port, ptr, rust_vec_len, data_len),
-        330 => wire__crate__api__user__vip_exp_add_impl(port, ptr, rust_vec_len, data_len),
-        331 => wire__crate__api__dynamic__vote_info_impl(port, ptr, rust_vec_len, data_len),
-        332 => wire__crate__api__wbi__wbi_mixin_key_impl(port, ptr, rust_vec_len, data_len),
-        333 => wire__crate__api__wbi__wbi_sign_impl(port, ptr, rust_vec_len, data_len),
+        326 => wire__crate__api__dynamic__update_reserve_impl(port, ptr, rust_vec_len, data_len),
+        327 => wire__crate__api__msg__update_sys_cursor_impl(port, ptr, rust_vec_len, data_len),
+        328 => wire__crate__api__misc__update_wish_impl(port, ptr, rust_vec_len, data_len),
+        329 => wire__crate__api__upload__upload_bfs_await_impl(port, ptr, rust_vec_len, data_len),
+        332 => wire__crate__api__upload__upload_image_await_impl(port, ptr, rust_vec_len, data_len),
+        335 => wire__crate__api__user__vip_exp_add_impl(port, ptr, rust_vec_len, data_len),
+        336 => wire__crate__api__dynamic__vote_info_impl(port, ptr, rust_vec_len, data_len),
+        337 => wire__crate__api__wbi__wbi_mixin_key_impl(port, ptr, rust_vec_len, data_len),
+        338 => wire__crate__api__wbi__wbi_sign_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -30317,69 +30554,90 @@ fn pde_ffi_dispatcher_sync_impl(
         47 => wire__crate__api__reply_grpc__encode_stored_reply_impl(ptr, rust_vec_len, data_len),
         48 => wire__crate__api__reply_grpc__export_stored_replies_impl(ptr, rust_vec_len, data_len),
         49 => wire__crate__api__cover_scrim__fallback_cover_scrim_impl(ptr, rust_vec_len, data_len),
-        194 => wire__crate__api__playback__has_volume_measurement_impl(ptr, rust_vec_len, data_len),
-        197 => wire__crate__api__im__im_home_page_type_impl(ptr, rust_vec_len, data_len),
-        198 => wire__crate__api__im__im_msg_type_impl(ptr, rust_vec_len, data_len),
-        200 => wire__crate__api__im__im_setting_type_impl(ptr, rust_vec_len, data_len),
-        201 => {
+        194 => wire__crate__api__glass_droplet__glass_droplet_drag_target_impl(
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        195 => wire__crate__api__glass_droplet__glass_droplet_press_target_impl(
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        196 => {
+            wire__crate__api__glass_droplet__glass_droplet_rest_impl(ptr, rust_vec_len, data_len)
+        }
+        197 => wire__crate__api__glass_droplet__glass_droplet_snap_index_impl(
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        198 => {
+            wire__crate__api__glass_droplet__glass_droplet_step_impl(ptr, rust_vec_len, data_len)
+        }
+        199 => wire__crate__api__playback__has_volume_measurement_impl(ptr, rust_vec_len, data_len),
+        202 => wire__crate__api__im__im_home_page_type_impl(ptr, rust_vec_len, data_len),
+        203 => wire__crate__api__im__im_msg_type_impl(ptr, rust_vec_len, data_len),
+        205 => wire__crate__api__im__im_setting_type_impl(ptr, rust_vec_len, data_len),
+        206 => {
             wire__crate__api__reply_grpc__import_stored_replies_impl(ptr, rust_vec_len, data_len)
         }
-        205 => wire__crate__api__live_danmaku__live_danmaku_filter_mask_impl(
+        210 => wire__crate__api__live_danmaku__live_danmaku_filter_mask_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        206 => wire__crate__api__live_danmaku__live_socket_close_impl(ptr, rust_vec_len, data_len),
-        207 => wire__crate__api__live_danmaku__live_socket_open_impl(ptr, rust_vec_len, data_len),
-        208 => wire__crate__api__live_danmaku__live_socket_poll_impl(ptr, rust_vec_len, data_len),
-        209 => {
+        211 => wire__crate__api__live_danmaku__live_socket_close_impl(ptr, rust_vec_len, data_len),
+        212 => wire__crate__api__live_danmaku__live_socket_open_impl(ptr, rust_vec_len, data_len),
+        213 => wire__crate__api__live_danmaku__live_socket_poll_impl(ptr, rust_vec_len, data_len),
+        214 => {
             wire__crate__api__live_danmaku__live_socket_set_rules_impl(ptr, rust_vec_len, data_len)
         }
-        223 => wire__crate__api__playback__loudnorm_params_impl(ptr, rust_vec_len, data_len),
-        225 => wire__crate__api__playback__merge_video_streams_impl(ptr, rust_vec_len, data_len),
-        226 => wire__crate__api__playback__missing_video_quality_below_highest_impl(
+        228 => wire__crate__api__playback__loudnorm_params_impl(ptr, rust_vec_len, data_len),
+        230 => wire__crate__api__playback__merge_video_streams_impl(ptr, rust_vec_len, data_len),
+        231 => wire__crate__api__playback__missing_video_quality_below_highest_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        228 => wire__crate__api__user__parse_user_info_cache_impl(ptr, rust_vec_len, data_len),
-        232 => wire__crate__api__playback__pgc_clip_segments_impl(ptr, rust_vec_len, data_len),
-        241 => wire__crate__api__playback__pick_cdn_url_impl(ptr, rust_vec_len, data_len),
-        243 => wire__crate__api__history__playback_progress_ms_impl(ptr, rust_vec_len, data_len),
-        244 => wire__crate__api__player_port__player_port_abort_impl(ptr, rust_vec_len, data_len),
-        245 => wire__crate__api__player_port__player_port_begin_impl(ptr, rust_vec_len, data_len),
-        246 => wire__crate__api__player_port__player_port_close_impl(ptr, rust_vec_len, data_len),
-        247 => wire__crate__api__player_port__player_port_create_impl(ptr, rust_vec_len, data_len),
-        248 => {
+        233 => wire__crate__api__user__parse_user_info_cache_impl(ptr, rust_vec_len, data_len),
+        237 => wire__crate__api__playback__pgc_clip_segments_impl(ptr, rust_vec_len, data_len),
+        246 => wire__crate__api__playback__pick_cdn_url_impl(ptr, rust_vec_len, data_len),
+        248 => wire__crate__api__history__playback_progress_ms_impl(ptr, rust_vec_len, data_len),
+        249 => wire__crate__api__player_port__player_port_abort_impl(ptr, rust_vec_len, data_len),
+        250 => wire__crate__api__player_port__player_port_begin_impl(ptr, rust_vec_len, data_len),
+        251 => wire__crate__api__player_port__player_port_close_impl(ptr, rust_vec_len, data_len),
+        252 => wire__crate__api__player_port__player_port_create_impl(ptr, rust_vec_len, data_len),
+        253 => {
             wire__crate__api__player_port__player_port_is_current_impl(ptr, rust_vec_len, data_len)
         }
-        249 => wire__crate__api__player_port__player_port_observe_impl(ptr, rust_vec_len, data_len),
-        250 => wire__crate__api__player_port__player_port_prepare_impl(ptr, rust_vec_len, data_len),
-        251 => wire__crate__api__player_port__player_port_session_count_impl(
+        254 => wire__crate__api__player_port__player_port_observe_impl(ptr, rust_vec_len, data_len),
+        255 => wire__crate__api__player_port__player_port_prepare_impl(ptr, rust_vec_len, data_len),
+        256 => wire__crate__api__player_port__player_port_session_count_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        252 => wire__crate__api__player_port__player_port_should_retry_impl(
+        257 => wire__crate__api__player_port__player_port_should_retry_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        266 => wire__crate__api__reply_grpc__reply_from_rest_json_impl(ptr, rust_vec_len, data_len),
-        292 => {
+        271 => wire__crate__api__reply_grpc__reply_from_rest_json_impl(ptr, rust_vec_len, data_len),
+        297 => {
             wire__crate__api__media_select__select_target_audio_impl(ptr, rust_vec_len, data_len)
         }
-        293 => {
+        298 => {
             wire__crate__api__media_select__select_target_video_impl(ptr, rust_vec_len, data_len)
         }
-        295 => wire__crate__api__user__serialize_user_info_impl(ptr, rust_vec_len, data_len),
-        303 => wire__crate__api__space__space_article_is_end_impl(ptr, rust_vec_len, data_len),
-        304 => wire__crate__api__space__space_audio_is_end_impl(ptr, rust_vec_len, data_len),
-        308 => wire__crate__api__playback__stream_play_urls_impl(ptr, rust_vec_len, data_len),
-        325 => wire__crate__api__upload__upload_bfs_begin_impl(ptr, rust_vec_len, data_len),
-        326 => wire__crate__api__upload__upload_cancel_impl(ptr, rust_vec_len, data_len),
-        328 => wire__crate__api__upload__upload_image_begin_impl(ptr, rust_vec_len, data_len),
-        329 => wire__crate__api__user__user_info_with_profile_impl(ptr, rust_vec_len, data_len),
+        300 => wire__crate__api__user__serialize_user_info_impl(ptr, rust_vec_len, data_len),
+        308 => wire__crate__api__space__space_article_is_end_impl(ptr, rust_vec_len, data_len),
+        309 => wire__crate__api__space__space_audio_is_end_impl(ptr, rust_vec_len, data_len),
+        313 => wire__crate__api__playback__stream_play_urls_impl(ptr, rust_vec_len, data_len),
+        330 => wire__crate__api__upload__upload_bfs_begin_impl(ptr, rust_vec_len, data_len),
+        331 => wire__crate__api__upload__upload_cancel_impl(ptr, rust_vec_len, data_len),
+        333 => wire__crate__api__upload__upload_image_begin_impl(ptr, rust_vec_len, data_len),
+        334 => wire__crate__api__user__user_info_with_profile_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -32901,6 +33159,80 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::media_select::FormatCandidate
     for crate::api::media_select::FormatCandidateInput
 {
     fn into_into_dart(self) -> crate::api::media_select::FormatCandidateInput {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::glass_droplet::GlassDropletFrame {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.state.into_into_dart().into_dart(),
+            self.shape.into_into_dart().into_dart(),
+            self.settled.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::glass_droplet::GlassDropletFrame
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::glass_droplet::GlassDropletFrame>
+    for crate::api::glass_droplet::GlassDropletFrame
+{
+    fn into_into_dart(self) -> crate::api::glass_droplet::GlassDropletFrame {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::glass_droplet::GlassDropletShape {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.left.into_into_dart().into_dart(),
+            self.right.into_into_dart().into_dart(),
+            self.height_scale.into_into_dart().into_dart(),
+            self.stretch.into_into_dart().into_dart(),
+            self.lift.into_into_dart().into_dart(),
+            self.lens_zoom.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::glass_droplet::GlassDropletShape
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::glass_droplet::GlassDropletShape>
+    for crate::api::glass_droplet::GlassDropletShape
+{
+    fn into_into_dart(self) -> crate::api::glass_droplet::GlassDropletShape {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::glass_droplet::GlassDropletState {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.left.into_into_dart().into_dart(),
+            self.left_velocity.into_into_dart().into_dart(),
+            self.right.into_into_dart().into_dart(),
+            self.right_velocity.into_into_dart().into_dart(),
+            self.lift.into_into_dart().into_dart(),
+            self.lift_velocity.into_into_dart().into_dart(),
+            self.target.into_into_dart().into_dart(),
+            self.direction.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::glass_droplet::GlassDropletState
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::glass_droplet::GlassDropletState>
+    for crate::api::glass_droplet::GlassDropletState
+{
+    fn into_into_dart(self) -> crate::api::glass_droplet::GlassDropletState {
         self
     }
 }
@@ -45274,6 +45606,41 @@ impl SseEncode for crate::api::media_select::FormatCandidateInput {
     }
 }
 
+impl SseEncode for crate::api::glass_droplet::GlassDropletFrame {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <crate::api::glass_droplet::GlassDropletState>::sse_encode(self.state, serializer);
+        <crate::api::glass_droplet::GlassDropletShape>::sse_encode(self.shape, serializer);
+        <bool>::sse_encode(self.settled, serializer);
+    }
+}
+
+impl SseEncode for crate::api::glass_droplet::GlassDropletShape {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <f64>::sse_encode(self.left, serializer);
+        <f64>::sse_encode(self.right, serializer);
+        <f64>::sse_encode(self.height_scale, serializer);
+        <f64>::sse_encode(self.stretch, serializer);
+        <f64>::sse_encode(self.lift, serializer);
+        <f64>::sse_encode(self.lens_zoom, serializer);
+    }
+}
+
+impl SseEncode for crate::api::glass_droplet::GlassDropletState {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <f64>::sse_encode(self.left, serializer);
+        <f64>::sse_encode(self.left_velocity, serializer);
+        <f64>::sse_encode(self.right, serializer);
+        <f64>::sse_encode(self.right_velocity, serializer);
+        <f64>::sse_encode(self.lift, serializer);
+        <f64>::sse_encode(self.lift_velocity, serializer);
+        <f64>::sse_encode(self.target, serializer);
+        <i8>::sse_encode(self.direction, serializer);
+    }
+}
+
 impl SseEncode for crate::api::grpc::GrpcBytesResult {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -45448,6 +45815,13 @@ impl SseEncode for i64 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         serializer.cursor.write_i64::<NativeEndian>(self).unwrap();
+    }
+}
+
+impl SseEncode for i8 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer.cursor.write_i8(self).unwrap();
     }
 }
 

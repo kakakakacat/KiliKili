@@ -89,7 +89,7 @@ class CoverScrimCard extends StatelessWidget {
   /// 显示，[title] 仍然要传，它是无障碍朗读用的文本。
   final List<TextSpan>? titleSpans;
 
-  /// UP 名 / 主播名，排在标题前面、同一段文字里。
+  /// UP 名 / 主播名，做成主题色底白字的胶囊，排在标题最前面、同一段文字里。
   final String? upName;
 
   /// 已登录**且**已关注时，在 [upName] 后面补一个对勾圆圈。
@@ -208,7 +208,9 @@ class CoverScrimCard extends StatelessWidget {
               else
                 Expanded(child: coverStack),
               _TextStrip(
-                span: _titleSpan(colorScheme),
+                span: TextSpan(children: titleSpans ?? [TextSpan(text: title)]),
+                upLabel: _upLabel(colorScheme),
+                upColor: colorScheme.primary,
                 semanticsLabel: [
                   if (upName case final name? when name.isNotEmpty) 'UP：$name',
                   if (upFollowed && upName?.isNotEmpty == true) '已关注',
@@ -263,36 +265,28 @@ class CoverScrimCard extends StatelessWidget {
     );
   }
 
-  /// `UP 主名 [已关注]  标题`，一段连续的文字。
-  TextSpan _titleSpan(ColorScheme colorScheme) {
+  /// 胶囊里的字：`UP 主名 [已关注]`，白字（主题色底上的 onPrimary）。
+  TextSpan? _upLabel(ColorScheme colorScheme) {
     final name = upName;
+    if (name == null || name.isEmpty) return null;
     return TextSpan(
+      style: TextStyle(
+        fontSize: 11,
+        height: 1.2,
+        color: colorScheme.onPrimary,
+        fontWeight: FontWeight.w500,
+      ),
       children: [
-        if (name != null && name.isNotEmpty) ...[
+        TextSpan(text: name),
+        if (upFollowed)
           TextSpan(
-            text: name,
+            text:
+                ' ${String.fromCharCode(Icons.check_circle_rounded.codePoint)}',
             style: TextStyle(
-              fontSize: 13,
-              color: colorScheme.primary,
-              fontWeight: FontWeight.w500,
+              fontFamily: Icons.check_circle_rounded.fontFamily,
+              package: Icons.check_circle_rounded.fontPackage,
             ),
           ),
-          // 对勾用图标字体的字形而不是 WidgetSpan：右下角让位要按行切分
-          // 文字，WidgetSpan 量不出来（见 [_TextStrip]）。
-          if (upFollowed)
-            TextSpan(
-              text:
-                  ' ${String.fromCharCode(Icons.check_circle_rounded.codePoint)}',
-              style: TextStyle(
-                fontSize: 12,
-                fontFamily: Icons.check_circle_rounded.fontFamily,
-                package: Icons.check_circle_rounded.fontPackage,
-                color: colorScheme.outline,
-              ),
-            ),
-          const TextSpan(text: '  '),
-        ],
-        ...(titleSpans ?? [TextSpan(text: title)]),
       ],
     );
   }
@@ -384,6 +378,8 @@ class _CoverStack extends StatelessWidget {
 class _TextStrip extends StatelessWidget {
   const _TextStrip({
     required this.span,
+    required this.upLabel,
+    required this.upColor,
     required this.semanticsLabel,
     required this.style,
     required this.maxLines,
@@ -394,6 +390,10 @@ class _TextStrip extends StatelessWidget {
   });
 
   final TextSpan span;
+
+  /// UP 名胶囊里的字；为 null 时没有胶囊。
+  final TextSpan? upLabel;
+  final Color upColor;
   final String semanticsLabel;
   final TextStyle style;
   final int maxLines;
@@ -468,11 +468,7 @@ class _TextStrip extends StatelessWidget {
                     height: lineHeight,
                     child: Align(
                       alignment: Alignment.centerRight,
-                      child: Text(
-                        date,
-                        maxLines: 1,
-                        style: dateStyle,
-                      ),
+                      child: Text(date, maxLines: 1, style: dateStyle),
                     ),
                   ),
               ],
@@ -498,6 +494,13 @@ class _TextStrip extends StatelessWidget {
       style: style,
     );
 
+    // UP 名胶囊作为 WidgetSpan 排在最前面。尺寸在这里先量好并写死在胶囊
+    // 上，下面按行切分时给 TextPainter 的占位尺寸才和实际绘制一致。
+    final pill = _pill(inherited, width, scaler, direction);
+    final span = pill == null
+        ? this.span
+        : TextSpan(children: [pill.span, this.span]);
+
     if (groupWidth <= 0) return text(span, maxLines);
     if (maxLines == 1) {
       return Padding(
@@ -511,7 +514,16 @@ class _TextStrip extends StatelessWidget {
       textDirection: direction,
       textScaler: scaler,
       textHeightBehavior: DefaultTextStyle.of(context).textHeightBehavior,
-    )..layout(maxWidth: width);
+    );
+    if (pill != null) {
+      painter.setPlaceholderDimensions([
+        PlaceholderDimensions(
+          size: pill.size,
+          alignment: PlaceholderAlignment.middle,
+        ),
+      ]);
+    }
+    painter.layout(maxWidth: width);
     final lines = painter.computeLineMetrics();
     final int splitAt;
     if (lines.length < maxLines ||
@@ -525,7 +537,7 @@ class _TextStrip extends StatelessWidget {
         .offset;
     painter.dispose();
 
-    final runs = <TextSpan>[];
+    final runs = <InlineSpan>[];
     _flatten(span, null, runs);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -539,23 +551,96 @@ class _TextStrip extends StatelessWidget {
     );
   }
 
-  /// 把嵌套的 [TextSpan] 摊平成一串「文字 + 已合并样式」。
-  static void _flatten(TextSpan span, TextStyle? parent, List<TextSpan> out) {
+  /// UP 名胶囊：量好的尺寸 + 对应的 [WidgetSpan]。
+  ({Size size, WidgetSpan span})? _pill(
+    TextStyle inherited,
+    double width,
+    TextScaler scaler,
+    TextDirection direction,
+  ) {
+    final label = upLabel;
+    if (label == null) return null;
+    final painter = TextPainter(
+      text: TextSpan(style: inherited.merge(label.style), children: [label]),
+      textDirection: direction,
+      textScaler: scaler,
+      maxLines: 1,
+    )..layout();
+    final labelSize = painter.size;
+    painter.dispose();
+    // UP 名一律完整显示（所有者要求，#300）。B 站昵称最多 16 个字，正常
+    // 宽度下放得下；只有窄到一行都放不下时才按整行宽度兜底，否则胶囊会
+    // 撑出文字区。
+    final maxLabelWidth = width - _pillPadding.horizontal - _pillGap;
+    final pillSize = Size(
+      labelSize.width.clamp(0, maxLabelWidth.clamp(0, double.infinity)) +
+          _pillPadding.horizontal,
+      labelSize.height + _pillPadding.vertical,
+    );
+    return (
+      size: Size(pillSize.width + _pillGap, pillSize.height),
+      span: WidgetSpan(
+        alignment: PlaceholderAlignment.middle,
+        child: Padding(
+          padding: const EdgeInsetsDirectional.only(end: _pillGap),
+          child: SizedBox.fromSize(
+            size: pillSize,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: upColor,
+                borderRadius: const BorderRadius.all(Radius.circular(4)),
+              ),
+              child: Padding(
+                padding: _pillPadding,
+                child: Text.rich(
+                  label,
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  static const _pillPadding = EdgeInsets.symmetric(horizontal: 5, vertical: 1);
+  static const _pillGap = 5.0;
+
+  /// 把嵌套的 [TextSpan] 摊平成一串「文字 + 已合并样式」；胶囊的
+  /// [WidgetSpan] 原样保留，占一个字符位。
+  static void _flatten(
+    InlineSpan span,
+    TextStyle? parent,
+    List<InlineSpan> out,
+  ) {
+    if (span is! TextSpan) {
+      out.add(span);
+      return;
+    }
     final style = parent == null ? span.style : parent.merge(span.style);
     if (span.text case final text? when text.isNotEmpty) {
       out.add(TextSpan(text: text, style: style));
     }
     for (final child in span.children ?? const <InlineSpan>[]) {
-      assert(child is TextSpan, 'CoverScrimCard 的标题只支持 TextSpan');
-      if (child is TextSpan) _flatten(child, style, out);
+      _flatten(child, style, out);
     }
   }
 
   /// 按字符区间 `[start, end)` 截取摊平后的文字；`end` 为 null 表示到末尾。
-  static TextSpan _slice(List<TextSpan> runs, int start, int? end) {
-    final children = <TextSpan>[];
+  static TextSpan _slice(List<InlineSpan> runs, int start, int? end) {
+    final children = <InlineSpan>[];
     var offset = 0;
     for (final run in runs) {
+      if (run is! TextSpan) {
+        if (offset >= start && (end == null || offset < end)) {
+          children.add(run);
+        }
+        offset += 1;
+        continue;
+      }
       final text = run.text!;
       final runEnd = offset + text.length;
       final from = start.clamp(offset, runEnd);
@@ -689,9 +774,7 @@ class _ScrimLayerState extends State<_ScrimLayer> {
     return Row(
       spacing: 4,
       children: [
-        Expanded(
-          child: Row(spacing: 4, children: items.sublist(0, split)),
-        ),
+        Expanded(child: Row(spacing: 4, children: items.sublist(0, split))),
         ...items.sublist(split + 1),
       ],
     );

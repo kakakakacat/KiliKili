@@ -305,25 +305,23 @@ class MineAccountCard extends StatelessWidget {
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (tools.isNotEmpty && !inlineTools) ...[
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: toolsWidth),
-                    child: MineToolCapsule(children: tools),
-                  ),
-                ),
-                const SizedBox(height: 18),
-              ],
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _profileTap(avatar),
-                  const SizedBox(width: 16),
+                  // 窄屏收紧头像间距，让五个 44px 工具仍能与头像顶端同排。
+                  SizedBox(width: inlineTools ? 16 : 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (tools.isNotEmpty && !inlineTools) ...[
+                          Align(
+                            alignment: Alignment.topRight,
+                            child: MineToolCapsule(children: tools),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
                         if (inlineTools)
                           Row(
                             children: [

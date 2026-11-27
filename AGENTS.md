@@ -221,6 +221,52 @@ PR**，不要只留在代码和 Issues 里：
   `gh workflow run "Regression CI" --ref <分支>`。
 - 回归仍在跑的地方：合并进 main 的 push、每日 02:17 定时、手动 dispatch。
   坏改动的发现点从「合并前」后移到「合并后」，合完顺手看一眼那次运行。
+- **那次运行根本没出现时，先怀疑 Actions 被停了，而不是触发条件。**
+  2026-11-26 遇到过一次：`gh workflow run` 返回
+  `HTTP 422: Actions has been disabled for this repository.`，而仓库设置页与
+  `repos/.../actions/permissions` 都显示 `enabled: true`、十个工作流全
+  `active`，逐个调 `PUT .../actions/workflows/<id>/enable` 也全部返回 OK。
+
+  **成因是「本仓库的 workflow 总开关」没开，而这个开关 API 看不见也按不到。**
+  本仓库是 PiliPlus 的 fork，fork 的工作流有一道独立的闸门，开关在**仓库的
+  Actions 标签页**上（页面顶部的横幅与按钮），它与 Settings → Actions 里那组
+  `Allow all actions / Disable actions` 单选**不是同一个东西**：后者是
+  `actions/permissions` 反映的那个，前者不是。所以会出现「API 说开着、派发说
+  关着」。
+
+  **判据：`actions/permissions` 说 `enabled: true` 但派发 422 时，不要再在
+  API 和仓库设置页里找了，直接去 Actions 标签页点那个开关。** 2026-11-26 那次
+  在 API 这边白试了一轮才问出来。
+
+  GitHub 不在别处提示这件事，表现就是 workflow 安静地不跑：那次连着三次合并
+  进 main 都没触发回归也没人发现，是合完去看那次运行才暴露的。
+
+- **先分清是账号级还是仓库级，再去猜成因。** 一条命令就够——看同账号别的
+  仓库最近有没有运行：
+
+  ```sh
+  gh repo list <owner> --limit 200 --json name -q '.[].name'     | xargs -I{} sh -c 'gh api repos/<owner>/{}/actions/runs?per_page=1         -q "\"{} \" + (.workflow_runs[0].created_at // \"无\")"'
+  ```
+
+  别的仓库还在跑 → 仓库级，与账单、额度无关，别去动账号设置。全停 → 才轮到
+  账号级那几种可能。**这一步要在动手之前做**：#279 那次是反过来的，看到
+  产物 4.87 GB、而 Free 账号额度是 500 MB，就认定是存储超额导致账号级停用，
+  据此删光了全部产物——事后一量才发现 public 仓库的 Actions 用量本来免费、
+  那个额度主要约束 private 仓库与 Packages，而且同账号别的仓库当天都在正常
+  跑。**「数字看着超标」不等于「这个数字受那条限制约束」。**
+
+- **别把要长期留的包当产物传。** public 仓库的 Release 附件不计入 Actions
+  存储，产物那份不是。带 `tag` 的发布构建已经把包发到 Release，所以五端
+  workflow 里的 `upload-artifact` 都加了 `if: <tag> == ''`；验证包一律
+  `retention-days: 2`（仓库默认已从 90 天改成 7 天）。量一眼用的是：
+
+  ```sh
+  gh api "repos/<owner>/<repo>/actions/artifacts?per_page=100" -q '.total_count'
+  gh api repos/<owner>/<repo>/actions/permissions/artifact-and-log-retention
+  ```
+
+  缓存（`actions/cache/usage`）另算、不计费，GitHub 按 LRU 自动淘汰到 10 GB，
+  不用管。
 - **定时回归红在 `ios` / `macos` 时，先看是不是没抢到 runner。** 托管 macOS
   runner 容量紧张时 job 会在 15 分钟整处被取消——`steps` 为空、日志拉不到、
   运行注解写着 `The job was not acquired by Runner of type hosted even after

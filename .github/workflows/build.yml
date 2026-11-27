@@ -146,26 +146,38 @@ jobs:
                   name: ${{ github.event.inputs.tag }}
                   files: KiliKili_android_*.apk
 
+            # 带 tag 的发布包已经进了上面的 Release。public 仓库的 Release 附件不计入
+            # Actions 存储，产物那份却是计费的——同一个包存两遍，#279 的 4.87 GB 就是
+            # 这么堆起来的，堆满之后 GitHub 会账号级停掉整个仓库的 Actions。
+            # retention-days 比仓库默认的 7 天更短：验证包看完即弃。
             - name: 上传
+              if: ${{ github.event.inputs.tag == '' }}
               uses: actions/upload-artifact@v7
               with:
                   archive: false
                   name: Android_arm64-v8a
                   path: KiliKili_android_*_arm64-v8a.apk
+                  retention-days: 2
 
+            # 同上，只在非发布构建里留一份短期产物（#279）。
             - name: 上传
+              if: ${{ github.event.inputs.tag == '' }}
               uses: actions/upload-artifact@v7
               with:
                   archive: false
                   name: Android_armeabi-v7a
                   path: KiliKili_android_*_armeabi-v7a.apk
+                  retention-days: 2
 
+            # 同上，只在非发布构建里留一份短期产物（#279）。
             - name: 上传
+              if: ${{ github.event.inputs.tag == '' }}
               uses: actions/upload-artifact@v7
               with:
                   archive: false
                   name: Android_x86_64
                   path: KiliKili_android_*_x86_64.apk
+                  retention-days: 2
 
     ios:
         if: ${{ (github.event_name == 'pull_request' && github.repository == 'kakakakacat/KiliKili') || github.event.inputs.build_ios == 'true' }}

@@ -62,9 +62,15 @@ jobs:
           files: |
             KiliKili_ios_*.ipa
 
+      # 带 tag 的发布包已经进了上面的 Release。public 仓库的 Release 附件不计入
+      # Actions 存储，产物那份却是计费的——同一个包存两遍，#279 的 4.87 GB 就是
+      # 这么堆起来的，堆满之后 GitHub 会账号级停掉整个仓库的 Actions。
+      # retention-days 比仓库默认的 7 天更短：验证包看完即弃。
       - name: Upload ios release
+        if: ${{ inputs.tag == '' }}
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: iOS-release
           path: KiliKili_ios_*.ipa
+          retention-days: 2

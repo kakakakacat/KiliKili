@@ -14,12 +14,16 @@ class MainPageInset extends StatelessWidget {
   final bool extendBehindStatusBar;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.only(
-      top: extendBehindStatusBar ? 0 : MediaQuery.viewPaddingOf(context).top,
-    ),
-    child: child,
-  );
+  Widget build(BuildContext context) {
+    if (extendBehindStatusBar) return child;
+    // 页面范围从状态栏下方开始，并裁在这个范围内。#262 之前这层裁剪由
+    // PageView 的边界完成；上边距挪进来以后必须自己裁，否则首页顶栏随
+    // 滚动上移时会画进透明状态栏，看起来只收起了一半（#286）。
+    return Padding(
+      padding: EdgeInsets.only(top: MediaQuery.viewPaddingOf(context).top),
+      child: ClipRect(child: child),
+    );
+  }
 }
 
 enum MainType { sideBar, bottomNav, body }

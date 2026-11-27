@@ -8,7 +8,10 @@ import 'package:kilikili/common/widgets/loading_widget/http_error.dart';
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/video_card/video_card_v.dart';
 import 'package:kilikili/http/loading_state.dart';
+import 'package:kilikili/pages/home/controller.dart';
+import 'package:kilikili/pages/main/controller.dart';
 import 'package:kilikili/pages/rcmd/controller.dart';
+import 'package:kilikili/utils/extension/scroll_controller_ext.dart';
 import 'package:kilikili/utils/grid.dart';
 import 'package:kilikili/utils/platform_utils.dart';
 import 'package:kilikili/utils/storage_pref.dart';
@@ -34,6 +37,44 @@ class _RcmdPageState extends State<RcmdPage>
 
   @override
   bool get wantKeepAlive => true;
+
+  /// 右下角「回到顶部」：离开顶部才出现（#282）。只在越过阈值时改值，
+  /// 滚动中不会每帧重建。
+  final _showToTop = ValueNotifier(false);
+  static const double _toTopThreshold = 48;
+
+  void _onScroll() {
+    final sc = controller.scrollController;
+    if (!sc.hasClients) return;
+    _showToTop.value = sc.offset > _toTopThreshold;
+  }
+
+  /// 回到顶部，并把滚动时收起的顶部搜索栏与底栏一起展开——否则回到
+  /// 列表顶部后头尾仍是收起的，看起来不像在首页顶部。
+  void _toTop() {
+    controller.scrollController.animToTop();
+    if (Get.isRegistered<MainController>()) {
+      final main = Get.find<MainController>();
+      main.showBottomBar?.value = true;
+      main.barOffset?.value = 0;
+    }
+    if (Get.isRegistered<HomeController>()) {
+      Get.find<HomeController>().showTopBar?.value = true;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    controller.scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    controller.scrollController.removeListener(_onScroll);
+    _showToTop.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,25 +114,57 @@ class _RcmdPageState extends State<RcmdPage>
         ),
       ),
     );
-    if (PlatformUtils.isDesktop && Pref.showRefreshFAB) {
-      return ScaffoldLayout(
-        body: child,
-        fab: Padding(
-          padding: const .only(
-            right: kFloatingActionButtonMargin,
-            bottom: 80 + kFloatingActionButtonMargin,
-          ),
-          child: FloatingActionButton(
-            tooltip: '刷新',
-            onPressed: controller.toTopAndRefresh,
-            backgroundColor: colorScheme.secondaryContainer,
-            foregroundColor: colorScheme.onSecondaryContainer,
-            child: const Icon(Icons.refresh),
-          ),
+    final showRefreshFab = PlatformUtils.isDesktop && Pref.showRefreshFAB;
+    return ScaffoldLayout(
+      body: child,
+      fab: Padding(
+        padding: const .only(
+          right: kFloatingActionButtonMargin,
+          bottom: 80 + kFloatingActionButtonMargin,
         ),
-      );
-    }
-    return child;
+        child: Column(
+          mainAxisSize: .min,
+          crossAxisAlignment: .end,
+          spacing: 12,
+          children: [
+            ValueListenableBuilder<bool>(
+              valueListenable: _showToTop,
+              // 隐藏时既不可点，也不进无障碍树（缩到 0 仍会被读屏读到）。
+              builder: (context, show, child) => ExcludeSemantics(
+                excluding: !show,
+                child: IgnorePointer(
+                  ignoring: !show,
+                  child: AnimatedScale(
+                    scale: show ? 1 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOut,
+                    child: child,
+                  ),
+                ),
+              ),
+              child: FloatingActionButton(
+                heroTag: null,
+                tooltip: '回到顶部',
+                shape: const CircleBorder(),
+                onPressed: _toTop,
+                backgroundColor: colorScheme.secondaryContainer,
+                foregroundColor: colorScheme.onSecondaryContainer,
+                child: const Icon(Icons.vertical_align_top),
+              ),
+            ),
+            if (showRefreshFab)
+              FloatingActionButton(
+                heroTag: null,
+                tooltip: '刷新',
+                onPressed: controller.toTopAndRefresh,
+                backgroundColor: colorScheme.secondaryContainer,
+                foregroundColor: colorScheme.onSecondaryContainer,
+                child: const Icon(Icons.refresh),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
   late final gridDelegate = SliverGridDelegateWithExtentAndRatio(

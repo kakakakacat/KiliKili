@@ -1899,7 +1899,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                         height: 25,
                         cacheHeight: 25.cacheSize(context),
                         semanticLabel: "加载中",
-                        color: Colors.white,
+                        // 小电视跟随主题色（默认经典粉），下方文字仍为白色（#294）。
+                        color: ColorScheme.of(context).primary,
                       ),
                       if (plPlayerController.isBuffering.value)
                         Obx(() {

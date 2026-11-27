@@ -846,7 +846,8 @@ git log --no-merges --format='C %h %s' --name-only <UPSTREAM_TIP>..HEAD
 
 `lib/pages/member/controller.dart` 与 `view.dart` 增加独立资料错误提示和重试；
 错误不再覆盖昵称，重试不清空资料与当前标签。同步上游时保留这条失败路径。
-空间主页与投稿视频游标列表的签名在 Rust 侧完成，Dart 服务层仅透传公开客户端标识。
+空间及两条话题 APP 请求的签名在 Rust 侧完成，Dart 服务层按接口透传所选账号
+的 access_key 与公开客户端标识；这些 APP 请求不混入 Web Cookie。
 按 §6 对两个宿主文件核查：相对 `2dd24225b` 均为修改，且此前已有
 `e42504535`、`f5b50aabb` 等非重命名提交，因此本次不改变其「实质改动」分类，
 上游文件修改数与分类数的增量均为 0；新增控制器回归测试与实现计划各一份。

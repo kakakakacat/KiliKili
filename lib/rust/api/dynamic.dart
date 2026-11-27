@@ -170,9 +170,15 @@ Future<ArticleListResult> articleList({
 Future<TopicTopResult> topicTop({
   required DynamicReadContext context,
   required String topicId,
+  String? accessKey,
+  required String appkey,
+  required String appsec,
 }) => RustLib.instance.api.crateApiDynamicTopicTop(
   context: context,
   topicId: topicId,
+  accessKey: accessKey,
+  appkey: appkey,
+  appsec: appsec,
 );
 
 /// 取推荐话题。
@@ -205,11 +211,17 @@ Future<TopicPubSearchResult> topicPubSearch({
   required String keywords,
   required String content,
   required PlatformInt64 pageNum,
+  String? accessKey,
+  required String appkey,
+  required String appsec,
 }) => RustLib.instance.api.crateApiDynamicTopicPubSearch(
   context: context,
   keywords: keywords,
   content: content,
   pageNum: pageNum,
+  accessKey: accessKey,
+  appkey: appkey,
+  appsec: appsec,
 );
 
 class ArticleInfoData {

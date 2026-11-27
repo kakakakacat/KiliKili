@@ -413,6 +413,7 @@ fn the_archive_cursor_request_requires_app_signature() {
             None,
             None,
             Some(true),
+            None,
             "dfca71928277209b",
             "b5475a8825547a4fc26c7d518eaaa02e",
             ts,
@@ -435,9 +436,9 @@ fn the_archive_cursor_request_requires_app_signature() {
     }
 }
 
-/// 本次只确认游标投稿接口必须签名，其余列表不扩展请求面。
+/// 旧拦截器会给六条列表都加签，迁移后不得遗漏。
 #[test]
-fn the_other_archive_requests_keep_their_unsigned_shape() {
+fn the_other_archive_requests_are_also_signed() {
     use bili_api::space::{SpaceArchiveKind, space_archive_request};
     for kind in [
         SpaceArchiveKind::Charging,
@@ -457,15 +458,12 @@ fn the_other_archive_requests_keep_their_unsigned_shape() {
             None,
             None,
             None,
+            None,
             "dfca71928277209b",
             "b5475a8825547a4fc26c7d518eaaa02e",
             1_700_000_000,
         );
-        assert!(
-            !req.query
-                .iter()
-                .any(|(key, _)| matches!(key.as_str(), "appkey" | "ts" | "sign"))
-        );
+        assert!(req.query.iter().any(|(key, _)| key == "sign"));
         assert!(req.query_string().contains("qn=32"));
     }
 }
@@ -486,6 +484,7 @@ fn the_contribute_tabs_keep_their_paths_and_quality() {
         None,
         None,
         None,
+        None,
         "dfca71928277209b",
         "b5475a8825547a4fc26c7d518eaaa02e",
         1_700_000_000,
@@ -493,6 +492,7 @@ fn the_contribute_tabs_keep_their_paths_and_quality() {
     let comic = space_archive_request(
         SpaceArchiveKind::Comic,
         Some(1),
+        None,
         None,
         None,
         None,
@@ -518,6 +518,7 @@ fn the_optional_archive_params_are_dropped_rather_than_sent_empty() {
     let bare = space_archive_request(
         SpaceArchiveKind::Video,
         Some(1),
+        None,
         None,
         None,
         None,
@@ -555,6 +556,7 @@ fn the_optional_archive_params_are_dropped_rather_than_sent_empty() {
         None,
         None,
         Some(true),
+        None,
         "dfca71928277209b",
         "b5475a8825547a4fc26c7d518eaaa02e",
         1_700_000_000,
@@ -571,7 +573,7 @@ fn the_space_request_is_app_signed() {
     use bili_api::space::space_request;
     const KEY: &str = "dfca71928277209b";
     const SEC: &str = "b5475a8825547a4fc26c7d518eaaa02e";
-    let req = space_request(1, Some("123"), KEY, SEC, 1_700_000_000);
+    let req = space_request(1, Some("123"), None, KEY, SEC, 1_700_000_000);
     assert_eq!(req.path, "/x/v2/space");
     let query: std::collections::BTreeMap<_, _> = req.query.iter().cloned().collect();
     assert_eq!(query["appkey"], KEY);
@@ -581,11 +583,11 @@ fn the_space_request_is_app_signed() {
     assert_eq!(query["sign"], "020e132fa15b1c4ea87f50034a11216a");
     assert_eq!(query.len(), 13);
 
-    let bare = space_request(1, None, KEY, SEC, 1_700_000_000);
+    let bare = space_request(1, None, None, KEY, SEC, 1_700_000_000);
     assert!(!bare.query_string().contains("from_view_aid"));
     assert_ne!(bare.query.last(), req.query.last());
     assert_ne!(
-        space_request(1, Some("123"), KEY, SEC, 1_700_000_001)
+        space_request(1, Some("123"), None, KEY, SEC, 1_700_000_001)
             .query
             .last(),
         req.query.last(),

@@ -999,10 +999,27 @@ pub async fn article_list(context: DynamicReadContext, id: String) -> ArticleLis
 }
 
 /// 取话题页顶部。`base_url` 要给 app 网关。
-pub async fn topic_top(context: DynamicReadContext, topic_id: String) -> TopicTopResult {
-    let (ctx, transport, _, _) = context.split();
+pub async fn topic_top(
+    context: DynamicReadContext,
+    topic_id: String,
+    access_key: Option<String>,
+    appkey: String,
+    appsec: String,
+) -> TopicTopResult {
+    let (ctx, transport, _, ts) = context.split();
     let result = init::runtime()
-        .spawn(async move { dynamic::fetch_topic_top(&transport, &ctx, &topic_id).await })
+        .spawn(async move {
+            dynamic::fetch_topic_top(
+                &transport,
+                &ctx,
+                &topic_id,
+                access_key.as_deref(),
+                &appkey,
+                &appsec,
+                ts,
+            )
+            .await
+        })
         .await
         .unwrap_or_else(|_| {
             Err(DomainError::new(
@@ -1171,11 +1188,25 @@ pub async fn topic_pub_search(
     keywords: String,
     content: String,
     page_num: i64,
+    access_key: Option<String>,
+    appkey: String,
+    appsec: String,
 ) -> TopicPubSearchResult {
-    let (ctx, transport, _, _) = context.split();
+    let (ctx, transport, _, ts) = context.split();
     let result = init::runtime()
         .spawn(async move {
-            dynamic::fetch_topic_pub_search(&transport, &ctx, &keywords, &content, page_num).await
+            dynamic::fetch_topic_pub_search(
+                &transport,
+                &ctx,
+                &keywords,
+                &content,
+                page_num,
+                access_key.as_deref(),
+                &appkey,
+                &appsec,
+                ts,
+            )
+            .await
         })
         .await
         .unwrap_or_else(|_| {

@@ -460,17 +460,33 @@ fn season_series(s: bili_domain::space::SpaceSeasonSeries) -> SpaceSeasonSeries 
 }
 
 /// 取一页投币过/点赞过的稿件。`coin` 为真取投币列表。
+#[allow(clippy::too_many_arguments)]
 pub async fn fetch_coin_like_arc(
     context: SpaceContext,
     coin: bool,
     mid: i64,
     page: i64,
     page_size: i64,
+    access_key: Option<String>,
+    appkey: String,
+    appsec: String,
 ) -> CoinLikeArcResult {
-    let (ctx, transport, _, _) = context.split();
+    let (ctx, transport, _, ts) = context.split();
     let joined = init::runtime()
         .spawn(async move {
-            space::fetch_coin_like_arc(&transport, &ctx, coin, mid, page, page_size).await
+            space::fetch_coin_like_arc(
+                &transport,
+                &ctx,
+                coin,
+                mid,
+                page,
+                page_size,
+                access_key.as_deref(),
+                &appkey,
+                &appsec,
+                ts,
+            )
+            .await
         })
         .await;
 
@@ -1365,6 +1381,7 @@ pub async fn fetch_space_page(
     from_view_aid: Option<String>,
     appkey: String,
     appsec: String,
+    access_key: Option<String>,
 ) -> SpacePageResult {
     let (ctx, transport, _, ts) = context.split();
     let joined = init::runtime()
@@ -1374,6 +1391,7 @@ pub async fn fetch_space_page(
                 &ctx,
                 mid,
                 from_view_aid.as_deref(),
+                access_key.as_deref(),
                 &appkey,
                 &appsec,
                 ts,
@@ -1400,7 +1418,7 @@ pub async fn fetch_space_page(
 
 /// 取一页投稿。
 ///
-/// 六个 tab 共用这一个函数，路径、封面档位与视频游标签名由
+/// 六个 tab 共用 APP 签名，路径与封面档位由
 /// [`SpaceArchiveKind`] 决定。可省的参数省掉就不发，不是发空值。
 #[allow(clippy::too_many_arguments)]
 pub async fn fetch_space_archive(
@@ -1417,6 +1435,7 @@ pub async fn fetch_space_archive(
     include_cursor: Option<bool>,
     appkey: String,
     appsec: String,
+    access_key: Option<String>,
 ) -> SpaceArchiveResult {
     let (ctx, transport, _, ts) = context.split();
     let joined = init::runtime()
@@ -1434,6 +1453,7 @@ pub async fn fetch_space_archive(
                 season_id,
                 series_id,
                 include_cursor,
+                access_key.as_deref(),
                 &appkey,
                 &appsec,
                 ts,
@@ -2097,12 +2117,26 @@ pub async fn fetch_space_article(
     mid: i64,
     page: i64,
     page_size: i64,
+    access_key: Option<String>,
+    appkey: String,
+    appsec: String,
 ) -> SpaceArticleResult {
-    let (ctx, transport, _, _) = context.split();
+    let (ctx, transport, _, ts) = context.split();
     let joined = init::runtime()
-        .spawn(
-            async move { space::fetch_space_article(&transport, &ctx, mid, page, page_size).await },
-        )
+        .spawn(async move {
+            space::fetch_space_article(
+                &transport,
+                &ctx,
+                mid,
+                page,
+                page_size,
+                access_key.as_deref(),
+                &appkey,
+                &appsec,
+                ts,
+            )
+            .await
+        })
         .await;
     match flatten(joined) {
         Ok(p) => SpaceArticleResult {

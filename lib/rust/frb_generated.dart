@@ -474,6 +474,9 @@ abstract class RustLibApi extends BaseApi {
     required PlatformInt64 mid,
     required PlatformInt64 page,
     required PlatformInt64 pageSize,
+    String? accessKey,
+    required String appkey,
+    required String appsec,
   });
 
   Future<CoinLogResult> crateApiUserFetchCoinLog({
@@ -1151,6 +1154,7 @@ abstract class RustLibApi extends BaseApi {
     bool? includeCursor,
     required String appkey,
     required String appsec,
+    String? accessKey,
   });
 
   Future<SpaceArchiveSearchResult> crateApiSpaceFetchSpaceArchiveSearch({
@@ -1169,6 +1173,9 @@ abstract class RustLibApi extends BaseApi {
     required PlatformInt64 mid,
     required PlatformInt64 page,
     required PlatformInt64 pageSize,
+    String? accessKey,
+    required String appkey,
+    required String appsec,
   });
 
   Future<SpaceAudioResult> crateApiSpaceFetchSpaceAudio({
@@ -1204,6 +1211,7 @@ abstract class RustLibApi extends BaseApi {
     String? fromViewAid,
     required String appkey,
     required String appsec,
+    String? accessKey,
   });
 
   Future<SpaceSearchArchiveResult> crateApiSpaceFetchSpaceSearchArchive({
@@ -1897,6 +1905,9 @@ abstract class RustLibApi extends BaseApi {
     required String keywords,
     required String content,
     required PlatformInt64 pageNum,
+    String? accessKey,
+    required String appkey,
+    required String appsec,
   });
 
   Future<TopicItemsResult> crateApiDynamicTopicRcmd({
@@ -1907,6 +1918,9 @@ abstract class RustLibApi extends BaseApi {
   Future<TopicTopResult> crateApiDynamicTopicTop({
     required DynamicReadContext context,
     required String topicId,
+    String? accessKey,
+    required String appkey,
+    required String appsec,
   });
 
   Future<UgcTripleResult> crateApiVideoWriteUgcTriple({
@@ -4220,6 +4234,9 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     required PlatformInt64 mid,
     required PlatformInt64 page,
     required PlatformInt64 pageSize,
+    String? accessKey,
+    required String appkey,
+    required String appsec,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -4230,6 +4247,9 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_i_64(mid, serializer);
           sse_encode_i_64(page, serializer);
           sse_encode_i_64(pageSize, serializer);
+          sse_encode_opt_String(accessKey, serializer);
+          sse_encode_String(appkey, serializer);
+          sse_encode_String(appsec, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -4242,7 +4262,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: null,
         ),
         constMeta: kCrateApiSpaceFetchCoinLikeArcConstMeta,
-        argValues: [context, coin, mid, page, pageSize],
+        argValues: [
+          context,
+          coin,
+          mid,
+          page,
+          pageSize,
+          accessKey,
+          appkey,
+          appsec,
+        ],
         apiImpl: this,
       ),
     );
@@ -4251,7 +4280,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiSpaceFetchCoinLikeArcConstMeta =>
       const TaskConstMeta(
         debugName: "fetch_coin_like_arc",
-        argNames: ["context", "coin", "mid", "page", "pageSize"],
+        argNames: [
+          "context",
+          "coin",
+          "mid",
+          "page",
+          "pageSize",
+          "accessKey",
+          "appkey",
+          "appsec",
+        ],
       );
 
   @override
@@ -8233,6 +8271,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     bool? includeCursor,
     required String appkey,
     required String appsec,
+    String? accessKey,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -8251,6 +8290,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_opt_box_autoadd_bool(includeCursor, serializer);
           sse_encode_String(appkey, serializer);
           sse_encode_String(appsec, serializer);
+          sse_encode_opt_String(accessKey, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -8277,6 +8317,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           includeCursor,
           appkey,
           appsec,
+          accessKey,
         ],
         apiImpl: this,
       ),
@@ -8300,6 +8341,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           "includeCursor",
           "appkey",
           "appsec",
+          "accessKey",
         ],
       );
 
@@ -8374,6 +8416,9 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     required PlatformInt64 mid,
     required PlatformInt64 page,
     required PlatformInt64 pageSize,
+    String? accessKey,
+    required String appkey,
+    required String appsec,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -8383,6 +8428,9 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_i_64(mid, serializer);
           sse_encode_i_64(page, serializer);
           sse_encode_i_64(pageSize, serializer);
+          sse_encode_opt_String(accessKey, serializer);
+          sse_encode_String(appkey, serializer);
+          sse_encode_String(appsec, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -8395,7 +8443,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: null,
         ),
         constMeta: kCrateApiSpaceFetchSpaceArticleConstMeta,
-        argValues: [context, mid, page, pageSize],
+        argValues: [context, mid, page, pageSize, accessKey, appkey, appsec],
         apiImpl: this,
       ),
     );
@@ -8404,7 +8452,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiSpaceFetchSpaceArticleConstMeta =>
       const TaskConstMeta(
         debugName: "fetch_space_article",
-        argNames: ["context", "mid", "page", "pageSize"],
+        argNames: [
+          "context",
+          "mid",
+          "page",
+          "pageSize",
+          "accessKey",
+          "appkey",
+          "appsec",
+        ],
       );
 
   @override
@@ -8567,6 +8623,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     String? fromViewAid,
     required String appkey,
     required String appsec,
+    String? accessKey,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -8577,6 +8634,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_opt_String(fromViewAid, serializer);
           sse_encode_String(appkey, serializer);
           sse_encode_String(appsec, serializer);
+          sse_encode_opt_String(accessKey, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -8589,7 +8647,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: null,
         ),
         constMeta: kCrateApiSpaceFetchSpacePageConstMeta,
-        argValues: [context, mid, fromViewAid, appkey, appsec],
+        argValues: [context, mid, fromViewAid, appkey, appsec, accessKey],
         apiImpl: this,
       ),
     );
@@ -8598,7 +8656,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiSpaceFetchSpacePageConstMeta =>
       const TaskConstMeta(
         debugName: "fetch_space_page",
-        argNames: ["context", "mid", "fromViewAid", "appkey", "appsec"],
+        argNames: [
+          "context",
+          "mid",
+          "fromViewAid",
+          "appkey",
+          "appsec",
+          "accessKey",
+        ],
       );
 
   @override
@@ -13486,6 +13551,9 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     required String keywords,
     required String content,
     required PlatformInt64 pageNum,
+    String? accessKey,
+    required String appkey,
+    required String appsec,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -13495,6 +13563,9 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_String(keywords, serializer);
           sse_encode_String(content, serializer);
           sse_encode_i_64(pageNum, serializer);
+          sse_encode_opt_String(accessKey, serializer);
+          sse_encode_String(appkey, serializer);
+          sse_encode_String(appsec, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -13507,7 +13578,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: null,
         ),
         constMeta: kCrateApiDynamicTopicPubSearchConstMeta,
-        argValues: [context, keywords, content, pageNum],
+        argValues: [
+          context,
+          keywords,
+          content,
+          pageNum,
+          accessKey,
+          appkey,
+          appsec,
+        ],
         apiImpl: this,
       ),
     );
@@ -13516,7 +13595,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiDynamicTopicPubSearchConstMeta =>
       const TaskConstMeta(
         debugName: "topic_pub_search",
-        argNames: ["context", "keywords", "content", "pageNum"],
+        argNames: [
+          "context",
+          "keywords",
+          "content",
+          "pageNum",
+          "accessKey",
+          "appkey",
+          "appsec",
+        ],
       );
 
   @override
@@ -13557,6 +13644,9 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Future<TopicTopResult> crateApiDynamicTopicTop({
     required DynamicReadContext context,
     required String topicId,
+    String? accessKey,
+    required String appkey,
+    required String appsec,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -13564,6 +13654,9 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_box_autoadd_dynamic_read_context(context, serializer);
           sse_encode_String(topicId, serializer);
+          sse_encode_opt_String(accessKey, serializer);
+          sse_encode_String(appkey, serializer);
+          sse_encode_String(appsec, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -13576,7 +13669,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: null,
         ),
         constMeta: kCrateApiDynamicTopicTopConstMeta,
-        argValues: [context, topicId],
+        argValues: [context, topicId, accessKey, appkey, appsec],
         apiImpl: this,
       ),
     );
@@ -13584,7 +13677,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiDynamicTopicTopConstMeta => const TaskConstMeta(
     debugName: "topic_top",
-    argNames: ["context", "topicId"],
+    argNames: ["context", "topicId", "accessKey", "appkey", "appsec"],
   );
 
   @override

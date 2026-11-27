@@ -1,26 +1,28 @@
-# 个人空间信息失败修复计划（#260）
+# 空间与话题 APP 鉴权修复计划（#260 / #288）
 
-目标：修复空间主页缺少 APP 签名导致的 -400，并使资料错误与昵称分离。
+目标：恢复空间与两条话题 APP 请求在旧 AccountManager 中隐式完成的账号 token、
+签名和 Cookie 隔离，并修复空间资料失败时错误覆盖昵称的展示。
 
-设计：空间请求继续使用主账号 Cookie，Rust 复用 bili-protocol::app_sign，宿主传入公开客户端标识与时间。失败保留已有资料与标签；首次失败生成原有兜底标签；独立错误提示提供重试，成功后清除。重试期间不卸载已有内容。
+设计：账号材料按请求取一次快照，空间取主账号，话题顶部取推荐账号，话题发布
+搜索取主账号。Rust 将非空 access_key 放入参数后再 APP 签名，匿名及空 token
+整条省略；APP 发送边界去掉 Cookie 字段与同名头。宿主负责账号材料和时间，
+不实现签名算法。保留资料失败后的可用内容，提供明确重试，成功后清除错误。
 
-实测：2026-11-27，相同匿名参数未签名返回 -400，签名返回 0 和 card。登录态仍需 Phase 2 验证，不读取本机私人凭据。
+范围：空间主页、视频游标、充电专属、合集、列表、追番、漫画、专栏、投币列表、
+点赞列表、话题顶部、话题发布搜索，共 12 条；含话题搜索页号到 offset 的分页。
 
-- [x] 在 space_golden.rs 增加签名覆盖、可选来源参数与固定时间回归，先确认失败。
-- [x] 修改 bili-api/src/space.rs、bridge_flutter/src/api/space.rs 和 rust_space.dart，透传 appkey/appsec/ts，重跑 tool/frb-generate.sh。
-- [x] MemberController 分离错误与昵称，失败保留已加载资料，页面提供独立提示和重试；添加行为回归。
-- [x] 更新协议变更、上游分叉与人工验证文档。
-- [x] cargo fmt --check、cargo clippy --workspace --all-targets、cargo test --workspace；dart analyze lib，运行适用的 Flutter 回归。
+- [x] 用失败回归复现未签名请求与错误昵称问题。
+- [x] 请求构造共用 sign_app_query，先补非空 token 后签名。
+- [x] 六个 FRB 函数透传账号材料与上下文时间，重跑 tool/frb-generate.sh。
+- [x] Dart APP 上下文跳过 Cookie 加载，Rust send_app 保证发送时不带 Cookie。
+- [x] 修复失败展示；保留已有资料和标签，无标签的成功资料补兜底标签并通知重建。
+- [x] 独立 Python 签名期望覆盖匿名/空 token/假登录 token 的 12 条路径与话题翻页。
+- [x] 传输桩遍历全部 fetch 检查 token、签名和 Cookie 隔离；临时撤去隔离时用例失败。
+- [x] 同步协议记录、ADR、fixture 来源、上游分叉与 Phase 2 验收路径。
+- [x] Rust fmt / Clippy / 全量测试通过；1058 项通过，2 项原有忽略。
+- [x] Flutter 控制器回归 5 项通过；Dart 分析 0 error，55 条既有诊断，修改文件无诊断。
+- [x] 独立审查签名透传、生成绑定、账号路由、空 token 与 Cookie 隔离。
 
-验证：Rust 全量测试 1054 通过、2 忽略；fmt 与 Clippy 通过。Flutter 控制器回归
-5 项通过；Dart 分析 0 error，55 条既有 warning/info，修改文件没有诊断。
-独立审查补齐了「无标签但已有资料」时的保留与页面刷新通知回归。
-登录态和真机观感仍按 RELEASE-VALIDATION 的 Phase 2 路径验收。
-
-追加投稿 Tab 修复：`space_archive_request` 的 Video 分支复用 APP 签名，
-桥接与宿主透传 appkey/appsec/ts 并重新生成 FRB。其余五条列表保持请求面。
-增加首屏固定签名、游标/排序/时间参与签名和其他五条不扩展请求面的回归。
-匿名网关对照：不签名 -400，签名 0；登录态真机仍留 Phase 2。
-
-追加验证：Rust 全量 1056 通过、2 忽略；fmt / Clippy 通过；Dart 分析无 error
-且修改文件无诊断；5 项 Flutter 回归通过。投稿签名透传与生成绑定独立审查通过。
+网关对照：空间主页与视频游标未签名 -400、签名 0；其余十条在本次匿名样本中
+七条返回 0，三条返回资源类错误，签名前后没有差别。补齐依据是旧拦截器协议行为，
+不能把匿名请求成功当成登录态一致。真实登录态与设备表现留 Phase 2 验收。

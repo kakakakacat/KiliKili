@@ -46,7 +46,15 @@ fn tabs_match_frozen_snapshots() {
 }
 #[test]
 fn request_shapes_keep_baseline_parameters() {
-    let article = space::space_article_request(123, 2, 10);
+    let article = space::space_article_request(
+        123,
+        2,
+        10,
+        None,
+        "dfca71928277209b",
+        "b5475a8825547a4fc26c7d518eaaa02e",
+        1_700_000_000,
+    );
     assert_eq!(article.path, "/x/v2/space/article");
     assert!(article.query.contains(&("vmid".into(), "123".into())));
     assert!(article.query.contains(&("pn".into(), "2".into())));

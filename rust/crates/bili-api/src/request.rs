@@ -422,6 +422,21 @@ impl PreparedRequest {
     }
 }
 
+/// 复现旧 APP 拦截器：只发送非空账号 token，并在补 token 后签名。
+/// Cookie 不参与 APP 鉴权；请求是否登录只取决于本次注入的 access_key。
+pub(crate) fn sign_app_query(
+    mut query: Vec<(String, String)>,
+    access_key: Option<&str>,
+    appkey: &str,
+    appsec: &str,
+    ts: i64,
+) -> Vec<(String, String)> {
+    if let Some(key) = access_key.filter(|key| !key.is_empty()) {
+        query.push(("access_key".to_owned(), key.to_owned()));
+    }
+    bili_protocol::app_sign::sign(&query, appkey, appsec, ts)
+}
+
 #[cfg(test)]
 // 测试里 expect 是正确做法：前提不成立时就该崩掉并指出原因。
 #[allow(clippy::expect_used)]

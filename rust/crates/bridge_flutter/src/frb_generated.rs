@@ -2603,6 +2603,9 @@ fn wire__crate__api__space__fetch_coin_like_arc_impl(
             let api_mid = <i64>::sse_decode(&mut deserializer);
             let api_page = <i64>::sse_decode(&mut deserializer);
             let api_page_size = <i64>::sse_decode(&mut deserializer);
+            let api_access_key = <Option<String>>::sse_decode(&mut deserializer);
+            let api_appkey = <String>::sse_decode(&mut deserializer);
+            let api_appsec = <String>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, ()>(
@@ -2614,6 +2617,9 @@ fn wire__crate__api__space__fetch_coin_like_arc_impl(
                                 api_mid,
                                 api_page,
                                 api_page_size,
+                                api_access_key,
+                                api_appkey,
+                                api_appsec,
                             )
                             .await,
                         )?;
@@ -7264,6 +7270,7 @@ fn wire__crate__api__space__fetch_space_archive_impl(
             let api_include_cursor = <Option<bool>>::sse_decode(&mut deserializer);
             let api_appkey = <String>::sse_decode(&mut deserializer);
             let api_appsec = <String>::sse_decode(&mut deserializer);
+            let api_access_key = <Option<String>>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, ()>(
@@ -7283,6 +7290,7 @@ fn wire__crate__api__space__fetch_space_archive_impl(
                                 api_include_cursor,
                                 api_appkey,
                                 api_appsec,
+                                api_access_key,
                             )
                             .await,
                         )?;
@@ -7376,6 +7384,9 @@ fn wire__crate__api__space__fetch_space_article_impl(
             let api_mid = <i64>::sse_decode(&mut deserializer);
             let api_page = <i64>::sse_decode(&mut deserializer);
             let api_page_size = <i64>::sse_decode(&mut deserializer);
+            let api_access_key = <Option<String>>::sse_decode(&mut deserializer);
+            let api_appkey = <String>::sse_decode(&mut deserializer);
+            let api_appsec = <String>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, ()>(
@@ -7386,6 +7397,9 @@ fn wire__crate__api__space__fetch_space_article_impl(
                                 api_mid,
                                 api_page,
                                 api_page_size,
+                                api_access_key,
+                                api_appkey,
+                                api_appsec,
                             )
                             .await,
                         )?;
@@ -7606,6 +7620,7 @@ fn wire__crate__api__space__fetch_space_page_impl(
             let api_from_view_aid = <Option<String>>::sse_decode(&mut deserializer);
             let api_appkey = <String>::sse_decode(&mut deserializer);
             let api_appsec = <String>::sse_decode(&mut deserializer);
+            let api_access_key = <Option<String>>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, ()>(
@@ -7617,6 +7632,7 @@ fn wire__crate__api__space__fetch_space_page_impl(
                                 api_from_view_aid,
                                 api_appkey,
                                 api_appsec,
+                                api_access_key,
                             )
                             .await,
                         )?;
@@ -13034,6 +13050,9 @@ fn wire__crate__api__dynamic__topic_pub_search_impl(
             let api_keywords = <String>::sse_decode(&mut deserializer);
             let api_content = <String>::sse_decode(&mut deserializer);
             let api_page_num = <i64>::sse_decode(&mut deserializer);
+            let api_access_key = <Option<String>>::sse_decode(&mut deserializer);
+            let api_appkey = <String>::sse_decode(&mut deserializer);
+            let api_appsec = <String>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, ()>(
@@ -13044,6 +13063,9 @@ fn wire__crate__api__dynamic__topic_pub_search_impl(
                                 api_keywords,
                                 api_content,
                                 api_page_num,
+                                api_access_key,
+                                api_appkey,
+                                api_appsec,
                             )
                             .await,
                         )?;
@@ -13120,12 +13142,22 @@ fn wire__crate__api__dynamic__topic_top_impl(
             let api_context =
                 <crate::api::dynamic::DynamicReadContext>::sse_decode(&mut deserializer);
             let api_topic_id = <String>::sse_decode(&mut deserializer);
+            let api_access_key = <Option<String>>::sse_decode(&mut deserializer);
+            let api_appkey = <String>::sse_decode(&mut deserializer);
+            let api_appsec = <String>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, ()>(
                     (move || async move {
                         let output_ok = Ok::<_, ()>(
-                            crate::api::dynamic::topic_top(api_context, api_topic_id).await,
+                            crate::api::dynamic::topic_top(
+                                api_context,
+                                api_topic_id,
+                                api_access_key,
+                                api_appkey,
+                                api_appsec,
+                            )
+                            .await,
                         )?;
                         std::result::Result::Ok(output_ok)
                     })()

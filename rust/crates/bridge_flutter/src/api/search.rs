@@ -440,8 +440,15 @@ pub async fn search_video(context: SearchContext, query: SearchQuery) -> SearchV
 
     let joined = init::runtime()
         .spawn(async move {
-            let body = search::fetch_search(&transport, &ctx, &params, &mixin_key, wts).await?;
-            search::parse_video(&body)
+            search::fetch_search_parsed(
+                &transport,
+                &ctx,
+                &params,
+                &mixin_key,
+                wts,
+                search::parse_video,
+            )
+            .await
         })
         .await;
 
@@ -470,8 +477,15 @@ pub async fn search_user(context: SearchContext, query: SearchQuery) -> SearchUs
 
     let joined = init::runtime()
         .spawn(async move {
-            let body = search::fetch_search(&transport, &ctx, &params, &mixin_key, wts).await?;
-            search::parse_user(&body)
+            search::fetch_search_parsed(
+                &transport,
+                &ctx,
+                &params,
+                &mixin_key,
+                wts,
+                search::parse_user,
+            )
+            .await
         })
         .await;
 
@@ -500,8 +514,15 @@ pub async fn search_live(context: SearchContext, query: SearchQuery) -> SearchLi
 
     let joined = init::runtime()
         .spawn(async move {
-            let body = search::fetch_search(&transport, &ctx, &params, &mixin_key, wts).await?;
-            search::parse_live(&body)
+            search::fetch_search_parsed(
+                &transport,
+                &ctx,
+                &params,
+                &mixin_key,
+                wts,
+                search::parse_live,
+            )
+            .await
         })
         .await;
 
@@ -530,8 +551,15 @@ pub async fn search_pgc(context: SearchContext, query: SearchQuery) -> SearchPgc
 
     let joined = init::runtime()
         .spawn(async move {
-            let body = search::fetch_search(&transport, &ctx, &params, &mixin_key, wts).await?;
-            search::parse_pgc(&body)
+            search::fetch_search_parsed(
+                &transport,
+                &ctx,
+                &params,
+                &mixin_key,
+                wts,
+                search::parse_pgc,
+            )
+            .await
         })
         .await;
 
@@ -560,8 +588,15 @@ pub async fn search_article(context: SearchContext, query: SearchQuery) -> Searc
 
     let joined = init::runtime()
         .spawn(async move {
-            let body = search::fetch_search(&transport, &ctx, &params, &mixin_key, wts).await?;
-            search::parse_article(&body)
+            search::fetch_search_parsed(
+                &transport,
+                &ctx,
+                &params,
+                &mixin_key,
+                wts,
+                search::parse_article,
+            )
+            .await
         })
         .await;
 
@@ -590,8 +625,15 @@ pub async fn search_all(context: SearchContext, query: SearchQuery) -> SearchAll
 
     let joined = init::runtime()
         .spawn(async move {
-            let body = search::fetch_search(&transport, &ctx, &params, &mixin_key, wts).await?;
-            search::parse_all(&body)
+            search::fetch_search_parsed(
+                &transport,
+                &ctx,
+                &params,
+                &mixin_key,
+                wts,
+                search::parse_all,
+            )
+            .await
         })
         .await;
 

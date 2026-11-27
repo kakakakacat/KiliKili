@@ -105,9 +105,10 @@ abstract final class RustSearch {
   /// 分类型搜索。`R` 由 `searchType` 决定，与基线
   /// `SearchHttp.searchByType` 的契约一致。
   ///
-  /// 风控拦截（服务端下发 `v_voucher`）时返回
-  /// `Error('触发风控，需要完成验证后重试')`——基线在这里也是直接判失败，
-  /// 其后的验证流程是注释掉的。
+  /// 风控拦截（服务端下发 `v_voucher`）时 Rust 先自动退避重试两次
+  /// （`bili_api::search::fetch_search_parsed`），仍被拦才返回
+  /// `Error('触发风控，需要完成验证后重试')`。基线是第一次就判失败、
+  /// 等用户手点重试。
   static Future<LoadingState<R>> searchByType<R extends SearchNumData>({
     required SearchType searchType,
     required String keyword,

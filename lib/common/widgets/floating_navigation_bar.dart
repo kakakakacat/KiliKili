@@ -24,43 +24,41 @@ const _kNavigationShape = RoundedSuperellipseBorder(
   borderRadius: _kBorderRadius,
 );
 
-/// 底栏着色沿左上 → 右下对角线的三档不透明度。
-///
-/// 液态玻璃着色器只折射、不模糊，底下卡片的标题会原样透上来，和导航文字
-/// 叠在一起（#252 所有者反馈「太透、看不清」）。所以中间区域靠这层着色
-/// 压暗背板；边缘高光与折射仍由着色器负责，玻璃感保留。此前为 0.24 /
-/// 0.10 / 0.18（#122 调高透明度时的取值）。
-///
-/// 着色器可用时这层在 shader 里画（#266：盖在 shader 之上的话，水滴里的
-/// 折射会被它压得看不见）；不可用时仍是一层 DecoratedBox。两处同一组值。
-const _kTintAlphas = (0.78, 0.68, 0.74);
-
 /// 统一的胶囊玻璃底层，供三种底部导航样式共用。
 ///
-/// 选中指示是一滴会拉伸、冲过、回弹的液态玻璃（#266）。形变规则全在 Rust
+/// ## 选中指示（#266）
+///
+/// 参照 iOS 26 tab bar（所有者给的录屏逐帧看过），选中指示有两种形态：
+///
+/// - **静止**：一块哑光灰色胶囊，没有玻璃。
+/// - **切换或按住**：灰色淡出，**升起**一块透明透镜，比静止胶囊大一圈、可以
+///   超出底栏上下边；放大下面的图标与文字，边缘强折射带色散，里面的图标被
+///   染成选中色。到位后透镜落下，变回灰色胶囊。
+///
+/// 位置、升起程度、按下落在哪格、拖动吸附到哪格全由 Rust 决定
 /// （`bili_core::glass_droplet`，AGENTS.md 第 2 节），这里只做三件事：用
-/// [Ticker] 按真实流逝时间推它、把「格」换算成像素、交给着色器画出来。
+/// [Ticker] 按真实流逝时间推它、把「格」换算成像素、画出来。透镜由
+/// `shaders/glass_lens.frag` 画，它是叠在导航内容**之上**的第二个
+/// [BackdropFilter]，所以采得到图标；只在升起时挂上。
 ///
-/// 两种情况退回原来的纯平移（300ms `easeOutCubic`），不弹、不变形：
+/// 退路：
 ///
-/// - 系统打开了「减弱动态效果」（#266 验收第 4 条）；
-/// - Rust Core 不可用（初始化失败，或没有原生库的组件测试进程）。这时没有
-///   形变规则可用，而为它在 Dart 再写一份弹簧正是第 2 节禁止的。
-///
-/// 着色器不可用（非 Impeller）时水滴照样变形，质感退回原来的渐变胶囊。
+/// - 系统打开了「减弱动态效果」（#266 验收第 4 条）：不升起透镜，灰色胶囊按
+///   原来的 300ms `easeOutCubic` 平移；拖动选择仍可用，胶囊按格跳。
+/// - Rust Core 不可用（初始化失败，或没有原生库的组件测试进程）：同上，且没
+///   有按压与拖动。为它在 Dart 再写一份规则正是第 2 节禁止的。
+/// - 着色器不可用（非 Impeller）：照常移动，没有透镜，只有灰色胶囊。
 ///
 /// ## 按压与拖动（#266 所有者定）
 ///
-/// - 按下哪格，水滴**立即**跑过去并鼓起；真正切换仍由内层导航的点击完成，
+/// - 按下哪格，透镜**立即**升起并跑过去；真正切换仍由内层导航的点击完成，
 ///   这里不重复选中（重复点同一个 tab 在首页是「回顶/刷新」，不能多触发）。
-/// - 按下后移动超过 [kTouchSlop]：进入拖动，水滴中心跟手；内层的点击此时
+/// - 按下后移动超过 [kTouchSlop]：进入拖动，透镜中心跟手；内层的点击此时
 ///   已被手势竞技场取消，松手后由这里吸附到最近一格并调
 ///   [onDestinationSelected]。
-/// - 按住期间水滴之上叠一层透镜，放大下方的图标与文字（只在着色器可用时）。
 ///
 /// 手势用 [Listener] 读原始触点，不进手势竞技场，所以三种底栏（悬浮 / MD3 /
-/// 经典，后两者是 Flutter 自带控件）都不用改内部就能生效。哪一格、跟手的
-/// 目标、吸附到哪格都由 Rust 决定。
+/// 经典，后两者是 Flutter 自带控件）都不用改内部就能生效。
 class GlassNavigationSurface extends StatefulWidget {
   const GlassNavigationSurface({
     super.key,
@@ -83,12 +81,12 @@ class GlassNavigationSurface extends StatefulWidget {
 
 class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
     with SingleTickerProviderStateMixin {
-  /// 底栏着色器与按压透镜着色器，一起加载。
-  static Future<List<FragmentProgram>>? _programs;
+  static Future<FragmentProgram>? _glassProgram;
+  static Future<FragmentProgram>? _lensProgram;
 
   late final Ticker _ticker = createTicker(_onTick);
 
-  /// 每推一帧通知一次。只有滤镜和选中指示两处监听，导航内容不重建。
+  /// 每推一帧通知一次。只有选中胶囊与透镜两处监听，导航内容不重建。
   final _frame = _FrameNotifier();
 
   GlassDropletState? _state;
@@ -103,10 +101,9 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
   /// 复用同一个着色器对象，每帧改 uniform 再包一个新的 `ImageFilter`：
   /// 原生滤镜在包装时按当时的 uniform 建出来，判等也比 uniform，所以
   /// 改了就会重绘、没改就不会。
-  FragmentShader? _shader;
   FragmentShader? _lensShader;
 
-  /// 手指按下或拖动期间水滴的目标格，优先于 [_selected]。松手后保留到下一
+  /// 手指按下或拖动期间透镜的目标格，优先于 [_selected]。松手后保留到下一
   /// 帧画完：那时内层导航的点击（或这里的拖动吸附）已经把选中改过来了，
   /// 再交还给 [_selected] 就不会往旧位置抖一下。
   double? _touchTarget;
@@ -129,6 +126,23 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
 
   bool _useSprings(BuildContext context) =>
       _rustUsable && !MediaQuery.disableAnimationsOf(context);
+
+  @override
+  void didUpdateWidget(GlassNavigationSurface oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.destinationCount != widget.destinationCount) {
+      // tab 数量变了，「格」的含义跟着变，旧状态没有意义，直接落到新位置。
+      _reset();
+    } else if (oldWidget.selectedIndex != widget.selectedIndex) {
+      _kick();
+    }
+  }
+
+  void _reset() {
+    _ticker.stop();
+    _state = null;
+    _shape = null;
+  }
 
   /// 手指此刻的位置，单位是格。
   double _slotOf(Offset local, int count) {
@@ -226,26 +240,6 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
     _kick();
   }
 
-  @override
-  void didUpdateWidget(GlassNavigationSurface oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.destinationCount != widget.destinationCount) {
-      // tab 数量变了，「格」的含义跟着变，旧状态没有意义，直接落到新位置。
-      _reset();
-    } else if (oldWidget.selectedIndex != widget.selectedIndex &&
-        _state != null &&
-        !_ticker.isActive) {
-      _lastElapsed = Duration.zero;
-      _ticker.start();
-    }
-  }
-
-  void _reset() {
-    _ticker.stop();
-    _state = null;
-    _shape = null;
-  }
-
   void _onTick(Duration elapsed) {
     final state = _state;
     final target = _touchTarget ?? _selected?.toDouble();
@@ -263,7 +257,6 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
         dtSeconds: dt,
       );
       _state = frame.state;
-      // 静止时也保留形状：按住不动时它是鼓起的那一档，不是原始胶囊。
       _shape = frame.shape;
       if (frame.settled) _ticker.stop();
     } catch (_) {
@@ -278,13 +271,13 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
   void dispose() {
     _ticker.dispose();
     _frame.dispose();
-    _shader?.dispose();
     _lensShader?.dispose();
     super.dispose();
   }
 
-  /// 选中水滴当前的外接框，像素，相对底栏左上角。
-  Rect _dropletRect(Size size, int selected, int count) {
+  /// 选中指示当前的外接框，像素，相对底栏左上角。升起时比静止胶囊大，
+  /// 可能超出底栏的上下边（透镜层不受底栏裁剪）。
+  Rect _indicatorRect(Size size, int selected, int count) {
     final slotWidth = (size.width - 2 * _kIndicatorPaddingInt) / count;
     final shape = _shape;
     final left = shape?.left ?? selected.toDouble();
@@ -299,38 +292,7 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
     );
   }
 
-  ImageFilter _glassFilter(
-    FragmentProgram program,
-    Size size,
-    Rect? droplet,
-    Color tint,
-  ) {
-    final shader = _shader ??= program.fragmentShader();
-    // 下标从 2 起：0、1 是引擎自动填的 u_size。顺序见 liquid_glass.frag。
-    var i = 2;
-    if (droplet != null) {
-      shader
-        ..setFloat(i++, droplet.left / size.width)
-        ..setFloat(i++, droplet.top / size.height)
-        ..setFloat(i++, droplet.right / size.width)
-        ..setFloat(i++, droplet.bottom / size.height)
-        ..setFloat(i++, _shape?.stretch ?? 0);
-    } else {
-      for (var k = 0; k < 5; k++) {
-        shader.setFloat(i++, 0);
-      }
-    }
-    shader
-      ..setFloat(i++, tint.r)
-      ..setFloat(i++, tint.g)
-      ..setFloat(i++, tint.b)
-      ..setFloat(i++, _kTintAlphas.$1)
-      ..setFloat(i++, _kTintAlphas.$2)
-      ..setFloat(i++, _kTintAlphas.$3);
-    return ImageFilter.shader(shader);
-  }
-
-  /// 平移退路里水滴停在哪格：按住或拖动时跟着触点吸附，否则是选中项。
+  /// 平移退路里胶囊停在哪格：按住或拖动时跟着触点吸附，否则是选中项。
   int _fallbackIndex(int selected, int count) {
     final target = _touchTarget;
     if (target == null) return selected;
@@ -341,10 +303,20 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
     }
   }
 
-  ImageFilter _lensFilter(FragmentProgram program, double zoom) {
-    // 下标 2：u_zoom。0、1 是引擎填的 u_size。
+  ImageFilter _lensFilter(
+    FragmentProgram program,
+    GlassDropletShape shape,
+    ColorScheme scheme,
+  ) {
+    // 下标从 2 起：0、1 是引擎填的 u_size。顺序见 glass_lens.frag。
+    final accent = scheme.primary;
     final shader = (_lensShader ??= program.fragmentShader())
-      ..setFloat(2, zoom);
+      ..setFloat(2, shape.lensZoom)
+      ..setFloat(3, shape.lift)
+      ..setFloat(4, accent.r)
+      ..setFloat(5, accent.g)
+      ..setFloat(6, accent.b)
+      ..setFloat(7, scheme.brightness == Brightness.light ? 1 : 0);
     return ImageFilter.shader(shader);
   }
 
@@ -366,227 +338,212 @@ class _GlassNavigationSurfaceState extends State<GlassNavigationSurface>
       }
     }
 
-    final dropletDecoration = BoxDecoration(
-      borderRadius: _kBorderRadius,
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          Colors.white.withValues(alpha: 0.26),
-          scheme.primary.withValues(alpha: 0.08),
-          Colors.white.withValues(alpha: 0.10),
-        ],
-      ),
-      border: Border.all(color: Colors.white.withValues(alpha: 0.40)),
-      boxShadow: [
-        BoxShadow(
-          color: scheme.onSurface.withValues(alpha: 0.12),
-          blurRadius: 8,
-          offset: const Offset(0, 2),
+    // 静止时的选中胶囊：哑光灰，不带玻璃（iOS 26 tab bar 静止时就是这样）。
+    final pill = IgnorePointer(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: _kBorderRadius,
+          color: scheme.onSurface.withValues(
+            alpha: scheme.brightness == Brightness.light ? 0.08 : 0.14,
+          ),
         ),
-      ],
+      ),
     );
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: _kBorderRadius,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.22),
-            blurRadius: 22,
-            offset: const Offset(0, 7),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: _kBorderRadius,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final size = constraints.biggest;
-            _size = size;
-            final deform = springs && size.isFinite;
-            return FutureBuilder<List<FragmentProgram>>(
-              future: supportsShader
-                  ? (_programs ??= Future.wait([
-                      FragmentProgram.fromAsset('shaders/liquid_glass.frag'),
-                      FragmentProgram.fromAsset('shaders/glass_lens.frag'),
-                    ]))
-                  : null,
-              builder: (context, snapshot) {
-                // 非 Impeller 后端无法对背板运行自定义折射，保留可读的透明材质。
-                final programs = supportsShader && snapshot.hasData
-                    ? snapshot.data!
-                    : null;
-                final program = programs?[0];
-                final lensProgram = programs?[1];
-                // 水滴由着色器画：只在会变形时这样做。平移退路里水滴的位置
-                // 由 AnimatedPositioned 插值，着色器拿不到，仍画渐变胶囊。
-                final shaderDroplet = program != null && deform;
-
-                Widget? indicator;
-                if (selected != null && count != null) {
-                  final face = IgnorePointer(
-                    child: shaderDroplet
-                        ? const SizedBox.expand()
-                        : DecoratedBox(decoration: dropletDecoration),
-                  );
-                  if (deform) {
-                    indicator = ListenableBuilder(
-                      listenable: _frame,
-                      builder: (context, child) {
-                        final rect = _dropletRect(size, selected, count);
-                        return Positioned.fromRect(
-                          key: const Key('glass-selected-indicator'),
-                          rect: rect,
-                          child: child!,
-                        );
-                      },
-                      child: face,
-                    );
-                  } else {
-                    final slotWidth =
-                        (constraints.maxWidth - 2 * _kIndicatorPaddingInt) /
-                        count;
-                    indicator = ListenableBuilder(
-                      listenable: _frame,
-                      builder: (context, child) => AnimatedPositioned(
-                        key: const Key('glass-selected-indicator'),
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOutCubic,
-                        // 「减弱动态效果」下拖动选择仍然可用，只是水滴按格
-                        // 跳、不跟手不弹。
-                        left:
-                            _kIndicatorPaddingInt +
-                            slotWidth * _fallbackIndex(selected, count),
-                        top: _kIndicatorPaddingInt,
-                        bottom: _kIndicatorPaddingInt,
-                        width: slotWidth,
-                        child: child!,
-                      ),
-                      child: face,
-                    );
-                  }
-                }
-
-                final content = Stack(
-                  fit: StackFit.passthrough,
-                  children: [
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: program != null
-                              ? null
-                              : LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    scheme.surface.withValues(
-                                      alpha: _kTintAlphas.$1,
-                                    ),
-                                    scheme.surface.withValues(
-                                      alpha: _kTintAlphas.$2,
-                                    ),
-                                    scheme.surface.withValues(
-                                      alpha: _kTintAlphas.$3,
-                                    ),
-                                  ],
-                                ),
-                          borderRadius: _kBorderRadius,
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.36),
-                          ),
-                        ),
-                      ),
-                    ),
-                    ?indicator,
-                    // 三种导航与选中背景共用分栏边界，避免首尾项目向外偏移。
-                    Padding(
-                      padding: _kIndicatorPadding,
-                      // 安全区已由胶囊外层负责，内部导航不能再次插入状态栏留白。
-                      child: MediaQuery.removePadding(
-                        context: context,
-                        removeTop: true,
-                        removeBottom: true,
-                        removeLeft: true,
-                        removeRight: true,
-                        child: Theme(
-                          data: Theme.of(context).copyWith(
-                            splashFactory: NoSplash.splashFactory,
-                            splashColor: Colors.transparent,
-                            highlightColor: Colors.transparent,
-                          ),
-                          child: NavigationBarTheme(
-                            data: NavigationBarTheme.of(context).copyWith(
-                              overlayColor: const WidgetStatePropertyAll(
-                                Colors.transparent,
-                              ),
-                            ),
-                            child: Center(child: widget.child),
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (deform && lensProgram != null && count != null)
-                      ListenableBuilder(
-                        listenable: _frame,
-                        builder: (context, _) {
-                          final zoom = _shape?.lensZoom ?? 1.0;
-                          // 不按压时不挂这一层，省掉一次背板采样。
-                          if (zoom <= 1.001) return const SizedBox.shrink();
-                          final rect = _dropletRect(size, selected, count);
-                          return Positioned.fromRect(
-                            rect: rect,
-                            child: IgnorePointer(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(
-                                  rect.shortestSide / 2,
-                                ),
-                                child: BackdropFilter(
-                                  filter: _lensFilter(lensProgram, zoom),
-                                  child: const SizedBox.expand(),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                  ],
-                );
-
-                final touchable = Listener(
-                  behavior: HitTestBehavior.translucent,
-                  onPointerDown: _onPointerDown,
-                  onPointerMove: _onPointerMove,
-                  onPointerUp: _onPointerUp,
-                  onPointerCancel: _onPointerCancel,
-                  child: content,
-                );
-                if (program == null) {
-                  return BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: touchable,
-                  );
-                }
-                return ListenableBuilder(
-                  listenable: _frame,
-                  builder: (context, child) => BackdropFilter(
-                    filter: _glassFilter(
-                      program,
-                      size,
-                      shaderDroplet && count != null
-                          ? _dropletRect(size, selected, count)
-                          : null,
-                      scheme.surface,
-                    ),
-                    child: child,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = constraints.biggest;
+        _size = size;
+        final deform = springs && size.isFinite && count != null;
+        return FutureBuilder<List<FragmentProgram>>(
+          future: supportsShader
+              ? Future.wait([
+                  _glassProgram ??= FragmentProgram.fromAsset(
+                    'shaders/liquid_glass.frag',
                   ),
-                  child: touchable,
+                  _lensProgram ??= FragmentProgram.fromAsset(
+                    'shaders/glass_lens.frag',
+                  ),
+                ])
+              : null,
+          builder: (context, snapshot) {
+            final programs = supportsShader && snapshot.hasData
+                ? snapshot.data!
+                : null;
+            final glassProgram = programs?[0];
+            final lensProgram = programs?[1];
+            // 有透镜可画时，灰色胶囊随升起淡出；没有透镜时一直显示。
+            final lensOn = deform && lensProgram != null;
+
+            Widget? indicator;
+            if (selected != null && count != null) {
+              if (deform) {
+                indicator = ListenableBuilder(
+                  listenable: _frame,
+                  builder: (context, child) => Positioned.fromRect(
+                    key: const Key('glass-selected-indicator'),
+                    rect: _indicatorRect(size, selected, count),
+                    child: Opacity(
+                      opacity: lensOn
+                          ? 1 - (_shape?.lift ?? 0).clamp(0.0, 1.0)
+                          : 1,
+                      child: child,
+                    ),
+                  ),
+                  child: pill,
                 );
-              },
+              } else {
+                final slotWidth =
+                    (constraints.maxWidth - 2 * _kIndicatorPaddingInt) / count;
+                indicator = ListenableBuilder(
+                  listenable: _frame,
+                  builder: (context, child) => AnimatedPositioned(
+                    key: const Key('glass-selected-indicator'),
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOutCubic,
+                    // 「减弱动态效果」下拖动选择仍然可用，只是胶囊按格跳。
+                    left:
+                        _kIndicatorPaddingInt +
+                        slotWidth * _fallbackIndex(selected, count),
+                    top: _kIndicatorPaddingInt,
+                    bottom: _kIndicatorPaddingInt,
+                    width: slotWidth,
+                    child: child!,
+                  ),
+                  child: pill,
+                );
+              }
+            }
+
+            final content = Stack(
+              fit: StackFit.passthrough,
+              children: [
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        // 液态玻璃着色器只折射、不模糊，底下卡片的标题会原样
+                        // 透上来，和导航文字叠在一起（#252 所有者反馈「太透、
+                        // 看不清」）。所以中间区域靠这层着色压暗背板；边缘高
+                        // 光与折射仍由着色器负责，玻璃感保留。此前为 0.24 /
+                        // 0.10 / 0.18（#122 调高透明度时的取值）。
+                        colors: [
+                          scheme.surface.withValues(alpha: 0.78),
+                          scheme.surface.withValues(alpha: 0.68),
+                          scheme.surface.withValues(alpha: 0.74),
+                        ],
+                      ),
+                      borderRadius: _kBorderRadius,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.36),
+                      ),
+                    ),
+                  ),
+                ),
+                ?indicator,
+                // 三种导航与选中背景共用分栏边界，避免首尾项目向外偏移。
+                Padding(
+                  padding: _kIndicatorPadding,
+                  // 安全区已由胶囊外层负责，内部导航不能再次插入状态栏留白。
+                  child: MediaQuery.removePadding(
+                    context: context,
+                    removeTop: true,
+                    removeBottom: true,
+                    removeLeft: true,
+                    removeRight: true,
+                    child: Theme(
+                      data: Theme.of(context).copyWith(
+                        splashFactory: NoSplash.splashFactory,
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                      ),
+                      child: NavigationBarTheme(
+                        data: NavigationBarTheme.of(context).copyWith(
+                          overlayColor: const WidgetStatePropertyAll(
+                            Colors.transparent,
+                          ),
+                        ),
+                        child: Center(child: widget.child),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+
+            final bar = DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: _kBorderRadius,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.22),
+                    blurRadius: 22,
+                    offset: const Offset(0, 7),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: _kBorderRadius,
+                child: BackdropFilter(
+                  // 非 Impeller 后端无法对背板运行自定义折射，保留可读的透明
+                  // 材质。
+                  filter: glassProgram != null
+                      ? ImageFilter.shader(glassProgram.fragmentShader())
+                      : ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Listener(
+                    behavior: HitTestBehavior.translucent,
+                    onPointerDown: _onPointerDown,
+                    onPointerMove: _onPointerMove,
+                    onPointerUp: _onPointerUp,
+                    onPointerCancel: _onPointerCancel,
+                    child: content,
+                  ),
+                ),
+              ),
+            );
+            if (!lensOn) return bar;
+
+            // 透镜放在底栏的裁剪之外：升起时它比底栏还高一点（录屏里如此）。
+            return Stack(
+              clipBehavior: Clip.none,
+              fit: StackFit.passthrough,
+              children: [
+                bar,
+                ListenableBuilder(
+                  listenable: _frame,
+                  builder: (context, _) {
+                    final shape = _shape;
+                    // 没升起时不挂这一层，省掉一次背板采样。
+                    if (shape == null || shape.lift <= 0.01) {
+                      return const SizedBox.shrink();
+                    }
+                    final rect = _indicatorRect(size, selected, count);
+                    return Positioned.fromRect(
+                      rect: rect,
+                      // 不给透镜加 BoxShadow：阴影先画在底下，会被透镜自己的
+                      // BackdropFilter 采进去，透镜下半部发灰。轮廓靠着色器
+                      // 里的白色高光边。
+                      child: IgnorePointer(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(
+                            rect.shortestSide / 2,
+                          ),
+                          child: BackdropFilter(
+                            filter: _lensFilter(lensProgram, shape, scheme),
+                            child: const SizedBox.expand(),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             );
           },
-        ),
-      ),
+        );
+      },
     );
   }
 }

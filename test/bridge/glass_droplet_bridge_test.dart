@@ -4,11 +4,12 @@ import 'package:material_ui/material_ui.dart';
 
 import 'bridge_env.dart';
 
-/// 底栏液态水滴（#266）跨 FFI 的组件测试。
+/// 底栏液态玻璃选中指示（#266）跨 FFI 的组件测试。
 ///
 /// 形变规则本身由 `bili_core::glass_droplet` 的单测钉住；这里验的是宿主
 /// 那一半：`Ticker` 真的在推、「格」到像素的换算对、静止后回到原来的胶
-/// 囊、连点停在最后一格、「减弱动态效果」下不变形。没有原生库时组件只
+/// 囊、连点停在最后一格、「减弱动态效果」下不变形、按压与拖动。透镜本身
+/// 是着色器，测试进程里跑不了，只能真机看。没有原生库时组件只
 /// 会走平移退路，所以这组测试必须加载真正的动态库。
 void main() {
   setUpAll(() async {
@@ -48,31 +49,30 @@ void main() {
     ),
   );
 
-  testWidgets('切换时拉长、变扁，静止后回到原胶囊', skip: !bridgeTestsRequested, (tester) async {
+  testWidgets('切换时升起变大、移动中变宽，静止后回到原胶囊', skip: !bridgeTestsRequested, (
+    tester,
+  ) async {
     await tester.pumpWidget(bar(0));
     final rest0 = tester.getRect(indicator);
 
     await tester.pumpWidget(bar(1));
     var maxWidth = 0.0;
-    var minHeight = double.infinity;
-    var maxRight = 0.0;
+    var maxHeight = 0.0;
     for (var i = 0; i < 30; i++) {
       await tester.pump(const Duration(milliseconds: 16));
       final r = tester.getRect(indicator);
       maxWidth = r.width > maxWidth ? r.width : maxWidth;
-      minHeight = r.height < minHeight ? r.height : minHeight;
-      maxRight = r.right > maxRight ? r.right : maxRight;
+      maxHeight = r.height > maxHeight ? r.height : maxHeight;
     }
-    expect(maxWidth, greaterThan(rest0.width * 1.1));
-    expect(minHeight, lessThan(rest0.height * 0.95));
+    // 录屏里相邻切换最宽约 1.4 格，升起后几乎撑满底栏。
+    expect(maxWidth, greaterThan(rest0.width * 1.25));
+    expect(maxHeight, greaterThan(rest0.height * 1.1));
 
     await tester.pumpAndSettle();
     final rest1 = tester.getRect(indicator);
     expect(rest1.width, closeTo(rest0.width, 0.01));
     expect(rest1.height, closeTo(rest0.height, 0.01));
     expect(rest1.left, closeTo(rest0.left + rest0.width, 0.01));
-    // 前缘冲过了目标再回来。
-    expect(maxRight, greaterThan(rest1.right + 1));
   });
 
   testWidgets('快速连点停在最后一格', skip: !bridgeTestsRequested, (tester) async {
@@ -112,7 +112,7 @@ void main() {
     return Offset(surface.left + 4 + slotWidth * slot, surface.center.dy);
   }
 
-  testWidgets('按下即跑到按下那格并鼓起，松手未切换则回到选中项', skip: !bridgeTestsRequested, (
+  testWidgets('按下即升起并跑到按下那格，松手未切换则回到选中项', skip: !bridgeTestsRequested, (
     tester,
   ) async {
     await tester.pumpWidget(bar(0));
@@ -120,7 +120,7 @@ void main() {
     final gesture = await tester.startGesture(slotCenter(tester, 2.5));
     await tester.pumpAndSettle();
     final held = tester.getRect(indicator);
-    // 鼓起 12%，中心落在第 2 格中心。
+    // 升起后变大，中心落在第 2 格中心。
     expect(held.height, greaterThan(rest0.height * 1.05));
     expect(
       held.center.dx,
@@ -128,13 +128,13 @@ void main() {
     );
     await gesture.up();
     await tester.pumpAndSettle();
-    // 测试里没有内层导航去改选中，水滴回到第 0 格、恢复原大小。
+    // 测试里没有内层导航去改选中，回到第 0 格、恢复原大小。
     final back = tester.getRect(indicator);
     expect(back.left, closeTo(rest0.left, 0.01));
     expect(back.height, closeTo(rest0.height, 0.01));
   });
 
-  testWidgets('拖动时水滴跟手，松手吸附到最近一格并选中', skip: !bridgeTestsRequested, (
+  testWidgets('拖动时透镜跟手，松手吸附到最近一格并选中', skip: !bridgeTestsRequested, (
     tester,
   ) async {
     var selected = 0;

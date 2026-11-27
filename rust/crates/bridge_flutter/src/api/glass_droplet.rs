@@ -1,4 +1,4 @@
-//! 底栏液态水滴形变的 Dart 导出（issue #266）。
+//! 底栏液态玻璃透镜运动规则的 Dart 导出（issue #266）。
 //!
 //! 每帧调用一次，所以是 `#[frb(sync)]`：纯计算、几十次浮点运算，改成
 //! Future 反而要多排一次事件循环，动画必然晚一帧。
@@ -9,7 +9,7 @@
 use bili_core::glass_droplet as core;
 use flutter_rust_bridge::frb;
 
-/// 水滴的运动状态。宿主原样保存，每帧传回 [`glass_droplet_step`]，不要
+/// 透镜的运动状态。宿主原样保存，每帧传回 [`glass_droplet_step`]，不要
 /// 自己改字段。
 #[derive(Debug, Clone, Copy)]
 pub struct GlassDropletState {
@@ -17,8 +17,8 @@ pub struct GlassDropletState {
     pub left_velocity: f64,
     pub right: f64,
     pub right_velocity: f64,
-    pub scale: f64,
-    pub scale_velocity: f64,
+    pub lift: f64,
+    pub lift_velocity: f64,
     pub target: f64,
     pub direction: i8,
 }
@@ -29,13 +29,13 @@ pub struct GlassDropletState {
 pub struct GlassDropletShape {
     pub left: f64,
     pub right: f64,
-    /// 高度相对静止高度的比例，已含按压缩放。
+    /// 高度相对静止胶囊的比例，只随升起变化。
     pub height_scale: f64,
-    /// 0 = 静止形状，1 = 拉到上限。供 shader 决定中段收细多少。
+    /// 移动中的变宽程度 0..1。
     pub stretch: f64,
-    /// 按压程度 0..1。
-    pub press: f64,
-    /// 水滴下方内容的放大倍数；等于 1 时宿主不叠透镜层。
+    /// 升起程度 0..1：0 是静止的灰色胶囊，1 是完全升起的透镜。
+    pub lift: f64,
+    /// 透镜下方内容的放大倍数；等于 1 时宿主不叠透镜层。
     pub lens_zoom: f64,
 }
 
@@ -54,8 +54,8 @@ impl From<GlassDropletState> for core::DropletState {
             left_velocity: s.left_velocity,
             right: s.right,
             right_velocity: s.right_velocity,
-            scale: s.scale,
-            scale_velocity: s.scale_velocity,
+            lift: s.lift,
+            lift_velocity: s.lift_velocity,
             target: s.target,
             direction: s.direction,
         }
@@ -69,8 +69,8 @@ impl From<core::DropletState> for GlassDropletState {
             left_velocity: s.left_velocity,
             right: s.right,
             right_velocity: s.right_velocity,
-            scale: s.scale,
-            scale_velocity: s.scale_velocity,
+            lift: s.lift,
+            lift_velocity: s.lift_velocity,
             target: s.target,
             direction: s.direction,
         }
@@ -86,7 +86,7 @@ impl From<core::DropletFrame> for GlassDropletFrame {
                 right: f.shape.right,
                 height_scale: f.shape.height_scale,
                 stretch: f.shape.stretch,
-                press: f.shape.press,
+                lift: f.shape.lift,
                 lens_zoom: f.shape.lens_zoom,
             },
             settled: f.settled,
@@ -101,8 +101,8 @@ pub fn glass_droplet_rest(index: f64) -> GlassDropletState {
     core::rest(index).into()
 }
 
-/// 把水滴推进 `dt_seconds` 秒。`target` 是目标格（拖动时可为小数），
-/// `pressed` 为 true 时整体鼓起。
+/// 把透镜推进 `dt_seconds` 秒。`target` 是目标格（拖动时可为小数），
+/// `pressed` 为 true 时透镜保持升起。
 #[frb(sync)]
 #[must_use]
 pub fn glass_droplet_step(
@@ -114,14 +114,14 @@ pub fn glass_droplet_step(
     core::step(state.into(), target, pressed, dt_seconds).into()
 }
 
-/// 手指按下时水滴的目标格。`pointer` 单位是格。
+/// 手指按下时透镜的目标格。`pointer` 单位是格。
 #[frb(sync)]
 #[must_use]
 pub fn glass_droplet_press_target(pointer: f64, count: u32) -> f64 {
     core::press_target(pointer, count)
 }
 
-/// 拖动时水滴跟手的目标（中心对准手指，夹在首尾两格之间）。
+/// 拖动时透镜跟手的目标（中心对准手指，夹在首尾两格之间）。
 #[frb(sync)]
 #[must_use]
 pub fn glass_droplet_drag_target(pointer: f64, count: u32) -> f64 {

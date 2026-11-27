@@ -16032,14 +16032,14 @@ impl SseDecode for crate::api::glass_droplet::GlassDropletShape {
         let mut var_right = <f64>::sse_decode(deserializer);
         let mut var_heightScale = <f64>::sse_decode(deserializer);
         let mut var_stretch = <f64>::sse_decode(deserializer);
-        let mut var_press = <f64>::sse_decode(deserializer);
+        let mut var_lift = <f64>::sse_decode(deserializer);
         let mut var_lensZoom = <f64>::sse_decode(deserializer);
         return crate::api::glass_droplet::GlassDropletShape {
             left: var_left,
             right: var_right,
             height_scale: var_heightScale,
             stretch: var_stretch,
-            press: var_press,
+            lift: var_lift,
             lens_zoom: var_lensZoom,
         };
     }
@@ -16052,8 +16052,8 @@ impl SseDecode for crate::api::glass_droplet::GlassDropletState {
         let mut var_leftVelocity = <f64>::sse_decode(deserializer);
         let mut var_right = <f64>::sse_decode(deserializer);
         let mut var_rightVelocity = <f64>::sse_decode(deserializer);
-        let mut var_scale = <f64>::sse_decode(deserializer);
-        let mut var_scaleVelocity = <f64>::sse_decode(deserializer);
+        let mut var_lift = <f64>::sse_decode(deserializer);
+        let mut var_liftVelocity = <f64>::sse_decode(deserializer);
         let mut var_target = <f64>::sse_decode(deserializer);
         let mut var_direction = <i8>::sse_decode(deserializer);
         return crate::api::glass_droplet::GlassDropletState {
@@ -16061,8 +16061,8 @@ impl SseDecode for crate::api::glass_droplet::GlassDropletState {
             left_velocity: var_leftVelocity,
             right: var_right,
             right_velocity: var_rightVelocity,
-            scale: var_scale,
-            scale_velocity: var_scaleVelocity,
+            lift: var_lift,
+            lift_velocity: var_liftVelocity,
             target: var_target,
             direction: var_direction,
         };
@@ -33192,7 +33192,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::glass_droplet::GlassDropletSh
             self.right.into_into_dart().into_dart(),
             self.height_scale.into_into_dart().into_dart(),
             self.stretch.into_into_dart().into_dart(),
-            self.press.into_into_dart().into_dart(),
+            self.lift.into_into_dart().into_dart(),
             self.lens_zoom.into_into_dart().into_dart(),
         ]
         .into_dart()
@@ -33217,8 +33217,8 @@ impl flutter_rust_bridge::IntoDart for crate::api::glass_droplet::GlassDropletSt
             self.left_velocity.into_into_dart().into_dart(),
             self.right.into_into_dart().into_dart(),
             self.right_velocity.into_into_dart().into_dart(),
-            self.scale.into_into_dart().into_dart(),
-            self.scale_velocity.into_into_dart().into_dart(),
+            self.lift.into_into_dart().into_dart(),
+            self.lift_velocity.into_into_dart().into_dart(),
             self.target.into_into_dart().into_dart(),
             self.direction.into_into_dart().into_dart(),
         ]
@@ -45622,7 +45622,7 @@ impl SseEncode for crate::api::glass_droplet::GlassDropletShape {
         <f64>::sse_encode(self.right, serializer);
         <f64>::sse_encode(self.height_scale, serializer);
         <f64>::sse_encode(self.stretch, serializer);
-        <f64>::sse_encode(self.press, serializer);
+        <f64>::sse_encode(self.lift, serializer);
         <f64>::sse_encode(self.lens_zoom, serializer);
     }
 }
@@ -45634,8 +45634,8 @@ impl SseEncode for crate::api::glass_droplet::GlassDropletState {
         <f64>::sse_encode(self.left_velocity, serializer);
         <f64>::sse_encode(self.right, serializer);
         <f64>::sse_encode(self.right_velocity, serializer);
-        <f64>::sse_encode(self.scale, serializer);
-        <f64>::sse_encode(self.scale_velocity, serializer);
+        <f64>::sse_encode(self.lift, serializer);
+        <f64>::sse_encode(self.lift_velocity, serializer);
         <f64>::sse_encode(self.target, serializer);
         <i8>::sse_encode(self.direction, serializer);
     }

@@ -12,8 +12,8 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 GlassDropletState glassDropletRest({required double index}) =>
     RustLib.instance.api.crateApiGlassDropletGlassDropletRest(index: index);
 
-/// 把水滴推进 `dt_seconds` 秒。`target` 是目标格（拖动时可为小数），
-/// `pressed` 为 true 时整体鼓起。
+/// 把透镜推进 `dt_seconds` 秒。`target` 是目标格（拖动时可为小数），
+/// `pressed` 为 true 时透镜保持升起。
 GlassDropletFrame glassDropletStep({
   required GlassDropletState state,
   required double target,
@@ -26,14 +26,14 @@ GlassDropletFrame glassDropletStep({
   dtSeconds: dtSeconds,
 );
 
-/// 手指按下时水滴的目标格。`pointer` 单位是格。
+/// 手指按下时透镜的目标格。`pointer` 单位是格。
 double glassDropletPressTarget({required double pointer, required int count}) =>
     RustLib.instance.api.crateApiGlassDropletGlassDropletPressTarget(
       pointer: pointer,
       count: count,
     );
 
-/// 拖动时水滴跟手的目标（中心对准手指，夹在首尾两格之间）。
+/// 拖动时透镜跟手的目标（中心对准手指，夹在首尾两格之间）。
 double glassDropletDragTarget({required double pointer, required int count}) =>
     RustLib.instance.api.crateApiGlassDropletGlassDropletDragTarget(
       pointer: pointer,
@@ -79,16 +79,16 @@ class GlassDropletShape {
   final double left;
   final double right;
 
-  /// 高度相对静止高度的比例，已含按压缩放。
+  /// 高度相对静止胶囊的比例，只随升起变化。
   final double heightScale;
 
-  /// 0 = 静止形状，1 = 拉到上限。供 shader 决定中段收细多少。
+  /// 移动中的变宽程度 0..1。
   final double stretch;
 
-  /// 按压程度 0..1。
-  final double press;
+  /// 升起程度 0..1：0 是静止的灰色胶囊，1 是完全升起的透镜。
+  final double lift;
 
-  /// 水滴下方内容的放大倍数；等于 1 时宿主不叠透镜层。
+  /// 透镜下方内容的放大倍数；等于 1 时宿主不叠透镜层。
   final double lensZoom;
 
   const GlassDropletShape({
@@ -96,7 +96,7 @@ class GlassDropletShape {
     required this.right,
     required this.heightScale,
     required this.stretch,
-    required this.press,
+    required this.lift,
     required this.lensZoom,
   });
 
@@ -106,7 +106,7 @@ class GlassDropletShape {
       right.hashCode ^
       heightScale.hashCode ^
       stretch.hashCode ^
-      press.hashCode ^
+      lift.hashCode ^
       lensZoom.hashCode;
 
   @override
@@ -118,19 +118,19 @@ class GlassDropletShape {
           right == other.right &&
           heightScale == other.heightScale &&
           stretch == other.stretch &&
-          press == other.press &&
+          lift == other.lift &&
           lensZoom == other.lensZoom;
 }
 
-/// 水滴的运动状态。宿主原样保存，每帧传回 [`glass_droplet_step`]，不要
+/// 透镜的运动状态。宿主原样保存，每帧传回 [`glass_droplet_step`]，不要
 /// 自己改字段。
 class GlassDropletState {
   final double left;
   final double leftVelocity;
   final double right;
   final double rightVelocity;
-  final double scale;
-  final double scaleVelocity;
+  final double lift;
+  final double liftVelocity;
   final double target;
   final int direction;
 
@@ -139,8 +139,8 @@ class GlassDropletState {
     required this.leftVelocity,
     required this.right,
     required this.rightVelocity,
-    required this.scale,
-    required this.scaleVelocity,
+    required this.lift,
+    required this.liftVelocity,
     required this.target,
     required this.direction,
   });
@@ -151,8 +151,8 @@ class GlassDropletState {
       leftVelocity.hashCode ^
       right.hashCode ^
       rightVelocity.hashCode ^
-      scale.hashCode ^
-      scaleVelocity.hashCode ^
+      lift.hashCode ^
+      liftVelocity.hashCode ^
       target.hashCode ^
       direction.hashCode;
 
@@ -165,8 +165,8 @@ class GlassDropletState {
           leftVelocity == other.leftVelocity &&
           right == other.right &&
           rightVelocity == other.rightVelocity &&
-          scale == other.scale &&
-          scaleVelocity == other.scaleVelocity &&
+          lift == other.lift &&
+          liftVelocity == other.liftVelocity &&
           target == other.target &&
           direction == other.direction;
 }

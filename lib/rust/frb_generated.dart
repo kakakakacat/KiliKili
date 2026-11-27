@@ -17646,7 +17646,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       right: dco_decode_f_64(arr[1]),
       heightScale: dco_decode_f_64(arr[2]),
       stretch: dco_decode_f_64(arr[3]),
-      press: dco_decode_f_64(arr[4]),
+      lift: dco_decode_f_64(arr[4]),
       lensZoom: dco_decode_f_64(arr[5]),
     );
   }
@@ -17662,8 +17662,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       leftVelocity: dco_decode_f_64(arr[1]),
       right: dco_decode_f_64(arr[2]),
       rightVelocity: dco_decode_f_64(arr[3]),
-      scale: dco_decode_f_64(arr[4]),
-      scaleVelocity: dco_decode_f_64(arr[5]),
+      lift: dco_decode_f_64(arr[4]),
+      liftVelocity: dco_decode_f_64(arr[5]),
       target: dco_decode_f_64(arr[6]),
       direction: dco_decode_i_8(arr[7]),
     );
@@ -31035,14 +31035,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_right = sse_decode_f_64(deserializer);
     var var_heightScale = sse_decode_f_64(deserializer);
     var var_stretch = sse_decode_f_64(deserializer);
-    var var_press = sse_decode_f_64(deserializer);
+    var var_lift = sse_decode_f_64(deserializer);
     var var_lensZoom = sse_decode_f_64(deserializer);
     return GlassDropletShape(
       left: var_left,
       right: var_right,
       heightScale: var_heightScale,
       stretch: var_stretch,
-      press: var_press,
+      lift: var_lift,
       lensZoom: var_lensZoom,
     );
   }
@@ -31056,8 +31056,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_leftVelocity = sse_decode_f_64(deserializer);
     var var_right = sse_decode_f_64(deserializer);
     var var_rightVelocity = sse_decode_f_64(deserializer);
-    var var_scale = sse_decode_f_64(deserializer);
-    var var_scaleVelocity = sse_decode_f_64(deserializer);
+    var var_lift = sse_decode_f_64(deserializer);
+    var var_liftVelocity = sse_decode_f_64(deserializer);
     var var_target = sse_decode_f_64(deserializer);
     var var_direction = sse_decode_i_8(deserializer);
     return GlassDropletState(
@@ -31065,8 +31065,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       leftVelocity: var_leftVelocity,
       right: var_right,
       rightVelocity: var_rightVelocity,
-      scale: var_scale,
-      scaleVelocity: var_scaleVelocity,
+      lift: var_lift,
+      liftVelocity: var_liftVelocity,
       target: var_target,
       direction: var_direction,
     );
@@ -47970,7 +47970,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_f_64(self.right, serializer);
     sse_encode_f_64(self.heightScale, serializer);
     sse_encode_f_64(self.stretch, serializer);
-    sse_encode_f_64(self.press, serializer);
+    sse_encode_f_64(self.lift, serializer);
     sse_encode_f_64(self.lensZoom, serializer);
   }
 
@@ -47984,8 +47984,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_f_64(self.leftVelocity, serializer);
     sse_encode_f_64(self.right, serializer);
     sse_encode_f_64(self.rightVelocity, serializer);
-    sse_encode_f_64(self.scale, serializer);
-    sse_encode_f_64(self.scaleVelocity, serializer);
+    sse_encode_f_64(self.lift, serializer);
+    sse_encode_f_64(self.liftVelocity, serializer);
     sse_encode_f_64(self.target, serializer);
     sse_encode_i_8(self.direction, serializer);
   }

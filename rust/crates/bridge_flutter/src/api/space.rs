@@ -1400,7 +1400,7 @@ pub async fn fetch_space_page(
 
 /// 取一页投稿。
 ///
-/// 六个 tab 共用这一个函数：参数集合一样，差别只在路径与封面档位，由
+/// 六个 tab 共用这一个函数，路径、封面档位与视频游标签名由
 /// [`SpaceArchiveKind`] 决定。可省的参数省掉就不发，不是发空值。
 #[allow(clippy::too_many_arguments)]
 pub async fn fetch_space_archive(
@@ -1415,8 +1415,10 @@ pub async fn fetch_space_archive(
     season_id: Option<i64>,
     series_id: Option<i64>,
     include_cursor: Option<bool>,
+    appkey: String,
+    appsec: String,
 ) -> SpaceArchiveResult {
-    let (ctx, transport, _, _) = context.split();
+    let (ctx, transport, _, ts) = context.split();
     let joined = init::runtime()
         .spawn(async move {
             space::fetch_space_archive(
@@ -1432,6 +1434,9 @@ pub async fn fetch_space_archive(
                 season_id,
                 series_id,
                 include_cursor,
+                &appkey,
+                &appsec,
+                ts,
             )
             .await
         })

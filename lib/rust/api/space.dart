@@ -140,7 +140,7 @@ Future<SpacePageResult> fetchSpacePage({
 
 /// 取一页投稿。
 ///
-/// 六个 tab 共用这一个函数：参数集合一样，差别只在路径与封面档位，由
+/// 六个 tab 共用这一个函数，路径、封面档位与视频游标签名由
 /// [`SpaceArchiveKind`] 决定。可省的参数省掉就不发，不是发空值。
 Future<SpaceArchiveResult> fetchSpaceArchive({
   required SpaceContext context,
@@ -154,6 +154,8 @@ Future<SpaceArchiveResult> fetchSpaceArchive({
   PlatformInt64? seasonId,
   PlatformInt64? seriesId,
   bool? includeCursor,
+  required String appkey,
+  required String appsec,
 }) => RustLib.instance.api.crateApiSpaceFetchSpaceArchive(
   context: context,
   kind: kind,
@@ -166,6 +168,8 @@ Future<SpaceArchiveResult> fetchSpaceArchive({
   seasonId: seasonId,
   seriesId: seriesId,
   includeCursor: includeCursor,
+  appkey: appkey,
+  appsec: appsec,
 );
 
 /// 取一页投稿搜索（网页端）。

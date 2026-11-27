@@ -16,3 +16,11 @@
 5 项通过；Dart 分析 0 error，55 条既有 warning/info，修改文件没有诊断。
 独立审查补齐了「无标签但已有资料」时的保留与页面刷新通知回归。
 登录态和真机观感仍按 RELEASE-VALIDATION 的 Phase 2 路径验收。
+
+追加投稿 Tab 修复：`space_archive_request` 的 Video 分支复用 APP 签名，
+桥接与宿主透传 appkey/appsec/ts 并重新生成 FRB。其余五条列表保持请求面。
+增加首屏固定签名、游标/排序/时间参与签名和其他五条不扩展请求面的回归。
+匿名网关对照：不签名 -400，签名 0；登录态真机仍留 Phase 2。
+
+追加验证：Rust 全量 1056 通过、2 忽略；fmt / Clippy 通过；Dart 分析无 error
+且修改文件无诊断；5 项 Flutter 回归通过。投稿签名透传与生成绑定独立审查通过。

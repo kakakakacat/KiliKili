@@ -420,6 +420,8 @@ abstract final class RustSpace {
         seasonId: seasonId,
         seriesId: seriesId,
         includeCursor: includeCursor,
+        appkey: Constants.appKey,
+        appsec: Constants.appSec,
       );
       return _unwrap(result.data, result.errorDetail, result.errorCode);
     } catch (e, st) {

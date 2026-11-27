@@ -397,9 +397,82 @@ fn the_guard_count_is_dug_out_of_the_sentence() {
     );
 }
 
-/// 六个 tab 共用一个请求构造函数，差别只在路径与封面档位。
+/// 固定时间锁住首屏签名，游标、排序与时间变化都必须重新签名（#260）。
 #[test]
-fn the_six_contribute_tabs_only_differ_in_path_and_quality() {
+fn the_archive_cursor_request_requires_app_signature() {
+    use bili_api::space::{SpaceArchiveKind, SpaceArchiveOrder, space_archive_request};
+    let request = |next, order, ts| {
+        space_archive_request(
+            SpaceArchiveKind::Video,
+            Some(1),
+            None,
+            Some(order),
+            None,
+            None,
+            Some(next),
+            None,
+            None,
+            Some(true),
+            "dfca71928277209b",
+            "b5475a8825547a4fc26c7d518eaaa02e",
+            ts,
+        )
+    };
+    let req = request(0, SpaceArchiveOrder::Pubdate, 1_700_000_000);
+    assert_eq!(req.path, "/x/v2/space/archive/cursor");
+    let query: std::collections::BTreeMap<_, _> = req.query.iter().cloned().collect();
+    assert_eq!(query["appkey"], "dfca71928277209b");
+    assert_eq!(query["ts"], "1700000000");
+    assert_eq!(query["next"], "0");
+    assert_eq!(query["order"], "pubdate");
+    assert_eq!(query["sign"], "07eacd484b4d2768c95d6259e8c9a6e6");
+    for changed in [
+        request(123, SpaceArchiveOrder::Pubdate, 1_700_000_000),
+        request(0, SpaceArchiveOrder::Click, 1_700_000_000),
+        request(0, SpaceArchiveOrder::Pubdate, 1_700_000_001),
+    ] {
+        assert_ne!(changed.query.last(), req.query.last());
+    }
+}
+
+/// 本次只确认游标投稿接口必须签名，其余列表不扩展请求面。
+#[test]
+fn the_other_archive_requests_keep_their_unsigned_shape() {
+    use bili_api::space::{SpaceArchiveKind, space_archive_request};
+    for kind in [
+        SpaceArchiveKind::Charging,
+        SpaceArchiveKind::Season,
+        SpaceArchiveKind::Series,
+        SpaceArchiveKind::Bangumi,
+        SpaceArchiveKind::Comic,
+    ] {
+        let req = space_archive_request(
+            kind,
+            Some(1),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            "dfca71928277209b",
+            "b5475a8825547a4fc26c7d518eaaa02e",
+            1_700_000_000,
+        );
+        assert!(
+            !req.query
+                .iter()
+                .any(|(key, _)| matches!(key.as_str(), "appkey" | "ts" | "sign"))
+        );
+        assert!(req.query_string().contains("qn=32"));
+    }
+}
+
+/// 六个 tab 共用请求构造，视频与漫画仍保留各自的路径和封面档位。
+#[test]
+fn the_contribute_tabs_keep_their_paths_and_quality() {
     use bili_api::space::{SpaceArchiveKind, space_archive_request};
 
     let video = space_archive_request(
@@ -413,6 +486,9 @@ fn the_six_contribute_tabs_only_differ_in_path_and_quality() {
         None,
         None,
         None,
+        "dfca71928277209b",
+        "b5475a8825547a4fc26c7d518eaaa02e",
+        1_700_000_000,
     );
     let comic = space_archive_request(
         SpaceArchiveKind::Comic,
@@ -425,6 +501,9 @@ fn the_six_contribute_tabs_only_differ_in_path_and_quality() {
         None,
         None,
         None,
+        "dfca71928277209b",
+        "b5475a8825547a4fc26c7d518eaaa02e",
+        1_700_000_000,
     );
     assert_ne!(video.path, comic.path);
     assert!(video.query_string().contains("qn=80"));
@@ -447,6 +526,9 @@ fn the_optional_archive_params_are_dropped_rather_than_sent_empty() {
         None,
         None,
         None,
+        "dfca71928277209b",
+        "b5475a8825547a4fc26c7d518eaaa02e",
+        1_700_000_000,
     )
     .query_string();
     for key in [
@@ -473,6 +555,9 @@ fn the_optional_archive_params_are_dropped_rather_than_sent_empty() {
         None,
         None,
         Some(true),
+        "dfca71928277209b",
+        "b5475a8825547a4fc26c7d518eaaa02e",
+        1_700_000_000,
     )
     .query_string();
     assert!(full.contains("aid=12345"));

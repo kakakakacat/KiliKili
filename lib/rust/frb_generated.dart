@@ -1149,6 +1149,8 @@ abstract class RustLibApi extends BaseApi {
     PlatformInt64? seasonId,
     PlatformInt64? seriesId,
     bool? includeCursor,
+    required String appkey,
+    required String appsec,
   });
 
   Future<SpaceArchiveSearchResult> crateApiSpaceFetchSpaceArchiveSearch({
@@ -8229,6 +8231,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     PlatformInt64? seasonId,
     PlatformInt64? seriesId,
     bool? includeCursor,
+    required String appkey,
+    required String appsec,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -8245,6 +8249,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_opt_box_autoadd_i_64(seasonId, serializer);
           sse_encode_opt_box_autoadd_i_64(seriesId, serializer);
           sse_encode_opt_box_autoadd_bool(includeCursor, serializer);
+          sse_encode_String(appkey, serializer);
+          sse_encode_String(appsec, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -8269,6 +8275,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           seasonId,
           seriesId,
           includeCursor,
+          appkey,
+          appsec,
         ],
         apiImpl: this,
       ),
@@ -8290,6 +8298,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           "seasonId",
           "seriesId",
           "includeCursor",
+          "appkey",
+          "appsec",
         ],
       );
 

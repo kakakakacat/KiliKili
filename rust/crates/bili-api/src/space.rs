@@ -1355,8 +1355,8 @@ pub async fn fetch_space_page<T: HttpTransport>(
 
 /// 投稿列表的请求。
 ///
-/// 六个 tab 共用这一个构造函数：参数集合是一样的，差别只在路径与几个
-/// 按 tab 给不给的值，拆六份只会得到六段同样的代码。
+/// 六个 tab 共用基础参数；路径、可选参数与视频游标的 APP 签名按类型区分，
+/// 避免把相同的构造逻辑复制六份。
 ///
 /// `qn` 只有视频那条给 80，其余 32——这是封面分辨率，基线写死的。
 #[must_use]
@@ -1372,6 +1372,9 @@ pub fn space_archive_request(
     season_id: Option<i64>,
     series_id: Option<i64>,
     include_cursor: Option<bool>,
+    appkey: &str,
+    appsec: &str,
+    ts: i64,
 ) -> PreparedRequest {
     let mut query = Vec::new();
     if let Some(aid) = aid {
@@ -1411,6 +1414,10 @@ pub fn space_archive_request(
         "vmid".to_owned(),
         mid.map_or_else(String::new, |m| m.to_string()),
     ));
+    // 当前仅确认游标投稿接口强制校验 APP 签名；其余五条保持原请求面（#260）。
+    if matches!(kind, SpaceArchiveKind::Video) {
+        query = bili_protocol::app_sign::sign(&query, appkey, appsec, ts);
+    }
     PreparedRequest {
         path: kind.path(),
         query,
@@ -1559,6 +1566,9 @@ pub async fn fetch_space_archive<T: HttpTransport>(
     season_id: Option<i64>,
     series_id: Option<i64>,
     include_cursor: Option<bool>,
+    appkey: &str,
+    appsec: &str,
+    ts: i64,
 ) -> Result<SpaceArchivePage, DomainError> {
     let req = space_archive_request(
         kind,
@@ -1571,6 +1581,9 @@ pub async fn fetch_space_archive<T: HttpTransport>(
         season_id,
         series_id,
         include_cursor,
+        appkey,
+        appsec,
+        ts,
     );
     let body = crate::client::send(transport, ctx, &req).await?;
     parse_space_archive(&body)

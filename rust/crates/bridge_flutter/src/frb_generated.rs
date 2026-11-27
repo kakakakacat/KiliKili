@@ -7262,6 +7262,8 @@ fn wire__crate__api__space__fetch_space_archive_impl(
             let api_season_id = <Option<i64>>::sse_decode(&mut deserializer);
             let api_series_id = <Option<i64>>::sse_decode(&mut deserializer);
             let api_include_cursor = <Option<bool>>::sse_decode(&mut deserializer);
+            let api_appkey = <String>::sse_decode(&mut deserializer);
+            let api_appsec = <String>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, ()>(
@@ -7279,6 +7281,8 @@ fn wire__crate__api__space__fetch_space_archive_impl(
                                 api_season_id,
                                 api_series_id,
                                 api_include_cursor,
+                                api_appkey,
+                                api_appsec,
                             )
                             .await,
                         )?;

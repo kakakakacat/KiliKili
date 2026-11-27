@@ -1363,11 +1363,22 @@ pub async fn fetch_space_page(
     context: SpaceContext,
     mid: i64,
     from_view_aid: Option<String>,
+    appkey: String,
+    appsec: String,
 ) -> SpacePageResult {
-    let (ctx, transport, _, _) = context.split();
+    let (ctx, transport, _, ts) = context.split();
     let joined = init::runtime()
         .spawn(async move {
-            space::fetch_space_page(&transport, &ctx, mid, from_view_aid.as_deref()).await
+            space::fetch_space_page(
+                &transport,
+                &ctx,
+                mid,
+                from_view_aid.as_deref(),
+                &appkey,
+                &appsec,
+                ts,
+            )
+            .await
         })
         .await;
 

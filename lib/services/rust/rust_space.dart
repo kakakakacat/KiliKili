@@ -377,6 +377,8 @@ abstract final class RustSpace {
         ),
         mid: mid,
         fromViewAid: fromViewAid,
+        appkey: Constants.appKey,
+        appsec: Constants.appSec,
       );
       return _unwrap(result.data, result.errorDetail, result.errorCode);
     } catch (e, st) {

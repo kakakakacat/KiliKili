@@ -575,17 +575,16 @@ fn app_common_query() -> Vec<(String, String)> {
 /// 排到投稿列表前面。基线声明成 `dynamic` 并原样塞进查询串，这里收成
 /// 字符串——它只会被拼进 URL，转成整数再转回来只多一个出错点。
 ///
-/// ## 这条接口现在要 app 签名，基线没签
-///
-/// 2026-11-17 实测：不带 `appkey`/`sign` 的匿名请求一律 `-400 请求错误`，
-/// 带了就正常。基线 `MemberHttp.space` 从来没签过，也就是说空间页在当前
-/// 服务端上是坏的。**本切片不顺手修**：加签名是改请求面，属于协议变更，
-/// 要单独一条 issue、单独记 `protocol-changelog.md`。这里照抄基线的参数，
-/// 把发现写在这儿，免得下一个人以为是迁移迁坏的。
+/// APP 签名是当前网关的必需项，缺失时连匿名请求也返回 -400（#260）。
+/// 时间由调用方注入，保证签名可复现。
 #[must_use]
-pub fn space_request(mid: i64, from_view_aid: Option<&str>) -> PreparedRequest {
-    // 参数顺序照抄基线。这条没有签名，顺序本不影响结果，但两边一致时
-    // 抓包对照是逐行的，不用先排序再比。
+pub fn space_request(
+    mid: i64,
+    from_view_aid: Option<&str>,
+    appkey: &str,
+    appsec: &str,
+    ts: i64,
+) -> PreparedRequest {
     let mut query: Vec<(String, String)> = app_common_query()
         .into_iter()
         .filter(|(k, _)| k != "statistics")
@@ -597,7 +596,7 @@ pub fn space_request(mid: i64, from_view_aid: Option<&str>) -> PreparedRequest {
     query.push(("vmid".to_owned(), mid.to_string()));
     PreparedRequest {
         path: path::SPACE,
-        query,
+        query: bili_protocol::app_sign::sign(&query, appkey, appsec, ts),
     }
 }
 
@@ -1343,8 +1342,11 @@ pub async fn fetch_space_page<T: HttpTransport>(
     ctx: &RequestContext,
     mid: i64,
     from_view_aid: Option<&str>,
+    appkey: &str,
+    appsec: &str,
+    ts: i64,
 ) -> Result<SpacePage, DomainError> {
-    let req = space_request(mid, from_view_aid);
+    let req = space_request(mid, from_view_aid, appkey, appsec, ts);
     let body = crate::client::send(transport, ctx, &req).await?;
     parse_space_page(&body)
 }

@@ -480,32 +480,31 @@ fn the_optional_archive_params_are_dropped_rather_than_sent_empty() {
     assert!(full.contains("include_cursor=true"));
 }
 
-/// 空间主页的请求面照抄基线：同样的固定参数、同样的顺序。
+/// 固定时间的签名覆盖全部参数，来源稿件的变化也必须改变签名（#260）。
 #[test]
-fn the_space_request_keeps_the_baseline_param_order() {
+fn the_space_request_is_app_signed() {
     use bili_api::space::space_request;
+    const KEY: &str = "dfca71928277209b";
+    const SEC: &str = "b5475a8825547a4fc26c7d518eaaa02e";
+    let req = space_request(1, Some("123"), KEY, SEC, 1_700_000_000);
+    assert_eq!(req.path, "/x/v2/space");
+    let query: std::collections::BTreeMap<_, _> = req.query.iter().cloned().collect();
+    assert_eq!(query["appkey"], KEY);
+    assert_eq!(query["ts"], "1700000000");
+    assert_eq!(query["vmid"], "1");
+    assert_eq!(query["from_view_aid"], "123");
+    assert_eq!(query["sign"], "020e132fa15b1c4ea87f50034a11216a");
+    assert_eq!(query.len(), 13);
 
-    let req = space_request(1, Some("123"));
-    let keys: Vec<&str> = req.query.iter().map(|(k, _)| k.as_str()).collect();
-    assert_eq!(
-        keys,
-        [
-            "build",
-            "version",
-            "c_locale",
-            "channel",
-            "mobi_app",
-            "platform",
-            "s_locale",
-            "from_view_aid",
-            "statistics",
-            "vmid",
-        ]
+    let bare = space_request(1, None, KEY, SEC, 1_700_000_000);
+    assert!(!bare.query_string().contains("from_view_aid"));
+    assert_ne!(bare.query.last(), req.query.last());
+    assert_ne!(
+        space_request(1, Some("123"), KEY, SEC, 1_700_000_001)
+            .query
+            .last(),
+        req.query.last(),
     );
-
-    // 没有 from_view_aid 时整条参数不出现，不是发一个空值。
-    let bare = space_request(1, None).query_string();
-    assert!(!bare.contains("from_view_aid"), "{bare}");
 }
 
 // ------------------------------------------- 网页端的投稿搜索与合集

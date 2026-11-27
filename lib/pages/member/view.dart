@@ -125,18 +125,16 @@ class _MemberPageState extends State<MemberPage> {
                       ),
                     ),
                   ),
+                  _profileErrorSliver,
                 ];
               }
               return [
                 SliverAppBar(
                   pinned: true,
                   actions: _actions(theme),
-                  title: GestureDetector(
-                    onTap: _userController.onReload,
-                    behavior: HitTestBehavior.opaque,
-                    child: Text(_userController.username ?? ''),
-                  ),
+                  title: Text(_userController.username ?? '用户空间'),
                 ),
+                _profileErrorSliver,
               ];
             },
             body: _userController.tab2?.isNotEmpty == true
@@ -171,6 +169,22 @@ class _MemberPageState extends State<MemberPage> {
       ),
     );
   }
+
+  Widget get _profileErrorSliver => SliverToBoxAdapter(
+    child: Obx(() {
+      final error = _userController.profileError.value;
+      if (error == null) return const SizedBox.shrink();
+      return MaterialBanner(
+        content: Text('空间资料加载失败：$error'),
+        actions: [
+          TextButton(
+            onPressed: _userController.onReload,
+            child: const Text('重试'),
+          ),
+        ],
+      );
+    }),
+  );
 
   Widget _reserveBtn(List<MemberReserveItem> list, ColorScheme theme) {
     return IconButton(

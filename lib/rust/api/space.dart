@@ -128,10 +128,14 @@ Future<SpacePageResult> fetchSpacePage({
   required SpaceContext context,
   required PlatformInt64 mid,
   String? fromViewAid,
+  required String appkey,
+  required String appsec,
 }) => RustLib.instance.api.crateApiSpaceFetchSpacePage(
   context: context,
   mid: mid,
   fromViewAid: fromViewAid,
+  appkey: appkey,
+  appsec: appsec,
 );
 
 /// 取一页投稿。

@@ -242,3 +242,11 @@ REST 实现随本片删除。
 `rust/crates/bili-api/tests/grpc_im_golden.rs` 与
 `test/bridge/im_bridge_test.dart` 三头约束，真实账号与网关行为仍需
 Phase 2 验证。
+
+## 2026-11-27：空间主页补齐 APP 签名（#260）
+
+`app.bilibili.com/x/v2/space` 在 Rust 请求构造中复用 APP 签名，补上
+`appkey` / `ts` / `sign`，签名覆盖固定参数、`vmid` 与可选的
+`from_view_aid`。不改变签名算法、客户端标识及主账号 Cookie 选择。
+同参数匿名请求对照：缺签名返回 `-400 请求错误`，加签名返回 `0` 与资料卡。
+登录态真实请求仍由 Phase 2 人工验收，不能由匿名对照替代。

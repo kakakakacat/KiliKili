@@ -7600,6 +7600,8 @@ fn wire__crate__api__space__fetch_space_page_impl(
             let api_context = <crate::api::space::SpaceContext>::sse_decode(&mut deserializer);
             let api_mid = <i64>::sse_decode(&mut deserializer);
             let api_from_view_aid = <Option<String>>::sse_decode(&mut deserializer);
+            let api_appkey = <String>::sse_decode(&mut deserializer);
+            let api_appsec = <String>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, ()>(
@@ -7609,6 +7611,8 @@ fn wire__crate__api__space__fetch_space_page_impl(
                                 api_context,
                                 api_mid,
                                 api_from_view_aid,
+                                api_appkey,
+                                api_appsec,
                             )
                             .await,
                         )?;

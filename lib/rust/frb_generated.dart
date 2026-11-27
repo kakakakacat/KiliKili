@@ -1200,6 +1200,8 @@ abstract class RustLibApi extends BaseApi {
     required SpaceContext context,
     required PlatformInt64 mid,
     String? fromViewAid,
+    required String appkey,
+    required String appsec,
   });
 
   Future<SpaceSearchArchiveResult> crateApiSpaceFetchSpaceSearchArchive({
@@ -8553,6 +8555,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     required SpaceContext context,
     required PlatformInt64 mid,
     String? fromViewAid,
+    required String appkey,
+    required String appsec,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -8561,6 +8565,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_box_autoadd_space_context(context, serializer);
           sse_encode_i_64(mid, serializer);
           sse_encode_opt_String(fromViewAid, serializer);
+          sse_encode_String(appkey, serializer);
+          sse_encode_String(appsec, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -8573,7 +8579,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: null,
         ),
         constMeta: kCrateApiSpaceFetchSpacePageConstMeta,
-        argValues: [context, mid, fromViewAid],
+        argValues: [context, mid, fromViewAid, appkey, appsec],
         apiImpl: this,
       ),
     );
@@ -8582,7 +8588,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiSpaceFetchSpacePageConstMeta =>
       const TaskConstMeta(
         debugName: "fetch_space_page",
-        argNames: ["context", "mid", "fromViewAid"],
+        argNames: ["context", "mid", "fromViewAid", "appkey", "appsec"],
       );
 
   @override

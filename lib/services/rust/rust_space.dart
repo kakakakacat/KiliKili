@@ -141,12 +141,14 @@ abstract final class RustSpace {
     String mixinKey = '',
     List<(String, String)>? headers,
     bool write = false,
+    bool app = false,
+    Account? account,
     AccountType accountType = AccountType.main,
   }) async {
-    final acc = Accounts.get(accountType);
+    final acc = account ?? Accounts.get(accountType);
     return rust_api.SpaceContext(
       baseUrl: baseUrl ?? HttpString.apiBaseUrl,
-      cookie: await RustRequest.cookieFor(acc, path),
+      cookie: app ? null : await RustRequest.cookieFor(acc, path),
       csrf: write ? RustRequest.csrfFor(acc) : null,
       headers: headers ?? RustRequest.headersFor(acc),
       timeoutMs: BigInt.from(_timeoutMs),
@@ -267,16 +269,22 @@ abstract final class RustSpace {
   }) async {
     if (!RustCore.isReady) return const Error(_notReady);
     try {
+      final account = Accounts.main;
       final result = await rust_api.fetchCoinLikeArc(
         context: await _context(
           // 这两条挂在 app 域上。
           path: coin ? Api.coinArc : Api.likeArc,
           baseUrl: HttpString.appBaseUrl,
+          app: true,
+          account: account,
         ),
         coin: coin,
         mid: mid,
         page: page,
         pageSize: pageSize,
+        accessKey: account.accessKey,
+        appkey: Constants.appKey,
+        appsec: Constants.appSec,
       );
       return _unwrap(result.data, result.errorDetail, result.errorCode);
     } catch (e, st) {
@@ -369,14 +377,20 @@ abstract final class RustSpace {
   }) async {
     if (!RustCore.isReady) return const Error(_notReady);
     try {
+      final account = Accounts.main;
       final result = await rust_api.fetchSpacePage(
         context: await _context(
           // 这条挂在 app 域上。
           path: Api.space,
           baseUrl: HttpString.appBaseUrl,
+          app: true,
+          account: account,
         ),
         mid: mid,
         fromViewAid: fromViewAid,
+        accessKey: account.accessKey,
+        appkey: Constants.appKey,
+        appsec: Constants.appSec,
       );
       return _unwrap(result.data, result.errorDetail, result.errorCode);
     } catch (e, st) {
@@ -403,10 +417,13 @@ abstract final class RustSpace {
   }) async {
     if (!RustCore.isReady) return const Error(_notReady);
     try {
+      final account = Accounts.main;
       final result = await rust_api.fetchSpaceArchive(
         context: await _context(
           path: Api.spaceArchive,
           baseUrl: HttpString.appBaseUrl,
+          app: true,
+          account: account,
         ),
         kind: kind,
         mid: mid,
@@ -418,6 +435,9 @@ abstract final class RustSpace {
         seasonId: seasonId,
         seriesId: seriesId,
         includeCursor: includeCursor,
+        accessKey: account.accessKey,
+        appkey: Constants.appKey,
+        appsec: Constants.appSec,
       );
       return _unwrap(result.data, result.errorDetail, result.errorCode);
     } catch (e, st) {
@@ -533,13 +553,16 @@ abstract final class RustSpace {
   }) async {
     if (!RustCore.isReady) return const Error(_notReady);
     try {
+      final account = Accounts.main;
       final r = await rust_api.fetchSpaceArticle(
         context: await _context(
           path: Api.spaceArticle,
           baseUrl: HttpString.appBaseUrl,
+          app: true,
+          account: account,
           headers: [
             ...RustRequest.headersFor(
-              Accounts.main,
+              account,
               userAgent: Constants.userAgentApp,
             ),
             ('bili-http-engine', 'cronet'),
@@ -548,6 +571,9 @@ abstract final class RustSpace {
         mid: mid,
         page: page,
         pageSize: 10,
+        accessKey: account.accessKey,
+        appkey: Constants.appKey,
+        appsec: Constants.appSec,
       );
       return _unwrap(r.data, r.errorDetail, r.errorCode);
     } catch (e, st) {

@@ -575,17 +575,17 @@ fn app_common_query() -> Vec<(String, String)> {
 /// 排到投稿列表前面。基线声明成 `dynamic` 并原样塞进查询串，这里收成
 /// 字符串——它只会被拼进 URL，转成整数再转回来只多一个出错点。
 ///
-/// ## 这条接口现在要 app 签名，基线没签
-///
-/// 2026-11-17 实测：不带 `appkey`/`sign` 的匿名请求一律 `-400 请求错误`，
-/// 带了就正常。基线 `MemberHttp.space` 从来没签过，也就是说空间页在当前
-/// 服务端上是坏的。**本切片不顺手修**：加签名是改请求面，属于协议变更，
-/// 要单独一条 issue、单独记 `protocol-changelog.md`。这里照抄基线的参数，
-/// 把发现写在这儿，免得下一个人以为是迁移迁坏的。
+/// APP 签名是当前网关的必需项，缺失时连匿名请求也返回 -400（#260）。
+/// 时间由调用方注入，保证签名可复现。
 #[must_use]
-pub fn space_request(mid: i64, from_view_aid: Option<&str>) -> PreparedRequest {
-    // 参数顺序照抄基线。这条没有签名，顺序本不影响结果，但两边一致时
-    // 抓包对照是逐行的，不用先排序再比。
+pub fn space_request(
+    mid: i64,
+    from_view_aid: Option<&str>,
+    access_key: Option<&str>,
+    appkey: &str,
+    appsec: &str,
+    ts: i64,
+) -> PreparedRequest {
     let mut query: Vec<(String, String)> = app_common_query()
         .into_iter()
         .filter(|(k, _)| k != "statistics")
@@ -597,7 +597,7 @@ pub fn space_request(mid: i64, from_view_aid: Option<&str>) -> PreparedRequest {
     query.push(("vmid".to_owned(), mid.to_string()));
     PreparedRequest {
         path: path::SPACE,
-        query,
+        query: crate::request::sign_app_query(query, access_key, appkey, appsec, ts),
     }
 }
 
@@ -1338,14 +1338,19 @@ pub fn parse_space_page(body: &str) -> Result<SpacePage, DomainError> {
 ///
 /// # Errors
 /// 同 [`fetch_member_info`]。
+#[allow(clippy::too_many_arguments)]
 pub async fn fetch_space_page<T: HttpTransport>(
     transport: &T,
     ctx: &RequestContext,
     mid: i64,
     from_view_aid: Option<&str>,
+    access_key: Option<&str>,
+    appkey: &str,
+    appsec: &str,
+    ts: i64,
 ) -> Result<SpacePage, DomainError> {
-    let req = space_request(mid, from_view_aid);
-    let body = crate::client::send(transport, ctx, &req).await?;
+    let req = space_request(mid, from_view_aid, access_key, appkey, appsec, ts);
+    let body = crate::client::send_app(transport, ctx, &req).await?;
     parse_space_page(&body)
 }
 
@@ -1353,8 +1358,8 @@ pub async fn fetch_space_page<T: HttpTransport>(
 
 /// 投稿列表的请求。
 ///
-/// 六个 tab 共用这一个构造函数：参数集合是一样的，差别只在路径与几个
-/// 按 tab 给不给的值，拆六份只会得到六段同样的代码。
+/// 六个 tab 共用基础参数与 APP 签名；路径及可选参数按类型区分，
+/// 避免把相同的构造逻辑复制六份。
 ///
 /// `qn` 只有视频那条给 80，其余 32——这是封面分辨率，基线写死的。
 #[must_use]
@@ -1370,6 +1375,10 @@ pub fn space_archive_request(
     season_id: Option<i64>,
     series_id: Option<i64>,
     include_cursor: Option<bool>,
+    access_key: Option<&str>,
+    appkey: &str,
+    appsec: &str,
+    ts: i64,
 ) -> PreparedRequest {
     let mut query = Vec::new();
     if let Some(aid) = aid {
@@ -1409,6 +1418,8 @@ pub fn space_archive_request(
         "vmid".to_owned(),
         mid.map_or_else(String::new, |m| m.to_string()),
     ));
+    // 六条 APP 请求都曾由 AccountManager 补 token 与签名，迁移后在此显式恢复。
+    query = crate::request::sign_app_query(query, access_key, appkey, appsec, ts);
     PreparedRequest {
         path: kind.path(),
         query,
@@ -1557,6 +1568,10 @@ pub async fn fetch_space_archive<T: HttpTransport>(
     season_id: Option<i64>,
     series_id: Option<i64>,
     include_cursor: Option<bool>,
+    access_key: Option<&str>,
+    appkey: &str,
+    appsec: &str,
+    ts: i64,
 ) -> Result<SpaceArchivePage, DomainError> {
     let req = space_archive_request(
         kind,
@@ -1569,8 +1584,12 @@ pub async fn fetch_space_archive<T: HttpTransport>(
         season_id,
         series_id,
         include_cursor,
+        access_key,
+        appkey,
+        appsec,
+        ts,
     );
-    let body = crate::client::send(transport, ctx, &req).await?;
+    let body = crate::client::send_app(transport, ctx, &req).await?;
     parse_space_archive(&body)
 }
 
@@ -1977,28 +1996,42 @@ pub async fn fetch_space_season_web<T: HttpTransport>(
 
 /// 专栏列表一页的请求。**挂在 app 域**，base_url 由调用方给。
 ///
-/// 参数顺序照抄基线（`MemberHttp.spaceArticle`）。这条没有签名，顺序本不
-/// 影响结果，但两边一致时抓包对照是逐行的。
+/// 基础参数沿用 `MemberHttp.spaceArticle`，补回旧拦截器隐式添加的
+/// access_key 与 APP 签名。
 ///
 /// 这条还要 `bili-http-engine: cronet` 与 app 端 UA 两个头，由 Dart 补——
 /// 理由见本模块开头那段「请求头不在这里」。
 #[must_use]
-pub fn space_article_request(mid: i64, page: i64, page_size: i64) -> PreparedRequest {
+pub fn space_article_request(
+    mid: i64,
+    page: i64,
+    page_size: i64,
+    access_key: Option<&str>,
+    appkey: &str,
+    appsec: &str,
+    ts: i64,
+) -> PreparedRequest {
     PreparedRequest {
         path: path::SPACE_ARTICLE,
-        query: vec![
-            ("build".to_owned(), app_fixed::BUILD.to_owned()),
-            ("channel".to_owned(), app_fixed::CHANNEL.to_owned()),
-            ("version".to_owned(), app_fixed::VERSION.to_owned()),
-            ("c_locale".to_owned(), app_fixed::LOCALE.to_owned()),
-            ("mobi_app".to_owned(), app_fixed::MOBI_APP.to_owned()),
-            ("platform".to_owned(), app_fixed::PLATFORM.to_owned()),
-            ("pn".to_owned(), page.to_string()),
-            ("ps".to_owned(), page_size.to_string()),
-            ("s_locale".to_owned(), app_fixed::LOCALE.to_owned()),
-            ("statistics".to_owned(), app_fixed::STATISTICS.to_owned()),
-            ("vmid".to_owned(), mid.to_string()),
-        ],
+        query: crate::request::sign_app_query(
+            vec![
+                ("build".to_owned(), app_fixed::BUILD.to_owned()),
+                ("channel".to_owned(), app_fixed::CHANNEL.to_owned()),
+                ("version".to_owned(), app_fixed::VERSION.to_owned()),
+                ("c_locale".to_owned(), app_fixed::LOCALE.to_owned()),
+                ("mobi_app".to_owned(), app_fixed::MOBI_APP.to_owned()),
+                ("platform".to_owned(), app_fixed::PLATFORM.to_owned()),
+                ("pn".to_owned(), page.to_string()),
+                ("ps".to_owned(), page_size.to_string()),
+                ("s_locale".to_owned(), app_fixed::LOCALE.to_owned()),
+                ("statistics".to_owned(), app_fixed::STATISTICS.to_owned()),
+                ("vmid".to_owned(), mid.to_string()),
+            ],
+            access_key,
+            appkey,
+            appsec,
+            ts,
+        ),
     }
 }
 
@@ -2032,15 +2065,20 @@ pub fn parse_space_article(body: &str) -> Result<SpaceArticlePage, DomainError> 
 ///
 /// # Errors
 /// 同 [`fetch_member_info`]。
+#[allow(clippy::too_many_arguments)]
 pub async fn fetch_space_article<T: HttpTransport>(
     transport: &T,
     ctx: &RequestContext,
     mid: i64,
     page: i64,
     page_size: i64,
+    access_key: Option<&str>,
+    appkey: &str,
+    appsec: &str,
+    ts: i64,
 ) -> Result<SpaceArticlePage, DomainError> {
-    let req = space_article_request(mid, page, page_size);
-    let body = crate::client::send(transport, ctx, &req).await?;
+    let req = space_article_request(mid, page, page_size, access_key, appkey, appsec, ts);
+    let body = crate::client::send_app(transport, ctx, &req).await?;
     parse_space_article(&body)
 }
 
@@ -2565,8 +2603,26 @@ mod tests {
 
     #[test]
     fn coin_and_like_differ_only_in_the_path() {
-        let coin = coin_like_arc_request(true, 1, 2, 20);
-        let like = coin_like_arc_request(false, 1, 2, 20);
+        let coin = coin_like_arc_request(
+            true,
+            1,
+            2,
+            20,
+            None,
+            "dfca71928277209b",
+            "b5475a8825547a4fc26c7d518eaaa02e",
+            1_700_000_000,
+        );
+        let like = coin_like_arc_request(
+            false,
+            1,
+            2,
+            20,
+            None,
+            "dfca71928277209b",
+            "b5475a8825547a4fc26c7d518eaaa02e",
+            1_700_000_000,
+        );
         assert_ne!(coin.path, like.path, "路径不同");
         assert_eq!(coin.query, like.query, "参数完全一样，所以共用一个构造函数");
     }
@@ -2725,14 +2781,30 @@ pub async fn fetch_season_series<T: HttpTransport>(
 /// `coin` 为 true 取投币列表，否则取点赞列表——两条接口的参数与响应形状
 /// 完全一样，只换路径，拆成两个函数只会得到两份同样的代码。
 #[must_use]
-pub fn coin_like_arc_request(coin: bool, mid: i64, page: i64, page_size: i64) -> PreparedRequest {
+#[allow(clippy::too_many_arguments)]
+pub fn coin_like_arc_request(
+    coin: bool,
+    mid: i64,
+    page: i64,
+    page_size: i64,
+    access_key: Option<&str>,
+    appkey: &str,
+    appsec: &str,
+    ts: i64,
+) -> PreparedRequest {
     PreparedRequest {
         path: if coin { path::COIN_ARC } else { path::LIKE_ARC },
-        query: vec![
-            ("pn".to_owned(), page.to_string()),
-            ("ps".to_owned(), page_size.to_string()),
-            ("vmid".to_owned(), mid.to_string()),
-        ],
+        query: crate::request::sign_app_query(
+            vec![
+                ("pn".to_owned(), page.to_string()),
+                ("ps".to_owned(), page_size.to_string()),
+                ("vmid".to_owned(), mid.to_string()),
+            ],
+            access_key,
+            appkey,
+            appsec,
+            ts,
+        ),
     }
 }
 
@@ -2792,6 +2864,7 @@ pub fn parse_coin_like_arc(body: &str) -> Result<CoinLikeArcPage, DomainError> {
 ///
 /// # Errors
 /// 同 [`fetch_member_info`]。
+#[allow(clippy::too_many_arguments)]
 pub async fn fetch_coin_like_arc<T: HttpTransport>(
     transport: &T,
     ctx: &RequestContext,
@@ -2799,9 +2872,13 @@ pub async fn fetch_coin_like_arc<T: HttpTransport>(
     mid: i64,
     page: i64,
     page_size: i64,
+    access_key: Option<&str>,
+    appkey: &str,
+    appsec: &str,
+    ts: i64,
 ) -> Result<CoinLikeArcPage, DomainError> {
-    let req = coin_like_arc_request(coin, mid, page, page_size);
-    let body = crate::client::send(transport, ctx, &req).await?;
+    let req = coin_like_arc_request(coin, mid, page, page_size, access_key, appkey, appsec, ts);
+    let body = crate::client::send_app(transport, ctx, &req).await?;
     parse_coin_like_arc(&body)
 }
 

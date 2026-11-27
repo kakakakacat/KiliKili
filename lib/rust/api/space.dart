@@ -71,12 +71,18 @@ Future<CoinLikeArcResult> fetchCoinLikeArc({
   required PlatformInt64 mid,
   required PlatformInt64 page,
   required PlatformInt64 pageSize,
+  String? accessKey,
+  required String appkey,
+  required String appsec,
 }) => RustLib.instance.api.crateApiSpaceFetchCoinLikeArc(
   context: context,
   coin: coin,
   mid: mid,
   page: page,
   pageSize: pageSize,
+  accessKey: accessKey,
+  appkey: appkey,
+  appsec: appsec,
 );
 
 /// 取一页大航海名单。
@@ -128,15 +134,21 @@ Future<SpacePageResult> fetchSpacePage({
   required SpaceContext context,
   required PlatformInt64 mid,
   String? fromViewAid,
+  required String appkey,
+  required String appsec,
+  String? accessKey,
 }) => RustLib.instance.api.crateApiSpaceFetchSpacePage(
   context: context,
   mid: mid,
   fromViewAid: fromViewAid,
+  appkey: appkey,
+  appsec: appsec,
+  accessKey: accessKey,
 );
 
 /// 取一页投稿。
 ///
-/// 六个 tab 共用这一个函数：参数集合一样，差别只在路径与封面档位，由
+/// 六个 tab 共用 APP 签名，路径与封面档位由
 /// [`SpaceArchiveKind`] 决定。可省的参数省掉就不发，不是发空值。
 Future<SpaceArchiveResult> fetchSpaceArchive({
   required SpaceContext context,
@@ -150,6 +162,9 @@ Future<SpaceArchiveResult> fetchSpaceArchive({
   PlatformInt64? seasonId,
   PlatformInt64? seriesId,
   bool? includeCursor,
+  required String appkey,
+  required String appsec,
+  String? accessKey,
 }) => RustLib.instance.api.crateApiSpaceFetchSpaceArchive(
   context: context,
   kind: kind,
@@ -162,6 +177,9 @@ Future<SpaceArchiveResult> fetchSpaceArchive({
   seasonId: seasonId,
   seriesId: seriesId,
   includeCursor: includeCursor,
+  appkey: appkey,
+  appsec: appsec,
+  accessKey: accessKey,
 );
 
 /// 取一页投稿搜索（网页端）。
@@ -232,11 +250,17 @@ Future<SpaceArticleResult> fetchSpaceArticle({
   required PlatformInt64 mid,
   required PlatformInt64 page,
   required PlatformInt64 pageSize,
+  String? accessKey,
+  required String appkey,
+  required String appsec,
 }) => RustLib.instance.api.crateApiSpaceFetchSpaceArticle(
   context: context,
   mid: mid,
   page: page,
   pageSize: pageSize,
+  accessKey: accessKey,
+  appkey: appkey,
+  appsec: appsec,
 );
 
 Future<SpaceAudioResult> fetchSpaceAudio({

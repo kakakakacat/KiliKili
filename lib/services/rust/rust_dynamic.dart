@@ -1,3 +1,4 @@
+import 'package:kilikili/common/constants.dart';
 import 'package:flutter/foundation.dart';
 import 'package:kilikili/http/api.dart';
 import 'package:kilikili/http/constants.dart';
@@ -9,6 +10,7 @@ import 'package:kilikili/services/rust/rust_request.dart';
 import 'package:kilikili/services/rust/rust_transport.dart';
 import 'package:kilikili/services/rust_core.dart';
 import 'package:kilikili/utils/wbi_sign.dart';
+import 'package:kilikili/utils/accounts/account.dart';
 
 /// 动态接口的 typed Rust 入口。gRPC 凭据只在请求时传入 Rust。
 abstract final class RustDynamic {
@@ -354,12 +356,16 @@ abstract final class RustDynamic {
     String endpoint, {
     String? baseUrl,
     String mixinKey = '',
+    bool app = false,
+    Account? account,
   }) async {
-    final account = RustRequest.accountFor(endpoint);
+    final selectedAccount = account ?? RustRequest.accountFor(endpoint);
     return api.DynamicReadContext(
       baseUrl: baseUrl ?? HttpString.apiBaseUrl,
-      cookie: await RustRequest.cookieFor(account, endpoint),
-      headers: RustRequest.headersFor(account),
+      cookie: app
+          ? null
+          : await RustRequest.cookieFor(selectedAccount, endpoint),
+      headers: RustRequest.headersFor(selectedAccount),
       timeoutMs: BigInt.from(10000),
       transport: RustTransport.current(),
       mixinKey: mixinKey,
@@ -414,12 +420,18 @@ abstract final class RustDynamic {
   }) async {
     if (!RustCore.isReady) return const Error(_notReady);
     try {
+      final account = RustRequest.accountFor(Api.topicTop);
       final result = await api.topicTop(
         context: await _readContext(
           Api.topicTop,
           baseUrl: HttpString.appBaseUrl,
+          app: true,
+          account: account,
         ),
         topicId: topicId,
+        accessKey: account.accessKey,
+        appkey: Constants.appKey,
+        appsec: Constants.appSec,
       );
       return _unwrap(result.data, result.errorDetail, result.errorCode);
     } catch (e, st) {
@@ -476,14 +488,20 @@ abstract final class RustDynamic {
   }) async {
     if (!RustCore.isReady) return const Error(_notReady);
     try {
+      final account = RustRequest.accountFor(Api.topicPubSearch);
       final result = await api.topicPubSearch(
         context: await _readContext(
           Api.topicPubSearch,
           baseUrl: HttpString.appBaseUrl,
+          app: true,
+          account: account,
         ),
         keywords: keywords,
         content: content,
         pageNum: pageNum,
+        accessKey: account.accessKey,
+        appkey: Constants.appKey,
+        appsec: Constants.appSec,
       );
       return _unwrap(result.data, result.errorDetail, result.errorCode);
     } catch (e, st) {

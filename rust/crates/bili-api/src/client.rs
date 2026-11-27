@@ -317,6 +317,21 @@ pub(crate) fn encode_query(params: &[(String, String)]) -> String {
         .join("&")
 }
 
+/// APP 只读请求沿用旧拦截器的 token 鉴权，不混入 Web Cookie。
+/// 在发送边界清掉 Cookie，避免复用 Web 上下文时悄悄改变请求身份。
+pub(crate) async fn send_app<T: HttpTransport>(
+    transport: &T,
+    ctx: &RequestContext,
+    prepared: &PreparedRequest,
+) -> Result<String, DomainError> {
+    let mut app_ctx = ctx.clone();
+    app_ctx.cookie = None;
+    app_ctx
+        .headers
+        .retain(|(key, _)| !key.eq_ignore_ascii_case("cookie"));
+    send(transport, &app_ctx, prepared).await
+}
+
 #[cfg(test)]
 // 测试里 expect 是正确做法：前提不成立时就该崩掉并指出原因。
 #[allow(clippy::expect_used)]

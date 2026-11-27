@@ -931,13 +931,25 @@ pub fn article_list_request(id: &str) -> PreparedRequest {
 
 /// 话题页顶部的请求。
 #[must_use]
-pub fn topic_top_request(topic_id: &str) -> PreparedRequest {
+pub fn topic_top_request(
+    topic_id: &str,
+    access_key: Option<&str>,
+    appkey: &str,
+    appsec: &str,
+    ts: i64,
+) -> PreparedRequest {
     PreparedRequest {
         path: topic_path::TOPIC_TOP,
-        query: vec![
-            ("topic_id".to_owned(), topic_id.to_owned()),
-            ("source".to_owned(), "Web".to_owned()),
-        ],
+        query: crate::request::sign_app_query(
+            vec![
+                ("topic_id".to_owned(), topic_id.to_owned()),
+                ("source".to_owned(), "Web".to_owned()),
+            ],
+            access_key,
+            appkey,
+            appsec,
+            ts,
+        ),
     }
 }
 
@@ -1419,8 +1431,17 @@ pub async fn fetch_topic_top<T: HttpTransport>(
     transport: &T,
     ctx: &RequestContext,
     topic_id: &str,
+    access_key: Option<&str>,
+    appkey: &str,
+    appsec: &str,
+    ts: i64,
 ) -> Result<TopicTop, DomainError> {
-    let body = crate::client::send(transport, ctx, &topic_top_request(topic_id)).await?;
+    let body = crate::client::send_app(
+        transport,
+        ctx,
+        &topic_top_request(topic_id, access_key, appkey, appsec, ts),
+    )
+    .await?;
     parse_topic_top(&body)
 }
 
@@ -1464,7 +1485,15 @@ pub async fn fetch_bubble<T: HttpTransport>(
 /// 翻页形状与别处不同：第一页给 `page_size` + `page_num`，之后给 `offset`，
 /// 两者**不能同时出现**。这是基线的写法，照搬。
 #[must_use]
-pub fn topic_pub_search_request(keywords: &str, content: &str, page_num: i64) -> PreparedRequest {
+pub fn topic_pub_search_request(
+    keywords: &str,
+    content: &str,
+    page_num: i64,
+    access_key: Option<&str>,
+    appkey: &str,
+    appsec: &str,
+    ts: i64,
+) -> PreparedRequest {
     let mut query = vec![
         ("keywords".to_owned(), keywords.to_owned()),
         ("content".to_owned(), content.to_owned()),
@@ -1478,7 +1507,7 @@ pub fn topic_pub_search_request(keywords: &str, content: &str, page_num: i64) ->
     query.push(("web_location".to_owned(), "333.1365".to_owned()));
     PreparedRequest {
         path: topic_path::TOPIC_PUB_SEARCH,
-        query,
+        query: crate::request::sign_app_query(query, access_key, appkey, appsec, ts),
     }
 }
 
@@ -1517,15 +1546,20 @@ pub fn parse_topic_pub_search(body: &str) -> Result<TopicPubSearch, DomainError>
 ///
 /// # Errors
 /// 同 [`fetch_article_info`]。
+#[allow(clippy::too_many_arguments)]
 pub async fn fetch_topic_pub_search<T: HttpTransport>(
     transport: &T,
     ctx: &RequestContext,
     keywords: &str,
     content: &str,
     page_num: i64,
+    access_key: Option<&str>,
+    appkey: &str,
+    appsec: &str,
+    ts: i64,
 ) -> Result<TopicPubSearch, DomainError> {
-    let req = topic_pub_search_request(keywords, content, page_num);
-    let body = crate::client::send(transport, ctx, &req).await?;
+    let req = topic_pub_search_request(keywords, content, page_num, access_key, appkey, appsec, ts);
+    let body = crate::client::send_app(transport, ctx, &req).await?;
     parse_topic_pub_search(&body)
 }
 
@@ -1586,26 +1620,50 @@ mod batch1_tests {
             query(&article_list_request("rl540001")),
             "id=rl540001&web_location=333.1400"
         );
-        assert_eq!(
-            query(&topic_top_request("10001")),
-            "topic_id=10001&source=Web"
-        );
+        let top = query(&topic_top_request("10001", None, "key", "sec", 1));
+        assert!(top.contains("topic_id=10001") && top.contains("source=Web"));
         assert_eq!(
             query(&topic_rcmd_request(25)),
             "source=Web&page_size=25&web_location=333.1365"
         );
-        assert_eq!(topic_top_request("1").path, topic_path::TOPIC_TOP);
+        assert_eq!(
+            topic_top_request(
+                "1",
+                None,
+                "dfca71928277209b",
+                "b5475a8825547a4fc26c7d518eaaa02e",
+                1_700_000_000
+            )
+            .path,
+            topic_path::TOPIC_TOP
+        );
     }
 
     /// 翻页形状：第一页给 `page_size` + `page_num`，之后给 `offset`，
     /// 两者**不能同时出现**。
     #[test]
     fn topic_pub_search_switches_from_page_num_to_offset() {
-        let first = query(&topic_pub_search_request("关键词", "", 1));
+        let first = query(&topic_pub_search_request(
+            "关键词",
+            "",
+            1,
+            None,
+            "dfca71928277209b",
+            "b5475a8825547a4fc26c7d518eaaa02e",
+            1_700_000_000,
+        ));
         assert!(first.contains("page_size=20") && first.contains("page_num=1"));
         assert!(!first.contains("offset="), "第一页不带 offset");
 
-        let third = query(&topic_pub_search_request("关键词", "", 3));
+        let third = query(&topic_pub_search_request(
+            "关键词",
+            "",
+            3,
+            None,
+            "dfca71928277209b",
+            "b5475a8825547a4fc26c7d518eaaa02e",
+            1_700_000_000,
+        ));
         assert!(third.contains("offset=40"), "第三页从第 40 条开始");
         assert!(
             !third.contains("page_num=") && !third.contains("page_size="),

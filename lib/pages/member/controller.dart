@@ -23,6 +23,7 @@ class MemberController extends CommonDataController<SpacePage, SpacePage?>
   MemberController({required this.mid});
   int mid;
   String? username;
+  final profileError = RxnString();
   String? userAvatar;
 
   late final account = Accounts.main;
@@ -51,6 +52,7 @@ class MemberController extends CommonDataController<SpacePage, SpacePage?>
 
   int? medal;
   List<SpaceSimpleUser>? guards;
+
   /// 人数是从「2人加入大航海」里抠出来的，所以是字符串。
   String? guardCount;
   bool get hasGuard => guards?.isNotEmpty ?? false;
@@ -69,6 +71,7 @@ class MemberController extends CommonDataController<SpacePage, SpacePage?>
 
   @override
   bool customHandleResponse(bool isRefresh, Success<SpacePage> response) {
+    profileError.value = null;
     final data = response.response;
     final card = data.card;
     username = card?.name ?? '';
@@ -160,6 +163,9 @@ class MemberController extends CommonDataController<SpacePage, SpacePage?>
 
   @override
   bool handleError(String? errMsg) {
+    profileError.value = errMsg ?? '请求失败';
+    // 各标签独立取数，资料失败不能清掉已加载内容或重置正在浏览的标签。
+    if (tabController != null) return true;
     // 取不到空间信息时的兜底 tab。FRB 的列表字段是非空的，所以这里的
     // `items` 要显式给空表，不能像基线那样省掉。
     tab2 = const [
@@ -178,10 +184,18 @@ class MemberController extends CommonDataController<SpacePage, SpacePage?>
       vsync: this,
       length: tabs.length,
     );
-    username = errMsg;
-    loadingState.value = const Success(null);
+    // 成功资料可能没有可用标签；补兜底标签时仍需保留资料卡。
+    if (loadingState.value.dataOrNull == null) {
+      loadingState.value = const Success(null);
+    } else {
+      loadingState.refresh();
+    }
     return true;
   }
+
+  // 重试资料时保留整个页面，避免独立加载成功的标签跟着卸载。
+  @override
+  Future<void> onReload() => queryData();
 
   @override
   Future<LoadingState<SpacePage>> customGetData() => RustSpace.spacePage(

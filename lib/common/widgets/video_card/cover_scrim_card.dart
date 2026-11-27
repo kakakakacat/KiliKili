@@ -568,8 +568,10 @@ class _TextStrip extends StatelessWidget {
     )..layout();
     final labelSize = painter.size;
     painter.dispose();
-    // 名字再长也只占一行的一部分，后面至少留点地方给标题。
-    final maxLabelWidth = width * 0.6 - _pillPadding.horizontal - _pillGap;
+    // UP 名一律完整显示（所有者要求，#300）。B 站昵称最多 16 个字，正常
+    // 宽度下放得下；只有窄到一行都放不下时才按整行宽度兜底，否则胶囊会
+    // 撑出文字区。
+    final maxLabelWidth = width - _pillPadding.horizontal - _pillGap;
     final pillSize = Size(
       labelSize.width.clamp(0, maxLabelWidth.clamp(0, double.infinity)) +
           _pillPadding.horizontal,

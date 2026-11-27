@@ -1,41 +1,52 @@
 <div align="center">
+    <h1>KiliKili</h1>
 
-# KiliKili
+中文 | [English](README.en.md)
 
-### 打开就看，专心看视频
+<p>使用 Rust 重写核心的 BiliBili 第三方客户端</p>
 
-一款开源的第三方哔哩哔哩客户端，支持 Android、iPhone / iPad、macOS、Windows 和 Linux。
-
-[下载与发布状态](https://github.com/kakakakacat/KiliKili/releases) · [English](README.en.md) · [反馈问题](https://github.com/kakakakacat/KiliKili/issues)
+<img src="assets/screenshots/kilikili-android-home.png" width="24%" alt="Android 首页" />
+<img src="assets/screenshots/kilikili-android-video.png" width="24%" alt="Android 播放页" />
+<img src="assets/screenshots/kilikili-ios-home.png" width="24%" alt="iOS 首页" />
+<img src="assets/screenshots/kilikili-ios-video.png" width="24%" alt="iOS 播放页" />
 
 </div>
 
-## 为什么用 KiliKili？
+<br/>
 
-| 你想要的体验 | KiliKili 提供什么 |
+## 适配平台
+
+- [x] Android
+- [x] iOS / iPad
+- [x] macOS
+- [x] Windows
+- [x] Linux
+
+## 特点
+
+| | |
 | --- | --- |
-| 打开就看内容 | 简洁的首页与导航，没有开屏广告、商城入口或推送 SDK。 |
-| 按自己的习惯观看 | 支持弹幕、倍速、后台播放、画中画和离线缓存；可按需开启 SponsorBlock 跳过赞助片段，也能跳过番剧片头片尾。 |
-| 轻松找到想看的内容 | 搜索视频，浏览推荐、动态、直播与番剧；登录后继续查看关注、收藏和历史记录。 |
-| 用着顺手 | 浅色与深色主题、可调整的界面、重新设计的「我的」页面，以及切换底部标签时会升起的水滴透镜。 |
-| 在常用设备上使用 | 面向 Android、iPhone / iPad、macOS、Windows 和 Linux 开发。各平台的可用安装包以 [Releases](https://github.com/kakakakacat/KiliKili/releases) 页面为准。 |
+| **Rust 重构底层** | 性能提升 |
+| **GPU 补帧** | 24/30 fps 补到 60，低端机也跑满（[实测](docs/m0/spikes/2026-11-24-interp-218.md)） |
+| **Liquid Glass 水滴** | 底栏选中指示，切换时拉伸回弹 |
+| **重做「我的」页** | 账户卡片 + 一体工具胶囊 |
+| **没有多余东西** | 无广告、无开屏、无商城、无推送 SDK |
 
-## 看看界面
+## 即将到来
 
-| Android 首页 | Android 播放页 |
-| :---: | :---: |
-| <img src="assets/screenshots/kilikili-android-home.png" width="260" alt="KiliKili Android 首页"> | <img src="assets/screenshots/kilikili-android-video.png" width="260" alt="KiliKili Android 播放页"> |
+| | |
+| --- | --- |
+| GPU 视频插帧 | [#211](https://github.com/kakakakacat/KiliKili/issues/211) |
+| 视频内搜索 | [#213](https://github.com/kakakakacat/KiliKili/issues/213) |
+| 智能弹幕 | [#214](https://github.com/kakakakacat/KiliKili/issues/214) |
+| 玻璃界面扩展 | [#224](https://github.com/kakakakacat/KiliKili/issues/224) |
+| 更灵活的倍速 | [#291](https://github.com/kakakakacat/KiliKili/issues/291) |
+| 动态头像 | [#292](https://github.com/kakakakacat/KiliKili/issues/292) |
 
-| iPhone 首页 | iPhone 播放页 |
-| :---: | :---: |
-| <img src="assets/screenshots/kilikili-ios-home.png" width="260" alt="KiliKili iPhone 首页"> | <img src="assets/screenshots/kilikili-ios-video.png" width="260" alt="KiliKili iPhone 播放页"> |
+## 下载
 
-## 获取 KiliKili
+[Releases](https://github.com/kakakakacat/KiliKili/releases)（尚未发布） · [反馈](https://github.com/kakakakacat/KiliKili/issues)
 
-正式安装包尚未发布。发布后可在 [Releases](https://github.com/kakakakacat/KiliKili/releases) 下载适合设备的版本；现在可以关注该页面获取更新。
+## 致谢
 
-遇到问题或想提出建议，欢迎到 [Issues](https://github.com/kakakakacat/KiliKili/issues) 反馈。
-
----
-
-KiliKili 基于 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus)，感谢 [PiliPalaX](https://github.com/orz12/PiliPalaX)、[PiliPala](https://github.com/guozhigq/pilipala) 及所有贡献者。本项目是非官方客户端，遵循 [GPL-3.0](LICENSE) 许可证。
+基于 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus)，感谢 [PiliPalaX](https://github.com/orz12/PiliPalaX)、[PiliPala](https://github.com/guozhigq/pilipala) 及所有贡献者。非官方客户端，遵循 [GPL-3.0](LICENSE)。

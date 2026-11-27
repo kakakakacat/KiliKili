@@ -54,10 +54,23 @@ vec2 lensOrigin() {
   return local ? vec2(0.0) : vec2(u_lens_left, u_lens_top);
 }
 
-// 按透镜本地坐标（像素）采背板。
-vec4 sampleAt(vec2 p) {
-  vec2 g = p + lensOrigin();
+vec4 texel(vec2 g) {
   return texture(u_backdrop, clamp(g / u_size, vec2(0.0), vec2(1.0)));
+}
+
+// 按透镜本地坐标（像素）采背板，**手动双线性插值**。
+//
+// 背板纹理在真机上是按最近邻采样的：透镜放大 1.2 倍后，图标与文字的边
+// 缘露出一级级像素台阶，长按时最明显（#266 所有者反馈「有锯齿」）。所以
+// 取周围四个像素中心按距离加权。
+vec4 sampleAt(vec2 p) {
+  vec2 g = p + lensOrigin() - 0.5;
+  vec2 i = floor(g);
+  vec2 f = g - i;
+  vec2 o = i + 0.5;
+  vec4 a = mix(texel(o), texel(o + vec2(1.0, 0.0)), f.x);
+  vec4 b = mix(texel(o + vec2(0.0, 1.0)), texel(o + vec2(1.0, 1.0)), f.x);
+  return mix(a, b, f.y);
 }
 
 void main() {

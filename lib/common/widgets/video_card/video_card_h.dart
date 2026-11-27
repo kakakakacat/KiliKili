@@ -2,7 +2,6 @@ import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
-import 'package:kilikili/common/widgets/video_card/cover_zoom.dart';
 import 'package:kilikili/common/widgets/video_popup_menu.dart';
 import 'package:kilikili/http/search.dart';
 import 'package:kilikili/models/common/badge_type.dart';
@@ -23,16 +22,12 @@ class VideoCardH extends StatelessWidget {
     this.onTap,
     this.onViewLater,
     this.onRemove,
-    this.coverZoom = false,
   });
 
   final HorizontalVideoModel videoItem;
   final VoidCallback? onTap;
   final ValueChanged<int>? onViewLater;
   final VoidCallback? onRemove;
-
-  /// 点开时封面放大进播放页（#265），目前只有热门开。
-  final bool coverZoom;
 
   void onLongPress() => imageSaveDialog(
     bvid: videoItem.bvid,
@@ -43,9 +38,6 @@ class VideoCardH extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final progress = videoItem.progress;
-    final zoom = coverZoom && onTap == null
-        ? CoverZoomSource(key: videoItem, cover: videoItem.cover)
-        : null;
     final date = videoItem.pubdate == null
         ? ''
         : DateFormatUtils.dateFormat(videoItem.pubdate!);
@@ -53,10 +45,9 @@ class VideoCardH extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       child: CoverScrimCard(
         cover: videoItem.cover,
-        coverZoom: zoom,
         title: videoItem.title,
         upName: videoItem.owner.name,
-        onTap: onTap ?? () => pushVideoH(videoItem, coverZoom: zoom),
+        onTap: onTap ?? () => pushVideoH(videoItem),
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         titleSpans: videoItem.titleList?.isNotEmpty == true
@@ -117,10 +108,7 @@ class VideoCardH extends StatelessWidget {
   }
 }
 
-Future<void> pushVideoH(
-  HorizontalVideoModel videoItem, {
-  CoverZoomSource? coverZoom,
-}) async {
+Future<void> pushVideoH(HorizontalVideoModel videoItem) async {
   if (videoItem.isPugv ?? false) {
     PageUtils.viewPugv(seasonId: videoItem.seasonId);
     return;
@@ -157,7 +145,6 @@ Future<void> pushVideoH(
       cover: videoItem.cover,
       title: videoItem.title,
       dimension: dimension,
-      coverZoom: coverZoom,
     );
   }
 }

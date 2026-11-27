@@ -795,25 +795,26 @@ dart run flutter_native_splash:create
 
 ### 4.6 封面放大转场（#265）
 
-从首页推荐和热门点封面进播放页时，封面从卡片位置放大到播放器位置，播放页
-其余内容在转场后段淡入并微微上移；返回时内容先淡出、播放器缩回卡片。
-其余入口（搜索、动态、UP 空间、稍后再看等）仍走全局「页面过渡动画」。
-「页面过渡动画」设为 `noTransition` 时，这两处也直接切页。
+从任意封面卡片（`CoverScrimCard`：首页推荐、热门、搜索、动态、UP 空间、
+历史、稍后再看、收藏、相关推荐等）点进播放页时，封面从卡片位置放大到播放器
+位置，播放页其余内容在转场后段淡入并微微上移；返回时内容先淡出、播放器缩回
+卡片。卡片上的封面和进播放页传的封面地址对不上时（例如番剧卡片是季度封面、
+进的是单集）不放大，照常切页。「页面过渡动画」设为 `noTransition` 时也直接切页。
 
 实现全在新增的 `lib/common/widgets/video_card/cover_zoom.dart`：卡片封面外包
-`Hero`（tag 是列表项本身），播放页播放器区域放同 tag 的 `CoverZoomHold`，
+`Hero`，点下去（指针抬起）时记成「刚点的那张」，`toVideoPage` 按封面地址
+认领（4 秒内有效），所以各入口不用单独传参；播放页播放器区域放同 tag 的 `CoverZoomHold`，
 视频首帧画出之前一直盖着封面；路由换成 `CoverZoomPageRoute`（`GetPageRoute`
 的子类，只换 `buildTransitions`，外层仍套全局转场以保留 secondary 动画与
 iOS 边缘返回）。飞行和落地用的都是卡片上那张已解码的图，不重新加载。
 
 | 文件 | 改动 |
 | --- | --- |
-| `lib/utils/page_utils.dart` | `toVideoPage` 多一个 `coverZoom` 参数；带它时改推 `CoverZoomPageRoute`，路由名仍是 `/videoV` |
-| `lib/pages/video/view.dart` | `videoPlayer` 的 Stack 里加 `CoverZoomHold`（只在带 `coverZoom` 参数进来时） |
-| `lib/common/widgets/video_card/video_card_{v,h}.dart`、`lib/pages/{rcmd,hot}/view.dart` | 卡片多一个 `coverZoom` 开关，只有推荐和热门打开 |
+| `lib/utils/page_utils.dart` | `toVideoPage` 认领刚点的封面，认领到时改推 `CoverZoomPageRoute`，路由名仍是 `/videoV` |
+| `lib/pages/video/view.dart` | `videoPlayer` 的 Stack 里加 `CoverZoomHold`（只在认领到封面进来时） |
 
 **同步时**：上游改 `toVideoPage` 的参数或 `videoPlayer` 的层次，照常同步，
-保留 `coverZoom` 分支和那一层 `CoverZoomHold`；上游若给播放页换了路由或
+保留认领封面的那一段和那一层 `CoverZoomHold`；上游若给播放页换了路由或
 转场写法，要确认 `/videoV` 仍能被 `CoverZoomPageRoute` 推起来
 （`Get.arguments` 依赖 `RouteSettings.arguments`）。
 

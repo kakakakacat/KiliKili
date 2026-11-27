@@ -553,7 +553,6 @@ abstract final class PageUtils {
     Dimension? dimension,
     int? rootRpId,
     int? secondRpId,
-    CoverZoomSource? coverZoom,
   }) {
     final arguments = {
       'aid': aid ?? IdUtils.bv2av(bvid!),
@@ -572,7 +571,9 @@ abstract final class PageUtils {
       secondRpIdKey: ?secondRpId,
       ...?extraArguments,
     };
-    // 封面放大（#265）：关掉「页面过渡动画」时照常直接切页。
+    // 封面放大（#265）：从封面卡片点进来、且封面对得上时才放大；关掉
+    // 「页面过渡动画」时照常直接切页。
+    final coverZoom = CoverZoomSource.take(cover);
     if (coverZoom != null &&
         !off &&
         Get.defaultTransition != Transition.noTransition) {

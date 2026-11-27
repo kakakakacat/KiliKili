@@ -11,8 +11,9 @@ import 'package:media_kit_video/media_kit_video.dart';
 ///
 /// 三块拼起来：
 ///
-/// - 卡片封面外包一层 [Hero]，tag 就是这个 [CoverZoomSource]
-///   （`CoverScrimCard.coverZoom`）；
+/// - 每张网络封面卡片（`CoverScrimCard`）的封面外包一层 [Hero]，tag 就是
+///   这个 [CoverZoomSource]；点下去时记成「刚点的那张」，`toVideoPage`
+///   按封面地址认领（[take]），所以所有进播放页的入口都不用单独传参；
 /// - 播放页的播放器区域放一个同 tag 的 [CoverZoomHold]，它在视频首帧出来
 ///   之前一直盖着这张封面，避免放大落地之后先黑一下；
 /// - 路由换成 [CoverZoomPageRoute]：页面只做淡入上移，不再整页推进来，
@@ -22,11 +23,8 @@ import 'package:media_kit_video/media_kit_video.dart';
 /// 构造同参数的 [NetworkImgLayer]（内存缓存命中），再用 [FittedBox] 放大，
 /// 所以全程不重新加载封面。代价是放大后偏糊，只持续到首帧出来。
 class CoverZoomSource {
-  CoverZoomSource({required this.key, required this.cover});
+  CoverZoomSource({required this.cover});
 
-  /// 决定 Hero tag 的身份，用列表项本身：同一页里两张卡不会是同一个对象，
-  /// 卡片重建也不会换 tag。
-  final Object key;
   final String? cover;
 
   /// 卡片上封面的布局尺寸，由卡片布局时写入。按这个尺寸构造图片才能命中
@@ -38,12 +36,48 @@ class CoverZoomSource {
   /// 封面会重新盖回去半秒。
   bool released = false;
 
-  @override
-  bool operator ==(Object other) =>
-      other is CoverZoomSource && identical(other.key, key);
+  // Hero tag 用对象本身的身份：每张卡每次构建一个，同一页里不会重复。
 
-  @override
-  int get hashCode => identityHashCode(key);
+  static CoverZoomSource? _pending;
+  static DateTime? _pendingAt;
+
+  /// 「刚点的那张」最多认领多久。有的入口点下去之后还要先查 cid 再跳转，
+  /// 留够余量；过期就当没点过。
+  static const _pendingTtl = Duration(seconds: 4);
+
+  /// 卡片被点（指针抬起）时调用。
+  void markTapped() {
+    _pending = this;
+    _pendingAt = DateTime.now();
+  }
+
+  /// 播放页入口认领刚点的那张封面：只有没过期、并且**封面地址对得上**
+  /// 才认，否则放大的会是另一张图（例如番剧卡片是季度封面，进的是单集）。
+  /// 认领一次就清掉。
+  static CoverZoomSource? take(String? cover) {
+    final pending = _pending;
+    final at = _pendingAt;
+    _pending = null;
+    _pendingAt = null;
+    if (pending == null || at == null || cover == null) return null;
+    if (DateTime.now().difference(at) > _pendingTtl) return null;
+    if (_normalize(pending.cover) != _normalize(cover)) return null;
+    return pending;
+  }
+
+  /// 去掉协议和缩略图后缀再比：同一张图在不同接口里可能是 `http:` /
+  /// `https:` / `//` 开头，或带着 `@…` 尺寸参数。
+  static String? _normalize(String? url) {
+    if (url == null) return null;
+    var s = url;
+    final scheme = s.indexOf('//');
+    if (scheme >= 0) s = s.substring(scheme + 2);
+    final at = s.indexOf('@');
+    if (at >= 0) s = s.substring(0, at);
+    final query = s.indexOf('?');
+    if (query >= 0) s = s.substring(0, query);
+    return s;
+  }
 
   /// 飞行中的那张图：圆角从卡片的圆角过渡到播放器的直角。
   ///

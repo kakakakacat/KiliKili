@@ -77,7 +77,6 @@ class CoverScrimCard extends StatelessWidget {
     this.elevation = 4,
     this.semanticsLabel,
     this.coverAspectRatio,
-    this.coverZoom,
   });
 
   final String? cover;
@@ -148,10 +147,6 @@ class CoverScrimCard extends StatelessWidget {
   /// 高度。
   final double? coverAspectRatio;
 
-  /// 点开时让封面放大进播放页（#265）。只有首页推荐和热门传，见
-  /// [CoverZoomSource]。
-  final CoverZoomSource? coverZoom;
-
   static const _titleFontSize = 14.0;
   static const _titleHeight = 1.32;
   static const _dateFontSize = 11.0;
@@ -183,6 +178,11 @@ class CoverScrimCard extends StatelessWidget {
     final colorScheme = ColorScheme.of(context);
     final lineHeight =
         MediaQuery.textScalerOf(context).scale(_titleFontSize) * _titleHeight;
+    // 封面放大进播放页（#265）：每张网络封面都是一个可放大的源。点下去时
+    // 记成「刚点的那张」，播放页入口按封面地址认领，见 [CoverZoomSource]。
+    final coverZoom = localCover == null && cover?.isNotEmpty == true
+        ? CoverZoomSource(cover: cover)
+        : null;
     final Widget coverStack = _CoverStack(
       cover: cover,
       coverZoom: coverZoom,
@@ -198,7 +198,7 @@ class CoverScrimCard extends StatelessWidget {
       final zoom? => zoom.sourceHero(coverStack),
       null => coverStack,
     };
-    return Card(
+    final card = Card(
       // hardEdge 足够：圆角由 Card 的 shape 裁，封面自己不再裁一次，省一层
       // saveLayer。
       clipBehavior: Clip.hardEdge,
@@ -271,6 +271,13 @@ class CoverScrimCard extends StatelessWidget {
             ),
         ],
       ),
+    );
+    if (coverZoom == null) return card;
+    // 用 Listener 而不是包一层 onTap：有的卡片（如动态）不走自己的 onTap，
+    // 点击由外层处理，指针抬起时记一下就能覆盖所有入口。
+    return Listener(
+      onPointerUp: (_) => coverZoom.markTapped(),
+      child: card,
     );
   }
 

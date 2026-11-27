@@ -90,7 +90,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     with RouteAware, RouteAwareMixin, WidgetsBindingObserver {
   final heroTag = Get.arguments['heroTag'];
 
-  /// 从首页推荐 / 热门点封面进来时才有，见 [CoverZoomSource]（#265）。
+  /// 从封面卡片点进来时才有，见 [CoverZoomSource]（#265）。
   final CoverZoomSource? coverZoom = Get.arguments['coverZoom'];
 
   late final VideoDetailController videoDetailController;

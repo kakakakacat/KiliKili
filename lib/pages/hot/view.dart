@@ -133,7 +133,6 @@ class _HotPageState extends State<HotPage>
                   }
                   return VideoCardH(
                     videoItem: response[index],
-                    coverZoom: true,
                     onRemove: () => controller.loadingState
                       ..value.data!.removeAt(index)
                       ..refresh(),

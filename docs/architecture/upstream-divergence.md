@@ -640,7 +640,7 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | `.gitattributes` | `f113d9136` | 补全跨平台换行符规则 |
 | `.gitignore` | `6b54c9b01` `dd23f968c` | 忽略 Rust `target/` 等产物 |
 | `analysis_options.yaml` | `ee41df52c` | 排除 FRB 生成的 Dart 代码 |
-| `README.md` / `README.en.md` | `e0b32bfda` `c7dc17c1a` `f92a9890c` | 改写为 KiliKili 的说明与路线图 |
+| `README.md` / `README.en.md` | `e0b32bfda` `c7dc17c1a` `f92a9890c` #305 | 改写为面向用户的功能、截图与获取说明；中英文同步维护 |
 | `pubspec.yaml` / `pubspec.lock` | `ee41df52c` `57485ede8` #242 | 引入 `flutter_rust_bridge` 与 `rust_builder`；版本名改为 KiliKili 自己的 `0.1.0`（同步上游时**不要**带回上游的 `version:`；`+N` 由 CI 按提交数改写） |
 | `lib/pages/about/view.dart`、`lib/common/constants.dart` | #242 | 「关于」页加「基于 PiliPlus」与「开源许可证」两项（只增不改，GPL-3.0 要求注明来源） |
 | `lib/main.dart` | `ee41df52c` | 启动时初始化 Rust Core |

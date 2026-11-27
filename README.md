@@ -2,46 +2,40 @@
 
 # KiliKili
 
-**更快、更稳的哔哩哔哩第三方客户端**
+### 打开就看，专心看视频
 
-Android · iPhone / iPad · macOS · Windows · Linux
+一款开源的第三方哔哩哔哩客户端，支持 Android、iPhone / iPad、macOS、Windows 和 Linux。
 
-[简体中文](README.md) · [English](README.en.md) · [下载](https://github.com/kakakakacat/KiliKili/releases) · [反馈](https://github.com/kakakakacat/KiliKili/issues)
+[下载与发布状态](https://github.com/kakakakacat/KiliKili/releases) · [English](README.en.md) · [反馈问题](https://github.com/kakakakacat/KiliKili/issues)
 
 </div>
 
-KiliKili 基于 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus)，保留它的全部功能，并用 Rust 重写核心，让它更快、更稳。
+## 为什么用 KiliKili？
 
-<p align="center">
-  <img src="assets/screenshots/kilikili-ios-home.png" height="400" alt="iOS 首页">
-  <img src="assets/screenshots/kilikili-ios-video.png" height="400" alt="iOS 播放页">
-  <img src="assets/screenshots/kilikili-android-home.png" height="400" alt="Android 首页">
-  <img src="assets/screenshots/kilikili-android-video.png" height="400" alt="Android 播放页">
-</p>
+| 你想要的体验 | KiliKili 提供什么 |
+| --- | --- |
+| 打开就看内容 | 简洁的首页与导航，没有开屏广告、商城入口或推送 SDK。 |
+| 按自己的习惯观看 | 支持弹幕、倍速、后台播放、画中画和离线缓存；可按需开启 SponsorBlock 跳过赞助片段，也能跳过番剧片头片尾。 |
+| 轻松找到想看的内容 | 搜索视频，浏览推荐、动态、直播与番剧；登录后继续查看关注、收藏和历史记录。 |
+| 用着顺手 | 浅色与深色主题、可调整的界面、重新设计的「我的」页面，以及切换底部标签时会升起的水滴透镜。 |
+| 在常用设备上使用 | 面向 Android、iPhone / iPad、macOS、Windows 和 Linux 开发。各平台的可用安装包以 [Releases](https://github.com/kakakakacat/KiliKili/releases) 页面为准。 |
 
-## 和原版哔哩哔哩比，哪里不一样
+## 看看界面
 
-- **底层逻辑用 Rust 重写。** 取数、选流、排序与过滤这些核心逻辑正从 Dart 一条接口一条地搬进 Rust（[#67](https://github.com/kakakakacat/KiliKili/issues/67)），只读接口已基本迁完。原生代码、没有 GC 停顿，五个平台跑的是同一份实现，不会各端各写一套、各错一套。*我们还没有和官方客户端做受控对照测量，所以这里不报百分比；基准方法见 [docs/qa](docs/qa)。*
+| Android 首页 | Android 播放页 |
+| :---: | :---: |
+| <img src="assets/screenshots/kilikili-android-home.png" width="260" alt="KiliKili Android 首页"> | <img src="assets/screenshots/kilikili-android-video.png" width="260" alt="KiliKili Android 播放页"> |
 
-- **Liquid Glass 玻璃界面，iOS 那种水滴特效。** 底部导航的选中指示是一滴真玻璃：有折射和高光，切换标签时像液体一样先被拉长、冲过目标再回弹，按住会鼓起。走 Impeller 的 shader 折射，设备不支持或系统开了「减弱动态效果」时自动降级，不会卡。
+| iPhone 首页 | iPhone 播放页 |
+| :---: | :---: |
+| <img src="assets/screenshots/kilikili-ios-home.png" width="260" alt="KiliKili iPhone 首页"> | <img src="assets/screenshots/kilikili-ios-video.png" width="260" alt="KiliKili iPhone 播放页"> |
 
-- **「我的」页面重做过。** 账户信息和动态/关注/粉丝统计合成一张卡片，顶部是一体式工具胶囊（无痕模式、主题切换、搜索、消息），下面是统一圆角的快捷入口和收藏卡片，窄屏、平板、深浅主题、大字体都适配（[#262](https://github.com/kakakakacat/KiliKili/issues/262)）。
+## 获取 KiliKili
 
-- **不必要的东西一律砍掉。** 没有广告，没有开屏，没有商城和会员购入口，不集成任何推送 SDK，不做「用完即走」之外的挽留。还内置 SponsorBlock 自动跳过恰饭片段，番剧可以跳过片头片尾。
+正式安装包尚未发布。发布后可在 [Releases](https://github.com/kakakakacat/KiliKili/releases) 下载适合设备的版本；现在可以关注该页面获取更新。
 
-## 即将到来
+遇到问题或想提出建议，欢迎到 [Issues](https://github.com/kakakakacat/KiliKili/issues) 反馈。
 
-- **GPU 视频插帧**：让低帧率视频播放更顺滑，可随时关闭（[#211](https://github.com/kakakakacat/KiliKili/issues/211)、[#219](https://github.com/kakakakacat/KiliKili/issues/219)、[#220](https://github.com/kakakakacat/KiliKili/issues/220)）。
-- **视频内搜索**：按字幕和弹幕直接定位到要看的那一段（[#213](https://github.com/kakakakacat/KiliKili/issues/213)）。
-- **智能弹幕**：密度调节、自动避开字幕、防剧透预览（[#214](https://github.com/kakakakacat/KiliKili/issues/214)）。
-- **玻璃界面扩展到更多页面**：从导航栏扩到整套控件，并做五平台适配与低端机降级（[#224](https://github.com/kakakakacat/KiliKili/issues/224)–[#226](https://github.com/kakakakacat/KiliKili/issues/226)）。
-- **更灵活的倍速**：细粒度调速、任意输入、记住上次的倍速（[#291](https://github.com/kakakakacat/KiliKili/issues/291)）。
-- **动态头像**：gif / ResAnimation 头像不再被压成静态图（[#292](https://github.com/kakakakacat/KiliKili/issues/292)）。
+---
 
-正式安装包尚未发布，请关注 [Releases](https://github.com/kakakakacat/KiliKili/releases)。
-
-## 长期维护
-
-我们会长期更新 KiliKili。遇到问题欢迎在 [Issues](https://github.com/kakakakacat/KiliKili/issues) 反馈。
-
-感谢 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus)、[PiliPalaX](https://github.com/orz12/PiliPalaX)、[PiliPala](https://github.com/guozhigq/pilipala) 和所有贡献者。本项目遵循 [GPL-3.0](LICENSE)，是非官方客户端。
+KiliKili 基于 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus)，感谢 [PiliPalaX](https://github.com/orz12/PiliPalaX)、[PiliPala](https://github.com/guozhigq/pilipala) 及所有贡献者。本项目是非官方客户端，遵循 [GPL-3.0](LICENSE) 许可证。

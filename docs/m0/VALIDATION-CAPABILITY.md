@@ -11,6 +11,9 @@ Apple 与 Android 改为手动 dispatch（理由见 §2.1）；「成本约束�
 修订：2026-11-11 — `flutter-test.yml` 新增 bridge job：编出原生库、打开开关，
 在 CI 里真正跨 FFI 跑一遍（§3.1 的 Dart 单测那一行改写）。在此之前桥接层从未被
 执行过一次；`bili-danmaku` 已建立，§3.1 末尾那段随之更正
+修订：2026-11-28 — **PR 上的回归检查恢复**（issue #114）：`pull_request:` 触发
+2026-11-27 恢复，ruleset「main regression gate」2026-11-28 改回 `active`；
+§2.2 按此重写，下文凡写「每个 PR」的地方重新成立
 修订：2026-11-12 — **PR 上的回归检查暂停**（issue #114）：`ci.yml` 的
 `pull_request:` 触发注释掉、ruleset「main regression gate」改为 `disabled`；
 §2.2 按此重写，下文凡写「每个 PR」的地方当前只在 push/定时/手动运行时成立
@@ -204,21 +207,23 @@ Android 的 Rust 交叉编译改为手动 dispatch（§2.1）；五个 app workf
 
 ### 2.2 回归门（`ci.yml` 的 `regression gate`）
 
-> **当前状态（2026-11-12 起，issue #114）：PR 上不跑。** 重构期一条接口一个
-> PR，每个 PR 等一次完整回归（最慢的 Android 打包 11–15 分钟）的成本超过了
-> 收益，所有者决定暂停。两处同时改：`ci.yml` 的 `pull_request:` 触发注释掉、
-> ruleset「main regression gate」（id 27013798）`enforcement` 改成 `disabled`。
+> **当前状态（2026-11-28 起，issue #114）：PR 上照常跑，并且是必需检查。**
+> 2026-11-12 到 2026-11-27 之间曾暂停：重构期一条接口一个 PR，每个 PR 等一次
+> 完整回归（最慢的 Android 打包 11–15 分钟）的成本一度超过收益，所有者决定
+> 先停，两处同时改——`ci.yml` 的 `pull_request:` 触发注释掉、ruleset
+> 「main regression gate」（id 27013798）`enforcement` 改成 `disabled`。
 >
-> **为什么必须两处一起改**：ruleset 要的 `regression gate` 只由 `ci.yml` 产出。
-> 只注释触发而留着 ruleset，检查永不上报，PR 全部永久 `BLOCKED`；而个人账号
-> 仓库给 ruleset 加 bypass 会 422，没有退路。反之只停 ruleset 则白等。
+> **为什么停的时候必须两处一起改**：ruleset 要的 `regression gate` 只由
+> `ci.yml` 产出。只注释触发而留着 ruleset，检查永不上报，PR 全部永久
+> `BLOCKED`；而个人账号仓库给 ruleset 加 bypass 会 422，没有退路。反之只停
+> ruleset 则白等。
 >
-> 门本身、`gate` job 和下面这些判断**都没有删**：`push: main`、每日 02:17 定时、
-> `workflow_dispatch` 仍然跑完整回归。恢复 = 取消那行注释 + `enforcement` 改回
-> `active`，issue #114 在恢复前保持 open。期间要在合并前验某个分支：
-> `gh workflow run "Regression CI" --ref <分支>`。
+> **恢复时反过来必须分两步**：先恢复 `pull_request:` 触发，在真实 PR 上确认
+> `regression gate` 报过绿（#309 / #310），再把 `enforcement` 改回 `active`。
+> 要再停一次就是反向操作：`-f enforcement=disabled`。
 >
-> 代价：坏改动的发现点从合并前后移到合并后的 push 运行或次日定时运行。
+> 门本身与 `gate` job 从头到尾没有删：暂停期间 `push: main`、每日 02:17 定时、
+> `workflow_dispatch` 一直跑完整回归，代价只是坏改动的发现点后移到合并之后。
 
 2026-11-11 加。仓库 ruleset「main regression gate」把一个名为
 `regression gate` 的状态检查设成合并到 main 的必需项。产出这个检查的是
@@ -350,7 +355,7 @@ Docker 27.3.1，已承载 6 个生产容器
 - **iOS 模拟器 runtime**：本机 `simctl list runtimes` 为空，模拟器冒烟测试需额外下载 runtime。
 - **Linux GPU/合成**：如后续确有必要，比 Docker 可靠得多的路径是在 Windows 设备上安装双系统，或使用支持 GPU 分区直通的 VM。当前判断为投入产出比不足，暂不投入。
 - **CI 本身可能整个停掉，而仓库里没有任何提示**（#279，2026-11-26）。那次 `gh workflow run` 返回 `HTTP 422: Actions has been disabled for this repository.`，而仓库设置页与 `actions/permissions` 都显示 `enabled: true`、十个工作流全 `active`；成因只在网页端可见，**至今未查明**（已排除存储额度与账单：同账号其余仓库当天均正常运行，private 仓库的产物合计只有 4.5 MB）。表现就是回归安静地不再运行——连着三次合并进 main 都没触发，是合完去看那次运行才发现的。
-  这件事叠在 #114 上尤其糟：#114 关掉 PR 回归时的说法是「发现点从合并前后移到合并后」，合并后那张网也没了就等于**完全没有自动检查**，本机跑的那几条（AGENTS.md §5）是唯一保障。判别账号级还是仓库级、以及怎么量产物用量，见 AGENTS.md §7。
+  这件事叠在当时的 #114 上尤其糟（PR 回归已于 2026-11-28 恢复）：#114 关掉 PR 回归时的说法是「发现点从合并前后移到合并后」，合并后那张网也没了就等于**完全没有自动检查**，本机跑的那几条（AGENTS.md §5）是唯一保障。判别账号级还是仓库级、以及怎么量产物用量，见 AGENTS.md §7。
 
 ## 5. 跨机协作约定（macOS ↔ Windows）
 

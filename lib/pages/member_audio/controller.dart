@@ -1,6 +1,6 @@
 import 'package:kilikili/services/rust/rust_space.dart';
-import 'package:kilikili/grpc/bilibili/app/listener/v1.pbenum.dart'
-    show PlaylistSource;
+import 'package:kilikili/services/rust/rust_audio.dart'
+    show AudioPlaylistSource;
 import 'package:kilikili/http/loading_state.dart';
 
 import 'package:kilikili/pages/audio/view.dart';
@@ -44,7 +44,7 @@ class MemberAudioController
       itemType: 3,
       id: item.uid!,
       oid: item.id!,
-      from: PlaylistSource.MEM_SPACE,
+      from: AudioPlaylistSource.memSpace,
     );
   }
 }

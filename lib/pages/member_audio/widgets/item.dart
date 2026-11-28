@@ -2,8 +2,8 @@ import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
 import 'package:kilikili/common/widgets/stat/stat.dart';
-import 'package:kilikili/grpc/bilibili/app/listener/v1.pbenum.dart'
-    show PlaylistSource;
+import 'package:kilikili/services/rust/rust_audio.dart'
+    show AudioPlaylistSource;
 import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/pages/audio/view.dart';
 import 'package:kilikili/utils/date_utils.dart';
@@ -54,7 +54,7 @@ class MemberAudioItem extends StatelessWidget {
           itemType: 3,
           id: uid!,
           oid: id!,
-          from: PlaylistSource.MEM_SPACE,
+          from: AudioPlaylistSource.memSpace,
         ),
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,

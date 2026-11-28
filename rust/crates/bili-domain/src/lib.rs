@@ -4,6 +4,7 @@
 //! 协议/传输实现（RFC-0001 §2.1）。它必须能在不启动任何 UI
 //! 的情况下独立测试。
 
+pub mod audio;
 pub mod danmaku;
 pub mod danmaku_filter;
 pub mod dynamic;

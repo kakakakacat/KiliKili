@@ -18,6 +18,7 @@ brotli = "9"
 bili-grpc = { path = "../bili-grpc" }
 prost.workspace = true
 bili-domain = { path = "../bili-domain" }
+bili-core = { path = "../bili-core" }
 bili-protocol = { path = "../bili-protocol" }
 percent-encoding = "2.3"
 reqwest = { workspace = true, optional = true }

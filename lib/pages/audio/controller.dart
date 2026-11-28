@@ -3,17 +3,6 @@ import 'dart:io' show Platform;
 
 import 'package:kilikili/common/constants.dart';
 import 'package:kilikili/common/widgets/dialog/simple_dialog_option.dart';
-import 'package:kilikili/grpc/audio.dart';
-import 'package:kilikili/grpc/bilibili/app/listener/v1.pb.dart'
-    show
-        DetailItem,
-        PlayURLResp,
-        PlaylistSource,
-        PlayInfo,
-        ThumbUpReq_ThumbType,
-        ListOrder,
-        DashItem,
-        ResponseUrl;
 import 'package:kilikili/http/browser_ua.dart';
 import 'package:kilikili/http/constants.dart';
 import 'package:kilikili/http/loading_state.dart';
@@ -32,11 +21,11 @@ import 'package:kilikili/plugin/pl_player/controller.dart';
 import 'package:kilikili/plugin/pl_player/models/play_repeat.dart';
 import 'package:kilikili/plugin/pl_player/models/play_status.dart';
 import 'package:kilikili/services/service_locator.dart';
+import 'package:kilikili/services/rust/rust_audio.dart';
 import 'package:kilikili/services/shutdown_timer_service.dart';
 import 'package:kilikili/utils/accounts.dart';
 import 'package:kilikili/utils/android/android_helper.dart';
 import 'package:kilikili/utils/connectivity_utils.dart';
-import 'package:kilikili/utils/extension/iterable_ext.dart';
 import 'package:kilikili/utils/extension/num_ext.dart';
 import 'package:kilikili/utils/global_data.dart';
 import 'package:kilikili/utils/id_utils.dart';
@@ -47,8 +36,6 @@ import 'package:kilikili/utils/storage.dart';
 import 'package:kilikili/utils/storage_key.dart';
 import 'package:kilikili/utils/storage_pref.dart';
 import 'package:kilikili/utils/utils.dart';
-import 'package:kilikili/utils/video_utils.dart';
-import 'package:fixnum/fixnum.dart' show Int64;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -62,16 +49,19 @@ class AudioController extends GetxController
         BlockConfigMixin,
         BlockMixin,
         AudioNormalizationMixin {
-  late Int64 id;
-  late Int64 oid;
-  late List<Int64> subId;
+  late int id;
+  late int oid;
+  late List<int> subId;
   late int itemType;
-  Int64? extraId;
-  late final PlaylistSource from;
+  int? extraId;
+  late final AudioPlaylistSource from;
   @override
   late final bool isUgc = itemType == 1;
 
-  final audioItem = Rxn<DetailItem>();
+  final audioItem = Rxn<AudioItem>();
+  final likeCount = 0.obs;
+  final coinCount = 0.obs;
+  final favouriteCount = 0.obs;
 
   bool _hasInit = false;
   @override
@@ -87,7 +77,7 @@ class AudioController extends GetxController
   List<StreamSubscription>? _subscriptions;
 
   int? index;
-  List<DetailItem>? playlist;
+  List<AudioItem>? playlist;
 
   late double speed = 1.0;
 
@@ -111,7 +101,7 @@ class AudioController extends GetxController
   String? _next;
   bool get reachStart => _prev == null;
 
-  ListOrder order = ListOrder.ORDER_NORMAL;
+  AudioListOrder order = AudioListOrder.orderNormal;
 
   double? _lastVolume;
   late final RxDouble desktopVolume = RxDouble(Pref.desktopVolume);
@@ -160,16 +150,16 @@ class AudioController extends GetxController
   void onInit() {
     super.onInit();
     final args = Get.arguments;
-    oid = Int64(args['oid']);
+    oid = args['oid'];
     final id = args['id'];
-    this.id = id != null ? Int64(id) : oid;
-    subId = (args['subId'] as List<int>?)?.map(Int64.new).toList() ?? [oid];
+    this.id = id ?? oid;
+    subId = (args['subId'] as List<int>?) ?? [oid];
     itemType = args['itemType'];
     from = args['from'];
     _start = args['start'];
     final int? extraId = args['extraId'];
     if (extraId != null) {
-      this.extraId = Int64(extraId);
+      this.extraId = extraId;
     }
     if (args['heroTag'] case String heroTag) {
       try {
@@ -246,14 +236,17 @@ class AudioController extends GetxController
     return player?.seek(duration);
   }
 
-  void _updateCurrItem(DetailItem item) {
+  void _updateCurrItem(AudioItem item) {
     audioItem.value = item;
-    hasLike.value = item.stat.hasLike_7;
-    coinNum.value = item.stat.hasCoin_8 ? 2 : 0;
-    hasFav.value = item.stat.hasFav;
+    hasLike.value = item.hasLike;
+    coinNum.value = item.hasCoin ? 2 : 0;
+    hasFav.value = item.hasFav;
+    likeCount.value = item.like;
+    coinCount.value = item.coin;
+    favouriteCount.value = item.favourite;
     videoPlayerServiceHandler?.onVideoDetailChange(
       item,
-      (subId.firstOrNull ?? oid).toInt(),
+      subId.firstOrNull ?? oid,
       hashCode.toString(),
     );
   }
@@ -263,12 +256,12 @@ class AudioController extends GetxController
     bool isLoadPrev = false,
     bool isLoadNext = false,
   }) async {
-    final res = await AudioGrpc.audioPlayList(
+    final res = await RustAudio.playlist(
       id: id,
-      oid: isInit ? oid : null,
-      subId: isInit ? subId : null,
-      itemType: isInit ? itemType : null,
-      from: isInit ? from : null,
+      anchorOid: isInit ? oid : null,
+      anchorSubIds: isInit ? subId : const [],
+      anchorItemType: isInit ? itemType : null,
+      source: isInit ? from : null,
       next: isLoadPrev
           ? _prev
           : isLoadNext
@@ -279,25 +272,24 @@ class AudioController extends GetxController
     );
     if (res case Success(:final response)) {
       if (isInit) {
-        late final paginationReply = response.paginationReply;
-        _prev = response.reachStart ? null : paginationReply.prev;
-        _next = response.reachEnd ? null : paginationReply.next;
-        final index = response.list.indexWhere((e) => e.item.oid == oid);
+        _prev = response.reachStart ? null : response.prev;
+        _next = response.reachEnd ? null : response.next;
+        final index = response.items.indexWhere((e) => e.oid == oid);
         if (index != -1) {
           this.index = index;
-          _updateCurrItem(response.list[index]);
-          playlist = response.list;
+          _updateCurrItem(response.items[index]);
+          playlist = response.items;
         }
       } else if (isLoadPrev) {
-        _prev = response.reachStart ? null : response.paginationReply.prev;
-        if (response.list.isNotEmpty) {
-          index += response.list.length;
-          playlist?.insertAll(0, response.list);
+        _prev = response.reachStart ? null : response.prev;
+        if (response.items.isNotEmpty) {
+          index += response.items.length;
+          playlist?.insertAll(0, response.items);
         }
       } else if (isLoadNext) {
-        _next = response.reachEnd ? null : response.paginationReply.next;
-        if (response.list.isNotEmpty) {
-          playlist?.addAll(response.list);
+        _next = response.reachEnd ? null : response.next;
+        if (response.items.isNotEmpty) {
+          playlist?.addAll(response.items);
         }
       }
     } else {
@@ -318,10 +310,11 @@ class AudioController extends GetxController
 
   Future<bool> _queryPlayUrl() async {
     _querySponsorBlock();
-    final res = await AudioGrpc.audioPlayUrl(
+    final res = await RustAudio.playUrl(
       itemType: itemType,
       oid: oid,
-      subId: subId,
+      subIds: subId,
+      preferredQuality: cacheAudioQa,
     );
     if (res case Success(:final response)) {
       _onPlay(response);
@@ -332,41 +325,10 @@ class AudioController extends GetxController
     }
   }
 
-  void _onPlay(PlayURLResp data) {
-    final PlayInfo? playInfo = data.playerInfo.values.firstOrNull;
-    if (playInfo != null) {
-      http_model.Volume? volume;
-      if (playInfo.hasVolume()) {
-        final volumeInfo = playInfo.volume;
-        volume = http_model.Volume(
-          measuredI: volumeInfo.measuredI,
-          measuredLra: volumeInfo.measuredLra,
-          measuredTp: volumeInfo.measuredTp,
-          measuredThreshold: volumeInfo.measuredThreshold,
-          targetOffset: volumeInfo.targetOffset,
-          targetI: volumeInfo.targetI,
-          targetTp: volumeInfo.targetTp,
-        );
-      }
-      if (playInfo.hasPlayDash()) {
-        final playDash = playInfo.playDash;
-        final audios = playDash.audio;
-        if (audios.isEmpty) {
-          return;
-        }
-        position.value = 0;
-        final audio = audios.findTargetMedia((e) => e.id, cacheAudioQa);
-        _onOpenMedia(VideoUtils.getCdnUrl(audio.playUrls), volume: volume);
-      } else if (playInfo.hasPlayUrl()) {
-        final playUrl = playInfo.playUrl;
-        final durls = playUrl.durl;
-        if (durls.isEmpty) {
-          return;
-        }
-        final durl = durls.first;
-        position.value = 0;
-        _onOpenMedia(VideoUtils.getCdnUrl(durl.playUrls), volume: volume);
-      }
+  void _onPlay(AudioPlayback data) {
+    if (data.url case final url?) {
+      position.value = 0;
+      _onOpenMedia(url, volume: data.volume);
     }
   }
 
@@ -501,22 +463,15 @@ class AudioController extends GetxController
       return;
     }
     final newVal = !hasLike.value;
-    final res = await AudioGrpc.audioThumbUp(
+    final res = await RustAudio.thumbUp(
       oid: oid,
-      subId: subId,
+      subIds: subId,
       itemType: itemType,
-      type: newVal
-          ? ThumbUpReq_ThumbType.LIKE
-          : ThumbUpReq_ThumbType.CANCEL_LIKE,
+      like: newVal,
     );
     if (res case Success(:final response)) {
       hasLike.value = newVal;
-      try {
-        audioItem.value!.stat
-          ..hasLike_7 = newVal
-          ..like += newVal ? 1 : -1;
-        audioItem.refresh();
-      } catch (_) {}
+      likeCount.value += newVal ? 1 : -1;
       SmartDialog.showToast(response.message);
     } else {
       res.toast();
@@ -529,9 +484,9 @@ class AudioController extends GetxController
       SmartDialog.showToast('账号未登录');
       return;
     }
-    final res = await AudioGrpc.audioTripleLike(
+    final res = await RustAudio.tripleLike(
       oid: oid,
-      subId: subId,
+      subIds: subId,
       itemType: itemType,
     );
     if (res case Success(:final response)) {
@@ -539,12 +494,7 @@ class AudioController extends GetxController
       if (response.coinOk && !hasCoin) {
         coinNum.value = 2;
         GlobalData().afterCoin(2);
-        try {
-          audioItem.value!.stat
-            ..hasCoin_8 = true
-            ..coin += 2;
-          audioItem.refresh();
-        } catch (_) {}
+        coinCount.value += 2;
       }
       hasFav.value = true;
       if (!hasCoin) {
@@ -558,13 +508,13 @@ class AudioController extends GetxController
   }
 
   @override
-  int get copyright => audioItem.value?.arc.copyright ?? 1;
+  int get copyright => audioItem.value?.copyright ?? 1;
 
   @override
   Future<void> onPayCoin(int coin, bool coinWithLike) async {
-    final res = await AudioGrpc.audioCoinAdd(
+    final res = await RustAudio.coinAdd(
       oid: oid,
-      subId: subId,
+      subIds: subId,
       itemType: itemType,
       num: coin,
       thumbUp: coinWithLike,
@@ -575,17 +525,8 @@ class AudioController extends GetxController
         hasLike.value = true;
       }
       coinNum.value += coin;
-      try {
-        final stat = audioItem.value!.stat
-          ..hasCoin_8 = true
-          ..coin += coin;
-        if (updateLike) {
-          stat
-            ..hasLike_7 = true
-            ..like += 1;
-        }
-        audioItem.refresh();
-      } catch (_) {}
+      coinCount.value += coin;
+      if (updateLike) likeCount.value += 1;
       GlobalData().afterCoin(coin);
     } else {
       res.toast();
@@ -645,13 +586,13 @@ class AudioController extends GetxController
               child: const Text('分享视频', style: TextStyle(fontSize: 14)),
               onPressed: () {
                 Get.back();
-                if (audioItem.value case DetailItem(
-                  :final arc,
-                  :final owner,
+                if (audioItem.value case AudioItem(
+                  :final title,
+                  :final ownerName,
                 )) {
                   ShareUtils.shareText(
-                    '${arc.title} '
-                    'UP主: ${owner.name}'
+                    '$title '
+                    'UP主: $ownerName'
                     ' - $audioUrl',
                   );
                 }
@@ -662,9 +603,10 @@ class AudioController extends GetxController
               child: const Text('分享至动态', style: TextStyle(fontSize: 14)),
               onPressed: () {
                 Get.back();
-                if (audioItem.value case DetailItem(
-                  :final arc,
-                  :final owner,
+                if (audioItem.value case AudioItem(
+                  :final cover,
+                  :final title,
+                  :final ownerName,
                 )) {
                   showModalBottomSheet(
                     context: context,
@@ -673,9 +615,9 @@ class AudioController extends GetxController
                     builder: (context) => RepostPanel(
                       rid: oid.toInt(),
                       dynType: isUgc ? 8 : 256,
-                      pic: arc.cover,
-                      title: arc.title,
-                      uname: owner.name,
+                      pic: cover,
+                      title: title,
+                      uname: ownerName,
                     ),
                   );
                 }
@@ -686,21 +628,23 @@ class AudioController extends GetxController
               child: const Text('分享至消息', style: TextStyle(fontSize: 14)),
               onPressed: () {
                 Get.back();
-                if (audioItem.value case DetailItem(
-                  :final arc,
-                  :final owner,
+                if (audioItem.value case AudioItem(
+                  :final cover,
+                  :final title,
+                  :final ownerName,
+                  :final ownerMid,
                 )) {
                   try {
                     PageUtils.pmShare(
                       context,
                       content: {
                         "id": oid.toString(),
-                        "title": arc.title,
-                        "headline": arc.title,
+                        "title": title,
+                        "headline": title,
                         "source": 5,
-                        "thumb": arc.cover,
-                        "author": owner.name,
-                        "author_id": owner.mid.toString(),
+                        "thumb": cover,
+                        "author": ownerName,
+                        "author_id": ownerMid.toString(),
                       },
                     );
                   } catch (e) {
@@ -727,7 +671,7 @@ class AudioController extends GetxController
 
   bool playNext({bool nextPart = false}) {
     if (nextPart) {
-      if (audioItem.value case DetailItem(:final parts)) {
+      if (audioItem.value case AudioItem(:final parts)) {
         if (parts.length > 1) {
           final subId = this.subId.firstOrNull;
           final nextIndex = parts.indexWhere((e) => e.subId == subId) + 1;
@@ -758,16 +702,17 @@ class AudioController extends GetxController
     return false;
   }
 
-  void playIndex(int index, {List<Int64>? subId}) {
+  void playIndex(int index, {List<int>? subId}) {
     if (index == this.index && subId == null) return;
     this.index = index;
     final audioItem = playlist![index];
-    final item = audioItem.item;
-    oid = item.oid;
+    oid = audioItem.oid;
     this.subId =
         subId ??
-        (item.subId.isNotEmpty ? item.subId : [audioItem.parts.first.subId]);
-    itemType = item.itemType;
+        (audioItem.subIds.isNotEmpty
+            ? audioItem.subIds.map((e) => e.toInt()).toList()
+            : [audioItem.parts.first.subId]);
+    itemType = audioItem.itemType;
     _queryPlayUrl().then((res) {
       if (res) {
         _videoDetailController = null;
@@ -782,10 +727,8 @@ class AudioController extends GetxController
   @override
   void updateFavCount(int count) {
     try {
-      audioItem.value!.stat
-        ..hasFav = count > 0
-        ..favourite += count;
-      audioItem.refresh();
+      hasFav.value = count > 0;
+      favouriteCount.value += count;
     } catch (_) {}
   }
 
@@ -807,7 +750,7 @@ class AudioController extends GetxController
     }
   }
 
-  void onChangeOrder(ListOrder value) {
+  void onChangeOrder(AudioListOrder value) {
     if (order != value) {
       order = value;
       _queryPlayList(isInit: true);
@@ -855,19 +798,5 @@ class AudioController extends GetxController
     player = null;
     animController.dispose();
     super.onClose();
-  }
-}
-
-extension on DashItem {
-  Iterable<String> get playUrls sync* {
-    yield baseUrl;
-    yield* backupUrl;
-  }
-}
-
-extension on ResponseUrl {
-  Iterable<String> get playUrls sync* {
-    yield url;
-    yield* backupUrl;
   }
 }

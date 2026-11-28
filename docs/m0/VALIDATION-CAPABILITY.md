@@ -57,7 +57,9 @@ Windows 上实跑一轮：**`backdrop-blur` 在 FemtoVG 上生效**（官方文�
 
 - **无障碍只能抓树，不能实读。** `uiautomator dump` 导出的是
   AccessibilityNodeInfo 树，TalkBack 读的也是它，但「树里有这个节点」与
-  「读屏软件念出这句话」是两件事，后者本机答不了。
+  「读屏软件念出这句话」是两件事，后者本机答不了。**2026-11-28 起这条不再是
+  缺口**：项目不适配无障碍（RFC-0001 §1.2），抓树只作为「屏幕上确实有这个
+  控件」的取证手段保留。
 - **中文组字驱动不了。** `adb input text` 直接上屏，走的不是输入法的组字
   路径；候选栏要在屏幕上点，脚本点不了。要验这一项得有带硬件键盘的设备或
   一个测试用 IME。
@@ -188,7 +190,7 @@ Windows 安装包与 portable 同源：`windows/packaging/exe/inno_setup.iss` �
 本节只证明「编出来了、装进去了」。
 
 **CI 能证明的**（前提是手动 dispatch 了对应 workflow）：编译通过、依赖完整、单测与协议 fixture 通过。
-**CI 证明不了的**（全部是本项目的核心风险）：硬解、Slint + libmpv 同窗合成、PiP、后台音频、音频焦点、中文 IME、VoiceOver/TalkBack、渲染性能。CI runner 是虚拟化的，`hwdec` 必然回落软解。
+**CI 证明不了的**（全部是本项目的核心风险）：硬解、Slint + libmpv 同窗合成、PiP、后台音频、音频焦点、中文 IME、渲染性能。CI runner 是虚拟化的，`hwdec` 必然回落软解。
 
 性能基线（RFC §8.1 的八项指标）**必须固定在同一台机器采样**，CI runner 的性能抖动使其数据不可比。
 
@@ -701,9 +703,10 @@ Tab 焦点轮转、外部按键与中文 IME 上屏、UIA 无障碍树（角色/
 
 **三条边界，不写明就会被当成已验**：
 
-1. **UIA ≠ 读屏实读。** 树里有的，VoiceOver 与 TalkBack 怎么念是另一回事。
-   ~~mac 卡在 #8~~ macOS 已能**脚本化实读**（见下面的补充）；TalkBack 仍只能
-   抓树。
+1. ~~**UIA ≠ 读屏实读。**~~ **2026-11-28 起不适用**：无障碍不在项目范围内
+   （RFC-0001 §1.2）。原文：树里有的，VoiceOver 与 TalkBack 怎么念是另一回事；
+   macOS 已能脚本化实读（见下面的补充），TalkBack 仍只能抓树。UIA / AX 树现在
+   只当取证手段用。
 2. ~~**只有 Windows。**~~ macOS 也跑了一轮（2026-11-23），外部驱动
    `mac/drive.sh` 与 Windows 一一对应，四项自动判定（含简体拼音组字）全过。
    **Android 的中文组字仍没验。**
@@ -713,6 +716,7 @@ Tab 焦点轮转、外部按键与中文 IME 上屏、UIA 无障碍树（角色/
 一样都没有。
 
 **2026-11-23 补充：macOS 上旁白（VoiceOver）可以脚本化实读。**
+（2026-11-28：无障碍移出项目范围后，这套能力**保留但不再是验收项**。）
 `spikes/slint-ui/mac/vo-drive.sh` 用 System Events 发真实的 VO 键，再通过
 AppleScript 读回旁白**刚念的那句话**（`last phrase`），所以记下来的是「念出
 了什么」，不只是「树里有什么」——这是三个平台里唯一能做到这一步的。

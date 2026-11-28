@@ -1,4 +1,5 @@
 import 'package:kilikili/common/style.dart';
+import 'package:kilikili/common/widgets/short_tab_indicator.dart';
 import 'package:kilikili/utils/extension/theme_ext.dart';
 import 'package:kilikili/utils/font_utils.dart';
 import 'package:kilikili/utils/storage_pref.dart';
@@ -60,6 +61,9 @@ abstract final class ThemeUtils {
     final theme = ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
+      tabBarTheme: TabBarThemeData(
+        indicator: ShortTabIndicator(color: colorScheme.primary),
+      ),
       fontFamily: fontFamily,
       textTheme: textTheme,
       appBarTheme: AppBarTheme(

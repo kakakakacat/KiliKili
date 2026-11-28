@@ -7,6 +7,7 @@
 import 'dart:math' as math;
 import 'dart:ui' show SemanticsRole, lerpDouble;
 
+import 'package:kilikili/common/widgets/short_tab_indicator.dart';
 import 'package:kilikili/pages/main/controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show DragStartBehavior;
@@ -1425,6 +1426,9 @@ class _VerticalTabBarState extends State<VerticalTabBar> {
 
     if (widget.indicator != null) {
       return widget.indicator!;
+    }
+    if (tabBarTheme.indicator case final ShortTabIndicator indicator) {
+      return indicator.vertical();
     }
     if (tabBarTheme.indicator != null) {
       return tabBarTheme.indicator!;

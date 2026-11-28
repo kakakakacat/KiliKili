@@ -17,7 +17,7 @@
 - **阶段 2：Slint + Rust Core**。另建 Slint 客户端，复用既有 Core，按页面和平台迁移，最终移除 Flutter 运行时。视频播放采用平台适配层，不能假设 Slint 能直接嵌入所有视频表面。
 - **阶段 3：性能优化 + Bug 修复**。在阶段 1/2 持续保证质量的基础上，集中优化视频、弹幕、图片、滚动、启动时间、CPU、内存和耗电。
 
-**M0 阻断门槛**：阶段 1 启动时限时验证 Slint 视频合成、弹幕覆盖、长列表、富文本、IME 和无障碍。未通过仅阻断 Phase 2 Slint 完整替换；Phase 1 Flutter + Rust Core 仍可独立发布。
+**M0 阻断门槛**：阶段 1 启动时限时验证 Slint 视频合成、弹幕覆盖、长列表、富文本和 IME（无障碍已按 §1.2 移出范围）。未通过仅阻断 Phase 2 Slint 完整替换；Phase 1 Flutter + Rust Core 仍可独立发布。
 
 ## 1. 背景和现状
 
@@ -38,6 +38,11 @@ PiliPlus 是 Flutter 第三方 Bilibili 客户端。当前 `pubspec.yaml` 包含
 - 不在第一阶段重写完整 UI、动画和播放渲染。
 - 不以 Rust 代码行占比作为成功指标。
 - 不承诺规避 iOS 侧载签名有效期、第三方 API 授权或平台审核要求。
+- **不适配无障碍**（读屏的名字/角色/朗读与焦点语义：TalkBack、VoiceOver、UIA）。
+  2026-11-28 仓库所有者决定：所有功能一律不做，Slint 阶段也不做。这是范围取舍，
+  不是技术结论——#10 实测 Windows 与 macOS 这一侧是通的，Android 则是 Slint 后端
+  根本没接。**键盘焦点、Tab 轮转与中文 IME 上屏不在此列**，它们是输入，照常要做、
+  照常是门槛。既有上游代码里的 `Semantics` 等调用不动（无谓改动会变成同步冲突点）。
 
 ### 1.3 边界与假设
 
@@ -277,7 +282,7 @@ PiliPlus-Rust/
 - iOS：优先验证 Slint + libmpv 合成、旋转、安全区、后台音频/画中画；AVPlayerLayer 为备选。（合成、后台音频、画中画已由 SPIKE-004 验证；旋转、安全区未做。AVPlayer 备选实测时用的不是 AVPlayerLayer，而是 `AVPlayerItemVideoOutput` → 与 mpv 同一条零拷贝导入，以便叠加弹幕。）
 - Windows/Linux：窗口句柄、GPU 后端、视频表面、打包依赖；不能因为 macOS 通过就视为完成。
 
-**决策门槛**：若硬解、弹幕覆盖、全屏/输入、富文本、IME、长列表或无障碍不达标，则 Phase 2 No-Go；Phase 1 Flutter + Rust Core 保持独立可发布，并评估替代方案。
+**决策门槛**：若硬解、弹幕覆盖、全屏/输入、富文本、IME 或长列表不达标，则 Phase 2 No-Go；Phase 1 Flutter + Rust Core 保持独立可发布，并评估替代方案。
 
 ## 7. 第二阶段：Slint UI 替换 Flutter（P1）
 
@@ -380,7 +385,7 @@ PiliPlus-Rust/
 | Windows | Actions | ✅ 家中设备 | ✅ d3d11va | 完整验收 |
 | Linux | Actions | ❌ | ❌ | **best-effort** |
 
-- **CI 证明不了核心风险**：硬解、Slint + libmpv 合成、PiP、后台音频、IME、无障碍、渲染性能。CI runner 为虚拟化环境，`hwdec` 必然回落软解。性能基线（§8.1）必须固定同一台机器采样。
+- **CI 证明不了核心风险**：硬解、Slint + libmpv 合成、PiP、后台音频、IME、渲染性能。CI runner 为虚拟化环境，`hwdec` 必然回落软解。性能基线（§8.1）必须固定同一台机器采样。
 - **Linux 降级为 best-effort**：仅保证 Actions 编译通过 + Docker 多发行版 glibc/动态库兼容性矩阵 + Rust Core headless 单测；放弃 vaapi 硬解、Wayland/X11 合成、渲染性能与音频验收。Docker 是编译与兼容性闸门，不是验收手段——macOS 宿主下无 GPU 直通与显示输出。
 - **已评估并排除**：家用 iStoreOS 软路由（x86_64、具备 `/dev/dri`），因 Celeron J1900 为 Bay Trail Gen7，仅支持 H.264 硬解，不支持 HEVC/AV1/DV，且驱动栈（i965）与现代 Linux 桌面（iHD）不一致，验证结论不可外推。
 - **成本**：私有仓库 macOS runner 为 10 倍分钟倍率，需公开仓库、限制触发时机或使用 self-hosted runner。
@@ -409,7 +414,7 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 | ADR-004 | libmpv 与 AVPlayer/Media3 比较、视频合成 | [已批准](adr/ADR-004-player-backend.md)（2026-11-24）；§6 补测见 #210 |
 | ADR-005 | Hive Dart 导出 → Rust SQLite 导入与回滚 | P1-06 前 |
 | ADR-006 | DASH 分轨 mux、URLSession/WorkManager 后台下载 | P1-07 前 |
-| ADR-007 | Slint 视频/列表/富文本/IME/无障碍及失败回退 | M0/M4 |
+| ADR-007 | Slint 视频/列表/富文本/IME 及失败回退（无障碍已出范围，见 §1.2） | M0/M4 |
 | ADR-008 | WBI、协议版本化与上游同步 | M1 |
 | ADR-009 | GPL、播放器依赖和分发合规 | 发布前 |
 | ADR-010 | 弹幕引擎的跨 FFI 形状；正则不等价时整条降级 | P1-05（已批准） |
@@ -436,7 +441,7 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 | R6 | 上游 Bilibili API 变化频繁 | 高/中 | 版本化 Protocol Adapter 和 fixtures | 否 |
 | R7 | 五平台发布/签名/依赖问题 | 中/高 | 早期 CI、逐平台验收 | 是（发布） |
 | R8 | GPL/平台分发条款不满足 | 中/高 | 发布前许可证与合规 Review | 是（发布） |
-| R9 | ~~Slint 列表虚拟化、富文本、IME、无障碍及移动端成熟度~~ → 收敛为四条：**跨元素文本选择**（含表情参与复制）、**嵌套滚动的手势消歧**、**文本测量/自排版**、**Android 上的无障碍**。虚拟化与触控惯性在 Windows + Android 真机上都已验过，不是风险 | 高/高 | SPIKE-003 已跑 Windows、Android 真机与 macOS（含旁白实读）。macOS 那一轮另撞出一条：**`ListView` 的虚拟化对无障碍不透明**，旁白只读得到第一屏（报「1/7」、翻页滚不动），见 `2026-11-23-slint-ui-macos-notes.md` §1.2。前三条见 `2026-11-22-flutter-patches-slint-eval.md` §2；第四条是真机撞出来的：Slint 的 Android 后端**根本没接无障碍**（依赖图里没有 accesskit，TalkBack 读不到任何节点），**应用层绕不过去**，要么给上游提 PR 要么放弃——见 `2026-11-22-slint-ui-android-notes.md` §0。Flutter + Rust Core 为回退 | **是（Phase 2）** |
+| R9 | ~~Slint 列表虚拟化、富文本、IME、无障碍及移动端成熟度~~ → 收敛为三条：**跨元素文本选择**（含表情参与复制）、**嵌套滚动的手势消歧**、**文本测量/自排版**。虚拟化与触控惯性在 Windows + Android 真机上都已验过，不是风险 | 高/高 | SPIKE-003 已跑 Windows、Android 真机与 macOS，三条见 `2026-11-22-flutter-patches-slint-eval.md` §2。**2026-11-28：原第四条「Android 上的无障碍」作废**——无障碍已按 §1.2 移出项目范围，它曾是四条里唯一「应用层绕不过去、只能等上游」的一条，随之 macOS 那条「`ListView` 虚拟化对无障碍不透明」也不再是风险。Flutter + Rust Core 为回退 | **是（Phase 2）** |
 | R11 | ~~基线给 Flutter 框架打 34–37 个补丁，Slint 需全部重新实现~~ → 逐项评估完毕：去重后是 **26 个独立问题**（9 个 material 补丁里 8 个是框架补丁的同形复制），其中 4 个不适用、3 个 Slint 原生、12 个需自写、7 个做不到。**真正的工作量不在补丁，在它们服务的 `lib/common/widgets/flutter/` 那 2.9 万行自写控件** | 高/高 | 评估见 `docs/m0/spikes/2026-11-22-flutter-patches-slint-eval.md`；要排期的清单在该文 §4 | **是（Phase 2）** |
 | R12 | media-kit 系插件未适配 Swift Package Manager，Flutter 将来版本会报错；该 fork 上游不会适配 | 中/中 | 跟踪 Flutter SPM 强制时间点，必要时自行适配 | 否 |
 | R10 | 过早追求纯 Rust 导致过度重写 | 高/中 | 以可验证价值为前提，硬解保留原生 | 否 |
@@ -525,7 +530,7 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 - 断点续传、任务恢复、磁盘配额、失败清理、跨进程恢复需要独立测试。ADR-006 在 P1-07 前通过。
 
 ### 16.5 Slint UI 可行性与线程模型（P0）
-- M0 限时 Spike 除视频外必须包含：大列表虚拟化、评论/动态富文本与表情、中文 IME/焦点、辅助功能 VoiceOver/TalkBack、触控、HiDPI、前后台与窗口生命周期。
+- M0 限时 Spike 除视频外必须包含：大列表虚拟化、评论/动态富文本与表情、中文 IME/焦点、触控、HiDPI、前后台与窗口生命周期。（辅助功能已按 §1.2 移出范围。）
 - Slint UI 只在其事件循环线程被更新；Tokio 处理网络/IO/调度，使用 slint::invoke_from_event_loop 或等价消息队列切换，处理弱引用、任务取消与移动端挂起/恢复。
 - 任一关键风险无法接受则 Phase 2 No-Go，M3 Flutter + Rust Core 保持正式可发布且持续维护。
 
@@ -555,7 +560,7 @@ ADR 路径：docs/architecture/adr/。每篇记录候选、测试证据、决策
 | 移动端 AVPlayer/Media3 候选 | libmpv 优先实测，ADR-004 裁决 → 已实测，ADR-004 定为五端统一 libmpv |
 | Hive 隐含迁移成本 | Dart 导出 + Rust 导入，保留回滚 |
 | DASH 下载/后台任务 | mux + URLSession/WorkManager |
-| Slint 长列表/富文本/IME/无障碍 | Phase 2 阻断风险，M3 可发布回退 |
+| Slint 长列表/富文本/IME | Phase 2 阻断风险，M3 可发布回退 |
 | 线程与运行时生命周期 | Slint 事件循环单线程，Tokio 后台 |
 | Crate 与分层不一致 | 增加明确映射 |
 | 签名与风控协议易变 | bili-protocol 版本化 |

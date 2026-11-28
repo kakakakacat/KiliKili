@@ -6,7 +6,8 @@ param(
 $ErrorActionPreference = 'Stop'
 if (-not $IsWindows -or $TargetPlatform -ne 'android') { exit 0 }
 
-$longPaths = git -C $RepoPath config --get core.longpaths 2>$null
+# pub 在仓库外检出 git 依赖，本仓库的 local 配置不能作为它的前置条件。
+$longPaths = git -C $env:TEMP config --get core.longpaths 2>$null
 if ($LASTEXITCODE -ne 0 -or $longPaths -ne 'true') {
     [Console]::Error.WriteLine('Windows Android 构建前置检查失败：git core.longpaths 未开启。pub 的 git 依赖可能静默缺文件，随后 javac 报「找不到符号」。运行 git config --global core.longpaths true，再删除已损坏的 pub cache/git 检出并运行 flutter pub get。')
     exit 1

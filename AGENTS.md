@@ -355,7 +355,8 @@ PR**，不要只留在代码和 Issues 里：
   这条判断的唯一出处，`patch.ps1` 与 `prepare-build.sh` 都调它——别再在任何
   一侧写死路径（#175）。
 - Windows 宿主打 Android 包时，先运行 `tool/prepare-build.sh android` 的前置
-  检查（#232）：`git config --get core.longpaths` 必须为 `true`，否则 pub 的
+  检查（#232）：在仓库外执行的 `git config --get core.longpaths` 必须为
+  `true`，否则 pub 的
   git 依赖可能静默缺文件，最终报「找不到符号」；修复后须删掉受损的 git
   依赖检出再 `flutter pub get`。项目与 pub cache 跨盘符时，Kotlin 增量编译
   可能报 `Could not close incremental caches`；在本机

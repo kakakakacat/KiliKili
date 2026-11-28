@@ -117,7 +117,7 @@ The getter 'popGestureEnabled_' isn't defined for the type 'PageRoute<T>'.
 
 | 条件 | 失败时看到的症状 | 本机修法 |
 |---|---|---|
-| `git config --get core.longpaths` 为 `true` | pub 的 git 依赖检出静默少文件，随后 javac 报「找不到符号」（如 `ChromeCustomTabsChannelDelegate`） | `git config --global core.longpaths true`；删掉已损坏的 `pub cache/git` 中对应依赖检出，再运行 `flutter pub get` |
+| 在仓库外执行 `git config --get core.longpaths` 为 `true` | pub 的 git 依赖检出静默少文件，随后 javac 报「找不到符号」（如 `ChromeCustomTabsChannelDelegate`） | `git config --global core.longpaths true`；删掉已损坏的 `pub cache/git` 中对应依赖检出，再运行 `flutter pub get` |
 | 项目与 pub cache 同盘符 | Kotlin 报 `Could not close incremental caches`，内层异常是 `this and base files have different roots`；删缓存重跑仍失败 | 在本机 `~/.gradle/gradle.properties` 设置 `kotlin.incremental=false`，或把 `PUB_CACHE` 移到项目所在盘；脚本只警告 |
 | 所钉 NDK 版本存在 `package.xml` | Cargokit 记 `SEVERE`，Gradle 却可能成功产出缺少 `libbridge_flutter.so` 的 APK，启动后提示「Rust Core 未就绪」 | 用 `sdkmanager` 安装该版本，或给手工解压的 NDK 补与版本匹配的 `package.xml`；脚本会报错退出 |
 

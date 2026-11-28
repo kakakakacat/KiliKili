@@ -123,13 +123,13 @@ jobs:
         continue-on-error: true
 
       - name: Rename DMG
-        run: mv KiliKili*.dmg KiliKili_macos_${{ env.version }}.dmg
+        run: mv KiliKili*.dmg KiliKili_macos_${{ env.file_version }}.dmg
 
       # 同 linux_x64.yml。这一步在 macOS 上尤其有意义：上面的 create-dmg
       # 同时带了 `|| true` 和 continue-on-error，失败不会让构建变红。
       - name: 校验产物体积
         run: |
-          f="KiliKili_macos_${{ env.version }}.dmg"
+          f="KiliKili_macos_${{ env.file_version }}.dmg"
           if [ ! -f "$f" ]; then
             printf "缺失: %s\n" "$f"
             exit 1
@@ -154,7 +154,7 @@ jobs:
           NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
         run: |
           set -euo pipefail
-          DMG="KiliKili_macos_${{ env.version }}.dmg"
+          DMG="KiliKili_macos_${{ env.file_version }}.dmg"
 
           codesign --force --timestamp --sign "$IDENTITY" "$DMG"
           codesign --verify --strict --verbose=2 "$DMG"

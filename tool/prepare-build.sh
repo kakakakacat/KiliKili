@@ -35,8 +35,17 @@ git -C "$FLUTTER_ROOT" reset --hard HEAD --quiet
 git -C "$FLUTTER_ROOT" clean -fd --quiet
 
 echo "[2/4] 清除 pub cache 中被打过补丁的包"
-rm -rf "$HOME"/.pub-cache/hosted/pub.dev/cupertino_ui-* \
-       "$HOME"/.pub-cache/hosted/pub.dev/material_ui-*
+# 位置与 patch.ps1 用同一处判断（#175）：写死 ~/.pub-cache 的话，
+# 在 Windows 上这一步是静默空操作——rm -rf 对不存在的路径不报错。
+PUB_CACHE_DIR="$(pwsh -NoProfile -File lib/scripts/pub-cache.ps1 | tr -d "\r")"
+[ -n "$PUB_CACHE_DIR" ] || { echo "无法判断 pub cache 位置" >&2; exit 1; }
+echo "      pub cache: $PUB_CACHE_DIR"
+for dir in "$PUB_CACHE_DIR"/hosted/pub.dev/cupertino_ui-* \
+           "$PUB_CACHE_DIR"/hosted/pub.dev/material_ui-*; do
+    [ -e "$dir" ] || continue
+    echo "      删除 $dir"
+    rm -rf "$dir"
+done
 
 echo "[3/4] 重新拉取依赖"
 flutter pub get

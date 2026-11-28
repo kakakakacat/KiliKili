@@ -137,6 +137,12 @@ fn find_target_index(ids: impl IntoIterator<Item = i64>, prefer_id: i64) -> Opti
     selected.or(lowest).map(|(index, _)| index)
 }
 
+/// listener 音频沿用 `findTargetMedia` 的原始 id 比较，不走 DASH 音质 rank。
+#[must_use]
+pub fn find_target_media_index(ids: &[i64], prefer_id: i64) -> Option<usize> {
+    find_target_index(ids.iter().copied(), prefer_id)
+}
+
 /// 基线 `VideoUtils.selectCodec`：按用户偏好的顺序挑第一个可用格式。
 ///
 /// `prefer` 为空、或一个都没命中时，退回「列表里第一条流的格式」——

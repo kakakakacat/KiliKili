@@ -3,6 +3,7 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
+import 'package:kilikili/rust/api/audio.dart';
 import 'package:kilikili/rust/api/cover_scrim.dart';
 import 'package:kilikili/rust/api/danmaku.dart';
 import 'package:kilikili/rust/api/dynamic.dart';
@@ -127,7 +128,40 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AtFeedResult dco_decode_at_feed_result(dynamic raw);
 
   @protected
+  AudioItem dco_decode_audio_item(dynamic raw);
+
+  @protected
+  AudioListOrder dco_decode_audio_list_order(dynamic raw);
+
+  @protected
+  AudioPart dco_decode_audio_part(dynamic raw);
+
+  @protected
+  AudioPlayback dco_decode_audio_playback(dynamic raw);
+
+  @protected
+  AudioPlaybackResult dco_decode_audio_playback_result(dynamic raw);
+
+  @protected
+  AudioPlaylist dco_decode_audio_playlist(dynamic raw);
+
+  @protected
+  AudioPlaylistQuery dco_decode_audio_playlist_query(dynamic raw);
+
+  @protected
+  AudioPlaylistResult dco_decode_audio_playlist_result(dynamic raw);
+
+  @protected
+  AudioPlaylistSource dco_decode_audio_playlist_source(dynamic raw);
+
+  @protected
   AudioSelectionResult dco_decode_audio_selection_result(dynamic raw);
+
+  @protected
+  AudioWrite dco_decode_audio_write(dynamic raw);
+
+  @protected
+  AudioWriteResult dco_decode_audio_write_result(dynamic raw);
 
   @protected
   BgmRecommend dco_decode_bgm_recommend(dynamic raw);
@@ -177,6 +211,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   AtFeedContent dco_decode_box_autoadd_at_feed_content(dynamic raw);
+
+  @protected
+  AudioPlayback dco_decode_box_autoadd_audio_playback(dynamic raw);
+
+  @protected
+  AudioPlaylist dco_decode_box_autoadd_audio_playlist(dynamic raw);
+
+  @protected
+  AudioPlaylistQuery dco_decode_box_autoadd_audio_playlist_query(dynamic raw);
+
+  @protected
+  AudioPlaylistSource dco_decode_box_autoadd_audio_playlist_source(dynamic raw);
+
+  @protected
+  AudioWrite dco_decode_box_autoadd_audio_write(dynamic raw);
 
   @protected
   BlackList dco_decode_box_autoadd_black_list(dynamic raw);
@@ -1393,6 +1442,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<AtFeedItem> dco_decode_list_at_feed_item(dynamic raw);
 
   @protected
+  List<AudioItem> dco_decode_list_audio_item(dynamic raw);
+
+  @protected
+  List<AudioPart> dco_decode_list_audio_part(dynamic raw);
+
+  @protected
   List<BgmRecommend> dco_decode_list_bgm_recommend(dynamic raw);
 
   @protected
@@ -2250,6 +2305,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   AtFeedContent? dco_decode_opt_box_autoadd_at_feed_content(dynamic raw);
+
+  @protected
+  AudioPlayback? dco_decode_opt_box_autoadd_audio_playback(dynamic raw);
+
+  @protected
+  AudioPlaylist? dco_decode_opt_box_autoadd_audio_playlist(dynamic raw);
+
+  @protected
+  AudioPlaylistSource? dco_decode_opt_box_autoadd_audio_playlist_source(
+    dynamic raw,
+  );
+
+  @protected
+  AudioWrite? dco_decode_opt_box_autoadd_audio_write(dynamic raw);
 
   @protected
   BlackList? dco_decode_opt_box_autoadd_black_list(dynamic raw);
@@ -4067,9 +4136,50 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AtFeedResult sse_decode_at_feed_result(SseDeserializer deserializer);
 
   @protected
+  AudioItem sse_decode_audio_item(SseDeserializer deserializer);
+
+  @protected
+  AudioListOrder sse_decode_audio_list_order(SseDeserializer deserializer);
+
+  @protected
+  AudioPart sse_decode_audio_part(SseDeserializer deserializer);
+
+  @protected
+  AudioPlayback sse_decode_audio_playback(SseDeserializer deserializer);
+
+  @protected
+  AudioPlaybackResult sse_decode_audio_playback_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  AudioPlaylist sse_decode_audio_playlist(SseDeserializer deserializer);
+
+  @protected
+  AudioPlaylistQuery sse_decode_audio_playlist_query(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  AudioPlaylistResult sse_decode_audio_playlist_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  AudioPlaylistSource sse_decode_audio_playlist_source(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   AudioSelectionResult sse_decode_audio_selection_result(
     SseDeserializer deserializer,
   );
+
+  @protected
+  AudioWrite sse_decode_audio_write(SseDeserializer deserializer);
+
+  @protected
+  AudioWriteResult sse_decode_audio_write_result(SseDeserializer deserializer);
 
   @protected
   BgmRecommend sse_decode_bgm_recommend(SseDeserializer deserializer);
@@ -4133,6 +4243,29 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AtFeedContent sse_decode_box_autoadd_at_feed_content(
     SseDeserializer deserializer,
   );
+
+  @protected
+  AudioPlayback sse_decode_box_autoadd_audio_playback(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  AudioPlaylist sse_decode_box_autoadd_audio_playlist(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  AudioPlaylistQuery sse_decode_box_autoadd_audio_playlist_query(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  AudioPlaylistSource sse_decode_box_autoadd_audio_playlist_source(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  AudioWrite sse_decode_box_autoadd_audio_write(SseDeserializer deserializer);
 
   @protected
   BlackList sse_decode_box_autoadd_black_list(SseDeserializer deserializer);
@@ -5717,6 +5850,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<AtFeedItem> sse_decode_list_at_feed_item(SseDeserializer deserializer);
 
   @protected
+  List<AudioItem> sse_decode_list_audio_item(SseDeserializer deserializer);
+
+  @protected
+  List<AudioPart> sse_decode_list_audio_part(SseDeserializer deserializer);
+
+  @protected
   List<BgmRecommend> sse_decode_list_bgm_recommend(
     SseDeserializer deserializer,
   );
@@ -6836,6 +6975,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   AtFeedContent? sse_decode_opt_box_autoadd_at_feed_content(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  AudioPlayback? sse_decode_opt_box_autoadd_audio_playback(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  AudioPlaylist? sse_decode_opt_box_autoadd_audio_playlist(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  AudioPlaylistSource? sse_decode_opt_box_autoadd_audio_playlist_source(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  AudioWrite? sse_decode_opt_box_autoadd_audio_write(
     SseDeserializer deserializer,
   );
 
@@ -9209,8 +9368,59 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_at_feed_result(AtFeedResult self, SseSerializer serializer);
 
   @protected
+  void sse_encode_audio_item(AudioItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_audio_list_order(
+    AudioListOrder self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_audio_part(AudioPart self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_audio_playback(AudioPlayback self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_audio_playback_result(
+    AudioPlaybackResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_audio_playlist(AudioPlaylist self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_audio_playlist_query(
+    AudioPlaylistQuery self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_audio_playlist_result(
+    AudioPlaylistResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_audio_playlist_source(
+    AudioPlaylistSource self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_audio_selection_result(
     AudioSelectionResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_audio_write(AudioWrite self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_audio_write_result(
+    AudioWriteResult self,
     SseSerializer serializer,
   );
 
@@ -9286,6 +9496,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_at_feed_content(
     AtFeedContent self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_audio_playback(
+    AudioPlayback self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_audio_playlist(
+    AudioPlaylist self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_audio_playlist_query(
+    AudioPlaylistQuery self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_audio_playlist_source(
+    AudioPlaylistSource self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_audio_write(
+    AudioWrite self,
     SseSerializer serializer,
   );
 
@@ -11402,6 +11642,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_audio_item(
+    List<AudioItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_audio_part(
+    List<AudioPart> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_bgm_recommend(
     List<BgmRecommend> self,
     SseSerializer serializer,
@@ -12889,6 +13141,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_at_feed_content(
     AtFeedContent? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_audio_playback(
+    AudioPlayback? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_audio_playlist(
+    AudioPlaylist? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_audio_playlist_source(
+    AudioPlaylistSource? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_audio_write(
+    AudioWrite? self,
     SseSerializer serializer,
   );
 

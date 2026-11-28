@@ -30,6 +30,17 @@ const ROOTS: &[&str] = &[
     ".bilibili.main.community.reply.v1.SearchItemReply",
     ".bilibili.main.community.reply.v1.TranslateReplyReq",
     ".bilibili.main.community.reply.v1.TranslateReplyResp",
+    // 音频播放器（S16 / issue #203）：五条 listener unary。
+    ".bilibili.app.listener.v1.PlayURLReq",
+    ".bilibili.app.listener.v1.PlayURLResp",
+    ".bilibili.app.listener.v1.PlaylistReq",
+    ".bilibili.app.listener.v1.PlaylistResp",
+    ".bilibili.app.listener.v1.ThumbUpReq",
+    ".bilibili.app.listener.v1.ThumbUpResp",
+    ".bilibili.app.listener.v1.TripleLikeReq",
+    ".bilibili.app.listener.v1.TripleLikeResp",
+    ".bilibili.app.listener.v1.CoinAddReq",
+    ".bilibili.app.listener.v1.CoinAddResp",
     // ── IM（S12 续单 / issue #63）───────────────────────────────────
     // 注意：**服务路径与消息 package 不一样**。路径是
     // `/bilibili.im.interface.v1.ImInterface`（interface，单数），而描述符
@@ -110,6 +121,79 @@ const ROOTS: &[&str] = &[
 /// 规则，下次上游新加的同名字段会被悄悄放行或剪掉，两种都不是我们想要
 /// 的。要显示新字段时在这里加一行即可，解析层加字段向后兼容。
 const KEEP: &[(&str, &[&str])] = &[
+    // 音频只保留当前播放器会读取的字段，避免 DetailItem 的其它子树扩散。
+    (
+        ".bilibili.app.listener.v1.DetailItem",
+        &["item", "arc", "parts", "owner", "stat", "associated_item"],
+    ),
+    (
+        ".bilibili.app.listener.v1.PlayItem",
+        &["item_type", "oid", "sub_id"],
+    ),
+    (
+        ".bilibili.app.listener.v1.BKArchive",
+        &[
+            "title",
+            "cover",
+            "desc",
+            "duration",
+            "publish",
+            "displayed_oid",
+            "copyright",
+        ],
+    ),
+    (
+        ".bilibili.app.listener.v1.Author",
+        &["mid", "name", "avatar"],
+    ),
+    (
+        ".bilibili.app.listener.v1.BKArcPart",
+        &["oid", "sub_id", "title"],
+    ),
+    (
+        ".bilibili.app.listener.v1.BKStat",
+        &[
+            "like",
+            "coin",
+            "favourite",
+            "reply",
+            "share",
+            "view",
+            "has_like",
+            "has_coin",
+            "has_fav",
+        ],
+    ),
+    (".bilibili.app.listener.v1.PlayURLResp", &["player_info"]),
+    (
+        ".bilibili.app.listener.v1.PlayInfo",
+        &["volume", "play_url", "play_dash"],
+    ),
+    (".bilibili.app.listener.v1.PlayDASH", &["audio"]),
+    (
+        ".bilibili.app.listener.v1.DashItem",
+        &["id", "base_url", "backup_url"],
+    ),
+    (
+        ".bilibili.app.listener.v1.ResponseUrl",
+        &["url", "backup_url"],
+    ),
+    (
+        ".bilibili.app.listener.v1.PlaylistResp",
+        &["reach_start", "reach_end", "list", "pagination_reply"],
+    ),
+    (
+        ".bilibili.app.playurl.v1.VolumeInfo",
+        &[
+            "measured_i",
+            "measured_lra",
+            "measured_tp",
+            "measured_threshold",
+            "target_offset",
+            "target_i",
+            "target_tp",
+        ],
+    ),
     // ── 列表响应：只有分页、评论本体、评论区状态与两张卡有消费者 ──
     (
         ".bilibili.main.community.reply.v1.MainListReply",

@@ -573,3 +573,12 @@ CI 的 `tool/proto-generate.sh --check` 跑的是 `diff -ru`，确实会报
 Dart 子树从机械快照恢复」）。这次照做，但顺序值得写下来：**先抄快照、
 跑一次 `--check` 确认生成器自洽，再删子树。** 反过来做的话，快照只能从
 git 历史里捞，而那时你已经不确定该捞哪个版本了。
+
+### 补充五：S16 音频的 listener 子树（#203）
+
+五条 listener 请求共用 `bilibili.app.listener.v1` 描述符。生成器按实际
+消费者保留列表项、取流、写操作所需字段，并在删除旧 Dart pb 前将
+`v1.pbjson.dart` 复制到 `tool/proto-generator/inputs/bilibili/app/listener/`。
+`lib/grpc/bilibili/app/listener/` 的三个生成文件与 `lib/grpc/audio.dart`
+一起删除；`lib/grpc/view.dart` 无调用点，同片删除。其余 protobuf
+子树仍有独立消费者，本片不扩大删除面。

@@ -28,6 +28,7 @@
 //! crate 内可见；对外只返回 `bili_domain` 的实体。接口加字段、改类型、
 //! 换嵌套层级都止步于此。
 
+pub mod audio;
 pub mod client;
 pub mod danmaku;
 pub mod danmaku_filter;

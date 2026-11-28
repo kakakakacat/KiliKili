@@ -60,3 +60,9 @@ pub const IM_SET_SETTINGS: &str = "/bilibili.app.im.v1.im/SetImSettings";
 pub const IM_KEYWORD_BLOCKING_LIST: &str = "/bilibili.app.im.v1.im/KeywordBlockingList";
 pub const IM_KEYWORD_BLOCKING_ADD: &str = "/bilibili.app.im.v1.im/KeywordBlockingAdd";
 pub const IM_KEYWORD_BLOCKING_DELETE: &str = "/bilibili.app.im.v1.im/KeywordBlockingDelete";
+
+pub const AUDIO_PLAY_URL: &str = "/bilibili.app.listener.v1.Listener/PlayURL";
+pub const AUDIO_PLAYLIST: &str = "/bilibili.app.listener.v1.Listener/Playlist";
+pub const AUDIO_THUMB_UP: &str = "/bilibili.app.listener.v1.Listener/ThumbUp";
+pub const AUDIO_TRIPLE_LIKE: &str = "/bilibili.app.listener.v1.Listener/TripleLike";
+pub const AUDIO_COIN_ADD: &str = "/bilibili.app.listener.v1.Listener/CoinAdd";

@@ -2,8 +2,8 @@ import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/image_save.dart';
 import 'package:kilikili/common/widgets/select_mask.dart';
 import 'package:kilikili/common/widgets/video_card/cover_scrim_card.dart';
-import 'package:kilikili/grpc/bilibili/app/listener/v1.pbenum.dart'
-    show PlaylistSource;
+import 'package:kilikili/services/rust/rust_audio.dart'
+    show AudioPlaylistSource;
 import 'package:kilikili/models/common/badge_type.dart';
 import 'package:kilikili/models/common/stat_type.dart';
 import 'package:kilikili/services/rust/rust_fav.dart';
@@ -43,7 +43,7 @@ class FavVideoCardH extends StatelessWidget {
         AudioPage.toAudioPage(
           oid: item.id!,
           itemType: 3,
-          from: PlaylistSource.AUDIO_CARD,
+          from: AudioPlaylistSource.audioCard,
         );
         break;
       case 24:

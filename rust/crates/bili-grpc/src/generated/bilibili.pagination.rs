@@ -17,3 +17,17 @@ pub struct FeedPaginationReply {
     #[prost(string, optional, tag = "3")]
     pub last_read_offset: ::core::option::Option<::prost::alloc::string::String>,
 }
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct Pagination {
+    #[prost(int32, optional, tag = "1")]
+    pub page_size: ::core::option::Option<i32>,
+    #[prost(string, optional, tag = "2")]
+    pub next: ::core::option::Option<::prost::alloc::string::String>,
+}
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct PaginationReply {
+    #[prost(string, optional, tag = "1")]
+    pub next: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(string, optional, tag = "2")]
+    pub prev: ::core::option::Option<::prost::alloc::string::String>,
+}

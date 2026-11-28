@@ -8,8 +8,8 @@ import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/pair.dart';
 import 'package:kilikili/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:kilikili/common/widgets/scaffold/mini_scaffold.dart';
-import 'package:kilikili/grpc/bilibili/app/listener/v1.pbenum.dart'
-    show PlaylistSource;
+import 'package:kilikili/services/rust/rust_audio.dart'
+    show AudioPlaylistSource;
 import 'package:kilikili/grpc/dm.dart';
 import 'package:kilikili/http/browser_ua.dart';
 import 'package:kilikili/services/rust/rust_fav.dart';
@@ -1479,7 +1479,7 @@ class VideoDetailController extends GetxController
   void toAudioPage() {
     int? id;
     int? extraId;
-    PlaylistSource from = PlaylistSource.UP_ARCHIVE;
+    AudioPlaylistSource from = AudioPlaylistSource.upArchive;
     if (isPlayAll) {
       id = args['mediaId'];
       extraId = sourceType.extraId;
@@ -1489,7 +1489,7 @@ class VideoDetailController extends GetxController
         id = ugcIntroCtr.videoDetail.value.ugcSeason?.id;
         if (id != null) {
           extraId = 8;
-          from = PlaylistSource.MEDIA_LIST;
+          from = AudioPlaylistSource.mediaList;
         }
       } catch (_) {}
     }

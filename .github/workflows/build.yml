@@ -134,7 +134,7 @@ jobs:
               run: |
                   for file in build/app/outputs/flutter-apk/app-*-release.apk; do
                     abi=$(echo "$file" | sed -E 's|.*app-(.*)-release\.apk|\1|')
-                    mv "$file" "KiliKili_android_${{ env.version }}_${abi}.apk"
+                    mv "$file" "KiliKili_android_${{ env.file_version }}_${abi}.apk"
                   done
               shell: bash
 

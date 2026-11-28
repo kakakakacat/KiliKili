@@ -16,11 +16,16 @@
 
 ## 适配平台
 
-- [x] Android
-- [x] iOS / iPad
-- [x] macOS
-- [x] Windows
-- [x] Linux
+| 平台 | 最低系统版本 |
+| --- | --- |
+| Android | 7.0（API 24） |
+| iOS / iPadOS | 15.0 |
+| macOS | 12 Monterey |
+| Windows | 10（64 位） |
+| Linux | glibc 2.38+（实验性，未在真机上测试过） |
+
+除 Android 外的安装包都没有开发者签名，装之前要绕过系统拦截，办法写在
+[Release 页](https://github.com/kakakakacat/KiliKili/releases/latest)上。
 
 ## 特点
 
@@ -42,10 +47,11 @@
 | 玻璃界面扩展 | [#224](https://github.com/kakakakacat/KiliKili/issues/224) |
 | 更灵活的倍速 | [#291](https://github.com/kakakakacat/KiliKili/issues/291) |
 | 动态头像 | [#292](https://github.com/kakakakacat/KiliKili/issues/292) |
+| 酷炫皮肤 | [#316](https://github.com/kakakakacat/KiliKili/issues/316) |
 
 ## 下载
 
-[Releases](https://github.com/kakakakacat/KiliKili/releases)（尚未发布） · [反馈](https://github.com/kakakakacat/KiliKili/issues)
+[最新版本](https://github.com/kakakakacat/KiliKili/releases/latest) · [全部版本](https://github.com/kakakakacat/KiliKili/releases) · [反馈](https://github.com/kakakakacat/KiliKili/issues)
 
 ## 致谢
 

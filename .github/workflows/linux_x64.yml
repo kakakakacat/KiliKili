@@ -119,13 +119,13 @@ jobs:
         run: flutter build linux --release --dart-define-from-file=pili_release.json --no-pub
 
       - name: Package .tar.gz
-        run: tar -zcvf KiliKili_linux_${{ env.version }}_amd64.tar.gz -C build/linux/x64/release/bundle .
+        run: tar -zcvf KiliKili_linux_${{ env.file_version }}_amd64.tar.gz -C build/linux/x64/release/bundle .
 
       - name: Packege deb
         run: |
           printf "建立构建目录...\n"
-          mkdir "KiliKili_linux_${{ env.version }}_amd64"
-          pushd "KiliKili_linux_${{ env.version }}_amd64"
+          mkdir "KiliKili_linux_${{ env.file_version }}_amd64"
+          pushd "KiliKili_linux_${{ env.file_version }}_amd64"
           mkdir -p opt/KiliKili
           mkdir -p usr/share/applications
           mkdir -p usr/share/icons/hicolor/512x512/apps
@@ -203,8 +203,8 @@ jobs:
 
           printf "打包 deb 文件...\n"
           popd
-          dpkg-deb --build --verbose --root-owner-group "KiliKili_linux_${{ env.version }}_amd64"
-          printf "完成: KiliKili_linux_%s_amd64.deb\n" "${{ env.version }}"
+          dpkg-deb --build --verbose --root-owner-group "KiliKili_linux_${{ env.file_version }}_amd64"
+          printf "完成: KiliKili_linux_%s_amd64.deb\n" "${{ env.file_version }}"
         shell: bash
 
       - name: Packege rpm
@@ -290,7 +290,7 @@ jobs:
           # 后找到的会静默覆盖先找到的。装了 elfutils 之后 rpmbuild 会额外产出
           # kilikili-debuginfo-*.rpm，于是发布的 RPM 成了只含调试符号的 11KB
           # 空壳，而构建依旧是绿的。显式选包 + 数量校验，不再依赖 find 的顺序。
-          TARGET="KiliKili_linux_${{ env.version }}_amd64.rpm"
+          TARGET="KiliKili_linux_${{ env.file_version }}_amd64.rpm"
           mapfile -t RPM_FILES < <(find "$RPM_BUILD_ROOT/RPMS" -type f -name 'kilikili-*.rpm' \
             ! -name '*-debuginfo-*' ! -name '*-debugsource-*' | sort)
           if [ "${#RPM_FILES[@]}" -ne 1 ]; then
@@ -365,9 +365,9 @@ jobs:
           # 签名，得钉一个确定能用的 appimagetool 版本，并重新实测产物体积——
           # 别只看 `[sign] Success`。
           printf "打包 AppImage...\n"
-          ARCH=x86_64 ./appimagetool-x86_64.AppImage "$APPDIR" "KiliKili_linux_${{ env.version }}_amd64.AppImage"
+          ARCH=x86_64 ./appimagetool-x86_64.AppImage "$APPDIR" "KiliKili_linux_${{ env.file_version }}_amd64.AppImage"
 
-          printf "完成: KiliKili_linux_%s_amd64.AppImage\n" "${{ env.version }}"
+          printf "完成: KiliKili_linux_%s_amd64.AppImage\n" "${{ env.file_version }}"
         shell: bash
 
       # 签名分两类，缺一不可：
@@ -381,7 +381,7 @@ jobs:
           FPR: ${{ steps.signing.outputs.fingerprint }}
         run: |
           set -euo pipefail
-          V="${{ env.version }}"
+          V="${{ env.file_version }}"
 
           printf "签名 RPM...\n"
           # rpmsign 只认 ~/.rpmmacros 里的 %_gpg_name，没有等价的命令行参数。
@@ -405,7 +405,7 @@ jobs:
       - name: 生成 SHA256SUMS
         run: |
           set -euo pipefail
-          V="${{ env.version }}"
+          V="${{ env.file_version }}"
           sha256sum \
             "KiliKili_linux_${V}_amd64.tar.gz" \
             "KiliKili_linux_${V}_amd64.deb" \
@@ -420,7 +420,7 @@ jobs:
           FPR: ${{ steps.signing.outputs.fingerprint }}
         run: |
           set -euo pipefail
-          V="${{ env.version }}"
+          V="${{ env.file_version }}"
           for f in \
             "KiliKili_linux_${V}_amd64.tar.gz" \
             "KiliKili_linux_${V}_amd64.deb" \
@@ -442,7 +442,7 @@ jobs:
           KEYIDS: ${{ steps.signing.outputs.keyids }}
         run: |
           set -euo pipefail
-          V="${{ env.version }}"
+          V="${{ env.file_version }}"
           TARGZ="KiliKili_linux_${V}_amd64.tar.gz"
           DEB="KiliKili_linux_${V}_amd64.deb"
           RPM="KiliKili_linux_${V}_amd64.rpm"
@@ -512,10 +512,10 @@ jobs:
               printf "OK:   %s = %s 字节\n" "$1" "$size"
             fi
           }
-          check "KiliKili_linux_${{ env.version }}_amd64.tar.gz"   10000000
-          check "KiliKili_linux_${{ env.version }}_amd64.deb"       8000000
-          check "KiliKili_linux_${{ env.version }}_amd64.rpm"      10000000
-          check "KiliKili_linux_${{ env.version }}_amd64.AppImage" 10000000
+          check "KiliKili_linux_${{ env.file_version }}_amd64.tar.gz"   10000000
+          check "KiliKili_linux_${{ env.file_version }}_amd64.deb"       8000000
+          check "KiliKili_linux_${{ env.file_version }}_amd64.rpm"      10000000
+          check "KiliKili_linux_${{ env.file_version }}_amd64.AppImage" 10000000
           exit "$fail"
         shell: bash
 

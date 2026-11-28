@@ -16,11 +16,16 @@
 
 ## Platforms
 
-- [x] Android
-- [x] iOS / iPad
-- [x] macOS
-- [x] Windows
-- [x] Linux
+| Platform | Minimum OS |
+| --- | --- |
+| Android | 7.0 (API 24) |
+| iOS / iPadOS | 15.0 |
+| macOS | 12 Monterey |
+| Windows | 10 (64-bit) |
+| Linux | glibc 2.38+ (experimental, never run on real hardware) |
+
+Every build except Android is unsigned, so you have to get past the OS warning first;
+the steps are on the [release page](https://github.com/kakakakacat/KiliKili/releases/latest).
 
 ## Highlights
 
@@ -42,10 +47,11 @@
 | Liquid Glass everywhere | [#224](https://github.com/kakakakacat/KiliKili/issues/224) |
 | Flexible playback speed | [#291](https://github.com/kakakakacat/KiliKili/issues/291) |
 | Animated avatars | [#292](https://github.com/kakakakacat/KiliKili/issues/292) |
+| Fancy skins | [#316](https://github.com/kakakakacat/KiliKili/issues/316) |
 
 ## Download
 
-[Releases](https://github.com/kakakakacat/KiliKili/releases) (none yet) · [Feedback](https://github.com/kakakakacat/KiliKili/issues)
+[Latest release](https://github.com/kakakakacat/KiliKili/releases/latest) · [All releases](https://github.com/kakakakacat/KiliKili/releases) · [Feedback](https://github.com/kakakakacat/KiliKili/issues)
 
 ## Thanks
 

@@ -15,7 +15,7 @@ Windows 那一跑不改变下面的顺序（macOS 仍然先行），它回答的
 
 1. **macOS first**: minimal Slint window with embedded libmpv video and true overlay danmaku; run audio-video DASH, pause, seek, fullscreen and window resize.
 2. **Android second**: media surface layering, gestures, lifecycle/rotation, hardware acceleration, background audio, PiP feasibility.
-3. **UI viability in parallel**: large lazy list scroll, rich comments with emoji/image/text, Chinese/English IME composition, focus and screen reader accessibility.
+3. **UI viability in parallel**: large lazy list scroll, rich comments with emoji/image/text, Chinese/English IME composition and focus. Screen reader accessibility is **out of project scope** (2026-11-28 owner decision, RFC-0001 §1.2) and is no longer part of this spike or of any gate below.
 4. **iOS risk review early**: libmpv build and native surface/PiP/background audio integration evidence; complete real-device gate before shipping iOS Slint build.
 5. **Windows/Linux**: build integration and window/compositor checks after macOS+Android gates; GUI validation cannot be replaced by CI build.
 
@@ -31,14 +31,14 @@ Record per experiment:
 
 ## Explicit Go / No-Go
 
-Phase 2 Slint migration is **NO-GO** if video compositing/overlay, mobile lifecycle, large lists, essential rich text, IME or accessibility cannot meet acceptable functional quality. Phase 1 Flutter + Rust Core remains a valid stable release.
+Phase 2 Slint migration is **NO-GO** if video compositing/overlay, mobile lifecycle, large lists, essential rich text or IME cannot meet acceptable functional quality. Phase 1 Flutter + Rust Core remains a valid stable release.
 
 ## Initial backlog
 
 - [~] M0-SPIKE-01: macOS libmpv + Slint video + danmaku overlay
       （实验台与记录位就绪；macOS 实跑未做，见 [spikes/SPIKE-001-macos.md](spikes/SPIKE-001-macos.md)）
 - [ ] M0-SPIKE-02: Android surface/lifecycle + libmpv versus Media3 fallback
-- [ ] M0-SPIKE-03: Slint list virtualization, rich content, IME, accessibility
+- [ ] M0-SPIKE-03: Slint list virtualization, rich content, IME
 - [x] M0-SPIKE-04: iOS libmpv/AVPlayer feasibility and PiP/background-audio comparison
       （见 [spikes/SPIKE-004-ios.md](spikes/SPIKE-004-ios.md)）
 - [~] M0-SPIKE-05: collect real baseline CPU/RSS/video frame-time samples

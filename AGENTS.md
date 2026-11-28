@@ -354,6 +354,18 @@ PR**，不要只留在代码和 Issues 里：
   `~/.pub-cache`，`PUB_CACHE` 环境变量优先。`lib/scripts/pub-cache.ps1` 是
   这条判断的唯一出处，`patch.ps1` 与 `prepare-build.sh` 都调它——别再在任何
   一侧写死路径（#175）。
+- Windows 宿主打 Android 包时，先运行 `tool/prepare-build.sh android` 的前置
+  检查（#232）：在仓库外执行的 `git config --get core.longpaths` 必须为
+  `true`，否则 pub 的
+  git 依赖可能静默缺文件，最终报「找不到符号」；修复后须删掉受损的 git
+  依赖检出再 `flutter pub get`。项目与 pub cache 跨盘符时，Kotlin 增量编译
+  可能报 `Could not close incremental caches`；在本机
+  `~/.gradle/gradle.properties` 设置 `kotlin.incremental=false`，或把
+  `PUB_CACHE` 移到项目所在盘。检查只读，不修改全局配置。
+- 手工解压安装 Android NDK 时，`source.properties` 之外还必须补与该版本匹配的
+  `package.xml`（#232）。Cargokit 以它判断 NDK 是否已安装；缺它时可能只在
+  日志打印 `SEVERE`，Gradle 仍成功产出缺少 `libbridge_flutter.so` 的 APK。
+  `tool/prepare-build.sh android` 会在构建前检查 Gradle 所钉的 NDK 版本。
 - `flutter pub get` **不要带 `PUB_HOSTED_URL` 镜像**：它会把 `pubspec.lock`
   里每条 `url: https://pub.dev` 改写成镜像地址并顺带升级若干包。要用镜像就
   只用在下载 SDK 上。

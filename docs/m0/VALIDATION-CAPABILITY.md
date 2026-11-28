@@ -95,6 +95,12 @@ push / PR 上自动运行的只有两个，都**不产出任何平台产物**：
 下的 golden（核对它们确实出自基线）；只改 fixture 时若不触发，唯一检查它们的
 job 就跑不到。
 
+Windows 宿主打 Android 包的本地前置检查见
+[`tool/check-windows-android-env.ps1`](../../tool/check-windows-android-env.ps1)（#232）：
+`prepare-build.sh` 在清理全局状态前检查 Git 长路径开关和 NDK 的
+`package.xml`，跨盘符 pub cache 则警告。此检查只在 Windows 宿主上运行，
+Linux 的 PR 回归不会验证这些 Windows 环境条件。
+
 ##### Apple 与 Android 的交叉编译为何不在 PR 上
 
 2026-11-11 起，`aarch64-apple-darwin` / `aarch64-apple-ios` / `aarch64-linux-android`

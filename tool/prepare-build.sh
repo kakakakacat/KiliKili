@@ -30,6 +30,9 @@ cd "$(dirname "$0")/.."
 REPO="$PWD"
 : "${FLUTTER_ROOT:?请先 export FLUTTER_ROOT 指向 Flutter SDK}"
 
+# Windows 宿主的 Android 环境问题要在复位全局 SDK、清理 pub cache 前拦住（#232）。
+pwsh -NoProfile -File tool/check-windows-android-env.ps1 "$PLATFORM" "$REPO"
+
 echo "[1/4] 复位 Flutter SDK"
 git -C "$FLUTTER_ROOT" reset --hard HEAD --quiet
 git -C "$FLUTTER_ROOT" clean -fd --quiet

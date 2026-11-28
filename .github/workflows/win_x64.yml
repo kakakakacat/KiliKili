@@ -53,7 +53,7 @@ jobs:
           mkdir -p Release/KiliKili-Win
           mkdir -p KiliKili-Win-Setup
           mv build/windows/x64/runner/Release/* Release/KiliKili-Win/
-          mv dist/**/*.exe KiliKili-Win-Setup/KiliKili_windows_${{env.version}}_x64_setup.exe
+          mv dist/**/*.exe KiliKili-Win-Setup/KiliKili_windows_${{env.file_version}}_x64_setup.exe
 
       # Windows 的发布身份是一张代码签名证书（约定见 docs/release/SIGNING.md）。
       # 没配 secret 时跳过，产物与以前一样未签名——SmartScreen 会拦一道，
@@ -104,7 +104,7 @@ jobs:
 
           $targets = @(
             "Release/KiliKili-Win/kilikili.exe",
-            "KiliKili-Win-Setup/KiliKili_windows_${{env.version}}_x64_setup.exe"
+            "KiliKili-Win-Setup/KiliKili_windows_${{env.file_version}}_x64_setup.exe"
           )
           foreach ($t in $targets) {
             if (-not (Test-Path $t)) { throw "待签名文件不存在: $t" }
@@ -133,7 +133,7 @@ jobs:
 
       - name: Compress
         run: |
-          Compress-Archive -Path "Release/KiliKili-Win" -DestinationPath "KiliKili_windows_${{env.version}}_x64_portable.zip"
+          Compress-Archive -Path "Release/KiliKili-Win" -DestinationPath "KiliKili_windows_${{env.file_version}}_x64_portable.zip"
         shell: pwsh
 
       # 同 linux_x64.yml：上传前核对体积，防止产物成功上传但内容是错的。
@@ -155,8 +155,8 @@ jobs:
               Write-Host "OK:   $path = $size 字节"
             }
           }
-          Check "KiliKili_windows_${{env.version}}_x64_portable.zip" 20000000
-          Check "KiliKili-Win-Setup/KiliKili_windows_${{env.version}}_x64_setup.exe" 15000000
+          Check "KiliKili_windows_${{env.file_version}}_x64_portable.zip" 20000000
+          Check "KiliKili-Win-Setup/KiliKili_windows_${{env.file_version}}_x64_setup.exe" 15000000
           if ($fail) { exit 1 }
 
       - name: Release

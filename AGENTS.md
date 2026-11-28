@@ -315,7 +315,7 @@ PR**，不要只留在代码和 Issues 里：
 
 - **取 APK 产物不要用 `gh run download`。** `build.yml` 的上传步骤用了
   `archive: false`，于是：产物名就是**文件名本身**（形如
-  `KiliKili_android_<版本>-<短 sha>+<versionCode>_arm64-v8a.apk`），
+  `KiliKili_android_<版本>_arm64-v8a.apk`），
   `-n Android_arm64-v8a` 这种按平台猜的名字找不到；而且 APK 本身就是 zip，
   `gh run download` 会把它**当压缩包解开**，把七百来个条目摊进目标目录，
   还会因 `res/` 下有大小写同名的条目（`2f.xml` 与 `2F.xml`）在 Windows 上
@@ -349,6 +349,11 @@ PR**，不要只留在代码和 Issues 里：
 
 - `tool/prepare-build.sh` 会 **reset 全局 Flutter SDK** 并删 pub cache 里的
   cupertino_ui / material_ui，影响本机其他 Flutter 项目，别在无人值守时跑。
+- **pub cache 的位置由宿主系统决定，与要打给哪个平台无关**：Windows 上是
+  `%LOCALAPPDATA%\Pub\Cache`（**不是** `~/.pub-cache`），其余平台是
+  `~/.pub-cache`，`PUB_CACHE` 环境变量优先。`lib/scripts/pub-cache.ps1` 是
+  这条判断的唯一出处，`patch.ps1` 与 `prepare-build.sh` 都调它——别再在任何
+  一侧写死路径（#175）。
 - `flutter pub get` **不要带 `PUB_HOSTED_URL` 镜像**：它会把 `pubspec.lock`
   里每条 `url: https://pub.dev` 改写成镜像地址并顺带升级若干包。要用镜像就
   只用在下载 SDK 上。

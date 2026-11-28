@@ -111,6 +111,18 @@ The getter 'popGestureEnabled_' isn't defined for the type 'PageRoute<T>'.
 
 **切换目标平台必须使用 [`tool/prepare-build.sh`](../../tool/prepare-build.sh)**，它按正确顺序执行复位、清理 pub cache、重新拉取、打补丁四步。手工操作漏掉任一步都会产生难以定位的编译错误。
 
+### 3.2.2 Windows 宿主打 Android 包的三项前置条件（#232）
+
+`tool/prepare-build.sh android` 在改动全局 Flutter SDK 与 pub cache 前检查这些条件：
+
+| 条件 | 失败时看到的症状 | 本机修法 |
+|---|---|---|
+| `git config --get core.longpaths` 为 `true` | pub 的 git 依赖检出静默少文件，随后 javac 报「找不到符号」（如 `ChromeCustomTabsChannelDelegate`） | `git config --global core.longpaths true`；删掉已损坏的 `pub cache/git` 中对应依赖检出，再运行 `flutter pub get` |
+| 项目与 pub cache 同盘符 | Kotlin 报 `Could not close incremental caches`，内层异常是 `this and base files have different roots`；删缓存重跑仍失败 | 在本机 `~/.gradle/gradle.properties` 设置 `kotlin.incremental=false`，或把 `PUB_CACHE` 移到项目所在盘；脚本只警告 |
+| 所钉 NDK 版本存在 `package.xml` | Cargokit 记 `SEVERE`，Gradle 却可能成功产出缺少 `libbridge_flutter.so` 的 APK，启动后提示「Rust Core 未就绪」 | 用 `sdkmanager` 安装该版本，或给手工解压的 NDK 补与版本匹配的 `package.xml`；脚本会报错退出 |
+
+手工解压 NDK 只有 `source.properties` 仍不够。Cargokit 检查 `<Android SDK>/ndk/<ndkVersion>/package.xml` 来判断是否已安装，缺少时会尝试调用 `sdkmanager`；若本机也没有 `sdkmanager`，Rust 库可能不会进 APK。上述检查只读；跨盘符那项只警告，因为禁用增量编译有全局成本。CI 的 Android job 运行在 Linux 上，没有 Windows 的盘符和 `MAX_PATH` 问题。
+
 ### 3.3 影响
 
 - **锁定 Flutter 版本**不只是锁 3.47.9，而是锁 **3.47.9 + 对应平台补丁集**。升级 Flutter 时每个补丁都可能冲突。

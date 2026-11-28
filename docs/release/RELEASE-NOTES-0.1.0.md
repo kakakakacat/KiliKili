@@ -1,7 +1,10 @@
 # KiliKili 0.1.0 发布说明
 
-> 状态：**待发布**，跟踪 issue #242，「已知问题」一节由 #311 收口。
-> 发版时把本文「给用户看的部分」原样贴进 GitHub Release 正文。
+> 状态：**已发布**（2026-11-28）。tag `v0.1.0` → `1f84c3cdf`，产物版本 `0.1.0+6088`，
+> 构建 [run 46109080291](https://github.com/kakakakacat/KiliKili/actions/runs/46109080291)，
+> Release 页 <https://github.com/kakakakacat/KiliKili/releases/tag/v0.1.0>。
+> 跟踪 issue #242，「已知问题」一节由 #311 收口。
+> 本文「给用户看的部分」（下面两行注释之间）就是 Release 正文，改了要同步改 Release。
 >
 > 验收情况见 #242：Android 与 Windows 已按 [`docs/qa/RELEASE-VALIDATION.md`](../qa/RELEASE-VALIDATION.md)
 > 跑过主链路，其余未跑完的用例由所有者决定按通过处置（处置记录在 #242）。
@@ -81,8 +84,34 @@ deb / rpm 包**内部**的 `Version:` 仍带 `+提交数`，包管理器要它�
 
 ### 发版步骤
 
-见 issue #242 第二节。签名材料与 secrets 见 [`SIGNING.md`](SIGNING.md)；本版只有 Android
-（以及 Linux 的 rpm GPG 签名，如果 `LINUX_GPG_PRIVATE_KEY` 在）是签名的。
+发布门槛与验收范围见 issue #242 第二节。签名材料与 secrets 见 [`SIGNING.md`](SIGNING.md)；
+本版只有 Android（以及 Linux 的 rpm GPG 签名，如果 `LINUX_GPG_PRIVATE_KEY` 在）是签名的。
+
+0.1.0 实际是这么发出去的，下一版照抄即可：
+
+1. **先把 tag 打/移到要发的提交上。** 五个平台工作流里的
+   `softprops/action-gh-release` 都没设 `target_commitish`，tag 不存在时它会把 tag
+   建在 main 上。移动已存在的 tag 要 `git push --force origin refs/tags/<tag>`；
+   仓库的三条 ruleset 都是分支级的，没有 tag 规则，这一步不会被挡。
+2. **先建带正文的草稿 Release**，而不是发完再贴正文：
+
+   ```sh
+   gh release create v0.1.0 --draft --verify-tag --title v0.1.0 \
+     --notes-file <本文「给用户看的部分」>
+   ```
+
+   `action-gh-release@v3` 在 `getReleaseByTag` 返回 404 时会回落到列表扫描，**能找到
+   草稿**；更新时保留草稿标记与已有 body（工作流没传 `body`），上传完附件再
+   `finalizeRelease` 把它转成公开。于是 Release 从公开的第一秒起就带着安装指引，
+   不会有一段「有包没说明」的空窗。
+   **别用 `gh api -X PATCH` 只改 `target_commitish`**：那会把草稿的 `tag_name` 换成
+   `untagged-…` 占位值，等于脱离 tag，构建时会另建一个 Release。要改就连 `tag_name`
+   一起 PATCH 回去。
+3. **带 tag 触发构建**：`gh workflow run build.yml --ref <发布分支> -f tag=v0.1.0`
+   （五端全开）。带 `tag` 的 Android 包走发布密钥、应用 ID 不带 `.dev`。
+4. **产物抽查**：从 Release 页下回来，用 `tool/inspect-artifact.py` 核五端的 Rust 动态库
+   与 deb 依赖，`sha256sum -c SHA256SUMS`，`gpg --verify` 四个 `.asc`，Android 用
+   `apksigner verify --print-certs` 核证书身份。构建绿 ≠ 产物对（见 2026-11-10 复盘）。
 
 ### 已知问题（0.1.0）
 

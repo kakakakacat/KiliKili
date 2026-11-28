@@ -4,8 +4,8 @@ import 'dart:async' show StreamSubscription;
 
 import 'package:kilikili/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:kilikili/common/widgets/view_safe_area.dart';
-import 'package:kilikili/grpc/bilibili/app/listener/v1.pbenum.dart'
-    show PlaylistSource;
+import 'package:kilikili/services/rust/rust_audio.dart'
+    show AudioPlaylistSource;
 import 'package:kilikili/http/search.dart';
 import 'package:kilikili/models/common/fav_type.dart';
 import 'package:kilikili/models/common/video/source_type.dart';
@@ -839,7 +839,7 @@ abstract final class PiliScheme {
           AudioPage.toAudioPage(
             itemType: 3,
             oid: int.parse(oid),
-            from: PlaylistSource.AUDIO_CARD,
+            from: AudioPlaylistSource.audioCard,
           );
           return true;
         }

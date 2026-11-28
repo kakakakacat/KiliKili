@@ -1,8 +1,8 @@
 import 'package:kilikili/common/style.dart';
 import 'package:kilikili/common/widgets/badge.dart';
 import 'package:kilikili/common/widgets/image/network_img_layer.dart';
-import 'package:kilikili/grpc/bilibili/app/listener/v1.pbenum.dart'
-    show PlaylistSource;
+import 'package:kilikili/services/rust/rust_audio.dart'
+    show AudioPlaylistSource;
 import 'package:kilikili/models/dynamics/result.dart';
 import 'package:kilikili/pages/audio/view.dart';
 import 'package:kilikili/pages/dynamics/widgets/forward_panel.dart';
@@ -191,7 +191,7 @@ Widget module(
           onTap: () => AudioPage.toAudioPage(
             oid: music.id!,
             itemType: 3,
-            from: PlaylistSource.AUDIO_CARD,
+            from: AudioPlaylistSource.audioCard,
           ),
           child: Padding(
             padding: const EdgeInsets.only(

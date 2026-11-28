@@ -265,3 +265,13 @@ Web Cookie。此前只迁移各调用点的显式参数，遗漏了这一层拦�
 其余十条没有在本次样本中出现因签名而改变的返回码（七条为 `0`，三条为
 资源类错误），仍按旧拦截器补齐签名与身份。独立构造的签名期望和传输桩
 验证匿名/空 token/假登录 token；真实登录态和设备表现留到 Phase 2。
+
+## 2026-11-28：音频 listener 五条 gRPC 迁入 Rust（#203）
+
+`PlayURL`、`Playlist`、`ThumbUp`、`TripleLike`、`CoinAdd` 仍走
+`/bilibili.app.listener.v1.Listener/`，请求字段与旧 `lib/grpc/audio.dart`
+一致：`PlayerArgs` 的 qn=80、fnval=4048、force_host=2、voice_balance=1，
+列表分页 page_size=20。gRPC 身份仍为 main 账号，不注入 Cookie/csrf。
+点赞按置为语义只在确定未发出时重发；三连和投币定级为可判定，
+当前未接发前查询，故一次也不重发。匿名
+`PlayURL` 实测返回 -101，登录态回归列于 QA M37。

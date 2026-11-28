@@ -1,0 +1,9 @@
+{
+  "source": "hand_constructed_from_pre_migration_dart_fields",
+  "issue": 203,
+  "reason": "Anonymous listener PlayURL returned gRPC remote -101. No authenticated response was available for safe redaction.",
+  "redaction": "All URLs use example.invalid; oid, sub_id, mid, title and nickname are placeholders.",
+  "cases": ["playlist.raw.pb", "play_url_dash.raw.pb", "play_url_durl.raw.pb"],
+  "parity": "One-time Dart protobuf comparison passed for PlaylistResp and nested PlayInfo/PlayDASH/PlayURL fields. The legacy PlayURLResp map decoder threw a key type error with protobuf.dart 6.1.0, so PlayInfo values were extracted from the same raw bytes for comparison; the temporary legacy model and script were removed afterward.",
+  "limitation": "These fixtures prove projection and selection behavior, not the shape of a live authenticated response."
+}

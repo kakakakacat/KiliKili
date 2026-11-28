@@ -1,37 +1,37 @@
-import 'package:kilikili/grpc/bilibili/app/listener/v1.pbenum.dart'
-    show PlaylistSource;
+import 'package:kilikili/services/rust/rust_audio.dart'
+    show AudioPlaylistSource;
 
 enum SourceType {
   normal(
     mediaType: -1,
-    playlistSource: PlaylistSource.UP_ARCHIVE,
+    playlistSource: AudioPlaylistSource.upArchive,
   ),
   archive(
     mediaType: 1,
     extraId: 1,
-    playlistSource: PlaylistSource.MEDIA_LIST,
+    playlistSource: AudioPlaylistSource.mediaList,
   ),
   watchLater(
     mediaType: 2,
     extraId: 2,
-    playlistSource: PlaylistSource.MEDIA_LIST,
+    playlistSource: AudioPlaylistSource.mediaList,
   ),
   fav(
     mediaType: 3,
     extraId: 2,
-    playlistSource: PlaylistSource.USER_FAVOURITE,
+    playlistSource: AudioPlaylistSource.userFavourite,
   ),
   playlist(
     mediaType: 3,
     extraId: 4,
-    playlistSource: PlaylistSource.MEDIA_LIST,
+    playlistSource: AudioPlaylistSource.mediaList,
   ),
   file,
   ;
 
   final int? mediaType;
   final int? extraId;
-  final PlaylistSource? playlistSource;
+  final AudioPlaylistSource? playlistSource;
   const SourceType({
     this.mediaType,
     this.extraId,

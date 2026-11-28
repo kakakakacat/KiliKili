@@ -2,7 +2,7 @@ import 'dart:io' show File, Platform;
 import 'dart:ui' show PlatformDispatcher;
 
 import 'package:kilikili/common/constants.dart';
-import 'package:kilikili/grpc/bilibili/app/listener/v1.pb.dart' show DetailItem;
+import 'package:kilikili/services/rust/rust_audio.dart' show AudioItem;
 import 'package:kilikili/models_new/download/bili_download_entry_info.dart';
 import 'package:kilikili/models_new/pgc/pgc_info_model/episode.dart';
 import 'package:kilikili/models_new/video/video_detail/data.dart';
@@ -317,13 +317,18 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
           duration: Duration(seconds: data.duration ?? 0),
           artUri: getUri(cover),
         );
-      case DetailItem(:final arc):
+      case AudioItem(
+        :final title,
+        :final cover,
+        :final duration,
+        :final ownerName,
+      ):
         mediaItem = MediaItem(
           id: id,
-          title: arc.title,
-          artist: data.owner.name,
-          duration: Duration(seconds: arc.duration.toInt()),
-          artUri: getUri(arc.cover),
+          title: title,
+          artist: ownerName,
+          duration: Duration(seconds: duration),
+          artUri: getUri(cover),
         );
       case BiliDownloadEntryInfo():
         final coverFile = File(

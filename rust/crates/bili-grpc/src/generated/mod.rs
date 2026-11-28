@@ -23,6 +23,16 @@ pub mod bilibili {
                 include!("bilibili.app.interfaces.v1.rs");
             }
         }
+        pub mod listener {
+            pub mod v1 {
+                include!("bilibili.app.listener.v1.rs");
+            }
+        }
+        pub mod playurl {
+            pub mod v1 {
+                include!("bilibili.app.playurl.v1.rs");
+            }
+        }
     }
     pub mod community {
         pub mod service {

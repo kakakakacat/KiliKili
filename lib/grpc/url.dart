@@ -28,11 +28,5 @@ abstract final class GrpcUrl {
   static const viewunite = '/bilibili.app.viewunite.v1.View';
   static const view = '$viewunite/View';
 
-  // audio
-  static const audio = '/bilibili.app.listener.v1.Listener';
-  static const audioPlayUrl = '$audio/PlayURL';
-  static const audioPlayList = '$audio/Playlist';
-  static const audioThumbUp = '$audio/ThumbUp';
-  static const audioTripleLike = '$audio/TripleLike';
-  static const audioCoinAdd = '$audio/CoinAdd';
+  // 音频的五条路径迁到 `bili_protocol::grpc`，见 issue #203。
 }

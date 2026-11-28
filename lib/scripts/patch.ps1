@@ -215,7 +215,10 @@ $patches_material = @($ModalBarrierPatchMaterial, $NavigationDrawerPatchMaterial
                     $FABPatchMaterial, $TextFieldPatchMaterial, $ScaffoldPatchMaterial, $RefreshIndicatorPatchMaterial,
                     $TabsPatchMaterial)
 
-$PubCacheDir = "~/.pub-cache"
+# pub cache 在哪由跑脚本的机器决定，与 $platform 无关（#175）。
+. "$PSScriptRoot/pub-cache.ps1"
+$PubCache = Resolve-PubCache
+$PubCacheDir = $PubCache.Path
 
 switch ($platform.ToLower()) {
     "android" {
@@ -229,7 +232,6 @@ switch ($platform.ToLower()) {
     "macos" {
     }
     "windows" {
-        $PubCacheDir = "$env:LOCALAPPDATA/Pub/Cache"
     }
     default {}
 }
@@ -252,7 +254,8 @@ $MaterialUiDir = Get-ChildItem "$PubCacheDir/hosted/pub.dev" -Directory |
     Select-Object -Last 1
 
 if (-not $MaterialUiDir) {
-    throw "material_ui package not found in pub cache"
+    throw ("material_ui package not found in pub cache: " + $PubCacheDir +
+        " (tried: " + ($PubCache.Candidates -join ", ") + ")")
 }
 
 Write-Host "material_ui dir: $($MaterialUiDir.FullName)"

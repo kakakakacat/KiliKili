@@ -349,6 +349,11 @@ PR**，不要只留在代码和 Issues 里：
 
 - `tool/prepare-build.sh` 会 **reset 全局 Flutter SDK** 并删 pub cache 里的
   cupertino_ui / material_ui，影响本机其他 Flutter 项目，别在无人值守时跑。
+- **pub cache 的位置由宿主系统决定，与要打给哪个平台无关**：Windows 上是
+  `%LOCALAPPDATA%\Pub\Cache`（**不是** `~/.pub-cache`），其余平台是
+  `~/.pub-cache`，`PUB_CACHE` 环境变量优先。`lib/scripts/pub-cache.ps1` 是
+  这条判断的唯一出处，`patch.ps1` 与 `prepare-build.sh` 都调它——别再在任何
+  一侧写死路径（#175）。
 - `flutter pub get` **不要带 `PUB_HOSTED_URL` 镜像**：它会把 `pubspec.lock`
   里每条 `url: https://pub.dev` 改写成镜像地址并顺带升级若干包。要用镜像就
   只用在下载 SDK 上。

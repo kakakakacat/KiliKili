@@ -498,10 +498,10 @@ UPSTREAM_TIP = 2dd24225b01a4d7b7aab6ac8eb3398c1bf1d0642
 
 | 类别 | 数量 |
 | --- | ---: |
-| 修改的上游既有文件 | **854** |
+| 修改的上游既有文件 | **855** |
 | &nbsp;&nbsp;其中：仅因包名重命名而改动 | **338** |
-| &nbsp;&nbsp;其中：有实质改动 | **516** |
-| 新增文件 | **1078** |
+| &nbsp;&nbsp;其中：有实质改动 | **517** |
+| 新增文件 | **1079** |
 | 删除文件 | **369** |
 
 其后 #268 删除「显示上次看到位置提示」开关，第一次改动 `lib/utils/storage_key.dart`（此前与上游
@@ -648,6 +648,7 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 | `lib/pages/mine/view.dart` | #109 | 未登录头像改走共用头像组件，保持边框一致 |
 | `lib/common/widgets/floating_navigation_bar.dart`、`lib/pages/main/view.dart` | #122 | 三种首页底栏共用 64px 高度（#248）、图标与文字的可见间距各减半（#259：悬浮底栏在布局代理里让文字上移 5；MD3 底栏 `labelPadding` 改为仅底部 8 并把图标下移 4；经典底栏图标下移 3、整条上移 1.5，组合仍垂直居中）、玻璃背景、胶囊裁切、4px 内容内边距与边缘留白；安全区仅在胶囊外处理，分栏中心对齐选中背景，图标与文字组合居中；保留导航与隐藏行为。玻璃底色的不透明度先在 #122 降到 0.10–0.24，#252 因「太透、文字看不清」提回 0.68–0.78（液态玻璃着色器只折射不模糊，中间区域要靠底色压暗背板）；选中项图标与文字改用主题色（#252，配色在 `lib/utils/theme_utils.dart`） |
 | `lib/pages/main/controller.dart` | #128、#127 | 遵循「首页切换页面动画」设置：关闭时底栏与侧栏均直接切换，避免固定 240ms 转场及途经页初始化；开启时仍由 TabBarView 按方向滑动 240ms。同步上游时保留开关语义，不对 PageView 强制加动画 |
+| `lib/scripts/patch.ps1` | #175 | pub cache 的位置改为按**宿主系统**判断（`PUB_CACHE` > Windows 的 `%LOCALAPPDATA%\Pub\Cache` > `~/.pub-cache`），不再跟着 `$platform` 走——原来只有 `windows` 那一支读 `LOCALAPPDATA`，于是「在 Windows 上打 Android 包」必然找不到缓存。判断本身在我们自己的 `lib/scripts/pub-cache.ps1` 里，`patch.ps1` 只剩三行引用；**这条对所有 Windows 开发者都成立，可以提给上游** |
 | `lib/scripts/double_tap_gesture.patch` | #143 | 给 Flutter SDK 的 `DoubleTapGestureRecognizer` 加一个 `doubleTapTimeout` 参数（默认仍为 `kDoubleTapTimeout`，只有播放器选择性调短）；**改了它就多一个只在打过补丁的 SDK 上才存在的符号**，见 AGENTS §5 |
 | `lib/scripts/material/*.patch`（8 个）、`lib/common/widgets/flutter/dyn_tab_bar.dart` | #168 | cherry-pick 上游 `915276c87`，把补丁对齐到 `material_ui` 1.11.x；`tabs.patch` 新引入 `minimumIndicatorWidth`，**又一个只在打过补丁的包里存在的符号**。补丁与 `material_ui` 版本强绑定：1.10.0 上 `scaffold.patch` 打不上，必须连同 `pubspec.lock` 的版本一起动 |
 | `lib/common/widgets/expandable.dart` | #141 | 展开/折叠时长 300 → 180ms，抽成共用常量 `kIntroExpandDuration`，并新增标题旁的三角指示 `ExpandIndicator` |
@@ -691,6 +692,12 @@ ADR-011 决策四定下「迁一条路径就连同 Dart 原实现一起删」之
 修订：2026-11-27（#295 标题与 UP 名移到封面下方）——本轮触及的上游文件
 在此之前都已属于「实质改动」（逐个对照上游 tip 核过），修改 / 新增 / 删除
 三个数都不变；表格与说明按新布局改写，见 §4.4。
+
+修订：2026-11-28（#175 pub cache 按宿主系统判断）——`lib/scripts/patch.ps1`
+此前与上游逐字相同（连包名重命名都没碰到它），本次首次改动，直接进入
+「有实质改动」：修改 **854 → 855**、实质改动 **516 → 517**，仅重命名仍为 **338**；
+新增 **1078 → 1079**（`lib/scripts/pub-cache.ps1`），删除 **369** 不变。
+`tool/prepare-build.sh` 是我们自己的文件，不计进上游分叉面。
 
 ### 4.4 封面卡片改版触及的上游文件
 
